@@ -8,11 +8,11 @@ use Webkul\Customer\Models\CustomerAddress;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * GraphQL coverage for the customer-addresses sub-resource.
- */
 class CustomerAddressTest extends AdminApiTestCase
 {
+    /**
+     * Test query returns customer addresses.
+     */
     public function test_query_returns_customer_addresses(): void
     {
         $customerId = Customer::whereHas('addresses')->value('id');
@@ -40,6 +40,9 @@ class CustomerAddressTest extends AdminApiTestCase
         expect(is_array($data) || is_array($errors))->toBeTrue();
     }
 
+    /**
+     * Test query requires authentication.
+     */
     public function test_query_requires_authentication(): void
     {
         $query = <<<'GQL'

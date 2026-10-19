@@ -68,14 +68,29 @@ class AdminAppearanceSectionDuplicate
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The section id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $section_id = null;
 
+    /**
+     * The source id.
+     */
     public ?int $source_id = null;
 
+    /**
+     * The name.
+     */
     public ?string $name = null;
 
+    /**
+     * The type.
+     */
     public ?string $type = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

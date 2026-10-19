@@ -13,6 +13,9 @@ class AdminRmaStatusItemProvider extends AbstractAdminItemProvider
 {
     use ChecksAdminPermission;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         $this->authorizedAdmin('sales.rma.statuses');
@@ -20,21 +23,9 @@ class AdminRmaStatusItemProvider extends AbstractAdminItemProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
-    protected function getNotFoundLangKey(): string
-    {
-        return 'bagistoapi::app.admin.rma.status-not-found';
-    }
-
-    protected function findEntity(int $id): ?object
-    {
-        return DB::table('rma_statuses')->where('id', $id)->first();
-    }
-
-    protected function mapToDto(object $entity): AdminRmaStatus
-    {
-        return self::toDto($entity);
-    }
-
+    /**
+     * To dto.
+     */
     public static function toDto(object $row): AdminRmaStatus
     {
         $dto = new AdminRmaStatus;
@@ -47,5 +38,29 @@ class AdminRmaStatusItemProvider extends AbstractAdminItemProvider
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
 
         return $dto;
+    }
+
+    /**
+     * Get not found lang key.
+     */
+    protected function getNotFoundLangKey(): string
+    {
+        return 'bagistoapi::app.admin.rma.status-not-found';
+    }
+
+    /**
+     * Find entity.
+     */
+    protected function findEntity(int $id): ?object
+    {
+        return DB::table('rma_statuses')->where('id', $id)->first();
+    }
+
+    /**
+     * Map to dto.
+     */
+    protected function mapToDto(object $entity): AdminRmaStatus
+    {
+        return self::toDto($entity);
     }
 }

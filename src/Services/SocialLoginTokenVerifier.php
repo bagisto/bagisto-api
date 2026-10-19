@@ -8,6 +8,9 @@ use Webkul\BagistoApi\Exception\SocialLoginException;
 
 class SocialLoginTokenVerifier
 {
+    /**
+     * The providers constant.
+     */
     public const PROVIDERS = [
         'google' => [
             'driver' => 'google',
@@ -25,6 +28,9 @@ class SocialLoginTokenVerifier
         ],
     ];
 
+    /**
+     * The google tokeninfo url constant.
+     */
     protected const GOOGLE_TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo';
 
     /**

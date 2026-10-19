@@ -7,22 +7,37 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminConfigurationTreeItem
 {
+    /**
+     * The key.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $key = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $name = null;
 
+    /**
+     * The info.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $info = null;
 
+    /**
+     * The icon.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $icon = null;
 
+    /**
+     * The sort.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?int $sort = null;

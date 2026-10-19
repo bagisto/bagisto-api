@@ -15,10 +15,19 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminProductDetailGroupedProduct extends Model
 {
+    /**
+     * The table.
+     */
     protected $table = 'product_grouped_products';
 
+    /**
+     * The appends.
+     */
     protected $appends = ['sku', 'name'];
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'id' => 'int',
         'associated_product_id' => 'int',
@@ -26,18 +35,27 @@ class AdminProductDetailGroupedProduct extends Model
         'sort_order' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get sku attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getSkuAttribute(): ?string
     {
         return DB::table('products')->where('id', $this->associated_product_id)->value('sku');
     }
 
+    /**
+     * Get name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getNameAttribute(): ?string
     {

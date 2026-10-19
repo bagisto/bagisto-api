@@ -8,6 +8,81 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class RateLimitTest extends AdminApiTestCase
 {
+    /**
+     * Test per minute cap is enforced.
+     */
+    public function test_per_minute_cap_is_enforced(): void
+    {
+        $token = $this->cappedToken(perMinute: 3);
+
+        for ($i = 0; $i < 3; $i++) {
+            $this->getWithToken($token)->assertOk();
+        }
+
+        $response = $this->getWithToken($token);
+
+        $response->assertStatus(429);
+        $response->assertJson(['error' => 'rate_limit_exceeded']);
+        $this->assertNotNull($response->headers->get('Retry-After'));
+    }
+
+    /**
+     * Test per day cap is enforced.
+     */
+    public function test_per_day_cap_is_enforced(): void
+    {
+        $token = $this->cappedToken(perDay: 2);
+
+        $this->getWithToken($token)->assertOk();
+        $this->getWithToken($token)->assertOk();
+
+        $this->getWithToken($token)->assertStatus(429);
+    }
+
+    /**
+     * Test token without caps is not throttled.
+     */
+    public function test_token_without_caps_is_not_throttled(): void
+    {
+        $token = $this->cappedToken();
+
+        for ($i = 0; $i < 12; $i++) {
+            $this->getWithToken($token)->assertOk();
+        }
+    }
+
+    /**
+     * Test each token gets its own bucket.
+     */
+    public function test_each_token_gets_its_own_bucket(): void
+    {
+        $first = $this->cappedToken(perMinute: 2);
+        $second = $this->cappedToken(perMinute: 2);
+
+        $this->getWithToken($first)->assertOk();
+        $this->getWithToken($first)->assertOk();
+        $this->getWithToken($first)->assertStatus(429);
+
+        $this->getWithToken($second)->assertOk();
+    }
+
+    /**
+     * Test shop routes are not throttled by the admin limiter.
+     */
+    public function test_shop_routes_are_not_throttled_by_the_admin_limiter(): void
+    {
+        $token = $this->cappedToken(perMinute: 2);
+
+        $this->getWithToken($token)->assertOk();
+        $this->getWithToken($token)->assertOk();
+        $this->getWithToken($token)->assertStatus(429);
+
+        $this->get('/api/shop/channels', ['Accept' => 'application/json'])->assertOk();
+    }
+
+    /**
+     * Capped token.
+     */
     protected function cappedToken(?int $perMinute = null, ?int $perDay = null): string
     {
         $admin = $this->createAdmin();
@@ -30,68 +105,14 @@ class RateLimitTest extends AdminApiTestCase
         return $row->id.'|'.$plain;
     }
 
+    /**
+     * Get with token.
+     */
     protected function getWithToken(string $token, string $uri = '/api/admin/get')
     {
         return $this->get($uri, [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer '.$token,
         ]);
-    }
-
-    public function test_per_minute_cap_is_enforced(): void
-    {
-        $token = $this->cappedToken(perMinute: 3);
-
-        for ($i = 0; $i < 3; $i++) {
-            $this->getWithToken($token)->assertOk();
-        }
-
-        $response = $this->getWithToken($token);
-
-        $response->assertStatus(429);
-        $response->assertJson(['error' => 'rate_limit_exceeded']);
-        $this->assertNotNull($response->headers->get('Retry-After'));
-    }
-
-    public function test_per_day_cap_is_enforced(): void
-    {
-        $token = $this->cappedToken(perDay: 2);
-
-        $this->getWithToken($token)->assertOk();
-        $this->getWithToken($token)->assertOk();
-
-        $this->getWithToken($token)->assertStatus(429);
-    }
-
-    public function test_token_without_caps_is_not_throttled(): void
-    {
-        $token = $this->cappedToken();
-
-        for ($i = 0; $i < 12; $i++) {
-            $this->getWithToken($token)->assertOk();
-        }
-    }
-
-    public function test_each_token_gets_its_own_bucket(): void
-    {
-        $first = $this->cappedToken(perMinute: 2);
-        $second = $this->cappedToken(perMinute: 2);
-
-        $this->getWithToken($first)->assertOk();
-        $this->getWithToken($first)->assertOk();
-        $this->getWithToken($first)->assertStatus(429);
-
-        $this->getWithToken($second)->assertOk();
-    }
-
-    public function test_shop_routes_are_not_throttled_by_the_admin_limiter(): void
-    {
-        $token = $this->cappedToken(perMinute: 2);
-
-        $this->getWithToken($token)->assertOk();
-        $this->getWithToken($token)->assertOk();
-        $this->getWithToken($token)->assertStatus(429);
-
-        $this->get('/api/shop/channels', ['Accept' => 'application/json'])->assertOk();
     }
 }

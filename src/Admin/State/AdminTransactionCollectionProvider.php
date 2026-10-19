@@ -16,8 +16,14 @@ class AdminTransactionCollectionProvider extends AbstractAdminCollectionProvider
     use BuildsAdminTransaction;
     use ChecksAdminPermission;
 
+    /**
+     * The permission constant.
+     */
     protected const PERMISSION = 'sales.transactions.view';
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin(self::PERMISSION);
@@ -25,11 +31,17 @@ class AdminTransactionCollectionProvider extends AbstractAdminCollectionProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'transaction_id', 'amount', 'invoice_id', 'order_id', 'status', 'created_at'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('order_transactions')
@@ -37,6 +49,9 @@ class AdminTransactionCollectionProvider extends AbstractAdminCollectionProvider
             ->select($this->adminTransactionSelect());
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['id'])) {
@@ -72,6 +87,9 @@ class AdminTransactionCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -83,6 +101,9 @@ class AdminTransactionCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminTransaction
     {
         return $this->buildAdminTransaction($row);

@@ -8,19 +8,9 @@ use Webkul\Sales\Models\Order;
 
 class ShopPrivacyTest extends GraphQLTestCase
 {
-    private function enableGdpr(): void
-    {
-        DB::table('core_config')->updateOrInsert(
-            [
-                'code' => 'general.gdpr.settings.enabled',
-                'channel_code' => core()->getRequestedChannelCode(),
-                'locale_code' => core()->getRequestedLocaleCode(),
-            ],
-            ['value' => '1']
-        );
-        $this->forgetCoreConfigCache();
-    }
-
+    /**
+     * Test newsletter can be unsubscribed through graphql.
+     */
     public function test_newsletter_can_be_unsubscribed_through_graphql(): void
     {
         $this->seedRequiredData();
@@ -53,6 +43,9 @@ class ShopPrivacyTest extends GraphQLTestCase
             ->and(DB::table('subscribers_list')->where('email', $email)->exists())->toBeFalse();
     }
 
+    /**
+     * Test gdpr data is available through graphql for the authenticated customer.
+     */
     public function test_gdpr_data_is_available_through_graphql_for_the_authenticated_customer(): void
     {
         $this->seedRequiredData();
@@ -80,5 +73,21 @@ class ShopPrivacyTest extends GraphQLTestCase
         expect($response->json('errors'))->toBeNull()
             ->and($response->json('data.gdprData.customer.email'))->toBe($customer->email)
             ->and($response->json('data.gdprData.orders'))->toHaveCount(1);
+    }
+
+    /**
+     * Enable gdpr.
+     */
+    private function enableGdpr(): void
+    {
+        DB::table('core_config')->updateOrInsert(
+            [
+                'code' => 'general.gdpr.settings.enabled',
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+            ],
+            ['value' => '1']
+        );
+        $this->forgetCoreConfigCache();
     }
 }

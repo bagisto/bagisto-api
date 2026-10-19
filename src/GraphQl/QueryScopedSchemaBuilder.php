@@ -22,34 +22,26 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * Per-query scoped schema builder (storefront).
- *
- * Reads the incoming GraphQL query and builds a schema scoped to ONLY the
- * resources whose root query fields the query actually references — every
- * relation those resources expose resolves automatically. Building the full
- * storefront schema (~400 types) on every request is the single biggest GraphQL
- * overhead on a non-persistent runtime; scoping to the handful of types a query
- * needs cuts the per-request schema build by an order of magnitude.
- *
- * Conservative by design — it falls back to the full storefront schema for:
- *   - mutations / subscriptions
- *   - introspection (__schema / __type)
- *   - the Relay `node` field (its target type is only known from the runtime id)
- *   - any unrecognised root field
- *   - unparseable queries
- * so no query can ever be under-scoped into an error.
- *
- * The root-field -> resource map is built once from the real schema field names
- * and cached (keyed by the resource set, so it self-invalidates on deploy).
+ * Reads the incoming GraphQL query and builds a schema scoped to ONLY the.
  */
 final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
 {
+    /**
+     * The map cache key constant.
+     */
     private const MAP_CACHE_KEY = 'bagistoapi.graphql.shop_root_field_map';
 
+    /**
+     * The full shop.
+     */
     private ScopedSchemaBuilder $fullShop;
 
     /** @var list<class-string>|null */
     private ?array $frameworkResources = null;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ResourceNameCollectionFactoryInterface $resourceNameCollectionFactory,
         private readonly ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory,
@@ -67,6 +59,9 @@ final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
         );
     }
 
+    /**
+     * Get schema.
+     */
     public function getSchema(): Schema
     {
         $scope = $this->scopeForRequest();
@@ -86,8 +81,7 @@ final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
 
     /**
      * Pre-build and cache the root-field -> resource map so the first request
-     * after a deploy/cache-clear does not pay the map build. Returns the number
-     * of mapped fields. Invoked by the warm-cache command.
+     * after a deploy/cache-clear does not pay the map build. Returns the number.
      */
     public function warmFieldMap(): int
     {
@@ -166,6 +160,9 @@ final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
         return Cache::rememberForever($this->fieldMapCacheKey(), fn () => $this->buildFieldMap());
     }
 
+    /**
+     * Field map cache key.
+     */
     private function fieldMapCacheKey(): string
     {
         $names = [];
@@ -289,9 +286,6 @@ final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
     {
         return new class($classes) implements ResourceNameCollectionFactoryInterface
         {
-            /**
-             * @param  list<class-string>  $classes
-             */
             public function __construct(private readonly array $classes) {}
 
             public function create(): ResourceNameCollection

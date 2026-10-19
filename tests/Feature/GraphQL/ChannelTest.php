@@ -7,7 +7,7 @@ use Webkul\BagistoApi\Tests\GraphQLTestCase;
 class ChannelTest extends GraphQLTestCase
 {
     /**
-     * Get Channels - Basic
+     * Get Channels - Basic.
      */
     public function test_get_channels_basic(): void
     {
@@ -55,7 +55,7 @@ class ChannelTest extends GraphQLTestCase
     }
 
     /**
-     * Get Channels - Complete Details
+     * Get Channels - Complete Details.
      */
     public function test_get_channels_complete_details(): void
     {
@@ -136,7 +136,6 @@ class ChannelTest extends GraphQLTestCase
         $this->assertArrayHasKey('pageInfo', $data);
         $this->assertArrayHasKey('totalCount', $data);
 
-        // pageInfo expected keys
         $this->assertArrayHasKey('endCursor', $data['pageInfo']);
         $this->assertArrayHasKey('startCursor', $data['pageInfo']);
         $this->assertArrayHasKey('hasNextPage', $data['pageInfo']);
@@ -183,7 +182,7 @@ class ChannelTest extends GraphQLTestCase
     }
 
     /**
-     * Get Channels with Pagination
+     * Get Channels with Pagination.
      */
     public function test_get_channels_pagination_basic(): void
     {
@@ -260,7 +259,7 @@ class ChannelTest extends GraphQLTestCase
     }
 
     /**
-     * Get Channels with All Translations
+     * Get Channels with All Translations.
      */
     public function test_get_channels_all_translations_basic(): void
     {
@@ -331,7 +330,7 @@ class ChannelTest extends GraphQLTestCase
     }
 
     /**
-     * Get Channels with Maintenance Mode Info
+     * Get Channels with Maintenance Mode Info.
      */
     public function test_get_channels_maintenance_mode_info(): void
     {
@@ -388,7 +387,7 @@ class ChannelTest extends GraphQLTestCase
     }
 
     /**
-     * Get Channel By ID - Basic
+     * Get Channel By ID - Basic.
      */
     public function test_get_channel_by_id_basic(): void
     {
@@ -421,7 +420,7 @@ class ChannelTest extends GraphQLTestCase
     }
 
     /**
-     * Get Channel Complete Details
+     * Get Channel Complete Details.
      */
     public function test_get_channel_complete_details(): void
     {
@@ -502,7 +501,6 @@ class ChannelTest extends GraphQLTestCase
         $this->assertArrayHasKey('logoUrl', $node);
         $this->assertArrayHasKey('faviconUrl', $node);
 
-        // Verify translation (singular)
         $this->assertArrayHasKey('translation', $node);
         $translation = $node['translation'];
         if ($translation) {
@@ -517,20 +515,17 @@ class ChannelTest extends GraphQLTestCase
             $this->assertArrayHasKey('updatedAt', $translation);
         }
 
-        // Verify translations (plural - paginated)
         $this->assertArrayHasKey('translations', $node);
         $translations = $node['translations'];
         $this->assertIsArray($translations['edges'] ?? []);
         $this->assertArrayHasKey('pageInfo', $translations);
         $this->assertArrayHasKey('totalCount', $translations);
 
-        // pageInfo assertions
         $this->assertArrayHasKey('endCursor', $translations['pageInfo']);
         $this->assertArrayHasKey('startCursor', $translations['pageInfo']);
         $this->assertArrayHasKey('hasNextPage', $translations['pageInfo']);
         $this->assertArrayHasKey('hasPreviousPage', $translations['pageInfo']);
 
-        // Verify translation edges
         foreach ($translations['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
             $this->assertArrayHasKey('cursor', $edge);
@@ -550,7 +545,7 @@ class ChannelTest extends GraphQLTestCase
     }
 
     /**
-     * Get Channel with Branding Assets
+     * Get Channel with Branding Assets.
      */
     public function test_get_channel_with_branding_assets(): void
     {
@@ -593,7 +588,6 @@ class ChannelTest extends GraphQLTestCase
         $this->assertArrayHasKey('logoUrl', $node);
         $this->assertArrayHasKey('faviconUrl', $node);
 
-        // Verify translation
         $this->assertArrayHasKey('translation', $node);
         $translation = $node['translation'];
         if ($translation) {
@@ -603,7 +597,7 @@ class ChannelTest extends GraphQLTestCase
     }
 
     /**
-     * Get Channel Maintenance Mode details
+     * Get Channel Maintenance Mode details.
      */
     public function test_get_channel_maintenance_mode_details(): void
     {
@@ -648,7 +642,6 @@ class ChannelTest extends GraphQLTestCase
         $this->assertArrayHasKey('hostname', $node);
         $this->assertArrayHasKey('isMaintenanceOn', $node);
 
-        // Verify translation (singular)
         $this->assertArrayHasKey('translation', $node);
         $translation = $node['translation'];
         if ($translation) {
@@ -657,13 +650,11 @@ class ChannelTest extends GraphQLTestCase
             $this->assertArrayHasKey('maintenanceModeText', $translation);
         }
 
-        // Verify translations (plural)
         $this->assertArrayHasKey('translations', $node);
         $translations = $node['translations'];
         $this->assertIsArray($translations['edges'] ?? []);
         $this->assertArrayHasKey('totalCount', $translations);
 
-        // Verify translation edges
         foreach ($translations['edges'] ?? [] as $edge) {
             $t = $edge['node'] ?? null;
             $this->assertNotNull($t, 'translation node is null');
@@ -724,7 +715,6 @@ class ChannelTest extends GraphQLTestCase
         $this->assertArrayHasKey('logoUrl', $node);
         $this->assertArrayHasKey('faviconUrl', $node);
 
-        // Locales (BelongsToMany)
         $this->assertArrayHasKey('locales', $node);
         $localeEdges = $node['locales']['edges'] ?? [];
         $this->assertNotEmpty($localeEdges, 'Channel should have at least one locale');
@@ -738,7 +728,6 @@ class ChannelTest extends GraphQLTestCase
             $this->assertArrayHasKey('direction', $locale);
         }
 
-        // Currencies (BelongsToMany)
         $this->assertArrayHasKey('currencies', $node);
         $currencyEdges = $node['currencies']['edges'] ?? [];
         $this->assertNotEmpty($currencyEdges, 'Channel should have at least one currency');
@@ -752,7 +741,6 @@ class ChannelTest extends GraphQLTestCase
             $this->assertArrayHasKey('symbol', $currency);
         }
 
-        // Default Locale (BelongsTo)
         $this->assertArrayHasKey('defaultLocale', $node);
         $defaultLocale = $node['defaultLocale'];
         $this->assertNotNull($defaultLocale, 'Channel should have a default locale');
@@ -762,7 +750,6 @@ class ChannelTest extends GraphQLTestCase
         $this->assertArrayHasKey('name', $defaultLocale);
         $this->assertArrayHasKey('direction', $defaultLocale);
 
-        // Base Currency (BelongsTo)
         $this->assertArrayHasKey('baseCurrency', $node);
         $baseCurrency = $node['baseCurrency'];
         $this->assertNotNull($baseCurrency, 'Channel should have a base currency');
@@ -774,7 +761,7 @@ class ChannelTest extends GraphQLTestCase
     }
 
     /**
-     * Get Channel with all Translations
+     * Get Channel with all Translations.
      */
     public function test_get_channel_with_all_translations(): void
     {
@@ -822,18 +809,15 @@ class ChannelTest extends GraphQLTestCase
         $this->assertArrayHasKey('hostname', $node);
         $this->assertArrayHasKey('timezone', $node);
 
-        // Verify translations (plural)
         $this->assertArrayHasKey('translations', $node);
         $translations = $node['translations'];
         $this->assertIsArray($translations['edges'] ?? []);
         $this->assertArrayHasKey('pageInfo', $translations);
         $this->assertArrayHasKey('totalCount', $translations);
 
-        // pageInfo assertions
         $this->assertArrayHasKey('hasNextPage', $translations['pageInfo']);
         $this->assertArrayHasKey('endCursor', $translations['pageInfo']);
 
-        // Verify translation edges
         foreach ($translations['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
             $this->assertArrayHasKey('cursor', $edge);

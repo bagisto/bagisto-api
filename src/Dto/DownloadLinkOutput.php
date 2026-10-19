@@ -5,14 +5,12 @@ namespace Webkul\BagistoApi\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 
-/**
- * DownloadLinkOutput
- *
- * Output DTO for download link generation mutation
- */
 #[ApiResource(operations: [])]
 class DownloadLinkOutput
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         #[ApiProperty(identifier: true, writable: false)]
         public string $id = '1',

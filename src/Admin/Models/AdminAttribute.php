@@ -20,23 +20,6 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminAttributeItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
 
-/**
- * Admin Catalog → Attributes endpoints.
- *
- * REST (Phase 1.4 — read):
- *   GET /api/admin/catalog/attributes          datagrid-parity listing
- *   GET /api/admin/catalog/attributes/{id}     detail with translations + options
- *
- * REST (Phase 3 — write):
- *   POST   /api/admin/catalog/attributes       create
- *   PUT    /api/admin/catalog/attributes/{id}  update
- *   DELETE /api/admin/catalog/attributes/{id}  delete
- *
- * GraphQL mutations added in Phase 3:
- *   createAdminCatalogAttribute
- *   updateAdminCatalogAttribute
- *   deleteAdminCatalogAttribute
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAttribute',
@@ -684,54 +667,105 @@ class AdminAttribute
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(writable: false)]
     public ?string $code = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $type = null;
 
+    /**
+     * The admin name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $admin_name = null;
 
+    /**
+     * The is required.
+     */
     #[ApiProperty(writable: false)]
     public ?int $is_required = null;
 
+    /**
+     * The is unique.
+     */
     #[ApiProperty(writable: false)]
     public ?int $is_unique = null;
 
+    /**
+     * The value per locale.
+     */
     #[ApiProperty(writable: false)]
     public ?int $value_per_locale = null;
 
+    /**
+     * The value per channel.
+     */
     #[ApiProperty(writable: false)]
     public ?int $value_per_channel = null;
 
+    /**
+     * The is filterable.
+     */
     #[ApiProperty(writable: false)]
     public ?int $is_filterable = null;
 
+    /**
+     * The is configurable.
+     */
     #[ApiProperty(writable: false)]
     public ?int $is_configurable = null;
 
+    /**
+     * The is visible on front.
+     */
     #[ApiProperty(writable: false)]
     public ?int $is_visible_on_front = null;
 
+    /**
+     * The is user defined.
+     */
     #[ApiProperty(writable: false)]
     public ?int $is_user_defined = null;
 
+    /**
+     * The swatch type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $swatch_type = null;
 
+    /**
+     * The position.
+     */
     #[ApiProperty(writable: false)]
     public ?int $position = null;
 
+    /**
+     * The locale.
+     */
     #[ApiProperty(writable: false)]
     public ?string $locale = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 

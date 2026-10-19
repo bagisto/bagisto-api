@@ -12,14 +12,6 @@ use Webkul\BagistoApi\Tests\BagistoApiTest;
 
 class AdminPermissionResolutionTest extends BagistoApiTest
 {
-    private function admin(?string $type, array|string $permissions): object
-    {
-        return (object) ['role' => (object) [
-            'permission_type' => $type,
-            'permissions' => $permissions,
-        ]];
-    }
-
     /**
      * An admin without a role has no permission.
      */
@@ -56,5 +48,16 @@ class AdminPermissionResolutionTest extends BagistoApiTest
         expect($map[AdminSettingsDataTransferImportStats::class])->toBe('settings.data_transfer.imports.import');
         expect($map[AdminSettingsDataTransferImportDownload::class])->toBe('settings.data_transfer.imports.import');
         expect($map[AdminSettingsDataTransferImport::class])->toBe('settings.data_transfer.imports');
+    }
+
+    /**
+     * Admin.
+     */
+    private function admin(?string $type, array|string $permissions): object
+    {
+        return (object) ['role' => (object) [
+            'permission_type' => $type,
+            'permissions' => $permissions,
+        ]];
     }
 }

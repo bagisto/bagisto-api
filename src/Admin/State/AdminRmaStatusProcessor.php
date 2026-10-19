@@ -21,11 +21,17 @@ class AdminRmaStatusProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private readonly RMAStatusRepository $rmaStatusRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof AdminRmaStatusCreateInput) {
@@ -55,6 +61,9 @@ class AdminRmaStatusProcessor implements ProcessorInterface
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }
 
+    /**
+     * Handle create.
+     */
     private function handleCreate(AdminRmaStatusCreateInput $input): AdminRmaStatus
     {
         $this->authorizedAdmin('sales.rma.statuses.create', 'bagistoapi::app.admin.rma.no-permission');
@@ -77,6 +86,9 @@ class AdminRmaStatusProcessor implements ProcessorInterface
         return $this->map((int) $status->id);
     }
 
+    /**
+     * Handle update.
+     */
     private function handleUpdate(int $id, AdminRmaStatusUpdateInput $input): AdminRmaStatus
     {
         $this->authorizedAdmin('sales.rma.statuses.edit', 'bagistoapi::app.admin.rma.no-permission');
@@ -103,6 +115,9 @@ class AdminRmaStatusProcessor implements ProcessorInterface
         return $this->map($id);
     }
 
+    /**
+     * Handle delete.
+     */
     private function handleDelete(int $id): AdminRmaStatus
     {
         $this->authorizedAdmin('sales.rma.statuses.delete', 'bagistoapi::app.admin.rma.no-permission');
@@ -130,6 +145,9 @@ class AdminRmaStatusProcessor implements ProcessorInterface
         return $snapshot;
     }
 
+    /**
+     * Validate payload.
+     */
     private function validatePayload(array $data, string $titleRule): void
     {
         $validator = Validator::make($data, [
@@ -142,6 +160,9 @@ class AdminRmaStatusProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Map.
+     */
     private function map(int $id): AdminRmaStatus
     {
         return AdminRmaStatusItemProvider::toDto(DB::table('rma_statuses')->where('id', $id)->first());

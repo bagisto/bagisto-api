@@ -9,59 +9,14 @@ use Webkul\Customer\Models\Customer;
 
 class SocialLoginTest extends RestApiTestCase
 {
+    /**
+     * The url.
+     */
     private string $url = '/api/shop/customers/social-login';
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->forgetCoreConfigCache();
-    }
-
-    private function enableGoogle(): void
-    {
-        DB::table('core_config')->whereIn('code', [
-            'customer.settings.social_login.enable_google',
-            'customer.settings.social_login.google_client_id',
-        ])->delete();
-
-        foreach ([
-            'customer.settings.social_login.enable_google' => '1',
-            'customer.settings.social_login.google_client_id' => 'test-client-id.apps.googleusercontent.com',
-        ] as $code => $value) {
-            DB::table('core_config')->insert([
-                'code' => $code,
-                'value' => $value,
-                'channel_code' => core()->getRequestedChannelCode(),
-                'locale_code' => core()->getRequestedLocaleCode(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        $this->forgetCoreConfigCache();
-    }
-
-    private function disableGoogle(): void
-    {
-        DB::table('core_config')->where('code', 'customer.settings.social_login.enable_google')->delete();
-
-        $this->forgetCoreConfigCache();
-    }
-
-    private function fakeGoogle(string $email, array $overrides = []): void
-    {
-        Http::fake([
-            'oauth2.googleapis.com/*' => Http::response(array_merge([
-                'sub' => 'g-'.substr(md5($email), 0, 12),
-                'email' => $email,
-                'email_verified' => 'true',
-                'name' => 'Nadia Rahman',
-                'aud' => 'test-client-id.apps.googleusercontent.com',
-            ], $overrides), 200),
-        ]);
-    }
-
+    /**
+     * Test unsupported provider is rejected.
+     */
     public function test_unsupported_provider_is_rejected(): void
     {
         $this->seedRequiredData();
@@ -76,6 +31,9 @@ class SocialLoginTest extends RestApiTestCase
         expect($response->json('code'))->toBe('PROVIDER_NOT_SUPPORTED');
     }
 
+    /**
+     * Test disabled provider is rejected.
+     */
     public function test_disabled_provider_is_rejected(): void
     {
         $this->seedRequiredData();
@@ -90,6 +48,9 @@ class SocialLoginTest extends RestApiTestCase
         expect($response->json('code'))->toBe('PROVIDER_DISABLED');
     }
 
+    /**
+     * Test missing token is rejected.
+     */
     public function test_missing_token_is_rejected(): void
     {
         $this->seedRequiredData();
@@ -101,6 +62,9 @@ class SocialLoginTest extends RestApiTestCase
         expect($response->json('code'))->toBe('SOCIAL_TOKEN_REQUIRED');
     }
 
+    /**
+     * Test invalid token is rejected.
+     */
     public function test_invalid_token_is_rejected(): void
     {
         $this->seedRequiredData();
@@ -117,6 +81,9 @@ class SocialLoginTest extends RestApiTestCase
         expect($response->json('code'))->toBe('SOCIAL_TOKEN_INVALID');
     }
 
+    /**
+     * Test google fails closed without a client id.
+     */
     public function test_google_fails_closed_without_a_client_id(): void
     {
         $this->seedRequiredData();
@@ -137,6 +104,9 @@ class SocialLoginTest extends RestApiTestCase
         expect($response->json('code'))->toBe('SOCIAL_PROVIDER_NOT_CONFIGURED');
     }
 
+    /**
+     * Test new customer is created and gets a bearer token.
+     */
     public function test_new_customer_is_created_and_gets_a_bearer_token(): void
     {
         $this->seedRequiredData();
@@ -164,6 +134,9 @@ class SocialLoginTest extends RestApiTestCase
         ]);
     }
 
+    /**
+     * Test existing email is linked not duplicated.
+     */
     public function test_existing_email_is_linked_not_duplicated(): void
     {
         $this->seedRequiredData();
@@ -185,6 +158,9 @@ class SocialLoginTest extends RestApiTestCase
         expect(Customer::where('email', $email)->count())->toBe(1);
     }
 
+    /**
+     * Test repeat login returns same account.
+     */
     public function test_repeat_login_returns_same_account(): void
     {
         $this->seedRequiredData();
@@ -207,6 +183,9 @@ class SocialLoginTest extends RestApiTestCase
         expect((int) $second->json('id'))->toBe((int) $first->json('id'));
     }
 
+    /**
+     * Test inactive account is blocked.
+     */
     public function test_inactive_account_is_blocked(): void
     {
         $this->seedRequiredData();
@@ -227,5 +206,68 @@ class SocialLoginTest extends RestApiTestCase
 
         expect($response->json('success'))->toBeFalse();
         expect($response->json('code'))->toBe('ACCOUNT_INACTIVE');
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->forgetCoreConfigCache();
+    }
+
+    /**
+     * Enable google.
+     */
+    private function enableGoogle(): void
+    {
+        DB::table('core_config')->whereIn('code', [
+            'customer.settings.social_login.enable_google',
+            'customer.settings.social_login.google_client_id',
+        ])->delete();
+
+        foreach ([
+            'customer.settings.social_login.enable_google' => '1',
+            'customer.settings.social_login.google_client_id' => 'test-client-id.apps.googleusercontent.com',
+        ] as $code => $value) {
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+    }
+
+    /**
+     * Disable google.
+     */
+    private function disableGoogle(): void
+    {
+        DB::table('core_config')->where('code', 'customer.settings.social_login.enable_google')->delete();
+
+        $this->forgetCoreConfigCache();
+    }
+
+    /**
+     * Fake google.
+     */
+    private function fakeGoogle(string $email, array $overrides = []): void
+    {
+        Http::fake([
+            'oauth2.googleapis.com/*' => Http::response(array_merge([
+                'sub' => 'g-'.substr(md5($email), 0, 12),
+                'email' => $email,
+                'email_verified' => 'true',
+                'name' => 'Nadia Rahman',
+                'aud' => 'test-client-id.apps.googleusercontent.com',
+            ], $overrides), 200),
+        ]);
     }
 }

@@ -8,54 +8,10 @@ use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderItem;
 use Webkul\Sales\Models\OrderPayment;
 
-/**
- * Tests for customer order reordering via GraphQL
- */
 class CustomerOrderReorderSimplifiedTest extends GraphQLTestCase
 {
-    private function createTestData(): array
-    {
-        $this->seedRequiredData();
-
-        $customer = $this->createCustomer();
-        $channel = Channel::first();
-
-        // Create products and make them saleable
-        $product1 = $this->createBaseProduct('simple', ['sku' => 'REORDER-PROD-1']);
-        $this->ensureInventory($product1);
-
-        $product2 = $this->createBaseProduct('simple', ['sku' => 'REORDER-PROD-2']);
-        $this->ensureInventory($product2);
-
-        // Create a completed order with multiple items
-        $order = Order::factory()->create([
-            'customer_id' => $customer->id,
-            'customer_email' => $customer->email,
-            'customer_first_name' => $customer->first_name,
-            'customer_last_name' => $customer->last_name,
-            'channel_id' => $channel->id,
-            'status' => 'completed',
-        ]);
-
-        OrderItem::factory()->create([
-            'order_id' => $order->id,
-            'product_id' => $product1->id,
-            'qty_ordered' => 2,
-        ]);
-
-        OrderItem::factory()->create([
-            'order_id' => $order->id,
-            'product_id' => $product2->id,
-            'qty_ordered' => 1,
-        ]);
-
-        OrderPayment::factory()->create(['order_id' => $order->id]);
-
-        return compact('customer', 'order', 'product1', 'product2', 'channel');
-    }
-
     /**
-     * Test: Reorder items from completed order successfully
+     * Test: Reorder items from completed order successfully.
      */
     public function test_reorder_completed_order_success(): void
     {
@@ -91,13 +47,12 @@ class CustomerOrderReorderSimplifiedTest extends GraphQLTestCase
             ],
         ]);
 
-        // Should have added items
         $data = $response->json();
         $this->assertGreaterThan(0, $data['data']['createReorderOrder']['reorderOrder']['itemsAddedCount']);
     }
 
     /**
-     * Test: Reorder returns correct item count
+     * Test: Reorder returns correct item count.
      */
     public function test_reorder_returns_correct_item_count(): void
     {
@@ -122,18 +77,16 @@ class CustomerOrderReorderSimplifiedTest extends GraphQLTestCase
             ['input' => ['orderId' => $testData['order']->id]]
         );
 
-        // Skip this test if the operation returned an error
         $data = $response->json();
         if (isset($data['errors'])) {
             $this->markTestSkipped('Reorder operation returned errors');
         }
 
-        // The order has 2 items
         $this->assertEquals(2, $data['data']['createReorderOrder']['reorderOrder']['itemsAddedCount']);
     }
 
     /**
-     * Test: Cannot reorder non-existent order
+     * Test: Cannot reorder non-existent order.
      */
     public function test_cannot_reorder_non_existent_order(): void
     {
@@ -156,12 +109,11 @@ class CustomerOrderReorderSimplifiedTest extends GraphQLTestCase
             ['input' => ['orderId' => 99999]]
         );
 
-        // Should have errors
         $this->assertArrayHasKey('errors', $response->json());
     }
 
     /**
-     * Test: Cannot reorder another customer's order
+     * Test: Cannot reorder another customer's order.
      */
     public function test_cannot_reorder_other_customers_order(): void
     {
@@ -184,12 +136,11 @@ class CustomerOrderReorderSimplifiedTest extends GraphQLTestCase
             ['input' => ['orderId' => $testData['order']->id]]
         );
 
-        // Should have errors
         $this->assertArrayHasKey('errors', $response->json());
     }
 
     /**
-     * Test: Unauthenticated reorder request fails
+     * Test: Unauthenticated reorder request fails.
      */
     public function test_unauthenticated_reorder_fails(): void
     {
@@ -225,12 +176,11 @@ class CustomerOrderReorderSimplifiedTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, ['input' => ['orderId' => $order->id]]);
 
-        // Should have authentication errors
         $this->assertArrayHasKey('errors', $response->json());
     }
 
     /**
-     * Test: Inline GraphQL input object is normalized correctly
+     * Test: Inline GraphQL input object is normalized correctly.
      */
     public function test_reorder_completed_order_with_inline_input_literal(): void
     {
@@ -258,7 +208,7 @@ class CustomerOrderReorderSimplifiedTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Missing order ID parameter returns error
+     * Test: Missing order ID parameter returns error.
      */
     public function test_missing_order_id_parameter(): void
     {
@@ -281,7 +231,48 @@ class CustomerOrderReorderSimplifiedTest extends GraphQLTestCase
             ['input' => []]
         );
 
-        // Should have validation errors
         $this->assertArrayHasKey('errors', $response->json());
+    }
+
+    /**
+     * Create test data.
+     */
+    private function createTestData(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $channel = Channel::first();
+
+        $product1 = $this->createBaseProduct('simple', ['sku' => 'REORDER-PROD-1']);
+        $this->ensureInventory($product1);
+
+        $product2 = $this->createBaseProduct('simple', ['sku' => 'REORDER-PROD-2']);
+        $this->ensureInventory($product2);
+
+        $order = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'customer_first_name' => $customer->first_name,
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
+        ]);
+
+        OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product1->id,
+            'qty_ordered' => 2,
+        ]);
+
+        OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product2->id,
+            'qty_ordered' => 1,
+        ]);
+
+        OrderPayment::factory()->create(['order_id' => $order->id]);
+
+        return compact('customer', 'order', 'product1', 'product2', 'channel');
     }
 }

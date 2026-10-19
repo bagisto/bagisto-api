@@ -21,7 +21,6 @@ class AuthenticatedCustomerProvider implements ProviderInterface
         $input = $context['args']['input'] ?? null;
         $request = Request::instance() ?? ($context['request'] ?? null);
 
-        // Extract token from Authorization header only (no input property)
         $token = $this->extractTokenFromRequest($request);
 
         if (! $token) {
@@ -39,7 +38,7 @@ class AuthenticatedCustomerProvider implements ProviderInterface
 
     /**
      * Extract Bearer token from Authorization header.
-     * Recommended format: Authorization: Bearer <customer_token>
+     * Recommended format: Authorization: Bearer <customer_token>.
      */
     private function extractTokenFromRequest($request): ?string
     {

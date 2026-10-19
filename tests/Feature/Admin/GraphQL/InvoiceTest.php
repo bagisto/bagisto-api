@@ -20,6 +20,9 @@ class InvoiceTest extends AdminApiTestCase
 {
     use AdminFixtureFactory, ConfiguresSettings;
 
+    /**
+     * Test create with transaction flag records order transaction.
+     */
     public function test_create_with_transaction_flag_records_order_transaction(): void
     {
         $order = $this->bootstrapInvoiceableOrder('pending');
@@ -51,6 +54,9 @@ class InvoiceTest extends AdminApiTestCase
         expect($response->json('data.createAdminInvoice.adminInvoice.transactionId'))->toBe($linked);
     }
 
+    /**
+     * Test create mutation returns fully populated invoice.
+     */
     public function test_create_mutation_returns_fully_populated_invoice(): void
     {
         $order = $this->bootstrapInvoiceableOrder('pending');
@@ -94,9 +100,6 @@ class InvoiceTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeNull();
         $node = $response->json('data.createAdminInvoice.adminInvoice');
 
-        // The create mutation returns the invoice's scalars + order link. The
-        // items connection is populated on the detail query (adminInvoice) —
-        // API Platform does not resolve nested connections on a mutation payload.
         expect($node['incrementId'])->not->toBeNull();
         expect($node['order']['_id'])->toBe($order->id);
         expect($node['grandTotal'])->not->toBeNull();
@@ -104,14 +107,15 @@ class InvoiceTest extends AdminApiTestCase
         expect($node['customerName'])->not->toBeNull();
     }
 
+    /**
+     * Test create on fully invoiced order returns already invoiced.
+     */
     public function test_create_on_fully_invoiced_order_returns_already_invoiced(): void
     {
         $order = $this->bootstrapOrderWithInvoice('processing');
         $admin = $this->createAdmin();
         $item = $order->items->first();
 
-        // Simulate a completed full invoice: every item's qty is consumed so
-        // qty_to_invoice falls to 0 while the invoice row remains.
         OrderItem::where('order_id', $order->id)
             ->update(['qty_invoiced' => DB::raw('qty_ordered')]);
         $order = $order->fresh(['invoices', 'items']);
@@ -131,6 +135,9 @@ class InvoiceTest extends AdminApiTestCase
         expect($messages)->toContain('already been generated');
     }
 
+    /**
+     * Test create requires authentication.
+     */
     public function test_create_requires_authentication(): void
     {
         $mutation = 'mutation($input: createAdminInvoiceInput!){ createAdminInvoice(input:$input){ adminInvoice { _id } } }';
@@ -143,6 +150,9 @@ class InvoiceTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeArray();
     }
 
+    /**
+     * Test create invalid qty returns errors.
+     */
     public function test_create_invalid_qty_returns_errors(): void
     {
         $order = Order::with('items')
@@ -169,6 +179,9 @@ class InvoiceTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeArray();
     }
 
+    /**
+     * Test view invoice by id.
+     */
     public function test_view_invoice_by_id(): void
     {
         $invoiceId = Invoice::query()->value('id') ?? $this->bootstrapOrderWithInvoice()->invoices->first()->id;
@@ -186,8 +199,7 @@ class InvoiceTest extends AdminApiTestCase
 
     /**
      * Regression: the detail resource is an Eloquent-backed AdminInvoice — the
-     * IRI `id` resolves, full columns resolve, and `items` is a connection +
-     * addresses are reached via `order { addresses { edges { node } } }`.
+     * IRI `id` resolves, full columns resolve, and `items` is a connection +.
      */
     public function test_view_invoice_resolves_id_columns_and_items(): void
     {
@@ -204,6 +216,9 @@ class InvoiceTest extends AdminApiTestCase
         expect($node['items']['edges'])->toBeArray();
     }
 
+    /**
+     * Test mass update status flips state graphql.
+     */
     public function test_mass_update_status_flips_state_graphql(): void
     {
         $invoiceId = Invoice::query()->value('id') ?? $this->bootstrapOrderWithInvoice()->invoices->first()->id;

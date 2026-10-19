@@ -7,7 +7,7 @@ use Webkul\BagistoApi\Tests\GraphQLTestCase;
 class AttributeTest extends GraphQLTestCase
 {
     /**
-     * Get Attributes - Basic
+     * Get Attributes - Basic.
      */
     public function test_get_all_attributes_basic(): void
     {
@@ -58,7 +58,6 @@ class AttributeTest extends GraphQLTestCase
         $this->assertArrayHasKey('pageInfo', $data);
         $this->assertArrayHasKey('totalCount', $data);
 
-        // Ensure at least one attribute is returned
         $this->assertGreaterThanOrEqual(0, $data['totalCount']);
 
         if (! empty($data['edges'])) {
@@ -77,7 +76,7 @@ class AttributeTest extends GraphQLTestCase
     }
 
     /**
-     * Get Attribute - Basic
+     * Get Attribute - Basic.
      */
     public function test_get_attribute_by_id_basic(): void
     {
@@ -131,7 +130,7 @@ class AttributeTest extends GraphQLTestCase
     }
 
     /**
-     * Get Attributes with full Options and Translations
+     * Get Attributes with full Options and Translations.
      */
     public function test_get_all_attributes_with_full_options_and_translations(): void
     {
@@ -246,7 +245,6 @@ class AttributeTest extends GraphQLTestCase
         $this->assertArrayHasKey('pageInfo', $data);
         $this->assertArrayHasKey('totalCount', $data);
 
-        // pageInfo expected keys
         $this->assertArrayHasKey('endCursor', $data['pageInfo']);
         $this->assertArrayHasKey('startCursor', $data['pageInfo']);
         $this->assertArrayHasKey('hasNextPage', $data['pageInfo']);
@@ -263,7 +261,6 @@ class AttributeTest extends GraphQLTestCase
                 $this->assertArrayHasKey('type', $node);
                 $this->assertArrayHasKey('options', $node);
 
-                // options structure
                 $this->assertIsArray($node['options']['edges'] ?? []);
                 $this->assertArrayHasKey('totalCount', $node['options']);
 
@@ -274,7 +271,6 @@ class AttributeTest extends GraphQLTestCase
                     $this->assertArrayHasKey('_id', $opt);
                     $this->assertArrayHasKey('adminName', $opt);
 
-                    // translation and translations
                     $this->assertArrayHasKey('translation', $opt);
                     $this->assertArrayHasKey('translations', $opt);
 
@@ -283,7 +279,6 @@ class AttributeTest extends GraphQLTestCase
                     $this->assertArrayHasKey('totalCount', $opt['translations']);
                 }
 
-                // attribute translations
                 $this->assertIsArray($node['translations']['edges'] ?? []);
                 $this->assertArrayHasKey('pageInfo', $node['translations']);
                 $this->assertArrayHasKey('totalCount', $node['translations']);
@@ -292,7 +287,7 @@ class AttributeTest extends GraphQLTestCase
     }
 
     /**
-     * Get Attribute with Full Details
+     * Get Attribute with Full Details.
      */
     public function test_get_attribute_by_id_full_details(): void
     {
@@ -403,7 +398,6 @@ class AttributeTest extends GraphQLTestCase
         $this->assertArrayHasKey('options', $node);
         $this->assertArrayHasKey('translations', $node);
 
-        // options structure
         $this->assertIsArray($node['options']['edges'] ?? []);
         $this->assertArrayHasKey('pageInfo', $node['options']);
         $this->assertArrayHasKey('totalCount', $node['options']);
@@ -416,14 +410,13 @@ class AttributeTest extends GraphQLTestCase
             $this->assertArrayHasKey('pageInfo', $opt['translations']);
         }
 
-        // translations structure
         $this->assertIsArray($node['translations']['edges'] ?? []);
         $this->assertArrayHasKey('pageInfo', $node['translations']);
         $this->assertArrayHasKey('totalCount', $node['translations']);
     }
 
     /**
-     * Get Attribute Options - Basic
+     * Get Attribute Options - Basic.
      */
     public function test_get_attribute_options_basic(): void
     {
@@ -471,7 +464,7 @@ class AttributeTest extends GraphQLTestCase
     }
 
     /**
-     * Get Attribute Options with Translations
+     * Get Attribute Options with Translations.
      */
     public function test_get_attribute_options_with_translations_basic(): void
     {
@@ -524,7 +517,7 @@ class AttributeTest extends GraphQLTestCase
     }
 
     /**
-     * Get Attribute Options with Swatches
+     * Get Attribute Options with Swatches.
      */
     public function test_get_attribute_options_with_swatches_basic(): void
     {
@@ -576,7 +569,7 @@ class AttributeTest extends GraphQLTestCase
     }
 
     /**
-     * Get Single Attribute Option Detail By Option ID
+     * Get Single Attribute Option Detail By Option ID.
      */
     public function test_get_single_attribute_option_by_id_basic(): void
     {
@@ -647,7 +640,7 @@ class AttributeTest extends GraphQLTestCase
     }
 
     /**
-     * Get Attribute Options - Pagination
+     * Get Attribute Options - Pagination.
      */
     public function test_get_attribute_options_pagination_basic(): void
     {
@@ -713,7 +706,7 @@ class AttributeTest extends GraphQLTestCase
     }
 
     /**
-     * Get Attribute Options with Attribute
+     * Get Attribute Options with Attribute.
      */
     public function test_get_attribute_with_options_basic(): void
     {
@@ -791,7 +784,7 @@ class AttributeTest extends GraphQLTestCase
     }
 
     /**
-     * Get Color Options for Display
+     * Get Color Options for Display.
      */
     public function test_get_color_options_for_display(): void
     {

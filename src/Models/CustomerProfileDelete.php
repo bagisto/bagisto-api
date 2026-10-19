@@ -12,10 +12,6 @@ use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Dto\CustomerProfileInput;
 use Webkul\BagistoApi\State\CustomerProfileProcessor;
 
-/**
- * Customer profile delete resource
- * Handles authenticated customer profile deletion
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomerProfileDelete',
@@ -78,45 +74,87 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
 )]
 class CustomerProfileDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $id = null;
 
+    /**
+     * The token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $token = null;
 
+    /**
+     * The first name.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $firstName = null;
 
+    /**
+     * The last name.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $lastName = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $email = null;
 
+    /**
+     * The phone.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $phone = null;
 
+    /**
+     * The gender.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $gender = null;
 
+    /**
+     * The date of birth.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $dateOfBirth = null;
 
+    /**
+     * The password.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $password = null;
 
+    /**
+     * The confirm password.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $confirmPassword = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $status = null;
 
+    /**
+     * The subscribed to news letter.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?bool $subscribedToNewsLetter = null;
 
+    /**
+     * The is verified.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $isVerified = null;
 
+    /**
+     * The is suspended.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $isSuspended = null;
 }

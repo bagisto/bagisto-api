@@ -11,17 +11,11 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Core\Models\CurrencyExchangeRate;
 
-/**
- * POST /api/admin/settings/exchange-rates/update-rates +
- * createAdminSettingsExchangeRateUpdateRates.
- *
- * Mirrors Webkul\Admin ExchangeRateController::updateRates — resolves the
- * configured external exchange-rate provider and runs its updateRates().
- * Provider/network failures surface as HTTP 422 with the provider's message
- * (rather than the monolith's session-flash redirect).
- */
 class AdminSettingsExchangeRateUpdateRatesProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -63,6 +57,9 @@ class AdminSettingsExchangeRateUpdateRatesProcessor implements ProcessorInterfac
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

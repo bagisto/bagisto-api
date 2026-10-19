@@ -7,6 +7,9 @@ use Webkul\DataGrid\DataGrid;
 
 class IntegrationDataGrid extends DataGrid
 {
+    /**
+     * Prepare query builder.
+     */
     public function prepareQueryBuilder()
     {
         $tablePrefix = DB::getTablePrefix();
@@ -34,6 +37,9 @@ class IntegrationDataGrid extends DataGrid
             END as masked_token');
     }
 
+    /**
+     * Prepare columns.
+     */
     public function prepareColumns()
     {
         $this->addColumn([
@@ -146,6 +152,9 @@ class IntegrationDataGrid extends DataGrid
         ]);
     }
 
+    /**
+     * Prepare actions.
+     */
     public function prepareActions()
     {
         if (bouncer()->hasPermission('integration.edit')) {

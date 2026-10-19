@@ -5,16 +5,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Customer\Models\Customer;
 
-/**
- * GraphQL coverage for Wave 3 — fresh draft-cart bootstrap.
- *
- * Mutation: createAdminDraftCart(input: { customerId: Int! })
- *
- * Returns the same `{ cartId, customerId, success, message }` shape as the
- * REST endpoint (`POST /api/admin/customers/{customerId}/draft-carts`).
- */
 class DraftCartTest extends AdminApiTestCase
 {
+    /**
+     * The mutation.
+     */
     private string $mutation = <<<'GQL'
         mutation CreateAdminDraftCart($input: createAdminDraftCartInput!) {
           createAdminDraftCart(input: $input) {
@@ -23,12 +18,18 @@ class DraftCartTest extends AdminApiTestCase
         }
     GQL;
 
+    /**
+     * Test create draft cart requires auth.
+     */
     public function test_create_draft_cart_requires_auth(): void
     {
         $resp = $this->adminGraphQL($this->mutation, ['input' => ['customerId' => 1]]);
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test create draft cart unknown customer errors.
+     */
     public function test_create_draft_cart_unknown_customer_errors(): void
     {
         $admin = $this->createAdmin();
@@ -36,6 +37,9 @@ class DraftCartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test create draft cart zero customer id errors.
+     */
     public function test_create_draft_cart_zero_customer_id_errors(): void
     {
         $admin = $this->createAdmin();
@@ -43,6 +47,9 @@ class DraftCartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test create draft cart success.
+     */
     public function test_create_draft_cart_success(): void
     {
         $admin = $this->createAdmin();

@@ -8,11 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Webkul\BagistoApi\Dto\GenerateDownloadLinkInput;
 use Webkul\BagistoApi\State\DownloadableProductProcessor;
 
-/**
- * Temporary download link for purchased downloadable products.
- *
- * Stores secure tokens and metadata for file downloads with automatic expiration.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'DownloadableProductDownloadLink',
@@ -28,8 +23,14 @@ use Webkul\BagistoApi\State\DownloadableProductProcessor;
 )]
 class DownloadableProductDownloadLink extends Model
 {
+    /**
+     * The table.
+     */
     protected $table = 'downloadable_product_download_links';
 
+    /**
+     * The fillable.
+     */
     protected $fillable = [
         'token',
         'url',
@@ -37,9 +38,15 @@ class DownloadableProductDownloadLink extends Model
         'expires_at',
     ];
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'expires_at' => 'datetime',
     ];
 
+    /**
+     * The timestamps.
+     */
     public $timestamps = true;
 }

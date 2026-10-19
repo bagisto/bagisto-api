@@ -14,16 +14,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminOrderListDto;
 use Webkul\BagistoApi\Admin\State\AdminOrderExportProvider;
 use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
 
-/**
- * Admin Orders listing — one slim order row.
- *
- * REST  : GET /api/admin/orders → `{ data: [AdminOrder], meta: {...} }`
- *         (the `data`/`meta` envelope is applied by AdminCollectionEnvelopeNormalizer).
- * GraphQL: adminOrders query → native cursor pagination (edges + pageInfo).
- *
- * Only flat order fields + a light `items` preview. Heavy relations
- * (full items, invoices, shipments) are served by sub-resources.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminOrder',
@@ -205,13 +195,22 @@ use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
 )]
 class AdminOrder extends EloquentModel
 {
+    /**
+     * The table.
+     */
     protected $table = 'orders';
 
+    /**
+     * The appends.
+     */
     protected $appends = [
         'status_label', 'channel_name', 'customer_name', 'payment_title',
         'location', 'formatted_grand_total',
     ];
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'id' => 'int',
         'channel_id' => 'int',
@@ -223,48 +222,72 @@ class AdminOrder extends EloquentModel
         'base_grand_total' => 'float',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Items.
+     */
     #[ApiProperty(writable: false)]
     public function items(): HasMany
     {
         return $this->hasMany(AdminOrderItemPreview::class, 'order_id');
     }
 
+    /**
+     * Get status label attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getStatusLabelAttribute(): ?string
     {
         return $this->attributes['status_label'] ?? null;
     }
 
+    /**
+     * Get channel name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getChannelNameAttribute(): ?string
     {
         return $this->attributes['channel_name'] ?? null;
     }
 
+    /**
+     * Get customer name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getCustomerNameAttribute(): ?string
     {
         return $this->attributes['customer_name'] ?? null;
     }
 
+    /**
+     * Get payment title attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getPaymentTitleAttribute(): ?string
     {
         return $this->attributes['payment_title'] ?? null;
     }
 
+    /**
+     * Get location attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getLocationAttribute(): ?string
     {
         return $this->attributes['location'] ?? null;
     }
 
+    /**
+     * Get formatted grand total attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedGrandTotalAttribute(): ?string
     {

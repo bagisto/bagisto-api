@@ -7,53 +7,11 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for Admin Marketing → Email Templates CRUD (Block F2a).
- */
 class MarketingTemplateTest extends AdminApiTestCase
 {
-    protected function insertTemplate(array $overrides = []): int
-    {
-        return \DB::table('marketing_templates')->insertGetId(array_merge([
-            'name' => 'Template '.uniqid(),
-            'status' => 'active',
-            'content' => '<p>Body</p>',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
-    protected function createAdminWithoutPermissions(): Admin
-    {
-        $role = Role::create([
-            'name' => 'Limited '.uniqid(),
-            'description' => 'no template perms',
-            'permission_type' => 'custom',
-            'permissions' => ['catalog.products'],
-        ]);
-
-        return $this->createAdmin(['role_id' => $role->id]);
-    }
-
-    protected function basePayload(array $overrides = []): array
-    {
-        return array_merge([
-            'name' => 'API Template '.uniqid(),
-            'status' => 'active',
-            'content' => '<p>Welcome</p>',
-        ], $overrides);
-    }
-
+    /**
+     * Test listing requires admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -61,6 +19,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -73,6 +34,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         expect($response->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total', 'from', 'to']);
     }
 
+    /**
+     * Test listing row shape.
+     */
     public function test_listing_row_shape(): void
     {
         $admin = $this->createAdmin();
@@ -85,6 +49,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         expect($row)->toHaveKeys(['id', 'name', 'status', 'content']);
     }
 
+    /**
+     * Test filter by name.
+     */
     public function test_filter_by_name(): void
     {
         $admin = $this->createAdmin();
@@ -98,6 +65,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test filter by status.
+     */
     public function test_filter_by_status(): void
     {
         $admin = $this->createAdmin();
@@ -118,6 +88,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         expect($ids)->not->toContain($on);
     }
 
+    /**
+     * Test sort by name asc.
+     */
     public function test_sort_by_name_asc(): void
     {
         $admin = $this->createAdmin();
@@ -139,6 +112,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test per page cap.
+     */
     public function test_per_page_cap(): void
     {
         $admin = $this->createAdmin();
@@ -148,6 +124,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test detail returns payload.
+     */
     public function test_detail_returns_payload(): void
     {
         $admin = $this->createAdmin();
@@ -164,6 +143,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         expect($response->json('content'))->toBe('<h1>Hi</h1>');
     }
 
+    /**
+     * Test detail unknown id returns 404.
+     */
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -171,6 +153,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test detail requires admin token.
+     */
     public function test_detail_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -179,6 +164,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test create happy path.
+     */
     public function test_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -198,6 +186,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test create missing name returns 422.
+     */
     public function test_create_missing_name_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -207,6 +198,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create missing status returns 422.
+     */
     public function test_create_missing_status_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -216,6 +210,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create missing content returns 422.
+     */
     public function test_create_missing_content_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -225,6 +222,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create invalid status returns 422.
+     */
     public function test_create_invalid_status_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -234,6 +234,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create all three status values accepted.
+     */
     public function test_create_all_three_status_values_accepted(): void
     {
         $admin = $this->createAdmin();
@@ -246,6 +249,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test create requires auth.
+     */
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -253,6 +259,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test create no permission returns 403.
+     */
     public function test_create_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -260,6 +269,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test update happy path.
+     */
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -280,6 +292,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test update unknown id returns 404.
+     */
     public function test_update_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -287,6 +302,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test update invalid status returns 422.
+     */
     public function test_update_invalid_status_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -297,6 +315,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test update requires auth.
+     */
     public function test_update_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -305,6 +326,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test update no permission returns 403.
+     */
     public function test_update_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -313,6 +337,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -324,6 +351,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $this->assertDatabaseMissing('marketing_templates', ['id' => $id]);
     }
 
+    /**
+     * Test delete unknown id returns 404.
+     */
     public function test_delete_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -331,6 +361,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test delete requires auth.
+     */
     public function test_delete_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -339,11 +372,71 @@ class MarketingTemplateTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test delete no permission returns 403.
+     */
     public function test_delete_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
         $id = $this->insertTemplate();
         $response = $this->adminDelete($admin, '/api/admin/marketing/templates/'.$id);
         $response->assertStatus(403);
+    }
+
+    /**
+     * Insert template.
+     */
+    protected function insertTemplate(array $overrides = []): int
+    {
+        return \DB::table('marketing_templates')->insertGetId(array_merge([
+            'name' => 'Template '.uniqid(),
+            'status' => 'active',
+            'content' => '<p>Body</p>',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Create admin without permissions.
+     */
+    protected function createAdminWithoutPermissions(): Admin
+    {
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no template perms',
+            'permission_type' => 'custom',
+            'permissions' => ['catalog.products'],
+        ]);
+
+        return $this->createAdmin(['role_id' => $role->id]);
+    }
+
+    /**
+     * Base payload.
+     */
+    protected function basePayload(array $overrides = []): array
+    {
+        return array_merge([
+            'name' => 'API Template '.uniqid(),
+            'status' => 'active',
+            'content' => '<p>Welcome</p>',
+        ], $overrides);
     }
 }

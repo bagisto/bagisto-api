@@ -16,14 +16,14 @@ use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\ResolvesListSort;
 use Webkul\Customer\Models\Customer;
 
-/**
- * Provides customer addresses filtered by authenticated user token.
- */
 class CustomerAddressProvider implements ProviderInterface
 {
     use ClampsPageSize;
     use ResolvesListSort;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(private readonly Pagination $pagination) {}
 
     /**
@@ -33,7 +33,6 @@ class CustomerAddressProvider implements ProviderInterface
     {
         $request = Request::instance() ?? ($context['request'] ?? null);
 
-        // Extract Bearer token from Authorization header
         $token = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
 
         if (! $token) {

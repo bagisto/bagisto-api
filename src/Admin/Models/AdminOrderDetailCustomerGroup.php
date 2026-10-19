@@ -6,10 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Customer group — nested to-one sub-resource of AdminOrderDetailCustomer
- * (the order customer's group). Typed object: customer { group { code name } }.
- */
 #[ApiResource(
     shortName: 'AdminOrderDetailCustomerGroup',
     operations: [],
@@ -26,6 +22,9 @@ class AdminOrderDetailCustomerGroup extends Model
         'id' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

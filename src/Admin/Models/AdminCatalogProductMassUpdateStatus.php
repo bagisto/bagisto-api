@@ -10,17 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductMassUpdateStatusInput;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductMassUpdateStatusProcessor;
 
-/**
- * One-operation resource for bulk-flipping catalog product status.
- *
- * REST:
- *   POST /api/admin/catalog/products/mass-update-status
- *     Body: { "indices": [12, 18], "value": 1 }
- *     200:  { "updated": [12, 18], "message": "..." }
- *
- * GraphQL:
- *   createAdminCatalogProductMassUpdateStatus
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCatalogProductMassUpdateStatus',
@@ -90,6 +79,9 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductMassUpdateStatusProcessor;
 )]
 class AdminCatalogProductMassUpdateStatus
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -97,6 +89,9 @@ class AdminCatalogProductMassUpdateStatus
     #[ApiProperty(writable: false)]
     public ?array $updated = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

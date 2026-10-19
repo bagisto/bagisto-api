@@ -67,34 +67,49 @@ use Webkul\BookingProduct\Models\BookingProductDefaultSlot as BaseModel;
 class BookingProductDefaultSlot extends BaseModel
 {
     /**
-     * Override to prevent API Platform from using Laravel's auto-generated getter for 'slots'
+     * Override to prevent API Platform from using Laravel's auto-generated getter for 'slots'.
      */
     protected $casts = [];
 
+    /**
+     * Get booking type.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getBookingType()
     {
         return $this->booking_type;
     }
 
+    /**
+     * Get duration.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getDuration()
     {
         return $this->duration;
     }
 
+    /**
+     * Get break time.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getBreakTime()
     {
         return $this->break_time;
     }
 
+    /**
+     * Get slots.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getSlots()
     {
         return $this->slots;
     }
 
+    /**
+     * Get booking product id.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getBookingProductId()
     {

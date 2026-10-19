@@ -17,10 +17,16 @@ class FilterableAttributesProvider implements ProviderInterface
 {
     use ClampsPageSize;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $source = $context['source'] ?? null;

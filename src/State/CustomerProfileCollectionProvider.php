@@ -13,12 +13,11 @@ use Webkul\BagistoApi\Models\CustomerProfile;
 use Webkul\BagistoApi\Support\DateOfBirth;
 use Webkul\Customer\Models\Customer;
 
-/**
- * REST provider for authenticated customer profile.
- * Returns the profile as a single-item collection for the GetCollection operation.
- */
 class CustomerProfileCollectionProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         $request = Request::instance() ?? ($context['request'] ?? null);
@@ -52,6 +51,9 @@ class CustomerProfileCollectionProvider implements ProviderInterface
         return [$profile];
     }
 
+    /**
+     * Get customer from token.
+     */
     private function getCustomerFromToken(string $token): ?Customer
     {
         try {

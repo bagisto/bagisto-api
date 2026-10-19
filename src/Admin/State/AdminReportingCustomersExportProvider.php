@@ -2,10 +2,10 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
-/**
- * CSV export for the customers reporting sub-page.
- */
 class AdminReportingCustomersExportProvider extends AdminReportingExportProvider
 {
+    /**
+     * The entity.
+     */
     protected string $entity = 'customers';
 }

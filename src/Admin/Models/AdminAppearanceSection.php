@@ -353,8 +353,14 @@ use Webkul\Theme\Models\Section;
 )]
 class AdminAppearanceSection extends EloquentModel
 {
+    /**
+     * The table.
+     */
     protected $table = 'theme_sections';
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'id' => 'int',
         'name' => 'string',
@@ -369,16 +375,28 @@ class AdminAppearanceSection extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
+    /**
+     * The appends.
+     */
     protected $appends = ['has_draft', 'is_pinned', 'message'];
 
+    /**
+     * The action message.
+     */
     public ?string $actionMessage = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
     {
         return $this->id;
     }
 
+    /**
+     * Translations.
+     */
     #[ApiProperty(writable: false)]
     public function translations(): HasMany
     {
@@ -418,6 +436,9 @@ class AdminAppearanceSection extends EloquentModel
         return $this->type === Section::FOOTER_LINKS ? 1 : 0;
     }
 
+    /**
+     * Get message attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getMessageAttribute(): ?string
     {

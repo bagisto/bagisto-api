@@ -6,15 +6,18 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Models\DownloadableProductDownloadLink;
 use Webkul\Sales\Repositories\DownloadableLinkPurchasedRepository;
 
-/**
- * Handles secure file downloads for purchased downloadable products
- */
 class DownloadableProductController
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected DownloadableLinkPurchasedRepository $downloadableLinkPurchasedRepository,
     ) {}
 
+    /**
+     * Download.
+     */
     public function download($token)
     {
         $downloadLink = DownloadableProductDownloadLink::where('token', $token)

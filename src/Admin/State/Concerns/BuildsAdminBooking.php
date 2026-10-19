@@ -7,6 +7,9 @@ use Webkul\BagistoApi\Admin\Models\AdminBooking;
 
 trait BuildsAdminBooking
 {
+    /**
+     * Build admin booking.
+     */
     protected function buildAdminBooking(object $row): AdminBooking
     {
         $booking = new AdminBooking;
@@ -53,6 +56,9 @@ trait BuildsAdminBooking
         return $booking;
     }
 
+    /**
+     * Admin booking select.
+     */
     protected function adminBookingSelect(): array
     {
         return [

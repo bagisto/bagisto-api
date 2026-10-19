@@ -6,24 +6,27 @@ use Webkul\BagistoApi\Admin\Dto\AdminAppearanceSectionRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminAppearanceSection;
 use Webkul\Theme\Models\Section;
 
-/**
- * One section, shaped for either transport.
- *
- * GraphQL is served the Eloquent resource so `translations` resolves as a connection;
- * REST is served the flat DTO.
- */
 trait MapsAppearanceSection
 {
+    /**
+     * Whether graph ql.
+     */
     protected function isGraphQL(array $context): bool
     {
         return ! empty($context['graphql_operation_name']);
     }
 
+    /**
+     * To eloquent.
+     */
     protected function toEloquent(Section $section): AdminAppearanceSection
     {
         return AdminAppearanceSection::with('translations')->findOrFail($section->id);
     }
 
+    /**
+     * To rest dto.
+     */
     protected function toRestDto(Section $section): AdminAppearanceSectionRestDto
     {
         $dto = new AdminAppearanceSectionRestDto;

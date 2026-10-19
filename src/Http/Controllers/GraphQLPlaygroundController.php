@@ -5,13 +5,10 @@ namespace Webkul\BagistoApi\Http\Controllers;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
-/**
- * GraphQL Playground UI with X-STOREFRONT-KEY header support
- */
 class GraphQLPlaygroundController extends Controller
 {
     /**
-     * Display GraphQL Playground with Storefront Key input
+     * Display GraphQL Playground with Storefront Key input.
      */
     public function __invoke()
     {
@@ -24,7 +21,7 @@ class GraphQLPlaygroundController extends Controller
     }
 
     /**
-     * Generate GraphQL Playground HTML with custom styling and header injection
+     * Generate GraphQL Playground HTML with custom styling and header injection.
      *
      * @param  string  $storefrontKey  The storefront API key to use
      * @param  bool  $autoInjectKey  Whether to auto-inject the key in headers (controlled by API_AUTO_INJECT_STOREFRONT_KEY env)

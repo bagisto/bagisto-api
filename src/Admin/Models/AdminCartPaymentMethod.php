@@ -79,18 +79,33 @@ use Webkul\BagistoApi\Admin\State\AdminCartPaymentMethodsProvider;
 )]
 class AdminCartPaymentMethod
 {
+    /**
+     * The method.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $method = null;
 
+    /**
+     * The method title.
+     */
     #[ApiProperty(writable: false)]
     public ?string $methodTitle = null;
 
+    /**
+     * The description.
+     */
     #[ApiProperty(writable: false)]
     public ?string $description = null;
 
+    /**
+     * The sort.
+     */
     #[ApiProperty(writable: false)]
     public ?int $sort = null;
 
+    /**
+     * The image.
+     */
     #[ApiProperty(writable: false)]
     public ?string $image = null;
 }

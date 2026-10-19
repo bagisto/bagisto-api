@@ -17,6 +17,9 @@ trait ResolvesReturnableItems
         DefaultRMAStatusEnum::DECLINED->value,
     ];
 
+    /**
+     * Resolve returnable items.
+     */
     protected function resolveReturnableItems(
         RMAHelper $rmaHelper,
         RMAItemRepository $rmaItemRepository,

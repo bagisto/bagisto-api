@@ -84,6 +84,22 @@ class InstallApiPlatformCommand extends Command
     }
 
     /**
+     * Insert the provider before the closing bracket of the providers array, or return null when it cannot be located.
+     */
+    public function injectProvider(string $content, string $providerClass): ?string
+    {
+        $updated = preg_replace(
+            '/\n(\]\)?;)(\s*)$/',
+            "\n    $providerClass,\n$1$2",
+            $content,
+            1,
+            $count
+        );
+
+        return $count === 1 ? $updated : null;
+    }
+
+    /**
      * Register the API Platform service provider.
      */
     protected function registerServiceProvider(): void
@@ -137,22 +153,6 @@ class InstallApiPlatformCommand extends Command
             $this->laravel->make(PackageManifest::class)->providers(),
             true
         );
-    }
-
-    /**
-     * Insert the provider before the closing bracket of the providers array, or return null when it cannot be located.
-     */
-    public function injectProvider(string $content, string $providerClass): ?string
-    {
-        $updated = preg_replace(
-            '/\n(\]\)?;)(\s*)$/',
-            "\n    $providerClass,\n$1$2",
-            $content,
-            1,
-            $count
-        );
-
-        return $count === 1 ? $updated : null;
     }
 
     /**

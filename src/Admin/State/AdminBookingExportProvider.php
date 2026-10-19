@@ -11,21 +11,33 @@ class AdminBookingExportProvider implements ProviderInterface
 {
     use StreamsAdminExport;
 
+    /**
+     * Export permission.
+     */
     protected function exportPermission(): string
     {
         return 'sales.bookings';
     }
 
+    /**
+     * Export filename.
+     */
     protected function exportFilename(): string
     {
         return 'bookings';
     }
 
+    /**
+     * Export headers.
+     */
     protected function exportHeaders(): array
     {
         return ['ID', 'Order ID', 'Qty', 'From', 'To', 'Booking Date'];
     }
 
+    /**
+     * Export row.
+     */
     protected function exportRow(object $row): array
     {
         return [
@@ -38,6 +50,9 @@ class AdminBookingExportProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Export query.
+     */
     protected function exportQuery(array $args)
     {
         $query = DB::table('bookings')

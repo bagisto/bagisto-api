@@ -16,11 +16,16 @@ use Webkul\Customer\Models\Customer;
 
 class LogoutProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct() {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        // Try Sanctum guard first (GraphQL), then manual token extraction (REST)
         $customer = Auth::guard('sanctum')->user();
 
         if (! $customer) {
@@ -62,7 +67,6 @@ class LogoutProcessor implements ProcessorInterface
                 ]);
             }
 
-            // Dispatch event to delete device_token - PushNotification package will handle this
             $deviceToken = $data->deviceToken ?? null;
             if ($deviceToken) {
                 Event::dispatch('bagistoapi.customer.device-token.delete', [
@@ -71,7 +75,6 @@ class LogoutProcessor implements ProcessorInterface
                 ]);
             }
 
-            // Clear device_token if column exists (added by PushNotification plugin)
             if (Schema::hasColumn('customers', 'device_token')) {
                 $customer->forceFill(['device_token' => null]);
                 $customer->save();
@@ -92,6 +95,9 @@ class LogoutProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Output.
+     */
     private function output(array $data): CustomerLogout
     {
         $output = new CustomerLogout;

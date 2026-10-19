@@ -17,6 +17,9 @@ class CatalogProductTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
+    /**
+     * Test listing returns envelope for authenticated admin.
+     */
     public function test_listing_returns_envelope_for_authenticated_admin(): void
     {
         $admin = $this->createAdmin();
@@ -32,12 +35,18 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(10, $body['meta']['perPage']);
     }
 
+    /**
+     * Test listing requires admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $response = $this->getJson('/api/admin/catalog/products');
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    /**
+     * Test listing rejects revoked token.
+     */
     public function test_listing_rejects_revoked_token(): void
     {
         $admin = $this->createAdmin();
@@ -51,6 +60,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    /**
+     * Test listing returns seeded product row.
+     */
     public function test_listing_returns_seeded_product_row(): void
     {
         $admin = $this->createAdmin();
@@ -88,6 +100,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertArrayHasKey('baseImageUrl', $row);
     }
 
+    /**
+     * Test listing surfaces special price columns.
+     */
     public function test_listing_surfaces_special_price_columns(): void
     {
         $admin = $this->createAdmin();
@@ -110,38 +125,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotNull($row['formattedSpecialPrice']);
     }
 
-    protected function insertProductFlat(object $product, array $overrides = []): void
-    {
-        $attributeFamilyId = (int) (\Illuminate\Support\Facades\DB::table('attribute_families')->value('id') ?? 1);
-
-        \Illuminate\Support\Facades\DB::table('product_flat')->insert(array_merge([
-            'product_id' => $product->id,
-            'locale' => 'en',
-            'channel' => 'default',
-            'sku' => $product->sku,
-            'name' => 'Test '.$product->sku,
-            'type' => 'simple',
-            'status' => 1,
-            'price' => 10.00,
-            'url_key' => strtolower($product->sku).'-'.$product->id,
-            'attribute_family_id' => $attributeFamilyId,
-            'visible_individually' => 1,
-        ], $overrides));
-
-        $this->refreshFlatDerived((int) $product->id);
-    }
-
-    protected function refreshFlatDerived(int $productId): void
-    {
-        // BACKWARD COMPATIBILITY: product_flat gained these columns in 2.4.10; an older
-        // core has the listing compute them. Remove when the minimum core is 2.4.10.
-        if (! $this->core()->hasProductFlatDerivedColumns()) {
-            return;
-        }
-
-        app(Flat::class)->refreshDerivedColumns([$productId]);
-    }
-
+    /**
+     * Test filter by product id.
+     */
     public function test_filter_by_product_id(): void
     {
         $admin = $this->createAdmin();
@@ -156,6 +142,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotContains($b->id, $ids);
     }
 
+    /**
+     * Test filter by product id comma list.
+     */
     public function test_filter_by_product_id_comma_list(): void
     {
         $admin = $this->createAdmin();
@@ -173,6 +162,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotContains($c->id, $ids);
     }
 
+    /**
+     * Test filter by sku partial.
+     */
     public function test_filter_by_sku_partial(): void
     {
         $admin = $this->createAdmin();
@@ -187,6 +179,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotContains($miss->id, $ids);
     }
 
+    /**
+     * Test filter by name partial.
+     */
     public function test_filter_by_name_partial(): void
     {
         $admin = $this->createAdmin();
@@ -201,6 +196,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotContains($miss->id, $ids);
     }
 
+    /**
+     * Test filter by type.
+     */
     public function test_filter_by_type(): void
     {
         $admin = $this->createAdmin();
@@ -215,6 +213,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotContains($simple->id, $ids);
     }
 
+    /**
+     * Test filter by status.
+     */
     public function test_filter_by_status(): void
     {
         $admin = $this->createAdmin();
@@ -229,6 +230,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotContains($enabled->id, $ids);
     }
 
+    /**
+     * Test filter by attribute family.
+     */
     public function test_filter_by_attribute_family(): void
     {
         $admin = $this->createAdmin();
@@ -245,6 +249,9 @@ class CatalogProductTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test filter by channel.
+     */
     public function test_filter_by_channel(): void
     {
         $admin = $this->createAdmin();
@@ -257,6 +264,9 @@ class CatalogProductTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test filter by locale.
+     */
     public function test_filter_by_locale(): void
     {
         $admin = $this->createAdmin();
@@ -269,6 +279,9 @@ class CatalogProductTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test filter by price range split.
+     */
     public function test_filter_by_price_range_split(): void
     {
         $admin = $this->createAdmin();
@@ -286,6 +299,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotContains($expensive->id, $ids);
     }
 
+    /**
+     * Test filter by price range compound.
+     */
     public function test_filter_by_price_range_compound(): void
     {
         $admin = $this->createAdmin();
@@ -300,6 +316,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotContains($cheap->id, $ids);
     }
 
+    /**
+     * Test unknown filter is ignored.
+     */
     public function test_unknown_filter_is_ignored(): void
     {
         $admin = $this->createAdmin();
@@ -309,6 +328,9 @@ class CatalogProductTest extends AdminApiTestCase
         $resp->assertOk();
     }
 
+    /**
+     * Test invalid status filter is silently dropped.
+     */
     public function test_invalid_status_filter_is_silently_dropped(): void
     {
         $admin = $this->createAdmin();
@@ -320,6 +342,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertGreaterThan(0, $resp->json('meta.total'));
     }
 
+    /**
+     * Test sort by name asc compound.
+     */
     public function test_sort_by_name_asc_compound(): void
     {
         $admin = $this->createAdmin();
@@ -338,6 +363,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertLessThan($zIdx, $aIdx);
     }
 
+    /**
+     * Test sort by price desc split.
+     */
     public function test_sort_by_price_desc_split(): void
     {
         $admin = $this->createAdmin();
@@ -353,6 +381,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame($sorted, $prices);
     }
 
+    /**
+     * Test unknown sort column falls back to default.
+     */
     public function test_unknown_sort_column_falls_back_to_default(): void
     {
         $admin = $this->createAdmin();
@@ -363,6 +394,9 @@ class CatalogProductTest extends AdminApiTestCase
         $resp->assertOk();
     }
 
+    /**
+     * Test default sort is product id desc.
+     */
     public function test_default_sort_is_product_id_desc(): void
     {
         $admin = $this->createAdmin();
@@ -376,6 +410,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertGreaterThan(array_search($second->id, $ids, true), array_search($first->id, $ids, true));
     }
 
+    /**
+     * Test pagination page two.
+     */
     public function test_pagination_page_two(): void
     {
         $admin = $this->createAdmin();
@@ -396,6 +433,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertEmpty(array_intersect($ids1, $ids2));
     }
 
+    /**
+     * Test per page above cap is clamped.
+     */
     public function test_per_page_above_cap_is_clamped(): void
     {
         $admin = $this->createAdmin();
@@ -406,6 +446,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(50, $body['meta']['perPage']);
     }
 
+    /**
+     * Test per page zero falls back to default.
+     */
     public function test_per_page_zero_falls_back_to_default(): void
     {
         $admin = $this->createAdmin();
@@ -416,6 +459,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(10, $body['meta']['perPage']);
     }
 
+    /**
+     * Test quantity aggregates across inventory sources.
+     */
     public function test_quantity_aggregates_across_inventory_sources(): void
     {
         $admin = $this->createAdmin();
@@ -444,6 +490,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(12, $row['quantity']);
     }
 
+    /**
+     * Test base image url is null when no image.
+     */
     public function test_base_image_url_is_null_when_no_image(): void
     {
         $admin = $this->createAdmin();
@@ -459,6 +508,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(0, $row['imagesCount']);
     }
 
+    /**
+     * Test attribute family name is joined.
+     */
     public function test_attribute_family_name_is_joined(): void
     {
         $admin = $this->createAdmin();
@@ -471,6 +523,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotEmpty($row['attributeFamilyName']);
     }
 
+    /**
+     * Test page zero clamps to one.
+     */
     public function test_page_zero_clamps_to_one(): void
     {
         $admin = $this->createAdmin();
@@ -481,6 +536,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(1, $body['meta']['currentPage']);
     }
 
+    /**
+     * Test page negative clamps to one.
+     */
     public function test_page_negative_clamps_to_one(): void
     {
         $admin = $this->createAdmin();
@@ -491,6 +549,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(1, $body['meta']['currentPage']);
     }
 
+    /**
+     * Test page beyond last returns empty data.
+     */
     public function test_page_beyond_last_returns_empty_data(): void
     {
         $admin = $this->createAdmin();
@@ -502,6 +563,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertGreaterThanOrEqual(1, $body['meta']['total']);
     }
 
+    /**
+     * Test per page negative falls back to default.
+     */
     public function test_per_page_negative_falls_back_to_default(): void
     {
         $admin = $this->createAdmin();
@@ -512,6 +576,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(10, $body['meta']['perPage']);
     }
 
+    /**
+     * Test price from greater than to returns empty data.
+     */
     public function test_price_from_greater_than_to_returns_empty_data(): void
     {
         $admin = $this->createAdmin();
@@ -523,6 +590,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(0, $body['meta']['total']);
     }
 
+    /**
+     * Test empty database returns empty envelope.
+     */
     public function test_empty_database_returns_empty_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -535,6 +605,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(0, $body['meta']['total']);
     }
 
+    /**
+     * Test special characters in filter do not crash.
+     */
     public function test_special_characters_in_filter_do_not_crash(): void
     {
         $admin = $this->createAdmin();
@@ -547,6 +620,9 @@ class CatalogProductTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test unknown locale returns empty data.
+     */
     public function test_unknown_locale_returns_empty_data(): void
     {
         $admin = $this->createAdmin();
@@ -558,6 +634,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(0, $body['meta']['total']);
     }
 
+    /**
+     * Test unknown channel returns empty data.
+     */
     public function test_unknown_channel_returns_empty_data(): void
     {
         $admin = $this->createAdmin();
@@ -569,6 +648,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(0, $body['meta']['total']);
     }
 
+    /**
+     * Test product with no category returns null category fields.
+     */
     public function test_product_with_no_category_returns_null_category_fields(): void
     {
         $admin = $this->createAdmin();
@@ -583,6 +665,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNull($row['categoryName']);
     }
 
+    /**
+     * Test product appears once when in multiple categories.
+     */
     public function test_product_appears_once_when_in_multiple_categories(): void
     {
         $admin = $this->createAdmin();
@@ -603,6 +688,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertCount(1, $matching, 'Product joined to multiple categories must appear exactly once.');
     }
 
+    /**
+     * Test mass delete happy path.
+     */
     public function test_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -621,6 +709,9 @@ class CatalogProductTest extends AdminApiTestCase
         expect(\DB::table('products')->where('id', $b->id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mass delete silently skips missing ids.
+     */
     public function test_mass_delete_silently_skips_missing_ids(): void
     {
         $admin = $this->createAdmin();
@@ -635,6 +726,9 @@ class CatalogProductTest extends AdminApiTestCase
         expect(\DB::table('products')->where('id', $a->id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mass delete empty indices returns 400.
+     */
     public function test_mass_delete_empty_indices_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -642,6 +736,9 @@ class CatalogProductTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
+    /**
+     * Test mass delete requires auth.
+     */
     public function test_mass_delete_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -649,6 +746,9 @@ class CatalogProductTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
+    /**
+     * Test mass delete rejects admin without permission.
+     */
     public function test_mass_delete_rejects_admin_without_permission(): void
     {
         $role = Role::create([
@@ -668,6 +768,9 @@ class CatalogProductTest extends AdminApiTestCase
         expect(\DB::table('products')->where('id', $product->id)->exists())->toBeTrue();
     }
 
+    /**
+     * Test mass update status happy path disable.
+     */
     public function test_mass_update_status_happy_path_disable(): void
     {
         $admin = $this->createAdmin();
@@ -686,6 +789,9 @@ class CatalogProductTest extends AdminApiTestCase
         expect((int) \DB::table('product_flat')->where('product_id', $b->id)->value('status'))->toBe(0);
     }
 
+    /**
+     * Test mass update status happy path enable.
+     */
     public function test_mass_update_status_happy_path_enable(): void
     {
         $admin = $this->createAdmin();
@@ -701,6 +807,9 @@ class CatalogProductTest extends AdminApiTestCase
         expect((int) \DB::table('product_flat')->where('product_id', $a->id)->value('status'))->toBe(1);
     }
 
+    /**
+     * Test mass update status invalid value returns 400.
+     */
     public function test_mass_update_status_invalid_value_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -713,6 +822,9 @@ class CatalogProductTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
+    /**
+     * Test mass update status missing indices returns 400.
+     */
     public function test_mass_update_status_missing_indices_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -723,6 +835,9 @@ class CatalogProductTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
+    /**
+     * Test mass update status requires auth.
+     */
     public function test_mass_update_status_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -733,6 +848,9 @@ class CatalogProductTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
+    /**
+     * Test mass update status rejects admin without permission.
+     */
     public function test_mass_update_status_rejects_admin_without_permission(): void
     {
         $role = Role::create([
@@ -752,6 +870,9 @@ class CatalogProductTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(403);
     }
 
+    /**
+     * Test expired token is rejected.
+     */
     public function test_expired_token_is_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -767,6 +888,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    /**
+     * Test copy simple product happy path.
+     */
     public function test_copy_simple_product_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -785,6 +909,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertTrue(\DB::table('products')->where('id', $product->id)->exists(), 'Source product must still exist.');
     }
 
+    /**
+     * Test copy configurable product includes variants.
+     */
     public function test_copy_configurable_product_includes_variants(): void
     {
         $admin = $this->createAdmin();
@@ -818,6 +945,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertGreaterThanOrEqual(0, $variantCount, 'Copy should preserve variant structure (may be 0 if source had none).');
     }
 
+    /**
+     * Test copy refuses variant returns 422.
+     */
     public function test_copy_refuses_variant_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -834,6 +964,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
+    /**
+     * Test copy unknown id returns 404.
+     */
     public function test_copy_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -843,6 +976,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(404, $response->getStatusCode());
     }
 
+    /**
+     * Test copy requires auth.
+     */
     public function test_copy_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -850,6 +986,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    /**
+     * Test copy rejects admin without permission.
+     */
     public function test_copy_rejects_admin_without_permission(): void
     {
         $role = Role::create([
@@ -868,13 +1007,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertTrue(\DB::table('products')->where('id', $product->id)->exists());
     }
 
-    protected function defaultFamilyId(): int
-    {
-        $this->seedRequiredData();
-
-        return (int) (\Illuminate\Support\Facades\DB::table('attribute_families')->value('id') ?? 1);
-    }
-
+    /**
+     * Test create simple happy path default type.
+     */
     public function test_create_simple_happy_path_default_type(): void
     {
         $admin = $this->createAdmin();
@@ -895,6 +1030,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertTrue(\DB::table('products')->where('sku', $sku)->exists());
     }
 
+    /**
+     * Test create simple with explicit type.
+     */
     public function test_create_simple_with_explicit_type(): void
     {
         $admin = $this->createAdmin();
@@ -911,6 +1049,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame('simple', $response->json('type'));
     }
 
+    /**
+     * Test create unknown type returns 422.
+     */
     public function test_create_unknown_type_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -925,6 +1066,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
+    /**
+     * Test create simple like type happy path.
+     */
     #[DataProvider('simpleLikeTypeProvider')]
     public function test_create_simple_like_type_happy_path(string $type): void
     {
@@ -945,6 +1089,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertTrue(\DB::table('products')->where('sku', $sku)->where('type', $type)->exists());
     }
 
+    /**
+     * Test create other type duplicate sku returns 422.
+     */
     #[DataProvider('simpleLikeTypeProvider')]
     public function test_create_other_type_duplicate_sku_returns_422(string $type): void
     {
@@ -968,6 +1115,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $second->getStatusCode());
     }
 
+    /**
+     * Simple like type provider.
+     */
     public static function simpleLikeTypeProvider(): array
     {
         return [
@@ -979,6 +1129,9 @@ class CatalogProductTest extends AdminApiTestCase
         ];
     }
 
+    /**
+     * Test create configurable happy path.
+     */
     public function test_create_configurable_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -1009,6 +1162,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame($expected, $variantCount, 'Cartesian-product variant count mismatch.');
     }
 
+    /**
+     * Test create configurable with numeric id keys.
+     */
     public function test_create_configurable_with_numeric_id_keys(): void
     {
         $admin = $this->createAdmin();
@@ -1030,6 +1186,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(201, $response->getStatusCode(), 'Body: '.$response->getContent());
     }
 
+    /**
+     * Test create configurable missing super attributes returns 422.
+     */
     public function test_create_configurable_missing_super_attributes_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -1045,6 +1204,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertStringContainsString('super_attributes', (string) $response->json('detail'));
     }
 
+    /**
+     * Test create configurable empty super attributes returns 422.
+     */
     public function test_create_configurable_empty_super_attributes_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -1060,6 +1222,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
+    /**
+     * Test create configurable unknown attribute id returns 422.
+     */
     public function test_create_configurable_unknown_attribute_id_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -1078,6 +1243,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
+    /**
+     * Test create missing sku returns 422.
+     */
     public function test_create_missing_sku_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -1088,6 +1256,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
+    /**
+     * Test create missing attribute family returns 422.
+     */
     public function test_create_missing_attribute_family_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -1098,6 +1269,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
+    /**
+     * Test create duplicate sku returns 422.
+     */
     public function test_create_duplicate_sku_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -1111,6 +1285,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
+    /**
+     * Test create invalid sku slug returns 422.
+     */
     public function test_create_invalid_sku_slug_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -1122,6 +1299,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
+    /**
+     * Test create unknown attribute family returns 422.
+     */
     public function test_create_unknown_attribute_family_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -1133,6 +1313,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
+    /**
+     * Test create requires auth.
+     */
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -1143,6 +1326,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    /**
+     * Test create rejects admin without permission.
+     */
     public function test_create_rejects_admin_without_permission(): void
     {
         $role = Role::create([
@@ -1163,35 +1349,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertFalse(\DB::table('products')->where('sku', $sku)->exists(), 'Product must not be created when permission is denied.');
     }
 
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
-    protected function createAdminViaApi(): array
-    {
-        $admin = $this->createAdmin();
-        $familyId = $this->defaultFamilyId();
-        $sku = 'upd-'.uniqid();
-        $resp = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku' => $sku,
-            'attribute_family_id' => $familyId,
-            'type' => 'simple',
-        ]);
-        $this->assertSame(201, $resp->getStatusCode());
-
-        return [
-            'admin' => $admin,
-            'id' => (int) $resp->json('id'),
-            'sku' => $sku,
-        ];
-    }
-
+    /**
+     * Test update translations returns 200 with new name.
+     */
     public function test_update_translations_returns_200_with_new_name(): void
     {
         $ctx = $this->createAdminViaApi();
@@ -1208,6 +1368,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(200, $resp->getStatusCode(), 'Body: '.$resp->getContent());
     }
 
+    /**
+     * Test update sku to unique value returns 200.
+     */
     public function test_update_sku_to_unique_value_returns_200(): void
     {
         $ctx = $this->createAdminViaApi();
@@ -1218,6 +1381,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertTrue(\DB::table('products')->where('sku', $newSku)->where('id', $ctx['id'])->exists());
     }
 
+    /**
+     * Test update sku duplicate returns 422.
+     */
     public function test_update_sku_duplicate_returns_422(): void
     {
         $ctx1 = $this->createAdminViaApi();
@@ -1227,6 +1393,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $resp->getStatusCode());
     }
 
+    /**
+     * Test update url key duplicate returns 422.
+     */
     public function test_update_url_key_duplicate_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -1240,6 +1409,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $resp->getStatusCode());
     }
 
+    /**
+     * Test update special price with dates returns 200.
+     */
     public function test_update_special_price_with_dates_returns_200(): void
     {
         $ctx = $this->createAdminViaApi();
@@ -1252,6 +1424,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(200, $resp->getStatusCode(), 'Body: '.$resp->getContent());
     }
 
+    /**
+     * Test update special price greater than price returns 422.
+     */
     public function test_update_special_price_greater_than_price_returns_422(): void
     {
         $ctx = $this->createAdminViaApi();
@@ -1262,6 +1437,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $resp->getStatusCode());
     }
 
+    /**
+     * Test update special price dates inverted returns 422.
+     */
     public function test_update_special_price_dates_inverted_returns_422(): void
     {
         $ctx = $this->createAdminViaApi();
@@ -1273,6 +1451,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $resp->getStatusCode());
     }
 
+    /**
+     * Test update invalid boolean returns 422.
+     */
     public function test_update_invalid_boolean_returns_422(): void
     {
         $ctx = $this->createAdminViaApi();
@@ -1282,6 +1463,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $resp->getStatusCode());
     }
 
+    /**
+     * Test update categories list returns 200.
+     */
     public function test_update_categories_list_returns_200(): void
     {
         $ctx = $this->createAdminViaApi();
@@ -1297,6 +1481,9 @@ class CatalogProductTest extends AdminApiTestCase
         );
     }
 
+    /**
+     * Test update with stripped subresources emits warnings.
+     */
     public function test_update_with_stripped_subresources_emits_warnings(): void
     {
         $ctx = $this->createAdminViaApi();
@@ -1320,6 +1507,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertStringContainsString('customer-group prices', strtolower($joined));
     }
 
+    /**
+     * Test update non existent returns 404.
+     */
     public function test_update_non_existent_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -1327,6 +1517,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(404, $resp->getStatusCode());
     }
 
+    /**
+     * Test update requires auth.
+     */
     public function test_update_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -1334,6 +1527,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(401, $resp->getStatusCode());
     }
 
+    /**
+     * Test update rejects admin without permission.
+     */
     public function test_update_rejects_admin_without_permission(): void
     {
         $role = Role::create([
@@ -1348,6 +1544,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(403, $resp->getStatusCode());
     }
 
+    /**
+     * Test delete simple returns 204 and removes row.
+     */
     public function test_delete_simple_returns_204_and_removes_row(): void
     {
         $ctx = $this->createAdminViaApi();
@@ -1357,6 +1556,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertFalse(\DB::table('products')->where('id', $ctx['id'])->exists());
     }
 
+    /**
+     * Test delete configurable cascades variants.
+     */
     public function test_delete_configurable_cascades_variants(): void
     {
         $admin = $this->createAdmin();
@@ -1388,6 +1590,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertGreaterThanOrEqual(0, \DB::table('products')->where('parent_id', $id)->count());
     }
 
+    /**
+     * Test delete non existent returns 404.
+     */
     public function test_delete_non_existent_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -1395,6 +1600,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(404, $resp->getStatusCode());
     }
 
+    /**
+     * Test delete requires auth.
+     */
     public function test_delete_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -1402,6 +1610,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(401, $resp->getStatusCode());
     }
 
+    /**
+     * Test delete rejects admin without permission.
+     */
     public function test_delete_rejects_admin_without_permission(): void
     {
         $role = Role::create([
@@ -1417,6 +1628,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertTrue(\DB::table('products')->where('id', $product->id)->exists());
     }
 
+    /**
+     * Test export returns csv.
+     */
     public function test_export_returns_csv(): void
     {
         $admin = $this->createAdmin();
@@ -1431,6 +1645,9 @@ class CatalogProductTest extends AdminApiTestCase
         expect($response->getContent())->toContain('ID,Name,SKU,"Attribute Family",Price,Quantity,Status,Category,Type');
     }
 
+    /**
+     * Test export supports xlsx.
+     */
     public function test_export_supports_xlsx(): void
     {
         $admin = $this->createAdmin();
@@ -1446,6 +1663,9 @@ class CatalogProductTest extends AdminApiTestCase
         expect($response->headers->get('Content-Disposition'))->toContain('.xlsx');
     }
 
+    /**
+     * Test export unsupported format returns 422.
+     */
     public function test_export_unsupported_format_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -1455,11 +1675,17 @@ class CatalogProductTest extends AdminApiTestCase
         ))->assertStatus(422);
     }
 
+    /**
+     * Test export requires authentication.
+     */
     public function test_export_requires_authentication(): void
     {
         $this->get('/api/admin/catalog/products/export', ['Accept' => 'text/csv'])->assertStatus(401);
     }
 
+    /**
+     * Test export no permission returns 403.
+     */
     public function test_export_no_permission_returns_403(): void
     {
         $role = Role::create([
@@ -1476,6 +1702,9 @@ class CatalogProductTest extends AdminApiTestCase
         ))->assertStatus(403);
     }
 
+    /**
+     * Test update persists family attributes via refetch.
+     */
     public function test_update_persists_family_attributes_via_refetch(): void
     {
         $ctx = $this->createAdminViaApi();
@@ -1500,6 +1729,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame($colorOptionId, (int) $attrs['color']['value']);
     }
 
+    /**
+     * Test partial update does not wipe booleans.
+     */
     public function test_partial_update_does_not_wipe_booleans(): void
     {
         $ctx = $this->createAdminViaApi();
@@ -1520,6 +1752,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotEmpty($attrs['featured']['value'], 'Partial update must not wipe featured');
     }
 
+    /**
+     * Test attribute only update preserves variants.
+     */
     public function test_attribute_only_update_preserves_variants(): void
     {
         $admin = $this->createAdmin();
@@ -1548,6 +1783,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame($before, $after, 'Attribute-only update must not wipe configurable variants');
     }
 
+    /**
+     * Test update with custom attribute codes does not 500.
+     */
     public function test_update_with_custom_attribute_codes_does_not_500(): void
     {
         $ctx = $this->createAdminViaApi();
@@ -1562,5 +1800,89 @@ class CatalogProductTest extends AdminApiTestCase
         $attrs = collect($this->adminGet($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'])->json('attributes'))->keyBy('code');
         $this->assertSame((int) $colorOptions[0], (int) $attrs['color']['value']);
         $this->assertSame('PN-123', $attrs['product_number']['value']);
+    }
+
+    /**
+     * Insert product flat.
+     */
+    protected function insertProductFlat(object $product, array $overrides = []): void
+    {
+        $attributeFamilyId = (int) (\Illuminate\Support\Facades\DB::table('attribute_families')->value('id') ?? 1);
+
+        \Illuminate\Support\Facades\DB::table('product_flat')->insert(array_merge([
+            'product_id' => $product->id,
+            'locale' => 'en',
+            'channel' => 'default',
+            'sku' => $product->sku,
+            'name' => 'Test '.$product->sku,
+            'type' => 'simple',
+            'status' => 1,
+            'price' => 10.00,
+            'url_key' => strtolower($product->sku).'-'.$product->id,
+            'attribute_family_id' => $attributeFamilyId,
+            'visible_individually' => 1,
+        ], $overrides));
+
+        $this->refreshFlatDerived((int) $product->id);
+    }
+
+    /**
+     * Refresh flat derived.
+     */
+    protected function refreshFlatDerived(int $productId): void
+    {
+        if (! $this->core()->hasProductFlatDerivedColumns()) {
+            return;
+        }
+
+        app(Flat::class)->refreshDerivedColumns([$productId]);
+    }
+
+    /**
+     * Default family id.
+     */
+    protected function defaultFamilyId(): int
+    {
+        $this->seedRequiredData();
+
+        return (int) (\Illuminate\Support\Facades\DB::table('attribute_families')->value('id') ?? 1);
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Create admin via api.
+     */
+    protected function createAdminViaApi(): array
+    {
+        $admin = $this->createAdmin();
+        $familyId = $this->defaultFamilyId();
+        $sku = 'upd-'.uniqid();
+        $resp = $this->adminPost($admin, '/api/admin/catalog/products', [
+            'sku' => $sku,
+            'attribute_family_id' => $familyId,
+            'type' => 'simple',
+        ]);
+        $this->assertSame(201, $resp->getStatusCode());
+
+        return [
+            'admin' => $admin,
+            'id' => (int) $resp->json('id'),
+            'sku' => $sku,
+        ];
     }
 }

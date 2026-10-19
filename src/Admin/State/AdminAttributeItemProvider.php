@@ -8,16 +8,6 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
 
 class AdminAttributeItemProvider extends AbstractAdminItemProvider
 {
-    protected function getNotFoundLangKey(): string
-    {
-        return 'bagistoapi::app.admin.attribute.not-found';
-    }
-
-    protected function findEntity(int $id): ?object
-    {
-        return Attribute::with(['translations', 'options.translations'])->find($id);
-    }
-
     /**
      * Public alias so processors (AdminAttributeProcessor, AdminAttributeOptionProcessor)
      * can reuse the detail DTO mapping for their success responses.
@@ -27,9 +17,27 @@ class AdminAttributeItemProvider extends AbstractAdminItemProvider
         return $this->mapToDto($attribute);
     }
 
+    /**
+     * Get not found lang key.
+     */
+    protected function getNotFoundLangKey(): string
+    {
+        return 'bagistoapi::app.admin.attribute.not-found';
+    }
+
+    /**
+     * Find entity.
+     */
+    protected function findEntity(int $id): ?object
+    {
+        return Attribute::with(['translations', 'options.translations'])->find($id);
+    }
+
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $attribute): AdminAttribute
     {
-        /** @var Attribute $attribute */
         $dto = new AdminAttribute;
 
         $dto->id = (int) $attribute->id;

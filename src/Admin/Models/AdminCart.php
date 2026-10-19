@@ -274,57 +274,132 @@ class AdminCart
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The customer id.
+     */
     public ?int $customer_id = null;
 
+    /**
+     * The is guest.
+     */
     public ?bool $is_guest = null;
 
+    /**
+     * The is active.
+     */
     public ?bool $is_active = null;
 
+    /**
+     * The items count.
+     */
     public ?int $items_count = null;
 
+    /**
+     * The items qty.
+     */
     public ?int $items_qty = null;
 
+    /**
+     * The sub total.
+     */
     public ?float $sub_total = null;
 
+    /**
+     * The formatted sub total.
+     */
     public ?string $formatted_sub_total = null;
 
+    /**
+     * The grand total.
+     */
     public ?float $grand_total = null;
 
+    /**
+     * The formatted grand total.
+     */
     public ?string $formatted_grand_total = null;
 
+    /**
+     * The shipping amount.
+     */
     public ?float $shipping_amount = null;
 
+    /**
+     * The formatted shipping amount.
+     */
     public ?string $formatted_shipping_amount = null;
 
+    /**
+     * The tax total.
+     */
     public ?float $tax_total = null;
 
+    /**
+     * The formatted tax total.
+     */
     public ?string $formatted_tax_total = null;
 
+    /**
+     * The discount amount.
+     */
     public ?float $discount_amount = null;
 
+    /**
+     * The formatted discount amount.
+     */
     public ?string $formatted_discount_amount = null;
 
+    /**
+     * The coupon code.
+     */
     public ?string $coupon_code = null;
 
+    /**
+     * The shipping method.
+     */
     public ?string $shipping_method = null;
 
+    /**
+     * The payment method.
+     */
     public ?string $payment_method = null;
 
+    /**
+     * The payment method title.
+     */
     public ?string $payment_method_title = null;
 
+    /**
+     * The have stockable items.
+     */
     public ?bool $have_stockable_items = null;
 
     /** @var array<int, array> */
     public array $items = [];
 
+    /**
+     * The billing address.
+     */
     public ?array $billing_address = null;
 
+    /**
+     * The shipping address.
+     */
     public ?array $shipping_address = null;
 
+    /**
+     * The success.
+     */
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

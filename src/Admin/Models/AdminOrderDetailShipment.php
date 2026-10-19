@@ -6,10 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Slim shipment summary — nested sub-resource of AdminOrderDetail. For the full
- * shipment use GET /api/admin/shipments/{id}.
- */
 #[ApiResource(
     shortName: 'AdminOrderDetailShipment',
     operations: [],
@@ -34,6 +30,9 @@ class AdminOrderDetailShipment extends Model
         'created_at' => 'datetime',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

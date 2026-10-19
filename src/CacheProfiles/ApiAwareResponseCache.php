@@ -5,9 +5,6 @@ namespace Webkul\BagistoApi\CacheProfiles;
 use Illuminate\Http\Request;
 use Webkul\FPC\CacheProfiles\FullPageCacheProfile;
 
-/**
- * Core's full-page-cache profile, with every API and GraphQL request kept out of the cache.
- */
 class ApiAwareResponseCache extends FullPageCacheProfile
 {
     /**

@@ -9,14 +9,9 @@ use Webkul\MagicAI\Facades\MagicAI;
 
 class ImageSearchTest extends RestApiTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->app['url']->forceRootUrl('http://localhost');
-        Storage::fake('public');
-    }
-
+    /**
+     * Test image search stores the image and returns tensorflow keywords when ai is off.
+     */
     public function test_image_search_stores_the_image_and_returns_tensorflow_keywords_when_ai_is_off(): void
     {
         $this->seedRequiredData();
@@ -40,6 +35,9 @@ class ImageSearchTest extends RestApiTestCase
         Storage::disk('public')->assertExists(str_replace('/storage/', '', parse_url($response->json('imageUrl'), PHP_URL_PATH)));
     }
 
+    /**
+     * Test image search requires an image.
+     */
     public function test_image_search_requires_an_image(): void
     {
         $this->seedRequiredData();
@@ -49,6 +47,9 @@ class ImageSearchTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test image search uses magic ai when both features are enabled.
+     */
     public function test_image_search_uses_magic_ai_when_both_features_are_enabled(): void
     {
         $this->seedRequiredData();
@@ -73,6 +74,9 @@ class ImageSearchTest extends RestApiTestCase
             ->assertJsonPath('engine', 'ai');
     }
 
+    /**
+     * Test image search rejects non image files.
+     */
     public function test_image_search_rejects_non_image_files(): void
     {
         $this->seedRequiredData();
@@ -85,5 +89,16 @@ class ImageSearchTest extends RestApiTestCase
         ]);
 
         expect($response->getStatusCode())->toBeIn([400, 422]);
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app['url']->forceRootUrl('http://localhost');
+        Storage::fake('public');
     }
 }

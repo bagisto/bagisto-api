@@ -14,6 +14,9 @@ class AdminEuWithdrawalCollectionProvider extends AbstractAdminCollectionProvide
     use BuildsAdminEuWithdrawal;
     use ChecksAdminPermission;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin('sales.eu_withdrawals', 'bagistoapi::app.admin.eu-withdrawal.no-permission');
@@ -21,16 +24,25 @@ class AdminEuWithdrawalCollectionProvider extends AbstractAdminCollectionProvide
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'received_at', 'status'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return $this->baseWithdrawalQuery();
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['order_increment_id'])) {
@@ -66,6 +78,9 @@ class AdminEuWithdrawalCollectionProvider extends AbstractAdminCollectionProvide
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -79,6 +94,9 @@ class AdminEuWithdrawalCollectionProvider extends AbstractAdminCollectionProvide
         $query->orderBy($map[$column] ?? 'w.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminEuWithdrawal
     {
         return $this->mapWithdrawalRow($row);

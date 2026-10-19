@@ -13,24 +13,18 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CancelOrder;
 use Webkul\Sales\Repositories\OrderRepository;
 
-/**
- * CancelOrderProcessor — Handles the cancel order mutation
- *
- * Delegates to Bagisto's OrderRepository::cancel() which:
- * - Checks $order->canCancel() (items with qty_to_cancel > 0, status not closed/fraud)
- * - Dispatches sales.order.cancel.before / after events
- * - Returns inventory to stock
- * - Updates order status
- */
 class CancelOrderProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private readonly OrderRepository $orderRepository,
     ) {}
 
     /**
-     * Process the cancel order operation
+     * Process the cancel order operation.
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
@@ -44,7 +38,7 @@ class CancelOrderProcessor implements ProcessorInterface
     }
 
     /**
-     * Cancel the order for the authenticated customer
+     * Cancel the order for the authenticated customer.
      */
     private function handleCancel(CancelOrderInput $input): CancelOrder
     {
@@ -58,7 +52,6 @@ class CancelOrderProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.cancel-order.order-id-required'));
         }
 
-        /** Find order scoped to the authenticated customer */
         $order = $customer->orders()->find($input->orderId);
 
         if (! $order) {
@@ -67,10 +60,8 @@ class CancelOrderProcessor implements ProcessorInterface
             );
         }
 
-        /** Delegate to Bagisto's core cancel logic */
         $result = $this->orderRepository->cancel($order);
 
-        /** Refresh the order to get updated status */
         $order->refresh();
 
         if ($result) {
@@ -92,8 +83,7 @@ class CancelOrderProcessor implements ProcessorInterface
 
     /**
      * GraphQL input can reach the processor in slightly different shapes depending on
-     * whether the client sends variables or an inline literal. Normalize those shapes
-     * into the DTO before validation.
+     * whether the client sends variables or an inline literal. Normalize those shapes.
      */
     private function hydrateInputFromContext(CancelOrderInput $data, array $context): void
     {
@@ -121,6 +111,9 @@ class CancelOrderProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Extract order id.
+     */
     private function extractOrderId(mixed $input): ?int
     {
         if (is_array($input)) {

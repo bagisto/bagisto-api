@@ -5,45 +5,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Core\Helpers\Exchange\ExchangeRates;
 
-/**
- * GraphQL coverage for the admin Settings → Exchange Rates endpoints
- * (Block B Wave 1).
- *
- * Operations:
- *   - adminSettingsExchangeRates  (QueryCollection, cursor)
- *   - adminSettingsExchangeRate   (Query)
- *   - createAdminSettingsExchangeRate
- *   - updateAdminSettingsExchangeRate
- *   - deleteAdminSettingsExchangeRate
- *   - createAdminSettingsExchangeRateMassDelete
- */
 class SettingsExchangeRateTest extends AdminApiTestCase
 {
-    protected function insertCurrency(array $overrides = []): int
-    {
-        return \DB::table('currencies')->insertGetId(array_merge([
-            'code' => 'GQ'.substr((string) microtime(true), -4).rand(10, 99),
-            'name' => 'GQL Currency',
-            'symbol' => '$',
-            'decimal' => 2,
-            'group_separator' => ',',
-            'decimal_separator' => '.',
-            'currency_position' => 'left',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function insertExchangeRate(int $cur, float $rate = 1.0): int
-    {
-        return \DB::table('currency_exchange_rates')->insertGetId([
-            'target_currency' => $cur,
-            'rate' => $rate,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
+    /**
+     * Test query listing returns seeded row.
+     */
     public function test_query_listing_returns_seeded_row(): void
     {
         $admin = $this->createAdmin();
@@ -69,6 +35,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test query listing filter by target currency.
+     */
     public function test_query_listing_filter_by_target_currency(): void
     {
         $admin = $this->createAdmin();
@@ -95,6 +64,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test query listing requires auth.
+     */
     public function test_query_listing_requires_auth(): void
     {
         $query = <<<'GQL'
@@ -106,6 +78,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test query detail returns row.
+     */
     public function test_query_detail_returns_row(): void
     {
         $admin = $this->createAdmin();
@@ -125,6 +100,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->json('data.adminSettingsExchangeRate._id'))->toBe($id);
     }
 
+    /**
+     * Test query detail multiword fields resolve over graphql.
+     */
     public function test_query_detail_multiword_fields_resolve_over_graphql(): void
     {
         $admin = $this->createAdmin();
@@ -158,6 +136,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($node['updatedAt'])->not->toBeNull();
     }
 
+    /**
+     * Test query detail unknown id returns error.
+     */
     public function test_query_detail_unknown_id_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -177,6 +158,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($errors !== null || $dataNull)->toBeTrue();
     }
 
+    /**
+     * Test mutation create happy path.
+     */
     public function test_mutation_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -201,6 +185,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect(\DB::table('currency_exchange_rates')->where('target_currency', $cur)->exists())->toBeTrue();
     }
 
+    /**
+     * Test mutation create duplicate returns error.
+     */
     public function test_mutation_create_duplicate_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -226,6 +213,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test mutation create requires auth.
+     */
     public function test_mutation_create_requires_auth(): void
     {
         $cur = $this->insertCurrency();
@@ -247,6 +237,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test mutation update happy path.
+     */
     public function test_mutation_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -276,6 +269,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($afterRate === 9.99 || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -296,6 +292,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect(\DB::table('currency_exchange_rates')->where('id', $id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mutation mass delete happy path.
+     */
     public function test_mutation_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -317,21 +316,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect(\DB::table('currency_exchange_rates')->where('id', $id2)->exists())->toBeFalse();
     }
 
-    protected function fakeExchangeHelper(?\Closure $update = null): void
-    {
-        $this->app->bind(ExchangeRates::class, fn () => new class($update)
-        {
-            public function __construct(private $update) {}
-
-            public function updateRates()
-            {
-                if ($this->update) {
-                    ($this->update)();
-                }
-            }
-        });
-    }
-
+    /**
+     * Test update rates mutation runs provider.
+     */
     public function test_update_rates_mutation_runs_provider(): void
     {
         $admin = $this->createAdmin();
@@ -362,6 +349,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect(\DB::table('currency_exchange_rates')->where('target_currency', $cur)->exists())->toBeTrue();
     }
 
+    /**
+     * Test update rates mutation requires auth.
+     */
     public function test_update_rates_mutation_requires_auth(): void
     {
         $this->fakeExchangeHelper();
@@ -379,5 +369,54 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, ['input' => ['confirm' => true]]);
         $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
+    }
+
+    /**
+     * Insert currency.
+     */
+    protected function insertCurrency(array $overrides = []): int
+    {
+        return \DB::table('currencies')->insertGetId(array_merge([
+            'code' => 'GQ'.substr((string) microtime(true), -4).rand(10, 99),
+            'name' => 'GQL Currency',
+            'symbol' => '$',
+            'decimal' => 2,
+            'group_separator' => ',',
+            'decimal_separator' => '.',
+            'currency_position' => 'left',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Insert exchange rate.
+     */
+    protected function insertExchangeRate(int $cur, float $rate = 1.0): int
+    {
+        return \DB::table('currency_exchange_rates')->insertGetId([
+            'target_currency' => $cur,
+            'rate' => $rate,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Fake exchange helper.
+     */
+    protected function fakeExchangeHelper(?\Closure $update = null): void
+    {
+        $this->app->bind(ExchangeRates::class, fn () => new class($update)
+        {
+            public function __construct(private $update) {}
+
+            public function updateRates()
+            {
+                if ($this->update) {
+                    ($this->update)();
+                }
+            }
+        });
     }
 }

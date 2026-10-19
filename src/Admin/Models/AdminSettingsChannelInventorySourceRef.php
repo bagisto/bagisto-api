@@ -6,13 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Inventory source — nested sub-resource of AdminSettingsChannel
- * (`inventorySources` connection). Backed by `inventory_sources` via
- * belongsToMany over `channel_inventory_sources` (`channel_id`,
- * `inventory_source_id`) — pivot has no own `id`, so the node `_id` is the
- * source's real id. Surfaces `code`/`name`/`status`.
- */
 #[ApiResource(
     shortName: 'AdminSettingsChannelInventorySourceRef',
     operations: [],
@@ -33,6 +26,9 @@ class AdminSettingsChannelInventorySourceRef extends Model
         'status' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

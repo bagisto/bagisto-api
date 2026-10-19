@@ -81,9 +81,15 @@ use Webkul\BagistoApi\State\ForgotPasswordProcessor;
 )]
 class ForgotPassword
 {
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $message = null;
 }

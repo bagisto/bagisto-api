@@ -6,15 +6,18 @@ use ApiPlatform\Metadata\IdentifiersExtractorInterface;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Extracts identifiers from Eloquent models for API Platform
- */
 class CustomIdentifiersExtractor implements IdentifiersExtractorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private IdentifiersExtractorInterface $decorated
     ) {}
 
+    /**
+     * Get identifiers from item.
+     */
     public function getIdentifiersFromItem(object $item, ?Operation $operation = null, array $context = []): array
     {
         if ($item instanceof Model) {
@@ -31,12 +34,10 @@ class CustomIdentifiersExtractor implements IdentifiersExtractorInterface
                 $id = $item->getKey();
             }
 
-            // Only return identifier if it's not null
             if ($id !== null) {
                 return ['id' => $id];
             }
 
-            // For new items without an ID, return empty array to avoid IRI generation issues
             return [];
         }
 
@@ -50,7 +51,6 @@ class CustomIdentifiersExtractor implements IdentifiersExtractorInterface
             return $identifiers;
         }
 
-        // A provider returning a class other than its operation's yields no identifier — read the item's own id.
         $isClassMismatch = $operation?->getClass() !== null && $operation->getClass() !== $item::class;
 
         if (

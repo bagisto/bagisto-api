@@ -8,6 +8,9 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 
 class CheckoutPaymentConfirmationInput
 {
+    /**
+     * The session id.
+     */
     #[Groups(['mutation'])]
     #[ApiProperty(description: 'Stripe Checkout Session ID returned by the gateway.')]
     #[SerializedName('sessionId')]

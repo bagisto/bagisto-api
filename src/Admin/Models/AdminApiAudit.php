@@ -4,18 +4,21 @@ namespace Webkul\BagistoApi\Admin\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * One recorded change made through the admin API. Append-only.
- *
- * NOT an API Platform resource — this backs the Integration → History admin
- * screen and is written by AdminApiAuditRecorder.
- */
 class AdminApiAudit extends Model
 {
+    /**
+     * The timestamps.
+     */
     public $timestamps = false;
 
+    /**
+     * The table.
+     */
     protected $table = 'admin_api_audits';
 
+    /**
+     * The fillable.
+     */
     protected $fillable = [
         'history_id',
         'version_id',
@@ -37,6 +40,9 @@ class AdminApiAudit extends Model
         'created_at',
     ];
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'old_values' => 'array',
         'new_values' => 'array',

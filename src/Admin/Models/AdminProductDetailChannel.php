@@ -15,18 +15,33 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminProductDetailChannel extends Model
 {
+    /**
+     * The table.
+     */
     protected $table = 'channels';
 
+    /**
+     * The appends.
+     */
     protected $appends = ['name'];
 
+    /**
+     * The casts.
+     */
     protected $casts = ['id' => 'int'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getNameAttribute(): ?string
     {

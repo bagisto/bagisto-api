@@ -12,16 +12,11 @@ use Webkul\BagistoApi\Exception\ValidationException;
 use Webkul\CartRule\Repositories\CartRuleCouponRepository;
 use Webkul\Checkout\Facades\Cart;
 
-/**
- * POST /api/admin/carts/{id}/coupon — apply a coupon code.
- *
- * Mirrors CartController::storeCoupon status codes:
- *   - 404 unknown / inactive coupon  → ResourceNotFoundException
- *   - 422 already-applied coupon     → ValidationException
- *   - 200 success                    → returns the updated cart
- */
 class AdminCartApplyCouponProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminCart
     {
         $cart = AdminCartGuard::resolve(AdminCartGuard::resolveId($uriVariables, $context));
@@ -71,6 +66,9 @@ class AdminCartApplyCouponProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve code.
+     */
     protected function resolveCode(mixed $data, array $context): ?string
     {
         if (

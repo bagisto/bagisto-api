@@ -7,12 +7,6 @@ use Webkul\Core\Providers\CoreModuleServiceProvider;
 
 class ModuleServiceProvider extends CoreModuleServiceProvider
 {
-    public function boot(): void
-    {
-        parent::boot();
-
-    }
-
     /**
      * Models.
      *
@@ -21,4 +15,13 @@ class ModuleServiceProvider extends CoreModuleServiceProvider
     protected $models = [
         GuestCartTokens::class,
     ];
+
+    /**
+     * Boot the package services.
+     */
+    public function boot(): void
+    {
+        parent::boot();
+
+    }
 }

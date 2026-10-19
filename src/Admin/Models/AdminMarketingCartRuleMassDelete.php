@@ -10,12 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleMassDeleteInput;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleMassDeleteProcessor;
 
-/**
- * Mass-delete admin marketing cart rules.
- *
- * REST:    POST /api/admin/marketing/cart-rules/mass-delete
- * GraphQL: createAdminMarketingCartRuleMassDelete
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingCartRuleMassDelete',
@@ -78,6 +72,9 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleMassDeleteProcessor;
 )]
 class AdminMarketingCartRuleMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -89,6 +86,9 @@ class AdminMarketingCartRuleMassDelete
     #[ApiProperty(writable: false)]
     public ?array $skipped = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

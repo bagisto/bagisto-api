@@ -15,22 +15,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerDownloadableProduct;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
-/**
- * CustomerDownloadableProductProvider — Retrieves downloadable product purchases for the authenticated customer
- *
- * Supports cursor-based pagination and status filtering.
- * All queries are scoped to the current customer for multi-tenant isolation.
- */
 class CustomerDownloadableProductProvider implements ProviderInterface
 {
     use ClampsPageSize;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
     /**
-     * Provide customer downloadable products for collection or single-item operations
+     * Provide customer downloadable products for collection or single-item operations.
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
@@ -40,7 +37,6 @@ class CustomerDownloadableProductProvider implements ProviderInterface
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
 
-        /** Single item — GET /api/shop/customer-downloadable-products/{id} */
         if (
             ! $operation instanceof GetCollection
             && ! ($operation instanceof QueryCollection)
@@ -52,7 +48,7 @@ class CustomerDownloadableProductProvider implements ProviderInterface
     }
 
     /**
-     * Return a single downloadable product purchase owned by the customer
+     * Return a single downloadable product purchase owned by the customer.
      */
     private function provideItem(object $customer, array $uriVariables): CustomerDownloadableProduct
     {
@@ -76,7 +72,7 @@ class CustomerDownloadableProductProvider implements ProviderInterface
     }
 
     /**
-     * Return a paginated collection of downloadable product purchases owned by the customer
+     * Return a paginated collection of downloadable product purchases owned by the customer.
      */
     private function provideCollection(object $customer, array $context): Paginator
     {
@@ -86,13 +82,11 @@ class CustomerDownloadableProductProvider implements ProviderInterface
         $query = CustomerDownloadableProduct::where('customer_id', $customer->id)
             ->with(['order']);
 
-        /** Apply optional status filter */
         $status = $args['status'] ?? $filters['status'] ?? null;
         if ($status !== null) {
             $query->where('status', (string) $status);
         }
 
-        /** Cursor-based pagination (offset-based cursors from API Platform) */
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
         $after = $args['after'] ?? null;

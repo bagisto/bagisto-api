@@ -8,6 +8,9 @@ use Webkul\Shop\Mail\Customer\EmailVerificationNotification;
 
 class ResendVerificationEmailTest extends RestApiTestCase
 {
+    /**
+     * Test resend verification email for existing customer rotates token.
+     */
     public function test_resend_verification_email_for_existing_customer_rotates_token(): void
     {
         Mail::fake();
@@ -35,6 +38,9 @@ class ResendVerificationEmailTest extends RestApiTestCase
         Mail::assertQueued(EmailVerificationNotification::class);
     }
 
+    /**
+     * Test resend verification email for unknown email returns generic success.
+     */
     public function test_resend_verification_email_for_unknown_email_returns_generic_success(): void
     {
         Mail::fake();
@@ -51,6 +57,9 @@ class ResendVerificationEmailTest extends RestApiTestCase
         Mail::assertNothingQueued();
     }
 
+    /**
+     * Test resend verification email with invalid email fails.
+     */
     public function test_resend_verification_email_with_invalid_email_fails(): void
     {
         $this->seedRequiredData();
@@ -62,6 +71,9 @@ class ResendVerificationEmailTest extends RestApiTestCase
         $this->assertFalse($response->json('success'));
     }
 
+    /**
+     * Test resend verification email with missing email fails.
+     */
     public function test_resend_verification_email_with_missing_email_fails(): void
     {
         $this->seedRequiredData();

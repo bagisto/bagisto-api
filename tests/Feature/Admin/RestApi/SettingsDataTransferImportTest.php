@@ -10,53 +10,11 @@ use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 use ZipArchive;
 
-/**
- * REST coverage for Admin Settings → Data Transfer Imports (Block B Wave 3).
- *
- * Endpoints:
- *   GET    /api/admin/settings/data-transfer/imports
- *   GET    /api/admin/settings/data-transfer/imports/{id}
- *   POST   /api/admin/settings/data-transfer/imports/{id}/cancel
- *   DELETE /api/admin/settings/data-transfer/imports/{id}
- */
 class SettingsDataTransferImportTest extends AdminApiTestCase
 {
-    protected function insertImport(array $overrides = []): int
-    {
-        return (int) \DB::table('imports')->insertGetId(array_merge([
-            'state' => 'pending',
-            'process_in_queue' => 1,
-            'type' => 'product',
-            'action' => 'append',
-            'validation_strategy' => 'stop-on-errors',
-            'allowed_errors' => 0,
-            'processed_rows_count' => 0,
-            'invalid_rows_count' => 0,
-            'errors_count' => 0,
-            'field_separator' => ',',
-            'file_path' => 'imports/sample-'.uniqid().'.csv',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
-    protected function createAdminWithoutPermissions(): Admin
-    {
-        $role = Role::create([
-            'name' => 'NoDataTransfer '.uniqid(),
-            'description' => 'no perms',
-            'permission_type' => 'custom',
-            'permissions' => ['catalog.products'],
-        ]);
-
-        return $this->createAdmin(['role_id' => $role->id]);
-    }
-
+    /**
+     * Test listing requires admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -64,6 +22,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -76,6 +37,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($response->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total', 'from', 'to']);
     }
 
+    /**
+     * Test listing row shape.
+     */
     public function test_listing_row_shape(): void
     {
         $admin = $this->createAdmin();
@@ -92,6 +56,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($row)->toHaveKeys(['id', 'code', 'action', 'state', 'createdAt']);
     }
 
+    /**
+     * Test filter by code.
+     */
     public function test_filter_by_code(): void
     {
         $admin = $this->createAdmin();
@@ -105,6 +72,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($ids)->not->toContain($a);
     }
 
+    /**
+     * Test filter by type alias.
+     */
     public function test_filter_by_type_alias(): void
     {
         $admin = $this->createAdmin();
@@ -118,6 +88,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($ids)->not->toContain($a);
     }
 
+    /**
+     * Test filter by action.
+     */
     public function test_filter_by_action(): void
     {
         $admin = $this->createAdmin();
@@ -131,6 +104,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($ids)->not->toContain($a);
     }
 
+    /**
+     * Test filter by state.
+     */
     public function test_filter_by_state(): void
     {
         $admin = $this->createAdmin();
@@ -144,6 +120,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($ids)->not->toContain($a);
     }
 
+    /**
+     * Test filter by created at range.
+     */
     public function test_filter_by_created_at_range(): void
     {
         $admin = $this->createAdmin();
@@ -161,6 +140,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($ids)->not->toContain($old);
     }
 
+    /**
+     * Test sort id desc default.
+     */
     public function test_sort_id_desc_default(): void
     {
         $admin = $this->createAdmin();
@@ -173,6 +155,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($ids[0])->toBe($b);
     }
 
+    /**
+     * Test detail requires admin token.
+     */
     public function test_detail_requires_admin_token(): void
     {
         $id = $this->insertImport();
@@ -180,6 +165,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test detail happy path.
+     */
     public function test_detail_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -197,6 +185,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($response->json('filePath'))->toBeString();
     }
 
+    /**
+     * Test detail not found.
+     */
     public function test_detail_not_found(): void
     {
         $admin = $this->createAdmin();
@@ -204,6 +195,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test cancel pending happy path.
+     */
     public function test_cancel_pending_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -218,6 +212,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect(\DB::table('imports')->where('id', $id)->value('state'))->toBe('cancelled');
     }
 
+    /**
+     * Test cancel processing happy path.
+     */
     public function test_cancel_processing_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -229,6 +226,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect(\DB::table('imports')->where('id', $id)->value('state'))->toBe('cancelled');
     }
 
+    /**
+     * Test cancel completed is refused.
+     */
     public function test_cancel_completed_is_refused(): void
     {
         $admin = $this->createAdmin();
@@ -240,6 +240,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect(\DB::table('imports')->where('id', $id)->value('state'))->toBe('completed');
     }
 
+    /**
+     * Test cancel not found.
+     */
     public function test_cancel_not_found(): void
     {
         $admin = $this->createAdmin();
@@ -247,6 +250,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test cancel requires token.
+     */
     public function test_cancel_requires_token(): void
     {
         $id = $this->insertImport();
@@ -254,6 +260,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test cancel requires permission.
+     */
     public function test_cancel_requires_permission(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -263,6 +272,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -274,6 +286,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect(\DB::table('imports')->where('id', $id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test delete not found.
+     */
     public function test_delete_not_found(): void
     {
         $admin = $this->createAdmin();
@@ -281,6 +296,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test delete requires token.
+     */
     public function test_delete_requires_token(): void
     {
         $id = $this->insertImport();
@@ -288,6 +306,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test delete requires permission.
+     */
     public function test_delete_requires_permission(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -297,61 +318,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    /* ------------------------------------------------------------------ */
-    /* Create */
-    /* ------------------------------------------------------------------ */
-
-    protected function sampleCsv(): UploadedFile
-    {
-        return UploadedFile::fake()->createWithContent(
-            'products.csv',
-            "sku,type,name\nps4,simple,Sample\n",
-        );
-    }
-
-    protected function sampleImagesArchive(): UploadedFile
-    {
-        $path = tempnam(sys_get_temp_dir(), 'imgs').'.zip';
-
-        $zip = new ZipArchive;
-        $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-        $zip->addFromString('shirt.jpg', 'not-really-a-jpeg');
-        $zip->close();
-
-        return new UploadedFile($path, 'images.zip', 'application/zip', null, true);
-    }
-
-    protected function createPayload(array $overrides = []): array
-    {
-        return array_merge([
-            'type' => 'products',
-            'action' => 'append',
-            'validation_strategy' => 'stop-on-errors',
-            'allowed_errors' => 0,
-            'field_separator' => ',',
-            'image_source' => 'directory',
-            'images_directory_path' => 'product-images',
-        ], $overrides);
-    }
-
-    protected function adminMultipart(Admin $admin, string $method, string $url, array $data): TestResponse
-    {
-        $files = array_filter($data, fn ($v) => $v instanceof UploadedFile);
-        $params = array_filter($data, fn ($v) => ! $v instanceof UploadedFile);
-
-        return $this->call(
-            $method,
-            $url,
-            $params,
-            [],
-            $files,
-            $this->transformHeadersToServerVars(array_merge(
-                $this->adminHeaders($admin),
-                ['Accept' => 'application/json'],
-            )),
-        );
-    }
-
+    /**
+     * Test create happy path.
+     */
     public function test_create_happy_path(): void
     {
         Storage::fake('private');
@@ -374,6 +343,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         Storage::disk('private')->assertExists($row->file_path);
     }
 
+    /**
+     * Test create missing file returns 422.
+     */
     public function test_create_missing_file_returns_422(): void
     {
         Storage::fake('private');
@@ -383,6 +355,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create with a directory source needs the directory.
+     */
     public function test_create_with_a_directory_source_needs_the_directory(): void
     {
         Storage::fake('private');
@@ -399,6 +374,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create with a url source needs neither directory nor archive.
+     */
     public function test_create_with_a_url_source_needs_neither_directory_nor_archive(): void
     {
         Storage::fake('private');
@@ -416,6 +394,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($response->json('imageSource'))->toBe('url');
     }
 
+    /**
+     * Test create with an upload source unpacks the archive.
+     */
     public function test_create_with_an_upload_source_unpacks_the_archive(): void
     {
         Storage::fake('private');
@@ -435,12 +416,13 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
 
         $id = (int) $response->json('id');
 
-        // `Importer::resolveUploadedImage()` reads exactly this path, so the archive is
-        // unpacked rather than stored: the importer never sees the zip itself.
         Storage::disk('private')->assertExists('imports/'.$id.'/images/shirt.jpg');
         Storage::disk('private')->assertMissing('imports/'.$id.'/images/images.zip');
     }
 
+    /**
+     * Test create with an upload source needs the archive.
+     */
     public function test_create_with_an_upload_source_needs_the_archive(): void
     {
         Storage::fake('private');
@@ -454,6 +436,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create invalid type returns 422.
+     */
     public function test_create_invalid_type_returns_422(): void
     {
         Storage::fake('private');
@@ -466,6 +451,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create invalid action returns 422.
+     */
     public function test_create_invalid_action_returns_422(): void
     {
         Storage::fake('private');
@@ -478,6 +466,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create invalid validation strategy returns 422.
+     */
     public function test_create_invalid_validation_strategy_returns_422(): void
     {
         Storage::fake('private');
@@ -490,6 +481,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create requires token.
+     */
     public function test_create_requires_token(): void
     {
         Storage::fake('private');
@@ -505,6 +499,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test create requires permission.
+     */
     public function test_create_requires_permission(): void
     {
         Storage::fake('private');
@@ -521,6 +518,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     /* Update */
     /* ------------------------------------------------------------------ */
 
+    /**
+     * Test update resets state to pending.
+     */
     public function test_update_resets_state_to_pending(): void
     {
         Storage::fake('private');
@@ -543,6 +543,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect((int) \DB::table('imports')->where('id', $id)->value('processed_rows_count'))->toBe(0);
     }
 
+    /**
+     * Test update requires token.
+     */
     public function test_update_requires_token(): void
     {
         $id = $this->insertImport();
@@ -550,6 +553,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test update requires permission.
+     */
     public function test_update_requires_permission(): void
     {
         Storage::fake('private');
@@ -563,6 +569,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test update not found.
+     */
     public function test_update_not_found(): void
     {
         Storage::fake('private');
@@ -579,6 +588,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     /* Validate */
     /* ------------------------------------------------------------------ */
 
+    /**
+     * Test validate not found.
+     */
     public function test_validate_not_found(): void
     {
         $admin = $this->createAdmin();
@@ -586,6 +598,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test validate requires token.
+     */
     public function test_validate_requires_token(): void
     {
         $id = $this->insertImport();
@@ -593,6 +608,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test validate requires permission.
+     */
     public function test_validate_requires_permission(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -605,6 +623,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     /* Start / Link / Index — guard paths */
     /* ------------------------------------------------------------------ */
 
+    /**
+     * Test start nothing to import returns 400.
+     */
     public function test_start_nothing_to_import_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -614,6 +635,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(400);
     }
 
+    /**
+     * Test start not found.
+     */
     public function test_start_not_found(): void
     {
         $admin = $this->createAdmin();
@@ -621,6 +645,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test start requires token.
+     */
     public function test_start_requires_token(): void
     {
         $id = $this->insertImport();
@@ -628,6 +655,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test start requires permission.
+     */
     public function test_start_requires_permission(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -636,6 +666,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test link nothing to import returns 400.
+     */
     public function test_link_nothing_to_import_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -645,6 +678,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(400);
     }
 
+    /**
+     * Test link not found.
+     */
     public function test_link_not_found(): void
     {
         $admin = $this->createAdmin();
@@ -652,6 +688,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test link requires token.
+     */
     public function test_link_requires_token(): void
     {
         $id = $this->insertImport();
@@ -659,6 +698,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test index nothing to import returns 400.
+     */
     public function test_index_nothing_to_import_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -668,6 +710,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(400);
     }
 
+    /**
+     * Test index not found.
+     */
     public function test_index_not_found(): void
     {
         $admin = $this->createAdmin();
@@ -675,6 +720,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test index requires token.
+     */
     public function test_index_requires_token(): void
     {
         $id = $this->insertImport();
@@ -686,6 +734,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     /* Stats */
     /* ------------------------------------------------------------------ */
 
+    /**
+     * Test stats happy path.
+     */
     public function test_stats_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -697,6 +748,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($response->json('id'))->toBe($id);
     }
 
+    /**
+     * Test stats requires core import key.
+     */
     public function test_stats_requires_core_import_key(): void
     {
         $viewer = Role::create([
@@ -718,6 +772,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $this->adminGet($this->createAdmin(['role_id' => $importer->id]), $url)->assertOk();
     }
 
+    /**
+     * Test stats not found.
+     */
     public function test_stats_not_found(): void
     {
         $admin = $this->createAdmin();
@@ -725,6 +782,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test stats requires token.
+     */
     public function test_stats_requires_token(): void
     {
         $id = $this->insertImport();
@@ -732,18 +792,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
-    /* ------------------------------------------------------------------ */
-    /* Downloads (binary, REST-only) */
-    /* ------------------------------------------------------------------ */
-
-    protected function adminBinaryGet(Admin $admin, string $url): TestResponse
-    {
-        return $this->get($url, array_merge(
-            $this->adminHeaders($admin),
-            ['Accept' => 'application/octet-stream'],
-        ));
-    }
-
+    /**
+     * Test download streams file.
+     */
     public function test_download_streams_file(): void
     {
         Storage::fake('private');
@@ -758,17 +809,22 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($response->headers->get('Content-Disposition'))->toContain('attachment');
     }
 
+    /**
+     * Test download missing file returns 404.
+     */
     public function test_download_missing_file_returns_404(): void
     {
         Storage::fake('private');
         $admin = $this->createAdmin();
-        // file_path is NOT NULL — point at a path that does not exist on disk.
         $id = $this->insertImport(['file_path' => 'imports/does-not-exist-'.uniqid().'.csv']);
 
         $response = $this->adminBinaryGet($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/download');
         $response->assertStatus(404);
     }
 
+    /**
+     * Test download error report missing returns 404.
+     */
     public function test_download_error_report_missing_returns_404(): void
     {
         Storage::fake('private');
@@ -779,6 +835,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test download error report streams when present.
+     */
     public function test_download_error_report_streams_when_present(): void
     {
         Storage::fake('private');
@@ -792,6 +851,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test download sample streams for valid type format.
+     */
     public function test_download_sample_streams_for_valid_type_format(): void
     {
         Storage::fake('local');
@@ -805,6 +867,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($response->headers->get('Content-Disposition'))->toContain('attachment');
     }
 
+    /**
+     * Test download sample invalid format returns 422.
+     */
     public function test_download_sample_invalid_format_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -812,6 +877,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test download sample unknown type returns 404.
+     */
     public function test_download_sample_unknown_type_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -819,6 +887,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test cancel allowed for custom role with core import key.
+     */
     public function test_cancel_allowed_for_custom_role_with_core_import_key(): void
     {
         $role = Role::create([
@@ -841,6 +912,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect(\DB::table('imports')->where('id', $id)->value('state'))->toBe('cancelled');
     }
 
+    /**
+     * Test validate is not refused for custom role with core import key.
+     */
     public function test_validate_is_not_refused_for_custom_role_with_core_import_key(): void
     {
         $role = Role::create([
@@ -863,6 +937,9 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($response->getStatusCode())->not->toBe(403);
     }
 
+    /**
+     * Test cancel refused for custom role with only edit key.
+     */
     public function test_cancel_refused_for_custom_role_with_only_edit_key(): void
     {
         $role = Role::create([
@@ -881,5 +958,132 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $id = $this->insertImport(['state' => 'pending']);
 
         $this->adminPost($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/cancel')->assertStatus(403);
+    }
+
+    /**
+     * Insert import.
+     */
+    protected function insertImport(array $overrides = []): int
+    {
+        return (int) \DB::table('imports')->insertGetId(array_merge([
+            'state' => 'pending',
+            'process_in_queue' => 1,
+            'type' => 'product',
+            'action' => 'append',
+            'validation_strategy' => 'stop-on-errors',
+            'allowed_errors' => 0,
+            'processed_rows_count' => 0,
+            'invalid_rows_count' => 0,
+            'errors_count' => 0,
+            'field_separator' => ',',
+            'file_path' => 'imports/sample-'.uniqid().'.csv',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Create admin without permissions.
+     */
+    protected function createAdminWithoutPermissions(): Admin
+    {
+        $role = Role::create([
+            'name' => 'NoDataTransfer '.uniqid(),
+            'description' => 'no perms',
+            'permission_type' => 'custom',
+            'permissions' => ['catalog.products'],
+        ]);
+
+        return $this->createAdmin(['role_id' => $role->id]);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Create */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Sample csv.
+     */
+    protected function sampleCsv(): UploadedFile
+    {
+        return UploadedFile::fake()->createWithContent(
+            'products.csv',
+            "sku,type,name\nps4,simple,Sample\n",
+        );
+    }
+
+    /**
+     * Sample images archive.
+     */
+    protected function sampleImagesArchive(): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'imgs').'.zip';
+
+        $zip = new ZipArchive;
+        $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $zip->addFromString('shirt.jpg', 'not-really-a-jpeg');
+        $zip->close();
+
+        return new UploadedFile($path, 'images.zip', 'application/zip', null, true);
+    }
+
+    /**
+     * Create payload.
+     */
+    protected function createPayload(array $overrides = []): array
+    {
+        return array_merge([
+            'type' => 'products',
+            'action' => 'append',
+            'validation_strategy' => 'stop-on-errors',
+            'allowed_errors' => 0,
+            'field_separator' => ',',
+            'image_source' => 'directory',
+            'images_directory_path' => 'product-images',
+        ], $overrides);
+    }
+
+    /**
+     * Admin multipart.
+     */
+    protected function adminMultipart(Admin $admin, string $method, string $url, array $data): TestResponse
+    {
+        $files = array_filter($data, fn ($v) => $v instanceof UploadedFile);
+        $params = array_filter($data, fn ($v) => ! $v instanceof UploadedFile);
+
+        return $this->call(
+            $method,
+            $url,
+            $params,
+            [],
+            $files,
+            $this->transformHeadersToServerVars(array_merge(
+                $this->adminHeaders($admin),
+                ['Accept' => 'application/json'],
+            )),
+        );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Downloads (binary, REST-only) */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Admin binary get.
+     */
+    protected function adminBinaryGet(Admin $admin, string $url): TestResponse
+    {
+        return $this->get($url, array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'application/octet-stream'],
+        ));
     }
 }

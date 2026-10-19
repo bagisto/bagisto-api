@@ -16,11 +16,17 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
     use BuildsAdminShipment;
     use TranslatesActionPayload;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminOrderActionGuard $guard,
         protected ShipmentRepository $shipmentRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminShipment
     {
         $admin = $this->guard->resolveAdmin();
@@ -72,6 +78,9 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
         return $this->buildAdminShipment($shipment->fresh(['items', 'items.order_item', 'order', 'order.addresses', 'order.payment']));
     }
 
+    /**
+     * Extract source.
+     */
     protected function extractSource(mixed $data, array $context): ?int
     {
         $value = null;
@@ -90,6 +99,9 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
         return $value !== null ? (int) $value : null;
     }
 
+    /**
+     * Extract items.
+     */
     protected function extractItems(mixed $data, array $context): array
     {
         if (
@@ -107,6 +119,9 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
             ?? []);
     }
 
+    /**
+     * Extract field.
+     */
     protected function extractField(mixed $data, array $context, string $camel, string $snake): ?string
     {
         if (
@@ -125,6 +140,9 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
         return $value !== null ? (string) $value : null;
     }
 
+    /**
+     * Validate inventory.
+     */
     protected function validateInventory(Order $order, array $nested): void
     {
         $byId = $order->items->keyBy('id');
@@ -154,11 +172,6 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
                 }
 
                 if ($isComposite) {
-                    // Mirror core: validate each child's proportional qty against
-                    // its own qty_to_ship AND the child product's inventory at the
-                    // chosen source. Bundle/configurable/grouped parents have no
-                    // stock of their own, so checking the parent (as the old code
-                    // did) silently passed any quantity.
                     $this->assertCompositeChildrenShippable($item, (int) $sourceId, $qty);
                 } else {
                     $this->assertStockAvailable($item, (int) $sourceId, $qty);
@@ -167,6 +180,9 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Whether composite.
+     */
     protected function isComposite($item): bool
     {
         try {
@@ -176,6 +192,9 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert composite children shippable.
+     */
     protected function assertCompositeChildrenShippable($item, int $sourceId, int $qty): void
     {
         foreach ($item->children as $child) {
@@ -200,6 +219,9 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert stock available.
+     */
     protected function assertStockAvailable($item, int $sourceId, int $qty): void
     {
         if (! $item->product) {

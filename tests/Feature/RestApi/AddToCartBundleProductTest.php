@@ -8,10 +8,60 @@ use Webkul\BagistoApi\Tests\RestApiTestCase;
 
 class AddToCartBundleProductTest extends RestApiTestCase
 {
+    /**
+     * The cart tokens url.
+     */
     private string $cartTokensUrl = '/api/shop/cart-tokens';
 
+    /**
+     * The add product url.
+     */
     private string $addProductUrl = '/api/shop/add-product-in-cart';
 
+    /**
+     * Test add bundle product to cart as guest.
+     */
+    public function test_add_bundle_product_to_cart_as_guest(): void
+    {
+        $token = $this->createGuestCartToken();
+        $payload = $this->createBundleProductPayload();
+
+        $response = $this->postWithToken($this->addProductUrl, $token, [
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'bundleOptions' => $payload['bundleOptions'],
+            'bundleOptionQty' => $payload['bundleOptionQty'],
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('isGuest'))->toBeTrue();
+        expect((int) $response->json('itemsCount'))->toBeGreaterThan(0);
+    }
+
+    /**
+     * Test add bundle product to customer cart.
+     */
+    public function test_add_bundle_product_to_customer_cart(): void
+    {
+        $payload = $this->createBundleProductPayload();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'bundleOptions' => $payload['bundleOptions'],
+            'bundleOptionQty' => $payload['bundleOptionQty'],
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('isGuest'))->toBeFalse();
+    }
+
+    /**
+     * Create guest cart token.
+     */
     private function createGuestCartToken(): string
     {
         $response = $this->publicPost($this->cartTokensUrl, ['createNew' => true]);
@@ -20,6 +70,9 @@ class AddToCartBundleProductTest extends RestApiTestCase
         return (string) ($response->json('cartToken') ?? $response->json('sessionToken'));
     }
 
+    /**
+     * Post with token.
+     */
     private function postWithToken(string $url, string $token, array $payload): TestResponse
     {
         return $this->withHeaders([
@@ -28,6 +81,9 @@ class AddToCartBundleProductTest extends RestApiTestCase
         ])->postJson($url, $payload);
     }
 
+    /**
+     * Create bundle product payload.
+     */
     private function createBundleProductPayload(): array
     {
         $bundle = $this->createBaseProduct('bundle');
@@ -62,40 +118,5 @@ class AddToCartBundleProductTest extends RestApiTestCase
             'bundleOptions' => json_encode([(string) $optionId => [$bundleOptionProductId]], JSON_UNESCAPED_SLASHES),
             'bundleOptionQty' => json_encode([(string) $optionId => 1], JSON_UNESCAPED_SLASHES),
         ];
-    }
-
-    public function test_add_bundle_product_to_cart_as_guest(): void
-    {
-        $token = $this->createGuestCartToken();
-        $payload = $this->createBundleProductPayload();
-
-        $response = $this->postWithToken($this->addProductUrl, $token, [
-            'productId' => $payload['productId'],
-            'quantity' => 1,
-            'bundleOptions' => $payload['bundleOptions'],
-            'bundleOptionQty' => $payload['bundleOptionQty'],
-        ]);
-
-        expect($response->getStatusCode())->toBeIn([200, 201]);
-        expect($response->json('success'))->toBeTrue();
-        expect($response->json('isGuest'))->toBeTrue();
-        expect((int) $response->json('itemsCount'))->toBeGreaterThan(0);
-    }
-
-    public function test_add_bundle_product_to_customer_cart(): void
-    {
-        $payload = $this->createBundleProductPayload();
-        $customer = $this->createCustomer();
-
-        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId' => $payload['productId'],
-            'quantity' => 1,
-            'bundleOptions' => $payload['bundleOptions'],
-            'bundleOptionQty' => $payload['bundleOptionQty'],
-        ]);
-
-        expect($response->getStatusCode())->toBeIn([200, 201]);
-        expect($response->json('success'))->toBeTrue();
-        expect($response->json('isGuest'))->toBeFalse();
     }
 }

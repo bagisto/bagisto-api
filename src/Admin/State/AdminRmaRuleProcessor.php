@@ -21,11 +21,17 @@ class AdminRmaRuleProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private readonly RMARuleRepository $rmaRuleRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof AdminRmaRuleCreateInput) {
@@ -55,6 +61,9 @@ class AdminRmaRuleProcessor implements ProcessorInterface
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }
 
+    /**
+     * Handle create.
+     */
     private function handleCreate(AdminRmaRuleCreateInput $input): AdminRmaRule
     {
         $this->authorizedAdmin('sales.rma.rules.create', 'bagistoapi::app.admin.rma.no-permission');
@@ -79,6 +88,9 @@ class AdminRmaRuleProcessor implements ProcessorInterface
         return $this->map((int) $rule->id);
     }
 
+    /**
+     * Handle update.
+     */
     private function handleUpdate(int $id, AdminRmaRuleUpdateInput $input): AdminRmaRule
     {
         $this->authorizedAdmin('sales.rma.rules.edit', 'bagistoapi::app.admin.rma.no-permission');
@@ -107,6 +119,9 @@ class AdminRmaRuleProcessor implements ProcessorInterface
         return $this->map($id);
     }
 
+    /**
+     * Handle delete.
+     */
     private function handleDelete(int $id): AdminRmaRule
     {
         $this->authorizedAdmin('sales.rma.rules.delete', 'bagistoapi::app.admin.rma.no-permission');
@@ -128,6 +143,9 @@ class AdminRmaRuleProcessor implements ProcessorInterface
         return $snapshot;
     }
 
+    /**
+     * Validate payload.
+     */
     private function validatePayload(array $data): void
     {
         $validator = Validator::make($data, [
@@ -141,6 +159,9 @@ class AdminRmaRuleProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Map.
+     */
     private function map(int $id): AdminRmaRule
     {
         return AdminRmaRuleItemProvider::toDto(DB::table('rma_rules')->where('id', $id)->first());

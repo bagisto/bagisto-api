@@ -12,6 +12,9 @@ use Webkul\BagistoApi\Service\GenericIdNormalizer;
 
 class GdprRequestQueryResolver implements QueryItemResolverInterface
 {
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?object $item, array $context): object
     {
         if (! core()->getConfigData('general.gdpr.settings.enabled')) {

@@ -19,13 +19,6 @@ use Webkul\Sales\Models\OrderTransaction;
 use Webkul\Sales\Models\Refund;
 use Webkul\Sales\Models\Shipment;
 
-/**
- * Inline fixture factories for Admin API tests.
- *
- * Replaces the "look up existing row, skip if missing" pattern with explicit
- * fixture creation so tests don't depend on seeded dev data. Used by the
- * Admin Cart / Checkout / OrderAction / OrderCancel suites.
- */
 trait AdminFixtureFactory
 {
     /**
@@ -46,7 +39,6 @@ trait AdminFixtureFactory
             return $existing;
         }
 
-        // Fall back: create one via the test base's helper if available.
         if (method_exists($this, 'createBaseProduct')) {
             $product = $this->createBaseProduct('simple');
             if (method_exists($this, 'ensureInventory')) {
@@ -56,7 +48,6 @@ trait AdminFixtureFactory
             return $product;
         }
 
-        // Last resort.
         return Product::factory()->create(['type' => 'simple']);
     }
 
@@ -104,9 +95,6 @@ trait AdminFixtureFactory
 
             return $cart->id;
         } catch (\Throwable $e) {
-            // If CartFacade::addProduct fails (out of stock, channel issues etc.),
-            // build the bare cart row by hand so tests that don't need items
-            // can at least exercise the auth + sequence guards.
             if (
                 isset($cart)
                 && $cart instanceof Cart
@@ -271,12 +259,7 @@ trait AdminFixtureFactory
 
     /**
      * Build a draft cart ready to be placed as an order: items, billing +
-     * shipping address, shipping method (`flatrate_flatrate`) and a payment
-     * method (`cashondelivery`). Returns the fresh cart.
-     *
-     * Best-effort — if Bagisto's cart engine can't fully prepare the cart in
-     * the current env (e.g. no shipping rates), the cart is returned partial
-     * and the caller can detect via `$cart->shipping_method` / `payment->method`.
+     * shipping address, shipping method (`flatrate_flatrate`) and a payment.
      */
     protected function bootstrapPlaceableCart(): Cart
     {
@@ -328,7 +311,6 @@ trait AdminFixtureFactory
             CartFacade::savePaymentMethod(['method' => 'cashondelivery']);
             CartFacade::collectTotals();
         } catch (\Throwable) {
-            // partial — caller handles
         }
 
         return $cart->fresh();
@@ -336,8 +318,7 @@ trait AdminFixtureFactory
 
     /**
      * Bootstrap an Order whose items have qty_to_invoice > 0. Returns the
-     * Order with `items.product` and `billing_address` loaded so the
-     * InvoiceRepository::create path can find addresses.
+     * Order with `items.product` and `billing_address` loaded so the.
      */
     protected function bootstrapInvoiceableOrder(string $status = 'pending'): Order
     {
@@ -382,8 +363,7 @@ trait AdminFixtureFactory
 
     /**
      * Create an Order + a paid Invoice + InvoiceItem row. Returns the Order
-     * with `invoices.items` loaded. Used by tests that need an existing
-     * Invoice id without going through the InvoiceRepository pipeline.
+     * with `invoices.items` loaded. Used by tests that need an existing.
      */
     protected function bootstrapOrderWithInvoice(string $orderStatus = 'pending'): Order
     {
@@ -572,7 +552,6 @@ trait AdminFixtureFactory
             ]);
             CartFacade::collectTotals();
         } catch (\Throwable) {
-            // Fall back: assemble cart + cart_items directly.
             $cart = $this->createBareDraftCart($customer);
             $cart->is_active = 1;
             $cart->save();
@@ -656,9 +635,7 @@ trait AdminFixtureFactory
 
     /**
      * Ensure the `color` + `size` configurable attributes and at least 2
-     * options each exist (per installer seeder). Returns `[colorId, sizeId,
-     * colorOptionIds[], sizeOptionIds[]]`. Best-effort — if the attribute
-     * rows are missing entirely, seeds minimal rows.
+     * options each exist (per installer seeder). Returns `[colorId, sizeId,.
      */
     protected function ensureColorSizeAttributesWithOptions(): array
     {

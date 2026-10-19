@@ -12,19 +12,11 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Customer\Models\Customer;
 
-/**
- * Fresh Create-Order entry — POST /api/admin/customers/{customerId}/draft-carts
- * + GraphQL `createAdminDraftCart`.
- *
- * Bootstraps an empty admin draft cart (`is_active = false`) for the given
- * customer. Distinct from `AdminReorderProcessor` (Reorder entry); same end
- * state — a draft cart the admin can finalise via the cart-keyed write
- * endpoints (`POST /api/admin/carts/{id}/items`, etc).
- *
- * Mirrors `Webkul\Admin\Http\Controllers\Sales\CartController::store`.
- */
 class AdminDraftCartProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminDraftCart
     {
         AdminReadPermissions::authorize(null, null, 'sales.orders.create');
@@ -73,6 +65,9 @@ class AdminDraftCartProcessor implements ProcessorInterface
         );
     }
 
+    /**
+     * Resolve customer id.
+     */
     protected function resolveCustomerId(array $uriVariables, array $context, mixed $data): int
     {
         $raw = $uriVariables['customerId']
@@ -86,6 +81,9 @@ class AdminDraftCartProcessor implements ProcessorInterface
         return (int) ($raw ?? 0);
     }
 
+    /**
+     * Result.
+     */
     protected function result(?int $cartId, ?int $customerId, bool $success, string $message): AdminDraftCart
     {
         $draftCart = new AdminDraftCart;

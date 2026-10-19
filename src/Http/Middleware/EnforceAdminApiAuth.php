@@ -8,23 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Path-scoped admin authentication gate.
- *
- * API Platform applies its middleware list to every API route globally — we
- * can't selectively bind `auth:admin-api` only to `/api/admin/*` via the
- * config. This middleware sits in the global pipeline and short-circuits to
- * 401 when the request hits `/api/admin/*` without a valid admin Bearer
- * token resolvable by `Webkul\BagistoApi\Admin\Auth\AdminApiGuard`.
- *
- * Other routes (`/api/shop/*`, `/api/graphql`, documentation pages, etc.)
- * pass through untouched.
- *
- * Throttling is applied by the sibling {@see ThrottleAdminApi} middleware,
- * which scopes the `admin-api` limiter to the same path prefix.
- */
 class EnforceAdminApiAuth
 {
+    /**
+     * Handle the request.
+     */
     public function handle(Request $request, Closure $next): Response
     {
         $path = $request->getPathInfo();
@@ -33,9 +21,6 @@ class EnforceAdminApiAuth
             return $next($request);
         }
 
-        // Allow documentation / OpenAPI spec endpoints without a Bearer.
-        // Mirrors the GET-bypass already in VerifyStorefrontKey for /api/admin
-        // and /api/admin/docs.
         if ($this->isDocumentationEndpoint($request)) {
             return $next($request);
         }
@@ -52,6 +37,9 @@ class EnforceAdminApiAuth
         return $next($request);
     }
 
+    /**
+     * Whether documentation endpoint.
+     */
     protected function isDocumentationEndpoint(Request $request): bool
     {
         if ($request->method() !== 'GET') {

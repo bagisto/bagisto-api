@@ -9,30 +9,7 @@ use Webkul\Product\Models\Product;
 class CompareItemTest extends GraphQLTestCase
 {
     /**
-     * Create test data - customer, products and compare items
-     */
-    private function createTestData(): array
-    {
-        $this->seedRequiredData();
-
-        $customer = $this->createCustomer();
-        $product1 = Product::factory()->create();
-        $product2 = Product::factory()->create();
-
-        $compareItem1 = CompareItem::factory()->create([
-            'customer_id' => $customer->id,
-            'product_id' => $product1->id,
-        ]);
-        $compareItem2 = CompareItem::factory()->create([
-            'customer_id' => $customer->id,
-            'product_id' => $product2->id,
-        ]);
-
-        return compact('customer', 'product1', 'product2', 'compareItem1', 'compareItem2');
-    }
-
-    /**
-     * Test: Query all compare items collection
+     * Test: Query all compare items collection.
      */
     public function test_get_compare_items_collection(): void
     {
@@ -77,7 +54,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single compare item by ID
+     * Test: Query single compare item by ID.
      */
     public function test_get_compare_item_by_id(): void
     {
@@ -112,7 +89,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single compare item rejects unauthenticated requests
+     * Test: Query single compare item rejects unauthenticated requests.
      */
     public function test_get_compare_item_by_id_requires_auth(): void
     {
@@ -135,7 +112,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: A customer cannot read another customer's compare item by ID
+     * Test: A customer cannot read another customer's compare item by ID.
      */
     public function test_get_compare_item_by_id_rejects_other_customer(): void
     {
@@ -160,7 +137,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Timestamps are returned in ISO8601 format
+     * Test: Timestamps are returned in ISO8601 format.
      */
     public function test_compare_item_timestamps_are_iso8601_format(): void
     {
@@ -190,7 +167,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query compare items with pagination (first)
+     * Test: Query compare items with pagination (first).
      */
     public function test_compare_items_pagination_first(): void
     {
@@ -220,7 +197,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query compare items with product relationship
+     * Test: Query compare items with product relationship.
      */
     public function test_query_compare_items_with_product(): void
     {
@@ -250,7 +227,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query all fields of compare item
+     * Test: Query all fields of compare item.
      */
     public function test_query_all_compare_item_fields(): void
     {
@@ -286,7 +263,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query returns appropriate error for invalid ID
+     * Test: Query returns appropriate error for invalid ID.
      */
     public function test_invalid_compare_item_id_returns_error(): void
     {
@@ -309,7 +286,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Pagination with cursor
+     * Test: Pagination with cursor.
      */
     public function test_compare_items_pagination_with_cursor(): void
     {
@@ -346,7 +323,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Numeric ID is an integer
+     * Test: Numeric ID is an integer.
      */
     public function test_compare_item_numeric_id_is_integer(): void
     {
@@ -373,7 +350,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Multiple compare items can be queried
+     * Test: Multiple compare items can be queried.
      */
     public function test_query_multiple_compare_items(): void
     {
@@ -403,7 +380,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Schema introspection for CompareItem
+     * Test: Schema introspection for CompareItem.
      */
     public function test_compare_item_introspection_query(): void
     {
@@ -432,7 +409,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Compare items are properly sorted by creation date
+     * Test: Compare items are properly sorted by creation date.
      */
     public function test_compare_items_sorted_by_created_at(): void
     {
@@ -456,12 +433,11 @@ class CompareItemTest extends GraphQLTestCase
         $response->assertOk();
         $edges = $response->json('data.compareItems.edges');
 
-        // Verify we have items
         expect($edges)->not()->toBeEmpty();
     }
 
     /**
-     * Test: Get all compare items with variables and full fields (matches spec query)
+     * Test: Get all compare items with variables and full fields (matches spec query).
      */
     public function test_get_all_compare_items_with_variables_and_full_fields(): void
     {
@@ -523,13 +499,12 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Get compare items next page using cursor pagination (matches spec)
+     * Test: Get compare items next page using cursor pagination (matches spec).
      */
     public function test_get_compare_items_next_page_with_cursor(): void
     {
         $testData = $this->createTestData();
 
-        // First get the first item's cursor
         $firstQuery = <<<'GQL'
             query GetCompareItems($first: Int, $after: String) {
               compareItems(first: $first, after: $after) {
@@ -563,7 +538,6 @@ class CompareItemTest extends GraphQLTestCase
         $cursor = $firstResponse->json('data.compareItems.edges.0.cursor');
         expect($cursor)->not()->toBeNull();
 
-        // Now fetch next page using that cursor
         $nextResponse = $this->authenticatedGraphQL($testData['customer'], $firstQuery, [
             'first' => 10,
             'after' => $cursor,
@@ -578,7 +552,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Get single compare item with product price/sku and customer email/firstName (matches spec)
+     * Test: Get single compare item with product price/sku and customer email/firstName (matches spec).
      */
     public function test_get_single_compare_item_with_full_fields(): void
     {
@@ -620,7 +594,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Create compare item via mutation
+     * Test: Create compare item via mutation.
      */
     public function test_create_compare_item_mutation(): void
     {
@@ -668,7 +642,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Create compare item using createCompareItemInput variable type (matches spec)
+     * Test: Create compare item using createCompareItemInput variable type (matches spec).
      */
     public function test_create_compare_item_mutation_with_input_variable(): void
     {
@@ -715,7 +689,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Create compare item via inline GraphQL input literal
+     * Test: Create compare item via inline GraphQL input literal.
      */
     public function test_create_compare_item_mutation_with_inline_input_literal(): void
     {
@@ -746,7 +720,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete compare item via mutation
+     * Test: Delete compare item via mutation.
      */
     public function test_delete_compare_item_mutation(): void
     {
@@ -783,7 +757,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete compare item using deleteCompareItemInput variable type with product fields (matches spec)
+     * Test: Delete compare item using deleteCompareItemInput variable type with product fields (matches spec).
      */
     public function test_delete_compare_item_mutation_with_input_variable_and_product_fields(): void
     {
@@ -825,7 +799,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete compare item via inline GraphQL input literal
+     * Test: Delete compare item via inline GraphQL input literal.
      */
     public function test_delete_compare_item_mutation_with_inline_input_literal(): void
     {
@@ -858,7 +832,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Create compare item mutation with duplicate product
+     * Test: Create compare item mutation with duplicate product.
      */
     public function test_create_duplicate_compare_item_mutation_fails(): void
     {
@@ -895,7 +869,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete all compare items successfully
+     * Test: Delete all compare items successfully.
      */
     public function test_delete_all_compare_items(): void
     {
@@ -926,7 +900,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete all compare items requires authentication
+     * Test: Delete all compare items requires authentication.
      */
     public function test_delete_all_compare_items_requires_authentication(): void
     {
@@ -949,7 +923,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete all compare items with no items returns zero count
+     * Test: Delete all compare items with no items returns zero count.
      */
     public function test_delete_all_compare_items_with_no_items(): void
     {
@@ -978,7 +952,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Create compare item requires authentication
+     * Test: Create compare item requires authentication.
      */
     public function test_create_compare_item_requires_authentication(): void
     {
@@ -1002,7 +976,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Create compare item with non-existent product returns error
+     * Test: Create compare item with non-existent product returns error.
      */
     public function test_create_compare_item_with_nonexistent_product_returns_error(): void
     {
@@ -1028,7 +1002,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete compare item requires authentication
+     * Test: Delete compare item requires authentication.
      */
     public function test_delete_compare_item_requires_authentication(): void
     {
@@ -1051,7 +1025,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete non-existent compare item returns error
+     * Test: Delete non-existent compare item returns error.
      */
     public function test_delete_nonexistent_compare_item_returns_error(): void
     {
@@ -1079,7 +1053,7 @@ class CompareItemTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Cannot delete another user's compare item
+     * Test: Cannot delete another user's compare item.
      */
     public function test_cannot_delete_other_users_compare_item(): void
     {
@@ -1114,5 +1088,28 @@ class CompareItemTest extends GraphQLTestCase
             ->toMatch('/[Uu]nauthorized|cannot|not allowed/i');
 
         expect(CompareItem::find($compareItem->id))->not()->toBeNull();
+    }
+
+    /**
+     * Create test data - customer, products and compare items.
+     */
+    private function createTestData(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $product1 = Product::factory()->create();
+        $product2 = Product::factory()->create();
+
+        $compareItem1 = CompareItem::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product1->id,
+        ]);
+        $compareItem2 = CompareItem::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product2->id,
+        ]);
+
+        return compact('customer', 'product1', 'product2', 'compareItem1', 'compareItem2');
     }
 }

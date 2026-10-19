@@ -8,55 +8,130 @@ use ApiPlatform\Metadata\ApiResource;
 #[ApiResource(operations: [], graphQlOperations: [])]
 class ProductDetailDto
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The sku.
+     */
     public ?string $sku = null;
 
+    /**
+     * The type.
+     */
     public ?string $type = null;
 
+    /**
+     * The name.
+     */
     public ?string $name = null;
 
+    /**
+     * The url key.
+     */
     public ?string $url_key = null;
 
+    /**
+     * The status.
+     */
     public ?bool $status = null;
 
+    /**
+     * The description.
+     */
     public ?string $description = null;
 
+    /**
+     * The short description.
+     */
     public ?string $short_description = null;
 
+    /**
+     * The meta title.
+     */
     public ?string $meta_title = null;
 
+    /**
+     * The meta description.
+     */
     public ?string $meta_description = null;
 
+    /**
+     * The meta keywords.
+     */
     public ?string $meta_keywords = null;
 
+    /**
+     * The price.
+     */
     public ?float $price = null;
 
+    /**
+     * The special price.
+     */
     public ?float $special_price = null;
 
+    /**
+     * The new.
+     */
     public ?bool $new = null;
 
+    /**
+     * The featured.
+     */
     public ?bool $featured = null;
 
+    /**
+     * The minimum price.
+     */
     public ?float $minimum_price = null;
 
+    /**
+     * The maximum price.
+     */
     public ?float $maximum_price = null;
 
+    /**
+     * The formatted price.
+     */
     public ?string $formatted_price = null;
 
+    /**
+     * The formatted special price.
+     */
     public ?string $formatted_special_price = null;
 
+    /**
+     * The formatted minimum price.
+     */
     public ?string $formatted_minimum_price = null;
 
+    /**
+     * The formatted maximum price.
+     */
     public ?string $formatted_maximum_price = null;
 
+    /**
+     * The base image url.
+     */
     public ?string $base_image_url = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 
+    /**
+     * The is saleable.
+     */
     public ?bool $is_saleable = null;
 
     /** Whether this product is in the authenticated customer's wishlist (current channel): 1 = yes, 0 = no (0 for guests). */
@@ -67,18 +142,25 @@ class ProductDetailDto
 
     /**
      * Dynamic list of the product's attribute values, resolved from its attribute
-     * family (channel/locale-aware) — so any attribute (allow_rma, material, custom,
-     * ...) appears here without a package change. Each entry:
-     * { code, label, type, value }. Detail-only.
+     * family (channel/locale-aware) — so any attribute (allow_rma, material, custom,.
      *
      * @var array<int, array<string, mixed>>
      */
     public array $attributes = [];
 
+    /**
+     * The color.
+     */
     public ?int $color = null;
 
+    /**
+     * The size.
+     */
     public ?int $size = null;
 
+    /**
+     * The brand.
+     */
     public ?int $brand = null;
 
     /** @var CategorySummaryDto[] */
@@ -89,6 +171,9 @@ class ProductDetailDto
     #[ApiProperty(readableLink: true)]
     public array $channels = [];
 
+    /**
+     * The attribute family.
+     */
     #[ApiProperty(readableLink: true)]
     public ?AttributeFamilySummaryDto $attribute_family = null;
 

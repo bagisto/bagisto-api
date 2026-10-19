@@ -16,19 +16,22 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Theme\Models\Section;
 use Webkul\Theme\Repositories\SectionRepository;
 
-/**
- * Create / update / delete for appearance sections.
- */
 class AdminAppearanceSectionProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
     use MapsAppearanceSection;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SectionRepository $sectionRepository,
         protected AppearanceScopeGuard $scope,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if (
@@ -52,6 +55,9 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
         throw new InvalidInputException(__('bagistoapi::app.admin.appearance.section.invalid-payload'), 422);
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(AdminAppearanceSectionCreateInput $input, array $uriVariables, array $context): mixed
     {
         $this->authorizedAdmin('appearance.sections.create', 'bagistoapi::app.admin.appearance.no-permission');
@@ -97,6 +103,9 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
         );
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(AdminAppearanceSectionUpdateInput $input, array $uriVariables, array $context): mixed
     {
         $this->authorizedAdmin('appearance.sections.edit', 'bagistoapi::app.admin.appearance.no-permission');
@@ -174,6 +183,9 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
         );
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(mixed $data, Operation $operation, array $uriVariables, array $context): mixed
     {
         $this->authorizedAdmin('appearance.sections.delete', 'bagistoapi::app.admin.appearance.no-permission');
@@ -202,6 +214,9 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Requested channel id.
+     */
     protected function requestedChannelId(?int $fromInput, array $args): ?int
     {
         $channel = $fromInput
@@ -237,6 +252,9 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
         return is_array($options) ? $options : [];
     }
 
+    /**
+     * Guard single footer.
+     */
     protected function guardSingleFooter(?string $type, ?string $themeCode, int $channelId, ?int $ignoreId = null): void
     {
         if ($type !== Section::FOOTER_LINKS) {
@@ -255,6 +273,9 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Validate payload.
+     */
     protected function validatePayload(array $payload, array $rules): void
     {
         $validator = Validator::make($payload, $rules);
@@ -264,6 +285,9 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Present.
+     */
     protected function present(Section $section, array $context, string $message): mixed
     {
         if ($this->isGraphQL($context)) {

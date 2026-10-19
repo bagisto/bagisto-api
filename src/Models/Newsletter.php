@@ -138,16 +138,28 @@ use Webkul\BagistoApi\State\Processor\NewsletterUnsubscriptionProcessor;
 )]
 class Newsletter
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The customer email.
+     */
     #[ApiProperty(readable: false, writable: true)]
     #[Groups(['query', 'mutation'])]
     public ?string $customerEmail;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public bool $success;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $message;
 }

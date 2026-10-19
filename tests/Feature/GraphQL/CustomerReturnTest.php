@@ -16,53 +16,9 @@ use Webkul\Sales\Models\OrderItem;
 
 class CustomerReturnTest extends GraphQLTestCase
 {
-    private function createReturn($customer): array
-    {
-        $channel = Channel::first();
-        $product = Product::factory()->create();
-
-        $order = Order::factory()->create([
-            'customer_id' => $customer->id,
-            'customer_email' => $customer->email,
-            'channel_id' => $channel->id,
-            'status' => 'completed',
-        ]);
-
-        $orderItem = OrderItem::factory()->create([
-            'order_id' => $order->id,
-            'product_id' => $product->id,
-            'sku' => 'RMA-SKU-1',
-            'type' => 'simple',
-            'name' => 'Returnable Product',
-        ]);
-
-        $status = RMAStatus::firstOrCreate(
-            ['id' => 1],
-            [
-                'title' => 'Pending',
-                'status' => 1,
-                'color' => '#facc15',
-                'default' => 1,
-            ]
-        );
-
-        $rma = RMA::create([
-            'order_id' => $order->id,
-            'rma_status_id' => $status->id,
-            'information' => 'Item arrived damaged',
-            'package_condition' => 'opened',
-        ]);
-
-        RMAItem::create([
-            'rma_id' => $rma->id,
-            'order_item_id' => $orderItem->id,
-            'quantity' => 1,
-            'resolution' => 'return',
-        ]);
-
-        return compact('customer', 'order', 'orderItem', 'rma', 'status');
-    }
-
+    /**
+     * Test list returns own returns.
+     */
     public function test_list_returns_own_returns(): void
     {
         $this->seedRequiredData();
@@ -99,6 +55,9 @@ class CustomerReturnTest extends GraphQLTestCase
         expect($node['item']['sku'])->toBe('RMA-SKU-1');
     }
 
+    /**
+     * Test view own return.
+     */
     public function test_view_own_return(): void
     {
         $this->seedRequiredData();
@@ -131,6 +90,9 @@ class CustomerReturnTest extends GraphQLTestCase
         expect($node['item']['resolution'])->toBe('return');
     }
 
+    /**
+     * Test cannot view another customers return.
+     */
     public function test_cannot_view_another_customers_return(): void
     {
         $this->seedRequiredData();
@@ -154,6 +116,9 @@ class CustomerReturnTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test requires authentication.
+     */
     public function test_requires_authentication(): void
     {
         $this->seedRequiredData();
@@ -165,47 +130,9 @@ class CustomerReturnTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
-    private function seedEligibleOrderItem($customer): array
-    {
-        $channel = Channel::first();
-        $product = Product::factory()->create();
-
-        DB::table('product_flat')->insert([
-            'product_id' => $product->id,
-            'sku' => 'ELIGIBLE-1',
-            'name' => 'Eligible Product',
-            'url_key' => 'eligible-1-'.$product->id,
-            'status' => 1,
-            'visible_individually' => 1,
-            'locale' => app()->getLocale(),
-            'channel' => $channel->code,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $order = Order::factory()->create([
-            'customer_id' => $customer->id,
-            'customer_email' => $customer->email,
-            'channel_id' => $channel->id,
-            'status' => 'completed',
-        ]);
-
-        $orderItem = OrderItem::factory()->create([
-            'order_id' => $order->id,
-            'product_id' => $product->id,
-            'sku' => 'ELIGIBLE-1',
-            'type' => 'simple',
-            'name' => 'Eligible Product',
-            'qty_ordered' => 2,
-            'qty_invoiced' => 2,
-            'qty_refunded' => 0,
-            'qty_canceled' => 0,
-            'rma_return_period' => 30,
-        ]);
-
-        return compact('order', 'orderItem', 'product');
-    }
-
+    /**
+     * Test create return.
+     */
     public function test_create_return(): void
     {
         $this->seedRequiredData();
@@ -253,6 +180,9 @@ class CustomerReturnTest extends GraphQLTestCase
         ]);
     }
 
+    /**
+     * Test create rejects qty over returnable.
+     */
     public function test_create_rejects_qty_over_returnable(): void
     {
         $this->seedRequiredData();
@@ -287,6 +217,9 @@ class CustomerReturnTest extends GraphQLTestCase
         $this->assertDatabaseMissing('rma', ['order_id' => $seed['order']->id]);
     }
 
+    /**
+     * Test returnable items and reasons.
+     */
     public function test_returnable_items_and_reasons(): void
     {
         $this->seedRequiredData();
@@ -311,6 +244,9 @@ class CustomerReturnTest extends GraphQLTestCase
         expect((int) $node['forReturnQuantity'])->toBe(2);
     }
 
+    /**
+     * Test return reasons.
+     */
     public function test_return_reasons(): void
     {
         $this->seedRequiredData();
@@ -324,19 +260,9 @@ class CustomerReturnTest extends GraphQLTestCase
         expect(count($response->json('data.returnReasons')))->toBeGreaterThan(0);
     }
 
-    private function actionMutation(string $name, $customer, int $rmaId)
-    {
-        $mutation = <<<GQL
-            mutation {
-              {$name}CustomerReturn(input: {id: "/api/shop/returns/{$rmaId}"}) {
-                customerReturn { _id statusId }
-              }
-            }
-        GQL;
-
-        return $this->authenticatedGraphQL($customer, $mutation);
-    }
-
+    /**
+     * Test cancel return.
+     */
     public function test_cancel_return(): void
     {
         $this->seedRequiredData();
@@ -353,6 +279,9 @@ class CustomerReturnTest extends GraphQLTestCase
         ]);
     }
 
+    /**
+     * Test close return.
+     */
     public function test_close_return(): void
     {
         $this->seedRequiredData();
@@ -365,6 +294,9 @@ class CustomerReturnTest extends GraphQLTestCase
         expect((int) $response->json('data.closeCustomerReturn.customerReturn.statusId'))->toBe(6);
     }
 
+    /**
+     * Test cancel is refused once the package is received.
+     */
     public function test_cancel_is_refused_once_the_package_is_received(): void
     {
         $this->seedRequiredData();
@@ -381,6 +313,9 @@ class CustomerReturnTest extends GraphQLTestCase
         ]);
     }
 
+    /**
+     * Test close is refused for a solved return.
+     */
     public function test_close_is_refused_for_a_solved_return(): void
     {
         $this->seedRequiredData();
@@ -393,6 +328,9 @@ class CustomerReturnTest extends GraphQLTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test reopen canceled return.
+     */
     public function test_reopen_canceled_return(): void
     {
         $this->seedRequiredData();
@@ -407,6 +345,9 @@ class CustomerReturnTest extends GraphQLTestCase
         expect((int) $response->json('data.reopenCustomerReturn.customerReturn.statusId'))->toBe(1);
     }
 
+    /**
+     * Test send and list messages.
+     */
     public function test_send_and_list_messages(): void
     {
         $this->seedRequiredData();
@@ -443,48 +384,9 @@ class CustomerReturnTest extends GraphQLTestCase
         expect(count($listResponse->json('data.customerReturnMessages')))->toBeGreaterThan(0);
     }
 
-    private function seedCustomFields(): array
-    {
-        $text = RMACustomField::create([
-            'status' => 1,
-            'code' => 'invoice_number_'.uniqid(),
-            'label' => 'Invoice number',
-            'type' => 'text',
-            'is_required' => 1,
-            'position' => 1,
-        ]);
-
-        $select = RMACustomField::create([
-            'status' => 1,
-            'code' => 'pickup_slot_'.uniqid(),
-            'label' => 'Preferred pickup slot',
-            'type' => 'select',
-            'is_required' => 0,
-            'position' => 2,
-        ]);
-
-        RMACustomFieldOption::create([
-            'rma_custom_field_id' => $select->id,
-            'name' => 'Morning',
-            'value' => 'morning',
-        ]);
-
-        return compact('text', 'select');
-    }
-
-    private function createMutation($customer, array $input)
-    {
-        $mutation = <<<'GQL'
-            mutation CreateReturn($input: createCustomerReturnInput!) {
-              createCustomerReturn(input: $input) {
-                customerReturn { _id packageCondition customAttributes }
-              }
-            }
-        GQL;
-
-        return $this->authenticatedGraphQL($customer, $mutation, ['input' => $input]);
-    }
-
+    /**
+     * Test return custom fields are listed.
+     */
     public function test_return_custom_fields_are_listed(): void
     {
         $this->seedRequiredData();
@@ -503,6 +405,9 @@ class CustomerReturnTest extends GraphQLTestCase
         expect($select['options'][0]['value'])->toBe('morning');
     }
 
+    /**
+     * Test create stores custom field answers.
+     */
     public function test_create_stores_custom_field_answers(): void
     {
         $this->seedRequiredData();
@@ -540,6 +445,9 @@ class CustomerReturnTest extends GraphQLTestCase
         ]);
     }
 
+    /**
+     * Test create requires required custom fields.
+     */
     public function test_create_requires_required_custom_fields(): void
     {
         $this->seedRequiredData();
@@ -565,6 +473,9 @@ class CustomerReturnTest extends GraphQLTestCase
         $this->assertDatabaseMissing('rma', ['order_id' => $seed['order']->id]);
     }
 
+    /**
+     * Test create rejects a value outside the field options.
+     */
     public function test_create_rejects_a_value_outside_the_field_options(): void
     {
         $this->seedRequiredData();
@@ -595,6 +506,9 @@ class CustomerReturnTest extends GraphQLTestCase
         $this->assertDatabaseMissing('rma', ['order_id' => $seed['order']->id]);
     }
 
+    /**
+     * Test create rejects an unknown package condition.
+     */
     public function test_create_rejects_an_unknown_package_condition(): void
     {
         $this->seedRequiredData();
@@ -620,6 +534,9 @@ class CustomerReturnTest extends GraphQLTestCase
         $this->assertDatabaseMissing('rma', ['order_id' => $seed['order']->id]);
     }
 
+    /**
+     * Test a canceled return releases the item quantity.
+     */
     public function test_a_canceled_return_releases_the_item_quantity(): void
     {
         $this->seedRequiredData();
@@ -662,6 +579,9 @@ class CustomerReturnTest extends GraphQLTestCase
         expect((int) $released->json('data.returnableItems.0.rmaQuantity'))->toBe(0);
     }
 
+    /**
+     * Test list carries the action flags.
+     */
     public function test_list_carries_the_action_flags(): void
     {
         $this->seedRequiredData();
@@ -679,5 +599,163 @@ class CustomerReturnTest extends GraphQLTestCase
         expect($node['isExpired'])->not->toBeNull();
         expect($node['images'])->toBeArray();
         expect($node['customAttributes'])->toBeArray();
+    }
+
+    /**
+     * Create return.
+     */
+    private function createReturn($customer): array
+    {
+        $channel = Channel::first();
+        $product = Product::factory()->create();
+
+        $order = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
+        ]);
+
+        $orderItem = OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'RMA-SKU-1',
+            'type' => 'simple',
+            'name' => 'Returnable Product',
+        ]);
+
+        $status = RMAStatus::firstOrCreate(
+            ['id' => 1],
+            [
+                'title' => 'Pending',
+                'status' => 1,
+                'color' => '#facc15',
+                'default' => 1,
+            ]
+        );
+
+        $rma = RMA::create([
+            'order_id' => $order->id,
+            'rma_status_id' => $status->id,
+            'information' => 'Item arrived damaged',
+            'package_condition' => 'opened',
+        ]);
+
+        RMAItem::create([
+            'rma_id' => $rma->id,
+            'order_item_id' => $orderItem->id,
+            'quantity' => 1,
+            'resolution' => 'return',
+        ]);
+
+        return compact('customer', 'order', 'orderItem', 'rma', 'status');
+    }
+
+    /**
+     * Seed eligible order item.
+     */
+    private function seedEligibleOrderItem($customer): array
+    {
+        $channel = Channel::first();
+        $product = Product::factory()->create();
+
+        DB::table('product_flat')->insert([
+            'product_id' => $product->id,
+            'sku' => 'ELIGIBLE-1',
+            'name' => 'Eligible Product',
+            'url_key' => 'eligible-1-'.$product->id,
+            'status' => 1,
+            'visible_individually' => 1,
+            'locale' => app()->getLocale(),
+            'channel' => $channel->code,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $order = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
+        ]);
+
+        $orderItem = OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'ELIGIBLE-1',
+            'type' => 'simple',
+            'name' => 'Eligible Product',
+            'qty_ordered' => 2,
+            'qty_invoiced' => 2,
+            'qty_refunded' => 0,
+            'qty_canceled' => 0,
+            'rma_return_period' => 30,
+        ]);
+
+        return compact('order', 'orderItem', 'product');
+    }
+
+    /**
+     * Action mutation.
+     */
+    private function actionMutation(string $name, $customer, int $rmaId)
+    {
+        $mutation = <<<GQL
+            mutation {
+              {$name}CustomerReturn(input: {id: "/api/shop/returns/{$rmaId}"}) {
+                customerReturn { _id statusId }
+              }
+            }
+        GQL;
+
+        return $this->authenticatedGraphQL($customer, $mutation);
+    }
+
+    /**
+     * Seed custom fields.
+     */
+    private function seedCustomFields(): array
+    {
+        $text = RMACustomField::create([
+            'status' => 1,
+            'code' => 'invoice_number_'.uniqid(),
+            'label' => 'Invoice number',
+            'type' => 'text',
+            'is_required' => 1,
+            'position' => 1,
+        ]);
+
+        $select = RMACustomField::create([
+            'status' => 1,
+            'code' => 'pickup_slot_'.uniqid(),
+            'label' => 'Preferred pickup slot',
+            'type' => 'select',
+            'is_required' => 0,
+            'position' => 2,
+        ]);
+
+        RMACustomFieldOption::create([
+            'rma_custom_field_id' => $select->id,
+            'name' => 'Morning',
+            'value' => 'morning',
+        ]);
+
+        return compact('text', 'select');
+    }
+
+    /**
+     * Create mutation.
+     */
+    private function createMutation($customer, array $input)
+    {
+        $mutation = <<<'GQL'
+            mutation CreateReturn($input: createCustomerReturnInput!) {
+              createCustomerReturn(input: $input) {
+                customerReturn { _id packageCondition customAttributes }
+              }
+            }
+        GQL;
+
+        return $this->authenticatedGraphQL($customer, $mutation, ['input' => $input]);
     }
 }

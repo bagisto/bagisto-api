@@ -8,10 +8,58 @@ use Webkul\BagistoApi\Tests\RestApiTestCase;
 
 class AddToCartGroupedProductTest extends RestApiTestCase
 {
+    /**
+     * The cart tokens url.
+     */
     private string $cartTokensUrl = '/api/shop/cart-tokens';
 
+    /**
+     * The add product url.
+     */
     private string $addProductUrl = '/api/shop/add-product-in-cart';
 
+    /**
+     * Test add grouped product to cart as guest.
+     */
+    public function test_add_grouped_product_to_cart_as_guest(): void
+    {
+        $token = $this->createGuestCartToken();
+        $payload = $this->createGroupedProductPayload();
+
+        $response = $this->postWithToken($this->addProductUrl, $token, [
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'groupedQty' => $payload['groupedQty'],
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('isGuest'))->toBeTrue();
+        expect((int) $response->json('itemsCount'))->toBeGreaterThan(0);
+    }
+
+    /**
+     * Test add grouped product to customer cart.
+     */
+    public function test_add_grouped_product_to_customer_cart(): void
+    {
+        $payload = $this->createGroupedProductPayload();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'groupedQty' => $payload['groupedQty'],
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('isGuest'))->toBeFalse();
+    }
+
+    /**
+     * Create guest cart token.
+     */
     private function createGuestCartToken(): string
     {
         $response = $this->publicPost($this->cartTokensUrl, ['createNew' => true]);
@@ -20,6 +68,9 @@ class AddToCartGroupedProductTest extends RestApiTestCase
         return (string) ($response->json('cartToken') ?? $response->json('sessionToken'));
     }
 
+    /**
+     * Post with token.
+     */
     private function postWithToken(string $url, string $token, array $payload): TestResponse
     {
         return $this->withHeaders([
@@ -28,6 +79,9 @@ class AddToCartGroupedProductTest extends RestApiTestCase
         ])->postJson($url, $payload);
     }
 
+    /**
+     * Create grouped product payload.
+     */
     private function createGroupedProductPayload(int $associatedCount = 2): array
     {
         $grouped = $this->createBaseProduct('grouped');
@@ -56,38 +110,5 @@ class AddToCartGroupedProductTest extends RestApiTestCase
             'productId' => (int) $grouped->id,
             'groupedQty' => json_encode($qtyMap, JSON_UNESCAPED_SLASHES),
         ];
-    }
-
-    public function test_add_grouped_product_to_cart_as_guest(): void
-    {
-        $token = $this->createGuestCartToken();
-        $payload = $this->createGroupedProductPayload();
-
-        $response = $this->postWithToken($this->addProductUrl, $token, [
-            'productId' => $payload['productId'],
-            'quantity' => 1,
-            'groupedQty' => $payload['groupedQty'],
-        ]);
-
-        expect($response->getStatusCode())->toBeIn([200, 201]);
-        expect($response->json('success'))->toBeTrue();
-        expect($response->json('isGuest'))->toBeTrue();
-        expect((int) $response->json('itemsCount'))->toBeGreaterThan(0);
-    }
-
-    public function test_add_grouped_product_to_customer_cart(): void
-    {
-        $payload = $this->createGroupedProductPayload();
-        $customer = $this->createCustomer();
-
-        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId' => $payload['productId'],
-            'quantity' => 1,
-            'groupedQty' => $payload['groupedQty'],
-        ]);
-
-        expect($response->getStatusCode())->toBeIn([200, 201]);
-        expect($response->json('success'))->toBeTrue();
-        expect($response->json('isGuest'))->toBeFalse();
     }
 }

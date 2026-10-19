@@ -12,19 +12,35 @@ class AdminMarketingSitemapItemProvider extends AbstractAdminItemProvider
 {
     use MapsSitemapChannels;
 
+    /**
+     * Map to dto public.
+     */
+    public function mapToDtoPublic(object $sitemap): AdminMarketingSitemap
+    {
+        return $this->mapToDto($sitemap);
+    }
+
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.marketing.sitemap.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return Sitemap::with('channels')->find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $sitemap): AdminMarketingSitemap
     {
-        /** @var Sitemap $sitemap */
         $dto = new AdminMarketingSitemap;
 
         $dto->id = (int) $sitemap->id;
@@ -47,10 +63,5 @@ class AdminMarketingSitemapItemProvider extends AbstractAdminItemProvider
         $dto->updatedAt = $sitemap->updated_at?->toIso8601String();
 
         return $dto;
-    }
-
-    public function mapToDtoPublic(object $sitemap): AdminMarketingSitemap
-    {
-        return $this->mapToDto($sitemap);
     }
 }

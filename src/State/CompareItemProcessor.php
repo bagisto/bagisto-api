@@ -17,18 +17,18 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CompareItem;
 use Webkul\BagistoApi\Models\Product;
 
-/**
- * CompareItemProcessor - Handles create/delete operations for compare items
- */
 class CompareItemProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private ?Request $request = null
     ) {}
 
     /**
-     * Process compare item operations
+     * Process compare item operations.
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
@@ -74,7 +74,7 @@ class CompareItemProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle create operation for compare items
+     * Handle create operation for compare items.
      */
     private function handleCreate(CreateCompareItemInput $input): CompareItem
     {
@@ -113,7 +113,7 @@ class CompareItemProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle delete operation for compare items
+     * Handle delete operation for compare items.
      */
     private function handleDelete(DeleteCompareItemInput $input): CompareItem
     {
@@ -144,6 +144,9 @@ class CompareItemProcessor implements ProcessorInterface
         return $compareItem;
     }
 
+    /**
+     * Hydrate create input from context.
+     */
     private function hydrateCreateInputFromContext(CreateCompareItemInput $input, array $context): void
     {
         if (! empty($input->product_id)) {
@@ -167,6 +170,9 @@ class CompareItemProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Hydrate delete input from context.
+     */
     private function hydrateDeleteInputFromContext(DeleteCompareItemInput $input, array $context): void
     {
         if (! empty($input->id)) {
@@ -190,6 +196,9 @@ class CompareItemProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Extract product id.
+     */
     private function extractProductId(mixed $input): ?int
     {
         if (is_array($input)) {
@@ -207,6 +216,9 @@ class CompareItemProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Extract id.
+     */
     private function extractId(mixed $input): ?string
     {
         if (is_array($input)) {

@@ -14,10 +14,16 @@ class AdminRmaStatusMassDeleteProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly RMAStatusRepository $rmaStatusRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminRmaStatusMassDelete
     {
         $this->authorizedAdmin('sales.rma.statuses.delete', 'bagistoapi::app.admin.rma.no-permission');

@@ -5,26 +5,25 @@ namespace Webkul\BagistoApi\Admin\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * Input DTO for PUT /api/admin/catalog/categories/{id}.
- *
- * Update validation is LOCALE-NESTED in monolith CategoryRequest:
- *   <locale>.slug / <locale>.name / <locale>.description are required.
- * Plus top-level: position, attributes, parent_id, display_mode, etc.
- *
- * The REST/GraphQL clients send the same nested shape — the processor passes
- * the payload through to CategoryRepository::update() which understands it.
- */
 class AdminCategoryUpdateInput
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(description: 'Resource IRI (e.g. /api/admin/catalog/categories/12).')]
     #[Groups(['mutation'])]
     public ?string $id = null;
 
+    /**
+     * The locale.
+     */
     #[ApiProperty(description: 'Locale code (e.g. "en"). Determines which nested locale block is required.')]
     #[Groups(['mutation'])]
     public ?string $locale = null;
 
+    /**
+     * The position.
+     */
     #[ApiProperty(description: 'Sort position among siblings.')]
     #[Groups(['mutation'])]
     public ?int $position = null;
@@ -34,14 +33,23 @@ class AdminCategoryUpdateInput
     #[Groups(['mutation'])]
     public ?array $attributes = null;
 
+    /**
+     * The parent id.
+     */
     #[ApiProperty(description: 'Parent category ID. Change this (with position) to move the category.')]
     #[Groups(['mutation'])]
     public ?int $parent_id = null;
 
+    /**
+     * The display mode.
+     */
     #[ApiProperty(description: 'Display mode.')]
     #[Groups(['mutation'])]
     public ?string $display_mode = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(description: 'Status (1 = enabled, 0 = disabled).')]
     #[Groups(['mutation'])]
     public ?int $status = null;

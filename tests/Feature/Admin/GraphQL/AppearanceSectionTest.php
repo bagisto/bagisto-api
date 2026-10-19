@@ -9,41 +9,11 @@ use Webkul\Theme\Models\Section;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * GraphQL coverage for Admin Appearance → Sections: the connection, CRUD and the draft
- * workflow.
- */
 class AppearanceSectionTest extends AdminApiTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // BACKWARD COMPATIBILITY: remove when the minimum supported core is 2.4.10.
-        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
-    }
-
-    private function channelId(): int
-    {
-        $this->seedRequiredData();
-
-        return (int) \DB::table('channels')->orderBy('id')->value('id');
-    }
-
-    private function makeSection(array $attributes = []): Section
-    {
-        $channelId = $this->channelId();
-
-        return Section::create(array_merge([
-            'name' => 'Test Section '.uniqid(),
-            'type' => Section::STATIC_CONTENT,
-            'theme_code' => 'default',
-            'channel_id' => $channelId,
-            'sort_order' => 99,
-            'status' => 1,
-        ], $attributes));
-    }
-
+    /**
+     * Test query lists sections with the translations connection.
+     */
     public function test_query_lists_sections_with_the_translations_connection(): void
     {
         $admin = $this->createAdmin();
@@ -98,6 +68,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($row['translations'])->toHaveKey('edges');
     }
 
+    /**
+     * Test query resolves a single section.
+     */
     public function test_query_resolves_a_single_section(): void
     {
         $admin = $this->createAdmin();
@@ -125,6 +98,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->json('data.adminAppearanceSection._id'))->toBe($section->id);
     }
 
+    /**
+     * Test mutation creates a section.
+     */
     public function test_mutation_creates_a_section(): void
     {
         $admin = $this->createAdmin();
@@ -169,6 +145,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test mutation rejects an unknown type.
+     */
     public function test_mutation_rejects_an_unknown_type(): void
     {
         $admin = $this->createAdmin();
@@ -192,6 +171,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test mutation updates a section.
+     */
     public function test_mutation_updates_a_section(): void
     {
         $admin = $this->createAdmin();
@@ -232,6 +214,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test mutation deletes a section and returns the snapshot.
+     */
     public function test_mutation_deletes_a_section_and_returns_the_snapshot(): void
     {
         $admin = $this->createAdmin();
@@ -258,8 +243,6 @@ class AppearanceSectionTest extends AdminApiTestCase
 
         expect($response->json('errors'))->toBeNull();
 
-        // The snapshot is the whole point of the delete payload: asserting only that the
-        // row is gone passes just as well when the payload comes back null.
         $node = $response->json('data.deleteAdminAppearanceSection.adminAppearanceSection');
 
         expect($node)->not->toBeNull();
@@ -270,6 +253,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         $this->assertDatabaseMissing('theme_sections', ['id' => $section->id]);
     }
 
+    /**
+     * Test mutation stages a draft.
+     */
     public function test_mutation_stages_a_draft(): void
     {
         $admin = $this->createAdmin();
@@ -305,6 +291,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($node['hasDraft'])->toBeTrue();
     }
 
+    /**
+     * Test mutation stages status then publishes.
+     */
     public function test_mutation_stages_status_then_publishes(): void
     {
         $admin = $this->createAdmin();
@@ -359,6 +348,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($row->draft_status)->toBeNull();
     }
 
+    /**
+     * Test query fields returns the schema.
+     */
     public function test_query_fields_returns_the_schema(): void
     {
         $admin = $this->createAdmin();
@@ -385,6 +377,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->json('data.adminAppearanceSectionFields.type'))->toBe(Section::STATIC_CONTENT);
     }
 
+    /**
+     * Test query preview resolves.
+     */
     public function test_query_preview_resolves(): void
     {
         $admin = $this->createAdmin();
@@ -412,6 +407,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->json('data.adminAppearanceSectionPreview.themeCode'))->toBe('default');
     }
 
+    /**
+     * Test query requires authentication.
+     */
     public function test_query_requires_authentication(): void
     {
         $this->seedRequiredData();
@@ -427,111 +425,6 @@ class AppearanceSectionTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query);
 
         expect($response->getStatusCode() === 401 || $response->json('errors') !== null)->toBeTrue();
-    }
-
-    /**
-     * Create an admin whose role holds the given appearance permissions, with a role-bound token.
-     */
-    private function adminWithAppearancePermissions(array $permissions): array
-    {
-        $this->seedRequiredData();
-
-        $role = Role::create([
-            'name' => 'appearance-role-'.uniqid(),
-            'description' => 'test',
-            'permission_type' => 'custom',
-            'permissions' => $permissions,
-        ]);
-
-        $admin = $this->createAdmin(['role_id' => $role->id]);
-
-        return [$admin, $this->adminTokenSameAsWeb($admin)];
-    }
-
-    /**
-     * Stage a draft of the section's options through the draft mutation.
-     */
-    private function stageDraft(Section $section, Admin $admin): void
-    {
-        $mutation = <<<'GQL'
-            mutation saveDraft($input: createAdminAppearanceSectionDraftInput!) {
-              createAdminAppearanceSectionDraft(input: $input) {
-                adminAppearanceSectionDraft { hasDraft }
-              }
-            }
-        GQL;
-
-        $response = $this->adminGraphQL($mutation, [
-            'input' => [
-                'sectionId' => $section->id,
-                'options' => ['html' => '<p>staged</p>'],
-            ],
-        ], $admin);
-
-        expect($response->json('errors'))->toBeNull();
-    }
-
-    /**
-     * Run the discard mutation for the default theme on the given channel.
-     */
-    private function runDiscard(array $input, ?Admin $admin = null, ?string $token = null): TestResponse
-    {
-        $mutation = <<<'GQL'
-            mutation discard($input: createAdminAppearanceSectionDiscardInput!) {
-              createAdminAppearanceSectionDiscard(input: $input) {
-                adminAppearanceSectionDiscard {
-                  themeCode
-                  channelId
-                  sectionIds
-                  message
-                }
-              }
-            }
-        GQL;
-
-        return $this->adminGraphQL($mutation, ['input' => $input], $admin, $token);
-    }
-
-    /**
-     * Run the duplicate mutation for the given section.
-     */
-    private function runDuplicate(int $sectionId, ?Admin $admin = null, ?string $token = null): TestResponse
-    {
-        $mutation = <<<'GQL'
-            mutation duplicate($input: createAdminAppearanceSectionDuplicateInput!) {
-              createAdminAppearanceSectionDuplicate(input: $input) {
-                adminAppearanceSectionDuplicate {
-                  sectionId
-                  sourceId
-                  name
-                  type
-                  message
-                }
-              }
-            }
-        GQL;
-
-        return $this->adminGraphQL($mutation, ['input' => ['sectionId' => $sectionId]], $admin, $token);
-    }
-
-    /**
-     * Run the reorder mutation with the given section ids.
-     */
-    private function runReorder(array $sectionIds, ?Admin $admin = null, ?string $token = null): TestResponse
-    {
-        $mutation = <<<'GQL'
-            mutation reorder($input: createAdminAppearanceSectionReorderInput!) {
-              createAdminAppearanceSectionReorder(input: $input) {
-                adminAppearanceSectionReorder {
-                  sectionIds
-                  hasDraft
-                  message
-                }
-              }
-            }
-        GQL;
-
-        return $this->adminGraphQL($mutation, ['input' => ['sectionIds' => $sectionIds]], $admin, $token);
     }
 
     /**
@@ -769,5 +662,147 @@ class AppearanceSectionTest extends AdminApiTestCase
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.appearance.no-permission'));
         expect(\DB::table('theme_sections')->where('id', $section->id)->value('draft_sort_order'))->toBeNull();
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
+    }
+
+    /**
+     * Channel id.
+     */
+    private function channelId(): int
+    {
+        $this->seedRequiredData();
+
+        return (int) \DB::table('channels')->orderBy('id')->value('id');
+    }
+
+    /**
+     * Make section.
+     */
+    private function makeSection(array $attributes = []): Section
+    {
+        $channelId = $this->channelId();
+
+        return Section::create(array_merge([
+            'name' => 'Test Section '.uniqid(),
+            'type' => Section::STATIC_CONTENT,
+            'theme_code' => 'default',
+            'channel_id' => $channelId,
+            'sort_order' => 99,
+            'status' => 1,
+        ], $attributes));
+    }
+
+    /**
+     * Create an admin whose role holds the given appearance permissions, with a role-bound token.
+     */
+    private function adminWithAppearancePermissions(array $permissions): array
+    {
+        $this->seedRequiredData();
+
+        $role = Role::create([
+            'name' => 'appearance-role-'.uniqid(),
+            'description' => 'test',
+            'permission_type' => 'custom',
+            'permissions' => $permissions,
+        ]);
+
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        return [$admin, $this->adminTokenSameAsWeb($admin)];
+    }
+
+    /**
+     * Stage a draft of the section's options through the draft mutation.
+     */
+    private function stageDraft(Section $section, Admin $admin): void
+    {
+        $mutation = <<<'GQL'
+            mutation saveDraft($input: createAdminAppearanceSectionDraftInput!) {
+              createAdminAppearanceSectionDraft(input: $input) {
+                adminAppearanceSectionDraft { hasDraft }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'sectionId' => $section->id,
+                'options' => ['html' => '<p>staged</p>'],
+            ],
+        ], $admin);
+
+        expect($response->json('errors'))->toBeNull();
+    }
+
+    /**
+     * Run the discard mutation for the default theme on the given channel.
+     */
+    private function runDiscard(array $input, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $mutation = <<<'GQL'
+            mutation discard($input: createAdminAppearanceSectionDiscardInput!) {
+              createAdminAppearanceSectionDiscard(input: $input) {
+                adminAppearanceSectionDiscard {
+                  themeCode
+                  channelId
+                  sectionIds
+                  message
+                }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, ['input' => $input], $admin, $token);
+    }
+
+    /**
+     * Run the duplicate mutation for the given section.
+     */
+    private function runDuplicate(int $sectionId, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $mutation = <<<'GQL'
+            mutation duplicate($input: createAdminAppearanceSectionDuplicateInput!) {
+              createAdminAppearanceSectionDuplicate(input: $input) {
+                adminAppearanceSectionDuplicate {
+                  sectionId
+                  sourceId
+                  name
+                  type
+                  message
+                }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, ['input' => ['sectionId' => $sectionId]], $admin, $token);
+    }
+
+    /**
+     * Run the reorder mutation with the given section ids.
+     */
+    private function runReorder(array $sectionIds, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $mutation = <<<'GQL'
+            mutation reorder($input: createAdminAppearanceSectionReorderInput!) {
+              createAdminAppearanceSectionReorder(input: $input) {
+                adminAppearanceSectionReorder {
+                  sectionIds
+                  hasDraft
+                  message
+                }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, ['input' => ['sectionIds' => $sectionIds]], $admin, $token);
     }
 }

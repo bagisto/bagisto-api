@@ -6,11 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Order address — nested sub-resource of AdminOrderDetail, exposed as the
- * `addresses` connection (billing + shipping). Each node carries `addressType`
- * so the client can tell them apart.
- */
 #[ApiResource(
     shortName: 'AdminOrderDetailAddress',
     operations: [],
@@ -31,6 +26,9 @@ class AdminOrderDetailAddress extends Model
         'id' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

@@ -6,27 +6,11 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\CartRule\Models\CartRule;
 use Webkul\CartRule\Models\CartRuleCoupon;
 
-/**
- * GraphQL coverage for Admin Marketing → Cart Rule Coupons (Block F1c).
- */
 class MarketingCartRuleCouponTest extends AdminApiTestCase
 {
-    protected function makeCartRule(): CartRule
-    {
-        return CartRule::factory()->create();
-    }
-
-    protected function makeCoupon(int $cartRuleId, array $attrs = []): CartRuleCoupon
-    {
-        $coupon = CartRuleCoupon::factory()->make(array_merge([
-            'cart_rule_id' => $cartRuleId,
-        ], $attrs));
-        $coupon->cart_rule_id = $cartRuleId;
-        $coupon->save();
-
-        return $coupon;
-    }
-
+    /**
+     * Test query list coupons for a rule.
+     */
     public function test_query_list_coupons_for_a_rule(): void
     {
         $admin = $this->createAdmin();
@@ -57,6 +41,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test mutation create coupon.
+     */
     public function test_mutation_create_coupon(): void
     {
         $admin = $this->createAdmin();
@@ -84,6 +71,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test mutation generate coupons bulk.
+     */
     public function test_mutation_generate_coupons_bulk(): void
     {
         $admin = $this->createAdmin();
@@ -116,6 +106,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test mutation delete coupon.
+     */
     public function test_mutation_delete_coupon(): void
     {
         $admin = $this->createAdmin();
@@ -145,6 +138,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         expect($gone || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test mutation mass delete coupons.
+     */
     public function test_mutation_mass_delete_coupons(): void
     {
         $admin = $this->createAdmin();
@@ -171,5 +167,27 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         expect($response->json('data.createAdminMarketingCartRuleCouponMassDelete.adminMarketingCartRuleCouponMassDelete.cartRuleId'))->toBe($rule->id);
         $this->assertDatabaseMissing('cart_rule_coupons', ['id' => $c1->id]);
         $this->assertDatabaseMissing('cart_rule_coupons', ['id' => $c2->id]);
+    }
+
+    /**
+     * Make cart rule.
+     */
+    protected function makeCartRule(): CartRule
+    {
+        return CartRule::factory()->create();
+    }
+
+    /**
+     * Make coupon.
+     */
+    protected function makeCoupon(int $cartRuleId, array $attrs = []): CartRuleCoupon
+    {
+        $coupon = CartRuleCoupon::factory()->make(array_merge([
+            'cart_rule_id' => $cartRuleId,
+        ], $attrs));
+        $coupon->cart_rule_id = $cartRuleId;
+        $coupon->save();
+
+        return $coupon;
     }
 }

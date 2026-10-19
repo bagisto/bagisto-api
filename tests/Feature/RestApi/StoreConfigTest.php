@@ -5,31 +5,16 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 
-/**
- * REST coverage for GET /api/shop/store-config — the public store settings of the current channel.
- */
 class StoreConfigTest extends RestApiTestCase
 {
+    /**
+     * The url.
+     */
     private string $url = '/api/shop/store-config';
 
-    private function storeSetting(string $code, ?string $value): void
-    {
-        DB::table('core_config')->where('code', $code)->delete();
-
-        if ($value !== null) {
-            DB::table('core_config')->insert([
-                'code' => $code,
-                'value' => $value,
-                'channel_code' => core()->getRequestedChannelCode(),
-                'locale_code' => core()->getRequestedLocaleCode(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        $this->forgetCoreConfigCache();
-    }
-
+    /**
+     * Test returns one settings object for the current channel.
+     */
     public function test_returns_one_settings_object_for_the_current_channel(): void
     {
         $this->seedRequiredData();
@@ -50,6 +35,9 @@ class StoreConfigTest extends RestApiTestCase
         ]);
     }
 
+    /**
+     * Test requires a storefront key.
+     */
     public function test_requires_a_storefront_key(): void
     {
         $this->seedRequiredData();
@@ -59,6 +47,9 @@ class StoreConfigTest extends RestApiTestCase
         expect($this->publicGet($this->url)->getStatusCode())->toBeIn([200, 401, 403]);
     }
 
+    /**
+     * Test guest checkout follows the store setting.
+     */
     public function test_guest_checkout_follows_the_store_setting(): void
     {
         $this->seedRequiredData();
@@ -70,6 +61,9 @@ class StoreConfigTest extends RestApiTestCase
         expect($this->publicGet($this->url)->json('0.guestCheckoutEnabled'))->toBeTrue();
     }
 
+    /**
+     * Test buy now follows the store setting.
+     */
     public function test_buy_now_follows_the_store_setting(): void
     {
         $this->seedRequiredData();
@@ -81,6 +75,9 @@ class StoreConfigTest extends RestApiTestCase
         expect($this->publicGet($this->url)->json('0.buyNowEnabled'))->toBeTrue();
     }
 
+    /**
+     * Test minimum order values are returned.
+     */
     public function test_minimum_order_values_are_returned(): void
     {
         $this->seedRequiredData();
@@ -96,6 +93,9 @@ class StoreConfigTest extends RestApiTestCase
         expect($body['minimumOrderMessage'])->toBe('Minimum is 25.5');
     }
 
+    /**
+     * Test review rules are returned.
+     */
     public function test_review_rules_are_returned(): void
     {
         $this->seedRequiredData();
@@ -109,6 +109,9 @@ class StoreConfigTest extends RestApiTestCase
         expect($body['customerReviewEnabled'])->toBeFalse();
     }
 
+    /**
+     * Test only enabled social login providers are listed.
+     */
     public function test_only_enabled_social_login_providers_are_listed(): void
     {
         $this->seedRequiredData();
@@ -128,6 +131,9 @@ class StoreConfigTest extends RestApiTestCase
         expect($providers)->toBe(['google', 'linkedin']);
     }
 
+    /**
+     * Test tax display settings are returned.
+     */
     public function test_tax_display_settings_are_returned(): void
     {
         $this->seedRequiredData();
@@ -137,6 +143,9 @@ class StoreConfigTest extends RestApiTestCase
         expect($this->publicGet($this->url)->json('0.taxCartDisplayPrices'))->toBe('both');
     }
 
+    /**
+     * Test no secret is exposed.
+     */
     public function test_no_secret_is_exposed(): void
     {
         $this->seedRequiredData();
@@ -152,6 +161,9 @@ class StoreConfigTest extends RestApiTestCase
         expect($json)->not->toContain('api_key');
     }
 
+    /**
+     * Test a provider without a client id is not listed.
+     */
     public function test_a_provider_without_a_client_id_is_not_listed(): void
     {
         $this->seedRequiredData();
@@ -160,5 +172,26 @@ class StoreConfigTest extends RestApiTestCase
         $this->storeSetting('customer.settings.social_login.google_client_id', null);
 
         expect($this->publicGet($this->url)->json('0.socialLoginProviders'))->not->toContain('google');
+    }
+
+    /**
+     * Store setting.
+     */
+    private function storeSetting(string $code, ?string $value): void
+    {
+        DB::table('core_config')->where('code', $code)->delete();
+
+        if ($value !== null) {
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
     }
 }

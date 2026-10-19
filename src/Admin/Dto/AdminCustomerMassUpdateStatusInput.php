@@ -12,6 +12,9 @@ class AdminCustomerMassUpdateStatusInput
     #[Groups(['mutation'])]
     public ?array $indices = null;
 
+    /**
+     * The value.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?int $value = null;

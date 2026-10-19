@@ -22,28 +22,6 @@ class DatabaseCompatibilityTest extends BagistoApiTest
     ];
 
     /**
-     * Package source files that are checked, excluding migrations that guard on the driver themselves.
-     *
-     * @return array<int, string>
-     */
-    private function sourceFiles(): array
-    {
-        $files = [];
-
-        $finder = Finder::create()
-            ->files()
-            ->name('*.php')
-            ->in(dirname(__DIR__, 2).'/src')
-            ->exclude(['Resources', 'Database']);
-
-        foreach ($finder as $file) {
-            $files[] = $file->getRealPath();
-        }
-
-        return $files;
-    }
-
-    /**
      * No source file writes MySQL-only SQL inline.
      */
     public function test_source_has_no_mysql_only_sql(): void
@@ -107,5 +85,27 @@ class DatabaseCompatibilityTest extends BagistoApiTest
 
         $this->assertStringStartsWith('CASE WHEN', $expression);
         $this->assertStringNotContainsString('IF(', $expression);
+    }
+
+    /**
+     * Package source files that are checked, excluding migrations that guard on the driver themselves.
+     *
+     * @return array<int, string>
+     */
+    private function sourceFiles(): array
+    {
+        $files = [];
+
+        $finder = Finder::create()
+            ->files()
+            ->name('*.php')
+            ->in(dirname(__DIR__, 2).'/src')
+            ->exclude(['Resources', 'Database']);
+
+        foreach ($finder as $file) {
+            $files[] = $file->getRealPath();
+        }
+
+        return $files;
     }
 }

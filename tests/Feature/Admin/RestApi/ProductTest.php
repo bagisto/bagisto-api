@@ -6,22 +6,21 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Product\Models\Product;
 
-/**
- * REST coverage for the admin product search endpoint — GET /api/admin/products.
- *
- * Verifies the { data, meta } envelope, slim shape, query/sku/type/status
- * filters, pagination, and that admin sees ALL statuses (including disabled)
- * by default.
- */
 class ProductTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
+    /**
+     * Test list requires authentication.
+     */
     public function test_list_requires_authentication(): void
     {
         $this->publicGet('/api/admin/products')->assertStatus(401);
     }
 
+    /**
+     * Test list returns data meta envelope.
+     */
     public function test_list_returns_data_meta_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -36,6 +35,9 @@ class ProductTest extends AdminApiTestCase
         );
     }
 
+    /**
+     * Test default per page is 30.
+     */
     public function test_default_per_page_is_30(): void
     {
         $admin = $this->createAdmin();
@@ -46,6 +48,9 @@ class ProductTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBe(30);
     }
 
+    /**
+     * Test per page caps at 50.
+     */
     public function test_per_page_caps_at_50(): void
     {
         $admin = $this->createAdmin();
@@ -56,6 +61,9 @@ class ProductTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test list row has slim shape.
+     */
     public function test_list_row_has_slim_shape(): void
     {
         $admin = $this->createAdmin();
@@ -69,6 +77,9 @@ class ProductTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test filter by sku exact.
+     */
     public function test_filter_by_sku_exact(): void
     {
         $admin = $this->createAdmin();
@@ -83,6 +94,9 @@ class ProductTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test query matches by sku partial.
+     */
     public function test_query_matches_by_sku_partial(): void
     {
         $admin = $this->createAdmin();
@@ -97,6 +111,9 @@ class ProductTest extends AdminApiTestCase
         expect($response->json('data'))->toBeArray();
     }
 
+    /**
+     * Test filter by type simple.
+     */
     public function test_filter_by_type_simple(): void
     {
         $admin = $this->createAdmin();
@@ -109,6 +126,9 @@ class ProductTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test returns disabled products by default.
+     */
     public function test_returns_disabled_products_by_default(): void
     {
         $admin = $this->createAdmin();
@@ -119,6 +139,9 @@ class ProductTest extends AdminApiTestCase
         expect($response->json('data'))->toBeArray();
     }
 
+    /**
+     * Test status filter is accepted.
+     */
     public function test_status_filter_is_accepted(): void
     {
         $admin = $this->createAdmin();
@@ -130,6 +153,9 @@ class ProductTest extends AdminApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test pagination moves window.
+     */
     public function test_pagination_moves_window(): void
     {
         $admin = $this->createAdmin();

@@ -7,22 +7,19 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingTemplate;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/marketing/templates + adminMarketingTemplates.
- *
- * Filters: name (LIKE), status (exact: active|inactive|draft).
- * Sort:    id (default desc), name.
- *
- * Listing rows include content (the body is the whole point of a template,
- * and the rows are small without pivots/relations).
- */
 class AdminMarketingTemplateCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'name'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('marketing_templates')->select(
@@ -35,6 +32,9 @@ class AdminMarketingTemplateCollectionProvider extends AbstractAdminCollectionPr
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
@@ -49,6 +49,9 @@ class AdminMarketingTemplateCollectionProvider extends AbstractAdminCollectionPr
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -61,6 +64,9 @@ class AdminMarketingTemplateCollectionProvider extends AbstractAdminCollectionPr
         $query->orderBy($columnMap[$column] ?? 'marketing_templates.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminMarketingTemplate
     {
         $dto = new AdminMarketingTemplate;

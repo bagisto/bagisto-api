@@ -16,17 +16,11 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Product\Models\Product;
 use Webkul\Product\Models\ProductCustomerGroupPrice;
 
-/**
- * Read provider for the admin customer-group-prices sub-resource.
- *
- *  - GetCollection (REST + GraphQL QueryCollection): lists rows for the
- *    given product, joined with customer_groups for display name.
- *  - Put / Delete: returns a placeholder AdminCatalogProductCustomerGroupPrice
- *    so API Platform routes through to the processor (which reads
- *    uriVariables directly and looks the row up itself).
- */
 class AdminCatalogProductCustomerGroupPriceProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         AdminReadPermissions::authorize($operation, AdminCatalogProductCustomerGroupPrice::class);
@@ -52,6 +46,9 @@ class AdminCatalogProductCustomerGroupPriceProvider implements ProviderInterface
         return null;
     }
 
+    /**
+     * List for product.
+     */
     protected function listForProduct(array $uriVariables, array $context): Paginator
     {
         $productId = $this->resolveProductId($uriVariables, $context);
@@ -98,6 +95,9 @@ class AdminCatalogProductCustomerGroupPriceProvider implements ProviderInterface
         );
     }
 
+    /**
+     * Resolve product id.
+     */
     protected function resolveProductId(array $uriVariables, array $context): int
     {
         $raw = $uriVariables['productId']

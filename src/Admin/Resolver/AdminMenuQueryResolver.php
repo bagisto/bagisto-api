@@ -10,8 +10,14 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 
 class AdminMenuQueryResolver implements QueryItemResolverInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected AdminMenuProvider $provider) {}
 
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?object $item, array $context): AdminMenu
     {
         $admin = AdminAuthHelper::resolveAdmin();

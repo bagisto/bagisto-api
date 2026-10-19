@@ -15,17 +15,6 @@ use Webkul\BagistoApi\Admin\State\AdminReportingSalesExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminReportingSalesProvider;
 use Webkul\BagistoApi\Admin\State\AdminReportingSalesViewProvider;
 
-/**
- * Admin reporting — sales (read-only).
- *
- * REST   : GET /api/admin/reporting/sales
- * GraphQL: adminReportingSales query
- *
- * Mirrors `Reporting/SaleController::stats()`. `?type=`:
- *   total-sales (default), average-sales, total-orders, purchase-funnel,
- *   abandoned-carts, refunds, tax-collected, shipping-collected,
- *   top-payment-methods, sales-by-coupon.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminReportingSales',
@@ -147,10 +136,16 @@ class AdminReportingSales
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The entity.
+     */
     #[ApiProperty(readable: true, writable: false, identifier: true)]
     #[Groups(['query'])]
     public ?string $entity = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $type = null;

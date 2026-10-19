@@ -4,6 +4,9 @@ namespace Webkul\BagistoApi\Admin\State\Concerns;
 
 trait BuildsCmsPagePreviewUrl
 {
+    /**
+     * Build preview url.
+     */
     protected function buildPreviewUrl(?string $urlKey): ?string
     {
         if (! $urlKey) {

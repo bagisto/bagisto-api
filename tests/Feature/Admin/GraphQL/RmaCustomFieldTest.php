@@ -10,14 +10,9 @@ use Webkul\User\Models\Role;
 
 class RmaCustomFieldTest extends AdminApiTestCase
 {
-    private function createField(string $code, string $type = 'text'): int
-    {
-        return DB::table('rma_custom_fields')->insertGetId([
-            'code' => $code, 'label' => 'Label', 'type' => $type, 'is_required' => 0,
-            'position' => 1, 'status' => 1, 'created_at' => now(), 'updated_at' => now(),
-        ]);
-    }
-
+    /**
+     * Test create select and list.
+     */
     public function test_create_select_and_list(): void
     {
         $admin = $this->createAdmin();
@@ -39,6 +34,9 @@ class RmaCustomFieldTest extends AdminApiTestCase
         expect($list->json('data.adminRmaCustomFields.edges'))->toBeArray();
     }
 
+    /**
+     * Test update and delete.
+     */
     public function test_update_and_delete(): void
     {
         $admin = $this->createAdmin();
@@ -67,6 +65,9 @@ class RmaCustomFieldTest extends AdminApiTestCase
         $this->assertDatabaseMissing('rma_custom_fields', ['id' => $id]);
     }
 
+    /**
+     * Test mass delete.
+     */
     public function test_mass_delete(): void
     {
         $admin = $this->createAdmin();
@@ -189,5 +190,16 @@ class RmaCustomFieldTest extends AdminApiTestCase
         GQL;
 
         return $this->adminGraphQL($mutation, ['input' => $input], $admin, $token);
+    }
+
+    /**
+     * Create field.
+     */
+    private function createField(string $code, string $type = 'text'): int
+    {
+        return DB::table('rma_custom_fields')->insertGetId([
+            'code' => $code, 'label' => 'Label', 'type' => $type, 'is_required' => 0,
+            'position' => 1, 'status' => 1, 'created_at' => now(), 'updated_at' => now(),
+        ]);
     }
 }

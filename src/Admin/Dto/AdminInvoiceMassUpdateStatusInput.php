@@ -12,6 +12,9 @@ class AdminInvoiceMassUpdateStatusInput
     #[Groups(['mutation'])]
     public ?array $indices = null;
 
+    /**
+     * The value.
+     */
     #[ApiProperty(description: 'New invoice status: pending, paid, or overdue.')]
     #[Groups(['mutation'])]
     public ?string $value = null;

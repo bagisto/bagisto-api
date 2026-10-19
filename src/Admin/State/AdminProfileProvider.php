@@ -8,11 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\User\Models\Admin;
 
-/**
- * Provides the authenticated admin's profile for REST GET /api/admin/get.
- */
 class AdminProfileProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $admin = AdminAuthHelper::resolveAdmin();

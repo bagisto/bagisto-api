@@ -8,6 +8,9 @@ use Webkul\BagistoApi\Tests\RestApiTestCase;
 
 class ResetPasswordTest extends RestApiTestCase
 {
+    /**
+     * Test reset password with valid token succeeds.
+     */
     public function test_reset_password_with_valid_token_succeeds(): void
     {
         $this->seedRequiredData();
@@ -33,6 +36,9 @@ class ResetPasswordTest extends RestApiTestCase
         $this->assertTrue(Hash::check('new-password-123', $customer->password));
     }
 
+    /**
+     * Test reset password with invalid token fails.
+     */
     public function test_reset_password_with_invalid_token_fails(): void
     {
         $this->seedRequiredData();
@@ -52,6 +58,9 @@ class ResetPasswordTest extends RestApiTestCase
         $this->assertFalse($response->json('success'));
     }
 
+    /**
+     * Test reset password with mismatched confirmation fails.
+     */
     public function test_reset_password_with_mismatched_confirmation_fails(): void
     {
         $this->seedRequiredData();

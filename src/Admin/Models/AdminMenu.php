@@ -77,6 +77,9 @@ use Webkul\BagistoApi\Admin\State\AdminMenuProvider;
 )]
 class AdminMenu
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     #[Groups(['query'])]
     public ?string $id = 'menu';

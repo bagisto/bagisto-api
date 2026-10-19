@@ -516,13 +516,6 @@ class ApiStateBindingsServiceProvider extends ServiceProvider
         $this->app->tag(AdminProductProvider::class, ProviderInterface::class);
         $this->app->tag(AdminCatalogProductCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(AdminCatalogProductDetailProvider::class, ProviderInterface::class);
-        // Appearance → Themes + Sections on core 2.4.10+, else Settings → Themes. Only one
-        // era may be tagged: the bridge instantiates every tagged class on the first /api
-        // request, so a constructor asking for a repository this core lacks is a fatal on
-        // every endpoint.
-        //
-        // BACKWARD COMPATIBILITY: drop the else arm, the condition and the legacy
-        // AdminSettingsTheme* classes when the minimum supported core is 2.4.10.
         if (app(CoreCapabilities::class)->hasAppearanceSections()) {
             $this->app->tag(ThemeProvider::class, ProviderInterface::class);
             $this->app->tag(AdminAppearanceThemeCollectionProvider::class, ProviderInterface::class);

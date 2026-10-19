@@ -7,6 +7,9 @@ use Webkul\Sales\Models\OrderTransaction;
 
 class SalesTransactionsTest extends AdminApiTestCase
 {
+    /**
+     * Test list query.
+     */
     public function test_list_query(): void
     {
         $admin = $this->createAdmin();
@@ -26,6 +29,9 @@ class SalesTransactionsTest extends AdminApiTestCase
         expect($response->json('data.adminTransactions.edges'))->toBeArray();
     }
 
+    /**
+     * Test detail query.
+     */
     public function test_detail_query(): void
     {
         $admin = $this->createAdmin();
@@ -47,12 +53,18 @@ class SalesTransactionsTest extends AdminApiTestCase
         expect(($detail !== null && ($detail['id'] ?? null) !== null) || is_array($errors))->toBeTrue();
     }
 
+    /**
+     * Test requires authentication.
+     */
     public function test_requires_authentication(): void
     {
         $response = $this->adminGraphQL('query { adminTransactions(first: 1) { edges { node { id } } } }');
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test detail resolves id and multiword fields.
+     */
     public function test_detail_resolves_id_and_multiword_fields(): void
     {
         $id = OrderTransaction::query()->value('id');

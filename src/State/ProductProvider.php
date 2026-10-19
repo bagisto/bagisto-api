@@ -8,6 +8,9 @@ use Webkul\BagistoApi\Models\Product;
 
 class ProductProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProviderInterface $itemProvider
     ) {}

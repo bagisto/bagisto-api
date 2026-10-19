@@ -16,22 +16,19 @@ use Webkul\BagistoApi\Models\CustomerInvoice;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\Customer\Models\Customer;
 
-/**
- * CustomerInvoiceProvider — Retrieves invoices belonging to the authenticated customer
- *
- * Scopes all queries through the order relationship to ensure customer isolation.
- * Supports cursor-based pagination, orderId and state filtering.
- */
 class CustomerInvoiceProvider implements ProviderInterface
 {
     use ClampsPageSize;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
     /**
-     * Provide customer invoices for collection or single-item operations
+     * Provide customer invoices for collection or single-item operations.
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
@@ -41,7 +38,6 @@ class CustomerInvoiceProvider implements ProviderInterface
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
 
-        /** Single item — GET /api/shop/customer-invoices/{id} */
         if (
             ! $operation instanceof GetCollection
             && ! ($operation instanceof QueryCollection)
@@ -53,7 +49,7 @@ class CustomerInvoiceProvider implements ProviderInterface
     }
 
     /**
-     * Return a single invoice owned by the customer (via order relationship)
+     * Return a single invoice owned by the customer (via order relationship).
      */
     private function provideItem(object $customer, array $uriVariables): CustomerInvoice
     {
@@ -78,7 +74,7 @@ class CustomerInvoiceProvider implements ProviderInterface
     }
 
     /**
-     * Return a paginated collection of invoices owned by the customer
+     * Return a paginated collection of invoices owned by the customer.
      */
     private function provideCollection(object $customer, array $context): Paginator
     {
@@ -91,11 +87,6 @@ class CustomerInvoiceProvider implements ProviderInterface
                 ->where('customer_type', Customer::class);
         })->with(['items', 'addresses', 'order']);
 
-        /**
-         * Apply optional order ID filter.
-         * GraphQL: customerInvoices(orderId: 590) → $args['orderId']
-         * REST: /customer-invoices?order_id=590 (or ?orderId=590) → request()->query()
-         */
         $orderId = $args['orderId']
             ?? $filters['orderId']
             ?? $request->query('order_id')
@@ -107,7 +98,6 @@ class CustomerInvoiceProvider implements ProviderInterface
             $query->where('order_id', (int) $orderId);
         }
 
-        /** Apply optional state filter */
         $state = $args['state']
             ?? $filters['state']
             ?? $request->query('state');
@@ -118,7 +108,6 @@ class CustomerInvoiceProvider implements ProviderInterface
             $query->where('state', (string) $state);
         }
 
-        /** Cursor-based pagination (offset-based cursors from API Platform) */
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
         $after = $args['after'] ?? null;

@@ -5,33 +5,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Core\Facades\Core;
 
-/**
- * GraphQL coverage for Admin Settings → Currencies CRUD (Block B Wave 1).
- */
 class SettingsCurrencyTest extends AdminApiTestCase
 {
-    protected function uniqueCurrencyCode(string $prefix = 'G'): string
-    {
-        $letters = chr(rand(65, 90)).chr(rand(65, 90));
-
-        return strtoupper(substr($prefix.$letters, 0, 3));
-    }
-
-    protected function insertCurrency(array $overrides = []): int
-    {
-        return \DB::table('currencies')->insertGetId(array_merge([
-            'code' => $this->uniqueCurrencyCode(),
-            'name' => 'GQL Currency',
-            'symbol' => 'G$',
-            'decimal' => 2,
-            'group_separator' => ',',
-            'decimal_separator' => '.',
-            'currency_position' => 'left',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
+    /**
+     * Test query listing returns currencies.
+     */
     public function test_query_listing_returns_currencies(): void
     {
         $admin = $this->createAdmin();
@@ -51,6 +29,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect($response->json('data.adminSettingsCurrencies.edges'))->toBeArray();
     }
 
+    /**
+     * Test query listing filter by code.
+     */
     public function test_query_listing_filter_by_code(): void
     {
         $admin = $this->createAdmin();
@@ -73,6 +54,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect(is_array($edges) || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test query detail returns currency.
+     */
     public function test_query_detail_returns_currency(): void
     {
         $admin = $this->createAdmin();
@@ -93,6 +77,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect($hasErrors || $hasData)->toBeTrue();
     }
 
+    /**
+     * Test query detail multiword fields resolve over graphql.
+     */
     public function test_query_detail_multiword_fields_resolve_over_graphql(): void
     {
         $admin = $this->createAdmin();
@@ -125,6 +112,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect($node['updatedAt'])->not->toBeNull();
     }
 
+    /**
+     * Test mutation create happy path.
+     */
     public function test_mutation_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -149,6 +139,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $this->assertDatabaseHas('currencies', ['code' => $code]);
     }
 
+    /**
+     * Test mutation create missing name fails.
+     */
     public function test_mutation_create_missing_name_fails(): void
     {
         $admin = $this->createAdmin();
@@ -170,6 +163,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $this->assertDatabaseMissing('currencies', ['code' => 'NNG']);
     }
 
+    /**
+     * Test mutation update happy path.
+     */
     public function test_mutation_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -201,6 +197,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -224,6 +223,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $this->assertDatabaseMissing('currencies', ['id' => $id]);
     }
 
+    /**
+     * Test mutation delete last currency fails.
+     */
     public function test_mutation_delete_last_currency_fails(): void
     {
         $admin = $this->createAdmin();
@@ -248,6 +250,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $this->assertDatabaseHas('currencies', ['id' => $id]);
     }
 
+    /**
+     * Test mutation mass delete happy path.
+     */
     public function test_mutation_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -270,5 +275,33 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertOk();
         $this->assertDatabaseMissing('currencies', ['id' => $id1]);
         $this->assertDatabaseMissing('currencies', ['id' => $id2]);
+    }
+
+    /**
+     * Unique currency code.
+     */
+    protected function uniqueCurrencyCode(string $prefix = 'G'): string
+    {
+        $letters = chr(rand(65, 90)).chr(rand(65, 90));
+
+        return strtoupper(substr($prefix.$letters, 0, 3));
+    }
+
+    /**
+     * Insert currency.
+     */
+    protected function insertCurrency(array $overrides = []): int
+    {
+        return \DB::table('currencies')->insertGetId(array_merge([
+            'code' => $this->uniqueCurrencyCode(),
+            'name' => 'GQL Currency',
+            'symbol' => 'G$',
+            'decimal' => 2,
+            'group_separator' => ',',
+            'decimal_separator' => '.',
+            'currency_position' => 'left',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
     }
 }

@@ -8,13 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Slim order-item preview — nested sub-resource of AdminOrder (`items`
- * connection on the orders listing). Eloquent #[ApiResource] (operations: [])
- * so the parent's items() HasMany resolves as a GraphQL connection
- * (`items { edges { node } }`). The listing provider forceFills each row from
- * the already-loaded order items, so no per-row query.
- */
 #[ApiResource(
     shortName: 'AdminOrderItemPreview',
     operations: [],
@@ -35,12 +28,18 @@ class AdminOrderItemPreview extends Model
         'qty_ordered' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get product image attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getProductImageAttribute(): ?string
     {

@@ -400,30 +400,63 @@ class AdminRmaCustomField
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The code.
+     */
     public ?string $code = null;
 
+    /**
+     * The label.
+     */
     public ?string $label = null;
 
+    /**
+     * The type.
+     */
     public ?string $type = null;
 
+    /**
+     * The is required.
+     */
     public ?int $is_required = null;
 
+    /**
+     * The position.
+     */
     public ?int $position = null;
 
+    /**
+     * The input validation.
+     */
     public ?string $input_validation = null;
 
+    /**
+     * The status.
+     */
     public ?int $status = null;
 
     /** @var array<int,array{id:int,name:string,value:string}>|null */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $options = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

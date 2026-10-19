@@ -8,12 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCartRule;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Minimal placeholder provider for PUT / DELETE on AdminMarketingCartRule.
- * Real lookup lives in the processor.
- */
 class AdminMarketingCartRuleWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminMarketingCartRule
     {
         if (! AdminAuthHelper::resolveAdmin()) {

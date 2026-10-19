@@ -7,18 +7,9 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class RmaStatusTest extends AdminApiTestCase
 {
-    private function createStatus(string $title, int $default = 0): int
-    {
-        return DB::table('rma_statuses')->insertGetId([
-            'title' => $title,
-            'status' => 1,
-            'color' => '#abcdef',
-            'default' => $default,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
+    /**
+     * Test create.
+     */
     public function test_create(): void
     {
         $admin = $this->createAdmin();
@@ -34,6 +25,9 @@ class RmaStatusTest extends AdminApiTestCase
         $this->assertDatabaseHas('rma_statuses', ['id' => $response->json('id')]);
     }
 
+    /**
+     * Test create duplicate title rejected.
+     */
     public function test_create_duplicate_title_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -48,6 +42,9 @@ class RmaStatusTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test list and get.
+     */
     public function test_list_and_get(): void
     {
         $admin = $this->createAdmin();
@@ -62,6 +59,9 @@ class RmaStatusTest extends AdminApiTestCase
         expect((int) $get->json('id'))->toBe($id);
     }
 
+    /**
+     * Test update.
+     */
     public function test_update(): void
     {
         $admin = $this->createAdmin();
@@ -77,6 +77,9 @@ class RmaStatusTest extends AdminApiTestCase
         expect($response->json('color'))->toBe('#111111');
     }
 
+    /**
+     * Test delete non default.
+     */
     public function test_delete_non_default(): void
     {
         $admin = $this->createAdmin();
@@ -88,6 +91,9 @@ class RmaStatusTest extends AdminApiTestCase
         $this->assertDatabaseMissing('rma_statuses', ['id' => $id]);
     }
 
+    /**
+     * Test delete default rejected.
+     */
     public function test_delete_default_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -99,6 +105,9 @@ class RmaStatusTest extends AdminApiTestCase
         $this->assertDatabaseHas('rma_statuses', ['id' => $id]);
     }
 
+    /**
+     * Test mass delete skips default.
+     */
     public function test_mass_delete_skips_default(): void
     {
         $admin = $this->createAdmin();
@@ -112,6 +121,9 @@ class RmaStatusTest extends AdminApiTestCase
         $this->assertDatabaseMissing('rma_statuses', ['id' => $gone]);
     }
 
+    /**
+     * Test mass update status.
+     */
     public function test_mass_update_status(): void
     {
         $admin = $this->createAdmin();
@@ -126,6 +138,21 @@ class RmaStatusTest extends AdminApiTestCase
         $this->assertDatabaseHas('rma_statuses', [
             'id' => $id,
             'status' => 0,
+        ]);
+    }
+
+    /**
+     * Create status.
+     */
+    private function createStatus(string $title, int $default = 0): int
+    {
+        return DB::table('rma_statuses')->insertGetId([
+            'title' => $title,
+            'status' => 1,
+            'color' => '#abcdef',
+            'default' => $default,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 }

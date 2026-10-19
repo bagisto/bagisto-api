@@ -9,14 +9,11 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CompareItem;
 
-/**
- * Provider for REST GET /api/shop/compare-items/{id}
- *
- * Enforces authentication and customer ownership so a customer cannot
- * read another customer's compare-item row by guessing its ID.
- */
 class CompareItemItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $customer = Auth::guard('sanctum')->user();

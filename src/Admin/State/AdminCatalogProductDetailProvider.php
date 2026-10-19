@@ -14,21 +14,11 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Product\Models\Product;
 
-/**
- * Provider for the admin catalog product detail endpoint.
- *
- * REST  : GET /api/admin/catalog/products/{id}
- *
- * Eager-loads all relations and builds a type-aware AdminCatalogProduct DTO.
- * Type-specific blocks (superAttributes, variants, bundleOptions, linkedProducts,
- * downloadableLinks, downloadableSamples) are populated only for the matching
- * product type — all others remain null.
- *
- * Nested objects are returned as plain associative arrays to avoid API Platform
- * serialising them as IRIs (lesson from Wave 2 / Phase 1.3).
- */
 class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
 {
+    /**
+     * The graphql relations constant.
+     */
     private const GRAPHQL_RELATIONS = [
         'images', 'videos', 'categories', 'inventories', 'customer_group_prices', 'translations',
         'super_attributes.options', 'variants.attribute_values', 'bundle_options.products',
@@ -37,6 +27,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         'channels', 'related_products', 'up_sells', 'cross_sells',
     ];
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         if (empty($context['graphql_operation_name'])) {
@@ -62,11 +55,6 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         return $product;
     }
 
-    protected function getNotFoundLangKey(): string
-    {
-        return 'bagistoapi::app.admin.product.not-found';
-    }
-
     /**
      * Public alias of {@see findEntity()} so the Phase 5.3 create processor
      * can re-fetch a freshly-created product with the same eager-loads.
@@ -85,11 +73,25 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         return $this->mapToDto($product);
     }
 
+    /**
+     * Load eloquent for graph ql.
+     */
     public function loadEloquentForGraphQL(int $id): ?AdminCatalogProduct
     {
         return AdminCatalogProduct::with(self::GRAPHQL_RELATIONS)->find($id);
     }
 
+    /**
+     * Get not found lang key.
+     */
+    protected function getNotFoundLangKey(): string
+    {
+        return 'bagistoapi::app.admin.product.not-found';
+    }
+
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return Product::with([
@@ -120,9 +122,11 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         ])->find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $product): AdminCatalogProductRestDto
     {
-        /** @var Product $product */
         $dto = new AdminCatalogProductRestDto;
 
         $dto->id = (int) $product->id;
@@ -220,6 +224,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         return $dto;
     }
 
+    /**
+     * Build translations.
+     */
     private function buildTranslations(Product $product): array
     {
         $flats = $product->product_flats;
@@ -239,6 +246,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         ])->values()->all();
     }
 
+    /**
+     * Build images.
+     */
     private function buildImages(Product $product): array
     {
         return $product->images->map(fn ($image) => [
@@ -250,6 +260,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         ])->values()->all();
     }
 
+    /**
+     * Build categories.
+     */
     private function buildCategories(Product $product): array
     {
         return $product->categories->map(function ($category) {
@@ -264,6 +277,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         })->values()->all();
     }
 
+    /**
+     * Build inventories.
+     */
     private function buildInventories(Product $product): array
     {
         return $product->inventories->map(fn ($inventory) => [
@@ -273,6 +289,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         ])->values()->all();
     }
 
+    /**
+     * Build customer group prices.
+     */
     private function buildCustomerGroupPrices(Product $product): array
     {
         return $product->customer_group_prices->map(fn ($customerGroupPrice) => [
@@ -285,6 +304,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         ])->values()->all();
     }
 
+    /**
+     * Populate configurable.
+     */
     private function populateConfigurable(AdminCatalogProductRestDto $dto, Product $product): void
     {
         $dto->superAttributes = $product->super_attributes->map(fn ($attribute) => [
@@ -346,6 +368,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         })->values()->all();
     }
 
+    /**
+     * Populate bundle.
+     */
     private function populateBundle(AdminCatalogProductRestDto $dto, Product $product): void
     {
         $dto->bundleOptions = $product->bundle_options
@@ -419,6 +444,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         }
     }
 
+    /**
+     * Populate grouped.
+     */
     private function populateGrouped(AdminCatalogProductRestDto $dto, Product $product): void
     {
         $dto->linkedProducts = $product->grouped_products->map(function ($groupedProduct) {
@@ -440,6 +468,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         })->values()->all();
     }
 
+    /**
+     * Populate downloadable.
+     */
     private function populateDownloadable(AdminCatalogProductRestDto $dto, Product $product): void
     {
         $dto->downloadableLinks = $product->downloadable_links->map(fn ($link) => [
@@ -473,6 +504,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         ])->values()->all();
     }
 
+    /**
+     * Populate booking.
+     */
     private function populateBooking(AdminCatalogProductRestDto $dto, Product $product): void
     {
         $bookingProduct = $product->booking_products->first();
@@ -624,6 +658,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         ];
     }
 
+    /**
+     * Build customizable options.
+     */
     private function buildCustomizableOptions(Product $product): array
     {
         if (! $product->relationLoaded('customizable_options')) {
@@ -665,6 +702,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         })->values()->all();
     }
 
+    /**
+     * Build videos.
+     */
     private function buildVideos(Product $product): array
     {
         if (! $product->relationLoaded('videos')) {
@@ -679,6 +719,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         ])->values()->all();
     }
 
+    /**
+     * Build channels.
+     */
     private function buildChannels(Product $product): array
     {
         $assignedIds = $product->relationLoaded('channels')
@@ -696,10 +739,6 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
     /**
      * Build the attribute-family field list with the product's resolved value
      * per attribute — edit-page parity. Mirrors the core edit form exactly:
-     * iterates the family's attribute groups, pulls each group's editable
-     * attributes (super-attributes excluded — surfaced under superAttributes),
-     * and resolves every value through the same channel/locale-aware accessor
-     * the blade uses, so empty fields still appear (value null).
      */
     private function buildAttributes(Product $product): array
     {
@@ -797,8 +836,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
 
     /**
      * Resolve the integer attribute_id for a given attribute code from the
-     * product's loaded attribute_family. Falls back to 0 (no match) if the
-     * family is not loaded or the attribute is not in it.
+     * product's loaded attribute_family. Falls back to 0 (no match) if the.
      */
     private function resolveAttributeId(Product $product, string $code): int
     {

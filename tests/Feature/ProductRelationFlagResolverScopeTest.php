@@ -7,6 +7,9 @@ use Webkul\BagistoApi\Tests\BagistoApiTest;
 
 class ProductRelationFlagResolverScopeTest extends BagistoApiTest
 {
+    /**
+     * Test resolver is scoped to the request lifecycle.
+     */
     public function test_resolver_is_scoped_to_the_request_lifecycle(): void
     {
         $first = app(ProductRelationFlagResolver::class);

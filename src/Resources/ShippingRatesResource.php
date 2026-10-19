@@ -32,6 +32,16 @@ class ShippingRatesResource
     }
 
     /**
+     * Resolve the resource to array.
+     *
+     * @return array
+     */
+    public function resolve()
+    {
+        return $this->toArray();
+    }
+
+    /**
      * Map the rates of one carrier group.
      *
      * @return array<int, array<string, mixed>>
@@ -63,15 +73,5 @@ class ShippingRatesResource
         }
 
         return $rates;
-    }
-
-    /**
-     * Resolve the resource to array.
-     *
-     * @return array
-     */
-    public function resolve()
-    {
-        return $this->toArray();
     }
 }

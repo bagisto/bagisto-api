@@ -23,6 +23,9 @@ abstract class AdminReportingQueryResolver implements QueryItemResolverInterface
     /** 'graph' (panel summary) | 'table' (View Details). */
     protected string $mode = 'graph';
 
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?object $item, array $context): object
     {
         if (! AdminAuthHelper::resolveAdmin()) {

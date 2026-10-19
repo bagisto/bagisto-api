@@ -16,11 +16,17 @@ class AdminAppearanceSectionReorderProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SectionRepository $sectionRepository,
         protected AppearanceScopeGuard $scope,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $this->authorizedAdmin('appearance.sections.edit', 'bagistoapi::app.admin.appearance.no-permission');
@@ -45,9 +51,6 @@ class AdminAppearanceSectionReorderProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.appearance.section.unknown-section'), 422);
         }
 
-        // Positions are read back as 1..n over the ids given, so a partial list would
-        // renumber those sections on top of the ones left out of it. The order is only
-        // meaningful for a whole theme + channel, so that is what has to be sent.
         $scopes = $sections
             ->map(fn ($section) => $section->theme_code.'|'.$section->channel_id)
             ->unique();

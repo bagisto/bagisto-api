@@ -12,11 +12,17 @@ class AdminRmaStatusMassDeleteInput
     #[Groups(['mutation'])]
     public ?array $indices = null;
 
+    /**
+     * Get indices.
+     */
     public function getIndices(): ?array
     {
         return $this->indices;
     }
 
+    /**
+     * Set indices.
+     */
     public function setIndices(?array $value): void
     {
         $this->indices = $value;

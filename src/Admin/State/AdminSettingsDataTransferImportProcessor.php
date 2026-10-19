@@ -16,18 +16,18 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\DataTransfer\Models\Import;
 
-/**
- * Handles DELETE on AdminSettingsDataTransferImport.
- *
- * Permission resolution mirrors AdminSettingsChannelProcessor — reads
- * role->permission_type / role->permissions directly. No bouncer() calls.
- */
 class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminSettingsDataTransferImportItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -57,6 +57,9 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsDataTransferImport
     {
         $import = Import::find($id);
@@ -87,6 +90,9 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.settings.data-transfer.import.deleted')];
     }
 
+    /**
+     * Delete file.
+     */
     protected function deleteFile(?string $path): void
     {
         if (! $path) {
@@ -101,6 +107,9 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

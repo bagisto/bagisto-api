@@ -21,25 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingEventProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
 
-/**
- * Admin Marketing → Events endpoints (Block F2b).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Communications\EventController 1:1.
- *
- * REST:
- *   GET    /api/admin/marketing/events
- *   GET    /api/admin/marketing/events/{id}
- *   POST   /api/admin/marketing/events
- *   PUT    /api/admin/marketing/events/{id}
- *   DELETE /api/admin/marketing/events/{id}
- *
- * GraphQL:
- *   adminMarketingEvents             — cursor listing
- *   adminMarketingEvent(id:)         — detail
- *   createAdminMarketingEvent
- *   updateAdminMarketingEvent
- *   deleteAdminMarketingEvent
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingEvent',
@@ -310,21 +291,39 @@ class AdminMarketingEvent
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The description.
+     */
     #[ApiProperty(writable: false)]
     public ?string $description = null;
 
+    /**
+     * The date.
+     */
     #[ApiProperty(writable: false)]
     public ?string $date = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 }

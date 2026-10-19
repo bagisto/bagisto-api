@@ -9,6 +9,9 @@ class OrderCancelTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
+    /**
+     * Test cancel requires authentication.
+     */
     public function test_cancel_requires_authentication(): void
     {
         $mutation = 'mutation($input: createAdminCancelOrderInput!){ createAdminCancelOrder(input:$input){ adminOrderDetail { id } } }';
@@ -17,6 +20,9 @@ class OrderCancelTest extends AdminApiTestCase
         expect($errors)->toBeArray();
     }
 
+    /**
+     * Test cancel returns errors for unknown order.
+     */
     public function test_cancel_returns_errors_for_unknown_order(): void
     {
         $admin = $this->createAdmin();
@@ -25,6 +31,9 @@ class OrderCancelTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeArray();
     }
 
+    /**
+     * Test cancel succeeds on cancellable.
+     */
     public function test_cancel_succeeds_on_cancellable(): void
     {
         $id = $this->findOrCreateCancellableOrder()->id;

@@ -7,6 +7,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminMarketingCartRuleCouponMassDeleteInput
 {
+    /**
+     * The cart rule id.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?int $cartRuleId = null;

@@ -16,23 +16,18 @@ use GraphQL\Type\Schema;
 
 /**
  * Builds a GraphQL schema scoped to ONE API surface (shop OR admin).
- *
- * The default API Platform SchemaBuilder iterates every registered #[ApiResource]
- * (~261 here) and builds query/mutation field definitions for all of them on every
- * request. Because the storefront (`/api/graphql`) and the admin (`/api/admin/graphql`)
- * endpoints share one builder, each endpoint pays to build the OTHER surface's ~130
- * resources too — roughly doubling the per-request schema-build cost.
- *
- * This builder wraps the real ResourceNameCollectionFactory with a namespace filter
- * (admin resources live under a `\Admin\` namespace segment; framework error resources
- * stay in both schemas) so each endpoint only builds its own surface. It reuses the
- * shared singleton TypesContainer / TypesFactory / FieldsBuilder so lazily-resolved
- * GraphQL types still resolve identically to the unscoped builder.
+ * The default API Platform SchemaBuilder iterates every registered #[ApiResource].
  */
 final class ScopedSchemaBuilder implements SchemaBuilderInterface
 {
+    /**
+     * The inner.
+     */
     private SchemaBuilder $inner;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         ResourceNameCollectionFactoryInterface $resourceNameCollectionFactory,
         ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory,
@@ -50,11 +45,17 @@ final class ScopedSchemaBuilder implements SchemaBuilderInterface
         );
     }
 
+    /**
+     * Get schema.
+     */
     public function getSchema(): Schema
     {
         return $this->inner->getSchema();
     }
 
+    /**
+     * Scoped name factory.
+     */
     private function scopedNameFactory(
         ResourceNameCollectionFactoryInterface $inner,
         bool $adminScope,
@@ -71,7 +72,6 @@ final class ScopedSchemaBuilder implements SchemaBuilderInterface
                 $keep = [];
 
                 foreach ($this->inner->create() as $resourceClass) {
-                    // Framework resources (Error / ValidationError) belong in every schema.
                     if (str_starts_with($resourceClass, 'ApiPlatform\\')) {
                         $keep[] = $resourceClass;
 

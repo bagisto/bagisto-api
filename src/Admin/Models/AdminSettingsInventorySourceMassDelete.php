@@ -10,15 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsInventorySourceMassDeleteInput;
 use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceMassDeleteProcessor;
 
-/**
- * Mass-delete admin settings inventory sources.
- *
- * REST:    POST /api/admin/settings/inventory-sources/mass-delete
- * GraphQL: createAdminSettingsInventorySourceMassDelete
- *
- * Guards: refuses to delete every remaining source (must leave at least 1);
- * refuses any id that is referenced by product_inventories.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsInventorySourceMassDelete',
@@ -80,6 +71,9 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceMassDeleteProcesso
 )]
 class AdminSettingsInventorySourceMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -87,6 +81,9 @@ class AdminSettingsInventorySourceMassDelete
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

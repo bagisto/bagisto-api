@@ -7,9 +7,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminCustomerGroupCreateInput
 {
+    /**
+     * The code.
+     */
     #[ApiProperty] #[Groups(['mutation'])]
     public ?string $code = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty] #[Groups(['mutation'])]
     public ?string $name = null;
 }

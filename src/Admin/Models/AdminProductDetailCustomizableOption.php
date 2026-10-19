@@ -7,11 +7,6 @@ use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * Customizable option — nested sub-resource of AdminCatalogProduct
- * (`customizableOptions` connection). `translations` + `prices` are nested
- * connections.
- */
 #[ApiResource(
     shortName: 'AdminProductDetailCustomizableOption',
     operations: [],
@@ -35,18 +30,27 @@ class AdminProductDetailCustomizableOption extends Model
         'max_characters' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Translations.
+     */
     #[ApiProperty(writable: false)]
     public function translations(): HasMany
     {
         return $this->hasMany(AdminProductDetailCustomizableOptionTranslation::class, 'product_customizable_option_id');
     }
 
+    /**
+     * Prices.
+     */
     #[ApiProperty(writable: false)]
     public function prices(): HasMany
     {

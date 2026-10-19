@@ -10,9 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeMassDeleteInput;
 use Webkul\BagistoApi\Admin\State\AdminSettingsThemeMassDeleteProcessor;
 
-/**
- * Mass-delete admin settings theme customizations.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsThemeMassDelete',
@@ -63,6 +60,9 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeMassDeleteProcessor;
 )]
 class AdminSettingsThemeMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -70,6 +70,9 @@ class AdminSettingsThemeMassDelete
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

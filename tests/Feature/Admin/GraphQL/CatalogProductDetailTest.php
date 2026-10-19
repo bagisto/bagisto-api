@@ -6,74 +6,11 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Product\Helpers\Indexers\Flat;
 
-/**
- * GraphQL coverage for the admin catalog product detail Query.
- */
 class CatalogProductDetailTest extends AdminApiTestCase
 {
-    protected function insertProductFlat(object $product, array $overrides = []): void
-    {
-        $attributeFamilyId = (int) (DB::table('attribute_families')->value('id') ?? 1);
-
-        DB::table('product_flat')->insertOrIgnore(array_merge([
-            'product_id' => $product->id,
-            'locale' => 'en',
-            'channel' => 'default',
-            'sku' => $product->sku,
-            'name' => 'Test '.$product->sku,
-            'type' => $product->type ?? 'simple',
-            'status' => 1,
-            'price' => 29.99,
-            'url_key' => strtolower($product->sku).'-'.$product->id,
-            'attribute_family_id' => $attributeFamilyId,
-            'visible_individually' => 1,
-            'short_description' => 'Short desc for '.$product->sku,
-            'description' => 'Long description for '.$product->sku,
-            'featured' => 0,
-            'new' => 0,
-        ], $overrides));
-
-        $this->refreshFlatDerived((int) $product->id);
-    }
-
-    protected function refreshFlatDerived(int $productId): void
-    {
-        // BACKWARD COMPATIBILITY: product_flat gained these columns in 2.4.10; an older
-        // core has the listing compute them. Remove when the minimum core is 2.4.10.
-        if (! $this->core()->hasProductFlatDerivedColumns()) {
-            return;
-        }
-
-        app(Flat::class)->refreshDerivedColumns([$productId]);
-    }
-
-    private function detailQuery(): string
-    {
-        return <<<'GQL'
-            query($id: ID!) {
-              adminCatalogProduct(id: $id) {
-                id
-                _id
-                sku
-                type
-                name
-                status
-                translations
-                images
-                superAttributes
-                variants
-                bundleOptions
-                linkedProducts
-                downloadableLinks
-                downloadableSamples
-                channel
-                channels
-                attributes
-              }
-            }
-        GQL;
-    }
-
+    /**
+     * Test query detail channels and attributes resolve.
+     */
     public function test_query_detail_channels_and_attributes_resolve(): void
     {
         $admin = $this->createAdmin();
@@ -103,6 +40,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertNotEmpty($node['attributes']);
     }
 
+    /**
+     * Test query detail returns simple product with base fields.
+     */
     public function test_query_detail_returns_simple_product_with_base_fields(): void
     {
         $admin = $this->createAdmin();
@@ -152,6 +92,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         expect($restResponse->json('type'))->toBe('simple');
     }
 
+    /**
+     * Test query detail configurable includes super attributes.
+     */
     public function test_query_detail_configurable_includes_super_attributes(): void
     {
         $admin = $this->createAdmin();
@@ -192,6 +135,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertIsArray($restResponse->json('variants'));
     }
 
+    /**
+     * Test query detail unknown id returns error.
+     */
     public function test_query_detail_unknown_id_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -217,6 +163,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         );
     }
 
+    /**
+     * Test query detail requires token.
+     */
     public function test_query_detail_requires_token(): void
     {
         $product = $this->createBaseProduct('simple');
@@ -240,6 +189,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         expect(count($response->json('errors')))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test query detail translations inlined.
+     */
     public function test_query_detail_translations_inlined(): void
     {
         $admin = $this->createAdmin();
@@ -278,5 +230,75 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertGreaterThan(0, count($translations));
         $enTrans = collect($translations)->firstWhere('locale', 'en');
         $this->assertNotNull($enTrans, 'Expected an "en" locale in translations array (REST fallback).');
+    }
+
+    /**
+     * Insert product flat.
+     */
+    protected function insertProductFlat(object $product, array $overrides = []): void
+    {
+        $attributeFamilyId = (int) (DB::table('attribute_families')->value('id') ?? 1);
+
+        DB::table('product_flat')->insertOrIgnore(array_merge([
+            'product_id' => $product->id,
+            'locale' => 'en',
+            'channel' => 'default',
+            'sku' => $product->sku,
+            'name' => 'Test '.$product->sku,
+            'type' => $product->type ?? 'simple',
+            'status' => 1,
+            'price' => 29.99,
+            'url_key' => strtolower($product->sku).'-'.$product->id,
+            'attribute_family_id' => $attributeFamilyId,
+            'visible_individually' => 1,
+            'short_description' => 'Short desc for '.$product->sku,
+            'description' => 'Long description for '.$product->sku,
+            'featured' => 0,
+            'new' => 0,
+        ], $overrides));
+
+        $this->refreshFlatDerived((int) $product->id);
+    }
+
+    /**
+     * Refresh flat derived.
+     */
+    protected function refreshFlatDerived(int $productId): void
+    {
+        if (! $this->core()->hasProductFlatDerivedColumns()) {
+            return;
+        }
+
+        app(Flat::class)->refreshDerivedColumns([$productId]);
+    }
+
+    /**
+     * Detail query.
+     */
+    private function detailQuery(): string
+    {
+        return <<<'GQL'
+            query($id: ID!) {
+              adminCatalogProduct(id: $id) {
+                id
+                _id
+                sku
+                type
+                name
+                status
+                translations
+                images
+                superAttributes
+                variants
+                bundleOptions
+                linkedProducts
+                downloadableLinks
+                downloadableSamples
+                channel
+                channels
+                attributes
+              }
+            }
+        GQL;
     }
 }

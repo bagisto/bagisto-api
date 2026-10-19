@@ -143,7 +143,7 @@ class Page extends BasePage
     protected $with = ['translations'];
 
     /**
-     * Get unique page identifier for API Platform
+     * Get unique page identifier for API Platform.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -152,7 +152,7 @@ class Page extends BasePage
     }
 
     /**
-     * Get layout
+     * Get layout.
      */
     #[ApiProperty(writable: false, readable: true)]
     public function getLayout(): ?string
@@ -161,7 +161,7 @@ class Page extends BasePage
     }
 
     /**
-     * Get created at
+     * Get created at.
      */
     #[ApiProperty(writable: false, readable: true)]
     public function getCreatedAt(): ?\DateTime
@@ -170,7 +170,7 @@ class Page extends BasePage
     }
 
     /**
-     * Get updated at
+     * Get updated at.
      */
     #[ApiProperty(writable: false, readable: true)]
     public function getUpdatedAt(): ?\DateTime
@@ -179,7 +179,7 @@ class Page extends BasePage
     }
 
     /**
-     * Get current locale translation for API
+     * Get current locale translation for API.
      */
     #[ApiProperty(readable: true, writable: false, description: 'Current locale translation')]
     public function getCurrentTranslation(): ?Model

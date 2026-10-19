@@ -22,17 +22,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
 
-/**
- * Admin Settings → Tax Rates endpoints (Block B Wave 3).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\Tax\TaxRateController.
- *
- * is_zip conditional validation:
- *   - is_zip = false → zip_code required (the specific zip mode)
- *   - is_zip = true  → zip_from + zip_to required (the range mode)
- *
- * No mass-delete in the monolith admin UI; not exposed.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsTaxRate',
@@ -328,39 +317,75 @@ class AdminSettingsTaxRate
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
+    /**
+     * The identifier.
+     */
     #[ApiProperty(writable: false, example: 'US-CA-SF')]
     public ?string $identifier = null;
 
+    /**
+     * The is zip.
+     */
     #[ApiProperty(writable: false, example: false)]
     public ?bool $is_zip = null;
 
+    /**
+     * The zip code.
+     */
     #[ApiProperty(writable: false, example: '94103')]
     public ?string $zip_code = null;
 
+    /**
+     * The zip from.
+     */
     #[ApiProperty(writable: false, example: null)]
     public ?string $zip_from = null;
 
+    /**
+     * The zip to.
+     */
     #[ApiProperty(writable: false, example: null)]
     public ?string $zip_to = null;
 
+    /**
+     * The state.
+     */
     #[ApiProperty(writable: false, example: 'CA')]
     public ?string $state = null;
 
+    /**
+     * The country.
+     */
     #[ApiProperty(writable: false, example: 'US')]
     public ?string $country = null;
 
+    /**
+     * The tax rate.
+     */
     #[ApiProperty(writable: false, example: 8.5)]
     public ?float $tax_rate = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, example: 'Tax rate deleted successfully.')]
     public ?string $message = null;
 }

@@ -13,41 +13,38 @@ use Webkul\Sales\Models\OrderTransaction;
 use Webkul\Shop\Mail\Order\InvoicedNotification;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for Admin Invoice — create / view / print / mass-update-status.
- */
 class InvoiceTest extends AdminApiTestCase
 {
     use AdminFixtureFactory, ConfiguresSettings;
 
-    protected function anInvoiceableOrder(): Order
-    {
-        $existing = Order::with('items')
-            ->whereNotIn('status', [Order::STATUS_CLOSED, Order::STATUS_FRAUD])
-            ->whereHas('items', function ($q) {
-                $q->whereRaw('(qty_ordered - qty_invoiced - qty_canceled) > 0');
-            })
-            ->first();
-
-        return $existing ?? $this->bootstrapInvoiceableOrder('pending');
-    }
-
+    /**
+     * Test create requires authentication.
+     */
     public function test_create_requires_authentication(): void
     {
         $this->publicPost('/api/admin/orders/1/invoices', ['items' => []])->assertStatus(401);
     }
 
+    /**
+     * Test view requires authentication.
+     */
     public function test_view_requires_authentication(): void
     {
         $this->publicGet('/api/admin/invoices/1')->assertStatus(401);
     }
 
+    /**
+     * Test view returns 404 for unknown invoice.
+     */
     public function test_view_returns_404_for_unknown_invoice(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/invoices/999999999')->assertStatus(404);
     }
 
+    /**
+     * Test create returns 404 for unknown order.
+     */
     public function test_create_returns_404_for_unknown_order(): void
     {
         $admin = $this->createAdmin();
@@ -58,6 +55,9 @@ class InvoiceTest extends AdminApiTestCase
             ->assertStatus(404);
     }
 
+    /**
+     * Test create rejects when items missing.
+     */
     public function test_create_rejects_when_items_missing(): void
     {
         $order = $this->anInvoiceableOrder();
@@ -66,6 +66,9 @@ class InvoiceTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create rejects qty exceeding available.
+     */
     public function test_create_rejects_qty_exceeding_available(): void
     {
         $order = $this->anInvoiceableOrder();
@@ -84,6 +87,9 @@ class InvoiceTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create succeeds with valid items.
+     */
     public function test_create_succeeds_with_valid_items(): void
     {
         $order = $this->anInvoiceableOrder();
@@ -106,6 +112,9 @@ class InvoiceTest extends AdminApiTestCase
         expect($response->json('incrementId'))->not->toBeNull();
     }
 
+    /**
+     * Test create with transaction flag records order transaction.
+     */
     public function test_create_with_transaction_flag_records_order_transaction(): void
     {
         $order = $this->bootstrapInvoiceableOrder('pending');
@@ -130,6 +139,9 @@ class InvoiceTest extends AdminApiTestCase
         expect(OrderTransaction::where('order_id', $order->id)->count())->toBe(1);
     }
 
+    /**
+     * Test create without transaction flag records no order transaction.
+     */
     public function test_create_without_transaction_flag_records_no_order_transaction(): void
     {
         $order = $this->bootstrapInvoiceableOrder('pending');
@@ -151,6 +163,9 @@ class InvoiceTest extends AdminApiTestCase
         expect(OrderTransaction::where('order_id', $order->id)->count())->toBe(0);
     }
 
+    /**
+     * Test view returns invoice detail.
+     */
     public function test_view_returns_invoice_detail(): void
     {
         $invoiceId = Invoice::query()->value('id') ?? $this->bootstrapOrderWithInvoice()->invoices->first()->id;
@@ -158,7 +173,6 @@ class InvoiceTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/invoices/'.$invoiceId);
         $response->assertOk();
         expect($response->json('id'))->toBe($invoiceId);
-        // Full column set + order/customer context now surfaced.
         expect($response->json())->toHaveKeys([
             'id', 'incrementId', 'state', 'totalQty',
             'baseSubTotal', 'baseSubTotalInclTax', 'baseTaxAmount', 'baseDiscountAmount',
@@ -166,14 +180,9 @@ class InvoiceTest extends AdminApiTestCase
             'customerName', 'customerEmail', 'channelName', 'orderStatus', 'orderDate',
             'order', 'items',
         ]);
-        // Addresses live on the order: order = { id, addresses: [...] }.
-        // (The order id moved from a top-level `orderId` to `order.id` when the
-        // invoice gained the `order` relation that carries the addresses.)
         expect($response->json('order'))->toBeArray();
         expect($response->json('order'))->toHaveKey('addresses');
         expect($response->json('order.id'))->not->toBeNull();
-        // Items must be inline objects, NOT IRI strings (regression: the typed-DTO
-        // array previously serialized each item as "/api/order_action_item_dtos/{id}").
         $items = $response->json('items');
         if (! empty($items)) {
             expect($items[0])->toBeArray();
@@ -181,6 +190,9 @@ class InvoiceTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test print returns pdf or skips.
+     */
     public function test_print_returns_pdf_or_skips(): void
     {
         $invoiceId = Invoice::query()->value('id') ?? $this->bootstrapOrderWithInvoice()->invoices->first()->id;
@@ -202,11 +214,9 @@ class InvoiceTest extends AdminApiTestCase
         expect($response->headers->get('Content-Type'))->toContain('pdf');
     }
 
-    protected function anInvoiceId(): int
-    {
-        return Invoice::query()->value('id') ?? $this->bootstrapOrderWithInvoice()->invoices->first()->id;
-    }
-
+    /**
+     * Test mass update status flips state.
+     */
     public function test_mass_update_status_flips_state(): void
     {
         $invoiceId = $this->anInvoiceId();
@@ -226,6 +236,9 @@ class InvoiceTest extends AdminApiTestCase
         Invoice::where('id', $invoiceId)->update(['state' => $original]);
     }
 
+    /**
+     * Test mass update status empty indices returns 422.
+     */
     public function test_mass_update_status_empty_indices_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -235,6 +248,9 @@ class InvoiceTest extends AdminApiTestCase
         ])->assertStatus(422);
     }
 
+    /**
+     * Test mass update status invalid value returns 422.
+     */
     public function test_mass_update_status_invalid_value_returns_422(): void
     {
         $invoiceId = $this->anInvoiceId();
@@ -245,6 +261,9 @@ class InvoiceTest extends AdminApiTestCase
         ])->assertStatus(422);
     }
 
+    /**
+     * Test mass update status requires authentication.
+     */
     public function test_mass_update_status_requires_authentication(): void
     {
         $this->publicPost('/api/admin/invoices/mass-update-status', [
@@ -253,6 +272,9 @@ class InvoiceTest extends AdminApiTestCase
         ])->assertStatus(401);
     }
 
+    /**
+     * Test mass update status no permission returns 403.
+     */
     public function test_mass_update_status_no_permission_returns_403(): void
     {
         $invoiceId = $this->anInvoiceId();
@@ -341,6 +363,29 @@ class InvoiceTest extends AdminApiTestCase
             ->assertStatus(403);
 
         Mail::assertNothingQueued();
+    }
+
+    /**
+     * An invoiceable order.
+     */
+    protected function anInvoiceableOrder(): Order
+    {
+        $existing = Order::with('items')
+            ->whereNotIn('status', [Order::STATUS_CLOSED, Order::STATUS_FRAUD])
+            ->whereHas('items', function ($q) {
+                $q->whereRaw('(qty_ordered - qty_invoiced - qty_canceled) > 0');
+            })
+            ->first();
+
+        return $existing ?? $this->bootstrapInvoiceableOrder('pending');
+    }
+
+    /**
+     * An invoice id.
+     */
+    protected function anInvoiceId(): int
+    {
+        return Invoice::query()->value('id') ?? $this->bootstrapOrderWithInvoice()->invoices->first()->id;
     }
 
     /**

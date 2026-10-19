@@ -16,11 +16,17 @@ class AdminRefundCreateProcessor implements ProcessorInterface
     use BuildsAdminRefund;
     use TranslatesActionPayload;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminOrderActionGuard $guard,
         protected RefundRepository $refundRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminRefund
     {
         $admin = $this->guard->resolveAdmin();
@@ -67,6 +73,9 @@ class AdminRefundCreateProcessor implements ProcessorInterface
         return $this->buildAdminRefund($refund->fresh(['items', 'items.product', 'order', 'order.addresses', 'order.payment']));
     }
 
+    /**
+     * Build payload.
+     */
     protected function buildPayload(mixed $data, array $context, Order $order): array
     {
         $itemsRaw = $this->extractItems($data, $context);
@@ -88,6 +97,9 @@ class AdminRefundCreateProcessor implements ProcessorInterface
         ];
     }
 
+    /**
+     * Extract items.
+     */
     protected function extractItems(mixed $data, array $context): array
     {
         if (
@@ -105,6 +117,9 @@ class AdminRefundCreateProcessor implements ProcessorInterface
             ?? []);
     }
 
+    /**
+     * Extract numeric.
+     */
     protected function extractNumeric(mixed $data, array $context, string $camel, float $default, ?string $snake = null): float
     {
         if (
@@ -123,6 +138,9 @@ class AdminRefundCreateProcessor implements ProcessorInterface
         return (float) $value;
     }
 
+    /**
+     * Validate qty.
+     */
     protected function validateQty(Order $order, array $flat): void
     {
         $byId = $order->items->keyBy('id');

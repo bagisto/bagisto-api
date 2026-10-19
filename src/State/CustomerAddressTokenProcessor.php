@@ -194,7 +194,6 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
      */
     private function handleDelete(Customer $customer, mixed $data): CustomerAddressInput
     {
-        // Get address ID from DTO (GraphQL) or Eloquent model (REST DELETE)
         $addressId = $data->addressId ?? $data->id ?? null;
 
         if (! $addressId) {
@@ -209,7 +208,6 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.graphql.address.address-not-found'));
         }
 
-        /** Capture address data before deletion for response */
         $response = $this->mapAddressToInput($address);
 
         Event::dispatch('customer.addresses.delete.before', $addressId);
@@ -309,7 +307,7 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
     }
 
     /**
-     * Map an address model to a CustomerAddressInput DTO for delete response
+     * Map an address model to a CustomerAddressInput DTO for delete response.
      */
     private function mapAddressToInput(AddressModel $address): CustomerAddressInput
     {

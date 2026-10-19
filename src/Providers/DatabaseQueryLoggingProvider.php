@@ -7,24 +7,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
-/**
- * Database Query Logging Service Provider
- *
- * Logs database queries for debugging and performance monitoring
- * Only enabled when api-platform.database.log_queries is true
- */
 class DatabaseQueryLoggingProvider extends ServiceProvider
 {
     /**
-     * Register services
+     * Register services.
      */
-    public function register(): void
-    {
-        //
-    }
+    public function register(): void {}
 
     /**
-     * Bootstrap services
+     * Bootstrap services.
      */
     public function boot(): void
     {
@@ -38,7 +29,7 @@ class DatabaseQueryLoggingProvider extends ServiceProvider
     }
 
     /**
-     * Check if database query logging should be enabled
+     * Check if database query logging should be enabled.
      */
     private function shouldLogQueries(): bool
     {
@@ -46,7 +37,7 @@ class DatabaseQueryLoggingProvider extends ServiceProvider
     }
 
     /**
-     * Log a database query
+     * Log a database query.
      */
     private function logQuery(QueryExecuted $query): void
     {

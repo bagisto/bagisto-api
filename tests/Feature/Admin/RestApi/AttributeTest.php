@@ -8,32 +8,9 @@ use Webkul\User\Models\Admin;
 
 class AttributeTest extends AdminApiTestCase
 {
-    protected function insertAttribute(array $overrides = []): int
-    {
-        $id = \DB::table('attributes')->insertGetId(array_merge([
-            'code' => 'test_attr_'.uniqid(),
-            'admin_name' => 'Test Attribute '.uniqid(),
-            'type' => 'text',
-            'swatch_type' => null,
-            'validation' => null,
-            'position' => 1,
-            'is_required' => 0,
-            'is_unique' => 0,
-            'is_filterable' => 0,
-            'is_comparable' => 0,
-            'is_configurable' => 0,
-            'is_user_defined' => 1,
-            'is_visible_on_front' => 0,
-            'value_per_locale' => 0,
-            'value_per_channel' => 0,
-            'enable_wysiwyg' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-
-        return $id;
-    }
-
+    /**
+     * Test listing requires admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -43,6 +20,9 @@ class AttributeTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test listing rejects revoked token.
+     */
     public function test_listing_rejects_revoked_token(): void
     {
         $admin = $this->createAdmin();
@@ -57,6 +37,9 @@ class AttributeTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test listing rejects expired token.
+     */
     public function test_listing_rejects_expired_token(): void
     {
         $admin = $this->createAdmin();
@@ -71,6 +54,9 @@ class AttributeTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope for authenticated admin.
+     */
     public function test_listing_returns_envelope_for_authenticated_admin(): void
     {
         $admin = $this->createAdmin();
@@ -87,6 +73,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBe(10);
     }
 
+    /**
+     * Test listing returns seeded attribute row.
+     */
     public function test_listing_returns_seeded_attribute_row(): void
     {
         $admin = $this->createAdmin();
@@ -108,6 +97,9 @@ class AttributeTest extends AdminApiTestCase
         expect($row['locale'])->toBe('en');
     }
 
+    /**
+     * Test listing row has expected fields.
+     */
     public function test_listing_row_has_expected_fields(): void
     {
         $admin = $this->createAdmin();
@@ -131,6 +123,9 @@ class AttributeTest extends AdminApiTestCase
         expect($row['defaultValue'])->toBeNull();
     }
 
+    /**
+     * Test filter by id single.
+     */
     public function test_filter_by_id_single(): void
     {
         $admin = $this->createAdmin();
@@ -145,6 +140,9 @@ class AttributeTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test filter by id comma list.
+     */
     public function test_filter_by_id_comma_list(): void
     {
         $admin = $this->createAdmin();
@@ -161,6 +159,9 @@ class AttributeTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id3);
     }
 
+    /**
+     * Test filter by code partial.
+     */
     public function test_filter_by_code_partial(): void
     {
         $admin = $this->createAdmin();
@@ -175,6 +176,9 @@ class AttributeTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test filter by type.
+     */
     public function test_filter_by_type(): void
     {
         $admin = $this->createAdmin();
@@ -195,6 +199,9 @@ class AttributeTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test filter by admin name partial.
+     */
     public function test_filter_by_admin_name_partial(): void
     {
         $admin = $this->createAdmin();
@@ -215,6 +222,9 @@ class AttributeTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test filter by is required.
+     */
     public function test_filter_by_is_required(): void
     {
         $admin = $this->createAdmin();
@@ -235,6 +245,9 @@ class AttributeTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test filter by is user defined.
+     */
     public function test_filter_by_is_user_defined(): void
     {
         $admin = $this->createAdmin();
@@ -255,6 +268,9 @@ class AttributeTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id1);
     }
 
+    /**
+     * Test filter by locale.
+     */
     public function test_filter_by_locale(): void
     {
         $admin = $this->createAdmin();
@@ -278,6 +294,9 @@ class AttributeTest extends AdminApiTestCase
         expect($row['adminName'])->toBe('Attribut de locale');
     }
 
+    /**
+     * Test sort by code asc compound.
+     */
     public function test_sort_by_code_asc_compound(): void
     {
         $admin = $this->createAdmin();
@@ -294,6 +313,9 @@ class AttributeTest extends AdminApiTestCase
         expect($codes)->toBe($sorted);
     }
 
+    /**
+     * Test sort by position desc split.
+     */
     public function test_sort_by_position_desc_split(): void
     {
         $admin = $this->createAdmin();
@@ -319,6 +341,9 @@ class AttributeTest extends AdminApiTestCase
         expect($positions)->toBe($sorted);
     }
 
+    /**
+     * Test default sort is id desc.
+     */
     public function test_default_sort_is_id_desc(): void
     {
         $admin = $this->createAdmin();
@@ -334,6 +359,9 @@ class AttributeTest extends AdminApiTestCase
         expect($ids[0])->toBeGreaterThanOrEqual(max($id1, $id2, $id3));
     }
 
+    /**
+     * Test unknown sort falls back to default.
+     */
     public function test_unknown_sort_falls_back_to_default(): void
     {
         $admin = $this->createAdmin();
@@ -345,6 +373,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('data'))->toBeArray();
     }
 
+    /**
+     * Test pagination page two.
+     */
     public function test_pagination_page_two(): void
     {
         $admin = $this->createAdmin();
@@ -369,6 +400,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBe(10);
     }
 
+    /**
+     * Test per page above cap clamped.
+     */
     public function test_per_page_above_cap_clamped(): void
     {
         $admin = $this->createAdmin();
@@ -379,6 +413,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test per page zero falls back to default.
+     */
     public function test_per_page_zero_falls_back_to_default(): void
     {
         $admin = $this->createAdmin();
@@ -389,6 +426,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBe(10);
     }
 
+    /**
+     * Test page zero clamps to one.
+     */
     public function test_page_zero_clamps_to_one(): void
     {
         $admin = $this->createAdmin();
@@ -399,6 +439,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('meta.currentPage'))->toBe(1);
     }
 
+    /**
+     * Test page beyond last returns empty data.
+     */
     public function test_page_beyond_last_returns_empty_data(): void
     {
         $admin = $this->createAdmin();
@@ -410,6 +453,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('data'))->toBe([]);
     }
 
+    /**
+     * Test unknown filter is ignored.
+     */
     public function test_unknown_filter_is_ignored(): void
     {
         $admin = $this->createAdmin();
@@ -421,6 +467,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('data'))->toBeArray();
     }
 
+    /**
+     * Test invalid boolean filter is silently dropped.
+     */
     public function test_invalid_boolean_filter_is_silently_dropped(): void
     {
         $admin = $this->createAdmin();
@@ -433,6 +482,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('meta.total'))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test special characters in filter do not crash.
+     */
     public function test_special_characters_in_filter_do_not_crash(): void
     {
         $admin = $this->createAdmin();
@@ -451,6 +503,9 @@ class AttributeTest extends AdminApiTestCase
         $response3->assertOk();
     }
 
+    /**
+     * Test filter by is filterable.
+     */
     public function test_filter_by_is_filterable(): void
     {
         $admin = $this->createAdmin();
@@ -471,6 +526,9 @@ class AttributeTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test filter by is configurable.
+     */
     public function test_filter_by_is_configurable(): void
     {
         $admin = $this->createAdmin();
@@ -491,25 +549,9 @@ class AttributeTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
-    protected function insertAttributeOption(int $attributeId, array $overrides = []): int
-    {
-        return \DB::table('attribute_options')->insertGetId(array_merge([
-            'attribute_id' => $attributeId,
-            'admin_name' => 'Option '.uniqid(),
-            'swatch_value' => null,
-            'sort_order' => 0,
-        ], $overrides));
-    }
-
-    protected function insertAttributeOptionTranslation(int $optionId, string $locale, string $label): void
-    {
-        \DB::table('attribute_option_translations')->insert([
-            'attribute_option_id' => $optionId,
-            'locale' => $locale,
-            'label' => $label,
-        ]);
-    }
-
+    /**
+     * Test detail requires admin token.
+     */
     public function test_detail_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -520,6 +562,9 @@ class AttributeTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test detail rejects revoked token.
+     */
     public function test_detail_rejects_revoked_token(): void
     {
         $admin = $this->createAdmin();
@@ -535,6 +580,9 @@ class AttributeTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test detail unknown id returns 404.
+     */
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -544,6 +592,9 @@ class AttributeTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test detail zero id returns 404.
+     */
     public function test_detail_zero_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -553,6 +604,9 @@ class AttributeTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test detail negative id returns 4xx.
+     */
     public function test_detail_negative_id_returns_4xx(): void
     {
         $admin = $this->createAdmin();
@@ -563,6 +617,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBeLessThan(500);
     }
 
+    /**
+     * Test detail returns attribute with all fields for authenticated admin.
+     */
     public function test_detail_returns_attribute_with_all_fields_for_authenticated_admin(): void
     {
         $admin = $this->createAdmin();
@@ -599,6 +656,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('options'))->toBe([]);
     }
 
+    /**
+     * Test detail for attribute with no options returns empty array.
+     */
     public function test_detail_for_attribute_with_no_options_returns_empty_array(): void
     {
         $admin = $this->createAdmin();
@@ -614,6 +674,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('options'))->not()->toBeNull();
     }
 
+    /**
+     * Test detail for select attribute returns options with translations.
+     */
     public function test_detail_for_select_attribute_returns_options_with_translations(): void
     {
         $admin = $this->createAdmin();
@@ -655,6 +718,9 @@ class AttributeTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test detail translations array contains every seeded locale.
+     */
     public function test_detail_translations_array_contains_every_seeded_locale(): void
     {
         $admin = $this->createAdmin();
@@ -694,26 +760,9 @@ class AttributeTest extends AdminApiTestCase
         expect($frEntry['name'])->toBe('Multi Locale FR');
     }
 
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
-    protected function publicPut(string $url, array $data = []): TestResponse
-    {
-        return $this->putJson($url, $data);
-    }
-
-    protected function publicDelete(string $url): TestResponse
-    {
-        return $this->deleteJson($url);
-    }
-
+    /**
+     * Test create attribute simple type returns 201.
+     */
     public function test_create_attribute_simple_type_returns_201(): void
     {
         $admin = $this->createAdmin();
@@ -733,6 +782,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('isUserDefined'))->toBe(1);
     }
 
+    /**
+     * Test create attribute reads back comparable wysiwyg regex.
+     */
     public function test_create_attribute_reads_back_comparable_wysiwyg_regex(): void
     {
         $admin = $this->createAdmin();
@@ -758,9 +810,11 @@ class AttributeTest extends AdminApiTestCase
         expect($detail->json('regex'))->toBe('/^[A-Z]+$/');
     }
 
+    /**
+     * Test create attribute rejects a pattern the storefront cannot compile.
+     */
     public function test_create_attribute_rejects_a_pattern_the_storefront_cannot_compile(): void
     {
-        // BACKWARD COMPATIBILITY: remove when the minimum supported core is 2.4.10.
         $this->skipUnlessCoreSupports($this->core()->hasAttributeRegexRule(), 'Attribute regex validation');
 
         $admin = $this->createAdmin();
@@ -776,6 +830,9 @@ class AttributeTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create attribute select with options returns 201.
+     */
     public function test_create_attribute_select_with_options_returns_201(): void
     {
         $admin = $this->createAdmin();
@@ -806,6 +863,9 @@ class AttributeTest extends AdminApiTestCase
         expect($first['adminName'])->toBe('Cotton');
     }
 
+    /**
+     * Test create attribute with translations.
+     */
     public function test_create_attribute_with_translations(): void
     {
         $admin = $this->createAdmin();
@@ -830,6 +890,9 @@ class AttributeTest extends AdminApiTestCase
         expect($en['name'])->toBe('CRUD Translated EN');
     }
 
+    /**
+     * Test create attribute missing code returns 422.
+     */
     public function test_create_attribute_missing_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -842,6 +905,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create attribute invalid code starting with digit returns 422.
+     */
     public function test_create_attribute_invalid_code_starting_with_digit_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -855,6 +921,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create attribute reserved code type returns 422.
+     */
     public function test_create_attribute_reserved_code_type_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -868,6 +937,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create attribute duplicate code returns 422.
+     */
     public function test_create_attribute_duplicate_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -884,6 +956,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create attribute boolean with default value.
+     */
     public function test_create_attribute_boolean_with_default_value(): void
     {
         $admin = $this->createAdmin();
@@ -901,6 +976,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('defaultValue'))->toBe('1');
     }
 
+    /**
+     * Test create attribute requires auth.
+     */
     public function test_create_attribute_requires_auth(): void
     {
         $response = $this->publicPost('/api/admin/catalog/attributes', [
@@ -912,6 +990,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
+    /**
+     * Test update attribute admin name returns 200.
+     */
     public function test_update_attribute_admin_name_returns_200(): void
     {
         $admin = $this->createAdmin();
@@ -933,6 +1014,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('adminName'))->toBe('New Name');
     }
 
+    /**
+     * Test update attribute code change returns 422.
+     */
     public function test_update_attribute_code_change_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -951,6 +1035,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update attribute type change refused when product values exist.
+     */
     public function test_update_attribute_type_change_refused_when_product_values_exist(): void
     {
         $admin = $this->createAdmin();
@@ -980,6 +1067,9 @@ class AttributeTest extends AdminApiTestCase
         \DB::table('product_attribute_values')->where('attribute_id', $id)->delete();
     }
 
+    /**
+     * Test update attribute type change allowed when no product values.
+     */
     public function test_update_attribute_type_change_allowed_when_no_product_values(): void
     {
         $admin = $this->createAdmin();
@@ -1001,6 +1091,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('type'))->toBe('textarea');
     }
 
+    /**
+     * Test update attribute options replacement.
+     */
     public function test_update_attribute_options_replacement(): void
     {
         $admin = $this->createAdmin();
@@ -1039,6 +1132,9 @@ class AttributeTest extends AdminApiTestCase
         expect($names)->toContain('Brand New Option');
     }
 
+    /**
+     * Test update attribute missing code returns 422.
+     */
     public function test_update_attribute_missing_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -1052,6 +1148,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test delete attribute returns 200.
+     */
     public function test_delete_attribute_returns_200(): void
     {
         $admin = $this->createAdmin();
@@ -1065,6 +1164,9 @@ class AttributeTest extends AdminApiTestCase
         expect(\DB::table('attributes')->where('id', $id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test delete system attribute returns 403.
+     */
     public function test_delete_system_attribute_returns_403(): void
     {
         $admin = $this->createAdmin();
@@ -1078,6 +1180,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(403);
     }
 
+    /**
+     * Test delete attribute in family returns 409.
+     */
     public function test_delete_attribute_in_family_returns_409(): void
     {
         $admin = $this->createAdmin();
@@ -1105,6 +1210,9 @@ class AttributeTest extends AdminApiTestCase
         \DB::table('attribute_groups')->where('id', $groupId)->delete();
     }
 
+    /**
+     * Test delete nonexistent attribute returns 404.
+     */
     public function test_delete_nonexistent_attribute_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -1114,6 +1222,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test create option on select attribute returns 201.
+     */
     public function test_create_option_on_select_attribute_returns_201(): void
     {
         $admin = $this->createAdmin();
@@ -1135,6 +1246,9 @@ class AttributeTest extends AdminApiTestCase
         expect($names)->toContain('Wool');
     }
 
+    /**
+     * Test create option on multiselect attribute.
+     */
     public function test_create_option_on_multiselect_attribute(): void
     {
         $admin = $this->createAdmin();
@@ -1150,6 +1264,9 @@ class AttributeTest extends AdminApiTestCase
         $response->assertStatus(201);
     }
 
+    /**
+     * Test create option refused for text type.
+     */
     public function test_create_option_refused_for_text_type(): void
     {
         $admin = $this->createAdmin();
@@ -1165,6 +1282,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create option missing admin name returns 422.
+     */
     public function test_create_option_missing_admin_name_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -1180,6 +1300,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update option label returns 200.
+     */
     public function test_update_option_label_returns_200(): void
     {
         $admin = $this->createAdmin();
@@ -1202,6 +1325,9 @@ class AttributeTest extends AdminApiTestCase
         expect($opt['adminName'])->toBe('After');
     }
 
+    /**
+     * Test update option translations merge.
+     */
     public function test_update_option_translations_merge(): void
     {
         $admin = $this->createAdmin();
@@ -1228,6 +1354,9 @@ class AttributeTest extends AdminApiTestCase
         expect($enLabel['label'])->toBe('English Label');
     }
 
+    /**
+     * Test update option not found returns 404.
+     */
     public function test_update_option_not_found_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -1245,6 +1374,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test delete option returns 200.
+     */
     public function test_delete_option_returns_200(): void
     {
         $admin = $this->createAdmin();
@@ -1263,6 +1395,9 @@ class AttributeTest extends AdminApiTestCase
         expect(\DB::table('attribute_options')->where('id', $optId)->exists())->toBeFalse();
     }
 
+    /**
+     * Test delete option in use returns 409.
+     */
     public function test_delete_option_in_use_returns_409(): void
     {
         $admin = $this->createAdmin();
@@ -1290,6 +1425,9 @@ class AttributeTest extends AdminApiTestCase
         \DB::table('product_attribute_values')->where('attribute_id', $attrId)->delete();
     }
 
+    /**
+     * Test delete option not found returns 404.
+     */
     public function test_delete_option_not_found_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -1306,6 +1444,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test mass delete multiple attributes.
+     */
     public function test_mass_delete_multiple_attributes(): void
     {
         $admin = $this->createAdmin();
@@ -1325,6 +1466,9 @@ class AttributeTest extends AdminApiTestCase
         expect(\DB::table('attributes')->where('id', $id2)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mass delete with system attribute rejects entire batch.
+     */
     public function test_mass_delete_with_system_attribute_rejects_entire_batch(): void
     {
         $admin = $this->createAdmin();
@@ -1342,6 +1486,9 @@ class AttributeTest extends AdminApiTestCase
         expect(\DB::table('attributes')->where('id', $userId)->exists())->toBeTrue();
     }
 
+    /**
+     * Test mass delete empty indices returns 422.
+     */
     public function test_mass_delete_empty_indices_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -1353,6 +1500,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test mass delete nonexistent ids are skipped.
+     */
     public function test_mass_delete_nonexistent_ids_are_skipped(): void
     {
         $admin = $this->createAdmin();
@@ -1368,6 +1518,9 @@ class AttributeTest extends AdminApiTestCase
         expect($deleted)->not()->toContain(999999);
     }
 
+    /**
+     * Test create attribute revoked token returns 401.
+     */
     public function test_create_attribute_revoked_token_returns_401(): void
     {
         $admin = $this->createAdmin();
@@ -1386,6 +1539,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
+    /**
+     * Test update attribute without auth returns 401.
+     */
     public function test_update_attribute_without_auth_returns_401(): void
     {
         $id = $this->insertAttribute(['code' => 'noauth_put_'.uniqid()]);
@@ -1399,6 +1555,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
+    /**
+     * Test delete attribute without auth returns 401.
+     */
     public function test_delete_attribute_without_auth_returns_401(): void
     {
         $id = $this->insertAttribute(['code' => 'noauth_del_'.uniqid()]);
@@ -1406,5 +1565,91 @@ class AttributeTest extends AdminApiTestCase
         $response = $this->publicDelete('/api/admin/catalog/attributes/'.$id);
 
         expect($response->getStatusCode())->toBe(401);
+    }
+
+    /**
+     * Insert attribute.
+     */
+    protected function insertAttribute(array $overrides = []): int
+    {
+        $id = \DB::table('attributes')->insertGetId(array_merge([
+            'code' => 'test_attr_'.uniqid(),
+            'admin_name' => 'Test Attribute '.uniqid(),
+            'type' => 'text',
+            'swatch_type' => null,
+            'validation' => null,
+            'position' => 1,
+            'is_required' => 0,
+            'is_unique' => 0,
+            'is_filterable' => 0,
+            'is_comparable' => 0,
+            'is_configurable' => 0,
+            'is_user_defined' => 1,
+            'is_visible_on_front' => 0,
+            'value_per_locale' => 0,
+            'value_per_channel' => 0,
+            'enable_wysiwyg' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+
+        return $id;
+    }
+
+    /**
+     * Insert attribute option.
+     */
+    protected function insertAttributeOption(int $attributeId, array $overrides = []): int
+    {
+        return \DB::table('attribute_options')->insertGetId(array_merge([
+            'attribute_id' => $attributeId,
+            'admin_name' => 'Option '.uniqid(),
+            'swatch_value' => null,
+            'sort_order' => 0,
+        ], $overrides));
+    }
+
+    /**
+     * Insert attribute option translation.
+     */
+    protected function insertAttributeOptionTranslation(int $optionId, string $locale, string $label): void
+    {
+        \DB::table('attribute_option_translations')->insert([
+            'attribute_option_id' => $optionId,
+            'locale' => $locale,
+            'label' => $label,
+        ]);
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Public put.
+     */
+    protected function publicPut(string $url, array $data = []): TestResponse
+    {
+        return $this->putJson($url, $data);
+    }
+
+    /**
+     * Public delete.
+     */
+    protected function publicDelete(string $url): TestResponse
+    {
+        return $this->deleteJson($url);
     }
 }

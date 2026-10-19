@@ -10,13 +10,16 @@ use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTheme;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/settings/themes + adminSettingsThemes GraphQL query.
- */
 class AdminSettingsThemeCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * The listing is graph ql.
+     */
     protected bool $listingIsGraphQL = false;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
@@ -24,11 +27,17 @@ class AdminSettingsThemeCollectionProvider extends AbstractAdminCollectionProvid
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'name', 'type', 'sort_order', 'theme_code', 'channel_id', 'status'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('theme_customizations')->select(
@@ -44,6 +53,9 @@ class AdminSettingsThemeCollectionProvider extends AbstractAdminCollectionProvid
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
@@ -75,6 +87,9 @@ class AdminSettingsThemeCollectionProvider extends AbstractAdminCollectionProvid
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -85,6 +100,9 @@ class AdminSettingsThemeCollectionProvider extends AbstractAdminCollectionProvid
         $query->orderBy($column, $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): object
     {
         if ($this->listingIsGraphQL) {

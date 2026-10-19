@@ -5,14 +5,6 @@ namespace Webkul\BagistoApi\Admin\State;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Checkout\Models\Cart;
 
-/**
- * Centralised "Create-Order" sequence enforcement for the admin draft-cart
- * flow. Every Wave 3 endpoint that depends on a prior step calls these
- * guards explicitly so the API surfaces a precise HTTP 409 (Conflict) message
- * instead of relying on the monolith's implicit ordering. Conflicts are 409
- * because they describe a state mismatch — the resource exists, the request
- * is valid, but the cart isn't in the right state yet.
- */
 class AdminCartSequenceGuard
 {
     /**
@@ -30,8 +22,7 @@ class AdminCartSequenceGuard
 
     /**
      * Cart must have BOTH billing and shipping addresses saved.
-     * (Bagisto stores billing as a 1:1 row + shipping address as another row
-     * when use_for_shipping is true the shipping row mirrors billing.)
+     * (Bagisto stores billing as a 1:1 row + shipping address as another row.
      */
     public static function requireAddresses(Cart $cart, string $messageKey = 'bagistoapi::app.admin.cart.addresses-required-for-shipping'): void
     {

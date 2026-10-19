@@ -8,19 +8,27 @@ use Webkul\Core\Models\Locale;
 
 class AdminSettingsLocaleItemProvider extends AbstractAdminItemProvider
 {
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.settings.locale.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return Locale::find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $locale): AdminSettingsLocale
     {
-        /** @var Locale $locale */
         $dto = new AdminSettingsLocale;
 
         $dto->id = (int) $locale->id;

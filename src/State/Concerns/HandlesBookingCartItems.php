@@ -75,6 +75,9 @@ trait HandlesBookingCartItems
         return $booking;
     }
 
+    /**
+     * Validate event booking payload.
+     */
     private function validateEventBookingPayload(array $booking): void
     {
         $qty = $booking['qty'] ?? null;
@@ -113,6 +116,9 @@ trait HandlesBookingCartItems
         }
     }
 
+    /**
+     * Get channel timezone.
+     */
     private function getChannelTimezone(): ?string
     {
         $channel = core()->getCurrentChannel();
@@ -120,6 +126,9 @@ trait HandlesBookingCartItems
         return $channel?->timezone ?: config('app.timezone');
     }
 
+    /**
+     * Get booking duration minutes.
+     */
     private function getBookingDurationMinutes(int $productId, ?string $bookingType): ?int
     {
         if (
@@ -141,6 +150,9 @@ trait HandlesBookingCartItems
         } ?: null;
     }
 
+    /**
+     * Validate formatted slot exists.
+     */
     private function validateFormattedSlotExists(int $productId, mixed $bookingType, string $date, string $slot): void
     {
         if (
@@ -173,6 +185,9 @@ trait HandlesBookingCartItems
         }
     }
 
+    /**
+     * Looks like formatted time range.
+     */
     private function looksLikeFormattedTimeRange(string $value): bool
     {
         $slot = trim($value);

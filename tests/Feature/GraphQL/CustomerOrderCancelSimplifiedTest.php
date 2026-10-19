@@ -9,48 +9,10 @@ use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderItem;
 use Webkul\Sales\Models\OrderPayment;
 
-/**
- * Tests for customer order cancellation via GraphQL
- */
 class CustomerOrderCancelSimplifiedTest extends GraphQLTestCase
 {
-    private function createTestData(): array
-    {
-        Mail::fake();
-
-        $this->seedRequiredData();
-
-        $customer = $this->createCustomer();
-        $channel = Channel::first();
-        $product = $this->createBaseProduct('simple', ['sku' => 'TEST-SKU-CANCEL-SIMPLE-001']);
-        $this->ensureInventory($product, 10);
-
-        // Create a pending order that can be canceled
-        $order = Order::factory()->create([
-            'customer_id' => $customer->id,
-            'customer_email' => $customer->email,
-            'customer_first_name' => $customer->first_name,
-            'customer_last_name' => $customer->last_name,
-            'channel_id' => $channel->id,
-            'status' => 'pending',
-        ]);
-
-        OrderItem::factory()->create([
-            'order_id' => $order->id,
-            'product_id' => $product->id,
-            'sku' => 'TEST-SKU-CANCEL-SIMPLE-001',
-            'type' => 'simple',
-            'name' => 'Test Product for Simplified Cancel',
-            'qty_ordered' => 1,
-        ]);
-
-        OrderPayment::factory()->create(['order_id' => $order->id]);
-
-        return compact('customer', 'order', 'channel', 'product');
-    }
-
     /**
-     * Test: Cancel a pending order successfully
+     * Test: Cancel a pending order successfully.
      */
     public function test_cancel_pending_order_success(): void
     {
@@ -86,13 +48,12 @@ class CustomerOrderCancelSimplifiedTest extends GraphQLTestCase
             ],
         ]);
 
-        // Verify order was canceled
         $testData['order']->refresh();
         $this->assertEquals('canceled', $testData['order']->status);
     }
 
     /**
-     * Test: Cannot cancel non-existent order
+     * Test: Cannot cancel non-existent order.
      */
     public function test_cannot_cancel_non_existent_order(): void
     {
@@ -115,12 +76,11 @@ class CustomerOrderCancelSimplifiedTest extends GraphQLTestCase
             ['input' => ['orderId' => 99999]]
         );
 
-        // Should have errors
         $this->assertArrayHasKey('errors', $response->json());
     }
 
     /**
-     * Test: Cannot cancel another customer's order
+     * Test: Cannot cancel another customer's order.
      */
     public function test_cannot_cancel_other_customers_order(): void
     {
@@ -143,12 +103,11 @@ class CustomerOrderCancelSimplifiedTest extends GraphQLTestCase
             ['input' => ['orderId' => $testData['order']->id]]
         );
 
-        // Should have errors
         $this->assertArrayHasKey('errors', $response->json());
     }
 
     /**
-     * Test: Unauthenticated cancel request fails
+     * Test: Unauthenticated cancel request fails.
      */
     public function test_unauthenticated_cancel_fails(): void
     {
@@ -189,12 +148,11 @@ class CustomerOrderCancelSimplifiedTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, ['input' => ['orderId' => $order->id]]);
 
-        // Should have authentication errors
         $this->assertArrayHasKey('errors', $response->json());
     }
 
     /**
-     * Test: Inline GraphQL input object is normalized correctly
+     * Test: Inline GraphQL input object is normalized correctly.
      */
     public function test_cancel_pending_order_with_inline_input_literal(): void
     {
@@ -223,7 +181,7 @@ class CustomerOrderCancelSimplifiedTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Missing order ID parameter returns error
+     * Test: Missing order ID parameter returns error.
      */
     public function test_missing_order_id_parameter(): void
     {
@@ -246,7 +204,43 @@ class CustomerOrderCancelSimplifiedTest extends GraphQLTestCase
             ['input' => []]
         );
 
-        // Should have validation errors
         $this->assertArrayHasKey('errors', $response->json());
+    }
+
+    /**
+     * Create test data.
+     */
+    private function createTestData(): array
+    {
+        Mail::fake();
+
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $channel = Channel::first();
+        $product = $this->createBaseProduct('simple', ['sku' => 'TEST-SKU-CANCEL-SIMPLE-001']);
+        $this->ensureInventory($product, 10);
+
+        $order = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'customer_first_name' => $customer->first_name,
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'pending',
+        ]);
+
+        OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'TEST-SKU-CANCEL-SIMPLE-001',
+            'type' => 'simple',
+            'name' => 'Test Product for Simplified Cancel',
+            'qty_ordered' => 1,
+        ]);
+
+        OrderPayment::factory()->create(['order_id' => $order->id]);
+
+        return compact('customer', 'order', 'channel', 'product');
     }
 }

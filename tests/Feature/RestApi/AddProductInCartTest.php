@@ -15,19 +15,168 @@ use Webkul\Product\Models\Product;
 
 class AddProductInCartTest extends RestApiTestCase
 {
+    /**
+     * The cart tokens url.
+     */
     private string $cartTokensUrl = '/api/shop/cart-tokens';
 
+    /**
+     * The add product url.
+     */
     private string $addProductUrl = '/api/shop/add-product-in-cart';
 
+    /**
+     * Test add simple product to cart as guest.
+     */
+    public function test_add_simple_product_to_cart_as_guest(): void
+    {
+        $token = $this->createGuestCartToken();
+        $product = $this->createSimpleProduct();
+
+        $response = $this->guestPostWithToken($this->addProductUrl, $token, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ]);
+
+        $data = $this->assertAddToCartResponse($response);
+
+        expect((bool) ($data['isGuest'] ?? false))->toBeTrue();
+        expect((int) ($data['items'][0]['productId'] ?? 0))->toBe($product->id);
+        expect((string) ($data['items'][0]['type'] ?? ''))->toBe('simple');
+    }
+
+    /**
+     * Test add simple product to cart as customer.
+     */
+    public function test_add_simple_product_to_cart_as_customer(): void
+    {
+        $customer = $this->createCustomer([
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+        $product = $this->createSimpleProduct();
+
+        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
+            'productId' => $product->id,
+            'quantity' => 2,
+        ]);
+
+        $data = $this->assertAddToCartResponse($response);
+
+        expect((bool) ($data['isGuest'] ?? true))->toBeFalse();
+        expect((int) ($data['customerId'] ?? 0))->toBe($customer->id);
+        expect((int) ($data['items'][0]['quantity'] ?? 0))->toBe(2);
+    }
+
+    /**
+     * Test add configurable product to cart as guest.
+     */
+    public function test_add_configurable_product_to_cart_as_guest(): void
+    {
+        $token = $this->createGuestCartToken();
+        $payload = $this->createConfigurableProductPayload();
+
+        $response = $this->guestPostWithToken($this->addProductUrl, $token, [
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
+            'superAttribute' => $payload['superAttribute'],
+        ]);
+
+        $data = $this->assertAddToCartResponse($response);
+        $productId = (int) ($data['items'][0]['productId'] ?? 0);
+
+        expect($productId)->toBeIn([
+            $payload['productId'],
+            $payload['selectedConfigurableOption'],
+        ]);
+    }
+
+    /**
+     * Test add grouped product to cart as guest.
+     */
+    public function test_add_grouped_product_to_cart_as_guest(): void
+    {
+        $token = $this->createGuestCartToken();
+        $payload = $this->createGroupedProductPayload();
+
+        $response = $this->guestPostWithToken($this->addProductUrl, $token, [
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'qty' => $payload['qty'],
+        ]);
+
+        $data = $this->assertAddToCartResponse($response);
+
+        expect(count($data['items'] ?? []))->toBeGreaterThan(0);
+    }
+
+    /**
+     * Test add bundle product to cart as guest.
+     */
+    public function test_add_bundle_product_to_cart_as_guest(): void
+    {
+        $token = $this->createGuestCartToken();
+        $payload = $this->createBundleProductPayload();
+
+        $response = $this->guestPostWithToken($this->addProductUrl, $token, [
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'bundleOptions' => $payload['bundleOptions'],
+            'bundleOptionQty' => $payload['bundleOptionQty'],
+        ]);
+
+        $data = $this->assertAddToCartResponse($response);
+
+        expect((string) ($data['items'][0]['type'] ?? ''))->toBe('bundle');
+    }
+
+    /**
+     * Test add downloadable product to cart as guest.
+     */
+    public function test_add_downloadable_product_to_cart_as_guest(): void
+    {
+        $token = $this->createGuestCartToken();
+        $payload = $this->createDownloadableProductPayload();
+
+        $response = $this->guestPostWithToken($this->addProductUrl, $token, [
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'links' => $payload['links'],
+        ]);
+
+        $data = $this->assertAddToCartResponse($response);
+
+        expect((string) ($data['items'][0]['type'] ?? ''))->toBe('downloadable');
+    }
+
+    /**
+     * Test add default booking product to cart as guest.
+     */
+    public function test_add_default_booking_product_to_cart_as_guest(): void
+    {
+        $token = $this->createGuestCartToken();
+        $payload = $this->createDefaultBookingProductPayload();
+
+        $response = $this->guestPostWithToken($this->addProductUrl, $token, [
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'booking' => $payload['booking'],
+        ]);
+
+        $data = $this->assertAddToCartResponse($response);
+
+        expect((string) ($data['items'][0]['type'] ?? ''))->toBe('booking');
+    }
+
+    /**
+     * Create guest cart token.
+     */
     private function createGuestCartToken(): string
     {
         $response = $this->publicPost($this->cartTokensUrl, [
             'createNew' => true,
         ]);
 
-        // API Platform routes return a raw Symfony Response, not Illuminate\Http\Response.
-        // TestResponse's __call forwards status() to baseResponse, which only exists on the
-        // Laravel subclass — so use getStatusCode() (defined on Symfony\Response) instead.
         expect($response->getStatusCode())->toBeIn([200, 201]);
 
         $token = $response->json('cartToken') ?? $response->json('sessionToken');
@@ -37,6 +186,9 @@ class AddProductInCartTest extends RestApiTestCase
         return (string) $token;
     }
 
+    /**
+     * Guest post with token.
+     */
     private function guestPostWithToken(string $url, string $token, array $payload): TestResponse
     {
         return $this->withHeaders([
@@ -45,6 +197,9 @@ class AddProductInCartTest extends RestApiTestCase
         ])->postJson($url, $payload);
     }
 
+    /**
+     * Assert add to cart response.
+     */
     private function assertAddToCartResponse(TestResponse $response): array
     {
         expect($response->getStatusCode())->toBeIn([200, 201]);
@@ -59,6 +214,9 @@ class AddProductInCartTest extends RestApiTestCase
         return $data;
     }
 
+    /**
+     * Create simple product.
+     */
     private function createSimpleProduct(float $price = 17.0): Product
     {
         $product = $this->createBaseProduct('simple', [
@@ -73,6 +231,9 @@ class AddProductInCartTest extends RestApiTestCase
         return $product;
     }
 
+    /**
+     * Create configurable product payload.
+     */
     private function createConfigurableProductPayload(): array
     {
         $this->seedRequiredData();
@@ -130,6 +291,9 @@ class AddProductInCartTest extends RestApiTestCase
         ];
     }
 
+    /**
+     * Create grouped product payload.
+     */
     private function createGroupedProductPayload(int $associatedCount = 2): array
     {
         $grouped = $this->createBaseProduct('grouped', [
@@ -162,6 +326,9 @@ class AddProductInCartTest extends RestApiTestCase
         ];
     }
 
+    /**
+     * Create bundle product payload.
+     */
     private function createBundleProductPayload(): array
     {
         $bundle = $this->createBaseProduct('bundle', [
@@ -201,6 +368,9 @@ class AddProductInCartTest extends RestApiTestCase
         ];
     }
 
+    /**
+     * Create downloadable product payload.
+     */
     private function createDownloadableProductPayload(int $linksCount = 2): array
     {
         $product = $this->createBaseProduct('downloadable', [
@@ -231,6 +401,9 @@ class AddProductInCartTest extends RestApiTestCase
         ];
     }
 
+    /**
+     * Create default booking product payload.
+     */
     private function createDefaultBookingProductPayload(): array
     {
         $product = $this->createBaseProduct('booking', [
@@ -281,10 +454,12 @@ class AddProductInCartTest extends RestApiTestCase
         ];
     }
 
+    /**
+     * Get slot timestamp.
+     */
     private function getSlotTimestamp(int $productId, string $date): ?string
     {
         try {
-            /** @var BookingProductRepository $bookingProductRepository */
             $bookingProductRepository = app(BookingProductRepository::class);
             $bookingProduct = $bookingProductRepository->findOneByField('product_id', $productId);
 
@@ -292,7 +467,6 @@ class AddProductInCartTest extends RestApiTestCase
                 return null;
             }
 
-            /** @var BookingHelper $bookingHelper */
             $bookingHelper = app(BookingHelper::class);
             $slots = $bookingHelper->getSlotsByDate($bookingProduct, $date);
 
@@ -302,127 +476,5 @@ class AddProductInCartTest extends RestApiTestCase
         } catch (\Throwable) {
             return null;
         }
-    }
-
-    public function test_add_simple_product_to_cart_as_guest(): void
-    {
-        $token = $this->createGuestCartToken();
-        $product = $this->createSimpleProduct();
-
-        $response = $this->guestPostWithToken($this->addProductUrl, $token, [
-            'productId' => $product->id,
-            'quantity' => 1,
-        ]);
-
-        $data = $this->assertAddToCartResponse($response);
-
-        expect((bool) ($data['isGuest'] ?? false))->toBeTrue();
-        expect((int) ($data['items'][0]['productId'] ?? 0))->toBe($product->id);
-        expect((string) ($data['items'][0]['type'] ?? ''))->toBe('simple');
-    }
-
-    public function test_add_simple_product_to_cart_as_customer(): void
-    {
-        $customer = $this->createCustomer([
-            'token' => md5(uniqid((string) rand(), true)),
-        ]);
-        $product = $this->createSimpleProduct();
-
-        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId' => $product->id,
-            'quantity' => 2,
-        ]);
-
-        $data = $this->assertAddToCartResponse($response);
-
-        expect((bool) ($data['isGuest'] ?? true))->toBeFalse();
-        expect((int) ($data['customerId'] ?? 0))->toBe($customer->id);
-        expect((int) ($data['items'][0]['quantity'] ?? 0))->toBe(2);
-    }
-
-    public function test_add_configurable_product_to_cart_as_guest(): void
-    {
-        $token = $this->createGuestCartToken();
-        $payload = $this->createConfigurableProductPayload();
-
-        $response = $this->guestPostWithToken($this->addProductUrl, $token, [
-            'productId' => $payload['productId'],
-            'quantity' => 1,
-            'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute' => $payload['superAttribute'],
-        ]);
-
-        $data = $this->assertAddToCartResponse($response);
-        $productId = (int) ($data['items'][0]['productId'] ?? 0);
-
-        expect($productId)->toBeIn([
-            $payload['productId'],
-            $payload['selectedConfigurableOption'],
-        ]);
-    }
-
-    public function test_add_grouped_product_to_cart_as_guest(): void
-    {
-        $token = $this->createGuestCartToken();
-        $payload = $this->createGroupedProductPayload();
-
-        $response = $this->guestPostWithToken($this->addProductUrl, $token, [
-            'productId' => $payload['productId'],
-            'quantity' => 1,
-            'qty' => $payload['qty'],
-        ]);
-
-        $data = $this->assertAddToCartResponse($response);
-
-        expect(count($data['items'] ?? []))->toBeGreaterThan(0);
-    }
-
-    public function test_add_bundle_product_to_cart_as_guest(): void
-    {
-        $token = $this->createGuestCartToken();
-        $payload = $this->createBundleProductPayload();
-
-        $response = $this->guestPostWithToken($this->addProductUrl, $token, [
-            'productId' => $payload['productId'],
-            'quantity' => 1,
-            'bundleOptions' => $payload['bundleOptions'],
-            'bundleOptionQty' => $payload['bundleOptionQty'],
-        ]);
-
-        $data = $this->assertAddToCartResponse($response);
-
-        expect((string) ($data['items'][0]['type'] ?? ''))->toBe('bundle');
-    }
-
-    public function test_add_downloadable_product_to_cart_as_guest(): void
-    {
-        $token = $this->createGuestCartToken();
-        $payload = $this->createDownloadableProductPayload();
-
-        $response = $this->guestPostWithToken($this->addProductUrl, $token, [
-            'productId' => $payload['productId'],
-            'quantity' => 1,
-            'links' => $payload['links'],
-        ]);
-
-        $data = $this->assertAddToCartResponse($response);
-
-        expect((string) ($data['items'][0]['type'] ?? ''))->toBe('downloadable');
-    }
-
-    public function test_add_default_booking_product_to_cart_as_guest(): void
-    {
-        $token = $this->createGuestCartToken();
-        $payload = $this->createDefaultBookingProductPayload();
-
-        $response = $this->guestPostWithToken($this->addProductUrl, $token, [
-            'productId' => $payload['productId'],
-            'quantity' => 1,
-            'booking' => $payload['booking'],
-        ]);
-
-        $data = $this->assertAddToCartResponse($response);
-
-        expect((string) ($data['items'][0]['type'] ?? ''))->toBe('booking');
     }
 }

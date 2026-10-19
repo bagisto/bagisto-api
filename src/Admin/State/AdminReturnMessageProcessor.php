@@ -21,12 +21,18 @@ class AdminReturnMessageProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private readonly RMARepository $rmaRepository,
         private readonly RMAMessageRepository $rmaMessageRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof SendAdminReturnMessageInput) {
@@ -46,6 +52,9 @@ class AdminReturnMessageProcessor implements ProcessorInterface
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }
 
+    /**
+     * Handle send.
+     */
     private function handleSend(?int $returnId, ?string $message, $file): AdminReturnMessage
     {
         $this->authorizedAdmin('sales.rma.requests', 'bagistoapi::app.admin.rma.no-permission');

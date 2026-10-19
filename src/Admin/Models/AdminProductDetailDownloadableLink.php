@@ -8,10 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Downloadable link — nested sub-resource of AdminCatalogProduct
- * (`downloadableLinks` connection). `translations` is a nested connection.
- */
 #[ApiResource(
     shortName: 'AdminProductDetailDownloadableLink',
     operations: [],
@@ -37,18 +33,27 @@ class AdminProductDetailDownloadableLink extends Model
         'downloads' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get price.
+     */
     #[ApiProperty(writable: false)]
     public function getPrice(): ?string
     {
         return $this->attributes['price'] !== null ? (string) $this->attributes['price'] : null;
     }
 
+    /**
+     * Get formatted price attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedPriceAttribute(): ?string
     {
@@ -57,18 +62,27 @@ class AdminProductDetailDownloadableLink extends Model
             : null;
     }
 
+    /**
+     * Get file url attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFileUrlAttribute(): ?string
     {
         return $this->file ? Storage::url($this->file) : null;
     }
 
+    /**
+     * Get sample file url attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getSampleFileUrlAttribute(): ?string
     {
         return $this->sample_file ? Storage::url($this->sample_file) : null;
     }
 
+    /**
+     * Translations.
+     */
     #[ApiProperty(writable: false)]
     public function translations(): HasMany
     {

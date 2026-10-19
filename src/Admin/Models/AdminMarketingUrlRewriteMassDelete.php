@@ -10,17 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingUrlRewriteMassDeleteInput;
 use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteMassDeleteProcessor;
 
-/**
- * One-operation resource for mass-deleting URL rewrites.
- *
- * REST:
- *   POST /api/admin/marketing/url-rewrites/mass-delete
- *     Body: { "indices": [12, 18] }
- *     200:  { "deleted": [12, 18], "message": "..." }
- *
- * GraphQL:
- *   createAdminMarketingUrlRewriteMassDelete
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingUrlRewriteMassDelete',
@@ -83,6 +72,9 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteMassDeleteProcessor;
 )]
 class AdminMarketingUrlRewriteMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -90,6 +82,9 @@ class AdminMarketingUrlRewriteMassDelete
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

@@ -6,16 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * Create storefront_keys table with complete API key management features:
-     * - Basic key storage and configuration
-     * - Key type (shop vs admin) for multi-tenant support
-     * - Expiration and rotation tracking
-     * - Usage monitoring for compliance
-     * - Soft deletes for audit trail
-     */
     public function up(): void
     {
         if (Schema::hasTable('storefront_keys')) {
@@ -58,9 +48,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('storefront_keys');

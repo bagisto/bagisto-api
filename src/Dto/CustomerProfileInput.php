@@ -5,96 +5,89 @@ namespace Webkul\BagistoApi\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * Input DTO for customer profile operations with token-based authentication
- * Token is passed via Authorization: Bearer header, NOT as input parameter
- *
- * NOTE: Token is NOT a DTO property. It is extracted from the Authorization header
- * via TokenHeaderFacade::getAuthorizationBearerToken() in the processor.
- */
 class CustomerProfileInput
 {
     /**
-     * Customer ID (optional for get, required for update/delete when multiple profiles exist)
+     * Customer ID (optional for get, required for update/delete when multiple profiles exist).
      */
     #[ApiProperty(required: false)]
     #[Groups(['mutation'])]
     public ?string $id = null;
 
     /**
-     * First name
+     * First name.
      */
     #[Groups(['mutation'])]
     public ?string $firstName = null;
 
     /**
-     * Last name
+     * Last name.
      */
     #[Groups(['mutation'])]
     public ?string $lastName = null;
 
     /**
-     * Email address
+     * Email address.
      */
     #[Groups(['mutation'])]
     public ?string $email = null;
 
     /**
-     * Phone number
+     * Phone number.
      */
     #[Groups(['mutation'])]
     public ?string $phone = null;
 
     /**
-     * Gender
+     * Gender.
      */
     #[Groups(['mutation'])]
     public ?string $gender = null;
 
     /**
-     * Date of birth
+     * Date of birth.
      */
     #[Groups(['mutation'])]
     public ?string $dateOfBirth = null;
 
     /**
-     * Current password — required when changing password
+     * Current password — required when changing password.
      */
     #[Groups(['mutation'])]
     public ?string $currentPassword = null;
 
     /**
-     * New password
+     * New password.
      */
     #[Groups(['mutation'])]
     public ?string $password = null;
 
     /**
-     * New password confirmation
+     * New password confirmation.
      */
     #[Groups(['mutation'])]
     public ?string $confirmPassword = null;
 
     /**
-     * Customer status
+     * Customer status.
      */
     #[Groups(['mutation'])]
     public ?string $status = null;
 
     /**
-     * Newsletter subscription
+     * Newsletter subscription.
      */
     #[Groups(['mutation'])]
     public ?bool $subscribedToNewsLetter = null;
 
     /**
-     * Verification status
+     * Verification status.
      */
     #[Groups(['mutation'])]
     public ?string $isVerified = null;
 
     /**
-     * Suspension status
+     * Suspension status.
      */
     #[Groups(['mutation'])]
     public ?string $isSuspended = null;
@@ -107,19 +100,19 @@ class CustomerProfileInput
     public ?string $image = null;
 
     /**
-     * Flag to delete existing image
+     * Flag to delete existing image.
      */
     #[Groups(['mutation'])]
     public ?bool $deleteImage = null;
 
     /**
-     * Success status of the operation
+     * Success status of the operation.
      */
     #[Groups(['mutation'])]
     public ?bool $success = null;
 
     /**
-     * Response message
+     * Response message.
      */
     #[Groups(['mutation'])]
     public ?string $message = null;

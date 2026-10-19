@@ -21,22 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsRoleProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
 
-/**
- * Admin Settings → Roles endpoints (Block B Wave 2).
- *
- * REST:
- *   GET    /api/admin/settings/roles
- *   GET    /api/admin/settings/roles/{id}
- *   POST   /api/admin/settings/roles
- *   PUT    /api/admin/settings/roles/{id}
- *   DELETE /api/admin/settings/roles/{id}    (guards: in-use, last-role)
- *
- * GraphQL:
- *   adminSettingsRoles / adminSettingsRole
- *   createAdminSettingsRole / updateAdminSettingsRole / deleteAdminSettingsRole
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\RoleController 1:1.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsRole',
@@ -270,15 +254,27 @@ class AdminSettingsRole
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false, example: 'Administrator')]
     public ?string $name = null;
 
+    /**
+     * The description.
+     */
     #[ApiProperty(writable: false, example: 'Full access to all modules')]
     public ?string $description = null;
 
+    /**
+     * The permission type.
+     */
     #[ApiProperty(writable: false, example: 'all')]
     public ?string $permission_type = null;
 
@@ -286,12 +282,21 @@ class AdminSettingsRole
     #[ApiProperty(writable: false, example: ['catalog.products.create', 'sales.orders.view'])]
     public ?array $permissions = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, example: 'Role deleted successfully.')]
     public ?string $message = null;
 }

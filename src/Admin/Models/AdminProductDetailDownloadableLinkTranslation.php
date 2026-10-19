@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/** Downloadable-link translation — nested in the downloadableLinks connection. */
 #[ApiResource(
     shortName: 'AdminProductDetailDownloadableLinkTranslation',
     operations: [],
@@ -21,6 +20,9 @@ class AdminProductDetailDownloadableLinkTranslation extends Model
     /** @var array */
     protected $casts = ['id' => 'int'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

@@ -13,20 +13,14 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\DataTransfer\Models\Import;
 
-/**
- * POST /api/admin/settings/data-transfer/imports/{id}/cancel + cancel GraphQL mutation.
- *
- * Sets state to `cancelled` when the import is currently `pending` or `processing`.
- * Any other state (validated / processed / completed / linking / indexing / failed /
- * cancelled) is treated as terminal-or-active-and-locked and refused with HTTP 422.
- *
- * Permission gate: settings.data_transfer.imports.import (Sanctum-pattern role read).
- */
 class AdminSettingsDataTransferImportCancelProcessor implements ProcessorInterface
 {
     /** States that may be cancelled. */
     protected const CANCELLABLE_STATES = ['pending', 'processing'];
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -68,6 +62,9 @@ class AdminSettingsDataTransferImportCancelProcessor implements ProcessorInterfa
         return $result;
     }
 
+    /**
+     * Resolve import id.
+     */
     protected function resolveImportId(mixed $data, array $uriVariables, array $context): int
     {
         if (isset($uriVariables['id'])) {
@@ -101,6 +98,9 @@ class AdminSettingsDataTransferImportCancelProcessor implements ProcessorInterfa
         return 0;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

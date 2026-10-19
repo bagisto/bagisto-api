@@ -8,69 +8,11 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * Phase 5.12 — REST tests for product-inventory sub-resource.
- *
- *   GET /api/admin/catalog/products/{productId}/inventories
- *   PUT /api/admin/catalog/products/{productId}/inventories
- */
 class CatalogProductInventoryTest extends AdminApiTestCase
 {
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
     /**
-     * Returns the first inventory_source id (Bagisto seeds at least one row).
+     * Test list inventories happy path.
      */
-    protected function firstSourceId(): int
-    {
-        return (int) DB::table('inventory_sources')->orderBy('id')->value('id');
-    }
-
-    /**
-     * Returns a second inventory_source id, creating one if only one exists.
-     */
-    protected function secondSourceId(): int
-    {
-        $ids = DB::table('inventory_sources')->orderBy('id')->limit(2)->pluck('id')->all();
-
-        if (count($ids) >= 2) {
-            return (int) $ids[1];
-        }
-
-        return (int) DB::table('inventory_sources')->insertGetId([
-            'code' => 'secondary-'.uniqid(),
-            'name' => 'Secondary Source',
-            'description' => 'Test secondary source',
-            'contact_name' => 'Secondary Contact',
-            'contact_email' => 'secondary@example.com',
-            'contact_number' => '5550000000',
-            'country' => 'US',
-            'state' => 'NY',
-            'city' => 'New York',
-            'street' => '1 Test Street',
-            'postcode' => '10001',
-            'priority' => 2,
-            'status' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
-    protected function seedInventory(int $productId, int $sourceId, int $qty): void
-    {
-        DB::table('product_inventories')->updateOrInsert(
-            [
-                'product_id' => $productId,
-                'inventory_source_id' => $sourceId,
-                'vendor_id' => 0,
-            ],
-            ['qty' => $qty],
-        );
-    }
-
     public function test_list_inventories_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -99,6 +41,9 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $this->assertSame(25, (int) $row['qty']);
     }
 
+    /**
+     * Test list inventories empty returns empty data and zero total.
+     */
     public function test_list_inventories_empty_returns_empty_data_and_zero_total(): void
     {
         $admin = $this->createAdmin();
@@ -113,6 +58,9 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $this->assertSame(0, (int) $body['meta']['totalQty']);
     }
 
+    /**
+     * Test list unknown product returns 404.
+     */
     public function test_list_unknown_product_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -122,6 +70,9 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $this->assertSame(404, $response->getStatusCode());
     }
 
+    /**
+     * Test list requires admin token.
+     */
     public function test_list_requires_admin_token(): void
     {
         $product = $this->createBaseProduct('simple');
@@ -131,6 +82,9 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    /**
+     * Test update inventories add update and zero out.
+     */
     public function test_update_inventories_add_update_and_zero_out(): void
     {
         $admin = $this->createAdmin();
@@ -182,6 +136,9 @@ class CatalogProductInventoryTest extends AdminApiTestCase
             ->value('qty'));
     }
 
+    /**
+     * Test update with missing inventories returns 422.
+     */
     public function test_update_with_missing_inventories_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -192,6 +149,9 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
+    /**
+     * Test update with unknown source id returns 422.
+     */
     public function test_update_with_unknown_source_id_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -204,6 +164,9 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
+    /**
+     * Test update with negative qty returns 422.
+     */
     public function test_update_with_negative_qty_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -217,6 +180,9 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
+    /**
+     * Test update unknown product returns 404.
+     */
     public function test_update_unknown_product_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -229,6 +195,9 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $this->assertSame(404, $response->getStatusCode());
     }
 
+    /**
+     * Test update requires admin token.
+     */
     public function test_update_requires_admin_token(): void
     {
         $product = $this->createBaseProduct('simple');
@@ -241,6 +210,9 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    /**
+     * Test update without permission returns 403.
+     */
     public function test_update_without_permission_returns_403(): void
     {
         $role = Role::factory()->create([
@@ -256,5 +228,66 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         ]);
 
         $this->assertSame(403, $response->getStatusCode());
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Returns the first inventory_source id (Bagisto seeds at least one row).
+     */
+    protected function firstSourceId(): int
+    {
+        return (int) DB::table('inventory_sources')->orderBy('id')->value('id');
+    }
+
+    /**
+     * Returns a second inventory_source id, creating one if only one exists.
+     */
+    protected function secondSourceId(): int
+    {
+        $ids = DB::table('inventory_sources')->orderBy('id')->limit(2)->pluck('id')->all();
+
+        if (count($ids) >= 2) {
+            return (int) $ids[1];
+        }
+
+        return (int) DB::table('inventory_sources')->insertGetId([
+            'code' => 'secondary-'.uniqid(),
+            'name' => 'Secondary Source',
+            'description' => 'Test secondary source',
+            'contact_name' => 'Secondary Contact',
+            'contact_email' => 'secondary@example.com',
+            'contact_number' => '5550000000',
+            'country' => 'US',
+            'state' => 'NY',
+            'city' => 'New York',
+            'street' => '1 Test Street',
+            'postcode' => '10001',
+            'priority' => 2,
+            'status' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Seed inventory.
+     */
+    protected function seedInventory(int $productId, int $sourceId, int $qty): void
+    {
+        DB::table('product_inventories')->updateOrInsert(
+            [
+                'product_id' => $productId,
+                'inventory_source_id' => $sourceId,
+                'vendor_id' => 0,
+            ],
+            ['qty' => $qty],
+        );
     }
 }

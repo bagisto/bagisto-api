@@ -15,12 +15,6 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CustomerOrderShipmentItemProvider;
 use Webkul\Sales\Models\OrderItem;
 
-/**
- * Customer Order Shipment Item API Resource
- *
- * Nested API resource for items in a customer's order shipment.
- * Contains product details and quantity shipped.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomerOrderShipmentItem',

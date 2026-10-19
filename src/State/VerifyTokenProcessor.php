@@ -11,6 +11,9 @@ use Webkul\BagistoApi\Models\VerifyToken;
 
 class VerifyTokenProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         $defaultResponse = [
@@ -86,6 +89,9 @@ class VerifyTokenProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Output.
+     */
     private function output(array $data): VerifyToken
     {
         $output = new VerifyToken;

@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/** Customizable-option price — nested in the customizableOptions connection. */
 #[ApiResource(
     shortName: 'AdminProductDetailCustomizableOptionPrice',
     operations: [],
@@ -24,12 +23,18 @@ class AdminProductDetailCustomizableOptionPrice extends Model
         'sort_order' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get price.
+     */
     #[ApiProperty(writable: false)]
     public function getPrice(): ?string
     {

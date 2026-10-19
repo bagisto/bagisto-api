@@ -7,73 +7,7 @@ use Webkul\BagistoApi\Tests\GraphQLTestCase;
 class GuestCartTest extends GraphQLTestCase
 {
     /**
-     * Get guest cart token from the createCart mutation response
-     * This token is used as Bearer token for subsequent operations
-     */
-    private function getGuestCartToken(): string
-    {
-        $mutation = <<<'GQL'
-            mutation createCart {
-              createCartToken(input: {}) {
-                cartToken {
-                  id
-                  _id
-                  cartToken
-                  customerId
-                  channelId
-                  itemsCount
-                  subtotal
-                  baseSubtotal
-                  discountAmount
-                  baseDiscountAmount
-                  taxAmount
-                  baseTaxAmount
-                  shippingAmount
-                  baseShippingAmount
-                  grandTotal
-                  baseGrandTotal
-                  formattedSubtotal
-                  formattedDiscountAmount
-                  formattedTaxAmount
-                  formattedShippingAmount
-                  formattedGrandTotal
-                  couponCode
-                  success
-                  message
-                  sessionToken
-                  isGuest
-                }
-              }
-            }
-        GQL;
-
-        $response = $this->graphQL($mutation);
-        $response->assertSuccessful();
-
-        $data = $response->json('data.createCartToken.cartToken');
-
-        $this->assertNotNull($data, 'cartToken response is null');
-        $this->assertTrue((bool) ($data['success'] ?? false));
-
-        // Use cartToken as the bearer token
-        $token = $data['cartToken'] ?? null;
-        $this->assertNotEmpty($token, 'guest cart token is missing');
-
-        return $token;
-    }
-
-    /**
-     * Helper method to get authorization headers with guest cart token
-     */
-    private function guestHeaders(string $token): array
-    {
-        return [
-            'Authorization' => 'Bearer '.$token,
-        ];
-    }
-
-    /**
-     * Create Simple Cart (Guest)
+     * Create Simple Cart (Guest).
      */
     public function test_create_simple_cart(): void
     {
@@ -83,14 +17,13 @@ class GuestCartTest extends GraphQLTestCase
     }
 
     /**
-     * Add Product In Cart (Guest)
+     * Add Product In Cart (Guest).
      */
     public function test_create_add_product_in_cart_as_guest(): void
     {
         $token = $this->getGuestCartToken();
         $headers = $this->guestHeaders($token);
 
-        // Use test product helper to get a product with inventory
         $productData = $this->createTestProduct();
         $product = $productData['product'];
 
@@ -186,14 +119,13 @@ class GuestCartTest extends GraphQLTestCase
     }
 
     /**
-     * Update Cart Item Quantity (Guest)
+     * Update Cart Item Quantity (Guest).
      */
     public function test_update_cart_item_quantity_as_guest(): void
     {
         $token = $this->getGuestCartToken();
         $headers = $this->guestHeaders($token);
 
-        // Use test product helper to get a product with inventory
         $productData = $this->createTestProduct();
         $product = $productData['product'];
 
@@ -327,18 +259,16 @@ class GuestCartTest extends GraphQLTestCase
     }
 
     /**
-     * Remove Cart Item (Guest)
+     * Remove Cart Item (Guest).
      */
     public function test_remove_cart_item_as_guest(): void
     {
         $token = $this->getGuestCartToken();
         $headers = $this->guestHeaders($token);
 
-        // Use test product helper to get a product with inventory
         $productData = $this->createTestProduct();
         $product = $productData['product'];
 
-        // First add product to cart
         $addMutation = <<<'GQL'
             mutation createAddProductInCart($productId: Int!, $quantity: Int!) {
               createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
@@ -369,7 +299,6 @@ class GuestCartTest extends GraphQLTestCase
         $cartItemId = $addResponse->json('data.createAddProductInCart.addProductInCart.items.edges.0.node.id');
         $this->assertNotNull($cartItemId);
 
-        // Now remove the item
         $removeMutation = <<<'GQL'
             mutation createRemoveCartItem($cartItemId: Int!) {
               createRemoveCartItem(input: {cartItemId: $cartItemId}) {
@@ -413,18 +342,16 @@ class GuestCartTest extends GraphQLTestCase
     }
 
     /**
-     * Apply Coupon (Guest)
+     * Apply Coupon (Guest).
      */
     public function test_apply_coupon_as_guest(): void
     {
         $token = $this->getGuestCartToken();
         $headers = $this->guestHeaders($token);
 
-        // Use test product helper to get a product with inventory
         $productData = $this->createTestProduct();
         $product = $productData['product'];
 
-        // First add product to cart
         $addMutation = <<<'GQL'
             mutation createAddProductInCart($productId: Int!, $quantity: Int!) {
               createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
@@ -440,7 +367,6 @@ class GuestCartTest extends GraphQLTestCase
             'quantity' => 1,
         ], $headers);
 
-        // Apply coupon
         $couponMutation = <<<'GQL'
             mutation createApplyCoupon($couponCode: String!) {
               createApplyCoupon(input: {couponCode: $couponCode}) {
@@ -464,18 +390,16 @@ class GuestCartTest extends GraphQLTestCase
     }
 
     /**
-     * Remove Coupon (Guest)
+     * Remove Coupon (Guest).
      */
     public function test_remove_coupon_as_guest(): void
     {
         $token = $this->getGuestCartToken();
         $headers = $this->guestHeaders($token);
 
-        // Use test product helper to get a product with inventory
         $productData = $this->createTestProduct();
         $product = $productData['product'];
 
-        // First add product to cart
         $addMutation = <<<'GQL'
             mutation createAddProductInCart($productId: Int!, $quantity: Int!) {
               createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
@@ -491,7 +415,6 @@ class GuestCartTest extends GraphQLTestCase
             'quantity' => 1,
         ], $headers);
 
-        // Remove coupon
         $removeCouponMutation = <<<'GQL'
             mutation createRemoveCoupon {
               createRemoveCoupon(input: {}) {
@@ -512,8 +435,225 @@ class GuestCartTest extends GraphQLTestCase
         $this->assertNotNull($data);
     }
 
+    /**
+     * Test apply coupon response carries success and message graphql.
+     */
+    public function test_apply_coupon_response_carries_success_and_message_graphql(): void
+    {
+        $code = $this->seedActiveCoupon();
+        $token = $this->getGuestCartToken();
+        $headers = $this->guestHeaders($token);
+
+        $productData = $this->createTestProduct();
+        $product = $productData['product'];
+
+        $this->graphQL(<<<'GQL'
+            mutation add($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) { addProductInCart { itemsCount } }
+            }
+        GQL, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ], $headers);
+
+        $mutation = <<<'GQL'
+            mutation apply($couponCode: String!) {
+              createApplyCoupon(input: {couponCode: $couponCode}) {
+                applyCoupon { id couponCode success message }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, ['couponCode' => $code], $headers);
+        $response->assertSuccessful();
+
+        $data = $response->json('data.createApplyCoupon.applyCoupon');
+        $this->assertNotNull($data);
+        $this->assertTrue($data['success'] ?? false);
+        $this->assertNotEmpty($data['message'] ?? null);
+        $this->assertSame($code, $data['couponCode'] ?? null);
+    }
+
+    /**
+     * Test read cart returns applied coupon code graphql.
+     */
+    public function test_read_cart_returns_applied_coupon_code_graphql(): void
+    {
+        $code = $this->seedActiveCoupon();
+        $token = $this->getGuestCartToken();
+        $headers = $this->guestHeaders($token);
+
+        $productData = $this->createTestProduct();
+        $product = $productData['product'];
+
+        $this->graphQL(<<<'GQL'
+            mutation add($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) { addProductInCart { itemsCount } }
+            }
+        GQL, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ], $headers);
+
+        $this->graphQL(<<<'GQL'
+            mutation apply($couponCode: String!) {
+              createApplyCoupon(input: {couponCode: $couponCode}) { applyCoupon { id } }
+            }
+        GQL, ['couponCode' => $code], $headers);
+
+        $read = $this->graphQL(<<<'GQL'
+            mutation read {
+              createReadCart(input: {}) {
+                readCart { id couponCode }
+              }
+            }
+        GQL, [], $headers);
+
+        $read->assertSuccessful();
+        $this->assertSame($code, $read->json('data.createReadCart.readCart.couponCode'));
+    }
+
+    /**
+     * Test read cart returns the issued guest token not the cart id.
+     */
+    public function test_read_cart_returns_the_issued_guest_token_not_the_cart_id(): void
+    {
+        $token = $this->getGuestCartToken();
+        $headers = $this->guestHeaders($token);
+
+        $productData = $this->createTestProduct();
+
+        $add = $this->graphQL(<<<'GQL'
+            mutation add($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
+                addProductInCart { id cartToken }
+              }
+            }
+        GQL, [
+            'productId' => $productData['product']->id,
+            'quantity' => 1,
+        ], $headers);
+
+        $add->assertSuccessful();
+
+        $cart = $add->json('data.createAddProductInCart.addProductInCart');
+
+        $this->assertSame($token, $cart['cartToken']);
+        $this->assertNotSame((string) $cart['id'], $cart['cartToken']);
+    }
+
+    /**
+     * Test remove coupon response carries success and message graphql.
+     */
+    public function test_remove_coupon_response_carries_success_and_message_graphql(): void
+    {
+        $code = $this->seedActiveCoupon();
+        $token = $this->getGuestCartToken();
+        $headers = $this->guestHeaders($token);
+
+        $productData = $this->createTestProduct();
+        $product = $productData['product'];
+
+        $this->graphQL(<<<'GQL'
+            mutation add($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) { addProductInCart { itemsCount } }
+            }
+        GQL, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ], $headers);
+
+        $this->graphQL(<<<'GQL'
+            mutation apply($couponCode: String!) {
+              createApplyCoupon(input: {couponCode: $couponCode}) { applyCoupon { id } }
+            }
+        GQL, ['couponCode' => $code], $headers);
+
+        $response = $this->graphQL(<<<'GQL'
+            mutation rm {
+              createRemoveCoupon(input: {}) {
+                removeCoupon { id success message couponCode }
+              }
+            }
+        GQL, [], $headers);
+
+        $response->assertSuccessful();
+        $data = $response->json('data.createRemoveCoupon.removeCoupon');
+        $this->assertNotNull($data);
+        $this->assertTrue($data['success'] ?? false);
+        $this->assertNotEmpty($data['message'] ?? null);
+    }
+
+    /**
+     * Get guest cart token from the createCart mutation response
+     * This token is used as Bearer token for subsequent operations.
+     */
+    private function getGuestCartToken(): string
+    {
+        $mutation = <<<'GQL'
+            mutation createCart {
+              createCartToken(input: {}) {
+                cartToken {
+                  id
+                  _id
+                  cartToken
+                  customerId
+                  channelId
+                  itemsCount
+                  subtotal
+                  baseSubtotal
+                  discountAmount
+                  baseDiscountAmount
+                  taxAmount
+                  baseTaxAmount
+                  shippingAmount
+                  baseShippingAmount
+                  grandTotal
+                  baseGrandTotal
+                  formattedSubtotal
+                  formattedDiscountAmount
+                  formattedTaxAmount
+                  formattedShippingAmount
+                  formattedGrandTotal
+                  couponCode
+                  success
+                  message
+                  sessionToken
+                  isGuest
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation);
+        $response->assertSuccessful();
+
+        $data = $response->json('data.createCartToken.cartToken');
+
+        $this->assertNotNull($data, 'cartToken response is null');
+        $this->assertTrue((bool) ($data['success'] ?? false));
+
+        $token = $data['cartToken'] ?? null;
+        $this->assertNotEmpty($token, 'guest cart token is missing');
+
+        return $token;
+    }
+
+    /**
+     * Helper method to get authorization headers with guest cart token.
+     */
+    private function guestHeaders(string $token): array
+    {
+        return [
+            'Authorization' => 'Bearer '.$token,
+        ];
+    }
+
     // ── Bug fixes: couponCode populated, success/message on apply/remove ──
 
+    /**
+     * Seed active coupon.
+     */
     private function seedActiveCoupon(?string $code = null): string
     {
         $code = $code ?? ('SAVE10GQL_'.strtoupper(uniqid()));
@@ -568,142 +708,5 @@ class GuestCartTest extends GraphQLTestCase
         ]);
 
         return $code;
-    }
-
-    public function test_apply_coupon_response_carries_success_and_message_graphql(): void
-    {
-        $code = $this->seedActiveCoupon();
-        $token = $this->getGuestCartToken();
-        $headers = $this->guestHeaders($token);
-
-        $productData = $this->createTestProduct();
-        $product = $productData['product'];
-
-        $this->graphQL(<<<'GQL'
-            mutation add($productId: Int!, $quantity: Int!) {
-              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) { addProductInCart { itemsCount } }
-            }
-        GQL, [
-            'productId' => $product->id,
-            'quantity' => 1,
-        ], $headers);
-
-        $mutation = <<<'GQL'
-            mutation apply($couponCode: String!) {
-              createApplyCoupon(input: {couponCode: $couponCode}) {
-                applyCoupon { id couponCode success message }
-              }
-            }
-        GQL;
-
-        $response = $this->graphQL($mutation, ['couponCode' => $code], $headers);
-        $response->assertSuccessful();
-
-        $data = $response->json('data.createApplyCoupon.applyCoupon');
-        $this->assertNotNull($data);
-        $this->assertTrue($data['success'] ?? false);
-        $this->assertNotEmpty($data['message'] ?? null);
-        $this->assertSame($code, $data['couponCode'] ?? null);
-    }
-
-    public function test_read_cart_returns_applied_coupon_code_graphql(): void
-    {
-        $code = $this->seedActiveCoupon();
-        $token = $this->getGuestCartToken();
-        $headers = $this->guestHeaders($token);
-
-        $productData = $this->createTestProduct();
-        $product = $productData['product'];
-
-        $this->graphQL(<<<'GQL'
-            mutation add($productId: Int!, $quantity: Int!) {
-              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) { addProductInCart { itemsCount } }
-            }
-        GQL, [
-            'productId' => $product->id,
-            'quantity' => 1,
-        ], $headers);
-
-        $this->graphQL(<<<'GQL'
-            mutation apply($couponCode: String!) {
-              createApplyCoupon(input: {couponCode: $couponCode}) { applyCoupon { id } }
-            }
-        GQL, ['couponCode' => $code], $headers);
-
-        $read = $this->graphQL(<<<'GQL'
-            mutation read {
-              createReadCart(input: {}) {
-                readCart { id couponCode }
-              }
-            }
-        GQL, [], $headers);
-
-        $read->assertSuccessful();
-        $this->assertSame($code, $read->json('data.createReadCart.readCart.couponCode'));
-    }
-
-    public function test_read_cart_returns_the_issued_guest_token_not_the_cart_id(): void
-    {
-        $token = $this->getGuestCartToken();
-        $headers = $this->guestHeaders($token);
-
-        $productData = $this->createTestProduct();
-
-        $add = $this->graphQL(<<<'GQL'
-            mutation add($productId: Int!, $quantity: Int!) {
-              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
-                addProductInCart { id cartToken }
-              }
-            }
-        GQL, [
-            'productId' => $productData['product']->id,
-            'quantity' => 1,
-        ], $headers);
-
-        $add->assertSuccessful();
-
-        $cart = $add->json('data.createAddProductInCart.addProductInCart');
-
-        $this->assertSame($token, $cart['cartToken']);
-        $this->assertNotSame((string) $cart['id'], $cart['cartToken']);
-    }
-
-    public function test_remove_coupon_response_carries_success_and_message_graphql(): void
-    {
-        $code = $this->seedActiveCoupon();
-        $token = $this->getGuestCartToken();
-        $headers = $this->guestHeaders($token);
-
-        $productData = $this->createTestProduct();
-        $product = $productData['product'];
-
-        $this->graphQL(<<<'GQL'
-            mutation add($productId: Int!, $quantity: Int!) {
-              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) { addProductInCart { itemsCount } }
-            }
-        GQL, [
-            'productId' => $product->id,
-            'quantity' => 1,
-        ], $headers);
-
-        $this->graphQL(<<<'GQL'
-            mutation apply($couponCode: String!) {
-              createApplyCoupon(input: {couponCode: $couponCode}) { applyCoupon { id } }
-            }
-        GQL, ['couponCode' => $code], $headers);
-
-        $response = $this->graphQL(<<<'GQL'
-            mutation rm {
-              createRemoveCoupon(input: {}) {
-                removeCoupon { id success message couponCode }
-              }
-            }
-        GQL, [], $headers);
-
-        $response->assertSuccessful();
-        $data = $response->json('data.createRemoveCoupon.removeCoupon');
-        $this->assertNotNull($data);
-        $this->assertTrue($data['success'] ?? false);
-        $this->assertNotEmpty($data['message'] ?? null);
     }
 }

@@ -8,15 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsCurrency;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Minimal placeholder provider for AdminSettingsCurrency PUT/DELETE.
- *
- * API Platform requires a provider on PUT/DELETE so it can resolve the resource
- * before passing it to the processor. The actual lookup happens inside the
- * processor (which reads from $uriVariables / context).
- */
 class AdminSettingsCurrencyWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminSettingsCurrency
     {
         if (! AdminAuthHelper::resolveAdmin()) {

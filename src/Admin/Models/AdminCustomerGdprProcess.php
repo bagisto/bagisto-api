@@ -11,22 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminCustomerGdprProcessInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGdprProcessProcessor;
 
-/**
- * Approve + execute a GDPR request (destructive action for delete requests).
- *
- * REST    : POST /api/admin/customers/gdpr-requests/{id}/process
- * GraphQL : createAdminCustomerGdprProcess
- *
- * For type=delete: cascades the customer delete (CustomerRepository::delete()
- * fires the customer.delete.before / after events that the GDPR module already
- * listens to).
- *
- * For type=update: marks the request approved. The admin then applies the
- * pending profile changes manually — there is no embedded update payload in
- * gdpr_data_request, only a free-form `message`.
- *
- * Permission: customers.gdpr_requests.edit.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerGdprProcess',
@@ -95,27 +79,51 @@ class AdminCustomerGdprProcess
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The request id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $request_id = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customer_id = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $type = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(writable: false)]
     public ?string $status = null;
 
+    /**
+     * The customer deleted.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $customer_deleted = null;
 
+    /**
+     * The processed at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $processed_at = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

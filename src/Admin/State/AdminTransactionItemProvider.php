@@ -14,8 +14,14 @@ class AdminTransactionItemProvider extends AbstractAdminItemProvider
     use BuildsAdminTransaction;
     use ChecksAdminPermission;
 
+    /**
+     * The permission constant.
+     */
     protected const PERMISSION = 'sales.transactions.view';
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         $this->authorizedAdmin(self::PERMISSION);
@@ -23,11 +29,17 @@ class AdminTransactionItemProvider extends AbstractAdminItemProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.sales.transaction.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         $row = DB::table('order_transactions')
@@ -39,6 +51,9 @@ class AdminTransactionItemProvider extends AbstractAdminItemProvider
         return $row ?: null;
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $entity): AdminTransaction
     {
         return $this->buildAdminTransaction($entity);

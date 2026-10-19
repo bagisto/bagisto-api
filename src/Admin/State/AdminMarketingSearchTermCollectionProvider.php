@@ -10,20 +10,16 @@ use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchTermRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSearchTerm;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * GET /api/admin/marketing/search-terms + adminMarketingSearchTerms GraphQL.
- *
- * Filters: term (LIKE), channel_id, locale.
- * Sort: id (default desc), term, uses, results.
- *
- * Branches: GraphQL → an AdminMarketingSearchTerm Eloquent row per result (the
- * `channel` to-one is detail-only, null on listing rows — no N+1); REST → the
- * flat AdminMarketingSearchTermRestDto (`channel` omitted on listing rows).
- */
 class AdminMarketingSearchTermCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * The listing is graph ql.
+     */
     protected bool $listingIsGraphQL = false;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
@@ -31,11 +27,17 @@ class AdminMarketingSearchTermCollectionProvider extends AbstractAdminCollection
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'term', 'uses', 'results'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('search_terms')->select(
@@ -52,6 +54,9 @@ class AdminMarketingSearchTermCollectionProvider extends AbstractAdminCollection
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['term'])) {
@@ -71,6 +76,9 @@ class AdminMarketingSearchTermCollectionProvider extends AbstractAdminCollection
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -85,6 +93,9 @@ class AdminMarketingSearchTermCollectionProvider extends AbstractAdminCollection
         $query->orderBy($map[$column] ?? 'search_terms.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): object
     {
         if ($this->listingIsGraphQL) {
@@ -100,8 +111,6 @@ class AdminMarketingSearchTermCollectionProvider extends AbstractAdminCollection
         $dto->locale = $row->locale;
         $dto->createdAt = $row->created_at ? Carbon::parse($row->created_at)->toIso8601String() : null;
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
-
-        // channel is detail-only — null on list rows.
 
         return $dto;
     }

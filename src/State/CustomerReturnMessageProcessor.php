@@ -20,12 +20,18 @@ use Webkul\RMA\Repositories\RMARepository;
 
 class CustomerReturnMessageProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private readonly RMARepository $rmaRepository,
         private readonly RMAMessageRepository $rmaMessageRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof SendCustomerReturnMessageInput) {
@@ -43,6 +49,9 @@ class CustomerReturnMessageProcessor implements ProcessorInterface
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }
 
+    /**
+     * Handle send.
+     */
     private function handleSend(?int $returnId, ?string $message, $file): CustomerReturnMessage
     {
         $customer = Auth::guard('sanctum')->user();

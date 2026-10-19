@@ -4,12 +4,11 @@ namespace Webkul\BagistoApi\Resolver;
 
 use Webkul\BagistoApi\Models\Product;
 
-/**
- * Custom resolver for Product nested relations (upSells, crossSells, relatedProducts, bookingProducts)
- * Ensures the relation methods are called instead of querying all products
- */
 class ProductRelationResolver
 {
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke($object, array $args, $context, $info, $type, $fieldName)
     {
         if (! $object instanceof Product) {

@@ -14,6 +14,9 @@ use Webkul\Core\Models\SubscribersListProxy;
 
 class NewsletterSubscriptionProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         if (

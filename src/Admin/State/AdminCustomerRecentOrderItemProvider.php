@@ -13,16 +13,16 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Customer\Models\Customer;
 use Webkul\Sales\Models\OrderItem;
 
-/**
- * Up to 5 most-recent distinct order items for a customer — sidebar panel.
- *
- * Mirrors the monolith query: distinct product_id from order_items joined to
- * orders for the customer, parent_id null, ordered by orders.created_at desc.
- */
 class AdminCustomerRecentOrderItemProvider implements ProviderInterface
 {
+    /**
+     * The max items constant.
+     */
     protected const MAX_ITEMS = 5;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         AdminReadPermissions::authorize($operation, AdminCustomerRecentOrderItem::class);
@@ -72,6 +72,9 @@ class AdminCustomerRecentOrderItemProvider implements ProviderInterface
         return new Paginator(new LengthAwarePaginator($rows, $total, max($total, 1), 1));
     }
 
+    /**
+     * To dto.
+     */
     protected function toDto($item): AdminCustomerRecentOrderItem
     {
         $product = $item->product;

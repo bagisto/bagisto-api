@@ -54,10 +54,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 )]
 class AttributeValue extends Model
 {
+    /**
+     * The table.
+     */
     protected $table = 'product_attribute_values';
 
+    /**
+     * The timestamps.
+     */
     public $timestamps = false;
 
+    /**
+     * The fillable.
+     */
     protected $fillable = [
         'product_id',
         'attribute_id',
@@ -74,10 +83,13 @@ class AttributeValue extends Model
 
     /**
      * The attributes that should be hidden from arrays and JSON
-     * We hide 'value' from being saved to database since it's a virtual attribute
+     * We hide 'value' from being saved to database since it's a virtual attribute.
      */
     protected $guarded = ['value'];
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'boolean_value' => 'boolean',
         'integer_value' => 'integer',
@@ -88,12 +100,12 @@ class AttributeValue extends Model
     ];
 
     /**
-     * Append virtual 'value' attribute to array/JSON serialization
+     * Append virtual 'value' attribute to array/JSON serialization.
      */
     protected $appends = ['value'];
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
@@ -102,7 +114,7 @@ class AttributeValue extends Model
     }
 
     /**
-     * Relationship to the attribute
+     * Relationship to the attribute.
      */
     public function attribute(): BelongsTo
     {
@@ -110,7 +122,7 @@ class AttributeValue extends Model
     }
 
     /**
-     * Relationship to the product
+     * Relationship to the product.
      */
     public function product(): BelongsTo
     {
@@ -119,7 +131,7 @@ class AttributeValue extends Model
 
     /**
      * Expose value as a readable/writable property for API Platform
-     * This makes the virtual attribute available in BagistoApi
+     * This makes the virtual attribute available in BagistoApi.
      */
     #[ApiProperty(writable: true, readable: true)]
     public function getValue(): mixed
@@ -128,7 +140,7 @@ class AttributeValue extends Model
     }
 
     /**
-     * Setter for API Platform to write to the value property
+     * Setter for API Platform to write to the value property.
      */
     public function setValue(mixed $value): void
     {
@@ -137,7 +149,7 @@ class AttributeValue extends Model
 
     /**
      * Laravel accessor: Get the unified value (checks all value columns)
-     * This is called when accessing $model->value in Laravel
+     * This is called when accessing $model->value in Laravel.
      */
     public function getValueAttribute(): mixed
     {
@@ -171,7 +183,7 @@ class AttributeValue extends Model
     }
 
     /**
-     * Laravel mutator: Set the value (will be processed later by processor)
+     * Laravel mutator: Set the value (will be processed later by processor).
      */
     public function setValueAttribute(mixed $value): void
     {
@@ -179,7 +191,7 @@ class AttributeValue extends Model
     }
 
     /**
-     * Clear all value columns
+     * Clear all value columns.
      */
     public function clearAllValues(): void
     {
@@ -193,7 +205,7 @@ class AttributeValue extends Model
     }
 
     /**
-     * Set value to the appropriate column based on attribute type
+     * Set value to the appropriate column based on attribute type.
      *
      * @param  mixed  $value  The value to set
      * @param  string  $attributeType  The type of attribute (text, boolean, price, etc.)

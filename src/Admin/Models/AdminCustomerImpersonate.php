@@ -12,15 +12,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminCustomerImpersonateInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerImpersonateProcessor;
 
-/**
- * Login-as-customer impersonation.
- *
- * Issues a Sanctum customer token bound to the target customer; the token
- * carries an `impersonatedByAdminId` ability for audit. Expires in 1 hour.
- *
- * REST    : POST /api/admin/customers/{customerId}/impersonate
- * GraphQL : createAdminCustomerImpersonate
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerImpersonate',
@@ -73,24 +64,45 @@ class AdminCustomerImpersonate
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The token.
+     */
     #[ApiProperty(writable: false)]
     public ?string $token = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customer_id = null;
 
+    /**
+     * The customer email.
+     */
     #[ApiProperty(writable: false)]
     public ?string $customer_email = null;
 
+    /**
+     * The customer name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $customer_name = null;
 
+    /**
+     * The impersonated by admin id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $impersonated_by_admin_id = null;
 
+    /**
+     * The expires at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $expires_at = null;
 }

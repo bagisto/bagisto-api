@@ -10,11 +10,10 @@ use Webkul\BookingProduct\Models\BookingProduct;
 class ProductQueryTest extends GraphQLTestCase
 {
     /**
-     * Test querying simple products
+     * Test querying simple products.
      */
     public function test_get_all_simple_products(): void
     {
-        // Create a simple product for testing
         $product = $this->createBaseProduct('simple', [
             'sku' => 'TEST-SIMPLE-QUERY-'.uniqid(),
         ]);
@@ -82,11 +81,10 @@ class ProductQueryTest extends GraphQLTestCase
     }
 
     /**
-     * Test querying configurable products
+     * Test querying configurable products.
      */
     public function test_get_all_configurable_products(): void
     {
-        // Create attributes for configurable product
         $attributes = Attribute::query()
             ->where('is_configurable', 1)
             ->where('type', 'select')
@@ -98,14 +96,12 @@ class ProductQueryTest extends GraphQLTestCase
             $this->markTestSkipped('No configurable select attributes found.');
         }
 
-        // Create parent configurable product
         $parent = $this->createBaseProduct('configurable', [
             'sku' => 'TEST-CONFIG-QUERY-'.uniqid(),
         ]);
         $this->ensureInventory($parent, 50);
         $this->upsertProductAttributeValue($parent->id, 'weight', 1.5, null, 'default');
 
-        // Create child simple product
         $child = $this->createBaseProduct('simple', [
             'sku' => 'TEST-CONFIG-CHILD-QUERY-'.uniqid(),
             'parent_id' => $parent->id,
@@ -119,7 +115,6 @@ class ProductQueryTest extends GraphQLTestCase
             'child_id' => $child->id,
         ]);
 
-        // Add super attributes
         foreach ($attributes as $attribute) {
             DB::table('product_super_attributes')->insert([
                 'product_id' => $parent->id,
@@ -211,11 +206,10 @@ class ProductQueryTest extends GraphQLTestCase
     }
 
     /**
-     * Test querying virtual products
+     * Test querying virtual products.
      */
     public function test_get_all_virtual_products(): void
     {
-        // Create a virtual product for testing
         $product = $this->createBaseProduct('virtual', [
             'sku' => 'TEST-VIRTUAL-QUERY-'.uniqid(),
         ]);
@@ -283,17 +277,15 @@ class ProductQueryTest extends GraphQLTestCase
     }
 
     /**
-     * Test querying grouped products
+     * Test querying grouped products.
      */
     public function test_get_all_grouped_products(): void
     {
-        // Create a grouped product
         $parent = $this->createBaseProduct('grouped', [
             'sku' => 'TEST-GROUPED-QUERY-'.uniqid(),
         ]);
         $this->ensureInventory($parent, 50);
 
-        // Create associated products
         for ($i = 1; $i <= 2; $i++) {
             $associated = $this->createBaseProduct('simple', [
                 'sku' => 'TEST-GROUPED-ASSOC-QUERY-'.$parent->id.'-'.$i,
@@ -381,11 +373,10 @@ class ProductQueryTest extends GraphQLTestCase
     }
 
     /**
-     * Test querying downloadable products
+     * Test querying downloadable products.
      */
     public function test_get_all_downloadable_products(): void
     {
-        // Create a downloadable product
         $product = $this->createBaseProduct('downloadable', [
             'sku' => 'TEST-DOWNLOADABLE-QUERY-'.uniqid(),
         ]);
@@ -483,17 +474,15 @@ class ProductQueryTest extends GraphQLTestCase
 
     /**
      * Test querying booking products (collection filter by type)
-     * Matches spec: products(filter: "{\"type\": \"booking\"}")
+     * Matches spec: products(filter: "{\"type\": \"booking\"}").
      */
     public function test_get_all_booking_products(): void
     {
-        // Create a booking product for testing
         $product = $this->createBaseProduct('booking', [
             'sku' => 'TEST-BOOKING-COLLECTION-'.uniqid(),
         ]);
         $this->ensureInventory($product, 50);
 
-        // Create the booking product record
         $booking = BookingProduct::query()->create([
             'product_id' => $product->id,
             'type' => 'default',
@@ -575,12 +564,10 @@ class ProductQueryTest extends GraphQLTestCase
         $this->assertArrayHasKey('edges', $data);
         $this->assertArrayHasKey('totalCount', $data);
 
-        // Verify response structure on whatever booking products are present
         $edges = $data['edges'] ?? [];
         if (! empty($edges)) {
             $node = $edges[0]['node'];
 
-            // Verify product-level fields
             $this->assertArrayHasKey('id', $node);
             $this->assertArrayHasKey('name', $node);
             $this->assertArrayHasKey('sku', $node);
@@ -591,7 +578,6 @@ class ProductQueryTest extends GraphQLTestCase
             $this->assertArrayHasKey('price', $node);
             $this->assertArrayHasKey('specialPrice', $node);
 
-            // Verify bookingProducts connection structure
             $this->assertArrayHasKey('bookingProducts', $node);
             $bookingEdges = $node['bookingProducts']['edges'] ?? [];
             if (! empty($bookingEdges)) {
@@ -608,7 +594,6 @@ class ProductQueryTest extends GraphQLTestCase
                 $this->assertArrayHasKey('updatedAt', $bookingNode);
             }
 
-            // Verify images and categories connection structure
             $this->assertArrayHasKey('images', $node);
             $this->assertArrayHasKey('edges', $node['images']);
             $this->assertArrayHasKey('categories', $node);
@@ -617,11 +602,10 @@ class ProductQueryTest extends GraphQLTestCase
     }
 
     /**
-     * Test querying bundle products
+     * Test querying bundle products.
      */
     public function test_get_all_bundle_products(): void
     {
-        // Create a bundle product
         $product = $this->createBaseProduct('bundle', [
             'sku' => 'TEST-BUNDLE-QUERY-'.uniqid(),
         ]);
@@ -716,9 +700,7 @@ class ProductQueryTest extends GraphQLTestCase
 
     /**
      * url_key is a per-locale (translatable) attribute. A product's slug may
-     * exist only in a non-current locale; resolving `product(urlKey:)` must
-     * still find it (cross-locale fallback) rather than 404. The resolver
-     * matches the url_key across every locale — this locks that behaviour.
+     * exist only in a non-current locale; resolving `product(urlKey:)` must.
      */
     public function test_product_resolves_by_url_key_stored_only_in_another_locale(): void
     {
@@ -727,7 +709,6 @@ class ProductQueryTest extends GraphQLTestCase
         ]);
         $this->ensureInventory($product, 10);
 
-        // Store the slug ONLY in 'fr'; the request context defaults to 'en'.
         $slug = 'x-locale-slug-'.uniqid();
         DB::table('product_attribute_values')->updateOrInsert(
             [

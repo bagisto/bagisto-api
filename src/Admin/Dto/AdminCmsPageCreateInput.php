@@ -5,28 +5,25 @@ namespace Webkul\BagistoApi\Admin\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * Input DTO for POST /api/admin/cms/pages + createAdminCmsPage.
- *
- * Mirrors Bagisto core PageController::store():
- *   - top-level: url_key (required + unique on cms_page_translations.url_key + slug regex)
- *   - page_title (required)
- *   - html_content (required)
- *   - channels (required non-empty array of channel ids)
- *   - optional: meta_title, meta_keywords, meta_description
- *
- * The repository broadcasts top-level translated fields to every locale.
- */
 class AdminCmsPageCreateInput
 {
+    /**
+     * The url key.
+     */
     #[ApiProperty(description: 'URL key (slug). Must be unique across cms_page_translations and match slug regex.')]
     #[Groups(['mutation'])]
     public ?string $url_key = null;
 
+    /**
+     * The page title.
+     */
     #[ApiProperty(description: 'Page title.')]
     #[Groups(['mutation'])]
     public ?string $page_title = null;
 
+    /**
+     * The html content.
+     */
     #[ApiProperty(description: 'Page HTML content.')]
     #[Groups(['mutation'])]
     public ?string $html_content = null;
@@ -36,14 +33,23 @@ class AdminCmsPageCreateInput
     #[Groups(['mutation'])]
     public ?array $channels = null;
 
+    /**
+     * The meta title.
+     */
     #[ApiProperty(description: 'SEO meta title.')]
     #[Groups(['mutation'])]
     public ?string $meta_title = null;
 
+    /**
+     * The meta keywords.
+     */
     #[ApiProperty(description: 'SEO meta keywords.')]
     #[Groups(['mutation'])]
     public ?string $meta_keywords = null;
 
+    /**
+     * The meta description.
+     */
     #[ApiProperty(description: 'SEO meta description.')]
     #[Groups(['mutation'])]
     public ?string $meta_description = null;

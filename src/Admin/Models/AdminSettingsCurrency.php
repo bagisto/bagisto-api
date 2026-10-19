@@ -21,25 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
 
-/**
- * Admin Settings → Currencies endpoints (Block B Wave 1).
- *
- * REST:
- *   GET    /api/admin/settings/currencies            — datagrid-parity listing
- *   GET    /api/admin/settings/currencies/{id}       — detail
- *   POST   /api/admin/settings/currencies            — create
- *   PUT    /api/admin/settings/currencies/{id}       — update
- *   DELETE /api/admin/settings/currencies/{id}       — delete (guards: last currency, channel base)
- *
- * GraphQL:
- *   adminSettingsCurrencies          — cursor listing
- *   adminSettingsCurrency(id:)       — detail
- *   createAdminSettingsCurrency      — create
- *   updateAdminSettingsCurrency      — update
- *   deleteAdminSettingsCurrency      — delete
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\CurrencyController 1:1.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsCurrency',
@@ -375,36 +356,69 @@ class AdminSettingsCurrency
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(writable: false, example: 'USD')]
     public ?string $code = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false, example: 'US Dollar')]
     public ?string $name = null;
 
+    /**
+     * The symbol.
+     */
     #[ApiProperty(writable: false, example: '$')]
     public ?string $symbol = null;
 
+    /**
+     * The decimal.
+     */
     #[ApiProperty(writable: false, example: 2)]
     public ?int $decimal = null;
 
+    /**
+     * The group separator.
+     */
     #[ApiProperty(writable: false, example: ',')]
     public ?string $group_separator = null;
 
+    /**
+     * The decimal separator.
+     */
     #[ApiProperty(writable: false, example: '.')]
     public ?string $decimal_separator = null;
 
+    /**
+     * The currency position.
+     */
     #[ApiProperty(writable: false, example: 'left')]
     public ?string $currency_position = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, example: 'Currency deleted successfully.')]
     public ?string $message = null;
 }

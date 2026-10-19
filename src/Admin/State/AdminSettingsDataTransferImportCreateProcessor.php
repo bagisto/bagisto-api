@@ -21,20 +21,29 @@ use Webkul\DataTransfer\Models\Import;
 use Webkul\DataTransfer\Repositories\ImportRepository;
 use ZipArchive;
 
-/**
- * Create + update for data-transfer imports (multipart upload).
- */
 class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterface
 {
+    /**
+     * The supported formats constant.
+     */
     protected const SUPPORTED_FORMATS = ['csv', 'xls', 'xlsx', 'xml'];
 
+    /**
+     * The max images archive kb constant.
+     */
     protected const MAX_IMAGES_ARCHIVE_KB = 102400;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ImportRepository $importRepository,
         protected AdminSettingsDataTransferImportItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -66,6 +75,9 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(): mixed
     {
         $payload = $this->validatePayload(true);
@@ -92,6 +104,9 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         return $this->itemProvider->mapToDtoPublic(Import::find($import->id));
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id): mixed
     {
         $import = Import::find($id);
@@ -195,6 +210,9 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         return $input;
     }
 
+    /**
+     * Store file.
+     */
     protected function storeFile(UploadedFile $file, int $importId): string
     {
         $safeFilename = uniqid().'_'.hash('sha256', $file->getClientOriginalName());
@@ -278,6 +296,9 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         return $data;
     }
 
+    /**
+     * Store images archive.
+     */
     protected function storeImagesArchive(UploadedFile $file, int $importId): void
     {
         $disk = Storage::disk('private');
@@ -297,6 +318,9 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         $disk->delete($archivePath);
     }
 
+    /**
+     * Count uploaded images.
+     */
     protected function countUploadedImages(int $importId): int
     {
         try {
@@ -306,6 +330,9 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         }
     }
 
+    /**
+     * Purge import images.
+     */
     protected function purgeImportImages(int $importId): void
     {
         try {
@@ -314,6 +341,9 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         }
     }
 
+    /**
+     * Purge import files.
+     */
     protected function purgeImportFiles(int $importId): void
     {
         try {
@@ -322,6 +352,9 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         }
     }
 
+    /**
+     * Delete file.
+     */
     protected function deleteFile(?string $path): void
     {
         if (! $path) {
@@ -334,6 +367,9 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

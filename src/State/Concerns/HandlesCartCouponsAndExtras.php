@@ -17,7 +17,7 @@ use Webkul\Shipping\Facades\Shipping;
 trait HandlesCartCouponsAndExtras
 {
     /**
-     * Handle applying coupon code
+     * Handle applying coupon code.
      */
     private function handleApplyCoupon(?CartModel $cart, ?Customer $customer, CartInput $data): array
     {
@@ -47,15 +47,11 @@ trait HandlesCartCouponsAndExtras
         $cart = CartFacade::getCart();
 
         $cartData = CartData::fromModel($cart);
-        // Bagisto's setCouponCode/collectTotals does NOT throw for unknown codes — it
-        // silently writes the column without applying a discount. Treat the coupon as
-        // applied only when there is a matching cart_rule_coupons row.
         $applied = ! empty($cart->coupon_code)
             && $cart->coupon_code === $data->couponCode
             && \DB::table('cart_rule_coupons')->where('code', $data->couponCode)->exists();
 
         if (! $applied) {
-            // Strip the unverified code so subsequent reads don't lie about a discount.
             $cart->coupon_code = null;
             $cart->save();
             $cartData->couponCode = null;
@@ -70,7 +66,7 @@ trait HandlesCartCouponsAndExtras
     }
 
     /**
-     * Handle removing coupon code from cart
+     * Handle removing coupon code from cart.
      */
     private function handleRemoveCoupon(?CartModel $cart, ?Customer $customer, CartInput $data): array
     {
@@ -100,7 +96,7 @@ trait HandlesCartCouponsAndExtras
     }
 
     /**
-     * Handle moving items to wishlist
+     * Handle moving items to wishlist.
      */
     private function handleMoveToWishlist(?CartModel $cart, ?Customer $customer, CartInput $data): array
     {
@@ -150,7 +146,7 @@ trait HandlesCartCouponsAndExtras
     }
 
     /**
-     * Handle estimating shipping methods and tax
+     * Handle estimating shipping methods and tax.
      */
     private function handleEstimateShipping(?CartModel $cart, ?Customer $customer, CartInput $data): array
     {

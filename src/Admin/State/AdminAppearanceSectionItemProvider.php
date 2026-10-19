@@ -12,8 +12,14 @@ class AdminAppearanceSectionItemProvider implements ProviderInterface
     use ChecksAdminPermission;
     use MapsAppearanceSection;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected AppearanceScopeGuard $scope) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $this->authorizedAdmin('appearance.sections', 'bagistoapi::app.admin.appearance.no-permission');

@@ -13,10 +13,16 @@ class ChannelProvider implements ProviderInterface
 {
     use ClampsPageSize;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if (isset($uriVariables['id'])) {
@@ -38,9 +44,6 @@ class ChannelProvider implements ProviderInterface
             return new Paginator($query->paginate($this->clampPageSize($first ?? $last)));
         }
 
-        // REST: the Pagination service reads page/itemsPerPage from $context['filters'],
-        // which ReadProvider normally populates — but we merge request()->query() to be
-        // resilient to context variations.
         $context['filters'] = array_merge($context['filters'] ?? [], request()->query());
         $perPage = $this->pagination->getLimit($operation, $context);
         $page = $this->pagination->getPage($context);

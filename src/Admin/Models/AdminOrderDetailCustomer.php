@@ -7,11 +7,6 @@ use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Order customer — nested to-one sub-resource of AdminOrderDetail (the
- * registered customer who placed the order; null for guest orders). `group` is
- * a typed to-one object: customer { group { code name } }.
- */
 #[ApiResource(
     shortName: 'AdminOrderDetailCustomer',
     operations: [],
@@ -36,18 +31,27 @@ class AdminOrderDetailCustomer extends Model
         'status' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getNameAttribute(): ?string
     {
         return trim(($this->first_name ?? '').' '.($this->last_name ?? '')) ?: null;
     }
 
+    /**
+     * Group.
+     */
     #[ApiProperty(writable: false)]
     public function group(): BelongsTo
     {

@@ -5,19 +5,25 @@ namespace Webkul\BagistoApi\Admin\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * Input DTO for PUT /api/admin/marketing/sitemaps/{id} and the delete mutation.
- */
 class AdminMarketingSitemapUpdateInput
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(description: 'Resource IRI (e.g. /api/admin/marketing/sitemaps/5). Used by GraphQL mutations.')]
     #[Groups(['mutation'])]
     public ?string $id = null;
 
+    /**
+     * The file name.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?string $file_name = null;
 
+    /**
+     * The path.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?string $path = null;

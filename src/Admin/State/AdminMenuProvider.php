@@ -19,16 +19,19 @@ class AdminMenuProvider implements ProviderInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * The admin namespace constant.
+     */
     private const ADMIN_NAMESPACE = '\\Admin\\Models\\';
 
+    /**
+     * The standard graphql ops constant.
+     */
     private const STANDARD_GRAPHQL_OPS = ['collection_query', 'item_query', 'create', 'update', 'delete'];
 
     /**
      * Menu keys whose API route does not follow the key→path convention
-     * (core menu naming and API route naming diverge). Each value MUST be a
-     * real registered listing route — it is validated against the discovered
-     * resource index, so a wrong/removed route resolves to null rather than a
-     * dead link.
+     * (core menu naming and API route naming diverge). Each value MUST be a.
      */
     private const IRREGULAR = [
         'appearance' => '/api/admin/appearance/themes',
@@ -44,11 +47,17 @@ class AdminMenuProvider implements ProviderInterface
      */
     private static ?array $resourceIndex = null;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ResourceNameCollectionFactoryInterface $resourceNameFactory,
         protected ResourceMetadataCollectionFactoryInterface $resourceMetadataFactory,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -71,6 +80,9 @@ class AdminMenuProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * To dto.
+     */
     public static function toDto(array $payload): AdminMenu
     {
         $dto = new AdminMenu;
@@ -117,8 +129,7 @@ class AdminMenuProvider implements ProviderInterface
 
     /**
      * Discover every admin resource's listing route + GraphQL field straight
-     * from the registered API Platform metadata, so the map never drifts and
-     * new resources appear automatically. Keyed by REST listing path.
+     * from the registered API Platform metadata, so the map never drifts and.
      *
      * @return array<string, array<string, string|null>>
      */
@@ -158,6 +169,9 @@ class AdminMenuProvider implements ProviderInterface
         return self::$resourceIndex = $index;
     }
 
+    /**
+     * Rest listing path.
+     */
     private function restListingPath(object $metadata): ?string
     {
         $best = null;
@@ -189,6 +203,9 @@ class AdminMenuProvider implements ProviderInterface
         return $best;
     }
 
+    /**
+     * Graphql field.
+     */
     private function graphqlField(object $metadata): ?string
     {
         $shortName = $metadata->getShortName();

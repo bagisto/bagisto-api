@@ -15,10 +15,16 @@ use Webkul\Customer\Models\Customer;
 
 class LoginProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected LoginValidator $validator
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         if ($data instanceof LoginInput) {
@@ -102,6 +108,9 @@ class LoginProcessor implements ProcessorInterface
         ]);
     }
 
+    /**
+     * Output.
+     */
     private function output(array $data): CustomerLogin
     {
         $output = new CustomerLogin;

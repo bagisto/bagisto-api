@@ -231,6 +231,9 @@ class AdminShipment
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The sample list constant.
+     */
     private const SAMPLE_LIST = [
         'id' => 7,
         'orderId' => 8,
@@ -265,6 +268,9 @@ class AdminShipment
         'items' => [],
     ];
 
+    /**
+     * The sample detail constant.
+     */
     private const SAMPLE_DETAIL = [
         'id' => 7,
         'orderId' => 8,
@@ -305,6 +311,9 @@ class AdminShipment
         ]],
     ];
 
+    /**
+     * The sample billing constant.
+     */
     private const SAMPLE_BILLING = [
         'id' => 16,
         'addressType' => 'order_billing',
@@ -317,6 +326,9 @@ class AdminShipment
         'phone' => '5551234567',
     ];
 
+    /**
+     * The sample shipping constant.
+     */
     private const SAMPLE_SHIPPING = [
         'id' => 15,
         'addressType' => 'order_shipping',
@@ -329,66 +341,159 @@ class AdminShipment
         'phone' => '5551234567',
     ];
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The order id.
+     */
     public ?int $order_id = null;
 
+    /**
+     * The order increment id.
+     */
     public ?string $order_increment_id = null;
 
+    /**
+     * The shipped to.
+     */
     public ?string $shipped_to = null;
 
+    /**
+     * The order date.
+     */
     public ?string $order_date = null;
 
+    /**
+     * The order status.
+     */
     public ?string $order_status = null;
 
+    /**
+     * The order status label.
+     */
     public ?string $order_status_label = null;
 
+    /**
+     * The channel name.
+     */
     public ?string $channel_name = null;
 
+    /**
+     * The customer name.
+     */
     public ?string $customer_name = null;
 
+    /**
+     * The customer email.
+     */
     public ?string $customer_email = null;
 
+    /**
+     * The payment method.
+     */
     public ?string $payment_method = null;
 
+    /**
+     * The payment title.
+     */
     public ?string $payment_title = null;
 
+    /**
+     * The order currency code.
+     */
     public ?string $order_currency_code = null;
 
+    /**
+     * The shipping method.
+     */
     public ?string $shipping_method = null;
 
+    /**
+     * The shipping title.
+     */
     public ?string $shipping_title = null;
 
+    /**
+     * The base shipping amount.
+     */
     public ?float $base_shipping_amount = null;
 
+    /**
+     * The formatted base shipping amount.
+     */
     public ?string $formatted_base_shipping_amount = null;
 
+    /**
+     * The status.
+     */
     public ?string $status = null;
 
+    /**
+     * The total qty.
+     */
     public ?int $total_qty = null;
 
+    /**
+     * The total weight.
+     */
     public ?float $total_weight = null;
 
+    /**
+     * The carrier code.
+     */
     public ?string $carrier_code = null;
 
+    /**
+     * The carrier title.
+     */
     public ?string $carrier_title = null;
 
+    /**
+     * The track number.
+     */
     public ?string $track_number = null;
 
+    /**
+     * The email sent.
+     */
     public ?bool $email_sent = null;
 
+    /**
+     * The inventory source id.
+     */
     public ?int $inventory_source_id = null;
 
+    /**
+     * The inventory source name.
+     */
     public ?string $inventory_source_name = null;
 
+    /**
+     * The billing address.
+     */
     public ?array $billing_address = null;
 
+    /**
+     * The shipping address.
+     */
     public ?array $shipping_address = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 
+    /**
+     * The items.
+     */
     public array $items = [];
 }

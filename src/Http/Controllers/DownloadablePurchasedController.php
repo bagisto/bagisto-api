@@ -13,6 +13,9 @@ class DownloadablePurchasedController extends Controller
 {
     use ValidatesExternalUrl;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected DownloadableLinkPurchasedRepository $downloadableLinkPurchasedRepository,
     ) {}

@@ -7,22 +7,20 @@ use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Models\Category;
 use Webkul\Category\Models\Category as BaseCategory;
 
-/**
- * Provider for fetching category tree structure for REST API
- *
- * This provider handles the /api/shop/category-trees endpoint and supports:
- * - parentId query parameter to filter by parent category
- * - depth query parameter to control how deep the tree goes (default: 4)
- * - Returns hierarchical category structure with translations
- */
 class CategoryTreeProvider implements ProviderInterface
 {
+    /**
+     * The max depth constant.
+     */
     private const MAX_DEPTH = 4;
 
+    /**
+     * The depth limit constant.
+     */
     private const DEPTH_LIMIT = 6;
 
     /**
-     * Provide category tree data from REST API requests
+     * Provide category tree data from REST API requests.
      */
     public function provide(
         Operation $operation,
@@ -77,7 +75,7 @@ class CategoryTreeProvider implements ProviderInterface
     }
 
     /**
-     * Build tree as array to avoid serialization issues
+     * Build tree as array to avoid serialization issues.
      */
     private function buildTreeArray($categories, int $currentDepth = 0, int $maxDepth = self::MAX_DEPTH): array
     {
@@ -97,14 +95,9 @@ class CategoryTreeProvider implements ProviderInterface
                 '_rgt' => $category->_rgt,
                 'createdAt' => $category->created_at?->toIso8601String(),
                 'updatedAt' => $category->updated_at?->toIso8601String(),
-                // Core's getUrlAttribute() returns an UrlGenerator object instead
-                // of a string when the translated slug is null, which then breaks
-                // Symfony Serializer (it tries to read Request::getSession()).
-                // Always cast to a string here.
                 'url' => $this->safeCategoryUrl($category),
             ];
 
-            // Add translation if available
             $translation = $category->translation;
             if ($translation) {
                 $item['translation'] = [
@@ -121,7 +114,6 @@ class CategoryTreeProvider implements ProviderInterface
                 ];
             }
 
-            // Add children if not at max depth
             if ($currentDepth < $maxDepth - 1) {
                 $children = $category->children()
                     ->with(['translations', 'translation'])

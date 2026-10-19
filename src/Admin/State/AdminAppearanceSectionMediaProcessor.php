@@ -15,11 +15,17 @@ class AdminAppearanceSectionMediaProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SectionRepository $sectionRepository,
         protected AppearanceScopeGuard $scope,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $this->authorizedAdmin('appearance.sections.edit', 'bagistoapi::app.admin.appearance.no-permission');
@@ -34,8 +40,6 @@ class AdminAppearanceSectionMediaProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.appearance.section.file-required'), 422);
         }
 
-        // Anything the image encoder cannot read would surface as a 500 from inside the
-        // repository, so the upload is held to the same types and size as the editor.
         $validator = Validator::make(['file' => $file], [
             'file' => 'required|mimes:bmp,jpeg,jpg,png,webp,mp4,webm,ogg|max:51200',
         ]);

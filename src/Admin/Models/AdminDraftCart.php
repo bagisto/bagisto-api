@@ -61,15 +61,27 @@ use Webkul\BagistoApi\Admin\State\AdminDraftCartProcessor;
 )]
 class AdminDraftCart
 {
+    /**
+     * The cart id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $cartId = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customerId = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

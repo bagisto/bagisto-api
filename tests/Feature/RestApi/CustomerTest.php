@@ -10,6 +10,9 @@ use Webkul\Sales\Models\Order;
 
 class CustomerTest extends RestApiTestCase
 {
+    /**
+     * Test customer can login with valid credentials.
+     */
     public function test_customer_can_login_with_valid_credentials(): void
     {
         $this->seedRequiredData();
@@ -25,6 +28,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('token'))->toBeString()->not()->toBeEmpty();
     }
 
+    /**
+     * Test login returns api token and bearer token.
+     */
     public function test_login_returns_api_token_and_bearer_token(): void
     {
         $this->seedRequiredData();
@@ -40,6 +46,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('token'))->toContain('|');
     }
 
+    /**
+     * Test login fails with wrong password.
+     */
     public function test_login_fails_with_wrong_password(): void
     {
         $this->seedRequiredData();
@@ -55,6 +64,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('token'))->toBeEmpty();
     }
 
+    /**
+     * Test login fails with nonexistent email.
+     */
     public function test_login_fails_with_nonexistent_email(): void
     {
         $this->seedRequiredData();
@@ -68,6 +80,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('success'))->toBeFalse();
     }
 
+    /**
+     * Test login fails with missing credentials.
+     */
     public function test_login_fails_with_missing_credentials(): void
     {
         $this->seedRequiredData();
@@ -80,10 +95,11 @@ class CustomerTest extends RestApiTestCase
         }
     }
 
+    /**
+     * Test suspended customer can login.
+     */
     public function test_suspended_customer_can_login(): void
     {
-        // A suspended customer may sign in and browse; they are stopped only at
-        // checkout (mirrors the storefront). Only inactive accounts are refused.
         $this->seedRequiredData();
         $customer = $this->createCustomer([
             'password' => bcrypt('Password123!'),
@@ -100,6 +116,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('token'))->not->toBeNull();
     }
 
+    /**
+     * Test authenticated customer can logout.
+     */
     public function test_authenticated_customer_can_logout(): void
     {
         $this->seedRequiredData();
@@ -111,6 +130,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('success'))->toBeTrue();
     }
 
+    /**
+     * Test logout without bearer token returns failure.
+     */
     public function test_logout_without_bearer_token_returns_failure(): void
     {
         $this->seedRequiredData();
@@ -121,6 +143,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('success'))->toBeFalse();
     }
 
+    /**
+     * Test logout revokes token.
+     */
     public function test_logout_revokes_token(): void
     {
         $this->seedRequiredData();
@@ -133,6 +158,9 @@ class CustomerTest extends RestApiTestCase
         )->toBe(0);
     }
 
+    /**
+     * Test get customer profile.
+     */
     public function test_get_customer_profile(): void
     {
         $this->seedRequiredData();
@@ -146,6 +174,9 @@ class CustomerTest extends RestApiTestCase
         expect(count($data))->toBeGreaterThanOrEqual(1);
     }
 
+    /**
+     * Test get customer profile requires auth.
+     */
     public function test_get_customer_profile_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -155,6 +186,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Test forged token with valid id is rejected.
+     */
     public function test_forged_token_with_valid_id_is_rejected(): void
     {
         $this->seedRequiredData();
@@ -169,6 +203,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->getContent())->not->toContain($customer->email);
     }
 
+    /**
+     * Test profile has expected fields.
+     */
     public function test_profile_has_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -187,6 +224,9 @@ class CustomerTest extends RestApiTestCase
         expect($profile)->toHaveKey('email');
     }
 
+    /**
+     * Test profile returns correct customer data.
+     */
     public function test_profile_returns_correct_customer_data(): void
     {
         $this->seedRequiredData();
@@ -205,6 +245,9 @@ class CustomerTest extends RestApiTestCase
         expect($profile['email'])->toBe($customer->email);
     }
 
+    /**
+     * Test update customer profile.
+     */
     public function test_update_customer_profile(): void
     {
         $this->seedRequiredData();
@@ -221,6 +264,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('message'))->toBeString();
     }
 
+    /**
+     * Test update profile requires auth.
+     */
     public function test_update_profile_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -235,6 +281,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Test update profile with email of another customer is rejected.
+     */
     public function test_update_profile_with_email_of_another_customer_is_rejected(): void
     {
         $this->seedRequiredData();
@@ -251,6 +300,9 @@ class CustomerTest extends RestApiTestCase
         expect($customer->fresh()->email)->not()->toBe($other->email);
     }
 
+    /**
+     * Test update profile password mismatch returns error.
+     */
     public function test_update_profile_password_mismatch_returns_error(): void
     {
         $this->seedRequiredData();
@@ -268,6 +320,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 422, 500]);
     }
 
+    /**
+     * Test update password with correct current password succeeds.
+     */
     public function test_update_password_with_correct_current_password_succeeds(): void
     {
         $this->seedRequiredData();
@@ -290,6 +345,9 @@ class CustomerTest extends RestApiTestCase
         expect(Hash::check('NewPassword456!', $customer->fresh()->password))->toBeTrue();
     }
 
+    /**
+     * Test update password with wrong current password returns error.
+     */
     public function test_update_password_with_wrong_current_password_returns_error(): void
     {
         $this->seedRequiredData();
@@ -310,6 +368,9 @@ class CustomerTest extends RestApiTestCase
         expect($customer->fresh()->password)->toBe($oldHash);
     }
 
+    /**
+     * Test cannot update other customers profile.
+     */
     public function test_cannot_update_other_customers_profile(): void
     {
         $this->seedRequiredData();
@@ -326,6 +387,9 @@ class CustomerTest extends RestApiTestCase
         expect($otherCustomer->fresh()->first_name)->toBe($originalName);
     }
 
+    /**
+     * Test delete customer profile endpoint is reachable.
+     */
     public function test_delete_customer_profile_endpoint_is_reachable(): void
     {
         $this->seedRequiredData();
@@ -340,6 +404,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([200, 201, 204]);
     }
 
+    /**
+     * Test delete profile requires password.
+     */
     public function test_delete_profile_requires_password(): void
     {
         $this->seedRequiredData();
@@ -351,6 +418,9 @@ class CustomerTest extends RestApiTestCase
         expect(Customer::find($customer->id))->not()->toBeNull();
     }
 
+    /**
+     * Test delete profile rejects wrong password.
+     */
     public function test_delete_profile_rejects_wrong_password(): void
     {
         $this->seedRequiredData();
@@ -366,6 +436,9 @@ class CustomerTest extends RestApiTestCase
         expect(Customer::find($customer->id))->not()->toBeNull();
     }
 
+    /**
+     * Test delete profile refused with pending orders.
+     */
     public function test_delete_profile_refused_with_pending_orders(): void
     {
         $this->seedRequiredData();
@@ -387,6 +460,9 @@ class CustomerTest extends RestApiTestCase
         expect(Customer::find($customer->id))->not()->toBeNull();
     }
 
+    /**
+     * Test delete profile removes the customer over rest.
+     */
     public function test_delete_profile_removes_the_customer_over_rest(): void
     {
         $this->seedRequiredData();
@@ -404,6 +480,9 @@ class CustomerTest extends RestApiTestCase
 
     // ── Registration ──────────────────────────────────────────
 
+    /**
+     * Test register new customer.
+     */
     public function test_register_new_customer(): void
     {
         $this->seedRequiredData();
@@ -428,6 +507,9 @@ class CustomerTest extends RestApiTestCase
         ]);
     }
 
+    /**
+     * Test register withholds token when email verification is enabled.
+     */
     public function test_register_withholds_token_when_email_verification_is_enabled(): void
     {
         $this->seedRequiredData();
@@ -462,6 +544,9 @@ class CustomerTest extends RestApiTestCase
         ]);
     }
 
+    /**
+     * Test register accepts snake case body on shop endpoint.
+     */
     public function test_register_accepts_snake_case_body_on_shop_endpoint(): void
     {
         $this->seedRequiredData();
@@ -477,6 +562,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([201, 200]);
     }
 
+    /**
+     * Test registration returns sanctum token.
+     */
     public function test_registration_returns_sanctum_token(): void
     {
         $this->seedRequiredData();
@@ -493,6 +581,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('token'))->toBeString()->toContain('|');
     }
 
+    /**
+     * Test registration missing required fields returns error.
+     */
     public function test_registration_missing_required_fields_returns_error(): void
     {
         $this->seedRequiredData();
@@ -504,6 +595,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 422, 500]);
     }
 
+    /**
+     * Test registration password mismatch returns error.
+     */
     public function test_registration_password_mismatch_returns_error(): void
     {
         $this->seedRequiredData();
@@ -519,6 +613,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 422, 500]);
     }
 
+    /**
+     * Test registration duplicate email returns error.
+     */
     public function test_registration_duplicate_email_returns_error(): void
     {
         $this->seedRequiredData();
@@ -535,6 +632,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 409, 422, 500]);
     }
 
+    /**
+     * Test registered customer persisted in database.
+     */
     public function test_registered_customer_persisted_in_database(): void
     {
         $this->seedRequiredData();
@@ -551,6 +651,9 @@ class CustomerTest extends RestApiTestCase
         expect(Customer::where('email', $email)->exists())->toBeTrue();
     }
 
+    /**
+     * Test verify token returns customer when authenticated.
+     */
     public function test_verify_token_returns_customer_when_authenticated(): void
     {
         $this->seedRequiredData();
@@ -570,6 +673,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('message'))->toBeString()->not()->toBeEmpty();
     }
 
+    /**
+     * Test verify token fails without bearer token.
+     */
     public function test_verify_token_fails_without_bearer_token(): void
     {
         $this->seedRequiredData();
@@ -582,6 +688,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('message'))->toBeString()->not()->toBeEmpty();
     }
 
+    /**
+     * Test verify token fails for suspended customer.
+     */
     public function test_verify_token_fails_for_suspended_customer(): void
     {
         $this->seedRequiredData();
@@ -594,6 +703,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('message'))->toBeString()->not()->toBeEmpty();
     }
 
+    /**
+     * Test verify token accepts empty body.
+     */
     public function test_verify_token_accepts_empty_body(): void
     {
         $this->seedRequiredData();
@@ -605,6 +717,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('isValid'))->toBeTrue();
     }
 
+    /**
+     * Test forgot password with valid email returns success.
+     */
     public function test_forgot_password_with_valid_email_returns_success(): void
     {
         $this->seedRequiredData();
@@ -619,6 +734,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('message'))->toBeString()->not()->toBeEmpty();
     }
 
+    /**
+     * Test forgot password with unknown email returns failure.
+     */
     public function test_forgot_password_with_unknown_email_returns_failure(): void
     {
         $this->seedRequiredData();
@@ -632,6 +750,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('message'))->toBeString()->not()->toBeEmpty();
     }
 
+    /**
+     * Test forgot password repeat request reports throttling.
+     */
     public function test_forgot_password_repeat_request_reports_throttling(): void
     {
         $this->seedRequiredData();
@@ -646,6 +767,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('message'))->toBe(__('bagistoapi::app.graphql.forgot-password.throttled'));
     }
 
+    /**
+     * Test forgot password missing email returns failure.
+     */
     public function test_forgot_password_missing_email_returns_failure(): void
     {
         $this->seedRequiredData();
@@ -657,6 +781,9 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('message'))->toBeString()->not()->toBeEmpty();
     }
 
+    /**
+     * Test forgot password empty email returns failure.
+     */
     public function test_forgot_password_empty_email_returns_failure(): void
     {
         $this->seedRequiredData();

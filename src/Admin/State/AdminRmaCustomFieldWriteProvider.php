@@ -8,6 +8,9 @@ use Webkul\BagistoApi\Admin\Models\AdminRmaCustomField;
 
 class AdminRmaCustomFieldWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         $dto = new AdminRmaCustomField;

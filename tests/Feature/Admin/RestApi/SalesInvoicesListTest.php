@@ -5,17 +5,19 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for GET /api/admin/invoices — the admin Sales → Invoices
- * datagrid listing.
- */
 class SalesInvoicesListTest extends AdminApiTestCase
 {
+    /**
+     * Test list requires authentication.
+     */
     public function test_list_requires_authentication(): void
     {
         $this->publicGet('/api/admin/invoices')->assertStatus(401);
     }
 
+    /**
+     * Test list returns data meta envelope.
+     */
     public function test_list_returns_data_meta_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -27,6 +29,9 @@ class SalesInvoicesListTest extends AdminApiTestCase
         expect($response->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total', 'from', 'to']);
     }
 
+    /**
+     * Test per page caps at 50.
+     */
     public function test_per_page_caps_at_50(): void
     {
         $admin = $this->createAdmin();
@@ -37,6 +42,9 @@ class SalesInvoicesListTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test filter by state.
+     */
     public function test_filter_by_state(): void
     {
         $admin = $this->createAdmin();
@@ -49,6 +57,9 @@ class SalesInvoicesListTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test filter by grand total range.
+     */
     public function test_filter_by_grand_total_range(): void
     {
         $admin = $this->createAdmin();
@@ -59,6 +70,9 @@ class SalesInvoicesListTest extends AdminApiTestCase
         expect($response->json('data'))->toBeArray();
     }
 
+    /**
+     * Test sort default is id desc.
+     */
     public function test_sort_default_is_id_desc(): void
     {
         $admin = $this->createAdmin();
@@ -72,6 +86,9 @@ class SalesInvoicesListTest extends AdminApiTestCase
         expect($ids)->toBe($sorted);
     }
 
+    /**
+     * Test sort asc.
+     */
     public function test_sort_asc(): void
     {
         $admin = $this->createAdmin();
@@ -83,6 +100,9 @@ class SalesInvoicesListTest extends AdminApiTestCase
         expect($ids)->toBe($sorted);
     }
 
+    /**
+     * Test no permission returns 403.
+     */
     public function test_no_permission_returns_403(): void
     {
         $role = Role::factory()->create([
@@ -96,6 +116,9 @@ class SalesInvoicesListTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test export returns csv.
+     */
     public function test_export_returns_csv(): void
     {
         $admin = $this->createAdmin();
@@ -110,6 +133,9 @@ class SalesInvoicesListTest extends AdminApiTestCase
         expect($response->getContent())->toContain('ID,"Order ID",Status,"Grand Total","Invoice Date"');
     }
 
+    /**
+     * Test export supports xlsx.
+     */
     public function test_export_supports_xlsx(): void
     {
         $admin = $this->createAdmin();
@@ -125,6 +151,9 @@ class SalesInvoicesListTest extends AdminApiTestCase
         expect($response->headers->get('Content-Disposition'))->toContain('.xlsx');
     }
 
+    /**
+     * Test export unsupported format returns 422.
+     */
     public function test_export_unsupported_format_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -134,11 +163,17 @@ class SalesInvoicesListTest extends AdminApiTestCase
         ))->assertStatus(422);
     }
 
+    /**
+     * Test export requires authentication.
+     */
     public function test_export_requires_authentication(): void
     {
         $this->get('/api/admin/invoices/export', ['Accept' => 'text/csv'])->assertStatus(401);
     }
 
+    /**
+     * Test export no permission returns 403.
+     */
     public function test_export_no_permission_returns_403(): void
     {
         $role = Role::factory()->create([

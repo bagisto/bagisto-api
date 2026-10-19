@@ -10,15 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsLocaleMassDeleteInput;
 use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleMassDeleteProcessor;
 
-/**
- * Mass-delete admin settings locales.
- *
- * REST:    POST /api/admin/settings/locales/mass-delete
- * GraphQL: createAdminSettingsLocaleMassDelete
- *
- * Per-id guards (skip + report or fail row-by-row): would-be-last-locale,
- * channel-default. Non-existent IDs are silently skipped.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsLocaleMassDelete',
@@ -80,6 +71,9 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleMassDeleteProcessor;
 )]
 class AdminSettingsLocaleMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -91,6 +85,9 @@ class AdminSettingsLocaleMassDelete
     #[ApiProperty(writable: false)]
     public ?array $skipped = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

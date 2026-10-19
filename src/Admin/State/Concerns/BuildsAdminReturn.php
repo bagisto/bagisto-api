@@ -12,8 +12,14 @@ use Webkul\RMA\Repositories\RMAStatusRepository;
 
 trait BuildsAdminReturn
 {
+    /**
+     * The return relations constant.
+     */
     public const RETURN_RELATIONS = ['status', 'item.orderItem', 'item.reason', 'images', 'order'];
 
+    /**
+     * Build admin return.
+     */
     protected function buildAdminReturn($rma, RMARepository $rmaRepository, RMAStatusRepository $statusRepository): AdminReturn
     {
         $dto = new AdminReturn;
@@ -46,6 +52,9 @@ trait BuildsAdminReturn
         return $dto;
     }
 
+    /**
+     * Build admin return item.
+     */
     protected function buildAdminReturnItem($item): ?array
     {
         if (! $item) {

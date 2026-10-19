@@ -74,7 +74,7 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 class AttributeTranslation extends \Webkul\Attribute\Models\AttributeTranslation
 {
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int

@@ -8,14 +8,6 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProductImage;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Minimal item provider for AdminCatalogProductImage PUT (reorder) and DELETE.
- *
- * Mirrors AdminAttributeFamilyWriteProvider: API Platform requires a provider
- * on PUT/DELETE so it can resolve the resource shell before passing it to the
- * processor. Real entity lookup, validation and ownership checks live in the
- * processor.
- */
 class AdminCatalogProductImageProvider implements ProviderInterface
 {
     /**

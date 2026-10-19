@@ -14,16 +14,28 @@ class AdminApiGuard implements Guard
 {
     use GuardHelpers;
 
+    /**
+     * The request.
+     */
     protected Request $request;
 
+    /**
+     * The current token.
+     */
     protected ?AdminPersonalAccessToken $currentToken = null;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(UserProvider $provider, Request $request)
     {
         $this->provider = $provider;
         $this->request = $request;
     }
 
+    /**
+     * User.
+     */
     public function user(): ?Authenticatable
     {
         $request = app('request') ?: $this->request;
@@ -110,14 +122,14 @@ class AdminApiGuard implements Guard
             $admin->setAttribute('current_access_token', $token);
         }
 
-        // Constrain the resolved admin's effective role to the token's abilities so
-        // every endpoint permission check honours the token's permission_type
-        // (custom tokens are restricted to their frozen abilities).
         $token->applyAbilityScope($admin);
 
         return $this->user = $admin;
     }
 
+    /**
+     * Current access token.
+     */
     public function currentAccessToken(): ?AdminPersonalAccessToken
     {
         $this->user();
@@ -125,6 +137,9 @@ class AdminApiGuard implements Guard
         return $this->currentToken;
     }
 
+    /**
+     * Validate.
+     */
     public function validate(array $credentials = []): bool
     {
         if (empty($credentials['token'])) {

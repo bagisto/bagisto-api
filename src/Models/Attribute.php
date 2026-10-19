@@ -144,12 +144,18 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
      */
     protected $with = ['translations'];
 
+    /**
+     * Get translation.
+     */
     #[ApiProperty(readableLink: true, description: 'Current locale translation')]
     public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
     {
         return $this->translation;
     }
 
+    /**
+     * Boot the package services.
+     */
     public static function boot()
     {
         parent::boot();
@@ -161,12 +167,18 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
         });
     }
 
+    /**
+     * Options.
+     */
     #[ApiProperty(readableLink: true, writable: false, readable: true)]
     public function options(): HasMany
     {
         return $this->hasMany(AttributeOption::class);
     }
 
+    /**
+     * Get options.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public function getOptions()
     {
@@ -190,7 +202,7 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
     }
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int

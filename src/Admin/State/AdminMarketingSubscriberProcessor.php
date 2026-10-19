@@ -19,10 +19,16 @@ use Webkul\Core\Models\SubscribersList;
 
 class AdminMarketingSubscriberProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminMarketingSubscriberItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -67,6 +73,9 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, ?bool $value, bool $isGraphQL = false): AdminMarketingSubscriber|AdminMarketingSubscriberRestDto
     {
         $existing = SubscribersList::find($id);
@@ -88,6 +97,9 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
         return $this->buildResult($id, $isGraphQL);
     }
 
+    /**
+     * Build result.
+     */
     protected function buildResult(int $id, bool $isGraphQL): AdminMarketingSubscriber|AdminMarketingSubscriberRestDto
     {
         if ($isGraphQL) {
@@ -97,6 +109,9 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
         return $this->itemProvider->buildRestDtoPublic(SubscribersList::with(['customer'])->find($id));
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id): array
     {
         $existing = SubscribersList::find($id);
@@ -114,6 +129,9 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.subscriber.deleted')];
     }
 
+    /**
+     * Resolve is subscribed.
+     */
     protected function resolveIsSubscribed(mixed $data, array $context, bool $isGraphQL): ?bool
     {
         if (
@@ -169,6 +187,9 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
         };
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

@@ -11,9 +11,6 @@ use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Resolver\EuWithdrawalStatusQueryResolver;
 use Webkul\BagistoApi\State\FeatureStatusProvider;
 
-/**
- * Whether the EU right of withdrawal is enabled on the current channel.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'EuWithdrawalStatus',
@@ -56,10 +53,19 @@ use Webkul\BagistoApi\State\FeatureStatusProvider;
 )]
 class EuWithdrawalStatus
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?string $id = null;
 
+    /**
+     * The channel.
+     */
     public ?string $channel = null;
 
+    /**
+     * The enabled.
+     */
     public ?bool $enabled = null;
 }

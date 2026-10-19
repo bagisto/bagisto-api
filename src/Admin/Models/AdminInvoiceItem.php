@@ -8,13 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Webkul\Product\Models\Product;
 use Webkul\Sales\Models\OrderItem;
 
-/**
- * Invoice line-item — nested sub-resource of AdminInvoice. Eloquent #[ApiResource]
- * (operations: []) so the parent's `items` HasMany resolves as a GraphQL
- * connection (`items { edges { node } }`) with real node data. Money is raw +
- * base-currency formatted; `productType` is the catalog type (not the morph
- * class); `baseImageUrl` is the product image.
- */
 #[ApiResource(
     shortName: 'AdminInvoiceItem',
     operations: [],
@@ -55,30 +48,45 @@ class AdminInvoiceItem extends Model
         'additional' => 'array',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get formatted price attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedPriceAttribute(): ?string
     {
         return core()->formatBasePrice((float) $this->price);
     }
 
+    /**
+     * Get formatted total attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedTotalAttribute(): ?string
     {
         return core()->formatBasePrice((float) $this->total);
     }
 
+    /**
+     * Get formatted tax amount attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedTaxAmountAttribute(): ?string
     {
         return core()->formatBasePrice((float) $this->tax_amount);
     }
 
+    /**
+     * Get formatted discount amount attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedDiscountAmountAttribute(): ?string
     {
@@ -104,6 +112,9 @@ class AdminInvoiceItem extends Model
         return ($raw && ! str_contains((string) $raw, '\\')) ? $raw : null;
     }
 
+    /**
+     * Get base image url attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getBaseImageUrlAttribute(): ?string
     {

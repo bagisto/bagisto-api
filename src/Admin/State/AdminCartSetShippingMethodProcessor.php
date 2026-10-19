@@ -9,15 +9,11 @@ use Webkul\BagistoApi\Admin\Models\AdminCart;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Checkout\Facades\Cart;
 
-/**
- * POST /api/admin/carts/{id}/shipping-methods — save the selected shipping
- * method on the draft cart.
- *
- * Mirrors CartController::storeShippingMethod. Sequence: both addresses must
- * be saved first; the guard enforces it with HTTP 409.
- */
 class AdminCartSetShippingMethodProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminCart
     {
         $cart = AdminCartGuard::resolve(AdminCartGuard::resolveId($uriVariables, $context));
@@ -52,6 +48,9 @@ class AdminCartSetShippingMethodProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve shipping method.
+     */
     protected function resolveShippingMethod(mixed $data, array $context): ?string
     {
         if (

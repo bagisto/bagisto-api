@@ -6,9 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Theme translation — nested sub-resource of AdminSettingsTheme (`translations` connection).
- */
 #[ApiResource(
     shortName: 'AdminSettingsThemeTranslationRef',
     operations: [],
@@ -29,6 +26,9 @@ class AdminSettingsThemeTranslationRef extends Model
         'options' => 'array',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

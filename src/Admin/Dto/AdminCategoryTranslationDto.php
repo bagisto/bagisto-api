@@ -4,13 +4,6 @@ namespace Webkul\BagistoApi\Admin\Dto;
 
 use ApiPlatform\Metadata\ApiResource;
 
-/**
- * One row of category_translations, surfaced inline on the detail response.
- *
- * Annotated with empty operations / graphQlOperations so API Platform registers
- * it as a schema type (needed for GraphQL nested-object validation) without
- * exposing CRUD endpoints.
- */
 #[ApiResource(
     operations: [],
     graphQlOperations: [],
@@ -18,17 +11,38 @@ use ApiPlatform\Metadata\ApiResource;
 )]
 class AdminCategoryTranslationDto
 {
+    /**
+     * The locale.
+     */
     public ?string $locale = null;
 
+    /**
+     * The name.
+     */
     public ?string $name = null;
 
+    /**
+     * The slug.
+     */
     public ?string $slug = null;
 
+    /**
+     * The description.
+     */
     public ?string $description = null;
 
+    /**
+     * The meta title.
+     */
     public ?string $metaTitle = null;
 
+    /**
+     * The meta description.
+     */
     public ?string $metaDescription = null;
 
+    /**
+     * The meta keywords.
+     */
     public ?string $metaKeywords = null;
 }

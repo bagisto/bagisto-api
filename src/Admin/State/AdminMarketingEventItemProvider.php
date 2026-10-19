@@ -8,19 +8,35 @@ use Webkul\Marketing\Models\Event;
 
 class AdminMarketingEventItemProvider extends AbstractAdminItemProvider
 {
+    /**
+     * Map to dto public.
+     */
+    public function mapToDtoPublic(object $event): AdminMarketingEvent
+    {
+        return $this->mapToDto($event);
+    }
+
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.marketing.event.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return Event::find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $event): AdminMarketingEvent
     {
-        /** @var Event $event */
         $dto = new AdminMarketingEvent;
 
         $dto->id = (int) $event->id;
@@ -31,10 +47,5 @@ class AdminMarketingEventItemProvider extends AbstractAdminItemProvider
         $dto->updatedAt = $event->updated_at?->toIso8601String();
 
         return $dto;
-    }
-
-    public function mapToDtoPublic(object $event): AdminMarketingEvent
-    {
-        return $this->mapToDto($event);
     }
 }

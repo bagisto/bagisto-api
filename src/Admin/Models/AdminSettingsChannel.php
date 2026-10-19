@@ -26,35 +26,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsChannelProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
 
-/**
- * Admin Settings → Channels endpoints (Block B Wave 2; objectified 2026-06-22).
- *
- * Bare Eloquent `#[ApiResource]` parent. Nested data is field-selectable:
- *   GraphQL → `translations`/`locales`/`currencies`/`inventorySources` Relay
- *             connections + `homeSeo` typed object.
- *   REST    → the same data as flat arrays of objects (no connections).
- *
- * REST shape stays flat via `output: AdminSettingsChannelRestDto`; GraphQL ops
- * carry NO output so they return this Eloquent model → connections resolve.
- *
- * BREAKING (user-approved): the old scalar `localeIds`/`currencyIds`/
- * `inventorySourceIds` int arrays are REPLACED by the `locales`/`currencies`/
- * `inventorySources` object connections (GraphQL) / object arrays (REST).
- *
- * REST:
- *   GET    /api/admin/settings/channels            — datagrid-parity listing
- *   GET    /api/admin/settings/channels/{id}       — detail
- *   POST   /api/admin/settings/channels            — create
- *   PUT    /api/admin/settings/channels/{id}       — update (translatable via translations map)
- *   DELETE /api/admin/settings/channels/{id}       — delete (guards: last channel, app.channel)
- *
- * GraphQL:
- *   adminSettingsChannels / adminSettingsChannel(id:)
- *   createAdminSettingsChannel / updateAdminSettingsChannel / deleteAdminSettingsChannel
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\ChannelController 1:1.
- * Image uploads (logo/favicon) deferred — accept storage paths only.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsChannel',
@@ -311,12 +282,24 @@ class AdminSettingsChannel extends EloquentModel
     /** Default-locale code memo for the translatable string accessors. */
     private ?string $defaultLocaleCodeMemo = null;
 
+    /**
+     * The default locale code loaded.
+     */
     private bool $defaultLocaleCodeLoaded = false;
 
+    /**
+     * The default translation memo.
+     */
     private ?object $defaultTranslationMemo = null;
 
+    /**
+     * The default translation loaded.
+     */
     private bool $defaultTranslationLoaded = false;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
@@ -335,8 +318,7 @@ class AdminSettingsChannel extends EloquentModel
 
     /**
      * Assigned locales (GraphQL connection — `locales { edges }`). belongsToMany
-     * over `channel_locales` — pivot has no own id, so the node `_id` is the
-     * locale's real id.
+     * over `channel_locales` — pivot has no own id, so the node `_id` is the.
      */
     #[ApiProperty(writable: false)]
     public function locales(): BelongsToMany
@@ -355,8 +337,7 @@ class AdminSettingsChannel extends EloquentModel
 
     /**
      * Assigned inventory sources (GraphQL connection — `inventorySources { edges }`).
-     * The relation METHOD is snake_case (`inventory_sources`) so the central
-     * converter resolves it; the GraphQL field surfaces as `inventorySources`.
+     * The relation METHOD is snake_case (`inventory_sources`) so the central.
      */
     #[ApiProperty(writable: false)]
     public function inventory_sources(): BelongsToMany
@@ -366,16 +347,7 @@ class AdminSettingsChannel extends EloquentModel
 
     /**
      * Home-SEO triplet, field-selectable as flat top-level STRING accessors
-     * (`seoMetaTitle`/`seoMetaDescription`/`seoMetaKeywords`), read from the
-     * channel's own `home_seo` JSON column.
-     *
-     * NOTE — a nested `homeSeo {}` typed object was NOT feasible: the only way to
-     * back it on this resource is a HasOne onto the channels table, whose foreign
-     * key would be `id`. API Platform rejects any column matching a relation's
-     * foreign key, so a HasOne(... 'id', 'id') would DROP the parent's own `id`
-     * attribute → empty link identifiers → every connection 500s. String
-     * accessors are the field-selectable equivalent; the per-locale `homeSeo`
-     * JSON is still selectable on the `translations` connection nodes.
+     * (`seoMetaTitle`/`seoMetaDescription`/`seoMetaKeywords`), read from the.
      */
     #[ApiProperty(writable: false)]
     public function getSeoMetaTitleAttribute(): ?string
@@ -383,18 +355,81 @@ class AdminSettingsChannel extends EloquentModel
         return $this->defaultHomeSeo()['meta_title'] ?? null;
     }
 
+    /**
+     * Get seo meta description attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getSeoMetaDescriptionAttribute(): ?string
     {
         return $this->defaultHomeSeo()['meta_description'] ?? null;
     }
 
+    /**
+     * Get seo meta keywords attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getSeoMetaKeywordsAttribute(): ?string
     {
         return $this->defaultHomeSeo()['meta_keywords'] ?? null;
     }
 
+    /**
+     * Get name attribute.
+     */
+    #[ApiProperty(writable: false)]
+    public function getNameAttribute(): ?string
+    {
+        return $this->defaultTranslation()?->name;
+    }
+
+    /**
+     * Get description attribute.
+     */
+    #[ApiProperty(writable: false)]
+    public function getDescriptionAttribute(): ?string
+    {
+        return $this->defaultTranslation()?->description;
+    }
+
+    /**
+     * Get maintenance mode text attribute.
+     */
+    #[ApiProperty(writable: false)]
+    public function getMaintenanceModeTextAttribute(): ?string
+    {
+        return $this->defaultTranslation()?->maintenance_mode_text;
+    }
+
+    /**
+     * Get logo url attribute.
+     */
+    #[ApiProperty(writable: false)]
+    public function getLogoUrlAttribute(): ?string
+    {
+        return $this->logo ? Storage::url($this->logo) : null;
+    }
+
+    /**
+     * Get favicon url attribute.
+     */
+    #[ApiProperty(writable: false)]
+    public function getFaviconUrlAttribute(): ?string
+    {
+        return $this->favicon ? Storage::url($this->favicon) : null;
+    }
+
+    /**
+     * Get message attribute.
+     */
+    #[ApiProperty(writable: false, example: 'Channel deleted successfully.')]
+    public function getMessageAttribute(): ?string
+    {
+        return $this->actionMessage;
+    }
+
+    /**
+     * Default home seo.
+     */
     private function defaultHomeSeo(): array
     {
         $seo = $this->home_seo;
@@ -413,36 +448,9 @@ class AdminSettingsChannel extends EloquentModel
         return is_string($seo) ? (array) json_decode($seo, true) : [];
     }
 
-    #[ApiProperty(writable: false)]
-    public function getNameAttribute(): ?string
-    {
-        return $this->defaultTranslation()?->name;
-    }
-
-    #[ApiProperty(writable: false)]
-    public function getDescriptionAttribute(): ?string
-    {
-        return $this->defaultTranslation()?->description;
-    }
-
-    #[ApiProperty(writable: false)]
-    public function getMaintenanceModeTextAttribute(): ?string
-    {
-        return $this->defaultTranslation()?->maintenance_mode_text;
-    }
-
-    #[ApiProperty(writable: false)]
-    public function getLogoUrlAttribute(): ?string
-    {
-        return $this->logo ? Storage::url($this->logo) : null;
-    }
-
-    #[ApiProperty(writable: false)]
-    public function getFaviconUrlAttribute(): ?string
-    {
-        return $this->favicon ? Storage::url($this->favicon) : null;
-    }
-
+    /**
+     * Default locale code.
+     */
     private function defaultLocaleCode(): ?string
     {
         if (! $this->defaultLocaleCodeLoaded) {
@@ -455,6 +463,9 @@ class AdminSettingsChannel extends EloquentModel
         return $this->defaultLocaleCodeMemo;
     }
 
+    /**
+     * Default translation.
+     */
     private function defaultTranslation(): ?object
     {
         if (! $this->defaultTranslationLoaded) {
@@ -471,11 +482,5 @@ class AdminSettingsChannel extends EloquentModel
         }
 
         return $this->defaultTranslationMemo;
-    }
-
-    #[ApiProperty(writable: false, example: 'Channel deleted successfully.')]
-    public function getMessageAttribute(): ?string
-    {
-        return $this->actionMessage;
     }
 }

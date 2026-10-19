@@ -22,21 +22,6 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCustomerAddressProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
 
-/**
- * Customer Address — listing + full CRUD (Block C C1).
- *
- * REST:
- *   GET    /api/admin/customers/{customerId}/addresses
- *   GET    /api/admin/customers/{customerId}/addresses/{id}
- *   POST   /api/admin/customers/{customerId}/addresses
- *   PUT    /api/admin/customers/{customerId}/addresses/{id}
- *   DELETE /api/admin/customers/{customerId}/addresses/{id}
- *
- * GraphQL: adminCustomerAddresses, adminCustomerAddress,
- *          createAdminCustomerAddress, updateAdminCustomerAddress, deleteAdminCustomerAddress
- *
- * Mirrors Webkul\Admin\Http\Controllers\Customers\AddressController.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerAddress',
@@ -431,48 +416,93 @@ class AdminCustomerAddress
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customer_id = null;
 
+    /**
+     * The address type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $address_type = null;
 
+    /**
+     * The first name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $first_name = null;
 
+    /**
+     * The last name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $last_name = null;
 
+    /**
+     * The company name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $company_name = null;
 
+    /**
+     * The address.
+     */
     #[ApiProperty(writable: false)]
     public ?string $address = null;
 
+    /**
+     * The city.
+     */
     #[ApiProperty(writable: false)]
     public ?string $city = null;
 
+    /**
+     * The state.
+     */
     #[ApiProperty(writable: false)]
     public ?string $state = null;
 
+    /**
+     * The country.
+     */
     #[ApiProperty(writable: false)]
     public ?string $country = null;
 
+    /**
+     * The postcode.
+     */
     #[ApiProperty(writable: false)]
     public ?string $postcode = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(writable: false)]
     public ?string $email = null;
 
+    /**
+     * The phone.
+     */
     #[ApiProperty(writable: false)]
     public ?string $phone = null;
 
+    /**
+     * The vat id.
+     */
     #[ApiProperty(writable: false)]
     public ?string $vat_id = null;
 
+    /**
+     * The default address.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $default_address = null;
 }

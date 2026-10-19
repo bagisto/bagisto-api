@@ -8,15 +8,18 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Webkul\BagistoApi\Services\ApiKeyService;
 
-/**
- * Validates API keys for both shop and admin REST APIs
- */
 class VerifyStorefrontKey
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ApiKeyService $apiKeyService
     ) {}
 
+    /**
+     * Handle the request.
+     */
     public function handle(Request $request, Closure $next): Response
     {
         $path = $request->getPathInfo();
@@ -82,11 +85,7 @@ class VerifyStorefrontKey
 
     /**
      * Determine which API key type is required for a route
-     *
-     * Admin routes (`/api/admin/*`) authenticate purely via the
-     * `auth:admin-api` Bearer token (Webkul\BagistoApi\Admin\Auth\AdminApiGuard).
-     * No X-Admin-Key header is required — returning null here skips this
-     * middleware entirely for those routes.
+     * Admin routes (`/api/admin/*`) authenticate purely via the.
      *
      * @return string|null ApiKeyService::KEY_TYPE_* or null
      */
@@ -151,7 +150,7 @@ class VerifyStorefrontKey
     }
 
     /**
-     * Return missing API key response
+     * Return missing API key response.
      *
      * @param  string  $keyType  The required key type
      */
@@ -207,7 +206,7 @@ class VerifyStorefrontKey
     }
 
     /**
-     * Check if the key is a test key (for testing environment)
+     * Check if the key is a test key (for testing environment).
      */
     protected function isTestKey(string $key): bool
     {

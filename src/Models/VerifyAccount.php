@@ -81,9 +81,15 @@ use Webkul\BagistoApi\State\VerifyAccountProcessor;
 )]
 class VerifyAccount
 {
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $message = null;
 }

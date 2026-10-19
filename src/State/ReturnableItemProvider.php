@@ -18,12 +18,18 @@ class ReturnableItemProvider implements ProviderInterface
 {
     use ResolvesReturnableItems;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly RMAHelper $rmaHelper,
         private readonly OrderRepository $orderRepository,
         private readonly RMAItemRepository $rmaItemRepository,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): iterable
     {
         $customer = Auth::guard('sanctum')->user();

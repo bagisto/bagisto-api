@@ -91,15 +91,24 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 ]
 class Locale extends \Webkul\Core\Models\Locale
 {
+    /**
+     * The logo path.
+     */
+    #[ApiProperty(writable: false, readable: true)]
+    public ?string $logoPath = null;
+
+    /**
+     * The logo url.
+     */
+    #[ApiProperty(writable: false, readable: true)]
+    public ?string $logoUrl = null;
+
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
     {
         return $this->id;
     }
-
-    #[ApiProperty(writable: false, readable: true)]
-    public ?string $logoPath = null;
-
-    #[ApiProperty(writable: false, readable: true)]
-    public ?string $logoUrl = null;
 }

@@ -13,13 +13,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CancelOrderInput;
 use Webkul\BagistoApi\State\CancelOrderProcessor;
 
-/**
- * Cancel Order Response Model
- *
- * Response object for the cancel order action.
- * Delegates to Bagisto's OrderRepository::cancel() which checks
- * canCancel(), dispatches events, restores inventory, and updates status.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CancelOrder',
@@ -91,25 +84,43 @@ use Webkul\BagistoApi\State\CancelOrderProcessor;
 )]
 class CancelOrder
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: false, writable: false, readable: true)]
     public ?int $id = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $message = null;
 
+    /**
+     * The order id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $orderId = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $status = null;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         ?bool $success = null,
         ?string $message = null,

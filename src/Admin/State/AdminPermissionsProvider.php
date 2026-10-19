@@ -10,6 +10,9 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 
 class AdminPermissionsProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -48,6 +51,9 @@ class AdminPermissionsProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * To dto.
+     */
     public static function toDto(array $payload): AdminPermissions
     {
         $dto = new AdminPermissions;

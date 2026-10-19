@@ -13,10 +13,16 @@ use Webkul\RMA\Repositories\RMAReasonRepository;
 
 class ReturnReasonProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly RMAReasonRepository $rmaReasonRepository,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): iterable
     {
         if (! Auth::guard('sanctum')->user()) {

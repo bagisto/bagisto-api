@@ -12,15 +12,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductVideoDeleteInput;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductVideoProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductVideoProvider;
 
-/**
- * Admin Catalog Product videos sub-resource (mirrors AdminCatalogProductImage).
- *
- *   POST   /api/admin/catalog/products/{productId}/videos       upload (multipart `video`)
- *   DELETE /api/admin/catalog/products/{productId}/videos/{id}  remove DB row + file
- *
- * Binary upload is REST-only; the GraphQL create mutation is a placeholder that
- * rejects with 422. GraphQL delete works. Permission: catalog.products.edit.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCatalogProductVideo',
@@ -139,24 +130,45 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductVideoProvider;
 )]
 class AdminCatalogProductVideo
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The product id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $product_id = null;
 
+    /**
+     * The path.
+     */
     #[ApiProperty(writable: false)]
     public ?string $path = null;
 
+    /**
+     * The position.
+     */
     #[ApiProperty(writable: false)]
     public ?int $position = null;
 
+    /**
+     * The url.
+     */
     #[ApiProperty(writable: false)]
     public ?string $url = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

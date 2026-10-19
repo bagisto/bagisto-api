@@ -14,16 +14,11 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Core\Models\Locale;
 
-/**
- * POST /api/admin/settings/locales/mass-delete +
- * createAdminSettingsLocaleMassDelete.
- *
- * Deletes each provided ID, firing the before/after events. Non-existent IDs
- * are silently skipped. Per-id guards (last-locale, channel-default) skip the
- * id and append a reason in the `skipped` response key.
- */
 class AdminSettingsLocaleMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -94,6 +89,9 @@ class AdminSettingsLocaleMassDeleteProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -121,6 +119,9 @@ class AdminSettingsLocaleMassDeleteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

@@ -7,69 +7,8 @@ use Webkul\Checkout\Models\Cart;
 
 class CustomerCartTest extends GraphQLTestCase
 {
-    private function loginCustomerAndGetToken(): string
-    {
-        // Use our test customer helper to create a customer with proper token
-        $customerData = $this->createTestCustomer();
-
-        return $customerData['token'];
-    }
-
-    private function customerHeaders(string $token): array
-    {
-        return [
-            'Authorization' => 'Bearer '.$token,
-        ];
-    }
-
-    private function createCustomerCartWithItem(string $token, int $quantity = 2): array
-    {
-        // Use our test product helper to get a product with inventory
-        $productData = $this->createTestProduct();
-        $product = $productData['product'];
-
-        $mutation = <<<'GQL'
-            mutation createAddProductInCart($productId: Int!, $quantity: Int!) {
-              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
-                addProductInCart {
-                  id
-                  itemsCount
-                  items {
-                    edges {
-                      node {
-                        id
-                        productId
-                        quantity
-                      }
-                    }
-                  }
-                }
-              }
-            }
-        GQL;
-
-        $response = $this->graphQL($mutation, [
-            'productId' => $product->id,
-            'quantity' => $quantity,
-        ], $this->customerHeaders($token));
-
-        $response->assertSuccessful();
-
-        $cart = $response->json('data.createAddProductInCart.addProductInCart');
-        $cartItemId = $response->json('data.createAddProductInCart.addProductInCart.items.edges.0.node.id');
-
-        $this->assertNotNull($cart);
-        $this->assertNotNull($cartItemId);
-
-        return [
-            'product' => $product->id,
-            'cartId' => (int) ($cart['_id'] ?? $cart['id'] ?? 0),
-            'cartItemId' => (int) $cartItemId,
-        ];
-    }
-
     /**
-     * Create Simple Cart (Customer)
+     * Create Simple Cart (Customer).
      */
     public function test_create_simple_cart_as_customer(): void
     {
@@ -123,16 +62,14 @@ class CustomerCartTest extends GraphQLTestCase
     }
 
     /**
-     * Add Product In Cart (Customer) -- Failed
+     * Add Product In Cart (Customer) -- Failed.
      */
     public function test_create_add_product_in_cart_as_customer(): void
     {
-        // Use our helper method to create a fake customer
         $customerData = $this->createTestCustomer();
         $customer = $customerData['customer'];
         $token = $customerData['token'];
 
-        // Use our helper method to create a complete test product
         $productData = $this->createTestProduct();
         $product = $productData['product'];
 
@@ -239,14 +176,13 @@ class CustomerCartTest extends GraphQLTestCase
     }
 
     /**
-     * Update Cart Item Quantity (Customer) --  Failed
+     * Update Cart Item Quantity (Customer) --  Failed.
      */
     public function test_update_cart_item_quantity_as_customer(): void
     {
         $token = $this->loginCustomerAndGetToken();
         $headers = $this->customerHeaders($token);
 
-        // Use our test product helper to get a product with inventory
         $productData = $this->createTestProduct();
         $product = $productData['product'];
 
@@ -316,7 +252,7 @@ class CustomerCartTest extends GraphQLTestCase
     }
 
     /**
-     * Get Cart Details (Customer)
+     * Get Cart Details (Customer).
      */
     public function test_read_cart_as_customer(): void
     {
@@ -359,7 +295,7 @@ class CustomerCartTest extends GraphQLTestCase
     }
 
     /**
-     * Remove Cart Item (Customer) -- Failed
+     * Remove Cart Item (Customer) -- Failed.
      */
     public function test_remove_cart_item_as_customer(): void
     {
@@ -392,7 +328,7 @@ class CustomerCartTest extends GraphQLTestCase
     }
 
     /**
-     * Update Cart Item - full fields (matches spec)
+     * Update Cart Item - full fields (matches spec).
      */
     public function test_update_cart_item_full_fields(): void
     {
@@ -547,7 +483,7 @@ class CustomerCartTest extends GraphQLTestCase
     }
 
     /**
-     * Remove Cart Item - full fields (matches spec)
+     * Remove Cart Item - full fields (matches spec).
      */
     public function test_remove_cart_item_full_fields(): void
     {
@@ -600,7 +536,7 @@ class CustomerCartTest extends GraphQLTestCase
     }
 
     /**
-     * Apply Coupon (Customer)
+     * Apply Coupon (Customer).
      */
     public function test_apply_coupon_as_customer(): void
     {
@@ -640,7 +576,7 @@ class CustomerCartTest extends GraphQLTestCase
     }
 
     /**
-     * Remove Coupon (Customer)
+     * Remove Coupon (Customer).
      */
     public function test_remove_coupon_as_customer(): void
     {
@@ -950,6 +886,74 @@ class CustomerCartTest extends GraphQLTestCase
 
         expect($response->json('errors'))->not->toBeEmpty();
         expect($response->json('data.readGetCartToken.getCartToken'))->toBeNull();
+    }
+
+    /**
+     * Login customer and get token.
+     */
+    private function loginCustomerAndGetToken(): string
+    {
+        $customerData = $this->createTestCustomer();
+
+        return $customerData['token'];
+    }
+
+    /**
+     * Customer headers.
+     */
+    private function customerHeaders(string $token): array
+    {
+        return [
+            'Authorization' => 'Bearer '.$token,
+        ];
+    }
+
+    /**
+     * Create customer cart with item.
+     */
+    private function createCustomerCartWithItem(string $token, int $quantity = 2): array
+    {
+        $productData = $this->createTestProduct();
+        $product = $productData['product'];
+
+        $mutation = <<<'GQL'
+            mutation createAddProductInCart($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
+                addProductInCart {
+                  id
+                  itemsCount
+                  items {
+                    edges {
+                      node {
+                        id
+                        productId
+                        quantity
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, [
+            'productId' => $product->id,
+            'quantity' => $quantity,
+        ], $this->customerHeaders($token));
+
+        $response->assertSuccessful();
+
+        $cart = $response->json('data.createAddProductInCart.addProductInCart');
+        $cartItemId = $response->json('data.createAddProductInCart.addProductInCart.items.edges.0.node.id');
+
+        $this->assertNotNull($cart);
+        $this->assertNotNull($cartItemId);
+
+        return [
+            'product' => $product->id,
+            'cartId' => (int) ($cart['_id'] ?? $cart['id'] ?? 0),
+            'cartItemId' => (int) $cartItemId,
+        ];
     }
 
     /**

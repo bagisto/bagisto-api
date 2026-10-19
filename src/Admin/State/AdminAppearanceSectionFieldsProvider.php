@@ -12,11 +12,17 @@ class AdminAppearanceSectionFieldsProvider implements ProviderInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SectionSchema $sectionSchema,
         protected AppearanceScopeGuard $scope,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $this->authorizedAdmin('appearance.sections', 'bagistoapi::app.admin.appearance.no-permission');

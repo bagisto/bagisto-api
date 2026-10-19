@@ -8,65 +8,47 @@ use Webkul\Core\Models\SubscribersList;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerGroup;
 
-/**
- * REST coverage for Admin Marketing → Newsletter Subscribers (Block F2d).
- */
 class MarketingSubscriberTest extends AdminApiTestCase
 {
-    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
-    protected function seedSubscriber(array $overrides = []): SubscribersList
-    {
-        $this->seedRequiredData();
-
-        return SubscribersList::factory()->create(array_merge([
-            'is_subscribed' => 1,
-        ], $overrides));
-    }
-
-    protected function seedCustomer(): Customer
-    {
-        $this->seedRequiredData();
-        $group = CustomerGroup::where('code', 'general')->first();
-
-        return Customer::factory()->create([
-            'customer_group_id' => $group->id,
-            'status' => 1,
-        ]);
-    }
-
+    /**
+     * Test listing requires auth.
+     */
     public function test_listing_requires_auth(): void
     {
         $this->seedRequiredData();
         $this->publicGet('/api/admin/marketing/subscribers')->assertStatus(401);
     }
 
+    /**
+     * Test detail requires auth.
+     */
     public function test_detail_requires_auth(): void
     {
         $s = $this->seedSubscriber();
         $this->publicGet('/api/admin/marketing/subscribers/'.$s->id)->assertStatus(401);
     }
 
+    /**
+     * Test update requires auth.
+     */
     public function test_update_requires_auth(): void
     {
         $s = $this->seedSubscriber();
         $this->putJson('/api/admin/marketing/subscribers/'.$s->id, ['is_subscribed' => false])->assertStatus(401);
     }
 
+    /**
+     * Test delete requires auth.
+     */
     public function test_delete_requires_auth(): void
     {
         $s = $this->seedSubscriber();
         $this->deleteJson('/api/admin/marketing/subscribers/'.$s->id)->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -76,6 +58,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($resp->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total']);
     }
 
+    /**
+     * Test listing returns seeded subscriber.
+     */
     public function test_listing_returns_seeded_subscriber(): void
     {
         $admin = $this->createAdmin();
@@ -88,6 +73,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($row)->toHaveKeys(['email', 'customerId', 'isSubscribed']);
     }
 
+    /**
+     * Test listing filter by email.
+     */
     public function test_listing_filter_by_email(): void
     {
         $admin = $this->createAdmin();
@@ -102,6 +90,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($ids)->not()->toContain($miss->id);
     }
 
+    /**
+     * Test listing filter by is subscribed.
+     */
     public function test_listing_filter_by_is_subscribed(): void
     {
         $admin = $this->createAdmin();
@@ -115,6 +106,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($ids)->not()->toContain($on->id);
     }
 
+    /**
+     * Test listing filter by channel.
+     */
     public function test_listing_filter_by_channel(): void
     {
         $admin = $this->createAdmin();
@@ -127,6 +121,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($ids)->toContain($s->id);
     }
 
+    /**
+     * Test listing per page capped.
+     */
     public function test_listing_per_page_capped(): void
     {
         $admin = $this->createAdmin();
@@ -135,6 +132,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($resp->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test listing sort by email asc.
+     */
     public function test_listing_sort_by_email_asc(): void
     {
         $admin = $this->createAdmin();
@@ -149,6 +149,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($emails)->toEqual($sorted);
     }
 
+    /**
+     * Test detail returns subscriber.
+     */
     public function test_detail_returns_subscriber(): void
     {
         $admin = $this->createAdmin();
@@ -165,12 +168,18 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($resp->json('channel'))->toHaveKeys(['id', 'code', 'name']);
     }
 
+    /**
+     * Test detail unknown returns 404.
+     */
     public function test_detail_unknown_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/marketing/subscribers/9999999')->assertStatus(404);
     }
 
+    /**
+     * Test update unsubscribe.
+     */
     public function test_update_unsubscribe(): void
     {
         $admin = $this->createAdmin();
@@ -182,6 +191,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect((int) SubscribersList::find($s->id)->is_subscribed)->toBe(0);
     }
 
+    /**
+     * Test update resubscribe.
+     */
     public function test_update_resubscribe(): void
     {
         $admin = $this->createAdmin();
@@ -192,6 +204,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect((int) SubscribersList::find($s->id)->is_subscribed)->toBe(1);
     }
 
+    /**
+     * Test update mirrors flag to customer.
+     */
     public function test_update_mirrors_flag_to_customer(): void
     {
         $admin = $this->createAdmin();
@@ -209,6 +224,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect((int) Customer::find($customer->id)->subscribed_to_news_letter)->toBe(0);
     }
 
+    /**
+     * Test update missing is subscribed 422.
+     */
     public function test_update_missing_is_subscribed_422(): void
     {
         $admin = $this->createAdmin();
@@ -218,6 +236,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update unknown id 404.
+     */
     public function test_update_unknown_id_404(): void
     {
         $admin = $this->createAdmin();
@@ -225,6 +246,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test delete subscriber.
+     */
     public function test_delete_subscriber(): void
     {
         $admin = $this->createAdmin();
@@ -235,6 +259,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect(SubscribersList::find($s->id))->toBeNull();
     }
 
+    /**
+     * Test delete unsubscribes linked customer.
+     */
     public function test_delete_unsubscribes_linked_customer(): void
     {
         $admin = $this->createAdmin();
@@ -252,10 +279,55 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect((int) Customer::find($customer->id)->subscribed_to_news_letter)->toBe(0);
     }
 
+    /**
+     * Test delete unknown 404.
+     */
     public function test_delete_unknown_404(): void
     {
         $admin = $this->createAdmin();
         $resp = $this->adminDelete($admin, '/api/admin/marketing/subscribers/9999999');
         expect($resp->getStatusCode())->toBe(404);
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Seed subscriber.
+     */
+    protected function seedSubscriber(array $overrides = []): SubscribersList
+    {
+        $this->seedRequiredData();
+
+        return SubscribersList::factory()->create(array_merge([
+            'is_subscribed' => 1,
+        ], $overrides));
+    }
+
+    /**
+     * Seed customer.
+     */
+    protected function seedCustomer(): Customer
+    {
+        $this->seedRequiredData();
+        $group = CustomerGroup::where('code', 'general')->first();
+
+        return Customer::factory()->create([
+            'customer_group_id' => $group->id,
+            'status' => 1,
+        ]);
     }
 }

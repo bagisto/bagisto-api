@@ -24,11 +24,11 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Theme\Models\ThemeCustomization;
 use Webkul\Theme\Repositories\ThemeCustomizationRepository;
 
-/**
- * Handles POST / PUT / DELETE for AdminSettingsTheme.
- */
 class AdminSettingsThemeProcessor implements ProcessorInterface
 {
+    /**
+     * The allowed types constant.
+     */
     public const ALLOWED_TYPES = [
         'product_carousel',
         'category_carousel',
@@ -38,11 +38,17 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         'services_content',
     ];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminSettingsThemeItemProvider $itemProvider,
         protected ThemeCustomizationRepository $themeRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -98,6 +104,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input, bool $isGraphQL = false): AdminSettingsTheme|AdminSettingsThemeRestDto
     {
         $payload = $this->normaliseCreatePayload($input);
@@ -120,6 +129,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         return $this->buildResult((int) $theme->id, $isGraphQL);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): AdminSettingsTheme|AdminSettingsThemeRestDto
     {
         $existing = ThemeCustomization::find($id);
@@ -195,6 +207,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         return $this->buildResult($id, $isGraphQL);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsTheme
     {
         $existing = ThemeCustomization::find($id);
@@ -255,6 +270,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         return $this->itemProvider->buildRestDtoPublic(ThemeCustomization::with('translations')->find($id));
     }
 
+    /**
+     * Validate create payload.
+     */
     protected function validateCreatePayload(array $input): void
     {
         $channelIds = DB::table('channels')->pluck('id')->all();
@@ -273,6 +291,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Validate update payload.
+     */
     protected function validateUpdatePayload(array $input): void
     {
         $channelIds = DB::table('channels')->pluck('id')->all();
@@ -291,6 +312,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -318,6 +342,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -333,6 +360,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -345,6 +375,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -393,6 +426,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Normalise create payload.
+     */
     protected function normaliseCreatePayload(array $input): array
     {
         return [
@@ -405,6 +441,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         ];
     }
 
+    /**
+     * Normalise update payload.
+     */
     protected function normaliseUpdatePayload(array $input, ThemeCustomization $existing): array
     {
         $locale = ! empty($input['locale']) ? (string) $input['locale'] : (core()?->getRequestedLocaleCode() ?? 'en');
@@ -434,6 +473,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         return $out;
     }
 
+    /**
+     * To bool.
+     */
     protected function toBool(mixed $value): bool
     {
         if (is_bool($value)) {

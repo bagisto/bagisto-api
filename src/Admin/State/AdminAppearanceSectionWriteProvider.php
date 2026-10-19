@@ -8,14 +8,16 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminAppearanceSection;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Placeholder for PUT / DELETE. API Platform needs a provider to route the request to
- * the processor; the section itself is resolved there.
- */
 class AdminAppearanceSectionWriteProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected AppearanceScopeGuard $scope) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminAppearanceSection
     {
         if (! AdminAuthHelper::resolveAdmin()) {

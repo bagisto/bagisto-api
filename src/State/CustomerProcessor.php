@@ -17,21 +17,14 @@ use Webkul\Customer\Repositories\CustomerRepository;
 
 class CustomerProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CustomerRepository $customerRepository,
         protected CustomerValidator $validator,
         protected CustomerGroupRepository $customerGroupRepository
     ) {}
-
-    /**
-     * Resolve the default customer group id the storefront assigns at registration.
-     */
-    private function defaultCustomerGroupId(): ?int
-    {
-        $code = core()->getConfigData('customer.settings.create_new_account_options.default_group') ?: 'general';
-
-        return $this->customerGroupRepository->findOneWhere(['code' => $code])?->id;
-    }
 
     /**
      * Process the customer creation or update operation.
@@ -62,6 +55,19 @@ class CustomerProcessor implements ProcessorInterface
         return $data;
     }
 
+    /**
+     * Resolve the default customer group id the storefront assigns at registration.
+     */
+    private function defaultCustomerGroupId(): ?int
+    {
+        $code = core()->getConfigData('customer.settings.create_new_account_options.default_group') ?: 'general';
+
+        return $this->customerGroupRepository->findOneWhere(['code' => $code])?->id;
+    }
+
+    /**
+     * Create customer.
+     */
     private function createCustomer(Customer $data): Customer
     {
         $this->validator->validateForCreation($data);
@@ -139,6 +145,9 @@ class CustomerProcessor implements ProcessorInterface
         return $freshCustomer;
     }
 
+    /**
+     * Update customer.
+     */
     private function updateCustomer(Customer $data): Customer
     {
         $this->requireAuthentication();
@@ -186,6 +195,9 @@ class CustomerProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Delete customer.
+     */
     private function deleteCustomer(Customer $data): Customer
     {
         $this->requireAuthentication();

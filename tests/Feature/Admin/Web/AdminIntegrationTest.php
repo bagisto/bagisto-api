@@ -21,18 +21,6 @@ class AdminIntegrationTest extends TestCase
     protected AdminTokenService $service;
 
     /**
-     * Fake the mailer and resolve the admin token service.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Mail::fake();
-
-        $this->service = app(AdminTokenService::class);
-    }
-
-    /**
      * The integration index redirects a guest to the admin login page.
      */
     public function test_index_requires_admin_authentication(): void
@@ -661,6 +649,18 @@ class AdminIntegrationTest extends TestCase
         expect(AdminPersonalAccessToken::where('admin_id', $superAdmin->id)->exists())->toBeFalse();
 
         $this->post(route('admin.integration.generate', $this->draftToken($superAdmin)->id))->assertForbidden();
+    }
+
+    /**
+     * Fake the mailer and resolve the admin token service.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Mail::fake();
+
+        $this->service = app(AdminTokenService::class);
     }
 
     /**

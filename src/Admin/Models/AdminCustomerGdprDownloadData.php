@@ -12,23 +12,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminCustomerGdprDownloadDataInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGdprDownloadDataProcessor;
 
-/**
- * GDPR data export — JSON dump of every table referencing the customer's id.
- *
- * REST    : POST /api/admin/customers/{customerId}/gdpr-download-data
- * GraphQL : createAdminCustomerGdprDownloadData
- *
- * Not bound to a GDPR request — admin can run ad-hoc on any customer.
- * Permission: customers.gdpr_requests (read-only inspection).
- *
- * Returns an embedded `data` array carrying:
- *   - customer:  full customer record
- *   - addresses: every customer-address row
- *   - orders:    every order with items + addresses + payment
- *   - reviews:   product reviews authored by the customer
- *   - wishlist:  wishlist items
- *   - notes:     admin notes
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerGdprDownloadData',
@@ -115,15 +98,27 @@ class AdminCustomerGdprDownloadData
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customer_id = null;
 
+    /**
+     * The customer email.
+     */
     #[ApiProperty(writable: false)]
     public ?string $customer_email = null;
 
+    /**
+     * The generated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $generated_at = null;
 

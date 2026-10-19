@@ -7,26 +7,16 @@ use Webkul\Core\Models\Currency;
 
 class CurrencyTest extends RestApiTestCase
 {
+    /**
+     * The collection url.
+     */
     private string $collectionUrl = '/api/shop/currencies';
-
-    private function itemUrl(int $id): string
-    {
-        return $this->collectionUrl.'/'.$id;
-    }
-
-    private function firstCurrencyId(): int
-    {
-        $id = Currency::query()->orderBy('id')->value('id');
-
-        if (! $id) {
-            $this->markTestSkipped('No currencies found. Run Bagisto seeders.');
-        }
-
-        return (int) $id;
-    }
 
     // ── GET /currencies (collection) ──────────────────────────
 
+    /**
+     * Test get currencies returns ok.
+     */
     public function test_get_currencies_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -37,6 +27,9 @@ class CurrencyTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test get currencies returns non empty list.
+     */
     public function test_get_currencies_returns_non_empty_list(): void
     {
         $this->seedRequiredData();
@@ -47,6 +40,9 @@ class CurrencyTest extends RestApiTestCase
         expect(count($response->json()))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test currencies have expected fields.
+     */
     public function test_currencies_have_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -60,6 +56,9 @@ class CurrencyTest extends RestApiTestCase
         expect($first)->toHaveKey('decimal');
     }
 
+    /**
+     * Test currencies id is integer.
+     */
     public function test_currencies_id_is_integer(): void
     {
         $this->seedRequiredData();
@@ -69,6 +68,9 @@ class CurrencyTest extends RestApiTestCase
         expect($first['id'])->toBeInt();
     }
 
+    /**
+     * Test currencies decimal is integer.
+     */
     public function test_currencies_decimal_is_integer(): void
     {
         $this->seedRequiredData();
@@ -80,6 +82,9 @@ class CurrencyTest extends RestApiTestCase
 
     // ── Pagination ────────────────────────────────────────────
 
+    /**
+     * Test items per page limits collection size.
+     */
     public function test_items_per_page_limits_collection_size(): void
     {
         $this->seedRequiredData();
@@ -94,6 +99,9 @@ class CurrencyTest extends RestApiTestCase
         expect(count($response->json()))->toBe(1);
     }
 
+    /**
+     * Test page parameter returns different results.
+     */
     public function test_page_parameter_returns_different_results(): void
     {
         $this->seedRequiredData();
@@ -108,6 +116,9 @@ class CurrencyTest extends RestApiTestCase
         expect($page1[0]['id'])->not()->toBe($page2[0]['id']);
     }
 
+    /**
+     * Test page beyond total returns empty.
+     */
     public function test_page_beyond_total_returns_empty(): void
     {
         $this->seedRequiredData();
@@ -120,6 +131,9 @@ class CurrencyTest extends RestApiTestCase
 
     // ── GET /currencies/{id} (single) ─────────────────────────
 
+    /**
+     * Test get single currency returns ok.
+     */
     public function test_get_single_currency_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -130,6 +144,9 @@ class CurrencyTest extends RestApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test get single currency returns correct id.
+     */
     public function test_get_single_currency_returns_correct_id(): void
     {
         $this->seedRequiredData();
@@ -140,6 +157,9 @@ class CurrencyTest extends RestApiTestCase
         expect($body['id'])->toBe($id);
     }
 
+    /**
+     * Test get single currency returns expected fields.
+     */
     public function test_get_single_currency_returns_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -154,6 +174,9 @@ class CurrencyTest extends RestApiTestCase
         expect($body)->toHaveKey('decimal');
     }
 
+    /**
+     * Test get nonexistent currency returns error.
+     */
     public function test_get_nonexistent_currency_returns_error(): void
     {
         $this->seedRequiredData();
@@ -161,5 +184,27 @@ class CurrencyTest extends RestApiTestCase
         $response = $this->publicGet($this->itemUrl(999999));
 
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
+    }
+
+    /**
+     * Item url.
+     */
+    private function itemUrl(int $id): string
+    {
+        return $this->collectionUrl.'/'.$id;
+    }
+
+    /**
+     * First currency id.
+     */
+    private function firstCurrencyId(): int
+    {
+        $id = Currency::query()->orderBy('id')->value('id');
+
+        if (! $id) {
+            $this->markTestSkipped('No currencies found. Run Bagisto seeders.');
+        }
+
+        return (int) $id;
     }
 }

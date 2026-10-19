@@ -16,11 +16,17 @@ class AdminAppearanceSectionDuplicateProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SectionRepository $sectionRepository,
         protected AppearanceScopeGuard $scope,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $this->authorizedAdmin('appearance.sections.create', 'bagistoapi::app.admin.appearance.no-permission');
@@ -33,8 +39,6 @@ class AdminAppearanceSectionDuplicateProcessor implements ProcessorInterface
 
         $section = $this->scope->sectionOrFail($id ? (int) basename((string) $id) : null);
 
-        // A channel has room for one footer links section, and the copy would be a
-        // second one, so the type cannot be copied at all.
         if ($section->type === Section::FOOTER_LINKS) {
             throw new InvalidInputException(__('bagistoapi::app.admin.appearance.section.footer-links-exists'), 422);
         }

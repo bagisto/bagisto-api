@@ -22,19 +22,25 @@ use Webkul\BagistoApi\Support\CoreCapabilities;
 use Webkul\Marketing\Models\Template;
 use Webkul\Marketing\Repositories\TemplateRepository;
 
-/**
- * Handles POST, PUT, DELETE on AdminMarketingTemplate.
- */
 class AdminMarketingTemplateProcessor implements ProcessorInterface
 {
+    /**
+     * The allowed statuses constant.
+     */
     protected const ALLOWED_STATUSES = ['active', 'inactive', 'draft'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected TemplateRepository $templateRepository,
         protected AdminMarketingTemplateItemProvider $itemProvider,
         protected CoreCapabilities $capabilities,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -90,6 +96,9 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminMarketingTemplate
     {
         $this->validatePayload($input);
@@ -105,6 +114,9 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($template);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminMarketingTemplate
     {
         $template = Template::find($id);
@@ -125,6 +137,9 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($template);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id): array
     {
         $template = Template::find($id);
@@ -132,8 +147,6 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.template.not-found'));
         }
 
-        // BACKWARD COMPATIBILITY: core exposes the relation from 2.4.10. Drop the guard
-        // on the capability when the minimum supported core is 2.4.10.
         if (
             $this->capabilities->hasCampaignRelations()
             && $template->campaigns()->count()
@@ -161,6 +174,9 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.template.deleted')];
     }
 
+    /**
+     * Validate payload.
+     */
     protected function validatePayload(array $input): void
     {
         $rules = [
@@ -175,6 +191,9 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -202,6 +221,9 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -217,6 +239,9 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         return $this->normaliseArgs(request()->all());
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -229,6 +254,9 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -244,6 +272,9 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         return $this->normaliseArgs(request()->all());
     }
 
+    /**
+     * Normalise args.
+     */
     protected function normaliseArgs(array $input): array
     {
         unset($input['id']);
@@ -251,6 +282,9 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         return array_intersect_key($input, array_flip(['name', 'status', 'content']));
     }
 
+    /**
+     * Dto to array.
+     */
     protected function dtoToArray(object $dto, array $rawArgs = []): array
     {
         $result = [];

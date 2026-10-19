@@ -10,11 +10,17 @@ class SalesShipmentsListTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
+    /**
+     * Test list requires authentication.
+     */
     public function test_list_requires_authentication(): void
     {
         $this->publicGet('/api/admin/shipments')->assertStatus(401);
     }
 
+    /**
+     * Test list returns data meta envelope.
+     */
     public function test_list_returns_data_meta_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -26,6 +32,9 @@ class SalesShipmentsListTest extends AdminApiTestCase
         expect($response->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total']);
     }
 
+    /**
+     * Test row shape.
+     */
     public function test_row_shape(): void
     {
         $admin = $this->createAdmin();
@@ -42,6 +51,9 @@ class SalesShipmentsListTest extends AdminApiTestCase
         expect($rows[0])->toHaveKeys(['id', 'orderId', 'orderIncrementId', 'totalQty', 'inventorySourceName', 'shippedTo', 'createdAt']);
     }
 
+    /**
+     * Test per page caps at 50.
+     */
     public function test_per_page_caps_at_50(): void
     {
         $admin = $this->createAdmin();
@@ -50,6 +62,9 @@ class SalesShipmentsListTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test filter by total qty.
+     */
     public function test_filter_by_total_qty(): void
     {
         $admin = $this->createAdmin();
@@ -60,6 +75,9 @@ class SalesShipmentsListTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test sort default is id desc.
+     */
     public function test_sort_default_is_id_desc(): void
     {
         $admin = $this->createAdmin();
@@ -71,6 +89,9 @@ class SalesShipmentsListTest extends AdminApiTestCase
         expect($ids)->toBe($sorted);
     }
 
+    /**
+     * Test no permission returns 403.
+     */
     public function test_no_permission_returns_403(): void
     {
         $role = Role::factory()->create([
@@ -82,6 +103,9 @@ class SalesShipmentsListTest extends AdminApiTestCase
         $this->adminGet($admin, '/api/admin/shipments')->assertStatus(403);
     }
 
+    /**
+     * Test export returns csv.
+     */
     public function test_export_returns_csv(): void
     {
         $admin = $this->createAdmin();
@@ -96,6 +120,9 @@ class SalesShipmentsListTest extends AdminApiTestCase
         expect($response->getContent())->toContain('ID,"Order ID","Total Qty","Inventory Source","Shipped To","Shipment Date"');
     }
 
+    /**
+     * Test export supports xlsx.
+     */
     public function test_export_supports_xlsx(): void
     {
         $admin = $this->createAdmin();
@@ -111,6 +138,9 @@ class SalesShipmentsListTest extends AdminApiTestCase
         expect($response->headers->get('Content-Disposition'))->toContain('.xlsx');
     }
 
+    /**
+     * Test export unsupported format returns 422.
+     */
     public function test_export_unsupported_format_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -120,11 +150,17 @@ class SalesShipmentsListTest extends AdminApiTestCase
         ))->assertStatus(422);
     }
 
+    /**
+     * Test export requires authentication.
+     */
     public function test_export_requires_authentication(): void
     {
         $this->get('/api/admin/shipments/export', ['Accept' => 'text/csv'])->assertStatus(401);
     }
 
+    /**
+     * Test export no permission returns 403.
+     */
     public function test_export_no_permission_returns_403(): void
     {
         $role = Role::factory()->create([

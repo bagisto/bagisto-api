@@ -23,27 +23,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Core\Models\Channel;
 use Webkul\Core\Repositories\ChannelRepository;
 
-/**
- * Handles POST, PUT, DELETE on AdminSettingsChannel.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\ChannelController:
- *   store / update / destroy
- *
- * Permission resolution mirrors AdminCategoryProcessor — read
- * role->permission_type / role->permissions directly. No bouncer() calls.
- *
- * Delete guards (parity with monolith + the project's never-orphan rule):
- *   1. Refuse if this is the only remaining channel (HTTP 400).
- *   2. Refuse if its code matches config('app.channel') — the default app
- *      channel, used by every fallback in core (HTTP 400).
- */
 class AdminSettingsChannelProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ChannelRepository $channelRepository,
         protected AdminSettingsChannelItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -99,6 +91,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input, bool $isGraphQL = false): AdminSettingsChannel|AdminSettingsChannelRestDto
     {
         $this->validateCreatePayload($input);
@@ -112,6 +107,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         return $this->buildResult((int) $channel->id, $isGraphQL);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): AdminSettingsChannel|AdminSettingsChannelRestDto
     {
         $channel = Channel::with(['locales', 'currencies', 'inventory_sources'])->find($id);
@@ -155,6 +153,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         return $this->itemProvider->buildRestDtoPublic($fresh);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsChannel
     {
         $channel = Channel::find($id);
@@ -220,6 +221,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.settings.channel.deleted')];
     }
 
+    /**
+     * Validate create payload.
+     */
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
@@ -261,6 +265,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         $this->assertReferencedRowsExist($input);
     }
 
+    /**
+     * Validate update payload.
+     */
     protected function validateUpdatePayload(array $input, int $id): void
     {
         $rules = [
@@ -301,6 +308,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         $this->assertReferencedRowsExist($input);
     }
 
+    /**
+     * Assert cross array membership.
+     */
     protected function assertCrossArrayMembership(array $input): void
     {
         if (
@@ -318,6 +328,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert referenced rows exist.
+     */
     protected function assertReferencedRowsExist(array $input): void
     {
         if (! empty($input['locales'])) {
@@ -351,15 +364,7 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
 
     /**
      * Build the array `ChannelRepository::create/update` expects.
-     *
-     * Translatable broadcast: top-level scalars (name, description, seo_*,
-     * maintenance_mode_text, home_page_content, footer_content) ride along at
-     * the top level and the repository broadcasts them to every configured
-     * locale. The optional `translations: { <locale>: { ... } }` map writes
-     * per-locale overrides directly on top of the broadcast.
-     *
-     * SEO triplet (seo_title/seo_description/seo_keywords) is rolled into a
-     * `home_seo` array shape (mirrors the monolith's setSEOContent helper).
+     * Translatable broadcast: top-level scalars (name, description, seo_*,.
      */
     protected function buildRepositoryPayload(array $input, bool $isCreate): array
     {
@@ -464,6 +469,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         return $perLocale;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -491,6 +499,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -506,6 +517,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -518,6 +532,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (

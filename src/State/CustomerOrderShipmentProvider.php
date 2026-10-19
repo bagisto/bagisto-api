@@ -16,22 +16,19 @@ use Webkul\BagistoApi\Models\CustomerOrderShipment;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\Customer\Models\Customer;
 
-/**
- * CustomerOrderShipmentProvider — Retrieves shipments belonging to the authenticated customer
- *
- * Scopes all queries through the order relationship to ensure customer isolation.
- * Supports cursor-based pagination, orderId and status filtering.
- */
 class CustomerOrderShipmentProvider implements ProviderInterface
 {
     use ClampsPageSize;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
     /**
-     * Provide customer shipments for collection or single-item operations
+     * Provide customer shipments for collection or single-item operations.
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
@@ -41,7 +38,6 @@ class CustomerOrderShipmentProvider implements ProviderInterface
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
 
-        /** Single item — GET /api/shop/customer-order-shipments/{id} */
         if (
             ! $operation instanceof GetCollection
             && ! ($operation instanceof QueryCollection)
@@ -53,7 +49,7 @@ class CustomerOrderShipmentProvider implements ProviderInterface
     }
 
     /**
-     * Return a single shipment owned by the customer (via order relationship)
+     * Return a single shipment owned by the customer (via order relationship).
      */
     private function provideItem(object $customer, array $uriVariables): CustomerOrderShipment
     {
@@ -78,7 +74,7 @@ class CustomerOrderShipmentProvider implements ProviderInterface
     }
 
     /**
-     * Return a paginated collection of shipments owned by the customer
+     * Return a paginated collection of shipments owned by the customer.
      */
     private function provideCollection(object $customer, array $context): Paginator
     {
@@ -91,11 +87,6 @@ class CustomerOrderShipmentProvider implements ProviderInterface
                 ->where('customer_type', Customer::class);
         })->with(['items', 'shippingAddress', 'order']);
 
-        /**
-         * Apply optional order ID filter.
-         * GraphQL: customerOrderShipments(orderId: 3) → $args['orderId']
-         * REST: /customer-order-shipments?order_id=3 (or ?orderId=3) → request()->query()
-         */
         $orderId = $args['orderId']
             ?? $filters['orderId']
             ?? $request->query('order_id')
@@ -107,7 +98,6 @@ class CustomerOrderShipmentProvider implements ProviderInterface
             $query->where('order_id', (int) $orderId);
         }
 
-        /** Apply optional status filter */
         $status = $args['status']
             ?? $filters['status']
             ?? $request->query('status');
@@ -118,7 +108,6 @@ class CustomerOrderShipmentProvider implements ProviderInterface
             $query->where('status', (string) $status);
         }
 
-        /** Cursor-based pagination (offset-based cursors from API Platform) */
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
         $after = $args['after'] ?? null;

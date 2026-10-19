@@ -8,38 +8,9 @@ use Webkul\Product\Models\Product;
 
 class ProductStorefrontVisibilityTest extends GraphQLTestCase
 {
-    private function visibleProduct(): Product
-    {
-        $product = $this->createBaseProduct('simple', [
-            'sku' => 'STOREFRONT-VIS-'.uniqid(),
-        ]);
-
-        $this->ensureInventory($product, 10);
-
-        return $product;
-    }
-
-    private function disable(Product $product): void
-    {
-        $this->upsertProductAttributeValue($product->id, 'status', 0, null, 'default');
-    }
-
-    private function unassignFromChannel(Product $product): void
-    {
-        DB::table('product_channels')->where('product_id', $product->id)->delete();
-    }
-
-    private function productBySku(string $sku)
-    {
-        return $this->graphQL(<<<GQL
-            query {
-              product(sku: "{$sku}") {
-                sku
-              }
-            }
-        GQL);
-    }
-
+    /**
+     * Test enabled product in channel resolves.
+     */
     public function test_enabled_product_in_channel_resolves(): void
     {
         $product = $this->visibleProduct();
@@ -50,6 +21,9 @@ class ProductStorefrontVisibilityTest extends GraphQLTestCase
         expect($response->json('data.product.sku'))->toBe($product->sku);
     }
 
+    /**
+     * Test disabled product is not resolved by sku.
+     */
     public function test_disabled_product_is_not_resolved_by_sku(): void
     {
         $product = $this->visibleProduct();
@@ -61,6 +35,9 @@ class ProductStorefrontVisibilityTest extends GraphQLTestCase
         expect($response->json('data.product'))->toBeNull();
     }
 
+    /**
+     * Test disabled product is not resolved by id.
+     */
     public function test_disabled_product_is_not_resolved_by_id(): void
     {
         $product = $this->visibleProduct();
@@ -78,6 +55,9 @@ class ProductStorefrontVisibilityTest extends GraphQLTestCase
         expect($response->json('data.product'))->toBeNull();
     }
 
+    /**
+     * Test product not assigned to channel is not resolved.
+     */
     public function test_product_not_assigned_to_channel_is_not_resolved(): void
     {
         $product = $this->visibleProduct();
@@ -89,6 +69,9 @@ class ProductStorefrontVisibilityTest extends GraphQLTestCase
         expect($response->json('data.product'))->toBeNull();
     }
 
+    /**
+     * Test listing excludes disabled and unassigned products.
+     */
     public function test_listing_excludes_disabled_and_unassigned_products(): void
     {
         $visible = $this->visibleProduct();
@@ -119,6 +102,9 @@ class ProductStorefrontVisibilityTest extends GraphQLTestCase
         expect($skus)->not()->toContain($unassigned->sku);
     }
 
+    /**
+     * Test cost is not exposed.
+     */
     public function test_cost_is_not_exposed(): void
     {
         $product = $this->visibleProduct();
@@ -136,16 +122,9 @@ class ProductStorefrontVisibilityTest extends GraphQLTestCase
         expect($response->json('data.product.cost'))->toBeNull();
     }
 
-    private function variantOf(Product $parent): Product
-    {
-        $variant = $this->visibleProduct();
-
-        DB::table('products')->where('id', $variant->id)->update(['parent_id' => $parent->id]);
-        $this->upsertProductAttributeValue($variant->id, 'visible_individually', 0, null, 'default');
-
-        return $variant;
-    }
-
+    /**
+     * Test product hidden from the catalog is not resolved.
+     */
     public function test_product_hidden_from_the_catalog_is_not_resolved(): void
     {
         $product = $this->visibleProduct();
@@ -157,6 +136,9 @@ class ProductStorefrontVisibilityTest extends GraphQLTestCase
         expect($response->json('data.product'))->toBeNull();
     }
 
+    /**
+     * Test enabled variant of a visible product resolves by sku and id.
+     */
     public function test_enabled_variant_of_a_visible_product_resolves_by_sku_and_id(): void
     {
         $variant = $this->variantOf($this->visibleProduct());
@@ -178,6 +160,9 @@ class ProductStorefrontVisibilityTest extends GraphQLTestCase
         expect($byId->json('data.product.sku'))->toBe($variant->sku);
     }
 
+    /**
+     * Test variant of a disabled product is not resolved.
+     */
     public function test_variant_of_a_disabled_product_is_not_resolved(): void
     {
         $parent = $this->visibleProduct();
@@ -190,6 +175,9 @@ class ProductStorefrontVisibilityTest extends GraphQLTestCase
         expect($response->json('data.product'))->toBeNull();
     }
 
+    /**
+     * Test variant is not listed.
+     */
     public function test_variant_is_not_listed(): void
     {
         $variant = $this->variantOf($this->visibleProduct());
@@ -209,5 +197,62 @@ class ProductStorefrontVisibilityTest extends GraphQLTestCase
         $skus = collect($response->json('data.products.edges'))->pluck('node.sku')->all();
 
         expect($skus)->not()->toContain($variant->sku);
+    }
+
+    /**
+     * Visible product.
+     */
+    private function visibleProduct(): Product
+    {
+        $product = $this->createBaseProduct('simple', [
+            'sku' => 'STOREFRONT-VIS-'.uniqid(),
+        ]);
+
+        $this->ensureInventory($product, 10);
+
+        return $product;
+    }
+
+    /**
+     * Disable.
+     */
+    private function disable(Product $product): void
+    {
+        $this->upsertProductAttributeValue($product->id, 'status', 0, null, 'default');
+    }
+
+    /**
+     * Unassign from channel.
+     */
+    private function unassignFromChannel(Product $product): void
+    {
+        DB::table('product_channels')->where('product_id', $product->id)->delete();
+    }
+
+    /**
+     * Product by sku.
+     */
+    private function productBySku(string $sku)
+    {
+        return $this->graphQL(<<<GQL
+            query {
+              product(sku: "{$sku}") {
+                sku
+              }
+            }
+        GQL);
+    }
+
+    /**
+     * Variant of.
+     */
+    private function variantOf(Product $parent): Product
+    {
+        $variant = $this->visibleProduct();
+
+        DB::table('products')->where('id', $variant->id)->update(['parent_id' => $parent->id]);
+        $this->upsertProductAttributeValue($variant->id, 'visible_individually', 0, null, 'default');
+
+        return $variant;
     }
 }

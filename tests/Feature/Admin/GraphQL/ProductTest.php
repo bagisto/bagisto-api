@@ -5,11 +5,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Product\Models\Product;
 
-/**
- * GraphQL coverage for the adminProducts query (cursor pagination).
- */
 class ProductTest extends AdminApiTestCase
 {
+    /**
+     * Test query requires authentication.
+     */
     public function test_query_requires_authentication(): void
     {
         $query = <<<'GQL'
@@ -21,6 +21,9 @@ class ProductTest extends AdminApiTestCase
         expect($body)->toHaveKey('errors');
     }
 
+    /**
+     * Test query returns edges and pageinfo.
+     */
     public function test_query_returns_edges_and_pageinfo(): void
     {
         $admin = $this->createAdmin();
@@ -43,6 +46,9 @@ class ProductTest extends AdminApiTestCase
         expect($data)->toHaveKeys(['edges', 'pageInfo']);
     }
 
+    /**
+     * Test query filter by type.
+     */
     public function test_query_filter_by_type(): void
     {
         $admin = $this->createAdmin();
@@ -63,6 +69,9 @@ class ProductTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test query search by sku.
+     */
     public function test_query_search_by_sku(): void
     {
         $admin = $this->createAdmin();
@@ -90,6 +99,9 @@ class ProductTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test filters are valid args and camelcase columns resolve.
+     */
     public function test_filters_are_valid_args_and_camelcase_columns_resolve(): void
     {
         $admin = $this->createAdmin();

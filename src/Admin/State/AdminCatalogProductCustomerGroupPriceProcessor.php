@@ -22,18 +22,11 @@ use Webkul\Customer\Models\CustomerGroup;
 use Webkul\Product\Models\Product;
 use Webkul\Product\Models\ProductCustomerGroupPrice;
 
-/**
- * POST / PUT / DELETE for the admin product customer-group-prices sub-resource.
- *
- * Permission: catalog.products.edit. Fires catalog.product.update.{before,after}
- * around every write so any core listener (cache flush, indexer, etc.) runs.
- *
- * Uniqueness: (qty, customer_group_id) must be unique per product. The DB
- * also enforces a unique_id column ("{qty}|{product_id}|{customer_group_id}")
- * — we surface that as a 422 before insert/update.
- */
 class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -83,6 +76,9 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(Product $product, array $input): AdminCatalogProductCustomerGroupPrice
     {
         $this->validateInput($input, false);
@@ -105,6 +101,9 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         return $this->toDto($row);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(Product $product, int $rowId, array $input): AdminCatalogProductCustomerGroupPrice
     {
         $row = ProductCustomerGroupPrice::find($rowId);
@@ -148,6 +147,9 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         return $this->toDto($row->fresh());
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(Product $product, int $rowId, bool $asResource = false): array|AdminCatalogProductCustomerGroupPrice
     {
         $row = ProductCustomerGroupPrice::find($rowId);
@@ -173,6 +175,9 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         return ['message' => __('bagistoapi::app.admin.product.customer-group-price.deleted')];
     }
 
+    /**
+     * Validate input.
+     */
     protected function validateInput(array $input, bool $forUpdate): void
     {
         $rules = [
@@ -199,6 +204,9 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         }
     }
 
+    /**
+     * Assert customer group exists.
+     */
     protected function assertCustomerGroupExists(mixed $groupId): void
     {
         if (
@@ -216,6 +224,9 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         }
     }
 
+    /**
+     * Assert unique qty group.
+     */
     protected function assertUniqueQtyGroup(int $productId, int $qty, mixed $groupId, ?int $ignoreRowId): void
     {
         $query = ProductCustomerGroupPrice::query()
@@ -243,6 +254,9 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         }
     }
 
+    /**
+     * Compute unique id.
+     */
     protected function computeUniqueId(int $productId, int $qty, mixed $groupId): string
     {
         return implode('|', array_filter([
@@ -252,6 +266,9 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         ]));
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -279,6 +296,9 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         }
     }
 
+    /**
+     * Resolve product id.
+     */
     protected function resolveProductId(array $uriVariables, array $context, mixed $data): int
     {
         $raw = $uriVariables['productId']
@@ -301,6 +321,9 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         return (int) $raw;
     }
 
+    /**
+     * Resolve row id.
+     */
     protected function resolveRowId(array $uriVariables, array $context, mixed $data): int
     {
         $raw = $uriVariables['id']
@@ -327,6 +350,9 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         return (int) $raw;
     }
 
+    /**
+     * Resolve input.
+     */
     protected function resolveInput(mixed $data, array $context): array
     {
         $args = $context['args']['input'] ?? null;
@@ -362,6 +388,9 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         return $body;
     }
 
+    /**
+     * To dto.
+     */
     protected function toDto(ProductCustomerGroupPrice $row): AdminCatalogProductCustomerGroupPrice
     {
         $row->loadMissing('customer_group');

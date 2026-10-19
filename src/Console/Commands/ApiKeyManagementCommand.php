@@ -6,9 +6,6 @@ use Illuminate\Console\Command;
 use Webkul\BagistoApi\Models\StorefrontKey;
 use Webkul\BagistoApi\Services\KeyRotationService;
 
-/**
- * Manage API key rotation, expiration, and lifecycle.
- */
 class ApiKeyManagementCommand extends Command
 {
     /**
@@ -315,7 +312,6 @@ class ApiKeyManagementCommand extends Command
 
     /**
      * Find a key by ID or name.
-     *
      *
      * @throws \Exception
      */

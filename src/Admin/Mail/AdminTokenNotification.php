@@ -9,21 +9,21 @@ use Illuminate\Support\Facades\URL;
 use Webkul\Admin\Mail\Mailable;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 
-/**
- * Lifecycle notification for an admin integration token.
- *
- * Sent to the token owner whenever their token is generated, regenerated, or
- * revoked. The email NEVER carries the plaintext token — the plaintext is shown
- * only once in the browser at generation time. For generate/regenerate events
- * the email includes a signed, time-limited one-click revoke link so the owner
- * can immediately kill a token they did not expect.
- */
 class AdminTokenNotification extends Mailable
 {
+    /**
+     * The event generated constant.
+     */
     public const EVENT_GENERATED = 'generated';
 
+    /**
+     * The event regenerated constant.
+     */
     public const EVENT_REGENERATED = 'regenerated';
 
+    /**
+     * The event revoked constant.
+     */
     public const EVENT_REVOKED = 'revoked';
 
     /**

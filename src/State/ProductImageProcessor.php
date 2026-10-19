@@ -7,10 +7,16 @@ use ApiPlatform\State\ProcessorInterface;
 
 class ProductImageProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private ProcessorInterface $persistProcessor
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if (isset($uriVariables['productId'])) {

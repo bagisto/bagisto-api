@@ -75,6 +75,9 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerMassDeleteProcessor;
 )]
 class AdminCustomerMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -86,6 +89,9 @@ class AdminCustomerMassDelete
     #[ApiProperty(writable: false)]
     public ?array $skipped = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

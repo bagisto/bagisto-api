@@ -7,19 +7,9 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class RmaRuleTest extends AdminApiTestCase
 {
-    private function createRule(string $name = 'Rule'): int
-    {
-        return DB::table('rma_rules')->insertGetId([
-            'name' => $name,
-            'description' => 'desc',
-            'status' => 1,
-            'return_period' => 30,
-            'default' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
+    /**
+     * Test create.
+     */
     public function test_create(): void
     {
         $admin = $this->createAdmin();
@@ -32,6 +22,9 @@ class RmaRuleTest extends AdminApiTestCase
         $this->assertDatabaseHas('rma_rules', ['id' => $response->json('id')]);
     }
 
+    /**
+     * Test create validation.
+     */
     public function test_create_validation(): void
     {
         $admin = $this->createAdmin();
@@ -42,6 +35,9 @@ class RmaRuleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test list and get.
+     */
     public function test_list_and_get(): void
     {
         $admin = $this->createAdmin();
@@ -54,6 +50,9 @@ class RmaRuleTest extends AdminApiTestCase
         expect((int) $get->json('id'))->toBe($id);
     }
 
+    /**
+     * Test update.
+     */
     public function test_update(): void
     {
         $admin = $this->createAdmin();
@@ -66,6 +65,9 @@ class RmaRuleTest extends AdminApiTestCase
         expect((int) $response->json('returnPeriod'))->toBe(7);
     }
 
+    /**
+     * Test delete.
+     */
     public function test_delete(): void
     {
         $admin = $this->createAdmin();
@@ -75,6 +77,9 @@ class RmaRuleTest extends AdminApiTestCase
         $this->assertDatabaseMissing('rma_rules', ['id' => $id]);
     }
 
+    /**
+     * Test mass delete.
+     */
     public function test_mass_delete(): void
     {
         $admin = $this->createAdmin();
@@ -85,6 +90,9 @@ class RmaRuleTest extends AdminApiTestCase
         $this->assertDatabaseMissing('rma_rules', ['id' => $a]);
     }
 
+    /**
+     * Test mass update status.
+     */
     public function test_mass_update_status(): void
     {
         $admin = $this->createAdmin();
@@ -97,6 +105,22 @@ class RmaRuleTest extends AdminApiTestCase
         $this->assertDatabaseHas('rma_rules', [
             'id' => $id,
             'status' => 0,
+        ]);
+    }
+
+    /**
+     * Create rule.
+     */
+    private function createRule(string $name = 'Rule'): int
+    {
+        return DB::table('rma_rules')->insertGetId([
+            'name' => $name,
+            'description' => 'desc',
+            'status' => 1,
+            'return_period' => 30,
+            'default' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 }

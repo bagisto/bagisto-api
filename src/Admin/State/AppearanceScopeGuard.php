@@ -5,12 +5,6 @@ namespace Webkul\BagistoApi\Admin\State;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Theme\Models\Section;
 
-/**
- * Theme / channel / locale resolution shared by every Appearance endpoint.
- *
- * Mirrors SectionController::themeOrFail / requestedChannel / requestedLocale so the API
- * scopes a request exactly as the appearance editor does.
- */
 class AppearanceScopeGuard
 {
     /**

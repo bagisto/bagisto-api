@@ -4,13 +4,6 @@ namespace Webkul\BagistoApi\Admin\Dto;
 
 use ApiPlatform\Metadata\ApiResource;
 
-/**
- * One row of attribute_translations, surfaced inline on the attribute detail response.
- *
- * Annotated with empty operations / graphQlOperations so API Platform registers
- * it as a schema type (needed for GraphQL nested-object validation) without
- * exposing CRUD endpoints.
- */
 #[ApiResource(
     operations: [],
     graphQlOperations: [],
@@ -18,7 +11,13 @@ use ApiPlatform\Metadata\ApiResource;
 )]
 class AdminAttributeTranslationDto
 {
+    /**
+     * The locale.
+     */
     public ?string $locale = null;
 
+    /**
+     * The name.
+     */
     public ?string $name = null;
 }

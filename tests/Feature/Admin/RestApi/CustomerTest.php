@@ -9,73 +9,56 @@ use Webkul\Customer\Models\CustomerAddress;
 use Webkul\Customer\Models\CustomerGroup;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for the admin Customers CRUD + sub-resources (Block C C1).
- */
 class CustomerTest extends AdminApiTestCase
 {
-    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
-    protected function group(): CustomerGroup
-    {
-        $this->seedRequiredData();
-
-        return CustomerGroup::where('code', 'general')->first();
-    }
-
-    protected function uniqueEmail(string $prefix = 'cust'): string
-    {
-        return strtolower($prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99)).'@example.test';
-    }
-
-    protected function seedCustomer(array $overrides = []): Customer
-    {
-        $group = $this->group();
-
-        return Customer::factory()->create(array_merge([
-            'customer_group_id' => $group->id,
-            'status' => 1,
-        ], $overrides));
-    }
-
+    /**
+     * Test listing requires auth.
+     */
     public function test_listing_requires_auth(): void
     {
         $this->seedRequiredData();
         $this->publicGet('/api/admin/customers')->assertStatus(401);
     }
 
+    /**
+     * Test create requires auth.
+     */
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
         $this->postJson('/api/admin/customers', [])->assertStatus(401);
     }
 
+    /**
+     * Test update requires auth.
+     */
     public function test_update_requires_auth(): void
     {
         $c = $this->seedCustomer();
         $this->putJson('/api/admin/customers/'.$c->id, [])->assertStatus(401);
     }
 
+    /**
+     * Test delete requires auth.
+     */
     public function test_delete_requires_auth(): void
     {
         $c = $this->seedCustomer();
         $this->deleteJson('/api/admin/customers/'.$c->id)->assertStatus(401);
     }
 
+    /**
+     * Test detail requires auth.
+     */
     public function test_detail_requires_auth(): void
     {
         $c = $this->seedCustomer();
         $this->publicGet('/api/admin/customers/'.$c->id)->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -85,6 +68,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total']);
     }
 
+    /**
+     * Test listing returns seeded row.
+     */
     public function test_listing_returns_seeded_row(): void
     {
         $admin = $this->createAdmin();
@@ -103,6 +89,9 @@ class CustomerTest extends AdminApiTestCase
         expect($row['group'])->toHaveKeys(['id', 'code', 'name']);
     }
 
+    /**
+     * Test listing filter by email.
+     */
     public function test_listing_filter_by_email(): void
     {
         $admin = $this->createAdmin();
@@ -115,6 +104,9 @@ class CustomerTest extends AdminApiTestCase
         expect($ids)->toContain($c->id);
     }
 
+    /**
+     * Test listing filter by status.
+     */
     public function test_listing_filter_by_status(): void
     {
         $admin = $this->createAdmin();
@@ -128,6 +120,9 @@ class CustomerTest extends AdminApiTestCase
         expect($ids)->not()->toContain($on->id);
     }
 
+    /**
+     * Test listing per page capped.
+     */
     public function test_listing_per_page_capped(): void
     {
         $admin = $this->createAdmin();
@@ -136,6 +131,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test detail returns customer.
+     */
     public function test_detail_returns_customer(): void
     {
         $admin = $this->createAdmin();
@@ -155,6 +153,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('group.name'))->not()->toBeNull();
     }
 
+    /**
+     * Test detail null group returns null object.
+     */
     public function test_detail_null_group_returns_null_object(): void
     {
         $admin = $this->createAdmin();
@@ -166,12 +167,18 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('group'))->toBeNull();
     }
 
+    /**
+     * Test detail unknown returns 404.
+     */
     public function test_detail_unknown_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/customers/999999')->assertStatus(404);
     }
 
+    /**
+     * Test create happy path.
+     */
     public function test_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -188,6 +195,9 @@ class CustomerTest extends AdminApiTestCase
         expect(Customer::where('email', $email)->exists())->toBeTrue();
     }
 
+    /**
+     * Test create with explicit password.
+     */
     public function test_create_with_explicit_password(): void
     {
         $admin = $this->createAdmin();
@@ -204,6 +214,9 @@ class CustomerTest extends AdminApiTestCase
         $resp->assertStatus(201);
     }
 
+    /**
+     * Test create missing password when not send password.
+     */
     public function test_create_missing_password_when_not_send_password(): void
     {
         $admin = $this->createAdmin();
@@ -217,6 +230,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create duplicate email 422.
+     */
     public function test_create_duplicate_email_422(): void
     {
         $admin = $this->createAdmin();
@@ -230,6 +246,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create missing required fields 422.
+     */
     public function test_create_missing_required_fields_422(): void
     {
         $admin = $this->createAdmin();
@@ -237,6 +256,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update changes fields.
+     */
     public function test_update_changes_fields(): void
     {
         $admin = $this->createAdmin();
@@ -249,6 +271,9 @@ class CustomerTest extends AdminApiTestCase
         expect($c->fresh()->first_name)->toBe('New');
     }
 
+    /**
+     * Test update same email excludes self.
+     */
     public function test_update_same_email_excludes_self(): void
     {
         $admin = $this->createAdmin();
@@ -260,6 +285,9 @@ class CustomerTest extends AdminApiTestCase
         $resp->assertOk();
     }
 
+    /**
+     * Test update duplicate email 422.
+     */
     public function test_update_duplicate_email_422(): void
     {
         $admin = $this->createAdmin();
@@ -270,6 +298,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update unknown 404.
+     */
     public function test_update_unknown_404(): void
     {
         $admin = $this->createAdmin();
@@ -277,6 +308,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -287,6 +321,9 @@ class CustomerTest extends AdminApiTestCase
         expect(Customer::where('id', $c->id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test delete with pending order 400.
+     */
     public function test_delete_with_pending_order_400(): void
     {
         $admin = $this->createAdmin();
@@ -307,6 +344,9 @@ class CustomerTest extends AdminApiTestCase
         expect(Customer::where('id', $c->id)->exists())->toBeTrue();
     }
 
+    /**
+     * Test delete unknown 404.
+     */
     public function test_delete_unknown_404(): void
     {
         $admin = $this->createAdmin();
@@ -314,6 +354,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test mass delete happy path.
+     */
     public function test_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -328,6 +371,9 @@ class CustomerTest extends AdminApiTestCase
         expect(Customer::where('id', $b->id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mass delete skips with orders.
+     */
     public function test_mass_delete_skips_with_orders(): void
     {
         $admin = $this->createAdmin();
@@ -344,6 +390,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('skipped'))->toBeArray()->not()->toBeEmpty();
     }
 
+    /**
+     * Test mass delete empty 422.
+     */
     public function test_mass_delete_empty_422(): void
     {
         $admin = $this->createAdmin();
@@ -351,6 +400,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test mass update status.
+     */
     public function test_mass_update_status(): void
     {
         $admin = $this->createAdmin();
@@ -365,6 +417,9 @@ class CustomerTest extends AdminApiTestCase
         expect((int) $b->fresh()->status)->toBe(0);
     }
 
+    /**
+     * Test mass update status invalid value 422.
+     */
     public function test_mass_update_status_invalid_value_422(): void
     {
         $admin = $this->createAdmin();
@@ -375,21 +430,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
-    protected function seedAddress(int $customerId, array $overrides = []): CustomerAddress
-    {
-        return CustomerAddress::create(array_merge([
-            'customer_id' => $customerId,
-            'address_type' => CustomerAddress::ADDRESS_TYPE,
-            'first_name' => 'A',
-            'last_name' => 'B',
-            'address' => '1 Test St',
-            'city' => 'Town',
-            'country' => 'US',
-            'postcode' => '10001',
-            'phone' => '1234567890',
-        ], $overrides));
-    }
-
+    /**
+     * Test address create.
+     */
     public function test_address_create(): void
     {
         $admin = $this->createAdmin();
@@ -404,6 +447,9 @@ class CustomerTest extends AdminApiTestCase
         expect(CustomerAddress::where('customer_id', $c->id)->exists())->toBeTrue();
     }
 
+    /**
+     * Test address create validates.
+     */
     public function test_address_create_validates(): void
     {
         $admin = $this->createAdmin();
@@ -413,6 +459,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test address list.
+     */
     public function test_address_list(): void
     {
         $admin = $this->createAdmin();
@@ -424,6 +473,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('data'))->toBeArray()->not()->toBeEmpty();
     }
 
+    /**
+     * Test address detail.
+     */
     public function test_address_detail(): void
     {
         $admin = $this->createAdmin();
@@ -435,6 +487,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('id'))->toBe($a->id);
     }
 
+    /**
+     * Test address update.
+     */
     public function test_address_update(): void
     {
         $admin = $this->createAdmin();
@@ -448,6 +503,9 @@ class CustomerTest extends AdminApiTestCase
         expect($a->fresh()->city)->toBe('Boston');
     }
 
+    /**
+     * Test address ownership blocked.
+     */
     public function test_address_ownership_blocked(): void
     {
         $admin = $this->createAdmin();
@@ -459,6 +517,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(403);
     }
 
+    /**
+     * Test address delete.
+     */
     public function test_address_delete(): void
     {
         $admin = $this->createAdmin();
@@ -470,6 +531,9 @@ class CustomerTest extends AdminApiTestCase
         expect(CustomerAddress::where('id', $a->id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test address unknown 404.
+     */
     public function test_address_unknown_404(): void
     {
         $admin = $this->createAdmin();
@@ -477,6 +541,9 @@ class CustomerTest extends AdminApiTestCase
         $this->adminGet($admin, '/api/admin/customers/'.$c->id.'/addresses/99999')->assertStatus(404);
     }
 
+    /**
+     * Test note create.
+     */
     public function test_note_create(): void
     {
         $admin = $this->createAdmin();
@@ -492,9 +559,6 @@ class CustomerTest extends AdminApiTestCase
     /**
      * Regression — note POST must accept both `customer_notified` (snake_case,
      * what the OpenAPI block advertises) and `customerNotified` (camelCase).
-     * The processor reads from `request()->all()` for REST so the body's keys
-     * bypass the DTO denormaliser (which would otherwise drop multi-word
-     * snake_case keys per the `OutputOnlySnakeToCamelNameConverter` quirk).
      */
     public function test_note_create_with_snake_case_customer_notified(): void
     {
@@ -515,6 +579,9 @@ class CustomerTest extends AdminApiTestCase
             ->exists())->toBeTrue();
     }
 
+    /**
+     * Test note create with camel case customer notified.
+     */
     public function test_note_create_with_camel_case_customer_notified(): void
     {
         $admin = $this->createAdmin();
@@ -533,6 +600,9 @@ class CustomerTest extends AdminApiTestCase
             ->exists())->toBeTrue();
     }
 
+    /**
+     * Test note empty 422.
+     */
     public function test_note_empty_422(): void
     {
         $admin = $this->createAdmin();
@@ -541,6 +611,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test note unknown customer 404.
+     */
     public function test_note_unknown_customer_404(): void
     {
         $admin = $this->createAdmin();
@@ -548,6 +621,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test note append keeps existing.
+     */
     public function test_note_append_keeps_existing(): void
     {
         $admin = $this->createAdmin();
@@ -561,6 +637,9 @@ class CustomerTest extends AdminApiTestCase
         expect($rows)->toContain('Second');
     }
 
+    /**
+     * Test impersonate returns token.
+     */
     public function test_impersonate_returns_token(): void
     {
         $admin = $this->createAdmin();
@@ -574,6 +653,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('expiresAt'))->not()->toBeNull();
     }
 
+    /**
+     * Test impersonate token authenticates as customer.
+     */
     public function test_impersonate_token_authenticates_as_customer(): void
     {
         $admin = $this->createAdmin();
@@ -593,18 +675,27 @@ class CustomerTest extends AdminApiTestCase
         expect($tokenRow->expires_at)->not()->toBeNull();
     }
 
+    /**
+     * Test impersonate unknown customer 404.
+     */
     public function test_impersonate_unknown_customer_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/customers/99999999/impersonate', [])->assertStatus(404);
     }
 
+    /**
+     * Test impersonate requires auth.
+     */
     public function test_impersonate_requires_auth(): void
     {
         $c = $this->seedCustomer();
         $this->postJson('/api/admin/customers/'.$c->id.'/impersonate')->assertStatus(401);
     }
 
+    /**
+     * Test impersonate requires login as customer permission.
+     */
     public function test_impersonate_requires_login_as_customer_permission(): void
     {
         $role = Role::create([
@@ -620,6 +711,9 @@ class CustomerTest extends AdminApiTestCase
             ->assertStatus(403);
     }
 
+    /**
+     * Test impersonate allowed with login as customer permission.
+     */
     public function test_impersonate_allowed_with_login_as_customer_permission(): void
     {
         $role = Role::create([
@@ -633,5 +727,70 @@ class CustomerTest extends AdminApiTestCase
 
         $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/impersonate', [], $this->adminTokenSameAsWeb($admin))
             ->assertStatus(201);
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Group.
+     */
+    protected function group(): CustomerGroup
+    {
+        $this->seedRequiredData();
+
+        return CustomerGroup::where('code', 'general')->first();
+    }
+
+    /**
+     * Unique email.
+     */
+    protected function uniqueEmail(string $prefix = 'cust'): string
+    {
+        return strtolower($prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99)).'@example.test';
+    }
+
+    /**
+     * Seed customer.
+     */
+    protected function seedCustomer(array $overrides = []): Customer
+    {
+        $group = $this->group();
+
+        return Customer::factory()->create(array_merge([
+            'customer_group_id' => $group->id,
+            'status' => 1,
+        ], $overrides));
+    }
+
+    /**
+     * Seed address.
+     */
+    protected function seedAddress(int $customerId, array $overrides = []): CustomerAddress
+    {
+        return CustomerAddress::create(array_merge([
+            'customer_id' => $customerId,
+            'address_type' => CustomerAddress::ADDRESS_TYPE,
+            'first_name' => 'A',
+            'last_name' => 'B',
+            'address' => '1 Test St',
+            'city' => 'Town',
+            'country' => 'US',
+            'postcode' => '10001',
+            'phone' => '1234567890',
+        ], $overrides));
     }
 }

@@ -5,11 +5,11 @@ namespace Webkul\BagistoApi\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-/**
- * Adds essential HTTP security headers to API responses
- */
 class SecurityHeaders
 {
+    /**
+     * Handle the request.
+     */
     public function handle(Request $request, Closure $next)
     {
         $response = $next($request);
@@ -23,11 +23,17 @@ class SecurityHeaders
         return $response;
     }
 
+    /**
+     * Whether api request.
+     */
     private function isApiRequest(Request $request): bool
     {
         return str_starts_with($request->path(), 'api/');
     }
 
+    /**
+     * Add security headers.
+     */
     private function addSecurityHeaders($response): void
     {
         $headers = [
@@ -48,11 +54,17 @@ class SecurityHeaders
         }
     }
 
+    /**
+     * Should use hsts.
+     */
     private function shouldUseHSTS(): bool
     {
         return app()->environment('production') || config('api-platform.force_https', false);
     }
 
+    /**
+     * Get cspheader.
+     */
     private function getCSPHeader(): string
     {
         $defaultCSP = "default-src 'self'; "

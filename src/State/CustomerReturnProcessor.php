@@ -41,6 +41,9 @@ class CustomerReturnProcessor implements ProcessorInterface
      */
     public const PACKAGE_CONDITIONS = ['open', 'packed'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private readonly RMARepository $rmaRepository,
@@ -53,6 +56,9 @@ class CustomerReturnProcessor implements ProcessorInterface
         private readonly RMAAdditionalFieldRepository $rmaAdditionalFieldRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof CreateCustomerReturnInput) {
@@ -70,10 +76,6 @@ class CustomerReturnProcessor implements ProcessorInterface
                 return $this->handleAction($action, $uriVariables['id'] ?? null);
             }
 
-            /**
-             * The create operation is not deserialized, so that the same route
-             * accepts JSON and the multipart body carrying `images[]`.
-             */
             return $this->handleCreate($this->inputFromRequest(), $this->imagesFromRequest());
         }
 
@@ -139,6 +141,9 @@ class CustomerReturnProcessor implements ProcessorInterface
         return array_values($images);
     }
 
+    /**
+     * Handle create.
+     */
     private function handleCreate(CreateCustomerReturnInput $input, array $images): CustomerReturn
     {
         $customer = Auth::guard('sanctum')->user();
@@ -257,6 +262,9 @@ class CustomerReturnProcessor implements ProcessorInterface
         return $this->buildCustomerReturn($fresh, true, $this->rmaRepository);
     }
 
+    /**
+     * Handle action.
+     */
     private function handleAction(?string $action, mixed $id): CustomerReturn
     {
         $customer = Auth::guard('sanctum')->user();
@@ -347,6 +355,9 @@ class CustomerReturnProcessor implements ProcessorInterface
         ]);
     }
 
+    /**
+     * Action from template.
+     */
     private function actionFromTemplate(?string $template): ?string
     {
         foreach (['cancel', 'reopen', 'close'] as $action) {
@@ -361,11 +372,17 @@ class CustomerReturnProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Basename.
+     */
     private static function basename(?string $value): ?string
     {
         return $value === null ? null : basename($value);
     }
 
+    /**
+     * Int or null.
+     */
     private static function intOrNull($value): ?int
     {
         return $value === null || $value === '' ? null : (int) $value;

@@ -5,9 +5,6 @@ namespace Webkul\BagistoApi\Admin\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 
-/**
- * Schema-only DTO for a downloadable product sample row.
- */
 #[ApiResource(
     operations: [],
     graphQlOperations: [],
@@ -15,18 +12,33 @@ use ApiPlatform\Metadata\ApiResource;
 )]
 class AdminProductDownloadableSampleDto
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $id = null;
 
+    /**
+     * The sort order.
+     */
     #[ApiProperty(writable: false)]
     public ?int $sortOrder = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $type = null;
 
+    /**
+     * The file.
+     */
     #[ApiProperty(writable: false)]
     public ?string $file = null;
 
+    /**
+     * The file url.
+     */
     #[ApiProperty(writable: false)]
     public ?string $fileUrl = null;
 

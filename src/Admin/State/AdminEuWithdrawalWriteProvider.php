@@ -8,6 +8,9 @@ use Webkul\BagistoApi\Admin\Models\AdminEuWithdrawal;
 
 class AdminEuWithdrawalWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object
     {
         $dto = new AdminEuWithdrawal;

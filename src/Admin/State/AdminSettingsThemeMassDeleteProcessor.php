@@ -14,11 +14,11 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Theme\Models\ThemeCustomization;
 
-/**
- * POST /api/admin/settings/themes/mass-delete + createAdminSettingsThemeMassDelete.
- */
 class AdminSettingsThemeMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -84,6 +84,9 @@ class AdminSettingsThemeMassDeleteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -111,6 +114,9 @@ class AdminSettingsThemeMassDeleteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

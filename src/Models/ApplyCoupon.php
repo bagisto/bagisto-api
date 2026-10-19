@@ -13,11 +13,6 @@ use Webkul\BagistoApi\Dto\CartInput;
 use Webkul\BagistoApi\State\CartTokenMutationProvider;
 use Webkul\BagistoApi\State\CartTokenProcessor;
 
-/**
- * ApplyCoupon - GraphQL & REST API Resource for Applying Coupon Code
- *
- * Provides mutation for applying a coupon code to cart.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'ApplyCoupon',
@@ -131,10 +126,16 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
 )]
 class ApplyCoupon
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $id = null;
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $cartToken = null;

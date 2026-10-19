@@ -11,9 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminAppearanceSectionDiscardInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDiscardProcessor;
 
-/**
- * Throws away every staged edit of a theme and channel, leaving the published content.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAppearanceSectionDiscard',
@@ -85,9 +82,15 @@ class AdminAppearanceSectionDiscard
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The theme code.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $theme_code = null;
 
+    /**
+     * The channel id.
+     */
     public ?int $channel_id = null;
 
     /**
@@ -95,5 +98,8 @@ class AdminAppearanceSectionDiscard
      */
     public array $section_ids = [];
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

@@ -15,12 +15,6 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CustomerReviewProvider;
 use Webkul\Product\Models\ProductReview;
 
-/**
- * Customer Review API Resource
- *
- * Returns all reviews submitted by the authenticated customer.
- * This is a read-only, customer-scoped resource.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomerReview',
@@ -162,7 +156,7 @@ class CustomerReview extends ProductReview
     ];
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -171,7 +165,7 @@ class CustomerReview extends ProductReview
     }
 
     /**
-     * Product relationship for API
+     * Product relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Reviewed product')]
     public function product(): BelongsTo
@@ -180,7 +174,7 @@ class CustomerReview extends ProductReview
     }
 
     /**
-     * Customer relationship for API
+     * Customer relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Customer who wrote the review')]
     public function customer(): BelongsTo

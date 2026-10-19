@@ -2,10 +2,7 @@
 
 /**
  * System configuration for the BagistoApi admin modules.
- *
- * Merged into the core `system` config so the entries appear under
- * Admin → Configuration. The `api.integration.settings.enabled` flag controls
- * whether the "API Integration" plugin is shown in the admin sidebar.
+ * Merged into the core `system` config so the entries appear under.
  */
 return [
     [

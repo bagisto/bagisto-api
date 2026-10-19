@@ -15,13 +15,6 @@ use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminOrderCommentCreateProcessor;
 use Webkul\BagistoApi\Admin\State\AdminOrderCommentProvider;
 
-/**
- * Admin order comments.
- *
- * REST  : POST   /api/admin/orders/{id}/comments  (create)
- *         GET    /api/admin/orders/{id}/comments  (cursor list, newest first)
- * GraphQL: createAdminOrderComment mutation + adminOrderComments query collection.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminOrderComment',
@@ -92,21 +85,39 @@ class AdminOrderComment
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The order id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $order_id = null;
 
+    /**
+     * The comment.
+     */
     #[ApiProperty(writable: false)]
     public ?string $comment = null;
 
+    /**
+     * The customer notified.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $customer_notified = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 }

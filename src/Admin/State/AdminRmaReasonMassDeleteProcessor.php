@@ -15,11 +15,17 @@ class AdminRmaReasonMassDeleteProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly RMAReasonRepository $rmaReasonRepository,
         private readonly RMAReasonResolutionRepository $rmaReasonResolutionRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminRmaReasonMassDelete
     {
         $this->authorizedAdmin('sales.rma.reasons.delete', 'bagistoapi::app.admin.rma.no-permission');

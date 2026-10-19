@@ -6,16 +6,11 @@ use Illuminate\Support\Facades\Hash;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 
-/**
- * GraphQL coverage for admin Settings → Users (admins) CRUD (Block B Wave 2).
- */
 class SettingsUserTest extends AdminApiTestCase
 {
-    protected function uniqueEmail(string $prefix = 'gqluser'): string
-    {
-        return $prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99).'@example.com';
-    }
-
+    /**
+     * Test query listing returns edges.
+     */
     public function test_query_listing_returns_edges(): void
     {
         $admin = $this->createAdmin();
@@ -34,6 +29,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(is_array($edges) || $edges === null)->toBeTrue();
     }
 
+    /**
+     * Test query detail returns user.
+     */
     public function test_query_detail_returns_user(): void
     {
         $admin = $this->createAdmin();
@@ -55,6 +53,9 @@ class SettingsUserTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test query detail multiword fields resolve over graphql.
+     */
     public function test_query_detail_multiword_fields_resolve_over_graphql(): void
     {
         $admin = $this->createAdmin();
@@ -96,6 +97,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($node['updatedAt'])->not->toBeNull();
     }
 
+    /**
+     * Test mutation create admin user.
+     */
     public function test_mutation_create_admin_user(): void
     {
         $admin = $this->createAdmin();
@@ -126,6 +130,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Hash::check('secret123', $stored->password))->toBeTrue();
     }
 
+    /**
+     * Test mutation update admin user.
+     */
     public function test_mutation_update_admin_user(): void
     {
         $admin = $this->createAdmin();
@@ -150,6 +157,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::find($target->id)->name)->toBe('NewGqlName');
     }
 
+    /**
+     * Test mutation delete admin user.
+     */
     public function test_mutation_delete_admin_user(): void
     {
         $admin = $this->createAdmin();
@@ -172,6 +182,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::find($target->id))->toBeNull();
     }
 
+    /**
+     * Test mutation delete self is refused.
+     */
     public function test_mutation_delete_self_is_refused(): void
     {
         $admin = $this->createAdmin();
@@ -195,6 +208,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(is_array($errors))->toBeTrue();
     }
 
+    /**
+     * Test query requires auth.
+     */
     public function test_query_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -205,6 +221,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeArray();
     }
 
+    /**
+     * Test self delete mutation deletes own account.
+     */
     public function test_self_delete_mutation_deletes_own_account(): void
     {
         $this->createAdmin();
@@ -226,6 +245,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::find($admin->id))->toBeNull();
     }
 
+    /**
+     * Test self delete mutation wrong password keeps account.
+     */
     public function test_self_delete_mutation_wrong_password_keeps_account(): void
     {
         $this->createAdmin();
@@ -246,5 +268,13 @@ class SettingsUserTest extends AdminApiTestCase
 
         expect($response->json('errors'))->not()->toBeNull();
         expect(Admin::find($admin->id))->not->toBeNull();
+    }
+
+    /**
+     * Unique email.
+     */
+    protected function uniqueEmail(string $prefix = 'gqluser'): string
+    {
+        return $prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99).'@example.com';
     }
 }

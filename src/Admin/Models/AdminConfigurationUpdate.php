@@ -10,23 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminConfigurationUpdateInput;
 use Webkul\BagistoApi\Admin\State\AdminConfigurationUpdateProcessor;
 
-/**
- * Admin Configuration bulk-update.
- *
- * REST   : POST /api/admin/configuration (JSON or multipart for file fields)
- * GraphQL: createAdminConfigurationUpdate mutation (scalars only)
- *
- * Pipeline:
- *   1. Resolve admin / permission gate (system.configuration.edit).
- *   2. Load field defs for `slug`. 404 if no Item matches.
- *   3. Every key in `values` must start with `slug.` (anti-scope-escape).
- *   4. Server-side Validator built from each field's `validation` string.
- *   5. Decide scope columns from `channel_based` / `locale_based` per field.
- *   6. File fields: handled by CoreConfigRepository via request()->hasFile().
- *   7. Scalar upsert via repository.
- *   8. `core.configuration.save.before` + `.after` events.
- *   9. Return the freshly-resolved values (same shape as GET).
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminConfigurationUpdate',
@@ -141,18 +124,33 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationUpdateProcessor;
 )]
 class AdminConfigurationUpdate
 {
+    /**
+     * The slug.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $slug = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 
+    /**
+     * The channel.
+     */
     #[ApiProperty(writable: false)]
     public ?string $channel = null;
 
+    /**
+     * The locale.
+     */
     #[ApiProperty(writable: false)]
     public ?string $locale = null;
 

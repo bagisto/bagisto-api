@@ -4,68 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * GraphQL coverage for the admin catalog attribute endpoints:
- *   - adminAttributes  (QueryCollection — listing with cursor pagination + filters)
- *   - adminAttribute   (Query — single attribute detail with translations and options)
- *
- * Seeds attributes via local helper methods copied from the REST AttributeTest.
- * Does NOT modify AdminApiTestCase.
- */
 class AttributeTest extends AdminApiTestCase
 {
     /**
-     * Insert one attribute row and return the attribute ID.
+     * Test query listing returns seeded attribute.
      */
-    protected function insertAttribute(array $overrides = []): int
-    {
-        return \DB::table('attributes')->insertGetId(array_merge([
-            'code' => 'gql_attr_'.uniqid(),
-            'admin_name' => 'GQL Test Attribute '.uniqid(),
-            'type' => 'text',
-            'swatch_type' => null,
-            'validation' => null,
-            'position' => 1,
-            'is_required' => 0,
-            'is_unique' => 0,
-            'is_filterable' => 0,
-            'is_comparable' => 0,
-            'is_configurable' => 0,
-            'is_user_defined' => 1,
-            'is_visible_on_front' => 0,
-            'value_per_locale' => 0,
-            'value_per_channel' => 0,
-            'enable_wysiwyg' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    /**
-     * Insert one attribute option row and return the option ID.
-     */
-    protected function insertAttributeOption(int $attributeId, array $overrides = []): int
-    {
-        return \DB::table('attribute_options')->insertGetId(array_merge([
-            'attribute_id' => $attributeId,
-            'admin_name' => 'GQL Option '.uniqid(),
-            'swatch_value' => null,
-            'sort_order' => 0,
-        ], $overrides));
-    }
-
-    /**
-     * Insert one attribute option translation row.
-     */
-    protected function insertAttributeOptionTranslation(int $optionId, string $locale, string $label): void
-    {
-        \DB::table('attribute_option_translations')->insert([
-            'attribute_option_id' => $optionId,
-            'locale' => $locale,
-            'label' => $label,
-        ]);
-    }
-
     public function test_query_listing_returns_seeded_attribute(): void
     {
         $admin = $this->createAdmin();
@@ -103,6 +46,9 @@ class AttributeTest extends AdminApiTestCase
         expect($node['node']['type'])->toBe('text');
     }
 
+    /**
+     * Test query listing filter by code partial.
+     */
     public function test_query_listing_filter_by_code_partial(): void
     {
         $admin = $this->createAdmin();
@@ -129,6 +75,9 @@ class AttributeTest extends AdminApiTestCase
         expect($edgeIds)->not()->toContain($missId);
     }
 
+    /**
+     * Test query listing filter by type.
+     */
     public function test_query_listing_filter_by_type(): void
     {
         $admin = $this->createAdmin();
@@ -165,6 +114,9 @@ class AttributeTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test query listing filter by is user defined.
+     */
     public function test_query_listing_filter_by_is_user_defined(): void
     {
         $admin = $this->createAdmin();
@@ -197,6 +149,9 @@ class AttributeTest extends AdminApiTestCase
         expect($edgeIds)->not()->toContain($sysAttrId);
     }
 
+    /**
+     * Test query listing requires token.
+     */
     public function test_query_listing_requires_token(): void
     {
         $query = <<<'GQL'
@@ -214,6 +169,9 @@ class AttributeTest extends AdminApiTestCase
         expect(count($response->json('errors')))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test query listing pagination first after.
+     */
     public function test_query_listing_pagination_first_after(): void
     {
         $admin = $this->createAdmin();
@@ -261,6 +219,9 @@ class AttributeTest extends AdminApiTestCase
         expect(array_intersect($firstIds, $secondIds))->toBe([]);
     }
 
+    /**
+     * Test query detail returns attribute with translations and options.
+     */
     public function test_query_detail_returns_attribute_with_translations_and_options(): void
     {
         $admin = $this->createAdmin();
@@ -326,6 +287,9 @@ class AttributeTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test query detail unknown id returns error.
+     */
     public function test_query_detail_unknown_id_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -349,6 +313,9 @@ class AttributeTest extends AdminApiTestCase
         expect($hasErrors || $dataNull)->toBeTrue();
     }
 
+    /**
+     * Test query detail requires token.
+     */
     public function test_query_detail_requires_token(): void
     {
         $attrId = $this->insertAttribute(['code' => 'gql-detail-auth-'.uniqid()]);
@@ -369,6 +336,9 @@ class AttributeTest extends AdminApiTestCase
         expect(count($response->json('errors')))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test mutation create attribute happy path.
+     */
     public function test_mutation_create_attribute_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -397,6 +367,9 @@ class AttributeTest extends AdminApiTestCase
         expect($row->type)->toBe('text');
     }
 
+    /**
+     * Test mutation create attribute missing code returns error.
+     */
     public function test_mutation_create_attribute_missing_code_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -420,6 +393,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test mutation create attribute requires auth.
+     */
     public function test_mutation_create_attribute_requires_auth(): void
     {
         $mutation = <<<'GQL'
@@ -442,6 +418,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test mutation update attribute happy path.
+     */
     public function test_mutation_update_attribute_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -476,6 +455,9 @@ class AttributeTest extends AdminApiTestCase
         expect($row->admin_name)->toBe('After Update');
     }
 
+    /**
+     * Test mutation update attribute code change returns error.
+     */
     public function test_mutation_update_attribute_code_change_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -506,6 +488,9 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test mutation delete attribute happy path.
+     */
     public function test_mutation_delete_attribute_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -532,6 +517,9 @@ class AttributeTest extends AdminApiTestCase
         expect(\DB::table('attributes')->where('id', $id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mutation delete system attribute returns error.
+     */
     public function test_mutation_delete_system_attribute_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -558,6 +546,9 @@ class AttributeTest extends AdminApiTestCase
         expect(\DB::table('attributes')->where('id', $id)->exists())->toBeTrue();
     }
 
+    /**
+     * Test mutation mass delete happy path.
+     */
     public function test_mutation_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -582,6 +573,9 @@ class AttributeTest extends AdminApiTestCase
         expect(\DB::table('attributes')->where('id', $id2)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mutation delete attribute snapshot resolves.
+     */
     public function test_mutation_delete_attribute_snapshot_resolves(): void
     {
         $admin = $this->createAdmin();
@@ -618,6 +612,9 @@ class AttributeTest extends AdminApiTestCase
         expect(\DB::table('attributes')->where('id', $id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mutation create attribute option creates and resolves.
+     */
     public function test_mutation_create_attribute_option_creates_and_resolves(): void
     {
         $admin = $this->createAdmin();
@@ -661,6 +658,9 @@ class AttributeTest extends AdminApiTestCase
         expect((int) $optionRow->sort_order)->toBe(2);
     }
 
+    /**
+     * Test mutation update attribute option updates and resolves.
+     */
     public function test_mutation_update_attribute_option_updates_and_resolves(): void
     {
         $admin = $this->createAdmin();
@@ -709,6 +709,9 @@ class AttributeTest extends AdminApiTestCase
         expect((int) $optionRow->sort_order)->toBe(5);
     }
 
+    /**
+     * Test mutation delete attribute option snapshot resolves.
+     */
     public function test_mutation_delete_attribute_option_snapshot_resolves(): void
     {
         $admin = $this->createAdmin();
@@ -754,6 +757,9 @@ class AttributeTest extends AdminApiTestCase
         expect(\DB::table('attribute_options')->where('id', $optId)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mutation mass delete system attribute returns error.
+     */
     public function test_mutation_mass_delete_system_attribute_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -778,5 +784,57 @@ class AttributeTest extends AdminApiTestCase
         $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
         expect(\DB::table('attributes')->where('id', $userId)->exists())->toBeTrue();
+    }
+
+    /**
+     * Insert one attribute row and return the attribute ID.
+     */
+    protected function insertAttribute(array $overrides = []): int
+    {
+        return \DB::table('attributes')->insertGetId(array_merge([
+            'code' => 'gql_attr_'.uniqid(),
+            'admin_name' => 'GQL Test Attribute '.uniqid(),
+            'type' => 'text',
+            'swatch_type' => null,
+            'validation' => null,
+            'position' => 1,
+            'is_required' => 0,
+            'is_unique' => 0,
+            'is_filterable' => 0,
+            'is_comparable' => 0,
+            'is_configurable' => 0,
+            'is_user_defined' => 1,
+            'is_visible_on_front' => 0,
+            'value_per_locale' => 0,
+            'value_per_channel' => 0,
+            'enable_wysiwyg' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Insert one attribute option row and return the option ID.
+     */
+    protected function insertAttributeOption(int $attributeId, array $overrides = []): int
+    {
+        return \DB::table('attribute_options')->insertGetId(array_merge([
+            'attribute_id' => $attributeId,
+            'admin_name' => 'GQL Option '.uniqid(),
+            'swatch_value' => null,
+            'sort_order' => 0,
+        ], $overrides));
+    }
+
+    /**
+     * Insert one attribute option translation row.
+     */
+    protected function insertAttributeOptionTranslation(int $optionId, string $locale, string $label): void
+    {
+        \DB::table('attribute_option_translations')->insert([
+            'attribute_option_id' => $optionId,
+            'locale' => $locale,
+            'label' => $label,
+        ]);
     }
 }

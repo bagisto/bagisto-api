@@ -7,6 +7,9 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class ConfigurationTest extends AdminApiTestCase
 {
+    /**
+     * Test menu query loads full tree without slug.
+     */
     public function test_menu_query_loads_full_tree_without_slug(): void
     {
         $admin = $this->createAdmin();
@@ -34,6 +37,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($data['tree'][0]['key'])->not->toBeNull();
     }
 
+    /**
+     * Test menu query scoped by slug.
+     */
     public function test_menu_query_scoped_by_slug(): void
     {
         $admin = $this->createAdmin();
@@ -59,6 +65,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($data['tree'])->not->toBeEmpty();
     }
 
+    /**
+     * Test slugs query lists all slugs.
+     */
     public function test_slugs_query_lists_all_slugs(): void
     {
         $admin = $this->createAdmin();
@@ -85,6 +94,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($data['slugs'][0]['slug'])->not->toBeNull();
     }
 
+    /**
+     * Test slugs query requires authentication.
+     */
     public function test_slugs_query_requires_authentication(): void
     {
         $query = 'query { listAdminConfigurationSlug { slugs } }';
@@ -92,6 +104,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test values query.
+     */
     public function test_values_query(): void
     {
         $admin = $this->createAdmin();
@@ -117,6 +132,9 @@ class ConfigurationTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test menu requires authentication.
+     */
     public function test_menu_requires_authentication(): void
     {
         $query = 'query { adminConfigurationMenu { slug } }';
@@ -124,6 +142,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test values requires authentication.
+     */
     public function test_values_requires_authentication(): void
     {
         $query = 'query { adminConfigurationValues(slug: "sales.order_settings") { slug } }';
@@ -131,6 +152,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test update mutation happy path.
+     */
     public function test_update_mutation_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -165,6 +189,9 @@ class ConfigurationTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test update scope escape rejected.
+     */
     public function test_update_scope_escape_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -188,6 +215,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeArray();
     }
 
+    /**
+     * Test update validation rejection.
+     */
     public function test_update_validation_rejection(): void
     {
         $admin = $this->createAdmin();
@@ -214,6 +244,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeArray();
     }
 
+    /**
+     * Test update requires authentication.
+     */
     public function test_update_requires_authentication(): void
     {
         $mutation = <<<'GQL'

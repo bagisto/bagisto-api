@@ -7,10 +7,6 @@ use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Bundle-option product — nested in the `bundleOptions` connection
- * (`bundleOptions { edges { node { products { edges { node } } } } }`).
- */
 #[ApiResource(
     shortName: 'AdminProductDetailBundleOptionProduct',
     operations: [],
@@ -34,18 +30,27 @@ class AdminProductDetailBundleOptionProduct extends Model
         'sort_order' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get sku attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getSkuAttribute(): ?string
     {
         return DB::table('products')->where('id', $this->product_id)->value('sku');
     }
 
+    /**
+     * Get name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getNameAttribute(): ?string
     {

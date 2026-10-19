@@ -6,12 +6,6 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 
-/**
- * Shared admin auth + permission check for read-only Sales / Settings
- * providers. Mirrors the Sanctum-token resolution pattern used by every
- * admin endpoint: NEVER call bouncer() — read $admin->role->permissions
- * directly from the API-resolved admin.
- */
 trait ChecksAdminPermission
 {
     /**
@@ -36,6 +30,9 @@ trait ChecksAdminPermission
         return $admin;
     }
 
+    /**
+     * Admin has permission.
+     */
     protected function adminHasPermission(object $admin, string $permission): bool
     {
         return AdminAuthHelper::hasPermission($admin, $permission);

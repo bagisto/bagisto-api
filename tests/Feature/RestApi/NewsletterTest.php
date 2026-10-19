@@ -7,8 +7,14 @@ use Webkul\BagistoApi\Tests\RestApiTestCase;
 
 class NewsletterTest extends RestApiTestCase
 {
+    /**
+     * The url.
+     */
     private string $url = '/api/shop/newsletters';
 
+    /**
+     * Test subscribe success.
+     */
     public function test_subscribe_success(): void
     {
         $this->seedRequiredData();
@@ -33,6 +39,9 @@ class NewsletterTest extends RestApiTestCase
             ->exists())->toBeTrue();
     }
 
+    /**
+     * Test subscribe duplicate email returns error.
+     */
     public function test_subscribe_duplicate_email_returns_error(): void
     {
         $this->seedRequiredData();
@@ -52,6 +61,9 @@ class NewsletterTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test unsubscribed email can resubscribe.
+     */
     public function test_unsubscribed_email_can_resubscribe(): void
     {
         $this->seedRequiredData();
@@ -74,6 +86,9 @@ class NewsletterTest extends RestApiTestCase
         expect((int) DB::table('subscribers_list')->where('email', $email)->value('is_subscribed'))->toBe(1);
     }
 
+    /**
+     * Test subscribe missing email returns error.
+     */
     public function test_subscribe_missing_email_returns_error(): void
     {
         $this->seedRequiredData();
@@ -86,6 +101,9 @@ class NewsletterTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test guest can subscribe without a token.
+     */
     public function test_guest_can_subscribe_without_a_token(): void
     {
         $this->seedRequiredData();
@@ -105,6 +123,9 @@ class NewsletterTest extends RestApiTestCase
             ->exists())->toBeTrue();
     }
 
+    /**
+     * Test subscription by a customer is linked to that customer.
+     */
     public function test_subscription_by_a_customer_is_linked_to_that_customer(): void
     {
         $this->seedRequiredData();
@@ -123,6 +144,9 @@ class NewsletterTest extends RestApiTestCase
             ->exists())->toBeTrue();
     }
 
+    /**
+     * Test unsubscribe deletes the subscription by token.
+     */
     public function test_unsubscribe_deletes_the_subscription_by_token(): void
     {
         $this->seedRequiredData();
@@ -139,6 +163,9 @@ class NewsletterTest extends RestApiTestCase
         expect(DB::table('subscribers_list')->where('email', $email)->exists())->toBeFalse();
     }
 
+    /**
+     * Test unsubscribe requires a token.
+     */
     public function test_unsubscribe_requires_a_token(): void
     {
         $this->seedRequiredData();
@@ -148,6 +175,9 @@ class NewsletterTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test unsubscribe returns generic success for an unknown token.
+     */
     public function test_unsubscribe_returns_generic_success_for_an_unknown_token(): void
     {
         $this->seedRequiredData();

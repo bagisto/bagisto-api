@@ -15,6 +15,9 @@ use Webkul\Customer\Models\Customer;
 
 class AdminCustomerCompareItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         AdminReadPermissions::authorize($operation, AdminCustomerCompareItem::class);
@@ -44,6 +47,9 @@ class AdminCustomerCompareItemProvider implements ProviderInterface
         return new Paginator(new LengthAwarePaginator($rows, $total, max($total, 1), 1));
     }
 
+    /**
+     * To dto.
+     */
     protected function toDto($compare): AdminCustomerCompareItem
     {
         $product = $compare->product;

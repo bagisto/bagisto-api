@@ -38,6 +38,9 @@ class BookingSlotParser
         ];
     }
 
+    /**
+     * Parse date time.
+     */
     private function parseDateTime(string $date, string $time, string $timezone): Carbon
     {
         $candidate = trim($date.' '.$time);
@@ -61,7 +64,6 @@ class BookingSlotParser
             try {
                 return Carbon::createFromFormat($format, $candidate, $timezone);
             } catch (\Throwable) {
-                // try next format
             }
         }
 

@@ -18,6 +18,9 @@ use Webkul\BagistoApi\Models\Customer;
 
 class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInterface
 {
+    /**
+     * The nullable relations.
+     */
     private array $nullableRelations = [
         Customer::class => ['status', 'is_verified', 'is_suspended', 'subscribed_to_news_letter'],
         AdminCustomer::class => ['group'],
@@ -41,8 +44,14 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
     /** @var array<class-string, string[]> */
     private static array $columnsCache = [];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(private readonly PropertyMetadataFactoryInterface $decorated) {}
 
+    /**
+     * Create.
+     */
     public function create(string $resourceClass, string $property, array $options = []): ApiProperty
     {
         $metadata = $this->decorated->create($resourceClass, $property, $options);
@@ -85,6 +94,9 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
         return $metadata->withBuiltinTypes($nullable);
     }
 
+    /**
+     * Should be nullable.
+     */
     private function shouldBeNullable(string $resourceClass, string $property): bool
     {
         if (in_array($property, $this->nullableRelations[$resourceClass] ?? [], true)) {

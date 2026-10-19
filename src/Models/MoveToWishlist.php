@@ -15,11 +15,6 @@ use Webkul\BagistoApi\Dto\CartInput;
 use Webkul\BagistoApi\State\CartTokenMutationProvider;
 use Webkul\BagistoApi\State\CartTokenProcessor;
 
-/**
- * MoveToWishlist - GraphQL API Resource for Moving Items to Wishlist
- *
- * Provides mutation for moving multiple items from cart to wishlist.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'MoveToWishlist',
@@ -101,10 +96,16 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
 )]
 class MoveToWishlist
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $id = null;
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $cartToken = null;

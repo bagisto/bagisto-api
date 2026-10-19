@@ -11,26 +11,11 @@ use Webkul\User\Models\Role;
 
 class CatalogProductDownloadableFileTest extends AdminApiTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        Storage::fake('private');
-    }
-
-    protected function customRoleAdmin(array $permissions = []): Admin
-    {
-        $role = Role::create([
-            'name' => 'dl-test-'.uniqid(),
-            'description' => 'downloadable-test',
-            'permission_type' => 'custom',
-            'permissions' => $permissions,
-        ]);
-
-        return $this->createAdmin(['role_id' => $role->id]);
-    }
-
     // ---- CAT1: upload ----
 
+    /**
+     * Test upload link file returns stored path.
+     */
     public function test_upload_link_file_returns_stored_path(): void
     {
         $admin = $this->createAdmin();
@@ -51,6 +36,9 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
         Storage::disk('private')->assertExists($body['path']);
     }
 
+    /**
+     * Test upload sample file returns stored path.
+     */
     public function test_upload_sample_file_returns_stored_path(): void
     {
         $admin = $this->createAdmin();
@@ -70,6 +58,9 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
         Storage::disk('private')->assertExists($body['path']);
     }
 
+    /**
+     * Test upload without file returns 422.
+     */
     public function test_upload_without_file_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -82,6 +73,9 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
         )->assertStatus(422);
     }
 
+    /**
+     * Test upload unknown product returns 404.
+     */
     public function test_upload_unknown_product_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -94,6 +88,9 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
         )->assertStatus(404);
     }
 
+    /**
+     * Test upload requires authentication.
+     */
     public function test_upload_requires_authentication(): void
     {
         $product = $this->createBaseProduct('simple');
@@ -103,6 +100,9 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
             ->assertStatus(401);
     }
 
+    /**
+     * Test upload no permission returns 403.
+     */
     public function test_upload_no_permission_returns_403(): void
     {
         $admin = $this->customRoleAdmin([]);
@@ -116,8 +116,80 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
         )->assertStatus(403);
     }
 
+    /**
+     * Test download streams stored file.
+     */
+    public function test_download_streams_stored_file(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $attributeId = $this->insertFileAttribute();
+        $this->seedStoredAttributeFile($product->id, $attributeId);
+
+        $response = $this->get(
+            "/api/admin/catalog/products/{$product->id}/downloadable/{$attributeId}/download",
+            array_merge($this->adminHeaders($admin), ['Accept' => 'application/octet-stream']),
+        );
+
+        expect($response->getStatusCode())->toBe(200);
+    }
+
+    /**
+     * Test download unknown returns 404.
+     */
+    public function test_download_unknown_returns_404(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+
+        $this->get(
+            "/api/admin/catalog/products/{$product->id}/downloadable/999999/download",
+            array_merge($this->adminHeaders($admin), ['Accept' => 'application/octet-stream']),
+        )->assertStatus(404);
+    }
+
+    /**
+     * Test download requires authentication.
+     */
+    public function test_download_requires_authentication(): void
+    {
+        $product = $this->createBaseProduct('simple');
+
+        $this->get(
+            "/api/admin/catalog/products/{$product->id}/downloadable/26/download",
+            ['Accept' => 'application/octet-stream'],
+        )->assertStatus(401);
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake('private');
+    }
+
+    /**
+     * Custom role admin.
+     */
+    protected function customRoleAdmin(array $permissions = []): Admin
+    {
+        $role = Role::create([
+            'name' => 'dl-test-'.uniqid(),
+            'description' => 'downloadable-test',
+            'permission_type' => 'custom',
+            'permissions' => $permissions,
+        ]);
+
+        return $this->createAdmin(['role_id' => $role->id]);
+    }
+
     // ---- CAT3: download ----
 
+    /**
+     * Insert file attribute.
+     */
     protected function insertFileAttribute(): int
     {
         return DB::table('attributes')->insertGetId([
@@ -140,6 +212,9 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Seed stored attribute file.
+     */
     protected function seedStoredAttributeFile(int $productId, int $attributeId): string
     {
         $path = UploadedFile::fake()->create('stored.zip', 20)
@@ -155,41 +230,5 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
         ]);
 
         return $path;
-    }
-
-    public function test_download_streams_stored_file(): void
-    {
-        $admin = $this->createAdmin();
-        $product = $this->createBaseProduct('simple');
-        $attributeId = $this->insertFileAttribute();
-        $this->seedStoredAttributeFile($product->id, $attributeId);
-
-        $response = $this->get(
-            "/api/admin/catalog/products/{$product->id}/downloadable/{$attributeId}/download",
-            array_merge($this->adminHeaders($admin), ['Accept' => 'application/octet-stream']),
-        );
-
-        expect($response->getStatusCode())->toBe(200);
-    }
-
-    public function test_download_unknown_returns_404(): void
-    {
-        $admin = $this->createAdmin();
-        $product = $this->createBaseProduct('simple');
-
-        $this->get(
-            "/api/admin/catalog/products/{$product->id}/downloadable/999999/download",
-            array_merge($this->adminHeaders($admin), ['Accept' => 'application/octet-stream']),
-        )->assertStatus(404);
-    }
-
-    public function test_download_requires_authentication(): void
-    {
-        $product = $this->createBaseProduct('simple');
-
-        $this->get(
-            "/api/admin/catalog/products/{$product->id}/downloadable/26/download",
-            ['Accept' => 'application/octet-stream'],
-        )->assertStatus(401);
     }
 }

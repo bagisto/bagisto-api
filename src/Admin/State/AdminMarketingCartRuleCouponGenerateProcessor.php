@@ -18,20 +18,6 @@ use Webkul\CartRule\Models\CartRule;
 use Webkul\CartRule\Models\CartRuleCoupon;
 use Webkul\CartRule\Repositories\CartRuleCouponRepository;
 
-/**
- * Bulk-generate cart-rule coupons. Mirrors the monolith
- * CartRuleCouponController::store + CartRuleCouponRepository::generateCoupons.
- *
- * Format mapping (the underlying repository charset is keyed by Bagisto's
- * historical spellings — we accept both API-style and core-style names):
- *
- *   API name        → repository key
- *   --------------- ---------------
- *   alphabetic      alphabetical
- *   alphabetical    alphabetical   (core's own spelling, kept for compatibility)
- *   alphanumeric    alphanumeric
- *   numeric         numeric
- */
 class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterface
 {
     /** API-accepted format values mapped to the repository charset key. */
@@ -42,10 +28,16 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
         'numeric' => 'numeric',
     ];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CartRuleCouponRepository $couponRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -87,6 +79,9 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
         return $this->toRestResponse($dto, $operation instanceof Post ? 201 : 200);
     }
 
+    /**
+     * Handle generate.
+     */
     protected function handleGenerate(int $cartRuleId, array $input): AdminMarketingCartRuleCouponGenerate
     {
         $cartRule = CartRule::find($cartRuleId);
@@ -160,6 +155,9 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
         return $dto;
     }
 
+    /**
+     * Normalize keys.
+     */
     protected function normalizeKeys(array $args): array
     {
         $map = [
@@ -178,6 +176,9 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
         return $out;
     }
 
+    /**
+     * To rest response.
+     */
     protected function toRestResponse(AdminMarketingCartRuleCouponGenerate $dto, int $status): JsonResponse
     {
         return new JsonResponse(array_filter([
@@ -190,6 +191,9 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
         ], static fn ($value) => $value !== null), $status);
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin): void
     {
         $role = $admin->role ?? null;

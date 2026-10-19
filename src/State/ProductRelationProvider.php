@@ -9,16 +9,18 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Models\Product;
 
-/**
- * Custom provider for Product relation fields (upSells, crossSells, relatedProducts)
- * Intercepts relation queries and returns only the related products, not all products
- */
 class ProductRelationProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $source = $context['source'] ?? null;
@@ -51,7 +53,6 @@ class ProductRelationProvider implements ProviderInterface
 
         $relationBuilder = $source->{$relationMethod}();
 
-        /** Only return approved reviews on the storefront */
         if ($relationMethod === 'reviews') {
             $relationBuilder->where('status', 'approved');
         }

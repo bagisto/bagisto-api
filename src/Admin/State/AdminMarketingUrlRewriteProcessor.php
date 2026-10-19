@@ -21,36 +21,29 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Marketing\Models\URLRewrite;
 use Webkul\Marketing\Repositories\URLRewriteRepository;
 
-/**
- * Handles POST, PUT, DELETE on AdminMarketingUrlRewrite.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\SearchSEO\URLRewriteController:
- *   store / update / destroy. Events fired:
- *     marketing.search_seo.url_rewrites.create.before / after
- *     marketing.search_seo.url_rewrites.update.before / after
- *     marketing.search_seo.url_rewrites.delete.before / after
- *
- * Permission resolution: Sanctum pattern — read role->permission_type /
- * role->permissions directly. Never calls bouncer().
- *
- * Validation mirrors URLRewriteController::store / ::update:
- *   - entity_type   required|in:product,category,cms_page
- *   - request_path  required
- *   - target_path   required
- *   - redirect_type required|in:301,302
- *   - locale        required|exists:locales,code
- */
 class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
 {
+    /**
+     * The allowed entity types constant.
+     */
     protected const ALLOWED_ENTITY_TYPES = ['product', 'category', 'cms_page'];
 
+    /**
+     * The allowed redirect types constant.
+     */
     protected const ALLOWED_REDIRECT_TYPES = ['301', '302'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected URLRewriteRepository $urlRewriteRepository,
         protected AdminMarketingUrlRewriteItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -106,6 +99,9 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminMarketingUrlRewrite
     {
         $this->validatePayload($input);
@@ -121,6 +117,9 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($rewrite);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminMarketingUrlRewrite
     {
         $rewrite = URLRewrite::find($id);
@@ -141,6 +140,9 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($rewrite);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id): array
     {
         $rewrite = URLRewrite::find($id);
@@ -165,6 +167,9 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.url-rewrite.deleted')];
     }
 
+    /**
+     * Validate payload.
+     */
     protected function validatePayload(array $input): void
     {
         $rules = [
@@ -181,6 +186,9 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -208,6 +216,9 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -223,6 +234,9 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         return $this->normaliseArgs(request()->all());
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -235,6 +249,9 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -250,6 +267,9 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         return $this->normaliseArgs(request()->all());
     }
 
+    /**
+     * Normalise args.
+     */
     protected function normaliseArgs(array $input): array
     {
         unset($input['id']);
@@ -280,6 +300,9 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         ]));
     }
 
+    /**
+     * Dto to array.
+     */
     protected function dtoToArray(object $dto, array $rawArgs = []): array
     {
         $result = [];

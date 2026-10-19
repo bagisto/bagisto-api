@@ -14,11 +14,17 @@ class AdminReturnMessageProvider implements ProviderInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly RMARepository $rmaRepository,
         private readonly RMAMessageRepository $rmaMessageRepository,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): iterable
     {
         $this->authorizedAdmin('sales.rma.requests', 'bagistoapi::app.admin.rma.no-permission');

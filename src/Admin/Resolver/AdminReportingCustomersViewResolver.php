@@ -2,10 +2,10 @@
 
 namespace Webkul\BagistoApi\Admin\Resolver;
 
-/**
- * GraphQL View Details (table-form) resolver for the customers reporting sub-page.
- */
 class AdminReportingCustomersViewResolver extends AdminReportingCustomersQueryResolver
 {
+    /**
+     * The mode.
+     */
     protected string $mode = 'table';
 }

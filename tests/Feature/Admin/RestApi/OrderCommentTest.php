@@ -8,28 +8,29 @@ use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderComment;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for POST/GET /api/admin/orders/{id}/comments.
- */
 class OrderCommentTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    protected function anOrderId(): int
-    {
-        return Order::query()->value('id') ?? $this->bootstrapAdminOrder('pending', false)->id;
-    }
-
+    /**
+     * Test create requires authentication.
+     */
     public function test_create_requires_authentication(): void
     {
         $this->publicPost('/api/admin/orders/1/comments', ['comment' => 'hi'])->assertStatus(401);
     }
 
+    /**
+     * Test list requires authentication.
+     */
     public function test_list_requires_authentication(): void
     {
         $this->publicGet('/api/admin/orders/1/comments')->assertStatus(401);
     }
 
+    /**
+     * Test create returns 404 for unknown order.
+     */
     public function test_create_returns_404_for_unknown_order(): void
     {
         $admin = $this->createAdmin();
@@ -37,6 +38,9 @@ class OrderCommentTest extends AdminApiTestCase
             ->assertStatus(404);
     }
 
+    /**
+     * Test create rejects empty comment.
+     */
     public function test_create_rejects_empty_comment(): void
     {
         $id = $this->anOrderId();
@@ -47,6 +51,9 @@ class OrderCommentTest extends AdminApiTestCase
             ->toBe(trans('bagistoapi::app.admin.order.actions.comment.empty'));
     }
 
+    /**
+     * Test create without view permission returns 403.
+     */
     public function test_create_without_view_permission_returns_403(): void
     {
         $id = $this->anOrderId();
@@ -65,6 +72,9 @@ class OrderCommentTest extends AdminApiTestCase
         expect(OrderComment::where('comment', $msg)->exists())->toBeFalse();
     }
 
+    /**
+     * Test create persists a comment.
+     */
     public function test_create_persists_a_comment(): void
     {
         $id = $this->anOrderId();
@@ -83,6 +93,9 @@ class OrderCommentTest extends AdminApiTestCase
         expect((bool) $persisted->customer_notified)->toBeTrue();
     }
 
+    /**
+     * Test list returns comments newest first.
+     */
     public function test_list_returns_comments_newest_first(): void
     {
         $id = $this->anOrderId();
@@ -97,5 +110,13 @@ class OrderCommentTest extends AdminApiTestCase
         expect($data)->toBeArray();
         expect(count($data))->toBeGreaterThanOrEqual(2);
         expect($data[0]['orderId'])->toBe($id);
+    }
+
+    /**
+     * An order id.
+     */
+    protected function anOrderId(): int
+    {
+        return Order::query()->value('id') ?? $this->bootstrapAdminOrder('pending', false)->id;
     }
 }

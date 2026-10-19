@@ -54,18 +54,30 @@ use Webkul\BagistoApi\State\GuestEuWithdrawalConfirmationProvider;
 )]
 class GuestEuWithdrawalConfirmation
 {
+    /**
+     * The uuid.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $uuid = null;
 
+    /**
+     * The order increment id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $orderIncrementId = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $status = null;
 
+    /**
+     * The received at.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $receivedAt = null;

@@ -11,18 +11,12 @@ use Webkul\Core\Traits\PDFHandler;
 use Webkul\Customer\Models\Customer;
 use Webkul\Sales\Models\Invoice;
 
-/**
- * Invoice PDF Download Controller
- *
- * Generates and streams invoice PDF for authenticated customers.
- * Scopes access through order → customer relationship.
- */
 class InvoicePdfController extends Controller
 {
     use PDFHandler;
 
     /**
-     * Download invoice as PDF
+     * Download invoice as PDF.
      *
      * @param  int  $id  Invoice ID
      * @return Response

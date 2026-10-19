@@ -22,14 +22,23 @@ class AdminRmaReasonProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * The resolutions constant.
+     */
     private const RESOLUTIONS = ['return', 'cancel_items'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private readonly RMAReasonRepository $rmaReasonRepository,
         private readonly RMAReasonResolutionRepository $rmaReasonResolutionRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof AdminRmaReasonCreateInput) {
@@ -61,6 +70,9 @@ class AdminRmaReasonProcessor implements ProcessorInterface
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }
 
+    /**
+     * Handle create.
+     */
     private function handleCreate(AdminRmaReasonCreateInput $input): AdminRmaReason
     {
         $this->authorizedAdmin('sales.rma.reasons.create', 'bagistoapi::app.admin.rma.no-permission');
@@ -88,6 +100,9 @@ class AdminRmaReasonProcessor implements ProcessorInterface
         return $this->mapReason((int) $reason->id);
     }
 
+    /**
+     * Handle update.
+     */
     private function handleUpdate(int $id, AdminRmaReasonUpdateInput $input): AdminRmaReason
     {
         $this->authorizedAdmin('sales.rma.reasons.edit', 'bagistoapi::app.admin.rma.no-permission');
@@ -126,6 +141,9 @@ class AdminRmaReasonProcessor implements ProcessorInterface
         return $this->mapReason($id);
     }
 
+    /**
+     * Handle delete.
+     */
     private function handleDelete(int $id): AdminRmaReason
     {
         $this->authorizedAdmin('sales.rma.reasons.delete', 'bagistoapi::app.admin.rma.no-permission');
@@ -144,6 +162,9 @@ class AdminRmaReasonProcessor implements ProcessorInterface
         return $snapshot;
     }
 
+    /**
+     * Validate payload.
+     */
     private function validatePayload(array $data): void
     {
         $validator = Validator::make($data, [
@@ -159,6 +180,9 @@ class AdminRmaReasonProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Map reason.
+     */
     private function mapReason(int $id): AdminRmaReason
     {
         $row = DB::table('rma_reasons')->where('id', $id)->first();

@@ -7,45 +7,16 @@ use Webkul\Theme\Models\Section;
 
 class SectionTest extends RestApiTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // BACKWARD COMPATIBILITY: remove when the minimum supported core is 2.4.10.
-        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
-    }
-
+    /**
+     * The collection url.
+     */
     private string $collectionUrl = '/api/shop/sections';
-
-    private function itemUrl(int $id): string
-    {
-        return $this->collectionUrl.'/'.$id;
-    }
-
-    private function firstId(): int
-    {
-        $id = Section::query()->orderBy('id')->value('id');
-
-        if (! $id) {
-            $this->markTestSkipped('No sections found. Run Bagisto seeders.');
-        }
-
-        return (int) $id;
-    }
-
-    private function firstType(): string
-    {
-        $type = Section::query()->orderBy('id')->value('type');
-
-        if (! $type) {
-            $this->markTestSkipped('No sections found. Run Bagisto seeders.');
-        }
-
-        return $type;
-    }
 
     // ── GET /sections (collection) ────────────────
 
+    /**
+     * Test get collection returns ok.
+     */
     public function test_get_collection_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -56,6 +27,9 @@ class SectionTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test get collection returns non empty list.
+     */
     public function test_get_collection_returns_non_empty_list(): void
     {
         $this->seedRequiredData();
@@ -66,6 +40,9 @@ class SectionTest extends RestApiTestCase
         expect(count($response->json()))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test collection has expected fields.
+     */
     public function test_collection_has_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -79,6 +56,9 @@ class SectionTest extends RestApiTestCase
         expect($first)->toHaveKey('sortOrder');
     }
 
+    /**
+     * Test collection id is integer.
+     */
     public function test_collection_id_is_integer(): void
     {
         $this->seedRequiredData();
@@ -90,6 +70,9 @@ class SectionTest extends RestApiTestCase
 
     // ── GET /sections?type=X (filter) ────────────
 
+    /**
+     * Test type filter returns only matching type.
+     */
     public function test_type_filter_returns_only_matching_type(): void
     {
         $this->seedRequiredData();
@@ -106,6 +89,9 @@ class SectionTest extends RestApiTestCase
         }
     }
 
+    /**
+     * Test type filter footer links returns only footer links.
+     */
     public function test_type_filter_footer_links_returns_only_footer_links(): void
     {
         $this->seedRequiredData();
@@ -125,6 +111,9 @@ class SectionTest extends RestApiTestCase
         }
     }
 
+    /**
+     * Test type filter unknown type returns empty.
+     */
     public function test_type_filter_unknown_type_returns_empty(): void
     {
         $this->seedRequiredData();
@@ -135,6 +124,9 @@ class SectionTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
+    /**
+     * Test type filter does not mix types.
+     */
     public function test_type_filter_does_not_mix_types(): void
     {
         $this->seedRequiredData();
@@ -156,6 +148,9 @@ class SectionTest extends RestApiTestCase
 
     // ── Pagination ────────────────────────────────────────────
 
+    /**
+     * Test default page holds every section of the channel.
+     */
     public function test_default_page_holds_every_section_of_the_channel(): void
     {
         $this->seedRequiredData();
@@ -164,12 +159,13 @@ class SectionTest extends RestApiTestCase
 
         $response->assertOk();
 
-        // The storefront draws the whole set in one pass, so the first page has to carry
-        // all of it rather than cutting the page off part way down.
         expect(count($response->json()))->toBe((int) $response->headers->get('X-Total-Count'));
         expect((int) $response->headers->get('X-Total-Pages'))->toBe(1);
     }
 
+    /**
+     * Test items per page limits collection size.
+     */
     public function test_items_per_page_limits_collection_size(): void
     {
         $this->seedRequiredData();
@@ -184,6 +180,9 @@ class SectionTest extends RestApiTestCase
         expect(count($response->json()))->toBe(1);
     }
 
+    /**
+     * Test page parameter returns different results.
+     */
     public function test_page_parameter_returns_different_results(): void
     {
         $this->seedRequiredData();
@@ -198,6 +197,9 @@ class SectionTest extends RestApiTestCase
         expect($page1[0]['id'])->not()->toBe($page2[0]['id']);
     }
 
+    /**
+     * Test page beyond total returns empty.
+     */
     public function test_page_beyond_total_returns_empty(): void
     {
         $this->seedRequiredData();
@@ -210,6 +212,9 @@ class SectionTest extends RestApiTestCase
 
     // ── GET /sections/{id} (single) ──────────────
 
+    /**
+     * Test get single returns ok.
+     */
     public function test_get_single_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -220,6 +225,9 @@ class SectionTest extends RestApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test get single returns correct id.
+     */
     public function test_get_single_returns_correct_id(): void
     {
         $this->seedRequiredData();
@@ -230,6 +238,9 @@ class SectionTest extends RestApiTestCase
         expect($body['id'])->toBe($id);
     }
 
+    /**
+     * Test get single returns expected fields.
+     */
     public function test_get_single_returns_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -244,6 +255,9 @@ class SectionTest extends RestApiTestCase
         expect($body)->toHaveKey('sortOrder');
     }
 
+    /**
+     * Test get nonexistent returns error.
+     */
     public function test_get_nonexistent_returns_error(): void
     {
         $this->seedRequiredData();
@@ -251,5 +265,51 @@ class SectionTest extends RestApiTestCase
         $response = $this->publicGet($this->itemUrl(999999));
 
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
+    }
+
+    /**
+     * Item url.
+     */
+    private function itemUrl(int $id): string
+    {
+        return $this->collectionUrl.'/'.$id;
+    }
+
+    /**
+     * First id.
+     */
+    private function firstId(): int
+    {
+        $id = Section::query()->orderBy('id')->value('id');
+
+        if (! $id) {
+            $this->markTestSkipped('No sections found. Run Bagisto seeders.');
+        }
+
+        return (int) $id;
+    }
+
+    /**
+     * First type.
+     */
+    private function firstType(): string
+    {
+        $type = Section::query()->orderBy('id')->value('type');
+
+        if (! $type) {
+            $this->markTestSkipped('No sections found. Run Bagisto seeders.');
+        }
+
+        return $type;
     }
 }

@@ -21,18 +21,18 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\Wishlist;
 
-/**
- * WishlistProcessor - Handles create/delete operations for wishlist items
- */
 class WishlistProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private ?Request $request = null
     ) {}
 
     /**
-     * Process wishlist item operations
+     * Process wishlist item operations.
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
@@ -53,7 +53,6 @@ class WishlistProcessor implements ProcessorInterface
             return $this->handleCreate($data, $context);
         }
 
-        /** Handle REST POST — model received instead of DTO */
         if (
             $data instanceof Wishlist
             && $operation instanceof Post
@@ -85,7 +84,7 @@ class WishlistProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle create operation for wishlist items
+     * Handle create operation for wishlist items.
      */
     private function handleCreate(CreateWishlistInput $input, array $context = []): Wishlist
     {
@@ -133,6 +132,9 @@ class WishlistProcessor implements ProcessorInterface
         return $wishlistItem;
     }
 
+    /**
+     * Handle toggle.
+     */
     private function handleToggle(CreateWishlistInput $input, array $context = [], ?Operation $operation = null): Wishlist
     {
         if (empty($input->product_id)) {
@@ -193,6 +195,9 @@ class WishlistProcessor implements ProcessorInterface
         return $wishlistItem;
     }
 
+    /**
+     * Hydrate create input from context.
+     */
     private function hydrateCreateInputFromContext(CreateWishlistInput $input, array $context): void
     {
         if (! empty($input->product_id)) {
@@ -216,6 +221,9 @@ class WishlistProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Safe dispatch.
+     */
     private function safeDispatch(string $event, mixed $payload): void
     {
         try {
@@ -230,6 +238,9 @@ class WishlistProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Hydrate delete input from context.
+     */
     private function hydrateDeleteInputFromContext(DeleteWishlistInput $input, array $context): void
     {
         if (! empty($input->id)) {
@@ -253,6 +264,9 @@ class WishlistProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Extract product id.
+     */
     private function extractProductId(mixed $input): ?int
     {
         if (is_array($input)) {
@@ -270,6 +284,9 @@ class WishlistProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Extract id.
+     */
     private function extractId(mixed $input): ?string
     {
         if (is_array($input)) {
@@ -288,7 +305,7 @@ class WishlistProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle delete operation from GraphQL mutation input
+     * Handle delete operation from GraphQL mutation input.
      */
     private function handleDeleteFromInput(DeleteWishlistInput $input, array $context): Wishlist
     {
@@ -302,7 +319,6 @@ class WishlistProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.wishlist.id-required'));
         }
 
-        // Extract the numeric ID from the URI (format: /api/shop/wishlists/123)
         $wishlistItemId = basename($input->id);
 
         $wishlistItem = Wishlist::find($wishlistItemId);
@@ -325,7 +341,7 @@ class WishlistProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle delete operation for wishlist items with authorization
+     * Handle delete operation for wishlist items with authorization.
      */
     private function handleDelete(mixed $data, array $uriVariables, array $context): null
     {

@@ -408,31 +408,70 @@ class AdminReturn
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The order id.
+     */
     public ?int $order_id = null;
 
+    /**
+     * The order increment id.
+     */
     public ?string $order_increment_id = null;
 
+    /**
+     * The order status.
+     */
     public ?string $order_status = null;
 
+    /**
+     * The customer name.
+     */
     public ?string $customer_name = null;
 
+    /**
+     * The customer email.
+     */
     public ?string $customer_email = null;
 
+    /**
+     * The is guest.
+     */
     public ?int $is_guest = null;
 
+    /**
+     * The status id.
+     */
     public ?int $status_id = null;
 
+    /**
+     * The status title.
+     */
     public ?string $status_title = null;
 
+    /**
+     * The status color.
+     */
     public ?string $status_color = null;
 
+    /**
+     * The package condition.
+     */
     public ?string $package_condition = null;
 
+    /**
+     * The information.
+     */
     public ?string $information = null;
 
+    /**
+     * The can reopen.
+     */
     public ?bool $can_reopen = null;
 
     /** @var array<string,mixed>|null */
@@ -447,9 +486,18 @@ class AdminReturn
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $available_statuses = null;
 
+    /**
+     * The messages count.
+     */
     public ?int $messages_count = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

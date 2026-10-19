@@ -12,21 +12,6 @@ use Webkul\BagistoApi\Dto\CartInput;
 use Webkul\BagistoApi\State\CartTokenMutationProvider;
 use Webkul\BagistoApi\State\CartTokenProcessor;
 
-/**
- * CartToken - GraphQL API Resource for Cart Operations
- *
- * Provides mutations and queries for shopping cart management with token-based authentication.
- * Supports both authenticated users and guest users via cart tokens.
- *
- * Operations:
- * - createCartToken: Create new guest cart with unique UUID token
- * - updateCartItem: Update cart item quantity
- * - removeCartItem: Remove item from cart
- * - readCart: Get single cart details
- * - cartCollection: Get all customer carts
- * - mergeGuestCart: Merge guest cart to customer cart on login
- * - applyCouponCode: Apply discount coupon
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CartToken',
@@ -145,110 +130,191 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
 )]
 class CartToken
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $id = null;
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $cartToken = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $customerId = null;
 
+    /**
+     * The channel id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $channelId = null;
 
+    /**
+     * The items count.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $itemsCount = null;
 
+    /**
+     * The items.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?array $items = null;
 
+    /**
+     * The subtotal.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?float $subtotal = null;
 
+    /**
+     * The base subtotal.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?float $baseSubtotal = null;
 
+    /**
+     * The discount amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?float $discountAmount = null;
 
+    /**
+     * The base discount amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?float $baseDiscountAmount = null;
 
+    /**
+     * The tax amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?float $taxAmount = null;
 
+    /**
+     * The base tax amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?float $baseTaxAmount = null;
 
+    /**
+     * The shipping amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?float $shippingAmount = null;
 
+    /**
+     * The base shipping amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?float $baseShippingAmount = null;
 
+    /**
+     * The grand total.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?float $grandTotal = null;
 
+    /**
+     * The base grand total.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?float $baseGrandTotal = null;
 
+    /**
+     * The formatted subtotal.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $formattedSubtotal = null;
 
+    /**
+     * The formatted discount amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $formattedDiscountAmount = null;
 
+    /**
+     * The formatted tax amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $formattedTaxAmount = null;
 
+    /**
+     * The formatted shipping amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $formattedShippingAmount = null;
 
+    /**
+     * The formatted grand total.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $formattedGrandTotal = null;
 
+    /**
+     * The coupon code.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $couponCode = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $message = null;
 
+    /**
+     * The carts.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?array $carts = null;
 
+    /**
+     * The session token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $sessionToken = null;
 
+    /**
+     * The is guest.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?bool $isGuest = null;

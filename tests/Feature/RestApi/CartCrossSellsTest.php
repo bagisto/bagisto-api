@@ -9,6 +9,41 @@ use Webkul\Checkout\Repositories\CartRepository;
 
 class CartCrossSellsTest extends RestApiTestCase
 {
+    /**
+     * Test get cart cross sells excludes products already in the cart.
+     */
+    public function test_get_cart_cross_sells_excludes_products_already_in_the_cart(): void
+    {
+        [$token, $recommendedId] = $this->createCartWithProducts();
+
+        $response = $this->getJson('/api/shop/cart/cross-sells', [
+            ...$this->storefrontHeaders(),
+            'Authorization' => 'Bearer '.$token,
+        ]);
+
+        $response->assertOk();
+
+        expect(collect($response->json())->pluck('id')->all())->toBe([$recommendedId]);
+    }
+
+    /**
+     * Test get cart cross sells rejects an invalid cart token.
+     */
+    public function test_get_cart_cross_sells_rejects_an_invalid_cart_token(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->getJson('/api/shop/cart/cross-sells', [
+            ...$this->storefrontHeaders(),
+            'Authorization' => 'Bearer invalid-cart-token',
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([401, 404]);
+    }
+
+    /**
+     * Set up the test environment.
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -16,6 +51,9 @@ class CartCrossSellsTest extends RestApiTestCase
         $this->app['url']->forceRootUrl('http://localhost');
     }
 
+    /**
+     * Create cart with products.
+     */
     private function createCartWithProducts(): array
     {
         $this->seedRequiredData();
@@ -67,31 +105,5 @@ class CartCrossSellsTest extends RestApiTestCase
         $token = app(GuestCartTokensRepository::class)->createToken((int) $cart->id)->token;
 
         return [$token, (int) $recommended->id];
-    }
-
-    public function test_get_cart_cross_sells_excludes_products_already_in_the_cart(): void
-    {
-        [$token, $recommendedId] = $this->createCartWithProducts();
-
-        $response = $this->getJson('/api/shop/cart/cross-sells', [
-            ...$this->storefrontHeaders(),
-            'Authorization' => 'Bearer '.$token,
-        ]);
-
-        $response->assertOk();
-
-        expect(collect($response->json())->pluck('id')->all())->toBe([$recommendedId]);
-    }
-
-    public function test_get_cart_cross_sells_rejects_an_invalid_cart_token(): void
-    {
-        $this->seedRequiredData();
-
-        $response = $this->getJson('/api/shop/cart/cross-sells', [
-            ...$this->storefrontHeaders(),
-            'Authorization' => 'Bearer invalid-cart-token',
-        ]);
-
-        expect($response->getStatusCode())->toBeIn([401, 404]);
     }
 }

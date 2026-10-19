@@ -7,19 +7,6 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminAttribute;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for the admin Catalog → Attributes datagrid endpoint.
- *
- * REST: GET /api/admin/catalog/attributes
- *
- * Mirrors Webkul\Admin\DataGrids\Catalog\AttributeDataGrid 1:1 — same columns,
- * same filterable columns, same sort columns.
- *
- * The datagrid queries the `attributes` table directly (no join). We add an
- * optional LEFT JOIN to `attribute_translations` so the `adminName` field can
- * surface the locale-aware translated name when a translation exists for the
- * requested locale; falls back to `attributes.admin_name` otherwise.
- */
 class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
 {
     /**
@@ -39,11 +26,17 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
     /** Locale resolved during buildQuery; used by mapRow. */
     private string $locale = '';
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'code', 'admin_name', 'type', 'position'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         $this->locale = $args['locale'] ?? app()->getLocale();
@@ -75,6 +68,9 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
             );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['id'])) {
@@ -113,6 +109,9 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -130,6 +129,9 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
         $query->orderBy($orderColumn, $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminAttribute
     {
         $locale = $this->locale ?: app()->getLocale();

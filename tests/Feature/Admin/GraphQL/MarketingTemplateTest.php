@@ -4,22 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * GraphQL coverage for Admin Marketing → Email Templates CRUD (Block F2a).
- */
 class MarketingTemplateTest extends AdminApiTestCase
 {
-    protected function insertTemplate(array $overrides = []): int
-    {
-        return \DB::table('marketing_templates')->insertGetId(array_merge([
-            'name' => 'gqltpl-'.uniqid(),
-            'status' => 'active',
-            'content' => '<p>Body</p>',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
+    /**
+     * Test query listing.
+     */
     public function test_query_listing(): void
     {
         $admin = $this->createAdmin();
@@ -40,6 +29,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         expect($edges)->toBeArray();
     }
 
+    /**
+     * Test query detail.
+     */
     public function test_query_detail(): void
     {
         $admin = $this->createAdmin();
@@ -68,6 +60,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test mutation create.
+     */
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();
@@ -92,6 +87,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $this->assertDatabaseHas('marketing_templates', ['name' => 'gqlcr-tpl']);
     }
 
+    /**
+     * Test mutation update.
+     */
     public function test_mutation_update(): void
     {
         $admin = $this->createAdmin();
@@ -122,6 +120,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -143,6 +144,9 @@ class MarketingTemplateTest extends AdminApiTestCase
         $this->assertDatabaseMissing('marketing_templates', ['id' => $id]);
     }
 
+    /**
+     * Test query listing requires auth.
+     */
     public function test_query_listing_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -151,5 +155,19 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertOk();
         $errors = $response->json('errors');
         expect($errors)->toBeArray();
+    }
+
+    /**
+     * Insert template.
+     */
+    protected function insertTemplate(array $overrides = []): int
+    {
+        return \DB::table('marketing_templates')->insertGetId(array_merge([
+            'name' => 'gqltpl-'.uniqid(),
+            'status' => 'active',
+            'content' => '<p>Body</p>',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
     }
 }

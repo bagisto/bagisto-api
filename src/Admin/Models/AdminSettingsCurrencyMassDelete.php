@@ -10,18 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsCurrencyMassDeleteInput;
 use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyMassDeleteProcessor;
 
-/**
- * One-operation resource for mass-deleting currencies.
- *
- * REST:
- *   POST /api/admin/settings/currencies/mass-delete
- *     Body: { "indices": [2, 3] }
- *     200:  { "deleted": [2, 3], "message": "..." }
- *     400:  if any ID would leave zero currencies OR is a channel base currency, batch rejected.
- *
- * GraphQL:
- *   createAdminSettingsCurrencyMassDelete
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsCurrencyMassDelete',
@@ -83,6 +71,9 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyMassDeleteProcessor;
 )]
 class AdminSettingsCurrencyMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -90,6 +81,9 @@ class AdminSettingsCurrencyMassDelete
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

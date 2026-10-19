@@ -12,12 +12,11 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Checkout\Models\Cart;
 use Webkul\Customer\Models\Customer;
 
-/**
- * Returns top-level items from the customer's OWN active cart
- * (`carts.is_active = 1`). Distinct from the admin draft cart.
- */
 class AdminCustomerCartItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         AdminReadPermissions::authorize($operation, AdminCustomerCartItem::class);
@@ -55,6 +54,9 @@ class AdminCustomerCartItemProvider implements ProviderInterface
         return new Paginator(new LengthAwarePaginator($rows, $total, max($total, 1), 1));
     }
 
+    /**
+     * To dto.
+     */
     protected function toDto($item): AdminCustomerCartItem
     {
         $dto = new AdminCustomerCartItem;

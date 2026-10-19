@@ -164,18 +164,33 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductDownloadableFileProvider;
 )]
 class AdminCatalogProductDownloadableFile
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $type = null;
 
+    /**
+     * The path.
+     */
     #[ApiProperty(writable: false)]
     public ?string $path = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The url.
+     */
     #[ApiProperty(writable: false)]
     public ?string $url = null;
 }

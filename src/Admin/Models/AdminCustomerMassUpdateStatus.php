@@ -79,6 +79,9 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerMassUpdateStatusProcessor;
 )]
 class AdminCustomerMassUpdateStatus
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -86,9 +89,15 @@ class AdminCustomerMassUpdateStatus
     #[ApiProperty(writable: false)]
     public ?array $updated = null;
 
+    /**
+     * The value.
+     */
     #[ApiProperty(writable: false)]
     public ?int $value = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

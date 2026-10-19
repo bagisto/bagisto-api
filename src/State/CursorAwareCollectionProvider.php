@@ -10,25 +10,20 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Models\Category;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
-/**
- * Generic cursor-aware collection provider for GraphQL queries.
- *
- * API Platform's default CollectionProvider uses page-based pagination
- * which ignores cursor arguments (after/before). This provider properly
- * decodes cursor arguments and applies offset-based pagination so that
- * Relay-style cursor pagination works correctly.
- *
- * Can be used by any model that needs working cursor pagination without
- * custom query logic.
- */
 class CursorAwareCollectionProvider implements ProviderInterface
 {
     use ClampsPageSize;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly LinksHandler $linksHandler,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $resourceClass = $operation->getClass();
@@ -87,9 +82,6 @@ class CursorAwareCollectionProvider implements ProviderInterface
             ->limit($limit)
             ->get();
 
-        // `first: 0` yields an empty page (the query's LIMIT 0 returns no rows).
-        // Guard the page math + paginator perPage so a zero limit never divides
-        // by zero — that previously surfaced as an "Internal server error".
         $divisor = max(1, $limit);
         $currentPage = $total > 0 ? (int) floor($offset / $divisor) + 1 : 1;
 

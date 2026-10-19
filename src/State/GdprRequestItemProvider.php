@@ -14,6 +14,9 @@ class GdprRequestItemProvider implements ProviderInterface
 {
     use GdprFeatureGate;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         $this->assertGdprEnabled();

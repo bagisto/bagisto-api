@@ -13,9 +13,6 @@ use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\Resolver\AdminProfileQueryResolver;
 use Webkul\BagistoApi\Admin\State\AdminProfileProvider;
 
-/**
- * Read the authenticated admin's own profile.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminProfile',
@@ -69,38 +66,65 @@ class AdminProfile
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false, identifier: true)]
     #[Groups(['query'])]
     public ?string $id = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $name = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $email = null;
 
+    /**
+     * The image.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $image = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $status = null;
 
+    /**
+     * The role id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?int $role_id = null;
 
+    /**
+     * The role name.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $role_name = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $message = null;

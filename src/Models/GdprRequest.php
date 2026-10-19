@@ -263,27 +263,45 @@ use Webkul\GDPR\Models\GDPRDataRequest;
 )]
 class GdprRequest extends GDPRDataRequest
 {
+    /**
+     * The appends.
+     */
     protected $appends = ['success_message'];
 
+    /**
+     * The response message.
+     */
     public ?string $responseMessage = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
     {
         return $this->id;
     }
 
+    /**
+     * Customer.
+     */
     #[ApiProperty(writable: false, description: 'The customer who owns the request')]
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
 
+    /**
+     * Get success message attribute.
+     */
     public function getSuccessMessageAttribute(): ?string
     {
         return $this->responseMessage;
     }
 
+    /**
+     * Set response message.
+     */
     public function setResponseMessage(string $message): self
     {
         $this->responseMessage = $message;

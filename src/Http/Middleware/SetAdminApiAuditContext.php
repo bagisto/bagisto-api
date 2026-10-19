@@ -10,24 +10,24 @@ use Symfony\Component\HttpFoundation\Response;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditContext;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
 
-/**
- * Populates AdminApiAuditContext for admin-API WRITE requests (POST/PUT/PATCH/
- * DELETE on /api/admin/*) so AdminApiAuditRecorder records the changes against
- * the calling admin + integration token. GET requests are never given a
- * context, so reads are not audited.
- *
- * On terminate, writes a single "envelope" row if the request was a successful
- * write that produced no Eloquent model events (the rare raw-DB/pivot-only case).
- */
 class SetAdminApiAuditContext
 {
+    /**
+     * The write methods constant.
+     */
     protected const WRITE_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminApiAuditContext $context,
         protected AdminApiAuditRecorder $recorder,
     ) {}
 
+    /**
+     * Handle the request.
+     */
     public function handle(Request $request, Closure $next): Response
     {
         if ($this->shouldAudit($request)) {
@@ -53,6 +53,9 @@ class SetAdminApiAuditContext
         return $next($request);
     }
 
+    /**
+     * Terminate.
+     */
     public function terminate(Request $request, Response $response): void
     {
         if (
@@ -60,9 +63,6 @@ class SetAdminApiAuditContext
             || $this->context->rowCount() > 0
             || $response->getStatusCode() < 200
             || $response->getStatusCode() >= 300
-            // GraphQL queries and mutations are both POST to one endpoint, so a
-            // "no model events" request may well be a read — never synthesise an
-            // envelope row for it. Mutations are still recorded via model events.
             || str_ends_with($request->path(), 'graphql')
         ) {
             return;
@@ -76,6 +76,9 @@ class SetAdminApiAuditContext
         );
     }
 
+    /**
+     * Should audit.
+     */
     protected function shouldAudit(Request $request): bool
     {
         return config('bagistoapi.audit.enabled', true)
@@ -84,6 +87,9 @@ class SetAdminApiAuditContext
             && Auth::guard('admin-api')->check();
     }
 
+    /**
+     * Token id from bearer.
+     */
     protected function tokenIdFromBearer(Request $request): ?int
     {
         $bearer = (string) $request->bearerToken();
@@ -92,6 +98,9 @@ class SetAdminApiAuditContext
         return ctype_digit((string) $id) ? (int) $id : null;
     }
 
+    /**
+     * Tags from path.
+     */
     protected function tagsFromPath(Request $request): ?string
     {
         $path = trim(Str::after($request->path(), 'api/admin'), '/');
@@ -104,6 +113,9 @@ class SetAdminApiAuditContext
         return implode('.', array_slice($segments, 0, 2)) ?: null;
     }
 
+    /**
+     * Id from path.
+     */
     protected function idFromPath(Request $request): ?int
     {
         $numeric = array_filter(explode('/', $request->path()), 'ctype_digit');
@@ -111,6 +123,9 @@ class SetAdminApiAuditContext
         return $numeric ? (int) end($numeric) : null;
     }
 
+    /**
+     * Event from method.
+     */
     protected function eventFromMethod(string $method): string
     {
         return match (strtoupper($method)) {

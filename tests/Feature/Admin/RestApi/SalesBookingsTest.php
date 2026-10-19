@@ -8,6 +8,9 @@ use Webkul\User\Models\Role;
 
 class SalesBookingsTest extends AdminApiTestCase
 {
+    /**
+     * Test detail returns full payload.
+     */
     public function test_detail_returns_full_payload(): void
     {
         $bookingId = DB::table('bookings')->value('id');
@@ -31,11 +34,17 @@ class SalesBookingsTest extends AdminApiTestCase
         expect($response->json('refunds'))->toBeArray();
     }
 
+    /**
+     * Test list requires authentication.
+     */
     public function test_list_requires_authentication(): void
     {
         $this->publicGet('/api/admin/bookings')->assertStatus(401);
     }
 
+    /**
+     * Test list returns envelope.
+     */
     public function test_list_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -45,6 +54,9 @@ class SalesBookingsTest extends AdminApiTestCase
         expect($response->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total']);
     }
 
+    /**
+     * Test per page caps at 50.
+     */
     public function test_per_page_caps_at_50(): void
     {
         $admin = $this->createAdmin();
@@ -53,6 +65,9 @@ class SalesBookingsTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test sort default id desc.
+     */
     public function test_sort_default_id_desc(): void
     {
         $admin = $this->createAdmin();
@@ -64,6 +79,9 @@ class SalesBookingsTest extends AdminApiTestCase
         expect($ids)->toBe($sorted);
     }
 
+    /**
+     * Test filter by qty.
+     */
     public function test_filter_by_qty(): void
     {
         $admin = $this->createAdmin();
@@ -74,12 +92,18 @@ class SalesBookingsTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test detail 404 on unknown id.
+     */
     public function test_detail_404_on_unknown_id(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/bookings/99999999')->assertStatus(404);
     }
 
+    /**
+     * Test no permission returns 403.
+     */
     public function test_no_permission_returns_403(): void
     {
         $role = Role::factory()->create([
@@ -90,6 +114,9 @@ class SalesBookingsTest extends AdminApiTestCase
         $this->adminGet($admin, '/api/admin/bookings')->assertStatus(403);
     }
 
+    /**
+     * Test export returns csv.
+     */
     public function test_export_returns_csv(): void
     {
         $admin = $this->createAdmin();
@@ -104,6 +131,9 @@ class SalesBookingsTest extends AdminApiTestCase
         expect($response->getContent())->toContain('ID,"Order ID",Qty,From,To,"Booking Date"');
     }
 
+    /**
+     * Test export supports xlsx.
+     */
     public function test_export_supports_xlsx(): void
     {
         $admin = $this->createAdmin();
@@ -119,6 +149,9 @@ class SalesBookingsTest extends AdminApiTestCase
         expect($response->headers->get('Content-Disposition'))->toContain('.xlsx');
     }
 
+    /**
+     * Test export unsupported format returns 422.
+     */
     public function test_export_unsupported_format_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -128,11 +161,17 @@ class SalesBookingsTest extends AdminApiTestCase
         ))->assertStatus(422);
     }
 
+    /**
+     * Test export requires authentication.
+     */
     public function test_export_requires_authentication(): void
     {
         $this->get('/api/admin/bookings/export', ['Accept' => 'text/csv'])->assertStatus(401);
     }
 
+    /**
+     * Test export no permission returns 403.
+     */
     public function test_export_no_permission_returns_403(): void
     {
         $role = Role::factory()->create([
@@ -146,6 +185,9 @@ class SalesBookingsTest extends AdminApiTestCase
         ))->assertStatus(403);
     }
 
+    /**
+     * Test custom role with core bookings key can list and export.
+     */
     public function test_custom_role_with_core_bookings_key_can_list_and_export(): void
     {
         $role = Role::factory()->create([

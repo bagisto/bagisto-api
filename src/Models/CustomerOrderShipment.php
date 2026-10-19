@@ -17,19 +17,6 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CustomerOrderShipmentProvider;
 use Webkul\Sales\Models\Order;
 
-/**
- * Customer Order Shipment API Resource
- *
- * Standalone API resource for shipments belonging to authenticated customer's orders.
- * Provides shipment details including tracking numbers, items, addresses, and payment info.
- * Customer-scoped via order relationship — customers can only access their own shipments.
- *
- * Relationships:
- * - order: The parent order
- * - items: Shipment line items
- * - shippingAddress: Destination address for the shipment
- * - billingAddress: Billing address from the order
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomerOrderShipment',
@@ -133,7 +120,7 @@ class CustomerOrderShipment extends Model
     protected $appends = ['shippingNumber'];
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -142,7 +129,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get shipment number (for display - uses ID as shipment number)
+     * Get shipment number (for display - uses ID as shipment number).
      */
     #[ApiProperty(writable: false)]
     public function getShippingNumberAttribute(): string
@@ -151,7 +138,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get tracking number
+     * Get tracking number.
      */
     #[ApiProperty(writable: false)]
     public function getTrackingNumber(): ?string
@@ -160,7 +147,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get carrier title
+     * Get carrier title.
      */
     #[ApiProperty(writable: false)]
     public function getCarrierTitle(): ?string
@@ -169,7 +156,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get carrier code
+     * Get carrier code.
      */
     #[ApiProperty(writable: false)]
     public function getCarrierCode(): ?string
@@ -178,7 +165,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get total quantity  shipped
+     * Get total quantity  shipped.
      */
     #[ApiProperty(writable: false)]
     public function getTotalQty(): ?int
@@ -187,7 +174,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get total weight shipped
+     * Get total weight shipped.
      */
     #[ApiProperty(writable: false)]
     public function getTotalWeight(): ?float
@@ -196,7 +183,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get the order that owns this shipment
+     * Get the order that owns this shipment.
      */
     public function order(): BelongsTo
     {
@@ -204,7 +191,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get shipment items
+     * Get shipment items.
      */
     #[ApiProperty(writable: false)]
     public function items(): HasMany
@@ -213,7 +200,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get the shipping address for this shipment
+     * Get the shipping address for this shipment.
      */
     #[ApiProperty(writable: false)]
     public function shippingAddress(): BelongsTo
@@ -222,7 +209,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get the billing address from the parent order
+     * Get the billing address from the parent order.
      */
     #[ApiProperty(writable: false)]
     public function billingAddress(): BelongsTo
@@ -232,7 +219,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get order payment method info
+     * Get order payment method info.
      */
     #[ApiProperty(writable: false)]
     public function getPaymentMethodTitle(): ?string
@@ -241,7 +228,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get order shipping method info
+     * Get order shipping method info.
      */
     #[ApiProperty(writable: false)]
     public function getShippingMethodTitle(): ?string
@@ -250,7 +237,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Override toArray to ensure custom accessors are included
+     * Override toArray to ensure custom accessors are included.
      */
     public function toArray(): array
     {
@@ -264,7 +251,6 @@ class CustomerOrderShipment extends Model
         $array['paymentMethodTitle'] = $this->getPaymentMethodTitle();
         $array['shippingMethodTitle'] = $this->getShippingMethodTitle();
 
-        // Set addresses to null if not found
         if (
             ! array_key_exists('shippingAddress', $array)
             || ! $this->shippingAddress

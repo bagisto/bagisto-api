@@ -76,19 +76,40 @@ use Webkul\BagistoApi\State\ReturnCustomFieldProvider;
 )]
 class ReturnCustomField
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The code.
+     */
     public ?string $code = null;
 
+    /**
+     * The label.
+     */
     public ?string $label = null;
 
+    /**
+     * The type.
+     */
     public ?string $type = null;
 
+    /**
+     * The is required.
+     */
     public ?bool $is_required = null;
 
+    /**
+     * The position.
+     */
     public ?int $position = null;
 
+    /**
+     * The input validation.
+     */
     public ?string $input_validation = null;
 
     /** @var array<int,array<string,mixed>>|null */

@@ -12,19 +12,20 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\CompareItem;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
-/**
- * CompareItemProvider - Handles retrieval of compare items for authenticated customers
- *
- * Filters compare items by current customer with pagination support
- */
 class CompareItemProvider implements ProviderInterface
 {
     use ClampsPageSize;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $customer = Auth::guard('sanctum')->user();

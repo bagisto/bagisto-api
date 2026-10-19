@@ -4,36 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * GraphQL coverage for the admin Settings → Locales endpoints (Block B Wave 1).
- *
- * Operations:
- *   - adminSettingsLocales  (QueryCollection, cursor)
- *   - adminSettingsLocale   (Query)
- *   - createAdminSettingsLocale
- *   - updateAdminSettingsLocale
- *   - deleteAdminSettingsLocale
- *   - createAdminSettingsLocaleMassDelete
- */
 class SettingsLocaleTest extends AdminApiTestCase
 {
-    protected function uniqueCode(string $prefix = 'gl'): string
-    {
-        return strtolower($prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99));
-    }
-
-    protected function insertLocale(array $overrides = []): int
-    {
-        return \DB::table('locales')->insertGetId(array_merge([
-            'code' => $this->uniqueCode(),
-            'name' => 'GQL Locale',
-            'direction' => 'ltr',
-            'logo_path' => null,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
+    /**
+     * Test query listing returns seeded row.
+     */
     public function test_query_listing_returns_seeded_row(): void
     {
         $admin = $this->createAdmin();
@@ -62,6 +37,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test query listing filter by direction.
+     */
     public function test_query_listing_filter_by_direction(): void
     {
         $admin = $this->createAdmin();
@@ -86,6 +64,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($ids)->not()->toContain($ltr);
     }
 
+    /**
+     * Test query listing filter by id.
+     */
     public function test_query_listing_filter_by_id(): void
     {
         $admin = $this->createAdmin();
@@ -112,6 +93,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test query listing requires auth.
+     */
     public function test_query_listing_requires_auth(): void
     {
         $query = <<<'GQL'
@@ -123,6 +107,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test query detail returns row.
+     */
     public function test_query_detail_returns_row(): void
     {
         $admin = $this->createAdmin();
@@ -140,6 +127,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->json('data.adminSettingsLocale._id'))->toBe($id);
     }
 
+    /**
+     * Test query detail unknown id returns error.
+     */
     public function test_query_detail_unknown_id_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -159,6 +149,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($errors !== null || $dataNull)->toBeTrue();
     }
 
+    /**
+     * Test query detail multiword fields resolve over graphql.
+     */
     public function test_query_detail_multiword_fields_resolve_over_graphql(): void
     {
         $admin = $this->createAdmin();
@@ -189,6 +182,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($node['updatedAt'])->not->toBeNull();
     }
 
+    /**
+     * Test mutation create happy path.
+     */
     public function test_mutation_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -214,6 +210,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect(\DB::table('locales')->where('code', $code)->exists())->toBeTrue();
     }
 
+    /**
+     * Test mutation create duplicate returns error.
+     */
     public function test_mutation_create_duplicate_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -240,6 +239,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test mutation create requires auth.
+     */
     public function test_mutation_create_requires_auth(): void
     {
         $mutation = <<<'GQL'
@@ -261,6 +263,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test mutation update happy path.
+     */
     public function test_mutation_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -288,6 +293,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($afterName === 'NewName' || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -312,6 +320,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect(\DB::table('locales')->where('id', $id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mutation mass delete happy path.
+     */
     public function test_mutation_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -332,5 +343,28 @@ class SettingsLocaleTest extends AdminApiTestCase
 
         expect(\DB::table('locales')->where('id', $id1)->exists())->toBeFalse();
         expect(\DB::table('locales')->where('id', $id2)->exists())->toBeFalse();
+    }
+
+    /**
+     * Unique code.
+     */
+    protected function uniqueCode(string $prefix = 'gl'): string
+    {
+        return strtolower($prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99));
+    }
+
+    /**
+     * Insert locale.
+     */
+    protected function insertLocale(array $overrides = []): int
+    {
+        return \DB::table('locales')->insertGetId(array_merge([
+            'code' => $this->uniqueCode(),
+            'name' => 'GQL Locale',
+            'direction' => 'ltr',
+            'logo_path' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
     }
 }

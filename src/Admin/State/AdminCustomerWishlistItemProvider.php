@@ -13,11 +13,11 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\Wishlist;
 
-/**
- * Customer's wishlist for the Create-Order sidebar.
- */
 class AdminCustomerWishlistItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         AdminReadPermissions::authorize($operation, AdminCustomerWishlistItem::class);
@@ -47,6 +47,9 @@ class AdminCustomerWishlistItemProvider implements ProviderInterface
         return new Paginator(new LengthAwarePaginator($rows, $total, max($total, 1), 1));
     }
 
+    /**
+     * To dto.
+     */
     protected function toDto($wishlist): AdminCustomerWishlistItem
     {
         $product = $wishlist->product;

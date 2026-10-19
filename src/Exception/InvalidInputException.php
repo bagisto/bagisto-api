@@ -6,44 +6,45 @@ use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
 use ApiPlatform\Metadata\Exception\ProblemExceptionInterface;
 use GraphQL\Error\ClientAware;
 
-/**
- * InvalidInputException
- *
- * Thrown when user input validation fails.
- * This covers required field validation, data type validation, and business logic validation.
- *
- * Examples:
- * - Missing required fields (productId, quantity, cartItemId)
- * - Invalid quantity value
- * - Missing coupon code
- * - Invalid address data
- *
- * Status Code: 400 Bad Request
- */
 class InvalidInputException extends \Exception implements ClientAware, HttpExceptionInterface, ProblemExceptionInterface
 {
+    /**
+     * The status.
+     */
     private int $status = 400;
 
+    /**
+     * The headers.
+     */
     private array $headers = [];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(string $message = '', int $status = 400, ?\Throwable $previous = null)
     {
         parent::__construct($message, 0, $previous);
         $this->status = $status;
     }
 
+    /**
+     * Whether client safe.
+     */
     public function isClientSafe(): bool
     {
         return true;
     }
 
+    /**
+     * Get category.
+     */
     public function getCategory(): string
     {
         return 'invalid_input';
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritdoc}.
      */
     public function getStatusCode(): int
     {
@@ -51,7 +52,7 @@ class InvalidInputException extends \Exception implements ClientAware, HttpExcep
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritdoc}.
      */
     public function getHeaders(): array
     {
@@ -59,7 +60,7 @@ class InvalidInputException extends \Exception implements ClientAware, HttpExcep
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritdoc}.
      */
     public function getType(): string
     {
@@ -67,7 +68,7 @@ class InvalidInputException extends \Exception implements ClientAware, HttpExcep
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritdoc}.
      */
     public function getTitle(): ?string
     {
@@ -75,7 +76,7 @@ class InvalidInputException extends \Exception implements ClientAware, HttpExcep
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritdoc}.
      */
     public function getStatus(): ?int
     {
@@ -83,7 +84,7 @@ class InvalidInputException extends \Exception implements ClientAware, HttpExcep
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritdoc}.
      */
     public function getDetail(): ?string
     {
@@ -91,7 +92,7 @@ class InvalidInputException extends \Exception implements ClientAware, HttpExcep
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritdoc}.
      */
     public function getInstance(): ?string
     {

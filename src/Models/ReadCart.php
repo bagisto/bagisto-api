@@ -19,12 +19,6 @@ use Webkul\BagistoApi\State\CartTokenMutationProvider;
 use Webkul\BagistoApi\State\CartTokenProcessor;
 use Webkul\Checkout\Models\Cart;
 
-/**
- * ReadCart - GraphQL API Resource for Reading Cart Details
- *
- * Provides mutation for retrieving cart details by ID or token.
- * Using 'create' operation name ensures ID is NOT required in input.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'ReadCart',
@@ -125,36 +119,57 @@ use Webkul\Checkout\Models\Cart;
 )]
 class ReadCart extends Cart
 {
+    /**
+     * The appends.
+     */
     protected $appends = [
         'selected_shipping_rate',
     ];
 
+    /**
+     * The with.
+     */
     protected $with = [
         'selected_shipping_rate',
     ];
 
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?int $id = null;
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $cartToken = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?int $customerId = null;
 
+    /**
+     * The channel id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?int $channelId = null;
 
+    /**
+     * The items count.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?int $itemsCount = null;
 
     /**
-     * Cart items - array of CartItemData objects
+     * Cart items - array of CartItemData objects.
      *
      * @var CartItemData[]|null
      */
@@ -162,66 +177,114 @@ class ReadCart extends Cart
     #[Groups(['mutation'])]
     public ?array $items = null;
 
+    /**
+     * The subtotal.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?float $subtotal = null;
 
+    /**
+     * The base subtotal.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?float $baseSubtotal = null;
 
+    /**
+     * The discount amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?float $discountAmount = null;
 
+    /**
+     * The base discount amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?float $baseDiscountAmount = null;
 
+    /**
+     * The tax amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?float $taxAmount = null;
 
+    /**
+     * The base tax amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?float $baseTaxAmount = null;
 
+    /**
+     * The shipping amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?float $shippingAmount = null;
 
+    /**
+     * The base shipping amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?float $baseShippingAmount = null;
 
+    /**
+     * The grand total.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?float $grandTotal = null;
 
+    /**
+     * The base grand total.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?float $baseGrandTotal = null;
 
+    /**
+     * The formatted subtotal.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $formattedSubtotal = null;
 
+    /**
+     * The formatted grand total.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $formattedGrandTotal = null;
 
+    /**
+     * The formatted tax amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $formattedTaxAmount = null;
 
+    /**
+     * The formatted shipping amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $formattedShippingAmount = null;
 
+    /**
+     * The formatted discount amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $formattedDiscountAmount = null;
 
+    /**
+     * Customer.
+     */
     #[ApiProperty(readableLink: true, writable: false, readable: true)]
     public function customer(): BelongsTo
     {
@@ -238,7 +301,7 @@ class ReadCart extends Cart
     }
 
     /**
-     * Get shipping rates relationship
+     * Get shipping rates relationship.
      */
     public function shipping_rates(): HasMany
     {

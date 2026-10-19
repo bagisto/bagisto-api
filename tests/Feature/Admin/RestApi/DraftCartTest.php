@@ -5,25 +5,22 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 
-/**
- * REST coverage for Wave 3 — fresh draft-cart bootstrap.
- *
- * POST /api/admin/customers/{customerId}/draft-carts
- *
- * Distinct from `POST /api/admin/orders/{id}/reorder` (which seeds the cart
- * from an existing order's items) — this endpoint creates an empty draft cart
- * for a Create-Order session starting from scratch.
- */
 class DraftCartTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
+    /**
+     * Test create draft cart requires auth.
+     */
     public function test_create_draft_cart_requires_auth(): void
     {
         $resp = $this->postJson('/api/admin/customers/1/draft-carts', []);
         expect($resp->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test create draft cart returns 404 for unknown customer.
+     */
     public function test_create_draft_cart_returns_404_for_unknown_customer(): void
     {
         $admin = $this->createAdmin();
@@ -31,6 +28,9 @@ class DraftCartTest extends AdminApiTestCase
         $resp->assertStatus(404);
     }
 
+    /**
+     * Test create draft cart bootstraps for customer.
+     */
     public function test_create_draft_cart_bootstraps_for_customer(): void
     {
         $admin = $this->createAdmin();
@@ -51,6 +51,9 @@ class DraftCartTest extends AdminApiTestCase
         expect($cartResp->json('customerId'))->toBe($customer->id);
     }
 
+    /**
+     * Test create draft cart with zero customer id returns 404.
+     */
     public function test_create_draft_cart_with_zero_customer_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -58,6 +61,9 @@ class DraftCartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 404]);
     }
 
+    /**
+     * Test fresh draft cart then use cart keyed endpoints.
+     */
     public function test_fresh_draft_cart_then_use_cart_keyed_endpoints(): void
     {
         $admin = $this->createAdmin();

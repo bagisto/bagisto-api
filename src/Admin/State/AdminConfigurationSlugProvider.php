@@ -9,8 +9,14 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 
 class AdminConfigurationSlugProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected AdminConfigurationSchemaResolver $resolver) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         AdminReadPermissions::authorize($operation, AdminConfigurationSlug::class);
@@ -18,6 +24,9 @@ class AdminConfigurationSlugProvider implements ProviderInterface
         return [self::buildPayload($this->resolver)];
     }
 
+    /**
+     * Build payload.
+     */
     public static function buildPayload(AdminConfigurationSchemaResolver $resolver): array
     {
         return [
@@ -26,6 +35,9 @@ class AdminConfigurationSlugProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * To dto.
+     */
     public static function toDto(array $payload): AdminConfigurationSlug
     {
         $dto = new AdminConfigurationSlug;

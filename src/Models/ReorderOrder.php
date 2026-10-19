@@ -13,13 +13,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\ReorderInput;
 use Webkul\BagistoApi\State\ReorderProcessor;
 
-/**
- * Reorder Response Model
- *
- * Response object for the reorder action.
- * Re-adds items from a previous order to the customer's cart
- * using Cart::addProduct(), same as the Shop controller.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'ReorderOrder',
@@ -91,25 +84,43 @@ use Webkul\BagistoApi\State\ReorderProcessor;
 )]
 class ReorderOrder
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: false, writable: false, readable: true)]
     public ?int $id = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $message = null;
 
+    /**
+     * The order id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $orderId = null;
 
+    /**
+     * The items added count.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $itemsAddedCount = null;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         ?bool $success = null,
         ?string $message = null,

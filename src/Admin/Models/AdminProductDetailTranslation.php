@@ -6,10 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Product per-locale translation row (product_flat) — nested sub-resource of
- * AdminCatalogProduct (`translations` connection).
- */
 #[ApiResource(
     shortName: 'AdminProductDetailTranslation',
     operations: [],
@@ -28,6 +24,9 @@ class AdminProductDetailTranslation extends Model
     /** @var array */
     protected $casts = ['id' => 'int'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

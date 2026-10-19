@@ -7,8 +7,14 @@ use Webkul\BagistoApi\Tests\RestApiTestCase;
 
 class AttributeTranslationTest extends RestApiTestCase
 {
+    /**
+     * The base url.
+     */
     private string $baseUrl = '/api/shop/attribute_translations';
 
+    /**
+     * Test get collection.
+     */
     public function test_get_collection(): void
     {
         $this->seedRequiredData();
@@ -19,6 +25,9 @@ class AttributeTranslationTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test get single translation.
+     */
     public function test_get_single_translation(): void
     {
         $this->seedRequiredData();
@@ -34,6 +43,9 @@ class AttributeTranslationTest extends RestApiTestCase
         expect((int) $response->json('id'))->toBe($id);
     }
 
+    /**
+     * Test get nonexistent translation returns 404.
+     */
     public function test_get_nonexistent_translation_returns_404(): void
     {
         $this->seedRequiredData();

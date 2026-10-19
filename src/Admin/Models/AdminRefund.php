@@ -334,134 +334,329 @@ class AdminRefund
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The order id.
+     */
     public ?int $order_id = null;
 
+    /**
+     * The order increment id.
+     */
     public ?string $order_increment_id = null;
 
+    /**
+     * The state.
+     */
     public ?string $state = null;
 
+    /**
+     * The email sent.
+     */
     public ?bool $email_sent = null;
 
+    /**
+     * The total qty.
+     */
     public ?int $total_qty = null;
 
+    /**
+     * The order currency code.
+     */
     public ?string $order_currency_code = null;
 
+    /**
+     * The base currency code.
+     */
     public ?string $base_currency_code = null;
 
+    /**
+     * The channel currency code.
+     */
     public ?string $channel_currency_code = null;
 
+    /**
+     * The sub total.
+     */
     public ?float $sub_total = null;
 
+    /**
+     * The formatted sub total.
+     */
     public ?string $formatted_sub_total = null;
 
+    /**
+     * The base sub total.
+     */
     public ?float $base_sub_total = null;
 
+    /**
+     * The formatted base sub total.
+     */
     public ?string $formatted_base_sub_total = null;
 
+    /**
+     * The sub total incl tax.
+     */
     public ?float $sub_total_incl_tax = null;
 
+    /**
+     * The formatted sub total incl tax.
+     */
     public ?string $formatted_sub_total_incl_tax = null;
 
+    /**
+     * The base sub total incl tax.
+     */
     public ?float $base_sub_total_incl_tax = null;
 
+    /**
+     * The formatted base sub total incl tax.
+     */
     public ?string $formatted_base_sub_total_incl_tax = null;
 
+    /**
+     * The grand total.
+     */
     public ?float $grand_total = null;
 
+    /**
+     * The formatted grand total.
+     */
     public ?string $formatted_grand_total = null;
 
+    /**
+     * The base grand total.
+     */
     public ?float $base_grand_total = null;
 
+    /**
+     * The formatted base grand total.
+     */
     public ?string $formatted_base_grand_total = null;
 
+    /**
+     * The tax amount.
+     */
     public ?float $tax_amount = null;
 
+    /**
+     * The formatted tax amount.
+     */
     public ?string $formatted_tax_amount = null;
 
+    /**
+     * The base tax amount.
+     */
     public ?float $base_tax_amount = null;
 
+    /**
+     * The formatted base tax amount.
+     */
     public ?string $formatted_base_tax_amount = null;
 
+    /**
+     * The discount amount.
+     */
     public ?float $discount_amount = null;
 
+    /**
+     * The formatted discount amount.
+     */
     public ?string $formatted_discount_amount = null;
 
+    /**
+     * The base discount amount.
+     */
     public ?float $base_discount_amount = null;
 
+    /**
+     * The formatted base discount amount.
+     */
     public ?string $formatted_base_discount_amount = null;
 
+    /**
+     * The shipping amount.
+     */
     public ?float $shipping_amount = null;
 
+    /**
+     * The formatted shipping amount.
+     */
     public ?string $formatted_shipping_amount = null;
 
+    /**
+     * The base shipping amount.
+     */
     public ?float $base_shipping_amount = null;
 
+    /**
+     * The formatted base shipping amount.
+     */
     public ?string $formatted_base_shipping_amount = null;
 
+    /**
+     * The shipping amount incl tax.
+     */
     public ?float $shipping_amount_incl_tax = null;
 
+    /**
+     * The formatted shipping amount incl tax.
+     */
     public ?string $formatted_shipping_amount_incl_tax = null;
 
+    /**
+     * The base shipping amount incl tax.
+     */
     public ?float $base_shipping_amount_incl_tax = null;
 
+    /**
+     * The formatted base shipping amount incl tax.
+     */
     public ?string $formatted_base_shipping_amount_incl_tax = null;
 
+    /**
+     * The shipping tax amount.
+     */
     public ?float $shipping_tax_amount = null;
 
+    /**
+     * The formatted shipping tax amount.
+     */
     public ?string $formatted_shipping_tax_amount = null;
 
+    /**
+     * The base shipping tax amount.
+     */
     public ?float $base_shipping_tax_amount = null;
 
+    /**
+     * The formatted base shipping tax amount.
+     */
     public ?string $formatted_base_shipping_tax_amount = null;
 
+    /**
+     * The adjustment refund.
+     */
     public ?float $adjustment_refund = null;
 
+    /**
+     * The formatted adjustment refund.
+     */
     public ?string $formatted_adjustment_refund = null;
 
+    /**
+     * The base adjustment refund.
+     */
     public ?float $base_adjustment_refund = null;
 
+    /**
+     * The formatted base adjustment refund.
+     */
     public ?string $formatted_base_adjustment_refund = null;
 
+    /**
+     * The adjustment fee.
+     */
     public ?float $adjustment_fee = null;
 
+    /**
+     * The formatted adjustment fee.
+     */
     public ?string $formatted_adjustment_fee = null;
 
+    /**
+     * The base adjustment fee.
+     */
     public ?float $base_adjustment_fee = null;
 
+    /**
+     * The formatted base adjustment fee.
+     */
     public ?string $formatted_base_adjustment_fee = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 
+    /**
+     * The billed to.
+     */
     public ?string $billed_to = null;
 
+    /**
+     * The order status.
+     */
     public ?string $order_status = null;
 
+    /**
+     * The order status label.
+     */
     public ?string $order_status_label = null;
 
+    /**
+     * The order date.
+     */
     public ?string $order_date = null;
 
+    /**
+     * The channel name.
+     */
     public ?string $channel_name = null;
 
+    /**
+     * The customer name.
+     */
     public ?string $customer_name = null;
 
+    /**
+     * The customer email.
+     */
     public ?string $customer_email = null;
 
+    /**
+     * The payment method.
+     */
     public ?string $payment_method = null;
 
+    /**
+     * The payment title.
+     */
     public ?string $payment_title = null;
 
+    /**
+     * The shipping method.
+     */
     public ?string $shipping_method = null;
 
+    /**
+     * The shipping title.
+     */
     public ?string $shipping_title = null;
 
+    /**
+     * The billing address.
+     */
     public ?array $billing_address = null;
 
+    /**
+     * The shipping address.
+     */
     public ?array $shipping_address = null;
 
+    /**
+     * The items.
+     */
     public array $items = [];
 }

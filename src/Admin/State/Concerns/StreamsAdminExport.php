@@ -10,8 +10,39 @@ trait StreamsAdminExport
     use BuildsAdminExportFile;
     use ChecksAdminPermission;
 
+    /**
+     * The export max rows constant.
+     */
     protected const EXPORT_MAX_ROWS = 50000;
 
+    /**
+     * Export permission.
+     */
+    abstract protected function exportPermission(): string;
+
+    /**
+     * File name without the extension — the requested format supplies it.
+     */
+    abstract protected function exportFilename(): string;
+
+    /**
+     * Export headers.
+     */
+    abstract protected function exportHeaders(): array;
+
+    /**
+     * Export query.
+     */
+    abstract protected function exportQuery(array $args);
+
+    /**
+     * Export row.
+     */
+    abstract protected function exportRow(object $row): array;
+
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Response
     {
         $this->authorizedAdmin($this->exportPermission());
@@ -28,19 +59,9 @@ trait StreamsAdminExport
         );
     }
 
-    abstract protected function exportPermission(): string;
-
     /**
-     * File name without the extension — the requested format supplies it.
+     * Safe format base price.
      */
-    abstract protected function exportFilename(): string;
-
-    abstract protected function exportHeaders(): array;
-
-    abstract protected function exportQuery(array $args);
-
-    abstract protected function exportRow(object $row): array;
-
     protected function safeFormatBasePrice($amount): string
     {
         if ($amount === null) {

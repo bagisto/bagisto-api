@@ -10,27 +10,24 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Webkul\BagistoApi\Models\AttributeOption;
 
-/**
- * Collection provider for AttributeOption
- *
- * Provides cursor-based pagination for attribute options
- * - Subresource: /attributes/{attribute_id}/options (attribute_id provided via URI)
- * - Direct query: attributeOptions(attributeId: 23) (attributeId required in args for GraphQL and REST)
- */
 class AttributeOptionCollectionProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        // Handle both 'attributeId' (camelCase) and 'attribute_id' (snake_case) from URI
         $attributeId = $uriVariables['attribute_id'] ?? $uriVariables['attributeId'] ?? null;
 
         $args = $context['args'] ?? [];
 
-        // Also check for attributeId in GraphQL args (for direct attributeOptions query)
         if (
             ! $attributeId
             && isset($args['attributeId'])
@@ -38,7 +35,6 @@ class AttributeOptionCollectionProvider implements ProviderInterface
             $attributeId = (int) $args['attributeId'];
         }
 
-        // Enforce: attributeId is required when querying attribute options directly
         if (! $attributeId) {
             throw new BadRequestHttpException(
                 __('bagistoapi::app.graphql.attribute.option-id-required')
@@ -52,7 +48,6 @@ class AttributeOptionCollectionProvider implements ProviderInterface
 
         $defaultPerPage = 10;
 
-        // Determine page size
         if ($first !== null) {
             $perPage = $first;
         } elseif ($last !== null) {

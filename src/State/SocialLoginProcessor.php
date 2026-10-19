@@ -14,11 +14,17 @@ use Webkul\BagistoApi\Services\SocialLoginTokenVerifier;
 
 class SocialLoginProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SocialLoginTokenVerifier $verifier,
         protected SocialLoginService $socialLogin,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): SocialLogin
     {
         try {
@@ -65,6 +71,9 @@ class SocialLoginProcessor implements ProcessorInterface
         ];
     }
 
+    /**
+     * First filled.
+     */
     protected function firstFilled(array $values): ?string
     {
         foreach ($values as $value) {
@@ -79,6 +88,9 @@ class SocialLoginProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Success.
+     */
     protected function success(mixed $customer, bool $isNew, ?string $deviceToken): SocialLogin
     {
         if (empty($customer->api_token)) {
@@ -112,6 +124,9 @@ class SocialLoginProcessor implements ProcessorInterface
         return $output;
     }
 
+    /**
+     * Failure.
+     */
     protected function failure(string $code, string $message): SocialLogin
     {
         $output = new SocialLogin;

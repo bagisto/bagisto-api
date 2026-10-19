@@ -11,13 +11,11 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Customer\Models\Customer;
 
-/**
- * Returns all saved addresses for a customer — used by the Create-Order
- * screen's billing / shipping picker. Read-only, not paginated by the UI but
- * wrapped in the standard admin `{ data, meta }` envelope for consistency.
- */
 class AdminCustomerAddressProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         AdminReadPermissions::authorize($operation, AdminCustomerAddress::class);
@@ -66,6 +64,9 @@ class AdminCustomerAddressProvider implements ProviderInterface
         return new Paginator(new LengthAwarePaginator($rows, $total, $perPage, 1));
     }
 
+    /**
+     * To dto.
+     */
     protected function toDto($address): AdminCustomerAddress
     {
         $dto = new AdminCustomerAddress;

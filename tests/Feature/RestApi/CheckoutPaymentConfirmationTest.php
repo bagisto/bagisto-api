@@ -19,6 +19,115 @@ use Webkul\Stripe\Payment\Stripe;
 
 class CheckoutPaymentConfirmationTest extends RestApiTestCase
 {
+    /**
+     * Test confirm payment settles a paid session for the bearer cart.
+     */
+    public function test_confirm_payment_settles_a_paid_session_for_the_bearer_cart(): void
+    {
+        [$cartId, $cartToken] = $this->createStripeCart();
+
+        $session = $this->stripeSession($cartId);
+        $this->fakeStripeSession('cs_test_paid', $session);
+
+        $order = new Order;
+        $order->id = 1729;
+
+        $this->mock(StripeCheckoutController::class)
+            ->shouldReceive('settle')
+            ->once()
+            ->with($session)
+            ->andReturn($order);
+
+        $confirmation = $this->processConfirmation($cartToken, 'cs_test_paid');
+
+        expect($confirmation->success)->toBeTrue()
+            ->and($confirmation->cartId)->toBe($cartId)
+            ->and($confirmation->orderId)->toBe('1729');
+    }
+
+    /**
+     * Test confirm payment returns the order already placed for the cart.
+     */
+    public function test_confirm_payment_returns_the_order_already_placed_for_the_cart(): void
+    {
+        [$cartId, $cartToken] = $this->createStripeCart();
+
+        $this->fakeStripeSession('cs_test_paid', $this->stripeSession($cartId));
+
+        $orderId = Order::factory()->create([
+            'is_guest' => 1,
+            'cart_id' => $cartId,
+        ])->id;
+
+        $this->mock(StripeCheckoutController::class)
+            ->shouldNotReceive('settle');
+
+        $confirmation = $this->processConfirmation($cartToken, 'cs_test_paid');
+
+        expect($confirmation->orderId)->toBe((string) $orderId);
+    }
+
+    /**
+     * Test confirm payment requires a session id.
+     */
+    public function test_confirm_payment_requires_a_session_id(): void
+    {
+        [, $cartToken] = $this->createStripeCart();
+
+        $response = $this->guestPostWithToken('/api/shop/checkout-payments/confirm', $cartToken, []);
+
+        $response->assertUnprocessable();
+    }
+
+    /**
+     * Test confirm payment rejects a session of another cart.
+     */
+    public function test_confirm_payment_rejects_a_session_of_another_cart(): void
+    {
+        [, $cartToken] = $this->createStripeCart();
+        [$otherCartId] = $this->createStripeCart();
+
+        $this->fakeStripeSession('cs_test_other_cart', $this->stripeSession($otherCartId));
+
+        $this->mock(StripeCheckoutController::class)
+            ->shouldNotReceive('settle');
+
+        expect(fn () => $this->processConfirmation($cartToken, 'cs_test_other_cart'))
+            ->toThrow(InvalidInputException::class);
+    }
+
+    /**
+     * Test confirm payment rejects a session whose amount differs from the cart.
+     */
+    public function test_confirm_payment_rejects_a_session_whose_amount_differs_from_the_cart(): void
+    {
+        [$cartId, $cartToken] = $this->createStripeCart();
+
+        $this->fakeStripeSession('cs_test_paid', $this->stripeSession($cartId, 1));
+
+        $this->mock(StripeCheckoutController::class)
+            ->shouldNotReceive('settle');
+
+        expect(fn () => $this->processConfirmation($cartToken, 'cs_test_paid'))
+            ->toThrow(InvalidInputException::class);
+    }
+
+    /**
+     * Test confirm payment rejects an unknown session.
+     */
+    public function test_confirm_payment_rejects_an_unknown_session(): void
+    {
+        [, $cartToken] = $this->createStripeCart();
+
+        $this->fakeStripeSession('cs_test_missing', null);
+
+        expect(fn () => $this->processConfirmation($cartToken, 'cs_test_missing'))
+            ->toThrow(InvalidInputException::class);
+    }
+
+    /**
+     * Set up the test environment.
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -26,6 +135,9 @@ class CheckoutPaymentConfirmationTest extends RestApiTestCase
         $this->app['url']->forceRootUrl('http://localhost');
     }
 
+    /**
+     * Guest post with token.
+     */
     private function guestPostWithToken(string $url, string $token, array $payload): TestResponse
     {
         return $this->withHeaders([
@@ -34,6 +146,9 @@ class CheckoutPaymentConfirmationTest extends RestApiTestCase
         ])->postJson($url, $payload);
     }
 
+    /**
+     * Create stripe cart.
+     */
     private function createStripeCart(): array
     {
         $this->seedRequiredData();
@@ -62,6 +177,9 @@ class CheckoutPaymentConfirmationTest extends RestApiTestCase
         return [$cartId, $cartToken];
     }
 
+    /**
+     * Stripe session.
+     */
     private function stripeSession(int $cartId, float $baseGrandTotal = 100): object
     {
         $decimal = core()->getBaseCurrency()->decimal ?? 2;
@@ -74,6 +192,9 @@ class CheckoutPaymentConfirmationTest extends RestApiTestCase
         ];
     }
 
+    /**
+     * Fake stripe session.
+     */
     private function fakeStripeSession(string $sessionId, ?object $session): void
     {
         $this->mock(Stripe::class)
@@ -83,6 +204,9 @@ class CheckoutPaymentConfirmationTest extends RestApiTestCase
             ->andReturn($session);
     }
 
+    /**
+     * Process confirmation.
+     */
     private function processConfirmation(string $cartToken, ?string $sessionId): CheckoutPaymentConfirmation
     {
         $request = Request::create('/api/shop/checkout-payments/confirm', 'POST');
@@ -93,93 +217,5 @@ class CheckoutPaymentConfirmationTest extends RestApiTestCase
         $input->sessionId = $sessionId;
 
         return app(CheckoutPaymentConfirmationProcessor::class)->process($input, new Post);
-    }
-
-    public function test_confirm_payment_settles_a_paid_session_for_the_bearer_cart(): void
-    {
-        [$cartId, $cartToken] = $this->createStripeCart();
-
-        $session = $this->stripeSession($cartId);
-        $this->fakeStripeSession('cs_test_paid', $session);
-
-        $order = new Order;
-        $order->id = 1729;
-
-        $this->mock(StripeCheckoutController::class)
-            ->shouldReceive('settle')
-            ->once()
-            ->with($session)
-            ->andReturn($order);
-
-        $confirmation = $this->processConfirmation($cartToken, 'cs_test_paid');
-
-        expect($confirmation->success)->toBeTrue()
-            ->and($confirmation->cartId)->toBe($cartId)
-            ->and($confirmation->orderId)->toBe('1729');
-    }
-
-    public function test_confirm_payment_returns_the_order_already_placed_for_the_cart(): void
-    {
-        [$cartId, $cartToken] = $this->createStripeCart();
-
-        $this->fakeStripeSession('cs_test_paid', $this->stripeSession($cartId));
-
-        $orderId = Order::factory()->create([
-            'is_guest' => 1,
-            'cart_id' => $cartId,
-        ])->id;
-
-        $this->mock(StripeCheckoutController::class)
-            ->shouldNotReceive('settle');
-
-        $confirmation = $this->processConfirmation($cartToken, 'cs_test_paid');
-
-        expect($confirmation->orderId)->toBe((string) $orderId);
-    }
-
-    public function test_confirm_payment_requires_a_session_id(): void
-    {
-        [, $cartToken] = $this->createStripeCart();
-
-        $response = $this->guestPostWithToken('/api/shop/checkout-payments/confirm', $cartToken, []);
-
-        $response->assertUnprocessable();
-    }
-
-    public function test_confirm_payment_rejects_a_session_of_another_cart(): void
-    {
-        [, $cartToken] = $this->createStripeCart();
-        [$otherCartId] = $this->createStripeCart();
-
-        $this->fakeStripeSession('cs_test_other_cart', $this->stripeSession($otherCartId));
-
-        $this->mock(StripeCheckoutController::class)
-            ->shouldNotReceive('settle');
-
-        expect(fn () => $this->processConfirmation($cartToken, 'cs_test_other_cart'))
-            ->toThrow(InvalidInputException::class);
-    }
-
-    public function test_confirm_payment_rejects_a_session_whose_amount_differs_from_the_cart(): void
-    {
-        [$cartId, $cartToken] = $this->createStripeCart();
-
-        $this->fakeStripeSession('cs_test_paid', $this->stripeSession($cartId, 1));
-
-        $this->mock(StripeCheckoutController::class)
-            ->shouldNotReceive('settle');
-
-        expect(fn () => $this->processConfirmation($cartToken, 'cs_test_paid'))
-            ->toThrow(InvalidInputException::class);
-    }
-
-    public function test_confirm_payment_rejects_an_unknown_session(): void
-    {
-        [, $cartToken] = $this->createStripeCart();
-
-        $this->fakeStripeSession('cs_test_missing', null);
-
-        expect(fn () => $this->processConfirmation($cartToken, 'cs_test_missing'))
-            ->toThrow(InvalidInputException::class);
     }
 }

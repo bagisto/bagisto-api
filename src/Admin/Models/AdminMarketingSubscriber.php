@@ -22,21 +22,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
 
-/**
- * Admin Marketing → Newsletter Subscribers (Block F2d).
- *
- * REST:
- *   GET    /api/admin/marketing/subscribers
- *   GET    /api/admin/marketing/subscribers/{id}
- *   PUT    /api/admin/marketing/subscribers/{id}     (toggle is_subscribed)
- *   DELETE /api/admin/marketing/subscribers/{id}
- *
- * GraphQL: adminMarketingSubscribers, adminMarketingSubscriber,
- *          updateAdminMarketingSubscriber, deleteAdminMarketingSubscriber
- *
- * Subscriptions are created via storefront; admin only moderates.
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Communications\SubscriptionController.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingSubscriber',
@@ -276,6 +261,9 @@ class AdminMarketingSubscriber extends EloquentModel
     /** @var array */
     protected $appends = ['customer_name'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
@@ -284,8 +272,7 @@ class AdminMarketingSubscriber extends EloquentModel
 
     /**
      * Channel this subscriber belongs to (GraphQL to-one object —
-     * `channel { id _id code name }`). The belongsTo on `channel_id` consumes
-     * that FK column, replacing the old channelId / channelName scalars.
+     * `channel { id _id code name }`). The belongsTo on `channel_id` consumes.
      */
     #[ApiProperty(writable: false)]
     public function channel(): BelongsTo
@@ -295,8 +282,7 @@ class AdminMarketingSubscriber extends EloquentModel
 
     /**
      * Linked customer's full name (kept as a scalar — NOT objectified). String
-     * accessor (safe over GraphQL). Prefers a pre-set value (the listing
-     * forceFills it to avoid N+1) else resolves from `customer_id`.
+     * accessor (safe over GraphQL). Prefers a pre-set value (the listing.
      */
     #[ApiProperty(writable: false)]
     public function getCustomerNameAttribute(): ?string

@@ -171,36 +171,84 @@ use Webkul\BagistoApi\State\EuWithdrawalProvider;
 )]
 class EuWithdrawal implements SnakeCaseFieldsResource
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The uuid.
+     */
     public ?string $uuid = null;
 
+    /**
+     * The order id.
+     */
     public ?int $order_id = null;
 
+    /**
+     * The order increment id.
+     */
     public ?string $order_increment_id = null;
 
+    /**
+     * The is guest.
+     */
     public ?bool $is_guest = null;
 
+    /**
+     * The customer email.
+     */
     public ?string $customer_email = null;
 
+    /**
+     * The status.
+     */
     public ?string $status = null;
 
+    /**
+     * The reason text.
+     */
     public ?string $reason_text = null;
 
+    /**
+     * The received at.
+     */
     public ?string $received_at = null;
 
+    /**
+     * The confirmation sent at.
+     */
     public ?string $confirmation_sent_at = null;
 
+    /**
+     * The declined at.
+     */
     public ?string $declined_at = null;
 
+    /**
+     * The declined reason.
+     */
     public ?string $declined_reason = null;
 
+    /**
+     * The refunded at.
+     */
     public ?string $refunded_at = null;
 
+    /**
+     * The refund note.
+     */
     public ?string $refund_note = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

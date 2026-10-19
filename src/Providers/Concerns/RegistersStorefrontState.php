@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\Providers\Concerns;
 
 use ApiPlatform\Laravel\Eloquent\State\PersistProcessor;
 use ApiPlatform\State\Pagination\Pagination;
-use Illuminate\Http\Request;
 use Webkul\BagistoApi\State\AttributeCollectionProvider;
 use Webkul\BagistoApi\State\AttributeOptionCollectionProvider;
 use Webkul\BagistoApi\State\CancelOrderProcessor;
@@ -263,7 +262,6 @@ trait RegistersStorefrontState
             );
         });
 
-        // Request-scoped: membership sets loaded once per request, reused across the page.
         $this->app->scoped(ProductRelationFlagResolver::class);
 
         $this->app->singleton(ProductRelationProvider::class, function ($app) {

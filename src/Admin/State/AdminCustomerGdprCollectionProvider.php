@@ -8,20 +8,19 @@ use Webkul\BagistoApi\Admin\Models\AdminCustomerGdprRequest;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Support\Sql;
 
-/**
- * GET /api/admin/customers/gdpr-requests + adminCustomerGdprRequests GraphQL.
- *
- * DataGrid parity with Webkul\Admin\DataGrids\Customers\GDPRDataGrid.
- * Filters: status, type, customer_id, email, customer_name, created_at range.
- * Sort: id (default desc), status, type, created_at.
- */
 class AdminCustomerGdprCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'status', 'type', 'created_at'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
 
@@ -41,6 +40,9 @@ class AdminCustomerGdprCollectionProvider extends AbstractAdminCollectionProvide
             );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['status'])) {
@@ -76,6 +78,9 @@ class AdminCustomerGdprCollectionProvider extends AbstractAdminCollectionProvide
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -90,6 +95,9 @@ class AdminCustomerGdprCollectionProvider extends AbstractAdminCollectionProvide
         $query->orderBy($map[$column] ?? 'gdpr.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminCustomerGdprRequest
     {
         $dto = new AdminCustomerGdprRequest;

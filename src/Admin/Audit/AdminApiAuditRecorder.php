@@ -6,21 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
 
-/**
- * Records admin-API writes as audit rows by listening to Eloquent model events.
- *
- * Only acts when AdminApiAuditContext is active (i.e. an admin-API write request)
- * — so normal web-panel changes and reads are never recorded, with zero
- * per-model code and no Bagisto core edits.
- *
- * Bound as a singleton so the updating→updated diff stash survives within a
- * request. Every write is wrapped so auditing can never break the real change.
- */
 class AdminApiAuditRecorder
 {
     /** Pre-save diffs keyed by spl_object_id, captured on `updating`. */
     protected array $pending = [];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected AdminApiAuditContext $context) {}
 
     /**
@@ -34,6 +27,9 @@ class AdminApiAuditRecorder
         Event::listen('eloquent.deleted: *', [$this, 'onDeleted']);
     }
 
+    /**
+     * On updating.
+     */
     public function onUpdating(string $event, array $payload): void
     {
         $model = $payload[0] ?? null;
@@ -55,6 +51,9 @@ class AdminApiAuditRecorder
         ];
     }
 
+    /**
+     * On updated.
+     */
     public function onUpdated(string $event, array $payload): void
     {
         $model = $payload[0] ?? null;
@@ -75,6 +74,9 @@ class AdminApiAuditRecorder
         $this->persist($model, 'updated', $diff['old'], $diff['new']);
     }
 
+    /**
+     * On created.
+     */
     public function onCreated(string $event, array $payload): void
     {
         $model = $payload[0] ?? null;
@@ -88,6 +90,9 @@ class AdminApiAuditRecorder
         $this->persist($model, 'created', null, $model->getAttributes());
     }
 
+    /**
+     * On deleted.
+     */
     public function onDeleted(string $event, array $payload): void
     {
         $model = $payload[0] ?? null;
@@ -127,6 +132,9 @@ class AdminApiAuditRecorder
         }
     }
 
+    /**
+     * Persist.
+     */
     protected function persist(Model $model, string $event, ?array $old, ?array $new): void
     {
         try {
@@ -145,11 +153,13 @@ class AdminApiAuditRecorder
 
             $this->context->recordWritten();
         } catch (\Throwable $exception) {
-            // Auditing must never break the underlying write.
             report($exception);
         }
     }
 
+    /**
+     * Should audit.
+     */
     protected function shouldAudit(Model $model): bool
     {
         if (! config('bagistoapi.audit.enabled', true)) {
@@ -169,6 +179,9 @@ class AdminApiAuditRecorder
         return true;
     }
 
+    /**
+     * Next version.
+     */
     protected function nextVersion(?string $type, $id): int
     {
         if (

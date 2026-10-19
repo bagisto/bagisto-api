@@ -21,30 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
 
-/**
- * Admin Settings → Exchange Rates endpoints (Block B Wave 1).
- *
- * REST:
- *   GET    /api/admin/settings/exchange-rates
- *   GET    /api/admin/settings/exchange-rates/{id}
- *   POST   /api/admin/settings/exchange-rates
- *   PUT    /api/admin/settings/exchange-rates/{id}
- *   DELETE /api/admin/settings/exchange-rates/{id}
- *
- * GraphQL: adminSettingsExchangeRates, adminSettingsExchangeRate,
- *          createAdminSettingsExchangeRate, updateAdminSettingsExchangeRate,
- *          deleteAdminSettingsExchangeRate
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\ExchangeRateController.
- *
- * Notes:
- *  - Bagisto's `currency_exchange_rates` table has no `source_currency` column.
- *    The source currency is implicit (the channel's base currency); only the
- *    target_currency + rate pair is stored. Composite uniqueness is therefore
- *    enforced on `target_currency` alone.
- *  - The admin UI's "Mass Auto-Sync" action (calls an external exchange-rates
- *    helper to refresh every row in bulk) is intentionally NOT exposed in v1.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsExchangeRate',
@@ -302,27 +278,51 @@ class AdminSettingsExchangeRate
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
+    /**
+     * The target currency.
+     */
     #[ApiProperty(writable: false, example: 2)]
     public ?int $target_currency = null;
 
+    /**
+     * The target currency code.
+     */
     #[ApiProperty(writable: false, example: 'EUR')]
     public ?string $target_currency_code = null;
 
+    /**
+     * The target currency name.
+     */
     #[ApiProperty(writable: false, example: 'Euro')]
     public ?string $target_currency_name = null;
 
+    /**
+     * The rate.
+     */
     #[ApiProperty(writable: false, example: 0.92)]
     public ?float $rate = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, example: 'Exchange rate deleted successfully.')]
     public ?string $message = null;
 }

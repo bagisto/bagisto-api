@@ -23,31 +23,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
 
-/**
- * Admin Marketing → Campaigns CRUD (Block F2c).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Communications\CampaignController 1:1.
- *
- * REST:
- *   GET    /api/admin/marketing/campaigns
- *   GET    /api/admin/marketing/campaigns/{id}
- *   POST   /api/admin/marketing/campaigns
- *   PUT    /api/admin/marketing/campaigns/{id}
- *   DELETE /api/admin/marketing/campaigns/{id}
- *
- * GraphQL:
- *   adminMarketingCampaigns         — cursor listing
- *   adminMarketingCampaign(id:)     — detail
- *   createAdminMarketingCampaign
- *   updateAdminMarketingCampaign
- *   deleteAdminMarketingCampaign
- *
- * The four FK scalars are exposed as to-one objects (GraphQL typed objects +
- * REST objects): channel { id _id code name }, customerGroup { id _id code name },
- * marketingTemplate { id _id name status }, marketingEvent { id _id name date }
- * (nullable). Each belongsTo consumes its FK column, replacing the old *Id /
- * *Name scalars. Create/update request inputs stay id-based.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingCampaign',
@@ -455,6 +430,9 @@ class AdminMarketingCampaign extends EloquentModel
      */
     protected $appends = ['marketing_event', 'type', 'mail_to'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
@@ -463,8 +441,7 @@ class AdminMarketingCampaign extends EloquentModel
 
     /**
      * Channel this campaign targets (GraphQL to-one object —
-     * `channel { id _id code name }`). The belongsTo on `channel_id` consumes the
-     * FK column, replacing the old channelId / channelName scalars.
+     * `channel { id _id code name }`). The belongsTo on `channel_id` consumes the.
      */
     #[ApiProperty(writable: false)]
     public function channel(): BelongsTo
@@ -492,14 +469,7 @@ class AdminMarketingCampaign extends EloquentModel
 
     /**
      * Marketing event — REST-only `marketingEvent` object `{id, name, date}` (or
-     * null). It is NOT exposed as a GraphQL belongsTo: `marketing_event_id` is
-     * nullable, and API Platform types a to-one relation field non-null, so a
-     * null event 500s the GraphQL query (gotcha h, same as Product `booking`).
-     *
-     * This null `?string` accessor exists ONLY to satisfy the REST `output:`-DTO
-     * name-match (the RestDto's `marketing_event` object value passes through for
-     * REST); over GraphQL the field is a harmless null scalar — query the
-     * detail via REST to read the event object.
+     * null). It is NOT exposed as a GraphQL belongsTo: `marketing_event_id` is.
      */
     #[ApiProperty(writable: false)]
     public function getMarketingEventAttribute(): ?string

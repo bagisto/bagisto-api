@@ -8,6 +8,9 @@ use Webkul\BagistoApi\Admin\Models\AdminEuWithdrawal;
 
 trait BuildsAdminEuWithdrawal
 {
+    /**
+     * Base withdrawal query.
+     */
     protected function baseWithdrawalQuery()
     {
         return DB::table('eu_withdrawals as w')
@@ -32,6 +35,9 @@ trait BuildsAdminEuWithdrawal
             );
     }
 
+    /**
+     * Map withdrawal row.
+     */
     protected function mapWithdrawalRow(object $row): AdminEuWithdrawal
     {
         $dto = new AdminEuWithdrawal;
@@ -67,11 +73,17 @@ trait BuildsAdminEuWithdrawal
         return $dto;
     }
 
+    /**
+     * Iso.
+     */
     private function iso(?string $value): ?string
     {
         return $value ? Carbon::parse($value)->toIso8601String() : null;
     }
 
+    /**
+     * Join name.
+     */
     private function joinName(?string $first, ?string $last): ?string
     {
         $name = trim(($first ?? '').' '.($last ?? ''));

@@ -146,7 +146,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -155,7 +155,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * Override locales relationship to return API resource model
+     * Override locales relationship to return API resource model.
      */
     public function locales(): BelongsToMany
     {
@@ -163,7 +163,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * Override currencies relationship to return API resource model
+     * Override currencies relationship to return API resource model.
      */
     public function currencies(): BelongsToMany
     {
@@ -171,7 +171,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * Override default locale relationship to return API resource model
+     * Override default locale relationship to return API resource model.
      */
     public function default_locale(): BelongsTo
     {
@@ -179,7 +179,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * Override base currency relationship to return API resource model
+     * Override base currency relationship to return API resource model.
      */
     public function base_currency(): BelongsTo
     {
@@ -187,7 +187,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * Expose logo URL for API
+     * Expose logo URL for API.
      */
     #[ApiProperty(writable: false, readable: true)]
     public function getLogoUrl(): ?string
@@ -196,7 +196,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * Expose favicon URL for API
+     * Expose favicon URL for API.
      */
     #[ApiProperty(writable: false, readable: true)]
     public function getFaviconUrl(): ?string

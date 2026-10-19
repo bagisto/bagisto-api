@@ -5,86 +5,13 @@ namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Customer\Models\Customer;
 
-/**
- * Tests for customer address GraphQL operations:
- * - createAddUpdateCustomerAddress (create + update)
- * - getCustomerAddresses (list)
- * - createDeleteCustomerAddress (delete)
- *
- * All tests use freshly-created dummy data, no pre-existing records.
- */
 class CustomerAddressTest extends GraphQLTestCase
 {
-    // ─── Helper methods ─────────────────────────────────────────────────
-
-    /**
-     * Create a customer and return [customer, bearer token].
-     */
-    private function authCustomer(): array
-    {
-        $customer = $this->createCustomer();
-        $token = $customer->createToken('test-token')->plainTextToken;
-
-        return [
-            'customer' => $customer,
-            'token' => $token,
-        ];
-    }
-
-    /**
-     * Build a valid address input payload with dummy data.
-     */
-    private function dummyAddressInput(array $overrides = []): array
-    {
-        return array_merge([
-            'firstName' => 'Alice',
-            'lastName' => 'Tester',
-            'companyName' => 'Acme Inc.',
-            'vatId' => 'GB123456789',
-            'email' => 'address_'.uniqid().'@example.com',
-            'phone' => '5551234567',
-            'address1' => '123 Test Street',
-            'address2' => 'Suite 200',
-            'city' => 'Test City',
-            'state' => 'CA',
-            'country' => 'US',
-            'postcode' => '90001',
-            'defaultAddress' => false,
-        ], $overrides);
-    }
-
-    /**
-     * Create an address via GraphQL and return its ID.
-     */
-    private function createAddressViaApi(string $token, array $input = []): int
-    {
-        $mutation = <<<'GQL'
-            mutation createAddress($input: createAddUpdateCustomerAddressInput!) {
-              createAddUpdateCustomerAddress(input: $input) {
-                addUpdateCustomerAddress {
-                  id
-                  addressId
-                  firstName
-                  lastName
-                }
-              }
-            }
-        GQL;
-
-        $response = $this->graphQL($mutation, [
-            'input' => $this->dummyAddressInput($input),
-        ], ['Authorization' => 'Bearer '.$token]);
-
-        $response->assertSuccessful();
-
-        $data = $response->json('data.createAddUpdateCustomerAddress.addUpdateCustomerAddress');
-        $this->assertNotNull($data, 'Address creation response is null');
-
-        return (int) ($data['addressId'] ?? $data['id']);
-    }
-
     // ─── Create address ─────────────────────────────────────────────────
 
+    /**
+     * Test create customer address successfully.
+     */
     public function test_create_customer_address_successfully(): void
     {
         [
@@ -148,6 +75,9 @@ class CustomerAddressTest extends GraphQLTestCase
         ]);
     }
 
+    /**
+     * Test create address fails without authentication.
+     */
     public function test_create_address_fails_without_authentication(): void
     {
         $mutation = <<<'GQL'
@@ -168,6 +98,9 @@ class CustomerAddressTest extends GraphQLTestCase
 
     // ─── Update address ─────────────────────────────────────────────────
 
+    /**
+     * Test update existing customer address.
+     */
     public function test_update_existing_customer_address(): void
     {
         ['token' => $token] = $this->authCustomer();
@@ -219,6 +152,9 @@ class CustomerAddressTest extends GraphQLTestCase
 
     // ─── Get addresses ──────────────────────────────────────────────────
 
+    /**
+     * Test get customer addresses returns empty list for new customer.
+     */
     public function test_get_customer_addresses_returns_empty_list_for_new_customer(): void
     {
         ['token' => $token] = $this->authCustomer();
@@ -250,11 +186,13 @@ class CustomerAddressTest extends GraphQLTestCase
         $this->assertCount(0, $edges, 'New customer should have no addresses');
     }
 
+    /**
+     * Test get customer addresses returns created addresses.
+     */
     public function test_get_customer_addresses_returns_created_addresses(): void
     {
         ['token' => $token] = $this->authCustomer();
 
-        // Create two addresses
         $this->createAddressViaApi($token, [
             'firstName' => 'First',
             'city' => 'City One',
@@ -291,6 +229,9 @@ class CustomerAddressTest extends GraphQLTestCase
         $this->assertContains('Second', $names);
     }
 
+    /**
+     * Test get customer addresses sort created at desc returns newest first.
+     */
     public function test_get_customer_addresses_sort_created_at_desc_returns_newest_first(): void
     {
         ['token' => $token] = $this->authCustomer();
@@ -318,6 +259,9 @@ class CustomerAddressTest extends GraphQLTestCase
         $this->assertSame($firstId, (int) $edges[1]['node']['_id']);
     }
 
+    /**
+     * Test get customer addresses fails without authentication.
+     */
     public function test_get_customer_addresses_fails_without_authentication(): void
     {
         $query = <<<'GQL'
@@ -333,23 +277,23 @@ class CustomerAddressTest extends GraphQLTestCase
         $this->assertNotEmpty($errors, 'Unauthenticated address listing should fail');
     }
 
+    /**
+     * Test get customer addresses only returns own addresses.
+     */
     public function test_get_customer_addresses_only_returns_own_addresses(): void
     {
-        // Customer A creates an address
         ['token' => $tokenA] = $this->authCustomer();
         $this->createAddressViaApi($tokenA, [
             'firstName' => 'Alpha',
             'city' => 'City A',
         ]);
 
-        // Customer B creates an address
         ['token' => $tokenB] = $this->authCustomer();
         $this->createAddressViaApi($tokenB, [
             'firstName' => 'Beta',
             'city' => 'City B',
         ]);
 
-        // Customer A queries — should only see their own
         $query = <<<'GQL'
             query getAddresses {
               getCustomerAddresses(first: 10) {
@@ -368,6 +312,9 @@ class CustomerAddressTest extends GraphQLTestCase
 
     // ─── Delete address ─────────────────────────────────────────────────
 
+    /**
+     * Test delete customer address successfully.
+     */
     public function test_delete_customer_address_successfully(): void
     {
         [
@@ -403,6 +350,9 @@ class CustomerAddressTest extends GraphQLTestCase
         $this->assertDatabaseMissing('addresses', ['id' => $addressId]);
     }
 
+    /**
+     * Test delete address fails without authentication.
+     */
     public function test_delete_address_fails_without_authentication(): void
     {
         ['token' => $token] = $this->authCustomer();
@@ -424,13 +374,14 @@ class CustomerAddressTest extends GraphQLTestCase
         $this->assertNotEmpty($errors, 'Unauthenticated delete should fail');
     }
 
+    /**
+     * Test delete fails for another customers address.
+     */
     public function test_delete_fails_for_another_customers_address(): void
     {
-        // Customer A creates an address
         ['token' => $tokenA] = $this->authCustomer();
         $addressId = $this->createAddressViaApi($tokenA, ['firstName' => 'Owner']);
 
-        // Customer B tries to delete it
         ['token' => $tokenB] = $this->authCustomer();
 
         $mutation = <<<'GQL'
@@ -448,7 +399,6 @@ class CustomerAddressTest extends GraphQLTestCase
         $errors = $response->json('errors');
         $this->assertNotEmpty($errors, 'Customer B should not be allowed to delete Customer A\'s address');
 
-        // Address should still exist
         $this->assertDatabaseHas('addresses', ['id' => $addressId]);
     }
 
@@ -833,6 +783,74 @@ class CustomerAddressTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeEmpty();
 
         $this->assertDatabaseHas('addresses', ['id' => $addressId]);
+    }
+
+    // ─── Helper methods ─────────────────────────────────────────────────
+
+    /**
+     * Create a customer and return [customer, bearer token].
+     */
+    private function authCustomer(): array
+    {
+        $customer = $this->createCustomer();
+        $token = $customer->createToken('test-token')->plainTextToken;
+
+        return [
+            'customer' => $customer,
+            'token' => $token,
+        ];
+    }
+
+    /**
+     * Build a valid address input payload with dummy data.
+     */
+    private function dummyAddressInput(array $overrides = []): array
+    {
+        return array_merge([
+            'firstName' => 'Alice',
+            'lastName' => 'Tester',
+            'companyName' => 'Acme Inc.',
+            'vatId' => 'GB123456789',
+            'email' => 'address_'.uniqid().'@example.com',
+            'phone' => '5551234567',
+            'address1' => '123 Test Street',
+            'address2' => 'Suite 200',
+            'city' => 'Test City',
+            'state' => 'CA',
+            'country' => 'US',
+            'postcode' => '90001',
+            'defaultAddress' => false,
+        ], $overrides);
+    }
+
+    /**
+     * Create an address via GraphQL and return its ID.
+     */
+    private function createAddressViaApi(string $token, array $input = []): int
+    {
+        $mutation = <<<'GQL'
+            mutation createAddress($input: createAddUpdateCustomerAddressInput!) {
+              createAddUpdateCustomerAddress(input: $input) {
+                addUpdateCustomerAddress {
+                  id
+                  addressId
+                  firstName
+                  lastName
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, [
+            'input' => $this->dummyAddressInput($input),
+        ], ['Authorization' => 'Bearer '.$token]);
+
+        $response->assertSuccessful();
+
+        $data = $response->json('data.createAddUpdateCustomerAddress.addUpdateCustomerAddress');
+        $this->assertNotNull($data, 'Address creation response is null');
+
+        return (int) ($data['addressId'] ?? $data['id']);
     }
 
     /**

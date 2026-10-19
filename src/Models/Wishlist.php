@@ -23,11 +23,6 @@ use Webkul\BagistoApi\State\WishlistItemProvider;
 use Webkul\BagistoApi\State\WishlistProcessor;
 use Webkul\BagistoApi\State\WishlistProvider;
 
-/**
- * Wishlist Item API Resource
- *
- * Allows customers to add and manage products in their wishlist
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
@@ -267,21 +262,36 @@ class Wishlist extends \Webkul\Customer\Models\Wishlist
         'additional' => 'array',
     ];
 
+    /**
+     * The appends.
+     */
     protected $appends = ['message'];
 
+    /**
+     * The response message.
+     */
     public ?string $responseMessage = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
     {
         return $this->id;
     }
 
+    /**
+     * Get message attribute.
+     */
     public function getMessageAttribute(): ?string
     {
         return $this->responseMessage;
     }
 
+    /**
+     * Set message.
+     */
     public function setMessage(string $message): self
     {
         $this->responseMessage = $message;
@@ -290,7 +300,7 @@ class Wishlist extends \Webkul\Customer\Models\Wishlist
     }
 
     /**
-     * Product relationship for API
+     * Product relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Associated product')]
     public function product(): BelongsTo
@@ -299,7 +309,7 @@ class Wishlist extends \Webkul\Customer\Models\Wishlist
     }
 
     /**
-     * Customer relationship for API
+     * Customer relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Customer who added the item')]
     public function customer(): BelongsTo
@@ -308,7 +318,7 @@ class Wishlist extends \Webkul\Customer\Models\Wishlist
     }
 
     /**
-     * Channel relationship for API
+     * Channel relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Channel where item was added')]
     public function channel(): BelongsTo

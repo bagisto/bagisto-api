@@ -11,16 +11,11 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Payment\Facades\Payment;
 
-/**
- * GET /api/admin/carts/{cartId}/payment-methods — list supported payment
- * methods for a draft cart.
- *
- * Mirrors `Payment::getSupportedPaymentMethods()`. The monolith returns these
- * after the shipping method is picked; we enforce the same ordering with
- * HTTP 409 if the cart still lacks a shipping selection.
- */
 class AdminCartPaymentMethodsProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         AdminReadPermissions::authorize($operation, AdminCartPaymentMethod::class);

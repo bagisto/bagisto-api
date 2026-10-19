@@ -12,22 +12,153 @@ use Webkul\BookingProduct\Models\BookingProductEventTicket;
 use Webkul\BookingProduct\Models\BookingProductRentalSlot;
 use Webkul\BookingProduct\Models\BookingProductTableSlot;
 
-/**
- * REST tests for /api/shop/booking-slots.
- *
- * Mirrors the GraphQL bookingSlots query (see GraphQL/BookingSlotQueryTest.php).
- * The REST endpoint shares BookingSlotProvider with GraphQL — the provider reads
- * id/date from query params when $context['args'] is empty.
- */
 class BookingSlotTest extends RestApiTestCase
 {
+    /**
+     * The endpoint.
+     */
     private string $endpoint = '/api/shop/booking-slots';
 
+    // ── Flat types (default / appointment / table / event) ─────────────
+
+    /**
+     * Test booking slots default.
+     */
+    public function test_booking_slots_default(): void
+    {
+        $this->seedRequiredData();
+        $f = $this->createBookingFixture('default');
+
+        $response = $this->publicGet($this->url((int) $f['booking']->id, $f['tomorrowDate']));
+
+        $response->assertOk();
+        $slots = $response->json();
+        expect($slots)->toBeArray()->not()->toBeEmpty();
+        foreach ($slots as $slot) {
+            $this->assertFlatSlotStructure($slot);
+        }
+    }
+
+    /**
+     * Test booking slots appointment.
+     */
+    public function test_booking_slots_appointment(): void
+    {
+        $this->seedRequiredData();
+        $f = $this->createBookingFixture('appointment');
+
+        $response = $this->publicGet($this->url((int) $f['booking']->id, $f['tomorrowDate']));
+
+        $response->assertOk();
+        $slots = $response->json();
+        expect($slots)->toBeArray()->not()->toBeEmpty();
+        foreach ($slots as $slot) {
+            $this->assertFlatSlotStructure($slot);
+        }
+    }
+
+    /**
+     * Test booking slots table.
+     */
+    public function test_booking_slots_table(): void
+    {
+        $this->seedRequiredData();
+        $f = $this->createBookingFixture('table');
+
+        $response = $this->publicGet($this->url((int) $f['booking']->id, $f['tomorrowDate']));
+
+        $response->assertOk();
+        $slots = $response->json();
+        expect($slots)->toBeArray()->not()->toBeEmpty();
+        foreach ($slots as $slot) {
+            $this->assertFlatSlotStructure($slot);
+        }
+    }
+
+    /**
+     * Test booking slots event.
+     */
+    public function test_booking_slots_event(): void
+    {
+        $this->seedRequiredData();
+        $f = $this->createBookingFixture('event');
+
+        $response = $this->publicGet($this->url((int) $f['booking']->id, $f['tomorrowDate']));
+
+        $response->assertOk();
+        expect($response->json())->toBeArray();
+    }
+
+    // ── Rental (nested) ────────────────────────────────────────────────
+
+    /**
+     * Test booking slots rental.
+     */
+    public function test_booking_slots_rental(): void
+    {
+        $this->seedRequiredData();
+        $f = $this->createBookingFixture('rental');
+
+        $response = $this->publicGet($this->url((int) $f['booking']->id, $f['tomorrowDate']));
+
+        $response->assertOk();
+        $groups = $response->json();
+        expect($groups)->toBeArray()->not()->toBeEmpty();
+        foreach ($groups as $group) {
+            $this->assertRentalGroupStructure($group);
+        }
+    }
+
+    // ── Validation ─────────────────────────────────────────────────────
+
+    /**
+     * Test missing id returns 400.
+     */
+    public function test_missing_id_returns_400(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicGet($this->endpoint.'?date=2026-03-26');
+
+        expect($response->getStatusCode())->toBe(400);
+    }
+
+    /**
+     * Test missing date returns 400.
+     */
+    public function test_missing_date_returns_400(): void
+    {
+        $this->seedRequiredData();
+        $f = $this->createBookingFixture('default');
+
+        $response = $this->publicGet($this->endpoint.'?id='.$f['booking']->id);
+
+        expect($response->getStatusCode())->toBe(400);
+    }
+
+    /**
+     * Test invalid product id returns 400.
+     */
+    public function test_invalid_product_id_returns_400(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicGet($this->url(99999999, '2026-03-26'));
+
+        expect($response->getStatusCode())->toBe(400);
+    }
+
+    /**
+     * Url.
+     */
     private function url(int $id, string $date): string
     {
         return $this->endpoint.'?id='.$id.'&date='.$date;
     }
 
+    /**
+     * Create booking fixture.
+     */
     private function createBookingFixture(string $type): array
     {
         $product = $this->createBaseProduct('booking', [
@@ -138,6 +269,9 @@ class BookingSlotTest extends RestApiTestCase
         ];
     }
 
+    /**
+     * Assert flat slot structure.
+     */
     private function assertFlatSlotStructure(array $slot): void
     {
         expect($slot)->toHaveKeys(['slotId', 'from', 'to', 'timestamp', 'qty']);
@@ -147,6 +281,9 @@ class BookingSlotTest extends RestApiTestCase
         expect($slot['timestamp'])->toMatch('/^\d+-\d+$/');
     }
 
+    /**
+     * Assert rental group structure.
+     */
     private function assertRentalGroupStructure(array $group): void
     {
         expect($group)->toHaveKeys(['slotId', 'time', 'slots']);
@@ -159,110 +296,5 @@ class BookingSlotTest extends RestApiTestCase
             expect($sub['to'])->not()->toBeNull();
             expect($sub['timestamp'])->toMatch('/^\d+-\d+$/');
         }
-    }
-
-    // ── Flat types (default / appointment / table / event) ─────────────
-
-    public function test_booking_slots_default(): void
-    {
-        $this->seedRequiredData();
-        $f = $this->createBookingFixture('default');
-
-        $response = $this->publicGet($this->url((int) $f['booking']->id, $f['tomorrowDate']));
-
-        $response->assertOk();
-        $slots = $response->json();
-        expect($slots)->toBeArray()->not()->toBeEmpty();
-        foreach ($slots as $slot) {
-            $this->assertFlatSlotStructure($slot);
-        }
-    }
-
-    public function test_booking_slots_appointment(): void
-    {
-        $this->seedRequiredData();
-        $f = $this->createBookingFixture('appointment');
-
-        $response = $this->publicGet($this->url((int) $f['booking']->id, $f['tomorrowDate']));
-
-        $response->assertOk();
-        $slots = $response->json();
-        expect($slots)->toBeArray()->not()->toBeEmpty();
-        foreach ($slots as $slot) {
-            $this->assertFlatSlotStructure($slot);
-        }
-    }
-
-    public function test_booking_slots_table(): void
-    {
-        $this->seedRequiredData();
-        $f = $this->createBookingFixture('table');
-
-        $response = $this->publicGet($this->url((int) $f['booking']->id, $f['tomorrowDate']));
-
-        $response->assertOk();
-        $slots = $response->json();
-        expect($slots)->toBeArray()->not()->toBeEmpty();
-        foreach ($slots as $slot) {
-            $this->assertFlatSlotStructure($slot);
-        }
-    }
-
-    public function test_booking_slots_event(): void
-    {
-        $this->seedRequiredData();
-        $f = $this->createBookingFixture('event');
-
-        $response = $this->publicGet($this->url((int) $f['booking']->id, $f['tomorrowDate']));
-
-        $response->assertOk();
-        expect($response->json())->toBeArray();
-    }
-
-    // ── Rental (nested) ────────────────────────────────────────────────
-
-    public function test_booking_slots_rental(): void
-    {
-        $this->seedRequiredData();
-        $f = $this->createBookingFixture('rental');
-
-        $response = $this->publicGet($this->url((int) $f['booking']->id, $f['tomorrowDate']));
-
-        $response->assertOk();
-        $groups = $response->json();
-        expect($groups)->toBeArray()->not()->toBeEmpty();
-        foreach ($groups as $group) {
-            $this->assertRentalGroupStructure($group);
-        }
-    }
-
-    // ── Validation ─────────────────────────────────────────────────────
-
-    public function test_missing_id_returns_400(): void
-    {
-        $this->seedRequiredData();
-
-        $response = $this->publicGet($this->endpoint.'?date=2026-03-26');
-
-        expect($response->getStatusCode())->toBe(400);
-    }
-
-    public function test_missing_date_returns_400(): void
-    {
-        $this->seedRequiredData();
-        $f = $this->createBookingFixture('default');
-
-        $response = $this->publicGet($this->endpoint.'?id='.$f['booking']->id);
-
-        expect($response->getStatusCode())->toBe(400);
-    }
-
-    public function test_invalid_product_id_returns_400(): void
-    {
-        $this->seedRequiredData();
-
-        $response = $this->publicGet($this->url(99999999, '2026-03-26'));
-
-        expect($response->getStatusCode())->toBe(400);
     }
 }

@@ -21,28 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
 
-/**
- * Admin Settings → Users (admins) endpoints (Block B Wave 2).
- *
- * REST:
- *   GET    /api/admin/settings/users
- *   GET    /api/admin/settings/users/{id}
- *   POST   /api/admin/settings/users
- *   PUT    /api/admin/settings/users/{id}
- *   DELETE /api/admin/settings/users/{id}
- *
- * GraphQL: adminSettingsUsers, adminSettingsUser,
- *          createAdminSettingsUser, updateAdminSettingsUser,
- *          deleteAdminSettingsUser
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\UserController.
- *
- * Notes:
- *  - image upload is intentionally deferred in v1 — accepts a path string only.
- *  - Delete refuses if the admin is deleting themselves (400) or if this is
- *    the last admin (400).
- *  - Password is required on create; optional on update (re-hashed if present).
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsUser',
@@ -285,36 +263,69 @@ class AdminSettingsUser
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false, example: 'John Doe')]
     public ?string $name = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(writable: false, example: 'john@example.com')]
     public ?string $email = null;
 
+    /**
+     * The role id.
+     */
     #[ApiProperty(writable: false, example: 1)]
     public ?int $role_id = null;
 
+    /**
+     * The role name.
+     */
     #[ApiProperty(writable: false, example: 'Administrator')]
     public ?string $role_name = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(writable: false, example: 1)]
     public ?int $status = null;
 
+    /**
+     * The image.
+     */
     #[ApiProperty(writable: false, example: 'admins/1/avatar.png')]
     public ?string $image = null;
 
+    /**
+     * The image url.
+     */
     #[ApiProperty(writable: false, example: 'https://your-domain.com/storage/admins/1/avatar.png')]
     public ?string $image_url = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, example: 'User deleted successfully.')]
     public ?string $message = null;
 }

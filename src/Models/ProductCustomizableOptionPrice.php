@@ -81,7 +81,7 @@ class ProductCustomizableOptionPrice extends BaseProductCustomizableOptionPrice
     }
 
     /**
-     * Get id
+     * Get id.
      */
     #[ApiProperty(
         identifier: true,
@@ -95,7 +95,7 @@ class ProductCustomizableOptionPrice extends BaseProductCustomizableOptionPrice
     }
 
     /**
-     * Get label
+     * Get label.
      */
     #[ApiProperty(
         writable: false,
@@ -107,13 +107,16 @@ class ProductCustomizableOptionPrice extends BaseProductCustomizableOptionPrice
         return $this->label;
     }
 
+    /**
+     * Get price attribute.
+     */
     public function getPriceAttribute($value)
     {
         return $value !== null ? (float) core()->convertPrice((float) $value) : null;
     }
 
     /**
-     * Get price
+     * Get price.
      */
     #[ApiProperty(
         writable: false,
@@ -125,11 +128,17 @@ class ProductCustomizableOptionPrice extends BaseProductCustomizableOptionPrice
         return $this->price ? (float) $this->price : null;
     }
 
+    /**
+     * Get formatted price attribute.
+     */
     public function getFormattedPriceAttribute(): ?string
     {
         return $this->price !== null ? core()->formatPrice($this->price) : null;
     }
 
+    /**
+     * Get formatted price.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public function getFormatted_price(): ?string
     {
@@ -137,7 +146,7 @@ class ProductCustomizableOptionPrice extends BaseProductCustomizableOptionPrice
     }
 
     /**
-     * Get sort_order
+     * Get sort_order.
      */
     #[ApiProperty(
         writable: false,

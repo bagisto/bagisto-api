@@ -8,12 +8,11 @@ use Illuminate\Support\Carbon;
 use Webkul\BagistoApi\Admin\DataGrids\AuditHistoryDataGrid;
 use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
 
-/**
- * Integration → History admin screen: browse / inspect / clean up the
- * admin-API audit trail.
- */
 class AuditHistoryController extends Controller
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
@@ -24,10 +23,6 @@ class AuditHistoryController extends Controller
             return $next($request);
         });
 
-        /**
-         * The audit trail records who changed what through the API, so reading it is gated on
-         * `integration.history.view`; the destructive actions keep their own node.
-         */
         $this->middleware(function ($request, $next) {
             $action = $request->route()?->getActionMethod();
 
@@ -41,6 +36,9 @@ class AuditHistoryController extends Controller
         });
     }
 
+    /**
+     * Index.
+     */
     public function index()
     {
         if (request()->ajax()) {
@@ -50,6 +48,9 @@ class AuditHistoryController extends Controller
         return view('bagistoapi::integration.history.index');
     }
 
+    /**
+     * View.
+     */
     public function view(int $id)
     {
         $audit = AdminApiAudit::findOrFail($id);
@@ -69,6 +70,9 @@ class AuditHistoryController extends Controller
         return view('bagistoapi::integration.history.view', compact('audit', 'siblings', 'versions'));
     }
 
+    /**
+     * Mass destroy.
+     */
     public function massDestroy(): JsonResponse
     {
         $this->authorizeDelete();
@@ -116,6 +120,9 @@ class AuditHistoryController extends Controller
         return redirect()->route('admin.integration.history.index');
     }
 
+    /**
+     * Authorize delete.
+     */
     protected function authorizeDelete(): void
     {
         abort_unless(bouncer()->hasPermission('integration.history.delete'), 401);

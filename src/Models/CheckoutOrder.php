@@ -13,11 +13,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\State\CheckoutProcessor;
 
-/**
- * CheckoutOrder - GraphQL API Resource for Creating Order from Cart
- *
- * Provides mutation for finalizing checkout and creating order
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CheckoutOrder',
@@ -110,30 +105,51 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
 )]
 class CheckoutOrder
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $id = null;
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $cartToken = null;
 
+    /**
+     * The order id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $orderId = null;
 
+    /**
+     * The redirect.
+     */
     #[ApiProperty(readable: true, writable: false, description: 'True when the selected payment method requires the shopper to be sent to a payment page before the order is created.')]
     #[Groups(['query', 'mutation'])]
     public ?bool $redirect = false;
 
+    /**
+     * The redirect url.
+     */
     #[ApiProperty(readable: true, writable: false, description: 'Payment page to open when redirect is true. Null otherwise.')]
     #[Groups(['query', 'mutation'])]
     public ?string $redirectUrl = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(readable: true, writable: false, description: 'True when the checkout call succeeded — either the order was placed or a payment redirect is required. Order-placement failures are returned as errors, not here.')]
     #[Groups(['query', 'mutation'])]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false, description: 'Human-readable result of the call: order placed, or that the shopper must be redirected to the payment page to complete payment.')]
     #[Groups(['query', 'mutation'])]
     public ?string $message = null;

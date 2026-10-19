@@ -16,21 +16,11 @@ use Webkul\Core\Models\SubscribersList;
 use Webkul\Marketing\Mail\NewsletterMail;
 use Webkul\Marketing\Models\Campaign;
 
-/**
- * Handles POST /api/admin/marketing/campaigns/{id}/send + createAdminMarketingCampaignSend.
- *
- * Mirrors Webkul\Marketing\Helpers\Campaign::process for a single campaign —
- * resolves the recipient email list from the campaign's customer_group (or the
- * guest subscribers list when the group code is 'guest') and queues a
- * NewsletterMail for each. Skips the date-based event gate because manual
- * trigger semantics are "send now" regardless of event.date.
- *
- * Refuses inactive campaigns (status = 0) with HTTP 422.
- *
- * Permission: marketing.communications.campaigns.edit.
- */
 class AdminMarketingCampaignSendProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -90,6 +80,9 @@ class AdminMarketingCampaignSendProcessor implements ProcessorInterface
         return array_values(array_unique(array_filter($emails)));
     }
 
+    /**
+     * Resolve campaign id.
+     */
     protected function resolveCampaignId(mixed $data, array $uriVariables, array $context): int
     {
         if (! empty($uriVariables['id'])) {
@@ -123,6 +116,9 @@ class AdminMarketingCampaignSendProcessor implements ProcessorInterface
         return (int) (request()->input('campaignId') ?? request()->input('campaign_id') ?? 0);
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

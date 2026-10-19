@@ -11,19 +11,6 @@ use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\State\BookingSlotProvider;
 
-/**
- * Booking Slot GraphQL API Resource
- *
- * Provides available booking slots for a product on a specific date.
- *
- * For non-rental types (default, appointment, table, event):
- *   Each BookingSlot is a single flat slot with from/to/timestamp/qty.
- *
- * For rental hourly type:
- *   Each BookingSlot is a time-range group with a nested `slots` array.
- *   The `time` field is the group label (e.g., "10:00 AM - 12:00 PM"),
- *   and `slots` contains the individual hourly sub-slots.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'BookingSlot',
@@ -164,7 +151,7 @@ class BookingSlot
     public ?iterable $slots = null;
 
     /**
-     * Create a new BookingSlot instance
+     * Create a new BookingSlot instance.
      */
     public function __construct(
         ?string $slotId = null,

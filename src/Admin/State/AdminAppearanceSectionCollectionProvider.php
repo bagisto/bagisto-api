@@ -9,20 +9,22 @@ use Webkul\BagistoApi\Admin\State\Concerns\MapsAppearanceSection;
 use Webkul\Theme\Models\Section;
 use Webkul\Theme\Repositories\SectionRepository;
 
-/**
- * Sections of a theme for one channel, in render order with footer links pinned last —
- * the same set the appearance editor lists.
- */
 class AdminAppearanceSectionCollectionProvider implements ProviderInterface
 {
     use ChecksAdminPermission;
     use MapsAppearanceSection;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SectionRepository $sectionRepository,
         protected AppearanceScopeGuard $scope,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $this->authorizedAdmin('appearance.sections', 'bagistoapi::app.admin.appearance.no-permission');

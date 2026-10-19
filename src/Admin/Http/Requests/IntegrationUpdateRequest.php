@@ -8,11 +8,17 @@ use Webkul\BagistoApi\Admin\Rules\IpOrCidr;
 
 class IntegrationUpdateRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized.
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * Get the validation rules.
+     */
     public function rules(): array
     {
         return [
@@ -39,8 +45,7 @@ class IntegrationUpdateRequest extends FormRequest
 
     /**
      * Map the "one entry per line" textarea (from the Blade form) into the
-     * validated `allowed_ips` array. When `ip_mode=any` (or the user clears
-     * the list), normalise to an empty array so the service writes NULL.
+     * validated `allowed_ips` array. When `ip_mode=any` (or the user clears.
      */
     protected function prepareForValidation(): void
     {

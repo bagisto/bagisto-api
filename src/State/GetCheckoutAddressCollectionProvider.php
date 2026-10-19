@@ -20,18 +20,24 @@ use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
-/**
- * Custom collection provider for cart addresses with token-based filtering.
- */
 class GetCheckoutAddressCollectionProvider implements ProviderInterface
 {
     use ClampsPageSize;
     use StateOptionsTrait;
 
+    /**
+     * The links handler.
+     */
     private $linksHandler;
 
+    /**
+     * The handle links locator.
+     */
     private $handleLinksLocator;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination,
         ?LinksHandlerInterface $linksHandler = null,
@@ -53,7 +59,6 @@ class GetCheckoutAddressCollectionProvider implements ProviderInterface
 
         $request = Request::instance() ?? ($context['request'] ?? null);
 
-        // Extract Bearer token from Authorization header
         $token = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
 
         if (! $token) {

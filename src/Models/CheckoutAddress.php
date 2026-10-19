@@ -17,11 +17,6 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CheckoutAddressProvider;
 use Webkul\BagistoApi\State\CheckoutProcessor;
 
-/**
- * CheckoutAddress - GraphQL API Resource for Checkout Address
- *
- * Provides mutation for saving billing and shipping addresses during checkout
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CheckoutAddress',
@@ -243,10 +238,16 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
 )]
 class CheckoutAddress
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $id = null;
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $cartToken = null;

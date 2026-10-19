@@ -19,12 +19,24 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
     use ChecksAdminPermission;
     use MapsOrderAddress;
 
+    /**
+     * The permission constant.
+     */
     protected const PERMISSION = 'sales.refunds.view';
 
+    /**
+     * The billing by order.
+     */
     private array $billingByOrder = [];
 
+    /**
+     * The shipping by order.
+     */
     private array $shippingByOrder = [];
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin(self::PERMISSION);
@@ -32,11 +44,17 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'order_id', 'state', 'base_grand_total', 'billed_to', 'created_at'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         $prefix = DB::getTablePrefix();
@@ -60,6 +78,9 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
             ->addSelect(DB::raw(Sql::fullName('order_address_billing.first_name', 'order_address_billing.last_name').' as billed_to'));
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         $prefix = DB::getTablePrefix();
@@ -112,6 +133,9 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -128,6 +152,9 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
         $query->orderBy($map[$column] ?? 'refunds.id', $direction);
     }
 
+    /**
+     * Map rows.
+     */
     protected function mapRows($rows): array
     {
         $this->billingByOrder = [];
@@ -159,6 +186,9 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
         return $rows->map(fn ($row) => $this->mapRow($row))->all();
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminRefund
     {
         $currency = $row->order_currency_code ?? null;
@@ -242,37 +272,9 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
         return $dto;
     }
 
-    private function num($value): ?float
-    {
-        return $value !== null ? (float) $value : null;
-    }
-
-    private function money($value, ?string $currency): ?string
-    {
-        return $value !== null ? $this->safeFormatPrice((float) $value, $currency) : null;
-    }
-
-    private function baseMoney($value): ?string
-    {
-        return $value !== null ? core()->formatBasePrice((float) $value) : null;
-    }
-
-    private function orderStatusLabel(?string $status): ?string
-    {
-        if (! $status) {
-            return null;
-        }
-
-        try {
-            $order = new Order;
-            $order->status = $status;
-
-            return $order->status_label;
-        } catch (\Throwable $exception) {
-            return $status;
-        }
-    }
-
+    /**
+     * Safe format price.
+     */
     protected function safeFormatPrice(float $amount, ?string $currencyCode): string
     {
         try {
@@ -291,6 +293,49 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
             return core()->formatBasePrice($amount);
         } catch (\Throwable $exception) {
             return (string) $amount;
+        }
+    }
+
+    /**
+     * Num.
+     */
+    private function num($value): ?float
+    {
+        return $value !== null ? (float) $value : null;
+    }
+
+    /**
+     * Money.
+     */
+    private function money($value, ?string $currency): ?string
+    {
+        return $value !== null ? $this->safeFormatPrice((float) $value, $currency) : null;
+    }
+
+    /**
+     * Base money.
+     */
+    private function baseMoney($value): ?string
+    {
+        return $value !== null ? core()->formatBasePrice((float) $value) : null;
+    }
+
+    /**
+     * Order status label.
+     */
+    private function orderStatusLabel(?string $status): ?string
+    {
+        if (! $status) {
+            return null;
+        }
+
+        try {
+            $order = new Order;
+            $order->status = $status;
+
+            return $order->status_label;
+        } catch (\Throwable $exception) {
+            return $status;
         }
     }
 }

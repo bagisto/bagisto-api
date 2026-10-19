@@ -21,29 +21,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Marketing\Models\SearchSynonym;
 use Webkul\Marketing\Repositories\SearchSynonymRepository;
 
-/**
- * Handles POST, PUT, DELETE on AdminMarketingSearchSynonym.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\SearchSEO\SearchSynonymController:
- *   store / update / destroy. Events fired:
- *     marketing.search_seo.search_synonyms.create.before / after
- *     marketing.search_seo.search_synonyms.update.before / after
- *     marketing.search_seo.search_synonyms.delete.before / after
- *
- * Permission resolution: Sanctum pattern — read role->permission_type /
- * role->permissions directly. Never calls bouncer().
- *
- * Validation mirrors SearchSynonymController:
- *   - name  required
- *   - terms required
- */
 class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SearchSynonymRepository $searchSynonymRepository,
         protected AdminMarketingSearchSynonymItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -99,6 +89,9 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminMarketingSearchSynonym
     {
         $this->validatePayload($input);
@@ -117,6 +110,9 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($synonym);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminMarketingSearchSynonym
     {
         $synonym = SearchSynonym::find($id);
@@ -140,6 +136,9 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($synonym);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id): array
     {
         $synonym = SearchSynonym::find($id);
@@ -164,6 +163,9 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.search-synonym.deleted')];
     }
 
+    /**
+     * Validate payload.
+     */
     protected function validatePayload(array $input): void
     {
         $rules = [
@@ -177,6 +179,9 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -204,6 +209,9 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -219,6 +227,9 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         return $this->normaliseArgs(request()->all());
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -231,6 +242,9 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -246,6 +260,9 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         return $this->normaliseArgs(request()->all());
     }
 
+    /**
+     * Normalise args.
+     */
     protected function normaliseArgs(array $input): array
     {
         unset($input['id']);
@@ -253,6 +270,9 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         return $input;
     }
 
+    /**
+     * Dto to array.
+     */
     protected function dtoToArray(object $dto, array $rawArgs = []): array
     {
         $result = [];

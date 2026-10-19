@@ -75,52 +75,76 @@ use Webkul\BookingProduct\Models\BookingProductTableSlot as BaseModel;
 class BookingProductTableSlot extends BaseModel
 {
     /**
-     * Override to prevent API Platform from using Laravel's auto-generated getter for 'slots'
+     * Override to prevent API Platform from using Laravel's auto-generated getter for 'slots'.
      */
     protected $casts = [];
 
+    /**
+     * Get price type.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getPriceType()
     {
         return $this->price_type;
     }
 
+    /**
+     * Get guest limit.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getGuestLimit()
     {
         return $this->guest_limit;
     }
 
+    /**
+     * Get duration.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getDuration()
     {
         return $this->duration;
     }
 
+    /**
+     * Get break time.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getBreakTime()
     {
         return $this->break_time;
     }
 
+    /**
+     * Get prevent scheduling before.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getPreventSchedulingBefore()
     {
         return $this->prevent_scheduling_before;
     }
 
+    /**
+     * Get same slot all days.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getSameSlotAllDays()
     {
         return $this->same_slot_all_days;
     }
 
+    /**
+     * Get slots.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getSlots()
     {
         return $this->slots;
     }
 
+    /**
+     * Get booking product id.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getBookingProductId()
     {

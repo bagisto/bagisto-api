@@ -13,10 +13,241 @@ use Webkul\Product\Models\Product;
 
 class CustomizableOptionFileTest extends RestApiTestCase
 {
+    /**
+     * The upload url.
+     */
     private string $uploadUrl = '/api/shop/customizable-option-files';
 
+    /**
+     * The add product url.
+     */
     private string $addProductUrl = '/api/shop/add-product-in-cart';
 
+    /**
+     * Test upload returns a token.
+     */
+    public function test_upload_returns_a_token(): void
+    {
+        $customer = $this->createCustomer();
+        $product = $this->createSimpleProduct();
+        $optionId = $this->addFileOption($product);
+
+        $response = $this->upload(
+            $customer,
+            $product->id,
+            $optionId,
+            UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf')
+        );
+
+        expect($response->getStatusCode())->toBe(201);
+        expect($response->json('token'))->toBeString()->not->toBeEmpty();
+        expect($response->json('fileName'))->toBe('spec.pdf');
+        expect((int) $response->json('optionId'))->toBe($optionId);
+    }
+
+    /**
+     * Test upload rejects a non file option.
+     */
+    public function test_upload_rejects_a_non_file_option(): void
+    {
+        $customer = $this->createCustomer();
+        $product = $this->createSimpleProduct();
+
+        $textOption = (int) DB::table('product_customizable_options')->insertGetId([
+            'product_id' => $product->id,
+            'type' => 'textarea',
+            'is_required' => 1,
+            'sort_order' => 0,
+        ]);
+
+        $response = $this->upload(
+            $customer,
+            $product->id,
+            $textOption,
+            UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf')
+        );
+
+        expect($response->getStatusCode())->toBe(400);
+    }
+
+    /**
+     * Test upload rejects a wrong extension.
+     */
+    public function test_upload_rejects_a_wrong_extension(): void
+    {
+        $customer = $this->createCustomer();
+        $product = $this->createSimpleProduct();
+        $optionId = $this->addFileOption($product);
+
+        $response = $this->upload(
+            $customer,
+            $product->id,
+            $optionId,
+            UploadedFile::fake()->create('malware.exe', 10, 'application/octet-stream')
+        );
+
+        expect($response->getStatusCode())->toBe(400);
+    }
+
+    /**
+     * The upload ceiling comes from php.ini (`upload_max_filesize`), the same central
+     * limit the rest of Bagisto uses — PHP rejects anything larger before the request.
+     */
+    public function test_upload_size_limit_comes_from_php_ini(): void
+    {
+        $staging = app(CartOptionFileStaging::class);
+
+        $expected = $this->iniBytes((string) core()->getMaxUploadSize());
+
+        expect($staging->maxUploadBytes())->toBe($expected);
+
+        $oversized = new class extends CartOptionFileStaging
+        {
+            public function maxUploadBytes(): int
+            {
+                return 100 * 1024;
+            }
+        };
+
+        expect($oversized->maxUploadBytes())->toBeLessThan($staging->maxUploadBytes());
+    }
+
+    /**
+     * Test upload returns 404 for unknown product.
+     */
+    public function test_upload_returns_404_for_unknown_product(): void
+    {
+        $customer = $this->createCustomer();
+
+        $response = $this->upload(
+            $customer,
+            999999,
+            1,
+            UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf')
+        );
+
+        expect($response->getStatusCode())->toBe(404);
+    }
+
+    /**
+     * Test upload requires authentication.
+     */
+    public function test_upload_requires_authentication(): void
+    {
+        $product = $this->createSimpleProduct();
+        $optionId = $this->addFileOption($product);
+
+        $response = $this->post($this->uploadUrl, [
+            'product_id' => $product->id,
+            'option_id' => $optionId,
+            'file' => UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf'),
+        ], [
+            ...$this->storefrontHeaders(),
+            'Accept' => 'application/json',
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([401, 403]);
+    }
+
+    /**
+     * Test add to cart resolves the token and consumes it.
+     */
+    public function test_add_to_cart_resolves_the_token_and_consumes_it(): void
+    {
+        $customer = $this->createCustomer();
+        $product = $this->createSimpleProduct();
+        $optionId = $this->addFileOption($product);
+
+        $token = $this->upload(
+            $customer,
+            $product->id,
+            $optionId,
+            UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf')
+        )->json('token');
+
+        $add = $this->authenticatedPost($customer, $this->addProductUrl, [
+            'productId' => $product->id,
+            'quantity' => 1,
+            'customizableOptions' => [(string) $optionId => [$token]],
+        ]);
+
+        expect($add->getStatusCode())->toBeIn([200, 201]);
+        expect((bool) $add->json('success'))->toBeTrue();
+        expect((int) $add->json('itemsCount'))->toBeGreaterThan(0);
+
+        $reuse = $this->authenticatedPost($customer, $this->addProductUrl, [
+            'productId' => $product->id,
+            'quantity' => 1,
+            'customizableOptions' => [(string) $optionId => [$token]],
+        ]);
+
+        expect($reuse->getStatusCode())->toBe(400);
+    }
+
+    /**
+     * Test add to cart rejects a missing required file option.
+     */
+    public function test_add_to_cart_rejects_a_missing_required_file_option(): void
+    {
+        $customer = $this->createCustomer();
+        $product = $this->createSimpleProduct();
+        $this->addFileOption($product);
+
+        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ]);
+
+        expect($response->getStatusCode())->toBe(400);
+    }
+
+    /**
+     * Test add to cart rejects an invalid token.
+     */
+    public function test_add_to_cart_rejects_an_invalid_token(): void
+    {
+        $customer = $this->createCustomer();
+        $product = $this->createSimpleProduct();
+        $optionId = $this->addFileOption($product);
+
+        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
+            'productId' => $product->id,
+            'quantity' => 1,
+            'customizableOptions' => [(string) $optionId => ['not-a-real-token']],
+        ]);
+
+        expect($response->getStatusCode())->toBe(400);
+    }
+
+    /**
+     * Test add to cart rejects another customers token.
+     */
+    public function test_add_to_cart_rejects_another_customers_token(): void
+    {
+        $owner = $this->createCustomer();
+        $attacker = $this->createCustomer(['email' => 'attacker-'.uniqid().'@example.com']);
+        $product = $this->createSimpleProduct();
+        $optionId = $this->addFileOption($product);
+
+        $token = $this->upload(
+            $owner,
+            $product->id,
+            $optionId,
+            UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf')
+        )->json('token');
+
+        $response = $this->authenticatedPost($attacker, $this->addProductUrl, [
+            'productId' => $product->id,
+            'quantity' => 1,
+            'customizableOptions' => [(string) $optionId => [$token]],
+        ]);
+
+        expect($response->getStatusCode())->toBe(403);
+    }
+
+    /**
+     * Set up the test environment.
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -25,6 +256,9 @@ class CustomizableOptionFileTest extends RestApiTestCase
         Storage::fake();
     }
 
+    /**
+     * Create simple product.
+     */
     private function createSimpleProduct(): Product
     {
         $product = $this->createBaseProduct('simple', [
@@ -39,6 +273,9 @@ class CustomizableOptionFileTest extends RestApiTestCase
         return $product;
     }
 
+    /**
+     * Add file option.
+     */
     private function addFileOption(Product $product, array $attributes = []): int
     {
         $optionId = (int) DB::table('product_customizable_options')->insertGetId([
@@ -66,6 +303,9 @@ class CustomizableOptionFileTest extends RestApiTestCase
         return $optionId;
     }
 
+    /**
+     * Upload.
+     */
     private function upload(Customer $customer, int $productId, int $optionId, UploadedFile $file): TestResponse
     {
         return $this->actingAs($customer)
@@ -77,87 +317,9 @@ class CustomizableOptionFileTest extends RestApiTestCase
             ], ['Accept' => 'application/json']);
     }
 
-    public function test_upload_returns_a_token(): void
-    {
-        $customer = $this->createCustomer();
-        $product = $this->createSimpleProduct();
-        $optionId = $this->addFileOption($product);
-
-        $response = $this->upload(
-            $customer,
-            $product->id,
-            $optionId,
-            UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf')
-        );
-
-        expect($response->getStatusCode())->toBe(201);
-        expect($response->json('token'))->toBeString()->not->toBeEmpty();
-        expect($response->json('fileName'))->toBe('spec.pdf');
-        expect((int) $response->json('optionId'))->toBe($optionId);
-    }
-
-    public function test_upload_rejects_a_non_file_option(): void
-    {
-        $customer = $this->createCustomer();
-        $product = $this->createSimpleProduct();
-
-        $textOption = (int) DB::table('product_customizable_options')->insertGetId([
-            'product_id' => $product->id,
-            'type' => 'textarea',
-            'is_required' => 1,
-            'sort_order' => 0,
-        ]);
-
-        $response = $this->upload(
-            $customer,
-            $product->id,
-            $textOption,
-            UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf')
-        );
-
-        expect($response->getStatusCode())->toBe(400);
-    }
-
-    public function test_upload_rejects_a_wrong_extension(): void
-    {
-        $customer = $this->createCustomer();
-        $product = $this->createSimpleProduct();
-        $optionId = $this->addFileOption($product);
-
-        $response = $this->upload(
-            $customer,
-            $product->id,
-            $optionId,
-            UploadedFile::fake()->create('malware.exe', 10, 'application/octet-stream')
-        );
-
-        expect($response->getStatusCode())->toBe(400);
-    }
-
     /**
-     * The upload ceiling comes from php.ini (`upload_max_filesize`), the same central
-     * limit the rest of Bagisto uses — PHP rejects anything larger before the request
-     * reaches the endpoint, so the guard is asserted at the unit level.
+     * Ini bytes.
      */
-    public function test_upload_size_limit_comes_from_php_ini(): void
-    {
-        $staging = app(CartOptionFileStaging::class);
-
-        $expected = $this->iniBytes((string) core()->getMaxUploadSize());
-
-        expect($staging->maxUploadBytes())->toBe($expected);
-
-        $oversized = new class extends CartOptionFileStaging
-        {
-            public function maxUploadBytes(): int
-            {
-                return 100 * 1024;
-            }
-        };
-
-        expect($oversized->maxUploadBytes())->toBeLessThan($staging->maxUploadBytes());
-    }
-
     private function iniBytes(string $limit): int
     {
         $value = (int) $limit;
@@ -168,121 +330,5 @@ class CustomizableOptionFileTest extends RestApiTestCase
             'K' => $value * 1024,
             default => $value,
         };
-    }
-
-    public function test_upload_returns_404_for_unknown_product(): void
-    {
-        $customer = $this->createCustomer();
-
-        $response = $this->upload(
-            $customer,
-            999999,
-            1,
-            UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf')
-        );
-
-        expect($response->getStatusCode())->toBe(404);
-    }
-
-    public function test_upload_requires_authentication(): void
-    {
-        $product = $this->createSimpleProduct();
-        $optionId = $this->addFileOption($product);
-
-        $response = $this->post($this->uploadUrl, [
-            'product_id' => $product->id,
-            'option_id' => $optionId,
-            'file' => UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf'),
-        ], [
-            ...$this->storefrontHeaders(),
-            'Accept' => 'application/json',
-        ]);
-
-        expect($response->getStatusCode())->toBeIn([401, 403]);
-    }
-
-    public function test_add_to_cart_resolves_the_token_and_consumes_it(): void
-    {
-        $customer = $this->createCustomer();
-        $product = $this->createSimpleProduct();
-        $optionId = $this->addFileOption($product);
-
-        $token = $this->upload(
-            $customer,
-            $product->id,
-            $optionId,
-            UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf')
-        )->json('token');
-
-        $add = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId' => $product->id,
-            'quantity' => 1,
-            'customizableOptions' => [(string) $optionId => [$token]],
-        ]);
-
-        expect($add->getStatusCode())->toBeIn([200, 201]);
-        expect((bool) $add->json('success'))->toBeTrue();
-        expect((int) $add->json('itemsCount'))->toBeGreaterThan(0);
-
-        // Token is single-use: it is forgotten after a successful add, so re-using it fails.
-        $reuse = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId' => $product->id,
-            'quantity' => 1,
-            'customizableOptions' => [(string) $optionId => [$token]],
-        ]);
-
-        expect($reuse->getStatusCode())->toBe(400);
-    }
-
-    public function test_add_to_cart_rejects_a_missing_required_file_option(): void
-    {
-        $customer = $this->createCustomer();
-        $product = $this->createSimpleProduct();
-        $this->addFileOption($product);
-
-        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId' => $product->id,
-            'quantity' => 1,
-        ]);
-
-        expect($response->getStatusCode())->toBe(400);
-    }
-
-    public function test_add_to_cart_rejects_an_invalid_token(): void
-    {
-        $customer = $this->createCustomer();
-        $product = $this->createSimpleProduct();
-        $optionId = $this->addFileOption($product);
-
-        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId' => $product->id,
-            'quantity' => 1,
-            'customizableOptions' => [(string) $optionId => ['not-a-real-token']],
-        ]);
-
-        expect($response->getStatusCode())->toBe(400);
-    }
-
-    public function test_add_to_cart_rejects_another_customers_token(): void
-    {
-        $owner = $this->createCustomer();
-        $attacker = $this->createCustomer(['email' => 'attacker-'.uniqid().'@example.com']);
-        $product = $this->createSimpleProduct();
-        $optionId = $this->addFileOption($product);
-
-        $token = $this->upload(
-            $owner,
-            $product->id,
-            $optionId,
-            UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf')
-        )->json('token');
-
-        $response = $this->authenticatedPost($attacker, $this->addProductUrl, [
-            'productId' => $product->id,
-            'quantity' => 1,
-            'customizableOptions' => [(string) $optionId => [$token]],
-        ]);
-
-        expect($response->getStatusCode())->toBe(403);
     }
 }

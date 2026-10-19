@@ -16,11 +16,6 @@ use Webkul\BagistoApi\Dto\ShippingRateOutput;
 use Webkul\BagistoApi\State\CheckoutProcessor;
 use Webkul\BagistoApi\State\ShippingRatesProvider;
 
-/**
- * CheckoutShippingMethod - GraphQL API Resource for Checkout Shipping Method
- *
- * Provides mutation for selecting and saving shipping method during checkout
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CheckoutShippingMethod',
@@ -142,22 +137,37 @@ use Webkul\BagistoApi\State\ShippingRatesProvider;
 )]
 class CheckoutShippingMethod
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $id = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public bool $success = false;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public string $message = '';
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $cartToken = null;
 
+    /**
+     * The shipping method.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $shippingMethod = null;

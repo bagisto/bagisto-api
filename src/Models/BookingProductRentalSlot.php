@@ -64,72 +64,108 @@ use Webkul\BookingProduct\Models\BookingProductRentalSlot as BaseModel;
 class BookingProductRentalSlot extends BaseModel
 {
     /**
-     * Override to prevent API Platform from using Laravel's auto-generated getter for 'slots'
+     * Override to prevent API Platform from using Laravel's auto-generated getter for 'slots'.
      */
     protected $casts = [];
 
+    /**
+     * Get renting type.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getRentingType()
     {
         return $this->renting_type;
     }
 
+    /**
+     * Get daily price attribute.
+     */
     public function getDailyPriceAttribute($value)
     {
         return $value !== null ? (float) core()->convertPrice((float) $value) : null;
     }
 
+    /**
+     * Get hourly price attribute.
+     */
     public function getHourlyPriceAttribute($value)
     {
         return $value !== null ? (float) core()->convertPrice((float) $value) : null;
     }
 
+    /**
+     * Get daily price.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getDailyPrice()
     {
         return $this->daily_price;
     }
 
+    /**
+     * Get hourly price.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getHourlyPrice()
     {
         return $this->hourly_price;
     }
 
+    /**
+     * Get formatted daily price attribute.
+     */
     public function getFormattedDailyPriceAttribute(): ?string
     {
         return $this->daily_price !== null ? core()->formatPrice($this->daily_price) : null;
     }
 
+    /**
+     * Get formatted daily price.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public function getFormatted_daily_price(): ?string
     {
         return $this->getFormattedDailyPriceAttribute();
     }
 
+    /**
+     * Get formatted hourly price attribute.
+     */
     public function getFormattedHourlyPriceAttribute(): ?string
     {
         return $this->hourly_price !== null ? core()->formatPrice($this->hourly_price) : null;
     }
 
+    /**
+     * Get formatted hourly price.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public function getFormatted_hourly_price(): ?string
     {
         return $this->getFormattedHourlyPriceAttribute();
     }
 
+    /**
+     * Get same slot all days.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getSameSlotAllDays()
     {
         return $this->same_slot_all_days;
     }
 
+    /**
+     * Get slots.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getSlots()
     {
         return $this->slots;
     }
 
+    /**
+     * Get booking product id.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getBookingProductId()
     {

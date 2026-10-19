@@ -9,6 +9,9 @@ use Webkul\BagistoApi\Tests\BagistoApiTest;
 
 class ParseMultipartFormDataTest extends BagistoApiTest
 {
+    /**
+     * Test temporary upload file is removed on terminate.
+     */
     public function test_temporary_upload_file_is_removed_on_terminate(): void
     {
         $boundary = 'XBOUNDARYX';

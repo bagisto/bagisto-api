@@ -7,10 +7,6 @@ use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * Configurable super-attribute — nested sub-resource of AdminCatalogProduct
- * (`superAttributes` connection). `options` is a nested connection.
- */
 #[ApiResource(
     shortName: 'AdminProductDetailSuperAttribute',
     operations: [],
@@ -25,12 +21,18 @@ class AdminProductDetailSuperAttribute extends Model
     /** @var array */
     protected $casts = ['id' => 'int'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Options.
+     */
     #[ApiProperty(writable: false)]
     public function options(): HasMany
     {

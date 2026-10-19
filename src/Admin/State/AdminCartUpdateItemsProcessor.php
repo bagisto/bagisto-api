@@ -11,6 +11,9 @@ use Webkul\Checkout\Facades\Cart;
 
 class AdminCartUpdateItemsProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminCart
     {
         $cart = AdminCartGuard::resolve(AdminCartGuard::resolveId($uriVariables, $context));
@@ -44,6 +47,9 @@ class AdminCartUpdateItemsProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve qty.
+     */
     protected function resolveQty(mixed $data, array $context): ?array
     {
         if (

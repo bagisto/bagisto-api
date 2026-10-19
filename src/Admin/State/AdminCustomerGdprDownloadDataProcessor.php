@@ -16,20 +16,11 @@ use Webkul\Customer\Models\Wishlist;
 use Webkul\Product\Models\ProductReview;
 use Webkul\Sales\Models\Order;
 
-/**
- * POST /api/admin/customers/{customerId}/gdpr-download-data +
- * createAdminCustomerGdprDownloadData mutation.
- *
- * Returns a structured JSON dump of every table that references the
- * customer's id. Mirrors the storefront GDPR PDF endpoint
- * (Shop\Customer\GDPRController::pdfView) but extended — the storefront
- * version only exports orders + addresses; this exports everything an admin
- * would expect for a GDPR data-portability request.
- *
- * Permission: customers.gdpr_requests (read-only inspection).
- */
 class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -95,6 +86,9 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Safe query.
+     */
     protected function safeQuery(callable $fn): array
     {
         try {
@@ -106,6 +100,9 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin): void
     {
         $role = $admin->role ?? null;

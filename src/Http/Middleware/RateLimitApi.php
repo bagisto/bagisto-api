@@ -6,18 +6,21 @@ use Closure;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Http\Request;
 
-/**
- * Implements rate limiting for API endpoints to prevent abuse
- */
 class RateLimitApi
 {
     /**
-     * Cache key prefix for rate limiting
+     * Cache key prefix for rate limiting.
      */
     private const CACHE_PREFIX = 'api:rate-limit:';
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected RateLimiter $limiter) {}
 
+    /**
+     * Handle the request.
+     */
     public function handle(Request $request, Closure $next)
     {
         if ($this->shouldSkipRateLimit($request)) {
@@ -41,6 +44,9 @@ class RateLimitApi
         return $this->addRateLimitHeaders($response, $key, $limit);
     }
 
+    /**
+     * Should skip rate limit.
+     */
     private function shouldSkipRateLimit(Request $request): bool
     {
         if (in_array($request->path(), ['health', 'ping', ''])) {
@@ -57,6 +63,9 @@ class RateLimitApi
         return false;
     }
 
+    /**
+     * Get rate limit.
+     */
     private function getRateLimit(Request $request): ?array
     {
         $path = $request->path();
@@ -98,12 +107,7 @@ class RateLimitApi
 
     /**
      * Resolve request signature for rate limiting
-     * Uses API key if available (better for tracking), otherwise IP address
-     *
-     * Prefers API key as it's:
-     * - More accurate (per-key limits vs per-IP)
-     * - Supports shared IPs (offices, proxies)
-     * - Can be different for different key tiers
+     * Uses API key if available (better for tracking), otherwise IP address.
      */
     private function resolveRequestSignature(Request $request): string
     {
@@ -115,7 +119,7 @@ class RateLimitApi
     }
 
     /**
-     * Check if request is allowed based on rate limit
+     * Check if request is allowed based on rate limit.
      */
     private function allowRequest(string $key, array $limit): bool
     {
@@ -135,7 +139,7 @@ class RateLimitApi
     }
 
     /**
-     * Build rate limit exceeded response
+     * Build rate limit exceeded response.
      */
     private function buildResponse(Request $request, array $limit, string $key)
     {
@@ -151,35 +155,25 @@ class RateLimitApi
     }
 
     /**
-     * Get retry-after seconds from cache TTL
+     * Get retry-after seconds from cache TTL.
      */
     private function getRetryAfter(string $key, array $limit): int
     {
-        // Try to get TTL from cache backend
         $ttl = cache()->getStore()->connection()->ttl($key);
 
-        // Handle different TTL formats:
-        // - Positive seconds: Redis returns TTL in seconds (convert from -2/-1)
-        // - Negative: Redis returns -1 (key doesn't exist) or -2 (expired)
-        // - Large number: If > current timestamp, it's likely a Unix timestamp (Redis cluster)
         if ($ttl > 0) {
-            // TTL is in seconds (correct format)
             return $ttl;
         }
 
-        // If TTL is -1 or -2, or if large number (Unix timestamp), fallback to decay minutes
-        // For Unix timestamps, calculate seconds remaining
         if ($ttl > time()) {
-            // It's a Unix timestamp, calculate seconds remaining
             return max(1, $ttl - time());
         }
 
-        // Fallback to configured decay minutes
         return max(1, $limit['decay_minutes'] * 60);
     }
 
     /**
-     * Add rate limit headers to response
+     * Add rate limit headers to response.
      */
     private function addRateLimitHeaders($response, string $key, array $limit)
     {

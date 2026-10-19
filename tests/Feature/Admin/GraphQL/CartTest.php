@@ -7,39 +7,22 @@ use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Checkout\Facades\Cart as CartFacade;
 use Webkul\Product\Models\Product;
 
-/**
- * GraphQL coverage for the Admin draft-cart endpoints (Wave 2).
- *
- * Operations:
- *   - adminCart(id: ID!)                            query
- *   - createAdminCartAddItem(input)                 mutation
- *   - createAdminCartUpdateItems(input)             mutation
- *   - createAdminCartRemoveItem(input)              mutation
- *   - createAdminCartSaveAddress(input)             mutation
- *   - createAdminCartApplyCoupon(input)             mutation
- *   - createAdminCartRemoveCoupon(input)            mutation
- *
- * NOTE: API Platform GraphQL returns the resource IRI for `id` and the raw
- * integer for `_id`. Multi-word scalar fields (customerId, isActive,
- * grandTotal, ...) resolve over GraphQL because AdminCart declares snake_case
- * props + AcceptsCamelCaseWrites; REST surfaces them as camelCase too.
- */
 class CartTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    /** Bootstrap a draft cart with one item. Always returns a cart id. */
-    protected function bootstrapDraftCart(): int
-    {
-        return $this->bootstrapAdminDraftCart();
-    }
-
+    /**
+     * Test query requires authentication.
+     */
     public function test_query_requires_authentication(): void
     {
         $resp = $this->adminGraphQL('query { adminCart(id: "/api/admin/carts/1") { id } }');
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test query returns cart.
+     */
     public function test_query_returns_cart(): void
     {
         $admin = $this->createAdmin();
@@ -73,6 +56,9 @@ class CartTest extends AdminApiTestCase
         expect($data['formattedGrandTotal'])->not->toBeNull();
     }
 
+    /**
+     * Test query returns error for unknown cart.
+     */
     public function test_query_returns_error_for_unknown_cart(): void
     {
         $admin = $this->createAdmin();
@@ -80,6 +66,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test add item mutation requires product.
+     */
     public function test_add_item_mutation_requires_product(): void
     {
         $admin = $this->createAdmin();
@@ -100,6 +89,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test add item blocks booking products.
+     */
     public function test_add_item_blocks_booking_products(): void
     {
         $admin = $this->createAdmin();
@@ -132,6 +124,9 @@ class CartTest extends AdminApiTestCase
         expect($messages)->toContain('Booking');
     }
 
+    /**
+     * Test remove coupon mutation.
+     */
     public function test_remove_coupon_mutation(): void
     {
         $admin = $this->createAdmin();
@@ -154,6 +149,9 @@ class CartTest extends AdminApiTestCase
         expect($cart['id'])->toBe($cartId);
     }
 
+    /**
+     * Test apply unknown coupon returns error.
+     */
     public function test_apply_unknown_coupon_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -176,6 +174,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test query unknown cart id zero returns error.
+     */
     public function test_query_unknown_cart_id_zero_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -183,6 +184,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test update items mutation empty qty errors.
+     */
     public function test_update_items_mutation_empty_qty_errors(): void
     {
         $admin = $this->createAdmin();
@@ -203,6 +207,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test remove item mutation missing cart item id errors.
+     */
     public function test_remove_item_mutation_missing_cart_item_id_errors(): void
     {
         $admin = $this->createAdmin();
@@ -223,6 +230,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test save address mutation missing billing errors.
+     */
     public function test_save_address_mutation_missing_billing_errors(): void
     {
         $admin = $this->createAdmin();
@@ -243,6 +253,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test apply coupon empty code errors.
+     */
     public function test_apply_coupon_empty_code_errors(): void
     {
         $admin = $this->createAdmin();
@@ -264,12 +277,18 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test query requires auth strictly.
+     */
     public function test_query_requires_auth_strictly(): void
     {
         $resp = $this->adminGraphQL('query { adminCart(id: "/api/admin/carts/999999999") { id } }');
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test add item mutation unauth errors.
+     */
     public function test_add_item_mutation_unauth_errors(): void
     {
         $mutation = <<<'GQL'
@@ -288,6 +307,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test apply unknown coupon to empty cart errors.
+     */
     public function test_apply_unknown_coupon_to_empty_cart_errors(): void
     {
         $admin = $this->createAdmin();
@@ -312,5 +334,11 @@ class CartTest extends AdminApiTestCase
             ],
         ], $admin);
         expect($resp->json('errors'))->not->toBeNull();
+    }
+
+    /** Bootstrap a draft cart with one item. Always returns a cart id. */
+    protected function bootstrapDraftCart(): int
+    {
+        return $this->bootstrapAdminDraftCart();
     }
 }

@@ -6,7 +6,6 @@ use ApiPlatform\GraphQl\Type\Definition\IterableType;
 use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
 use ApiPlatform\Metadata\Resource\Factory\ResourceNameCollectionFactoryInterface;
 use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
-use Illuminate\Support\Facades\Route;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditContext;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
 use Webkul\BagistoApi\Admin\Metadata\NullableToOnePropertyMetadataFactory;
@@ -32,7 +31,6 @@ trait RegistersCoreServices
      */
     protected function registerCoreBindings(): void
     {
-        // Registered first: the resource gate and the state bindings both read it.
         $this->app->singleton(CoreCapabilities::class);
 
         $this->registerAdminApiGuardConfig();
@@ -63,14 +61,10 @@ trait RegistersCoreServices
             return new SplitOpenApiFactory($openApiFactory);
         });
 
-        // BACKWARD COMPATIBILITY: exposes only the theme surface this core can serve.
-        // Remove this extend() and the factory when the minimum supported core is 2.4.10.
         $this->app->extend(ResourceNameCollectionFactoryInterface::class, function ($inner, $app) {
             return new VersionGatedResourceNameCollectionFactory($inner, $app->make(CoreCapabilities::class));
         });
 
-        // Skip the ~700-route API resource enumeration for non-API HTTP requests
-        // when route cache is off, so plain admin/shop web pages don't pay it.
         $this->app->extend(ResourceNameCollectionFactoryInterface::class, function ($inner) {
             return new PathGatedResourceNameCollectionFactory($inner);
         });

@@ -10,27 +10,24 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Webkul\BagistoApi\Models\CountryState;
 
-/**
- * Collection provider for CountryState
- *
- * Provides cursor-based pagination for country states
- * - Subresource: /countries/{country_id}/states (country_id provided via URI)
- * - Direct query: countryStates(countryId: 244) (countryId REQUIRED in args for GraphQL and REST)
- */
 class CountryStateCollectionProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        // Handle both 'country_id' (snake_case from URI) and 'countryId' (camelCase from args)
         $countryId = $uriVariables['country_id'] ?? $uriVariables['countryId'] ?? null;
 
         $args = $context['args'] ?? [];
 
-        // Also check for countryId in GraphQL args (for direct countryStates query)
         if (
             ! $countryId
             && isset($args['countryId'])
@@ -38,7 +35,6 @@ class CountryStateCollectionProvider implements ProviderInterface
             $countryId = (int) $args['countryId'];
         }
 
-        // Enforce: countryId is REQUIRED when querying country states directly
         if (! $countryId) {
             throw new BadRequestHttpException(
                 __('bagistoapi::app.graphql.country-state.country-id-required')
@@ -52,7 +48,6 @@ class CountryStateCollectionProvider implements ProviderInterface
 
         $defaultPerPage = 10;
 
-        // Determine page size
         if ($first !== null) {
             $perPage = $first;
         } elseif ($last !== null) {

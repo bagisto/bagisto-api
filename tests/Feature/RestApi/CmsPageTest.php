@@ -9,47 +9,10 @@ use Webkul\Core\Models\Channel;
 
 class CmsPageTest extends RestApiTestCase
 {
-    /**
-     * Create test CMS page with translation
-     */
-    private function createTestCmsPage(): array
-    {
-        // Ensure we have required data
-        $this->seedRequiredData();
-
-        // Create a channel if none exists
-        $channel = Channel::first();
-        if (! $channel) {
-            $channel = Channel::factory()->create();
-        }
-
-        // Create CMS page
-        $page = Page::factory()->create([
-            'layout' => 'default',
-        ]);
-
-        // Attach channel
-        $page->channels()->attach($channel->id);
-
-        // Create translation
-        $translation = PageTranslation::factory()->create([
-            'cms_page_id' => $page->id,
-            'locale' => 'en',
-            'page_title' => 'Test About Us Page',
-            'url_key' => 'test-about-us',
-            'html_content' => '<p>This is a test about us page content</p>',
-            'meta_title' => 'Test About Us',
-            'meta_description' => 'Test meta description',
-            'meta_keywords' => 'test, about, us',
-        ]);
-
-        return compact('page', 'translation', 'channel');
-    }
-
     // ── Collection ────────────────────────────────────────────
 
     /**
-     * Test: GET /api/shop/pages returns collection
+     * Test: GET /api/shop/pages returns collection.
      */
     public function test_get_cms_pages_collection(): void
     {
@@ -63,7 +26,6 @@ class CmsPageTest extends RestApiTestCase
         expect($json)->toBeArray();
         expect(count($json))->toBeGreaterThanOrEqual(1);
 
-        // Check first item has expected structure
         $firstPage = $json[0];
         expect($firstPage)->toHaveKey('id');
         expect($firstPage)->toHaveKey('_id');
@@ -73,6 +35,9 @@ class CmsPageTest extends RestApiTestCase
         expect($firstPage)->toHaveKey('translation');
     }
 
+    /**
+     * Test get cms pages can filter by url key.
+     */
     public function test_get_cms_pages_can_filter_by_url_key(): void
     {
         $page = $this->createTestCmsPage();
@@ -84,6 +49,9 @@ class CmsPageTest extends RestApiTestCase
             ->and($response->json('0.translation.urlKey'))->toBe($page['translation']->url_key);
     }
 
+    /**
+     * Test get cms pages url key filter still hides other channels.
+     */
     public function test_get_cms_pages_url_key_filter_still_hides_other_channels(): void
     {
         $this->seedRequiredData();
@@ -105,7 +73,7 @@ class CmsPageTest extends RestApiTestCase
     }
 
     /**
-     * Test: GET /api/shop/pages returns all required fields
+     * Test: GET /api/shop/pages returns all required fields.
      */
     public function test_get_cms_pages_contains_all_fields(): void
     {
@@ -120,14 +88,12 @@ class CmsPageTest extends RestApiTestCase
 
         $page = $json[0];
 
-        // Main page fields
         expect($page['id'])->toMatch('/^\/api\/shop\/pages\/\d+$/');
         expect($page['_id'])->toBeInt();
         expect($page['layout'])->toBe('default');
         expect($page['createdAt'])->toMatch('/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
         expect($page['updatedAt'])->toMatch('/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
 
-        // Translation fields
         expect($page['translation'])->toHaveKey('id');
         expect($page['translation'])->toHaveKey('_id');
         expect($page['translation'])->toHaveKey('pageTitle');
@@ -142,7 +108,7 @@ class CmsPageTest extends RestApiTestCase
     // ── Single Item ───────────────────────────────────────────
 
     /**
-     * Test: GET /api/shop/pages/{id} returns single page
+     * Test: GET /api/shop/pages/{id} returns single page.
      */
     public function test_get_single_cms_page(): void
     {
@@ -165,7 +131,7 @@ class CmsPageTest extends RestApiTestCase
     }
 
     /**
-     * Test: GET /api/shop/pages/{id} with translation data
+     * Test: GET /api/shop/pages/{id} with translation data.
      */
     public function test_get_single_cms_page_with_translation(): void
     {
@@ -187,7 +153,7 @@ class CmsPageTest extends RestApiTestCase
     }
 
     /**
-     * Test: GET /api/shop/pages/{id} with invalid id returns 404
+     * Test: GET /api/shop/pages/{id} with invalid id returns 404.
      */
     public function test_get_cms_page_not_found(): void
     {
@@ -199,7 +165,7 @@ class CmsPageTest extends RestApiTestCase
     // ── Timestamps ───────────────────────────────────────────
 
     /**
-     * Test: Timestamps are returned in ISO8601 format
+     * Test: Timestamps are returned in ISO8601 format.
      */
     public function test_cms_page_timestamps_are_iso8601_format(): void
     {
@@ -212,7 +178,6 @@ class CmsPageTest extends RestApiTestCase
 
         $page = $json[0];
 
-        // Verify ISO8601 format (should contain 'T' and timezone)
         expect($page['createdAt'])->toMatch('/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
         expect($page['updatedAt'])->toMatch('/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
     }
@@ -220,11 +185,10 @@ class CmsPageTest extends RestApiTestCase
     // ── Multiple Pages ───────────────────────────────────────
 
     /**
-     * Test: Multiple CMS pages can be retrieved
+     * Test: Multiple CMS pages can be retrieved.
      */
     public function test_get_multiple_cms_pages(): void
     {
-        // Create multiple pages
         $this->createTestCmsPage();
         $this->createTestCmsPage();
 
@@ -235,7 +199,6 @@ class CmsPageTest extends RestApiTestCase
 
         expect(count($json))->toBeGreaterThanOrEqual(2);
 
-        // Each page should have translation
         foreach ($json as $page) {
             expect($page)->toHaveKey('translation');
             expect($page['translation']['pageTitle'])->not()->toBeNull();
@@ -245,7 +208,7 @@ class CmsPageTest extends RestApiTestCase
     // ── ID Format ───────────────────────────────────────────
 
     /**
-     * Test: Page IDs are in correct IRI format
+     * Test: Page IDs are in correct IRI format.
      */
     public function test_cms_page_id_format(): void
     {
@@ -256,10 +219,8 @@ class CmsPageTest extends RestApiTestCase
         $response->assertOk();
         $json = $response->json();
 
-        // Check id format: /api/shop/pages/{id}
         expect($json['id'])->toMatch('/^\/api\/shop\/pages\/\d+$/');
 
-        // Check translation id format: /api/shop/page_translations/{id}
         expect($json['translation']['id'])->toMatch('/^\/api\/shop\/page_translations\/\d+$/');
     }
 
@@ -295,5 +256,37 @@ class CmsPageTest extends RestApiTestCase
         if ($item->getStatusCode() === 200) {
             expect($item->json('_id'))->toBeNull();
         }
+    }
+
+    /**
+     * Create test CMS page with translation.
+     */
+    private function createTestCmsPage(): array
+    {
+        $this->seedRequiredData();
+
+        $channel = Channel::first();
+        if (! $channel) {
+            $channel = Channel::factory()->create();
+        }
+
+        $page = Page::factory()->create([
+            'layout' => 'default',
+        ]);
+
+        $page->channels()->attach($channel->id);
+
+        $translation = PageTranslation::factory()->create([
+            'cms_page_id' => $page->id,
+            'locale' => 'en',
+            'page_title' => 'Test About Us Page',
+            'url_key' => 'test-about-us',
+            'html_content' => '<p>This is a test about us page content</p>',
+            'meta_title' => 'Test About Us',
+            'meta_description' => 'Test meta description',
+            'meta_keywords' => 'test, about, us',
+        ]);
+
+        return compact('page', 'translation', 'channel');
     }
 }

@@ -7,50 +7,11 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * GraphQL coverage for admin marketing cart rules (Block F1b).
- */
 class MarketingCartRuleTest extends AdminApiTestCase
 {
-    protected function defaultChannelId(): int
-    {
-        $this->seedRequiredData();
-
-        return (int) \DB::table('channels')->value('id');
-    }
-
-    protected function defaultGroupId(): int
-    {
-        return (int) \DB::table('customer_groups')->value('id');
-    }
-
-    protected function seedRule(array $overrides = []): int
-    {
-        return \DB::table('cart_rules')->insertGetId(array_merge([
-            'name' => 'gql-rule-'.rand(1000, 9999),
-            'description' => null,
-            'status' => 1,
-            'coupon_type' => 1,
-            'use_auto_generation' => 0,
-            'usage_per_customer' => 0,
-            'uses_per_coupon' => 0,
-            'times_used' => 0,
-            'condition_type' => 1,
-            'conditions' => json_encode([]),
-            'end_other_rules' => 0,
-            'uses_attribute_conditions' => 0,
-            'action_type' => 'by_percent',
-            'discount_amount' => 10,
-            'discount_quantity' => 1,
-            'discount_step' => '0',
-            'apply_to_shipping' => 0,
-            'free_shipping' => 0,
-            'sort_order' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
+    /**
+     * Test query listing.
+     */
     public function test_query_listing(): void
     {
         $admin = $this->createAdmin();
@@ -71,6 +32,9 @@ class MarketingCartRuleTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test query filter by name.
+     */
     public function test_query_filter_by_name(): void
     {
         $admin = $this->createAdmin();
@@ -92,6 +56,9 @@ class MarketingCartRuleTest extends AdminApiTestCase
         expect($ids)->not()->toContain($other);
     }
 
+    /**
+     * Test query detail.
+     */
     public function test_query_detail(): void
     {
         $admin = $this->createAdmin();
@@ -110,6 +77,9 @@ class MarketingCartRuleTest extends AdminApiTestCase
         expect($r->json('data.adminMarketingCartRule._id'))->toBe($id);
     }
 
+    /**
+     * Test query detail resolves camelcase fields.
+     */
     public function test_query_detail_resolves_camelcase_fields(): void
     {
         $admin = $this->createAdmin();
@@ -138,6 +108,9 @@ class MarketingCartRuleTest extends AdminApiTestCase
         expect($node['createdAt'])->not->toBeNull();
     }
 
+    /**
+     * Test query detail resolves channels and customer groups connections.
+     */
     public function test_query_detail_resolves_channels_and_customer_groups_connections(): void
     {
         $admin = $this->createAdmin();
@@ -173,6 +146,9 @@ class MarketingCartRuleTest extends AdminApiTestCase
         expect($groupIds)->toContain($groupId);
     }
 
+    /**
+     * Test mutation create.
+     */
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();
@@ -203,6 +179,9 @@ class MarketingCartRuleTest extends AdminApiTestCase
         expect($count > 0 || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test mutation partial update preserves coupon code.
+     */
     public function test_mutation_partial_update_preserves_coupon_code(): void
     {
         $admin = $this->createAdmin();
@@ -265,6 +244,9 @@ class MarketingCartRuleTest extends AdminApiTestCase
         expect($node['couponCode'])->toBe($code);
     }
 
+    /**
+     * Test mutation delete.
+     */
     public function test_mutation_delete(): void
     {
         $admin = $this->createAdmin();
@@ -282,6 +264,9 @@ class MarketingCartRuleTest extends AdminApiTestCase
         expect(\DB::table('cart_rules')->where('id', $id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mutation mass delete.
+     */
     public function test_mutation_mass_delete(): void
     {
         $admin = $this->createAdmin();
@@ -382,6 +367,54 @@ class MarketingCartRuleTest extends AdminApiTestCase
 
         expect($response->json('errors'))->not->toBeNull();
         expect(\DB::table('cart_rules')->count())->toBe($count);
+    }
+
+    /**
+     * Default channel id.
+     */
+    protected function defaultChannelId(): int
+    {
+        $this->seedRequiredData();
+
+        return (int) \DB::table('channels')->value('id');
+    }
+
+    /**
+     * Default group id.
+     */
+    protected function defaultGroupId(): int
+    {
+        return (int) \DB::table('customer_groups')->value('id');
+    }
+
+    /**
+     * Seed rule.
+     */
+    protected function seedRule(array $overrides = []): int
+    {
+        return \DB::table('cart_rules')->insertGetId(array_merge([
+            'name' => 'gql-rule-'.rand(1000, 9999),
+            'description' => null,
+            'status' => 1,
+            'coupon_type' => 1,
+            'use_auto_generation' => 0,
+            'usage_per_customer' => 0,
+            'uses_per_coupon' => 0,
+            'times_used' => 0,
+            'condition_type' => 1,
+            'conditions' => json_encode([]),
+            'end_other_rules' => 0,
+            'uses_attribute_conditions' => 0,
+            'action_type' => 'by_percent',
+            'discount_amount' => 10,
+            'discount_quantity' => 1,
+            'discount_step' => '0',
+            'apply_to_shipping' => 0,
+            'free_shipping' => 0,
+            'sort_order' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
     }
 
     /**

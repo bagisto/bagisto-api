@@ -11,10 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminAppearanceSectionStatusInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionStatusProcessor;
 
-/**
- * Switching a section on or off is staged like any other edit, so the storefront only
- * changes once the theme is published.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAppearanceSectionStatus',
@@ -74,12 +70,24 @@ class AdminAppearanceSectionStatus
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The section id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $section_id = null;
 
+    /**
+     * The draft status.
+     */
     public ?bool $draft_status = null;
 
+    /**
+     * The has draft.
+     */
     public ?bool $has_draft = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

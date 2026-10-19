@@ -2,16 +2,11 @@
 
 namespace Webkul\BagistoApi\Admin\State\Concerns;
 
-/**
- * Maps a Bagisto order address model to the plain associative-array shape used
- * across the admin Sales detail responses (Invoice / Shipment / Refund).
- *
- * Plain array (not a typed DTO) per the project-wide admin-detail nested-object
- * convention — avoids API Platform's IRI-serialization trap and renders the
- * same in REST and GraphQL.
- */
 trait MapsOrderAddress
 {
+    /**
+     * Map address.
+     */
     protected function mapAddress($address): ?array
     {
         if (! $address) {

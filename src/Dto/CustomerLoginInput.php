@@ -2,11 +2,11 @@
 
 namespace Webkul\BagistoApi\Dto;
 
-/**
- * DTO for customer login input
- */
 class CustomerLoginInput
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         public ?string $email = null,
         public ?string $password = null,

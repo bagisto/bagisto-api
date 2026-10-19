@@ -14,93 +14,10 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerDownloadableProductTest extends GraphQLTestCase
 {
-    /**
-     * Create test data — customer with downloadable product purchases
-     */
-    private function createTestData(): array
-    {
-        $this->seedRequiredData();
-
-        $customer = $this->createCustomer();
-        $channel = Channel::first();
-        $product = Product::factory()->create();
-
-        $order = Order::factory()->create([
-            'customer_id' => $customer->id,
-            'customer_email' => $customer->email,
-            'customer_first_name' => $customer->first_name,
-            'customer_last_name' => $customer->last_name,
-            'channel_id' => $channel->id,
-            'status' => 'completed',
-        ]);
-
-        OrderItem::factory()->create([
-            'order_id' => $order->id,
-            'product_id' => $product->id,
-            'sku' => 'DOWNLOAD-SKU-001',
-            'type' => 'downloadable',
-            'name' => 'Downloadable Test Product',
-        ]);
-
-        OrderPayment::factory()->create([
-            'order_id' => $order->id,
-        ]);
-
-        $purchase1 = DownloadableLinkPurchased::create([
-            'product_name' => 'Downloadable Test Product',
-            'name' => 'Download Link 1',
-            'url' => null,
-            'file' => 'downloadable/test-file.pdf',
-            'file_name' => 'test-file.pdf',
-            'type' => 'file',
-            'download_bought' => 5,
-            'download_used' => 1,
-            'status' => 'available',
-            'customer_id' => $customer->id,
-            'order_id' => $order->id,
-            'order_item_id' => $order->items->first()->id,
-            'download_canceled' => 0,
-        ]);
-
-        $purchase2 = DownloadableLinkPurchased::create([
-            'product_name' => 'Downloadable Test Product',
-            'name' => 'Download Link 2',
-            'url' => 'https://example.com/download/file.zip',
-            'file' => null,
-            'file_name' => 'file.zip',
-            'type' => 'url',
-            'download_bought' => 3,
-            'download_used' => 3,
-            'status' => 'expired',
-            'customer_id' => $customer->id,
-            'order_id' => $order->id,
-            'order_item_id' => $order->items->first()->id,
-            'download_canceled' => 0,
-        ]);
-
-        $purchase3 = DownloadableLinkPurchased::create([
-            'product_name' => 'Downloadable Test Product',
-            'name' => 'Download Link 3',
-            'url' => null,
-            'file' => 'downloadable/pending-file.pdf',
-            'file_name' => 'pending-file.pdf',
-            'type' => 'file',
-            'download_bought' => 10,
-            'download_used' => 0,
-            'status' => 'pending',
-            'customer_id' => $customer->id,
-            'order_id' => $order->id,
-            'order_item_id' => $order->items->first()->id,
-            'download_canceled' => 0,
-        ]);
-
-        return compact('customer', 'channel', 'product', 'order', 'purchase1', 'purchase2', 'purchase3');
-    }
-
     // ── Collection Queries ────────────────────────────────────
 
     /**
-     * Test: Query all customer downloadable products collection
+     * Test: Query all customer downloadable products collection.
      */
     public function test_get_customer_downloadable_products_collection(): void
     {
@@ -145,7 +62,7 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Unauthenticated request returns error
+     * Test: Unauthenticated request returns error.
      */
     public function test_get_customer_downloadable_products_requires_authentication(): void
     {
@@ -170,13 +87,12 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Customer only sees their own downloadable products
+     * Test: Customer only sees their own downloadable products.
      */
     public function test_customer_only_sees_own_downloadable_products(): void
     {
         $testData = $this->createTestData();
 
-        /** Create another customer with their own downloadable purchase */
         $otherCustomer = $this->createCustomer();
         $channel = Channel::first();
 
@@ -232,12 +148,11 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
         $response->assertOk();
         $data = $response->json('data.customerDownloadableProducts');
 
-        /** Should only see the 3 purchases belonging to testData customer */
         expect($data['totalCount'])->toBe(3);
     }
 
     /**
-     * Test: Filter downloadable products by status
+     * Test: Filter downloadable products by status.
      */
     public function test_filter_downloadable_products_by_status(): void
     {
@@ -257,7 +172,6 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
             }
         GQL;
 
-        /** Filter for 'available' — should get 1 result */
         $response = $this->authenticatedGraphQL($testData['customer'], $query, ['status' => 'available']);
 
         $response->assertOk();
@@ -268,7 +182,7 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Filter downloadable products by expired status
+     * Test: Filter downloadable products by expired status.
      */
     public function test_filter_downloadable_products_by_expired_status(): void
     {
@@ -298,7 +212,7 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Cursor-based pagination works
+     * Test: Cursor-based pagination works.
      */
     public function test_cursor_pagination(): void
     {
@@ -331,7 +245,6 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
         expect($data['edges'])->toHaveCount(1);
         expect($data['pageInfo']['hasNextPage'])->toBeTrue();
 
-        /** Fetch next page using the endCursor */
         $cursor = $data['pageInfo']['endCursor'];
 
         $nextQuery = <<<GQL
@@ -359,7 +272,7 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single item by ID
+     * Test: Query single item by ID.
      */
     public function test_get_single_downloadable_product(): void
     {
@@ -392,6 +305,9 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
         expect($data['status'])->toBe('available');
     }
 
+    /**
+     * Test other customer cannot get downloadable product by id.
+     */
     public function test_other_customer_cannot_get_downloadable_product_by_id(): void
     {
         $testData = $this->createTestData();
@@ -414,6 +330,9 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
         expect($response->json('data.customerDownloadableProduct'))->toBeNull();
     }
 
+    /**
+     * Test guest cannot get downloadable product by id.
+     */
     public function test_guest_cannot_get_downloadable_product_by_id(): void
     {
         $testData = $this->createTestData();
@@ -436,7 +355,7 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Customer with no downloadable products returns empty collection
+     * Test: Customer with no downloadable products returns empty collection.
      */
     public function test_customer_with_no_downloadable_products_returns_empty(): void
     {
@@ -533,6 +452,89 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeEmpty();
         expect((string) $response->json('errors.0.message'))->toContain('pending');
         expect((int) $testData['purchase3']->fresh()->download_used)->toBe(0);
+    }
+
+    /**
+     * Create test data — customer with downloadable product purchases.
+     */
+    private function createTestData(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $channel = Channel::first();
+        $product = Product::factory()->create();
+
+        $order = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'customer_first_name' => $customer->first_name,
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
+        ]);
+
+        OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'DOWNLOAD-SKU-001',
+            'type' => 'downloadable',
+            'name' => 'Downloadable Test Product',
+        ]);
+
+        OrderPayment::factory()->create([
+            'order_id' => $order->id,
+        ]);
+
+        $purchase1 = DownloadableLinkPurchased::create([
+            'product_name' => 'Downloadable Test Product',
+            'name' => 'Download Link 1',
+            'url' => null,
+            'file' => 'downloadable/test-file.pdf',
+            'file_name' => 'test-file.pdf',
+            'type' => 'file',
+            'download_bought' => 5,
+            'download_used' => 1,
+            'status' => 'available',
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'order_item_id' => $order->items->first()->id,
+            'download_canceled' => 0,
+        ]);
+
+        $purchase2 = DownloadableLinkPurchased::create([
+            'product_name' => 'Downloadable Test Product',
+            'name' => 'Download Link 2',
+            'url' => 'https://example.com/download/file.zip',
+            'file' => null,
+            'file_name' => 'file.zip',
+            'type' => 'url',
+            'download_bought' => 3,
+            'download_used' => 3,
+            'status' => 'expired',
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'order_item_id' => $order->items->first()->id,
+            'download_canceled' => 0,
+        ]);
+
+        $purchase3 = DownloadableLinkPurchased::create([
+            'product_name' => 'Downloadable Test Product',
+            'name' => 'Download Link 3',
+            'url' => null,
+            'file' => 'downloadable/pending-file.pdf',
+            'file_name' => 'pending-file.pdf',
+            'type' => 'file',
+            'download_bought' => 10,
+            'download_used' => 0,
+            'status' => 'pending',
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'order_item_id' => $order->items->first()->id,
+            'download_canceled' => 0,
+        ]);
+
+        return compact('customer', 'channel', 'product', 'order', 'purchase1', 'purchase2', 'purchase3');
     }
 
     /**

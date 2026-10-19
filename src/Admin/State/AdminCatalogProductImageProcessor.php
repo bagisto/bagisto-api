@@ -29,24 +29,6 @@ use Webkul\Product\Models\ProductImage;
 use Webkul\Product\Repositories\ProductImageRepository;
 use Webkul\Product\Repositories\ProductRepository;
 
-/**
- * Phase 5.11 — Admin Catalog Product images processor.
- *
- * Handles three operations on the AdminCatalogProductImage sub-resource:
- *   - POST   /catalog/products/{productId}/images        upload (multipart)
- *   - PUT    /catalog/products/{productId}/images/reorder reorder positions
- *   - DELETE /catalog/products/{productId}/images/{id}   remove DB row + file
- *
- * Storage convention: files live under `product/{productId}/{filename}` on the
- * `public` disk (Storage::disk('public')). Mirrors the core monolith path.
- *
- * Permission gate: catalog.products.edit for all three operations (Sanctum-token
- * pattern — reads $admin->role->permission_type / ->permissions directly; never
- * calls bouncer() because Sanctum-API requests have no session-bound admin).
- *
- * Each operation fires catalog.product.update.before/after — image edits are an
- * update event in the Bagisto monolith.
- */
 class AdminCatalogProductImageProcessor implements ProcessorInterface
 {
     /** Allowed mime types for uploads. */
@@ -427,10 +409,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
     /**
      * Convert an AdminCatalogProductImage result DTO to a raw JsonResponse so
-     * API Platform's SerializeProcessor short-circuits (it skips when $data is
-     * already a Response). This avoids the project's CustomIriConverter trying
-     * to generate an IRI for a non-Eloquent resource on the reorder/delete
-     * write responses.
+     * API Platform's SerializeProcessor short-circuits (it skips when $data is.
      */
     protected function toRestResponse(AdminCatalogProductImage $dto, int $status): JsonResponse
     {
@@ -502,8 +481,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
      */
     protected function saveAltText(int $imageId, string $altText): void
     {
-        // BACKWARD COMPATIBILITY: the translation table arrived in 2.4.10. Remove when the
-        // minimum supported core is 2.4.10.
         if (! app(CoreCapabilities::class)->hasProductImageAltText()) {
             return;
         }
@@ -524,7 +501,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
      */
     protected function altTextFor(int $imageId): ?string
     {
-        // BACKWARD COMPATIBILITY: remove when the minimum supported core is 2.4.10.
         if (! app(CoreCapabilities::class)->hasProductImageAltText()) {
             return null;
         }

@@ -13,23 +13,18 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Product\Repositories\ProductRepository;
 
-/**
- * POST /api/admin/catalog/products/mass-delete + createAdminCatalogProductMassDelete.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Catalog\ProductController::massDestroy:
- *   - For each ID, find → delete → fire catalog.product.delete.before/after.
- *   - Non-existent IDs are silently skipped.
- *   - If a single delete throws, surface HTTP 500 with the underlying message.
- *
- * No pre-validation batch guard (unlike Categories, which rejects channel-root IDs
- * up front). Products has no equivalent "undeletable" rule — plain best-effort.
- */
 class AdminCatalogProductMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ProductRepository $productRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -80,6 +75,9 @@ class AdminCatalogProductMassDeleteProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -107,6 +105,9 @@ class AdminCatalogProductMassDeleteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

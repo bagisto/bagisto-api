@@ -13,25 +13,19 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\CartRule\Repositories\CartRuleRepository;
 
-/**
- * Copy a cart rule — mirrors the admin datagrid Copy action
- * (Webkul\Admin\Http\Controllers\Marketing\Promotions\CartRuleController::copy).
- *
- * Replicates the rule with status forced to inactive and the name prefixed
- * "Copy of ...", copies its channel + customer-group associations, and returns
- * the new rule's full detail (same shape as GET /marketing/cart-rules/{id}) so
- * the client can render the prefilled edit form without a follow-up request.
- *
- * Coupons are NOT copied (a specific coupon code is unique and cannot be
- * duplicated) — matching the monolith.
- */
 class AdminMarketingCartRuleCopyProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CartRuleRepository $cartRuleRepository,
         protected AdminMarketingCartRuleItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -87,6 +81,9 @@ class AdminMarketingCartRuleCopyProcessor implements ProcessorInterface
         return $this->itemProvider->buildRestDtoPublic($reloaded);
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

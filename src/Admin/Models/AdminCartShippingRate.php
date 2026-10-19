@@ -76,27 +76,51 @@ use Webkul\BagistoApi\Admin\State\AdminCartShippingMethodsProvider;
 )]
 class AdminCartShippingRate
 {
+    /**
+     * The method.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $method = null;
 
+    /**
+     * The carrier code.
+     */
     #[ApiProperty(writable: false)]
     public ?string $carrierCode = null;
 
+    /**
+     * The carrier title.
+     */
     #[ApiProperty(writable: false)]
     public ?string $carrierTitle = null;
 
+    /**
+     * The method title.
+     */
     #[ApiProperty(writable: false)]
     public ?string $methodTitle = null;
 
+    /**
+     * The price.
+     */
     #[ApiProperty(writable: false)]
     public ?float $price = null;
 
+    /**
+     * The formatted price.
+     */
     #[ApiProperty(writable: false)]
     public ?string $formattedPrice = null;
 
+    /**
+     * The base total.
+     */
     #[ApiProperty(writable: false)]
     public ?float $baseTotal = null;
 
+    /**
+     * The formatted base total.
+     */
     #[ApiProperty(writable: false)]
     public ?string $formattedBaseTotal = null;
 }

@@ -7,6 +7,67 @@ use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
 class FeatureStatusTest extends GraphQLTestCase
 {
+    /**
+     * Test gdpr status returns the current channel.
+     */
+    public function test_gdpr_status_returns_the_current_channel(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->graphQL('query { gdprStatus { channel enabled } }');
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.gdprStatus.channel'))->toBe(core()->getCurrentChannel()->code);
+    }
+
+    /**
+     * Test gdpr status follows the store setting.
+     */
+    public function test_gdpr_status_follows_the_store_setting(): void
+    {
+        $this->seedRequiredData();
+        $this->setFlag('general.gdpr.settings.enabled', '1');
+
+        $response = $this->graphQL('query { gdprStatus { enabled } }');
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.gdprStatus.enabled'))->toBeTrue();
+    }
+
+    /**
+     * Test eu withdrawal status returns the current channel.
+     */
+    public function test_eu_withdrawal_status_returns_the_current_channel(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->graphQL('query { euWithdrawalStatus { channel enabled } }');
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.euWithdrawalStatus.channel'))->toBe(core()->getCurrentChannel()->code);
+    }
+
+    /**
+     * Test eu withdrawal status follows the store setting.
+     */
+    public function test_eu_withdrawal_status_follows_the_store_setting(): void
+    {
+        $this->seedRequiredData();
+        $this->setFlag('sales.eu_withdrawal.general.enabled', '1', false);
+
+        $response = $this->graphQL('query { euWithdrawalStatus { enabled } }');
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.euWithdrawalStatus.enabled'))->toBeTrue();
+    }
+
+    /**
+     * Set flag.
+     */
     private function setFlag(string $code, ?string $value, bool $localeScoped = true): void
     {
         DB::table('core_config')->where('code', $code)->delete();
@@ -23,51 +84,5 @@ class FeatureStatusTest extends GraphQLTestCase
         }
 
         $this->forgetCoreConfigCache();
-    }
-
-    public function test_gdpr_status_returns_the_current_channel(): void
-    {
-        $this->seedRequiredData();
-
-        $response = $this->graphQL('query { gdprStatus { channel enabled } }');
-
-        $response->assertOk();
-        expect($response->json('errors'))->toBeNull();
-        expect($response->json('data.gdprStatus.channel'))->toBe(core()->getCurrentChannel()->code);
-    }
-
-    public function test_gdpr_status_follows_the_store_setting(): void
-    {
-        $this->seedRequiredData();
-        $this->setFlag('general.gdpr.settings.enabled', '1');
-
-        $response = $this->graphQL('query { gdprStatus { enabled } }');
-
-        $response->assertOk();
-        expect($response->json('errors'))->toBeNull();
-        expect($response->json('data.gdprStatus.enabled'))->toBeTrue();
-    }
-
-    public function test_eu_withdrawal_status_returns_the_current_channel(): void
-    {
-        $this->seedRequiredData();
-
-        $response = $this->graphQL('query { euWithdrawalStatus { channel enabled } }');
-
-        $response->assertOk();
-        expect($response->json('errors'))->toBeNull();
-        expect($response->json('data.euWithdrawalStatus.channel'))->toBe(core()->getCurrentChannel()->code);
-    }
-
-    public function test_eu_withdrawal_status_follows_the_store_setting(): void
-    {
-        $this->seedRequiredData();
-        $this->setFlag('sales.eu_withdrawal.general.enabled', '1', false);
-
-        $response = $this->graphQL('query { euWithdrawalStatus { enabled } }');
-
-        $response->assertOk();
-        expect($response->json('errors'))->toBeNull();
-        expect($response->json('data.euWithdrawalStatus.enabled'))->toBeTrue();
     }
 }

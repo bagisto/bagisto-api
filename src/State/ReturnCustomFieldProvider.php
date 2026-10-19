@@ -14,10 +14,16 @@ class ReturnCustomFieldProvider implements ProviderInterface
 {
     use ResolvesReturnCustomFields;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly RMACustomFieldRepository $rmaCustomFieldRepository,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): iterable
     {
         if (! Auth::guard('sanctum')->user()) {

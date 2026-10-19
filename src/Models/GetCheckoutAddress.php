@@ -10,12 +10,6 @@ use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\State\GetCheckoutAddressCollectionProvider;
 use Webkul\Checkout\Models\CartAddress;
 
-/**
- * GetCheckoutAddress - GraphQL Query Collection for Cart Addresses
- *
- * Extends CartAddress to inherit all address fields and expose them via
- * a custom GraphQL collection query for fetching addresses by cart token
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'GetCheckoutAddress',

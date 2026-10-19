@@ -7,40 +7,13 @@ use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Product\Models\Product;
 use Webkul\User\Models\Admin;
 
-/**
- * DIAGNOSTIC — drives the admin Create-Order flow (draft cart -> add item ->
- * addresses -> shipping -> payment -> place order) for EVERY product type, over
- * BOTH REST and GraphQL, and prints a pass/fail matrix to STDERR.
- *
- * The goal is to discover which product types fail to add-to-cart / order at
- * the API end. It asserts nothing strict so every type runs to completion.
- *
- * Run: php artisan test packages/Webkul/BagistoApi/tests/Feature/Admin/RestApi/CreateOrderProductTypesTest.php
- */
 class CreateOrderProductTypesTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    /** Representative saleable product id per type in the dev DB. */
-    protected function samples(): array
-    {
-        return [
-            'simple' => 1,
-            'virtual' => 2505,
-            'downloadable' => 2506,
-            'grouped' => 2516,
-            'configurable' => 123,
-            'bundle' => 2517,
-            'booking' => 2507,
-        ];
-    }
-
-    /** Types that carry no stockable items, so no shipping step is needed. */
-    protected function isVirtualType(string $type): bool
-    {
-        return in_array($type, ['virtual', 'downloadable'], true);
-    }
-
+    /**
+     * Test create order every product type matrix.
+     */
     public function test_create_order_every_product_type_matrix(): void
     {
         $admin = $this->createAdmin();
@@ -76,14 +49,11 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
 
         foreach ($collected as $type => $byTransport) {
             if ($type === 'booking') {
-                // Booking is intentionally blocked in admin Create-Order.
                 expect($byTransport['REST']['add'])->not->toStartWith('OK');
 
                 continue;
             }
 
-            // Every orderable type must add to cart over BOTH transports
-            // (skip only when the dev DB couldn't supply a saleable sample).
             foreach (['REST', 'GraphQL'] as $transport) {
                 $add = $byTransport[$transport]['add'];
                 if (str_starts_with($add, 'SKIP')) {
@@ -94,6 +64,29 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
         }
     }
 
+    /** Representative saleable product id per type in the dev DB. */
+    protected function samples(): array
+    {
+        return [
+            'simple' => 1,
+            'virtual' => 2505,
+            'downloadable' => 2506,
+            'grouped' => 2516,
+            'configurable' => 123,
+            'bundle' => 2517,
+            'booking' => 2507,
+        ];
+    }
+
+    /** Types that carry no stockable items, so no shipping step is needed. */
+    protected function isVirtualType(string $type): bool
+    {
+        return in_array($type, ['virtual', 'downloadable'], true);
+    }
+
+    /**
+     * Load product.
+     */
     protected function loadProduct(int $id): ?Product
     {
         return Product::with([
@@ -249,6 +242,9 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
         return $input;
     }
 
+    /**
+     * Saleable.
+     */
     protected function saleable($product): bool
     {
         try {
@@ -307,7 +303,6 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
     {
         $customerId = $this->findOrCreateCustomer()->id;
 
-        // Bootstrap the draft cart over REST (the GraphQL focus here is add-to-cart).
         $cartId = $this->adminPost($admin, '/api/admin/customers/'.$customerId.'/draft-carts')->json('cartId');
         if (! $cartId) {
             return [
@@ -334,7 +329,6 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
 
         $this->adminGraphQL($mutation, ['input' => $input], $admin);
 
-        // Verify via REST whether the item actually landed in the cart.
         $cart = $this->adminGet($admin, '/api/admin/carts/'.$cartId);
         $itemCount = is_array($cart->json('items')) ? count($cart->json('items')) : 0;
 
@@ -404,6 +398,9 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
         return 'FAIL ('.$code.'): '.$this->short($placeResp->json('message') ?? '');
     }
 
+    /**
+     * First shipping method.
+     */
     protected function firstShippingMethod(?array $rates): ?string
     {
         foreach ((array) $rates as $rate) {
@@ -416,6 +413,9 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
         return null;
     }
 
+    /**
+     * First supported payment.
+     */
     protected function firstSupportedPayment(?array $methods): ?string
     {
         $codes = collect((array) $methods)->pluck('method')->filter()->all();
@@ -428,6 +428,9 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
         return null;
     }
 
+    /**
+     * Short.
+     */
     protected function short(?string $msg): string
     {
         $msg = trim((string) $msg);

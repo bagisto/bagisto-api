@@ -9,15 +9,11 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\AdminDashboardProvider;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 
-/**
- * GraphQL resolver for `adminDashboardStats`.
- *
- * The resolver itself runs through the GraphQL query input — it pushes
- * received args into the live request so the Dashboard helper picks them
- * up via `request()->query()`, then delegates to AdminDashboardProvider.
- */
 class AdminDashboardQueryResolver implements QueryItemResolverInterface
 {
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?object $item, array $context): AdminDashboard
     {
         if (! AdminAuthHelper::resolveAdmin()) {

@@ -15,11 +15,17 @@ class AdminReturnItemProvider extends AbstractAdminItemProvider
     use BuildsAdminReturn;
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly RMARepository $rmaRepository,
         private readonly RMAStatusRepository $rmaStatusRepository,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         $this->authorizedAdmin('sales.rma.requests');
@@ -27,16 +33,25 @@ class AdminReturnItemProvider extends AbstractAdminItemProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.rma.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return $this->rmaRepository->with(self::RETURN_RELATIONS)->find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $entity): AdminReturn
     {
         return $this->buildAdminReturn($entity, $this->rmaRepository, $this->rmaStatusRepository);

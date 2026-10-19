@@ -2,38 +2,23 @@
 
 namespace Webkul\BagistoApi\Services;
 
-/**
- * Utility class to serialize API Platform's OpenAPI object to array
- * This handles the serialization of complex nested objects
- */
 class OpenApiSerializer
 {
     /**
-     * Check if input is an object and has a method
-     */
-    private static function hasMethod($subject, $method): bool
-    {
-        return is_object($subject) && method_exists($subject, $method);
-    }
-
-    /**
-     * Convert an OpenAPI object to an array recursively
+     * Convert an OpenAPI object to an array recursively.
      */
     public static function toArray($openApi): array
     {
         $result = [];
 
-        // Return early if it's already an array
         if (is_array($openApi)) {
             return $openApi;
         }
 
-        // Return empty if not an object
         if (! is_object($openApi)) {
             return $result;
         }
 
-        // Get OpenAPI version
         if (
             static::hasMethod($openApi, 'getOpenapi')
             && $openApi->getOpenapi()
@@ -41,7 +26,6 @@ class OpenApiSerializer
             $result['openapi'] = $openApi->getOpenapi();
         }
 
-        // Get Info object
         if (
             static::hasMethod($openApi, 'getInfo')
             && $openApi->getInfo()
@@ -49,7 +33,6 @@ class OpenApiSerializer
             $result['info'] = static::serializeInfo($openApi->getInfo());
         }
 
-        // Get Servers array
         if (
             static::hasMethod($openApi, 'getServers')
             && $openApi->getServers()
@@ -57,7 +40,6 @@ class OpenApiSerializer
             $result['servers'] = static::serializeServers($openApi->getServers());
         }
 
-        // Get Paths object
         if (
             static::hasMethod($openApi, 'getPaths')
             && $openApi->getPaths()
@@ -65,7 +47,6 @@ class OpenApiSerializer
             $result['paths'] = static::serializePaths($openApi->getPaths());
         }
 
-        // Get Components object
         if (
             static::hasMethod($openApi, 'getComponents')
             && $openApi->getComponents()
@@ -73,7 +54,6 @@ class OpenApiSerializer
             $result['components'] = static::serializeComponents($openApi->getComponents());
         }
 
-        // Get Security array
         if (
             static::hasMethod($openApi, 'getSecurity')
             && $openApi->getSecurity()
@@ -81,7 +61,6 @@ class OpenApiSerializer
             $result['security'] = static::serializeSecurity($openApi->getSecurity());
         }
 
-        // Get Tags array
         if (
             static::hasMethod($openApi, 'getTags')
             && $openApi->getTags()
@@ -89,7 +68,6 @@ class OpenApiSerializer
             $result['tags'] = static::serializeTags($openApi->getTags());
         }
 
-        // Get External Docs
         if (
             static::hasMethod($openApi, 'getExternalDocs')
             && $openApi->getExternalDocs()
@@ -101,7 +79,15 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Info object
+     * Check if input is an object and has a method.
+     */
+    private static function hasMethod($subject, $method): bool
+    {
+        return is_object($subject) && method_exists($subject, $method);
+    }
+
+    /**
+     * Serialize Info object.
      */
     private static function serializeInfo($info): array
     {
@@ -161,7 +147,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Contact object
+     * Serialize Contact object.
      */
     private static function serializeContact($contact): array
     {
@@ -200,7 +186,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize License object
+     * Serialize License object.
      */
     private static function serializeLicense($license): array
     {
@@ -232,7 +218,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Servers array
+     * Serialize Servers array.
      */
     private static function serializeServers($servers): array
     {
@@ -246,7 +232,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Server object
+     * Serialize Server object.
      */
     private static function serializeServer($server): array
     {
@@ -285,7 +271,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize ServerVariables
+     * Serialize ServerVariables.
      */
     private static function serializeServerVariables($variables): array
     {
@@ -299,7 +285,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize ServerVariable object
+     * Serialize ServerVariable object.
      */
     private static function serializeServerVariable($variable): array
     {
@@ -338,13 +324,12 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Paths object
+     * Serialize Paths object.
      */
     private static function serializePaths($paths): array
     {
         $result = [];
 
-        // Return early if it's already an array
         if (is_array($paths)) {
             foreach ($paths as $path => $pathItem) {
                 $result[$path] = static::serializePathItem($pathItem);
@@ -353,7 +338,6 @@ class OpenApiSerializer
             return $result;
         }
 
-        // The Paths object has a getPaths() method that returns an array
         if (static::hasMethod($paths, 'getPaths')) {
             $pathsData = $paths->getPaths();
             foreach ($pathsData as $path => $pathItem) {
@@ -365,13 +349,12 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize PathItem object
+     * Serialize PathItem object.
      */
     private static function serializePathItem($pathItem): array
     {
         $result = [];
 
-        // Return early if it's already an array
         if (is_array($pathItem)) {
             return $pathItem;
         }
@@ -380,7 +363,6 @@ class OpenApiSerializer
             return $result;
         }
 
-        // Serialize each HTTP method (get, post, put, delete, etc.)
         $methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace'];
 
         foreach ($methods as $method) {
@@ -397,18 +379,16 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Operation object
+     * Serialize Operation object.
      */
     private static function serializeOperation($operation): array
     {
         $result = [];
 
-        // Return early if it's already an array
         if (is_array($operation)) {
             return $operation;
         }
 
-        // Return empty if not an object
         if (! is_object($operation)) {
             return $result;
         }
@@ -480,7 +460,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Parameters array
+     * Serialize Parameters array.
      */
     private static function serializeParameters($parameters): array
     {
@@ -495,7 +475,6 @@ class OpenApiSerializer
 
         foreach ($parameters as $parameter) {
             if (is_array($parameter)) {
-                // Already serialized, just add it
                 $result[] = $parameter;
             } else {
                 $result[] = static::serializeParameter($parameter);
@@ -506,18 +485,16 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Parameter object
+     * Serialize Parameter object.
      */
     private static function serializeParameter($parameter): array
     {
         $result = [];
 
-        // Return early if it's already an array
         if (is_array($parameter)) {
             return $parameter;
         }
 
-        // Return empty if not an object
         if (! is_object($parameter)) {
             return $result;
         }
@@ -561,18 +538,16 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize RequestBody object
+     * Serialize RequestBody object.
      */
     private static function serializeRequestBody($requestBody): array
     {
         $result = [];
 
-        // Return early if it's already an array
         if (is_array($requestBody)) {
             return $requestBody;
         }
 
-        // Return empty if not an object
         if (! is_object($requestBody)) {
             return $result;
         }
@@ -602,13 +577,12 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Content (MediaType objects)
+     * Serialize Content (MediaType objects).
      */
     private static function serializeContent($content): array
     {
         $result = [];
 
-        // Return early if it's already an array with all serialized content
         if (is_array($content)) {
             foreach ($content as $mediaType => $mediaTypeObject) {
                 if (is_array($mediaTypeObject)) {
@@ -621,7 +595,6 @@ class OpenApiSerializer
             return $result;
         }
 
-        // If it's an iterable object
         if (is_iterable($content)) {
             foreach ($content as $mediaType => $mediaTypeObject) {
                 $result[$mediaType] = static::serializeMediaType($mediaTypeObject);
@@ -632,18 +605,16 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize MediaType object
+     * Serialize MediaType object.
      */
     private static function serializeMediaType($mediaType): array
     {
         $result = [];
 
-        // Return early if it's already an array
         if (is_array($mediaType)) {
             return $mediaType;
         }
 
-        // Return empty if not an object
         if (! is_object($mediaType)) {
             return $result;
         }
@@ -659,7 +630,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Responses object
+     * Serialize Responses object.
      */
     private static function serializeResponses($responses): array
     {
@@ -673,18 +644,16 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Response object
+     * Serialize Response object.
      */
     private static function serializeResponse($response): array
     {
         $result = [];
 
-        // Return early if it's already an array
         if (is_array($response)) {
             return $response;
         }
 
-        // Return empty if not an object
         if (! is_object($response)) {
             return $result;
         }
@@ -714,7 +683,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Headers
+     * Serialize Headers.
      */
     private static function serializeHeaders($headers): array
     {
@@ -728,7 +697,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Header object
+     * Serialize Header object.
      */
     private static function serializeHeader($header): array
     {
@@ -760,18 +729,16 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Schema object (recursively handles nested schemas)
+     * Serialize Schema object (recursively handles nested schemas).
      */
     private static function serializeSchema($schema): array
     {
         $result = [];
 
-        // Return early if it's already an array
         if (is_array($schema)) {
             return $schema;
         }
 
-        // Return empty if not an object
         if (! is_object($schema)) {
             return $result;
         }
@@ -930,7 +897,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Components object
+     * Serialize Components object.
      */
     private static function serializeComponents($components): array
     {
@@ -989,7 +956,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Security array
+     * Serialize Security array.
      */
     private static function serializeSecurity($security): array
     {
@@ -1001,7 +968,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize SecuritySchemes
+     * Serialize SecuritySchemes.
      */
     private static function serializeSecuritySchemes($schemes): array
     {
@@ -1015,7 +982,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize SecurityScheme object
+     * Serialize SecurityScheme object.
      */
     private static function serializeSecurityScheme($scheme): array
     {
@@ -1089,7 +1056,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Flows object
+     * Serialize Flows object.
      */
     private static function serializeFlows($flows): array
     {
@@ -1135,7 +1102,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Flow object
+     * Serialize Flow object.
      */
     private static function serializeFlow($flow): array
     {
@@ -1181,7 +1148,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Tags array
+     * Serialize Tags array.
      */
     private static function serializeTags($tags): array
     {
@@ -1195,7 +1162,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize Tag object
+     * Serialize Tag object.
      */
     private static function serializeTag($tag): array
     {
@@ -1234,7 +1201,7 @@ class OpenApiSerializer
     }
 
     /**
-     * Serialize ExternalDocs object
+     * Serialize ExternalDocs object.
      */
     private static function serializeExternalDocs($externalDocs): array
     {

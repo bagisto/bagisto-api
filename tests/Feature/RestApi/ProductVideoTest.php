@@ -7,20 +7,14 @@ use Webkul\Product\Models\ProductVideo;
 
 class ProductVideoTest extends RestApiTestCase
 {
+    /**
+     * The base url.
+     */
     private string $baseUrl = '/api/shop/product-videos';
 
-    private function seedVideo(): ProductVideo
-    {
-        $product = $this->createBaseProduct('simple', ['sku' => 'VIDEO-'.uniqid()]);
-
-        return ProductVideo::create([
-            'type' => 'video',
-            'path' => 'product/'.$product->id.'/test.mp4',
-            'product_id' => $product->id,
-            'position' => 1,
-        ]);
-    }
-
+    /**
+     * Test get collection.
+     */
     public function test_get_collection(): void
     {
         $this->seedRequiredData();
@@ -33,6 +27,9 @@ class ProductVideoTest extends RestApiTestCase
         expect(\count($response->json()))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test get single product video.
+     */
     public function test_get_single_product_video(): void
     {
         $this->seedRequiredData();
@@ -45,6 +42,9 @@ class ProductVideoTest extends RestApiTestCase
         expect((int) $response->json('productId'))->toBe($video->product_id);
     }
 
+    /**
+     * Test get nonexistent video returns 404.
+     */
     public function test_get_nonexistent_video_returns_404(): void
     {
         $this->seedRequiredData();
@@ -52,5 +52,20 @@ class ProductVideoTest extends RestApiTestCase
         $response = $this->publicGet($this->baseUrl.'/999999');
 
         expect($response->getStatusCode())->toBeIn([404, 500]);
+    }
+
+    /**
+     * Seed video.
+     */
+    private function seedVideo(): ProductVideo
+    {
+        $product = $this->createBaseProduct('simple', ['sku' => 'VIDEO-'.uniqid()]);
+
+        return ProductVideo::create([
+            'type' => 'video',
+            'path' => 'product/'.$product->id.'/test.mp4',
+            'product_id' => $product->id,
+            'position' => 1,
+        ]);
     }
 }

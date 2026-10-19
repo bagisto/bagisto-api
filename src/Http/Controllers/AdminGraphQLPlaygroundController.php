@@ -5,17 +5,11 @@ namespace Webkul\BagistoApi\Http\Controllers;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
-/**
- * Admin GraphQL Playground UI — mirrors GraphQLPlaygroundController structure
- * with the admin-specific differences:
- *   - posts to /api/admin/graphql (dedicated admin endpoint)
- *   - injects Authorization: Bearer <token> only (NO X-STOREFRONT-KEY)
- *   - single token slot (admin integration token, format `<id>|<random>`) —
- *     admin has no guest-cart equivalent so the cart-token slot is dropped
- *   - banner reads "Admin authenticated"
- */
 class AdminGraphQLPlaygroundController extends Controller
 {
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke()
     {
         return new Response($this->getGraphQLPlaygroundHTML(), 200, [
@@ -23,6 +17,9 @@ class AdminGraphQLPlaygroundController extends Controller
         ]);
     }
 
+    /**
+     * Get graph qlplayground html.
+     */
     private function getGraphQLPlaygroundHTML(): string
     {
         $graphiqlData = json_encode([

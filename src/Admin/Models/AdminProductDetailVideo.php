@@ -7,9 +7,6 @@ use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Product video — nested sub-resource of AdminCatalogProduct (`videos` connection).
- */
 #[ApiResource(
     shortName: 'AdminProductDetailVideo',
     operations: [],
@@ -30,12 +27,18 @@ class AdminProductDetailVideo extends Model
         'position' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get url attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getUrlAttribute(): ?string
     {

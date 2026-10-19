@@ -6,61 +6,80 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 
-/**
- * REST output for AdminSettingsChannel (detail + listing). Snake_case props
- * surface as camelCase via the central converter (provider writes camelCase;
- * the trait maps it).
- *
- * REST exposes the nested data as flat arrays of objects (no connections):
- *   - `locales` / `currencies` / `inventory_sources` → arrays of `{id, code, ...}`
- *     (these REPLACE the old localeIds/currencyIds/inventorySourceIds int arrays)
- *   - `translations` → flat array of `{locale, name, description, ...}`
- *   - `home_seo` → object `{meta_title, meta_description, meta_keywords}`
- *
- * IMPORTANT (the output:-DTO name-match trap, see CLAUDE.md OrderDetail notes):
- * with `output:` set, API Platform only serialises DTO props whose names match
- * an attribute/relation on the AdminSettingsChannel Eloquent resource — so the
- * nested blocks MUST be named `locales`/`currencies`/`inventory_sources`/
- * `translations`/`home_seo` (the relations), not any other name.
- */
 #[ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
 class AdminSettingsChannelRestDto
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $id = null;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(writable: false)]
     public ?string $code = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The description.
+     */
     #[ApiProperty(writable: false)]
     public ?string $description = null;
 
+    /**
+     * The hostname.
+     */
     #[ApiProperty(writable: false)]
     public ?string $hostname = null;
 
+    /**
+     * The theme.
+     */
     #[ApiProperty(writable: false)]
     public ?string $theme = null;
 
+    /**
+     * The timezone.
+     */
     #[ApiProperty(writable: false)]
     public ?string $timezone = null;
 
+    /**
+     * The default locale id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $default_locale_id = null;
 
+    /**
+     * The base currency id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $base_currency_id = null;
 
+    /**
+     * The root category id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $root_category_id = null;
 
+    /**
+     * The is maintenance on.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $is_maintenance_on = null;
 
+    /**
+     * The maintenance mode text.
+     */
     #[ApiProperty(writable: false)]
     public ?string $maintenance_mode_text = null;
 
@@ -68,15 +87,27 @@ class AdminSettingsChannelRestDto
     #[ApiProperty(writable: false)]
     public ?array $allowed_ips = null;
 
+    /**
+     * The logo.
+     */
     #[ApiProperty(writable: false)]
     public ?string $logo = null;
 
+    /**
+     * The logo url.
+     */
     #[ApiProperty(writable: false)]
     public ?string $logo_url = null;
 
+    /**
+     * The favicon.
+     */
     #[ApiProperty(writable: false)]
     public ?string $favicon = null;
 
+    /**
+     * The favicon url.
+     */
     #[ApiProperty(writable: false)]
     public ?string $favicon_url = null;
 
@@ -100,9 +131,15 @@ class AdminSettingsChannelRestDto
     #[ApiProperty(writable: false)]
     public ?array $translations = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 }

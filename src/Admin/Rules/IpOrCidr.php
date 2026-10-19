@@ -5,19 +5,11 @@ namespace Webkul\BagistoApi\Admin\Rules;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-/**
- * Validates an IPv4 or IPv6 address — with or without a CIDR prefix.
- *
- * Examples:
- *   192.168.1.1        ✔ IPv4
- *   2001:db8::1        ✔ IPv6
- *   10.0.0.0/24        ✔ IPv4 + CIDR
- *   2001:db8::/32      ✔ IPv6 + CIDR
- *   10.0.0.0/40        ✘ invalid prefix for IPv4
- *   not-an-ip          ✘ invalid
- */
 class IpOrCidr implements ValidationRule
 {
+    /**
+     * Validate.
+     */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (

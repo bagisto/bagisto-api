@@ -139,6 +139,9 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
 )]
 class ProductVideo extends BaseProductVideo
 {
+    /**
+     * The visible.
+     */
     protected $visible = [
         'id',
         'type',
@@ -148,12 +151,18 @@ class ProductVideo extends BaseProductVideo
         'public_path',
     ];
 
+    /**
+     * Get public path attribute.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public function getPublicPathAttribute(): ?string
     {
         return $this->getUrlAttribute();
     }
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

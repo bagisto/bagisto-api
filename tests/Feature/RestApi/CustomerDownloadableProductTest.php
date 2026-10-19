@@ -14,89 +14,10 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerDownloadableProductTest extends RestApiTestCase
 {
-    /**
-     * Create test data — customer with downloadable product purchases
-     */
-    private function createTestData(): array
-    {
-        $this->seedRequiredData();
-
-        $customer = $this->createCustomer();
-        $channel = Channel::first();
-        $product = Product::factory()->create();
-
-        $order = Order::factory()->create([
-            'customer_id' => $customer->id,
-            'customer_email' => $customer->email,
-            'customer_first_name' => $customer->first_name,
-            'customer_last_name' => $customer->last_name,
-            'channel_id' => $channel->id,
-            'status' => 'completed',
-        ]);
-
-        OrderItem::factory()->create([
-            'order_id' => $order->id,
-            'product_id' => $product->id,
-            'sku' => 'DOWNLOAD-SKU-001',
-            'type' => 'downloadable',
-            'name' => 'Downloadable Test Product',
-        ]);
-
-        OrderPayment::factory()->create([
-            'order_id' => $order->id,
-        ]);
-
-        $purchase1 = DownloadableLinkPurchased::create([
-            'product_name' => 'Downloadable Test Product',
-            'name' => 'Download Link 1',
-            'url' => null,
-            'file' => 'downloadable/test-file.pdf',
-            'file_name' => 'test-file.pdf',
-            'type' => 'file',
-            'download_bought' => 5,
-            'download_used' => 1,
-            'status' => 'available',
-            'customer_id' => $customer->id,
-            'order_id' => $order->id,
-            'order_item_id' => $order->items->first()->id,
-            'download_canceled' => 0,
-        ]);
-
-        $purchase2 = DownloadableLinkPurchased::create([
-            'product_name' => 'Downloadable Test Product',
-            'name' => 'Download Link 2',
-            'url' => 'https://example.com/download/file.zip',
-            'file' => null,
-            'file_name' => 'file.zip',
-            'type' => 'url',
-            'download_bought' => 3,
-            'download_used' => 3,
-            'status' => 'expired',
-            'customer_id' => $customer->id,
-            'order_id' => $order->id,
-            'order_item_id' => $order->items->first()->id,
-            'download_canceled' => 0,
-        ]);
-
-        return compact('customer', 'channel', 'product', 'order', 'purchase1', 'purchase2');
-    }
-
-    /**
-     * Invoice the whole order so its purchased links become downloadable.
-     */
-    private function invoiceOrder(Order $order): void
-    {
-        Invoice::query()->forceCreate([
-            'order_id' => $order->id,
-            'state' => 'paid',
-            'total_qty' => $order->total_qty_ordered,
-        ]);
-    }
-
     // ── Collection ────────────────────────────────────────────
 
     /**
-     * Test: GET /api/shop/customer-downloadable-products returns collection
+     * Test: GET /api/shop/customer-downloadable-products returns collection.
      */
     public function test_get_customer_downloadable_products_collection(): void
     {
@@ -112,7 +33,7 @@ class CustomerDownloadableProductTest extends RestApiTestCase
     }
 
     /**
-     * Test: GET /api/shop/customer-downloadable-products without auth returns error
+     * Test: GET /api/shop/customer-downloadable-products without auth returns error.
      */
     public function test_get_customer_downloadable_products_requires_auth(): void
     {
@@ -124,13 +45,12 @@ class CustomerDownloadableProductTest extends RestApiTestCase
     }
 
     /**
-     * Test: Customer only sees own downloadable products
+     * Test: Customer only sees own downloadable products.
      */
     public function test_customer_only_sees_own_downloadable_products(): void
     {
         $testData = $this->createTestData();
 
-        /** Create another customer with their own downloadable purchase */
         $otherCustomer = $this->createCustomer();
         $channel = Channel::first();
 
@@ -173,12 +93,11 @@ class CustomerDownloadableProductTest extends RestApiTestCase
         $response->assertOk();
         $json = $response->json();
 
-        /** Should only see the 2 purchases belonging to testData customer */
         expect(count($json))->toBe(2);
     }
 
     /**
-     * Test: Customer with no downloadable products returns empty collection
+     * Test: Customer with no downloadable products returns empty collection.
      */
     public function test_customer_with_no_downloadable_products_returns_empty(): void
     {
@@ -197,7 +116,7 @@ class CustomerDownloadableProductTest extends RestApiTestCase
     // ── Single Item ───────────────────────────────────────────
 
     /**
-     * Test: GET /api/shop/customer-downloadable-products/{id} returns single item
+     * Test: GET /api/shop/customer-downloadable-products/{id} returns single item.
      */
     public function test_get_single_customer_downloadable_product(): void
     {
@@ -227,7 +146,7 @@ class CustomerDownloadableProductTest extends RestApiTestCase
     }
 
     /**
-     * Test: GET /api/shop/customer-downloadable-products/{id} with invalid id returns 404
+     * Test: GET /api/shop/customer-downloadable-products/{id} with invalid id returns 404.
      */
     public function test_get_customer_downloadable_product_not_found(): void
     {
@@ -240,13 +159,12 @@ class CustomerDownloadableProductTest extends RestApiTestCase
     }
 
     /**
-     * Test: Cannot access another customer's downloadable product by ID
+     * Test: Cannot access another customer's downloadable product by ID.
      */
     public function test_cannot_access_other_customers_downloadable_product(): void
     {
         $testData = $this->createTestData();
 
-        /** Create another customer */
         $otherCustomer = $this->createCustomer();
 
         $response = $this->authenticatedGet(
@@ -254,7 +172,6 @@ class CustomerDownloadableProductTest extends RestApiTestCase
             '/api/shop/customer-downloadable-products/'.$testData['purchase1']->id
         );
 
-        /** Should get 404 since the purchase doesn't belong to otherCustomer */
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
     }
 
@@ -333,5 +250,84 @@ class CustomerDownloadableProductTest extends RestApiTestCase
 
         $response->assertForbidden();
         expect($response->json('error'))->toBe('download_pending');
+    }
+
+    /**
+     * Create test data — customer with downloadable product purchases.
+     */
+    private function createTestData(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $channel = Channel::first();
+        $product = Product::factory()->create();
+
+        $order = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'customer_first_name' => $customer->first_name,
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
+        ]);
+
+        OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'DOWNLOAD-SKU-001',
+            'type' => 'downloadable',
+            'name' => 'Downloadable Test Product',
+        ]);
+
+        OrderPayment::factory()->create([
+            'order_id' => $order->id,
+        ]);
+
+        $purchase1 = DownloadableLinkPurchased::create([
+            'product_name' => 'Downloadable Test Product',
+            'name' => 'Download Link 1',
+            'url' => null,
+            'file' => 'downloadable/test-file.pdf',
+            'file_name' => 'test-file.pdf',
+            'type' => 'file',
+            'download_bought' => 5,
+            'download_used' => 1,
+            'status' => 'available',
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'order_item_id' => $order->items->first()->id,
+            'download_canceled' => 0,
+        ]);
+
+        $purchase2 = DownloadableLinkPurchased::create([
+            'product_name' => 'Downloadable Test Product',
+            'name' => 'Download Link 2',
+            'url' => 'https://example.com/download/file.zip',
+            'file' => null,
+            'file_name' => 'file.zip',
+            'type' => 'url',
+            'download_bought' => 3,
+            'download_used' => 3,
+            'status' => 'expired',
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'order_item_id' => $order->items->first()->id,
+            'download_canceled' => 0,
+        ]);
+
+        return compact('customer', 'channel', 'product', 'order', 'purchase1', 'purchase2');
+    }
+
+    /**
+     * Invoice the whole order so its purchased links become downloadable.
+     */
+    private function invoiceOrder(Order $order): void
+    {
+        Invoice::query()->forceCreate([
+            'order_id' => $order->id,
+            'state' => 'paid',
+            'total_qty' => $order->total_qty_ordered,
+        ]);
     }
 }

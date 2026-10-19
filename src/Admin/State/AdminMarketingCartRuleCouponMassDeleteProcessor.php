@@ -18,16 +18,18 @@ use Webkul\CartRule\Models\CartRule;
 use Webkul\CartRule\Models\CartRuleCoupon;
 use Webkul\CartRule\Repositories\CartRuleCouponRepository;
 
-/**
- * Mass-delete coupons for a cart rule. IDs not belonging to the named
- * cart_rule are silently skipped (cross-rule isolation).
- */
 class AdminMarketingCartRuleCouponMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CartRuleCouponRepository $couponRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -115,6 +117,9 @@ class AdminMarketingCartRuleCouponMassDeleteProcessor implements ProcessorInterf
         ], static fn ($value) => $value !== null), 200);
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin): void
     {
         $role = $admin->role ?? null;

@@ -13,6 +13,9 @@ class AdminRmaCustomFieldItemProvider extends AbstractAdminItemProvider
 {
     use ChecksAdminPermission;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         $this->authorizedAdmin('sales.rma.custom-fields');
@@ -20,21 +23,9 @@ class AdminRmaCustomFieldItemProvider extends AbstractAdminItemProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
-    protected function getNotFoundLangKey(): string
-    {
-        return 'bagistoapi::app.admin.rma.custom-field-not-found';
-    }
-
-    protected function findEntity(int $id): ?object
-    {
-        return DB::table('rma_custom_fields')->where('id', $id)->first();
-    }
-
-    protected function mapToDto(object $entity): AdminRmaCustomField
-    {
-        return self::toDto($entity, true);
-    }
-
+    /**
+     * To dto.
+     */
     public static function toDto(object $row, bool $withOptions = true): AdminRmaCustomField
     {
         $dto = new AdminRmaCustomField;
@@ -59,5 +50,29 @@ class AdminRmaCustomFieldItemProvider extends AbstractAdminItemProvider
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
 
         return $dto;
+    }
+
+    /**
+     * Get not found lang key.
+     */
+    protected function getNotFoundLangKey(): string
+    {
+        return 'bagistoapi::app.admin.rma.custom-field-not-found';
+    }
+
+    /**
+     * Find entity.
+     */
+    protected function findEntity(int $id): ?object
+    {
+        return DB::table('rma_custom_fields')->where('id', $id)->first();
+    }
+
+    /**
+     * Map to dto.
+     */
+    protected function mapToDto(object $entity): AdminRmaCustomField
+    {
+        return self::toDto($entity, true);
     }
 }

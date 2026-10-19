@@ -5,9 +5,6 @@ namespace Webkul\BagistoApi\Admin\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 
-/**
- * Schema-only DTO for a single option of a configurable super-attribute.
- */
 #[ApiResource(
     operations: [],
     graphQlOperations: [],
@@ -15,15 +12,27 @@ use ApiPlatform\Metadata\ApiResource;
 )]
 class AdminProductSuperAttributeOptionDto
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $id = null;
 
+    /**
+     * The admin name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $adminName = null;
 
+    /**
+     * The swatch value.
+     */
     #[ApiProperty(writable: false)]
     public ?string $swatchValue = null;
 
+    /**
+     * The sort order.
+     */
     #[ApiProperty(writable: false)]
     public ?int $sortOrder = null;
 }

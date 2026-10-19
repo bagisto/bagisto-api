@@ -79,7 +79,7 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 class Currency extends \Webkul\Core\Models\Currency
 {
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int

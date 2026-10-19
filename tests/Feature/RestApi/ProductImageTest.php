@@ -7,28 +7,14 @@ use Webkul\Product\Models\ProductImage;
 
 class ProductImageTest extends RestApiTestCase
 {
+    /**
+     * The base url.
+     */
     private string $baseUrl = '/api/shop/product-images';
 
-    private function seedImage(?string $altText = null): ProductImage
-    {
-        $product = $this->createBaseProduct('simple', ['sku' => 'IMG-'.uniqid()]);
-
-        $image = ProductImage::create([
-            'type' => 'image',
-            'path' => 'product/'.$product->id.'/test.jpg',
-            'product_id' => $product->id,
-            'position' => 1,
-        ]);
-
-        if ($altText !== null) {
-            $image->translateOrNew(app()->getLocale())->alt_text = $altText;
-
-            $image->save();
-        }
-
-        return $image;
-    }
-
+    /**
+     * Test get collection.
+     */
     public function test_get_collection(): void
     {
         $this->seedRequiredData();
@@ -41,6 +27,9 @@ class ProductImageTest extends RestApiTestCase
         expect(\count($response->json()))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test get single product image.
+     */
     public function test_get_single_product_image(): void
     {
         $this->seedRequiredData();
@@ -53,9 +42,11 @@ class ProductImageTest extends RestApiTestCase
         expect((int) $response->json('productId'))->toBe($image->product_id);
     }
 
+    /**
+     * Test image carries its alt text.
+     */
     public function test_image_carries_its_alt_text(): void
     {
-        // BACKWARD COMPATIBILITY: remove when the minimum supported core is 2.4.10.
         $this->skipUnlessCoreSupports($this->core()->hasProductImageAltText(), 'Product image alt text');
 
         $this->seedRequiredData();
@@ -68,6 +59,9 @@ class ProductImageTest extends RestApiTestCase
         expect($response->json('fileName'))->toBe('test');
     }
 
+    /**
+     * Test product images come back in gallery order.
+     */
     public function test_product_images_come_back_in_gallery_order(): void
     {
         $this->seedRequiredData();
@@ -89,6 +83,9 @@ class ProductImageTest extends RestApiTestCase
         expect(array_column($response->json(), 'position'))->toBe([1, 2, 3]);
     }
 
+    /**
+     * Test get nonexistent image returns 404.
+     */
     public function test_get_nonexistent_image_returns_404(): void
     {
         $this->seedRequiredData();
@@ -96,5 +93,28 @@ class ProductImageTest extends RestApiTestCase
         $response = $this->publicGet($this->baseUrl.'/999999');
 
         expect($response->getStatusCode())->toBeIn([404, 500]);
+    }
+
+    /**
+     * Seed image.
+     */
+    private function seedImage(?string $altText = null): ProductImage
+    {
+        $product = $this->createBaseProduct('simple', ['sku' => 'IMG-'.uniqid()]);
+
+        $image = ProductImage::create([
+            'type' => 'image',
+            'path' => 'product/'.$product->id.'/test.jpg',
+            'product_id' => $product->id,
+            'position' => 1,
+        ]);
+
+        if ($altText !== null) {
+            $image->translateOrNew(app()->getLocale())->alt_text = $altText;
+
+            $image->save();
+        }
+
+        return $image;
     }
 }

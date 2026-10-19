@@ -9,19 +9,21 @@ use Webkul\BagistoApi\Admin\Models\AdminAppearanceSectionPublish;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
 use Webkul\Theme\Repositories\SectionRepository;
 
-/**
- * Mirrors SectionController::publish — every drafted section of the theme and channel is
- * promoted at once, firing the update events core listeners expect.
- */
 class AdminAppearanceSectionPublishProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SectionRepository $sectionRepository,
         protected AppearanceScopeGuard $scope,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $this->authorizedAdmin('appearance.sections.edit', 'bagistoapi::app.admin.appearance.no-permission');

@@ -22,22 +22,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Core\Models\CurrencyExchangeRate;
 use Webkul\Core\Repositories\ExchangeRateRepository;
 
-/**
- * Handles POST / PUT / DELETE for the AdminSettingsExchangeRate resource.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\ExchangeRateController.
- *
- * Permission resolution mirrors AdminCategoryProcessor — read
- * role->permission_type / role->permissions directly, never call bouncer()
- * (Sanctum-token requests have no session-bound admin).
- */
 class AdminSettingsExchangeRateProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ExchangeRateRepository $exchangeRateRepository,
         protected AdminSettingsExchangeRateItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -93,6 +90,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminSettingsExchangeRate
     {
         $this->validateCreatePayload($input);
@@ -109,6 +109,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         return $this->fetchAndMap((int) $rate->id);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminSettingsExchangeRate
     {
         $existing = CurrencyExchangeRate::find($id);
@@ -136,6 +139,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsExchangeRate
     {
         $existing = CurrencyExchangeRate::with('currency')->find($id);
@@ -167,6 +173,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.settings.exchange-rate.deleted')];
     }
 
+    /**
+     * Validate create payload.
+     */
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
@@ -184,6 +193,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Validate update payload.
+     */
     protected function validateUpdatePayload(array $input, int $excludeId): void
     {
         $rules = [
@@ -201,6 +213,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Target currency taken.
+     */
     protected function targetCurrencyTaken(int $currencyId, ?int $excludeId): bool
     {
         $query = DB::table('currency_exchange_rates')->where('target_currency', $currencyId);
@@ -211,6 +226,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         return $query->limit(1)->exists();
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -238,6 +256,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -253,6 +274,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -265,6 +289,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -311,11 +338,17 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Fetch and map.
+     */
     protected function fetchAndMap(int $id): AdminSettingsExchangeRate
     {
         return $this->mapModel(CurrencyExchangeRate::with('currency')->find($id));
     }
 
+    /**
+     * Map model.
+     */
     protected function mapModel(object $model): AdminSettingsExchangeRate
     {
         $reflection = new \ReflectionClass($this->itemProvider);

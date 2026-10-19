@@ -15,24 +15,42 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminCustomerReviewProductRef extends Model
 {
+    /**
+     * The table.
+     */
     protected $table = 'products';
 
+    /**
+     * The appends.
+     */
     protected $appends = ['name'];
 
+    /**
+     * The casts.
+     */
     protected $casts = ['id' => 'int'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get sku.
+     */
     #[ApiProperty(writable: false)]
     public function getSku(): ?string
     {
         return $this->sku;
     }
 
+    /**
+     * Get name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getNameAttribute(): ?string
     {

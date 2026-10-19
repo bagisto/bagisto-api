@@ -73,11 +73,17 @@ class AdminRmaStatusMassUpdateStatus
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = 0;
 
     /** @var array<int,int>|null */
     public ?array $updated = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

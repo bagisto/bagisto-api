@@ -5,32 +5,32 @@ namespace Webkul\BagistoApi\Admin\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * Input DTO for POST /api/admin/catalog/categories.
- *
- * Mirrors Bagisto core CategoryRequest create-mode rules:
- *   - top-level: slug (required + unique via ProductCategoryUniqueSlug)
- *   - name (required)
- *   - position (required int)
- *   - attributes (required array of filterable attribute IDs)
- *   - description (required when display_mode in description_only/products_and_description)
- *   - optional: parent_id, display_mode, meta_title, meta_description, meta_keywords, status,
- *               logo_path, banner_path, locale
- */
 class AdminCategoryCreateInput
 {
+    /**
+     * The slug.
+     */
     #[ApiProperty(description: 'Category slug (unique across category translations + product slugs).')]
     #[Groups(['mutation'])]
     public ?string $slug = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(description: 'Category display name.')]
     #[Groups(['mutation'])]
     public ?string $name = null;
 
+    /**
+     * The description.
+     */
     #[ApiProperty(description: 'Category description. Required when display_mode is description_only or products_and_description.')]
     #[Groups(['mutation'])]
     public ?string $description = null;
 
+    /**
+     * The position.
+     */
     #[ApiProperty(description: 'Sort position among siblings.')]
     #[Groups(['mutation'])]
     public ?int $position = null;
@@ -40,30 +40,51 @@ class AdminCategoryCreateInput
     #[Groups(['mutation'])]
     public ?array $attributes = null;
 
+    /**
+     * The parent id.
+     */
     #[ApiProperty(description: 'Parent category ID. Null/omitted for a root category.')]
     #[Groups(['mutation'])]
     public ?int $parent_id = null;
 
+    /**
+     * The display mode.
+     */
     #[ApiProperty(description: 'Display mode (products_and_description, products_only, description_only).')]
     #[Groups(['mutation'])]
     public ?string $display_mode = null;
 
+    /**
+     * The locale.
+     */
     #[ApiProperty(description: 'Locale code for the translation. Defaults to the requested locale.')]
     #[Groups(['mutation'])]
     public ?string $locale = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(description: 'Status (1 = enabled, 0 = disabled).')]
     #[Groups(['mutation'])]
     public ?int $status = null;
 
+    /**
+     * The meta title.
+     */
     #[ApiProperty(description: 'SEO meta title.')]
     #[Groups(['mutation'])]
     public ?string $meta_title = null;
 
+    /**
+     * The meta description.
+     */
     #[ApiProperty(description: 'SEO meta description.')]
     #[Groups(['mutation'])]
     public ?string $meta_description = null;
 
+    /**
+     * The meta keywords.
+     */
     #[ApiProperty(description: 'SEO meta keywords.')]
     #[Groups(['mutation'])]
     public ?string $meta_keywords = null;

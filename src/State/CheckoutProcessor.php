@@ -32,13 +32,13 @@ use Webkul\Sales\Repositories\OrderRepository;
 use Webkul\Sales\Transformers\OrderResource;
 use Webkul\Shipping\Facades\Shipping;
 
-/**
- * Handles checkout operations including address, shipping, payment, and order creation.
- */
 class CheckoutProcessor implements ProcessorInterface
 {
     use ResolvesCartToken;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CustomerRepository $customerRepository,
         protected OrderRepository $orderRepository,
@@ -58,7 +58,6 @@ class CheckoutProcessor implements ProcessorInterface
         $operationName = $this->mapOperation($operation);
 
         if ($operationName === 'read') {
-            // Extract token from Authorization header only (no context/input parameters)
             $token = TokenHeaderFacade::getAuthorizationBearerToken($request);
 
             if (! $token) {
@@ -85,8 +84,6 @@ class CheckoutProcessor implements ProcessorInterface
             throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.invalid-input'));
         }
 
-        // Extract token from Authorization header (Bearer token) via TokenHeaderFacade
-        // Token is NOT a DTO property - it's extracted from Authorization header only
         $token = null;
         if ($request) {
             $token = TokenHeaderFacade::getAuthorizationBearerToken($request);
@@ -112,7 +109,7 @@ class CheckoutProcessor implements ProcessorInterface
     }
 
     /**
-     * Map BagistoApi operation name to internal operation type
+     * Map BagistoApi operation name to internal operation type.
      */
     private function mapOperation(Operation $operation): string
     {
@@ -449,7 +446,6 @@ class CheckoutProcessor implements ProcessorInterface
 
             Cart::deActivateCart($cart);
 
-            // Dispatch event for order creation (for push notifications)
             Event::dispatch('order.created.after', $order);
 
             return $this->orderOutput([
@@ -737,6 +733,9 @@ class CheckoutProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Shipping method output.
+     */
     private function shippingMethodOutput(array $data): CheckoutShippingMethod
     {
         $output = new CheckoutShippingMethod;
@@ -748,6 +747,9 @@ class CheckoutProcessor implements ProcessorInterface
         return $output;
     }
 
+    /**
+     * Payment method output.
+     */
     private function paymentMethodOutput(array $data): CheckoutPaymentMethod
     {
         $output = new CheckoutPaymentMethod;
@@ -759,6 +761,9 @@ class CheckoutProcessor implements ProcessorInterface
         return $output;
     }
 
+    /**
+     * Order output.
+     */
     private function orderOutput(array $data): CheckoutOrder
     {
         $output = new CheckoutOrder;

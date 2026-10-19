@@ -15,18 +15,6 @@ use Webkul\BagistoApi\Admin\State\AdminReportingProductsExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminReportingProductsProvider;
 use Webkul\BagistoApi\Admin\State\AdminReportingProductsViewProvider;
 
-/**
- * Admin reporting — products (read-only).
- *
- * REST   : GET /api/admin/reporting/products
- * GraphQL: adminReportingProducts query
- *
- * Mirrors `Reporting/ProductController::stats()`. `?type=`:
- *   total-sold-quantities (default), total-products-added-to-wishlist,
- *   top-selling-products-by-revenue, top-selling-products-by-quantity,
- *   products-with-most-reviews,
- *   last-search-terms, top-search-terms.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminReportingProducts',
@@ -148,10 +136,16 @@ class AdminReportingProducts
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The entity.
+     */
     #[ApiProperty(readable: true, writable: false, identifier: true)]
     #[Groups(['query'])]
     public ?string $entity = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $type = null;

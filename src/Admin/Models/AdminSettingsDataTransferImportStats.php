@@ -9,12 +9,6 @@ use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportStatsProvider;
 
-/**
- * GET /api/admin/settings/data-transfer/imports/{id}/stats?state=
- * + adminSettingsDataTransferImportStats query.
- *
- * Returns the import detail plus the per-batch progress + summary block.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsDataTransferImportStats',
@@ -56,6 +50,9 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportStatsProvider;
 )]
 class AdminSettingsDataTransferImportStats
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 }

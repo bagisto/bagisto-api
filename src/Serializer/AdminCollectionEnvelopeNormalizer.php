@@ -7,22 +7,18 @@ use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-/**
- * Wraps admin REST collection responses in a `{ data, meta }` envelope.
- *
- * Runs only for `/api/admin/*` REST routes (GraphQL lives at /api/graphql and
- * is untouched — it uses native cursor pagination). For every other route the
- * normalizer declines and the default chain handles the response.
- *
- * `meta` keys are written camelCase directly — this normalizer returns a raw
- * array, so the API Platform name converter never sees them.
- */
 class AdminCollectionEnvelopeNormalizer implements NormalizerAwareInterface, NormalizerInterface
 {
     use NormalizerAwareTrait;
 
+    /**
+     * The flag constant.
+     */
     private const FLAG = 'bagistoapi_admin_envelope';
 
+    /**
+     * Normalize.
+     */
     public function normalize(mixed $data, ?string $format = null, array $context = []): array
     {
         $items = [];
@@ -47,10 +43,6 @@ class AdminCollectionEnvelopeNormalizer implements NormalizerAwareInterface, Nor
             'to' => $from !== null ? $from + $count - 1 : null,
         ];
 
-        // Allow paginators to contribute additional meta keys (e.g. totalQty
-        // on the product-inventories listing). The paginator must expose
-        // public method getExtraMeta(): array — interface duck-typed for
-        // minimal coupling.
         if (method_exists($data, 'getExtraMeta')) {
             $extra = $data->getExtraMeta();
             if (is_array($extra)) {
@@ -64,6 +56,9 @@ class AdminCollectionEnvelopeNormalizer implements NormalizerAwareInterface, Nor
         ];
     }
 
+    /**
+     * Supports normalization.
+     */
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         $path = (string) request()?->getPathInfo();
@@ -74,6 +69,9 @@ class AdminCollectionEnvelopeNormalizer implements NormalizerAwareInterface, Nor
             && ! str_starts_with($path, '/api/admin/graphql');
     }
 
+    /**
+     * Get supported types.
+     */
     public function getSupportedTypes(?string $format): array
     {
         return [PaginatorInterface::class => false];

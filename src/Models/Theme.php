@@ -11,9 +11,6 @@ use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Resolver\ThemeQueryResolver;
 use Webkul\BagistoApi\State\ThemeProvider;
 
-/**
- * The theme the current channel runs, and the section types it draws.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'Theme',
@@ -64,9 +61,15 @@ use Webkul\BagistoApi\State\ThemeProvider;
 )]
 class Theme
 {
+    /**
+     * The code.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $code = null;
 
+    /**
+     * The name.
+     */
     public ?string $name = null;
 
     /**

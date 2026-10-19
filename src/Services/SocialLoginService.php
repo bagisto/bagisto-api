@@ -11,6 +11,9 @@ use Webkul\SocialLogin\Repositories\CustomerSocialAccountRepository;
 
 class SocialLoginService
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CustomerSocialAccountRepository $socialAccounts,
         protected CustomerRepository $customers,
@@ -62,6 +65,9 @@ class SocialLoginService
         ];
     }
 
+    /**
+     * Register the service bindings.
+     */
     protected function register(array $profile): Customer
     {
         [$firstName, $lastName] = $this->splitName((string) $profile['name'], (string) $profile['email']);

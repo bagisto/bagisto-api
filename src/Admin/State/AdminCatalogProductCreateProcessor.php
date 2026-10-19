@@ -14,37 +14,19 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Product\Repositories\ProductRepository;
 
-/**
- * Admin Catalog Product step-1 create (Phases 5.3 — 5.8 + 5.8-booking).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Catalog\ProductController::store
- * minimal-input path:
- *   - Validate type, attribute_family_id, sku (required + unique + Slug rule).
- *   - For configurable: also validate super_attributes (non-empty array of
- *     attribute => option_ids[]). Other types take no extra input at step 1.
- *   - Fire catalog.product.create.before
- *   - $this->productRepository->create([type, attribute_family_id, sku, ...])
- *   - Fire catalog.product.create.after
- *
- * Accepts type ∈ {simple, virtual, downloadable, grouped, bundle, configurable, booking}.
- * For booking, the 5 sub-types (default/appointment/event/rental/table) are
- * distinguished by booking_products.type during the step-2 update (Phase 5.9).
- *
- * Unlike the monolith's two-step UX (which asks for super_attributes in a
- * second request after rendering the family's configurable attributes), this
- * API expects super_attributes inline on the create call — a single-step
- * server flow with an explicit 422 when missing.
- *
- * Permission gate: catalog.products.create (Sanctum-pattern; reads
- * $admin->role->permission_type / ->permissions directly — never bouncer()).
- */
 class AdminCatalogProductCreateProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ProductRepository $productRepository,
         protected AdminCatalogProductDetailProvider $detailProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -181,8 +163,7 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
 
     /**
      * Read create fields from the GraphQL input args (camelCase) or the REST
-     * request body (snake_case or camelCase — we accept both for parity with
-     * the rest of the Catalog API surface).
+     * request body (snake_case or camelCase — we accept both for parity with.
      *
      * @return array{type?:string, sku?:string, attribute_family_id?:int}
      */
@@ -225,14 +206,6 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
     /**
      * Normalise super_attributes into the shape Bagisto core's Configurable::create
      * expects: { attribute_code => option_ids[] }.
-     *
-     * Accepts either:
-     *   - { "color": [1, 2], "size": [4, 5] }      (codes — passed through)
-     *   - { 23: [1, 2], 24: [4, 5] }              (numeric attribute_ids — looked up)
-     *
-     * Skips entries whose options aren't a non-empty list of integers, and
-     * silently drops unknown attribute_ids. Returns [] if nothing remains —
-     * the caller surfaces a 422 super-attributes-invalid in that case.
      *
      * @param  array<int|string, mixed>  $superAttributes
      * @return array<string, int[]>
@@ -279,6 +252,9 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

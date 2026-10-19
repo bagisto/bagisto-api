@@ -9,9 +9,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Models\DefaultChannel;
 use Webkul\Core\Models\Channel;
 
-/**
- * Provides the default channel for the store.
- */
 class DefaultChannelProvider implements ProviderInterface
 {
     /**
@@ -24,15 +21,12 @@ class DefaultChannelProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        // Get default channel
-        /** @var Channel|null $defaultChannel */
         $defaultChannel = core()->getDefaultChannel();
 
         if (! $defaultChannel) {
             return new PartialPaginator(new LengthAwarePaginator([], 0, 15, 1));
         }
 
-        // Eager load all relationships
         $defaultChannel->load([
             'default_locale',
             'locales',
@@ -61,7 +55,6 @@ class DefaultChannelProvider implements ProviderInterface
         $output->updated_at = $defaultChannel->updated_at?->format('Y-m-d H:i:s');
         $output->maintenance_mode_text = $defaultChannel->maintenance_mode_text;
 
-        // Set nested relationships
         if ($defaultChannel->default_locale) {
             $output->default_locale = $this->transformLocale($defaultChannel->default_locale);
         }
@@ -90,7 +83,6 @@ class DefaultChannelProvider implements ProviderInterface
             $output->translations = $defaultChannel->translations->map(fn ($translation) => $this->transformChannelTranslation($translation))->toArray();
         }
 
-        // Handle homeSeo
         if ($defaultChannel->home_seo) {
             $output->home_seo = $this->transformHomeSeo($defaultChannel->home_seo);
         }

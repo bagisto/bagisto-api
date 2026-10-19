@@ -8,10 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Bundle option — nested sub-resource of AdminCatalogProduct (`bundleOptions`
- * connection). `products` is a nested connection; `label` is locale-resolved.
- */
 #[ApiResource(
     shortName: 'AdminProductDetailBundleOption',
     operations: [],
@@ -32,12 +28,18 @@ class AdminProductDetailBundleOption extends Model
         'is_required' => 'boolean',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get label attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getLabelAttribute(): ?string
     {
@@ -51,12 +53,18 @@ class AdminProductDetailBundleOption extends Model
             ->value('label');
     }
 
+    /**
+     * Get position attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getPositionAttribute(): int
     {
         return (int) ($this->sort_order ?? 0);
     }
 
+    /**
+     * Products.
+     */
     #[ApiProperty(writable: false)]
     public function products(): HasMany
     {

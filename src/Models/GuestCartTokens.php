@@ -12,6 +12,9 @@ class GuestCartTokens extends Model implements GuestCartTokensContract
 {
     use HasFactory;
 
+    /**
+     * The table.
+     */
     protected $table = 'guest_cart_tokens';
 
     /**
@@ -37,7 +40,7 @@ class GuestCartTokens extends Model implements GuestCartTokensContract
     ];
 
     /**
-     * Get the cart associated with this token
+     * Get the cart associated with this token.
      */
     public function cart(): BelongsTo
     {

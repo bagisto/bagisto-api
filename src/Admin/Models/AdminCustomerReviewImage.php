@@ -15,30 +15,51 @@ use Illuminate\Support\Facades\Storage;
 )]
 class AdminCustomerReviewImage extends Model
 {
+    /**
+     * The table.
+     */
     protected $table = 'product_review_attachments';
 
+    /**
+     * The timestamps.
+     */
     public $timestamps = false;
 
+    /**
+     * The appends.
+     */
     protected $appends = ['url'];
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'id' => 'int',
         'review_id' => 'int',
         'path' => 'string',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get path.
+     */
     #[ApiProperty(writable: false)]
     public function getPath(): ?string
     {
         return $this->path;
     }
 
+    /**
+     * Get url attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getUrlAttribute(): ?string
     {

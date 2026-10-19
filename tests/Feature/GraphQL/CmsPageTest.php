@@ -10,48 +10,10 @@ use Webkul\Core\Models\Channel;
 class CmsPageTest extends GraphQLTestCase
 {
     /**
-     * Create test CMS page with translation
-     */
-    private function createTestCmsPage(): array
-    {
-        // Ensure we have required data
-        $this->seedRequiredData();
-
-        // Create a channel if none exists
-        $channel = Channel::first();
-        if (! $channel) {
-            $channel = Channel::factory()->create();
-        }
-
-        // Create CMS page
-        $page = Page::factory()->create([
-            'layout' => 'default',
-        ]);
-
-        // Attach channel
-        $page->channels()->attach($channel->id);
-
-        // Create translation
-        $translation = PageTranslation::factory()->create([
-            'cms_page_id' => $page->id,
-            'locale' => 'en',
-            'page_title' => 'Test About Us Page',
-            'url_key' => 'test-about-us',
-            'html_content' => '<p>This is a test about us page content</p>',
-            'meta_title' => 'Test About Us',
-            'meta_description' => 'Test meta description',
-            'meta_keywords' => 'test, about, us',
-        ]);
-
-        return compact('page', 'translation', 'channel');
-    }
-
-    /**
-     * Test: Query all CMS pages collection
+     * Test: Query all CMS pages collection.
      */
     public function test_get_cms_pages_collection(): void
     {
-        // Create test data
         $this->createTestCmsPage();
 
         $query = <<<'GQL'
@@ -96,7 +58,7 @@ class CmsPageTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single CMS page by ID
+     * Test: Query single CMS page by ID.
      */
     public function test_get_cms_page_by_id(): void
     {
@@ -140,7 +102,7 @@ class CmsPageTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query CMS page by URL key
+     * Test: Query CMS page by URL key.
      */
     public function test_get_cms_page_by_url_key(): void
     {
@@ -169,7 +131,7 @@ class CmsPageTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Timestamps are returned in ISO8601 format
+     * Test: Timestamps are returned in ISO8601 format.
      */
     public function test_cms_page_timestamps_are_iso8601_format(): void
     {
@@ -193,13 +155,12 @@ class CmsPageTest extends GraphQLTestCase
         $response->assertOk();
         $page = $response->json('data.pages.edges.0.node');
 
-        // Verify ISO8601 format (should contain 'T' and timezone)
         expect($page['createdAt'])->toMatch('/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
         expect($page['updatedAt'])->toMatch('/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
     }
 
     /**
-     * Test: Query returns appropriate error for invalid ID
+     * Test: Query returns appropriate error for invalid ID.
      */
     public function test_invalid_cms_page_id_returns_error(): void
     {
@@ -219,7 +180,7 @@ class CmsPageTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Translation contains all expected fields
+     * Test: Translation contains all expected fields.
      */
     public function test_cms_page_translation_contains_all_fields(): void
     {
@@ -268,7 +229,7 @@ class CmsPageTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query all CMS pages with edges/node pattern including translation
+     * Test: Query all CMS pages with edges/node pattern including translation.
      */
     public function test_get_cms_pages_with_edges_and_translation(): void
     {
@@ -337,7 +298,6 @@ class CmsPageTest extends GraphQLTestCase
         $edges = $response->json('data.pages.edges');
         expect($edges)->not()->toBeEmpty();
 
-        // Verify the created page is present in the results
         $found = collect($edges)->first(fn ($edge) => $edge['node']['_id'] == $testData['page']->id);
         expect($found)->not()->toBeNull();
         expect($found['node']['translation']['pageTitle'])->toBe('Test About Us Page');
@@ -349,11 +309,10 @@ class CmsPageTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Multiple CMS pages can be queried
+     * Test: Multiple CMS pages can be queried.
      */
     public function test_query_multiple_cms_pages(): void
     {
-        // Create multiple pages
         $this->createTestCmsPage();
         $this->createTestCmsPage();
 
@@ -406,5 +365,37 @@ class CmsPageTest extends GraphQLTestCase
         $response->assertOk();
 
         expect($response->json('data.pageByUrlKeypages'))->toBeEmpty();
+    }
+
+    /**
+     * Create test CMS page with translation.
+     */
+    private function createTestCmsPage(): array
+    {
+        $this->seedRequiredData();
+
+        $channel = Channel::first();
+        if (! $channel) {
+            $channel = Channel::factory()->create();
+        }
+
+        $page = Page::factory()->create([
+            'layout' => 'default',
+        ]);
+
+        $page->channels()->attach($channel->id);
+
+        $translation = PageTranslation::factory()->create([
+            'cms_page_id' => $page->id,
+            'locale' => 'en',
+            'page_title' => 'Test About Us Page',
+            'url_key' => 'test-about-us',
+            'html_content' => '<p>This is a test about us page content</p>',
+            'meta_title' => 'Test About Us',
+            'meta_description' => 'Test meta description',
+            'meta_keywords' => 'test, about, us',
+        ]);
+
+        return compact('page', 'translation', 'channel');
     }
 }

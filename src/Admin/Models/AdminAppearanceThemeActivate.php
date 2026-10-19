@@ -83,6 +83,9 @@ class AdminAppearanceThemeActivate
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $code = null;
 
@@ -91,5 +94,8 @@ class AdminAppearanceThemeActivate
      */
     public array $activated_on = [];
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

@@ -23,9 +23,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsThemeProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
 
-/**
- * Admin Settings → Themes (theme customizations).
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsTheme',
@@ -263,14 +260,23 @@ class AdminSettingsTheme extends EloquentModel
         'message',
     ];
 
+    /**
+     * The action message.
+     */
     public ?string $actionMessage = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get message attribute.
+     */
     #[ApiProperty(writable: false, example: 'Theme customization deleted successfully.')]
     public function getMessageAttribute(): ?string
     {

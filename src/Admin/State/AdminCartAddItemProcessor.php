@@ -11,15 +11,11 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Product\Repositories\ProductRepository;
 
-/**
- * POST /api/admin/carts/{id}/items — add a product to the draft cart.
- *
- * Mirrors the monolith CartController::storeItem: validate product, call
- * Cart::addProduct($product, $params) using the full request body so every
- * product-type-specific key is forwarded unchanged.
- */
 class AdminCartAddItemProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminCart
     {
         $cart = AdminCartGuard::resolve(AdminCartGuard::resolveId($uriVariables, $context));
@@ -87,9 +83,7 @@ class AdminCartAddItemProcessor implements ProcessorInterface
 
     /**
      * Translate the GraphQL-friendly typed option fields into the snake_case map
-     * shape Cart::addProduct expects. REST callers that already send the native
-     * keys (selected_configurable_option / qty / bundle_options / links) are left
-     * untouched — those win when present.
+     * shape Cart::addProduct expects. REST callers that already send the native.
      */
     protected function normalizeTypeOptions(array $params): array
     {
@@ -189,6 +183,9 @@ class AdminCartAddItemProcessor implements ProcessorInterface
         return $params;
     }
 
+    /**
+     * Merge params.
+     */
     protected function mergeParams(mixed $data, array $context): array
     {
         $params = request()->all();

@@ -5,9 +5,6 @@ namespace Webkul\BagistoApi\Admin\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 
-/**
- * Schema-only DTO for a bundle product option (with nested products).
- */
 #[ApiResource(
     operations: [],
     graphQlOperations: [],
@@ -15,18 +12,33 @@ use ApiPlatform\Metadata\ApiResource;
 )]
 class AdminProductBundleOptionDto
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $id = null;
 
+    /**
+     * The label.
+     */
     #[ApiProperty(writable: false)]
     public ?string $label = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $type = null;
 
+    /**
+     * The position.
+     */
     #[ApiProperty(writable: false)]
     public ?int $position = null;
 
+    /**
+     * The is required.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $isRequired = null;
 

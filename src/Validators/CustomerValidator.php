@@ -9,12 +9,12 @@ use Webkul\Customer\Models\Customer;
 class CustomerValidator
 {
     /**
-     * Valid gender values
+     * Valid gender values.
      */
     private const VALID_GENDERS = ['Male', 'Female', 'Other'];
 
     /**
-     * Validate customer for creation
+     * Validate customer for creation.
      *
      * @throws InvalidInputException
      */
@@ -45,25 +45,13 @@ class CustomerValidator
             throw new InvalidInputException($errorMessage);
         }
 
-        // Additional custom validations
         $this->validatePhone($customer->phone);
         $this->validateGender($customer->gender);
     }
 
     /**
-     * The channel a customer belongs to.
-     *
-     * The same address may register on each channel of a store, so an email is unique per
-     * channel rather than across the table.
-     */
-    protected function channelId(Customer $customer): int
-    {
-        return (int) ($customer->channel_id ?: core()->getCurrentChannel()->id);
-    }
-
-    /**
      * Validate customer for update
-     * Only validates fields that have been changed (non-null values)
+     * Only validates fields that have been changed (non-null values).
      *
      * @throws InvalidInputException
      */
@@ -72,7 +60,6 @@ class CustomerValidator
         $data = [];
         $rules = [];
 
-        // Only include and validate fields that have been set
         if ($customer->first_name !== null) {
             $data['first_name'] = $customer->first_name;
             $rules['first_name'] = 'string';
@@ -91,16 +78,13 @@ class CustomerValidator
         if ($customer->phone !== null) {
             $data['phone'] = $customer->phone;
             $rules['phone'] = 'string|unique:customers,phone,'.$customer->id;
-            // Validate phone format
             $this->validatePhone($customer->phone);
         }
 
-        // Validate gender if provided
         if ($customer->gender !== null) {
             $this->validateGender($customer->gender);
         }
 
-        // Only validate password if it's actually being changed
         if (
             ! empty($customer->password)
             && ! empty($customer->confirm_password)
@@ -110,7 +94,6 @@ class CustomerValidator
             $rules['password'] = 'confirmed|min:6';
         }
 
-        // Only validate if there are rules to check
         if (! empty($rules)) {
             $validator = Validator::make($data, $rules);
 
@@ -123,32 +106,8 @@ class CustomerValidator
     }
 
     /**
-     * Validate phone number - only digits allowed
-     *
-     * @throws InvalidInputException
-     */
-    private function validatePhone(?string $phone): void
-    {
-        if (
-            $phone === null
-            || $phone === ''
-        ) {
-            return;
-        }
-
-        // Phone should only contain digits - remove all non-digit characters
-        $cleanedPhone = preg_replace('/[^0-9]/', '', $phone);
-
-        // If the cleaned phone is different from original, it means special characters were present
-        if ($cleanedPhone !== $phone) {
-            throw new InvalidInputException(__('bagistoapi::app.graphql.customer.phone-special-chars-not-allowed'));
-        }
-    }
-
-    /**
      * Validate and normalize gender value
-     * Only allows Male, Female, or Other (case-insensitive)
-     * Saves with first letter uppercase
+     * Only allows Male, Female, or Other (case-insensitive).
      *
      * @throws InvalidInputException
      */
@@ -161,7 +120,6 @@ class CustomerValidator
             return null;
         }
 
-        // Normalize: trim and capitalize first letter
         $normalized = ucfirst(trim($gender));
 
         if (! in_array($normalized, self::VALID_GENDERS, true)) {
@@ -174,5 +132,35 @@ class CustomerValidator
         }
 
         return $normalized;
+    }
+
+    /**
+     * The channel a customer belongs to.
+     * The same address may register on each channel of a store, so an email is unique per.
+     */
+    protected function channelId(Customer $customer): int
+    {
+        return (int) ($customer->channel_id ?: core()->getCurrentChannel()->id);
+    }
+
+    /**
+     * Validate phone number - only digits allowed.
+     *
+     * @throws InvalidInputException
+     */
+    private function validatePhone(?string $phone): void
+    {
+        if (
+            $phone === null
+            || $phone === ''
+        ) {
+            return;
+        }
+
+        $cleanedPhone = preg_replace('/[^0-9]/', '', $phone);
+
+        if ($cleanedPhone !== $phone) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.customer.phone-special-chars-not-allowed'));
+        }
     }
 }

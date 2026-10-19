@@ -22,29 +22,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportWriteProvider;
 
-/**
- * Admin Settings → Data Transfer Imports (Block B Wave 3).
- *
- * REST:
- *   GET    /api/admin/settings/data-transfer/imports          — listing
- *   GET    /api/admin/settings/data-transfer/imports/{id}     — detail
- *   DELETE /api/admin/settings/data-transfer/imports/{id}     — delete (DB row + file)
- *
- * GraphQL:
- *   adminSettingsDataTransferImports  — cursor listing
- *   adminSettingsDataTransferImport(id:) — detail
- *   deleteAdminSettingsDataTransferImport — delete
- *
- * Cancel action lives on the sibling resource AdminSettingsDataTransferImportCancel
- * (POST /api/admin/settings/data-transfer/imports/{id}/cancel + cancel mutation).
- *
- * Create endpoint deferred — file upload + async queue dispatch will land in a
- * follow-up. Use the Bagisto admin panel for now. Mirrors the deferral pattern
- * documented for Phase 5.11 product images and the AdminSettingsChannel logo.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\DataTransfer\ImportController
- * for listing, detail, cancel and delete actions.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsDataTransferImport',
@@ -350,6 +327,9 @@ class AdminSettingsDataTransferImport
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
@@ -365,21 +345,39 @@ class AdminSettingsDataTransferImport
     #[ApiProperty(writable: false, example: 'pending')]
     public ?string $state = null;
 
+    /**
+     * The process in queue.
+     */
     #[ApiProperty(writable: false, example: false)]
     public ?bool $process_in_queue = null;
 
+    /**
+     * The validation strategy.
+     */
     #[ApiProperty(writable: false, example: 'stop-on-errors')]
     public ?string $validation_strategy = null;
 
+    /**
+     * The allowed errors.
+     */
     #[ApiProperty(writable: false, example: 0)]
     public ?int $allowed_errors = null;
 
+    /**
+     * The processed rows count.
+     */
     #[ApiProperty(writable: false, example: 0)]
     public ?int $processed_rows_count = null;
 
+    /**
+     * The invalid rows count.
+     */
     #[ApiProperty(writable: false, example: 0)]
     public ?int $invalid_rows_count = null;
 
+    /**
+     * The errors count.
+     */
     #[ApiProperty(writable: false, example: 0)]
     public ?int $errors_count = null;
 
@@ -387,21 +385,39 @@ class AdminSettingsDataTransferImport
     #[ApiProperty(writable: false, example: [])]
     public ?array $errors = null;
 
+    /**
+     * The field separator.
+     */
     #[ApiProperty(writable: false, example: ',')]
     public ?string $field_separator = null;
 
+    /**
+     * The file path.
+     */
     #[ApiProperty(writable: false, example: 'imports/6f1a_products.csv')]
     public ?string $file_path = null;
 
+    /**
+     * The images directory path.
+     */
     #[ApiProperty(writable: false, example: 'product/images')]
     public ?string $images_directory_path = null;
 
+    /**
+     * The image source.
+     */
     #[ApiProperty(writable: false, description: 'Where a product import reads its images from: url, upload or directory.')]
     public ?string $image_source = null;
 
+    /**
+     * The images archive name.
+     */
     #[ApiProperty(writable: false, description: 'Name of the images archive uploaded for this import, when its images came from an upload.')]
     public ?string $images_archive_name = null;
 
+    /**
+     * The error file path.
+     */
     #[ApiProperty(writable: false, example: null)]
     public ?string $error_file_path = null;
 
@@ -413,15 +429,27 @@ class AdminSettingsDataTransferImport
     ])]
     public ?array $summary = null;
 
+    /**
+     * The started at.
+     */
     #[ApiProperty(writable: false, example: null)]
     public ?string $started_at = null;
 
+    /**
+     * The completed at.
+     */
     #[ApiProperty(writable: false, example: null)]
     public ?string $completed_at = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
 
@@ -446,6 +474,9 @@ class AdminSettingsDataTransferImport
     ])]
     public ?array $stats = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, example: 'Import deleted successfully.')]
     public ?string $message = null;
 }

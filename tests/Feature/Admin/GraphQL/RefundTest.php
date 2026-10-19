@@ -11,6 +11,9 @@ class RefundTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
+    /**
+     * Test create requires authentication.
+     */
     public function test_create_requires_authentication(): void
     {
         $mutation = 'mutation($input: createAdminRefundInput!){ createAdminRefund(input:$input){ adminRefund { _id } } }';
@@ -23,6 +26,9 @@ class RefundTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeArray();
     }
 
+    /**
+     * Test preview returns totals.
+     */
     public function test_preview_returns_totals(): void
     {
         $order = Order::with('items')
@@ -56,6 +62,9 @@ class RefundTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test view refund by id.
+     */
     public function test_view_refund_by_id(): void
     {
         $id = Refund::query()->value('id') ?? $this->bootstrapOrderWithRefund()->refunds->first()->id;

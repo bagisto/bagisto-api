@@ -16,6 +16,9 @@ use Webkul\Sales\Models\Invoice;
 
 class AdminInvoiceSendDuplicateProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminInvoiceSendDuplicate
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -64,6 +67,9 @@ class AdminInvoiceSendDuplicateProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Resolve invoice id.
+     */
     protected function resolveInvoiceId(mixed $data, array $uriVariables, array $context): int
     {
         if (isset($uriVariables['id'])) {
@@ -92,6 +98,9 @@ class AdminInvoiceSendDuplicateProcessor implements ProcessorInterface
         return (int) (request()->route('id') ?? 0);
     }
 
+    /**
+     * Resolve email.
+     */
     protected function resolveEmail(mixed $data, array $context): ?string
     {
         if (
@@ -112,6 +121,9 @@ class AdminInvoiceSendDuplicateProcessor implements ProcessorInterface
         return $fromBody ? trim((string) $fromBody) : null;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

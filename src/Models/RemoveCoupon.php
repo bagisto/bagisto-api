@@ -13,11 +13,6 @@ use Webkul\BagistoApi\Dto\CartInput;
 use Webkul\BagistoApi\State\CartTokenMutationProvider;
 use Webkul\BagistoApi\State\CartTokenProcessor;
 
-/**
- * RemoveCoupon - GraphQL & REST API Resource for Removing Coupon
- *
- * Provides mutation for removing applied coupon code from cart.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'RemoveCoupon',
@@ -121,10 +116,16 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
 )]
 class RemoveCoupon
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $id = null;
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $cartToken = null;

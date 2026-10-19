@@ -69,10 +69,16 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationSlugProvider;
 )]
 class AdminConfigurationSlug
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $id = 'configuration-slugs';
 
+    /**
+     * The slugs.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?array $slugs = null;

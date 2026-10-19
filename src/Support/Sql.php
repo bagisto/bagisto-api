@@ -4,9 +4,6 @@ namespace Webkul\BagistoApi\Support;
 
 use Illuminate\Support\Facades\DB;
 
-/**
- * Database-portable SQL fragments for raw expressions, built on core's db_grammar().
- */
 class Sql
 {
     /**

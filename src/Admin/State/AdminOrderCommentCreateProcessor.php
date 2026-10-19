@@ -10,20 +10,19 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Sales\Repositories\OrderCommentRepository;
 
-/**
- * POST /api/admin/orders/{orderId}/comments + createAdminOrderComment mutation.
- *
- * Mirrors `Admin\Sales\OrderController::comment` — fires the before/after
- * events so Bagisto core listeners can send the customer email when
- * `customer_notified = 1`.
- */
 class AdminOrderCommentCreateProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminOrderActionGuard $guard,
         protected OrderCommentRepository $commentRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminOrderComment
     {
         AdminReadPermissions::authorize(null, null, 'sales.orders.view');
@@ -53,6 +52,9 @@ class AdminOrderCommentCreateProcessor implements ProcessorInterface
         return $this->toDto($row);
     }
 
+    /**
+     * Extract comment.
+     */
     protected function extractComment(mixed $data, array $context): ?string
     {
         if (
@@ -68,6 +70,9 @@ class AdminOrderCommentCreateProcessor implements ProcessorInterface
             ?? null;
     }
 
+    /**
+     * Extract customer notified.
+     */
     protected function extractCustomerNotified(mixed $data, array $context): bool
     {
         if (
@@ -84,6 +89,9 @@ class AdminOrderCommentCreateProcessor implements ProcessorInterface
             ?? false);
     }
 
+    /**
+     * To dto.
+     */
     protected function toDto($row): AdminOrderComment
     {
         $model = new AdminOrderComment;

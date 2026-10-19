@@ -8,10 +8,19 @@ use Webkul\RMA\Repositories\RMACustomFieldRepository;
 
 trait ResolvesReturnCustomFields
 {
+    /**
+     * The option field types constant.
+     */
     public const OPTION_FIELD_TYPES = ['select', 'radio'];
 
+    /**
+     * The multi option field types constant.
+     */
     public const MULTI_OPTION_FIELD_TYPES = ['multiselect', 'checkbox'];
 
+    /**
+     * Active return custom fields.
+     */
     protected function activeReturnCustomFields(RMACustomFieldRepository $repository): Collection
     {
         return $repository
@@ -60,6 +69,9 @@ trait ResolvesReturnCustomFields
         return array_filter($answers, fn ($value) => ! $this->isEmptyCustomFieldValue($value));
     }
 
+    /**
+     * Normalize custom field value.
+     */
     private function normalizeCustomFieldValue($field, mixed $value): mixed
     {
         if (in_array($field->type, self::MULTI_OPTION_FIELD_TYPES, true)) {
@@ -91,6 +103,9 @@ trait ResolvesReturnCustomFields
         return $value === null ? null : (string) $value;
     }
 
+    /**
+     * Assert allowed option.
+     */
     private function assertAllowedOption($field, mixed $value): void
     {
         $allowed = $field->options->pluck('value')->map(fn ($option) => (string) $option)->all();
@@ -102,6 +117,9 @@ trait ResolvesReturnCustomFields
         }
     }
 
+    /**
+     * Whether empty custom field value.
+     */
     private function isEmptyCustomFieldValue(mixed $value): bool
     {
         if (is_array($value)) {

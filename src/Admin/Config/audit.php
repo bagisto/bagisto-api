@@ -16,7 +16,6 @@ return [
     /**
      * Field names whose values are never stored. Matching keys in
      * old_values / new_values / payload are replaced with "[redacted]".
-     * A leading "*" matches by suffix (e.g. "*_token" matches "api_token").
      */
     'redact' => [
         'password',

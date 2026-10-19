@@ -14,10 +14,19 @@ use Webkul\Core\Models\Channel;
 
 class ProductProcessor implements ProcessorInterface
 {
+    /**
+     * The configurable attributes.
+     */
     public $configurableAttributes;
 
+    /**
+     * The family attributes.
+     */
     public $familyAttributes;
 
+    /**
+     * The system attributes.
+     */
     public $systemAttributes = [
         'sku', 'name', 'url_key', 'tax_category_id', 'new', 'featured', 'visible_individually', 'status', 'short_description', 'description', 'price', 'special_price', 'special_price_from', 'special_price_to', 'meta_title', 'meta_keywords', 'weight', 'guest_checkout', 'product_number', 'manage_stock',
         // User-defined attributes from seeder
@@ -143,6 +152,14 @@ class ProductProcessor implements ProcessorInterface
     }
 
     /**
+     * Set attribute type column values.
+     */
+    public function setAttributeTypeColumnValues($attribute, $value, &$attributeValue)
+    {
+        $attributeValue->{$attribute->column_name} = $value;
+    }
+
+    /**
      * Extract system attribute values from temporary storage.
      */
     protected function extractSystemAttributes(Product $product): array
@@ -221,13 +238,5 @@ class ProductProcessor implements ProcessorInterface
 
             $attributeValue->save();
         }
-    }
-
-    /**
-     * Set attribute type column values.
-     */
-    public function setAttributeTypeColumnValues($attribute, $value, &$attributeValue)
-    {
-        $attributeValue->{$attribute->column_name} = $value;
     }
 }

@@ -6,6 +6,9 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class DashboardTest extends AdminApiTestCase
 {
+    /**
+     * Test dashboard stats default.
+     */
     public function test_dashboard_stats_default(): void
     {
         $admin = $this->createAdmin();
@@ -30,6 +33,9 @@ class DashboardTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test dashboard stats today type.
+     */
     public function test_dashboard_stats_today_type(): void
     {
         $admin = $this->createAdmin();
@@ -47,6 +53,9 @@ class DashboardTest extends AdminApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test date range resolves over graphql.
+     */
     public function test_date_range_resolves_over_graphql(): void
     {
         $admin = $this->createAdmin();
@@ -67,6 +76,9 @@ class DashboardTest extends AdminApiTestCase
         expect($response->json('data.statsAdminDashboard.dateRange'))->not->toBeNull();
     }
 
+    /**
+     * Test requires authentication.
+     */
     public function test_requires_authentication(): void
     {
         $query = 'query { statsAdminDashboard { type } }';

@@ -6,12 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Customer Order Item — nested API resource (no standalone endpoints).
- *
- * Exposed only as a relationship of CustomerOrder.
- * Points to the `order_items` table with explicit field casts.
- */
 #[ApiResource(
     shortName: 'CustomerOrderItem',
     operations: [],
@@ -76,7 +70,7 @@ class CustomerOrderItem extends Model
     ];
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -84,72 +78,108 @@ class CustomerOrderItem extends Model
         return $this->id;
     }
 
+    /**
+     * Get sku.
+     */
     #[ApiProperty(writable: false)]
     public function getSku(): ?string
     {
         return $this->sku;
     }
 
+    /**
+     * Get name.
+     */
     #[ApiProperty(writable: false)]
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * Get qty ordered.
+     */
     #[ApiProperty(writable: false)]
     public function getQtyOrdered(): ?int
     {
         return $this->qty_ordered;
     }
 
+    /**
+     * Get qty shipped.
+     */
     #[ApiProperty(writable: false)]
     public function getQtyShipped(): ?int
     {
         return $this->qty_shipped;
     }
 
+    /**
+     * Get qty invoiced.
+     */
     #[ApiProperty(writable: false)]
     public function getQtyInvoiced(): ?int
     {
         return $this->qty_invoiced;
     }
 
+    /**
+     * Get qty canceled.
+     */
     #[ApiProperty(writable: false)]
     public function getQtyCanceled(): ?int
     {
         return $this->qty_canceled;
     }
 
+    /**
+     * Get qty refunded.
+     */
     #[ApiProperty(writable: false)]
     public function getQtyRefunded(): ?int
     {
         return $this->qty_refunded;
     }
 
+    /**
+     * Get type.
+     */
     #[ApiProperty(writable: false)]
     public function getType(): ?string
     {
         return $this->type;
     }
 
+    /**
+     * Get price.
+     */
     #[ApiProperty(writable: false)]
     public function getPrice(): ?float
     {
         return $this->price;
     }
 
+    /**
+     * Get base price.
+     */
     #[ApiProperty(writable: false)]
     public function getBasePrice(): ?float
     {
         return $this->base_price;
     }
 
+    /**
+     * Get total.
+     */
     #[ApiProperty(writable: false)]
     public function getTotal(): ?float
     {
         return $this->total;
     }
 
+    /**
+     * Get base total.
+     */
     #[ApiProperty(writable: false)]
     public function getBaseTotal(): ?float
     {
@@ -157,13 +187,12 @@ class CustomerOrderItem extends Model
     }
 
     /**
-     * Override toArray to ensure qty fields are always included in serialization
+     * Override toArray to ensure qty fields are always included in serialization.
      */
     public function toArray(): array
     {
         $array = parent::toArray();
 
-        // Ensure qty fields are always present
         $array['qty_ordered'] = $this->qty_ordered;
         $array['qty_shipped'] = $this->qty_shipped;
         $array['qty_invoiced'] = $this->qty_invoiced;

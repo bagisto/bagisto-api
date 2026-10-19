@@ -10,23 +10,30 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Models\ProductReview;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
-/**
- * Provider for ProductReview collection queries (REST + GraphQL).
- * Filters by product_id, status, and rating.
- * Only approved reviews are public; a client-supplied status is ignored.
- */
 class ProductReviewProvider implements ProviderInterface
 {
     use ClampsPageSize;
 
+    /**
+     * The default per page constant.
+     */
     private const DEFAULT_PER_PAGE = 30;
 
+    /**
+     * The max per page constant.
+     */
     private const MAX_PER_PAGE = 50;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $isGraphQL = ! empty($context['graphql_operation_name']);

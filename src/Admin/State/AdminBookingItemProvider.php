@@ -17,8 +17,14 @@ class AdminBookingItemProvider extends AbstractAdminItemProvider
     use ChecksAdminPermission;
     use MapsOrderAddress;
 
+    /**
+     * The permission constant.
+     */
     protected const PERMISSION = 'sales.bookings';
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         $this->authorizedAdmin(self::PERMISSION);
@@ -26,11 +32,17 @@ class AdminBookingItemProvider extends AbstractAdminItemProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.sales.booking.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         $row = DB::table('bookings')
@@ -45,6 +57,9 @@ class AdminBookingItemProvider extends AbstractAdminItemProvider
         return $row ?: null;
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $entity): AdminBooking
     {
         $booking = $this->buildAdminBooking($entity);
@@ -56,6 +71,9 @@ class AdminBookingItemProvider extends AbstractAdminItemProvider
         return $booking;
     }
 
+    /**
+     * Attach order documents.
+     */
     protected function attachOrderDocuments(AdminBooking $booking, int $orderId): void
     {
         $order = Order::with(['addresses', 'payment', 'invoices', 'shipments', 'refunds'])->find($orderId);
@@ -99,6 +117,9 @@ class AdminBookingItemProvider extends AbstractAdminItemProvider
         ])->all();
     }
 
+    /**
+     * Safe format base price.
+     */
     protected function safeFormatBasePrice(float $amount): ?string
     {
         try {

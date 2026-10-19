@@ -78,10 +78,16 @@ use Webkul\BagistoApi\State\LogoutProcessor;
 )]
 class CustomerLogout
 {
+    /**
+     * The success.
+     */
     #[ApiProperty(identifier: false, writable: false, readable: true)]
     #[Groups(['mutation'])]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, readable: true)]
     #[Groups(['mutation'])]
     public ?string $message = null;

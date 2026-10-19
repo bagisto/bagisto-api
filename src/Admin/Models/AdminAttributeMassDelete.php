@@ -10,17 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeMassDeleteInput;
 use Webkul\BagistoApi\Admin\State\AdminAttributeMassDeleteProcessor;
 
-/**
- * One-operation resource for mass-deleting attributes.
- *
- * REST:
- *   POST /api/admin/catalog/attributes/mass-delete
- *     Body: { "indices": [24, 31] }
- *     Response 200: { "deleted": [24, 31], "message": "..." }
- *
- * GraphQL:
- *   massDeleteAdminCatalogAttributes
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAttributeMassDelete',
@@ -93,6 +82,9 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeMassDeleteProcessor;
 )]
 class AdminAttributeMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -100,6 +92,9 @@ class AdminAttributeMassDelete
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

@@ -27,23 +27,20 @@ use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\Customer\Models\Customer;
 use Webkul\Sales\Repositories\OrderRepository;
 
-/**
- * CustomerOrderProvider — Retrieves orders belonging to the authenticated customer
- *
- * Supports cursor-based pagination and status filtering.
- * All queries are scoped to the current customer for multi-tenant isolation.
- */
 class CustomerOrderProvider implements ProviderInterface
 {
     use ClampsPageSize;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination,
         private readonly OrderRepository $orderRepository,
     ) {}
 
     /**
-     * Provide customer orders for collection or single-item operations
+     * Provide customer orders for collection or single-item operations.
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
@@ -53,7 +50,6 @@ class CustomerOrderProvider implements ProviderInterface
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
 
-        /** Single item — GET /api/shop/customer-orders/{id} */
         if (
             ! $operation instanceof GetCollection
             && ! ($operation instanceof QueryCollection)
@@ -64,6 +60,9 @@ class CustomerOrderProvider implements ProviderInterface
         return $this->provideCollection($customer, $context, $operation);
     }
 
+    /**
+     * To list dto.
+     */
     private function toListDto(CustomerOrder $order): CustomerOrderListDto
     {
         $dto = new CustomerOrderListDto;
@@ -96,7 +95,7 @@ class CustomerOrderProvider implements ProviderInterface
     }
 
     /**
-     * Return a single order owned by the customer
+     * Return a single order owned by the customer.
      */
     private function provideItem(object $customer, array $uriVariables, Operation $operation, array $context = []): CustomerOrder|CustomerOrderDetailDto
     {
@@ -133,6 +132,9 @@ class CustomerOrderProvider implements ProviderInterface
         return $order;
     }
 
+    /**
+     * To detail dto.
+     */
     private function toDetailDto(CustomerOrder $order): CustomerOrderDetailDto
     {
         $dto = new CustomerOrderDetailDto;
@@ -220,6 +222,9 @@ class CustomerOrderProvider implements ProviderInterface
         return $dto;
     }
 
+    /**
+     * To item dto.
+     */
     private function toItemDto($item): OrderItemDto
     {
         $dto = new OrderItemDto;
@@ -248,6 +253,9 @@ class CustomerOrderProvider implements ProviderInterface
         return $dto;
     }
 
+    /**
+     * To address dto.
+     */
     private function toAddressDto($address): OrderAddressDto
     {
         $dto = new OrderAddressDto;
@@ -269,6 +277,9 @@ class CustomerOrderProvider implements ProviderInterface
         return $dto;
     }
 
+    /**
+     * To payment dto.
+     */
     private function toPaymentDto($payment): OrderPaymentDto
     {
         $dto = new OrderPaymentDto;
@@ -279,6 +290,9 @@ class CustomerOrderProvider implements ProviderInterface
         return $dto;
     }
 
+    /**
+     * To shipment dto.
+     */
     private function toShipmentDto($shipment): OrderShipmentDto
     {
         $dto = new OrderShipmentDto;
@@ -384,9 +398,7 @@ class CustomerOrderProvider implements ProviderInterface
 
     /**
      * Enable debug dumps only when explicitly requested via header:
-     * X-DEBUG-CUSTOMER-ORDER: 1
-     * Optional hard-stop at success checkpoint:
-     * X-DEBUG-CUSTOMER-ORDER-DD: 1
+     * X-DEBUG-CUSTOMER-ORDER: 1.
      */
     private function debugDump(string $checkpoint, array $payload = []): void
     {
@@ -395,11 +407,17 @@ class CustomerOrderProvider implements ProviderInterface
         }
     }
 
+    /**
+     * Should debug dump.
+     */
     private function shouldDebugDump(): bool
     {
         return request()->header('X-DEBUG-CUSTOMER-ORDER') === '1';
     }
 
+    /**
+     * Should debug dd.
+     */
     private function shouldDebugDd(): bool
     {
         return request()->header('X-DEBUG-CUSTOMER-ORDER-DD') === '1';
@@ -407,7 +425,7 @@ class CustomerOrderProvider implements ProviderInterface
 
     /**
      * Targeted hard-stop for debugging.
-     * Usage: X-DEBUG-CUSTOMER-ORDER-DD-AT: start|auth|id|result
+     * Usage: X-DEBUG-CUSTOMER-ORDER-DD-AT: start|auth|id|result.
      */
     private function debugDdAt(string $checkpoint, array $payload = []): void
     {
@@ -417,7 +435,7 @@ class CustomerOrderProvider implements ProviderInterface
     }
 
     /**
-     * Return a paginated collection of orders owned by the customer
+     * Return a paginated collection of orders owned by the customer.
      */
     private function provideCollection(object $customer, array $context, Operation $operation): Paginator
     {
@@ -428,13 +446,11 @@ class CustomerOrderProvider implements ProviderInterface
             ->where('customer_id', $customer->id)
             ->where('customer_type', Customer::class);
 
-        /** Apply optional status filter */
         $status = $args['status'] ?? $filters['status'] ?? null;
         if ($status !== null) {
             $query->where('status', (string) $status);
         }
 
-        /** Cursor-based pagination (offset-based cursors from API Platform) */
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
         $after = $args['after'] ?? null;

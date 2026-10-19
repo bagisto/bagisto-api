@@ -6,21 +6,26 @@ use Illuminate\Contracts\Http\Kernel;
 use Webkul\BagistoApi\Http\Middleware\VerifyGraphQLStorefrontKey;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * Regression tests for the dedicated `POST /api/admin/graphql` endpoint.
- *
- * Verifies the admin GraphQL endpoint authenticates via admin Bearer (no
- * storefront key required) and that the shop `/api/graphql` endpoint does
- * NOT accept admin Bearer tokens as a back door.
- */
 class AdminGraphQLEndpointTest extends AdminApiTestCase
 {
+    /**
+     * The admin gql constant.
+     */
     private const ADMIN_GQL = '/api/admin/graphql';
 
+    /**
+     * The shop gql constant.
+     */
     private const SHOP_GQL = '/api/graphql';
 
+    /**
+     * The query constant.
+     */
     private const QUERY = 'query { readAdminProfile { id email } }';
 
+    /**
+     * Test admin graphql endpoint accepts valid admin bearer.
+     */
     public function test_admin_graphql_endpoint_accepts_valid_admin_bearer(): void
     {
         $admin = $this->createAdmin();
@@ -33,6 +38,9 @@ class AdminGraphQLEndpointTest extends AdminApiTestCase
         expect($response->json('data.readAdminProfile.email'))->toBe($admin->email);
     }
 
+    /**
+     * Test admin graphql endpoint rejects request without auth.
+     */
     public function test_admin_graphql_endpoint_rejects_request_without_auth(): void
     {
         $response = $this->postJson(self::ADMIN_GQL, ['query' => self::QUERY]);
@@ -40,6 +48,9 @@ class AdminGraphQLEndpointTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test admin graphql endpoint rejects invalid bearer.
+     */
     public function test_admin_graphql_endpoint_rejects_invalid_bearer(): void
     {
         $response = $this->postJson(self::ADMIN_GQL, ['query' => self::QUERY], [
@@ -49,6 +60,9 @@ class AdminGraphQLEndpointTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test shop graphql endpoint rejects admin bearer no back door.
+     */
     public function test_shop_graphql_endpoint_rejects_admin_bearer_no_back_door(): void
     {
         $admin = $this->createAdmin();
@@ -68,6 +82,9 @@ class AdminGraphQLEndpointTest extends AdminApiTestCase
         );
     }
 
+    /**
+     * Test shop graphql endpoint still accepts storefront key.
+     */
     public function test_shop_graphql_endpoint_still_accepts_storefront_key(): void
     {
         $response = $this->postJson(self::SHOP_GQL, ['query' => '{ __typename }'], [

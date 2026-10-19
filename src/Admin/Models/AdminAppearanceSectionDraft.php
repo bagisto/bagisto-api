@@ -11,9 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminAppearanceSectionDraftInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDraftProcessor;
 
-/**
- * Unpublished edits for one section and locale, held until the theme is published.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAppearanceSectionDraft',
@@ -81,12 +78,24 @@ class AdminAppearanceSectionDraft
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The section id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $section_id = null;
 
+    /**
+     * The locale.
+     */
     public ?string $locale = null;
 
+    /**
+     * The has draft.
+     */
     public ?bool $has_draft = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

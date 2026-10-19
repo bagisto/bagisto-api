@@ -13,10 +13,16 @@ class AdminReturnableItemProvider implements ProviderInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly RMAHelper $rmaHelper,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): iterable
     {
         $this->authorizedAdmin('sales.rma.requests.create', 'bagistoapi::app.admin.rma.no-permission');

@@ -10,21 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsDataTransferImportCancelInput;
 use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportCancelProcessor;
 
-/**
- * One-operation resource for cancelling a data-transfer import.
- *
- * REST:
- *   POST /api/admin/settings/data-transfer/imports/{id}/cancel
- *
- * GraphQL:
- *   cancelAdminSettingsDataTransferImport(input: { importId: Int! })
- *
- * Sets the import state to `cancelled` if currently `pending` or `processing`.
- * Anything else (completed / processed / failed / cancelled) → HTTP 422.
- *
- * Mirrors the same single-action-resource pattern used by
- * AdminCatalogProductCopy / AdminCustomerImpersonate (Phase 5.2 / Block C).
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsDataTransferImportCancel',
@@ -81,15 +66,27 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportCancelProcessor
 )]
 class AdminSettingsDataTransferImportCancel
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The state.
+     */
     #[ApiProperty(writable: false)]
     public ?string $state = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

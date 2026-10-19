@@ -116,21 +116,45 @@ class AdminAppearanceTheme
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $code = null;
 
+    /**
+     * The name.
+     */
     public ?string $name = null;
 
+    /**
+     * The author.
+     */
     public ?string $author = null;
 
+    /**
+     * The version.
+     */
     public ?string $version = null;
 
+    /**
+     * The url.
+     */
     public ?string $url = null;
 
+    /**
+     * The demo url.
+     */
     public ?string $demo_url = null;
 
+    /**
+     * The screenshot.
+     */
     public ?string $screenshot = null;
 
+    /**
+     * The rating.
+     */
     public ?string $rating = null;
 
     /**
@@ -138,8 +162,14 @@ class AdminAppearanceTheme
      */
     public array $tags = [];
 
+    /**
+     * The description.
+     */
     public ?string $description = null;
 
+    /**
+     * The is installed.
+     */
     public ?bool $is_installed = null;
 
     /**
@@ -154,5 +184,8 @@ class AdminAppearanceTheme
      */
     public array $active_on = [];
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

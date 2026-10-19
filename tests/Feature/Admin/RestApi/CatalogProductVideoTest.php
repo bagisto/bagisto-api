@@ -11,34 +11,9 @@ use Webkul\User\Models\Role;
 
 class CatalogProductVideoTest extends AdminApiTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        Storage::fake('public');
-    }
-
-    protected function customRoleAdmin(array $permissions = []): Admin
-    {
-        $role = Role::create([
-            'name' => 'vid-test-'.uniqid(),
-            'description' => 'video-test',
-            'permission_type' => 'custom',
-            'permissions' => $permissions,
-        ]);
-
-        return $this->createAdmin(['role_id' => $role->id]);
-    }
-
-    protected function seedVideo(int $productId, int $position = 1): ProductVideo
-    {
-        return ProductVideo::create([
-            'type' => 'videos',
-            'path' => 'product/'.$productId.'/'.uniqid('vid_').'.mp4',
-            'product_id' => $productId,
-            'position' => $position,
-        ]);
-    }
-
+    /**
+     * Test upload returns video row.
+     */
     public function test_upload_returns_video_row(): void
     {
         $admin = $this->createAdmin();
@@ -59,6 +34,9 @@ class CatalogProductVideoTest extends AdminApiTestCase
         expect(ProductVideo::where('product_id', $product->id)->count())->toBeGreaterThanOrEqual(1);
     }
 
+    /**
+     * Test upload invalid type returns 422.
+     */
     public function test_upload_invalid_type_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -72,6 +50,9 @@ class CatalogProductVideoTest extends AdminApiTestCase
         )->assertStatus(422);
     }
 
+    /**
+     * Test upload without file returns 422.
+     */
     public function test_upload_without_file_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -84,6 +65,9 @@ class CatalogProductVideoTest extends AdminApiTestCase
         )->assertStatus(422);
     }
 
+    /**
+     * Test upload unknown product returns 404.
+     */
     public function test_upload_unknown_product_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -96,6 +80,9 @@ class CatalogProductVideoTest extends AdminApiTestCase
         )->assertStatus(404);
     }
 
+    /**
+     * Test upload requires authentication.
+     */
     public function test_upload_requires_authentication(): void
     {
         $product = $this->createBaseProduct('simple');
@@ -105,6 +92,9 @@ class CatalogProductVideoTest extends AdminApiTestCase
             ->assertStatus(401);
     }
 
+    /**
+     * Test upload no permission returns 403.
+     */
     public function test_upload_no_permission_returns_403(): void
     {
         $admin = $this->customRoleAdmin([]);
@@ -118,6 +108,9 @@ class CatalogProductVideoTest extends AdminApiTestCase
         )->assertStatus(403);
     }
 
+    /**
+     * Test delete removes row.
+     */
     public function test_delete_removes_row(): void
     {
         $admin = $this->createAdmin();
@@ -134,6 +127,9 @@ class CatalogProductVideoTest extends AdminApiTestCase
         expect(ProductVideo::find($video->id))->toBeNull();
     }
 
+    /**
+     * Test delete cross product returns 404.
+     */
     public function test_delete_cross_product_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -145,5 +141,42 @@ class CatalogProductVideoTest extends AdminApiTestCase
             [],
             $this->adminHeaders($admin),
         )->assertStatus(404);
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake('public');
+    }
+
+    /**
+     * Custom role admin.
+     */
+    protected function customRoleAdmin(array $permissions = []): Admin
+    {
+        $role = Role::create([
+            'name' => 'vid-test-'.uniqid(),
+            'description' => 'video-test',
+            'permission_type' => 'custom',
+            'permissions' => $permissions,
+        ]);
+
+        return $this->createAdmin(['role_id' => $role->id]);
+    }
+
+    /**
+     * Seed video.
+     */
+    protected function seedVideo(int $productId, int $position = 1): ProductVideo
+    {
+        return ProductVideo::create([
+            'type' => 'videos',
+            'path' => 'product/'.$productId.'/'.uniqid('vid_').'.mp4',
+            'product_id' => $productId,
+            'position' => $position,
+        ]);
     }
 }

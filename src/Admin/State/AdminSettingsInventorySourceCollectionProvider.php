@@ -7,17 +7,19 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsInventorySource;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/settings/inventory-sources +
- * adminSettingsInventorySources GraphQL query.
- */
 class AdminSettingsInventorySourceCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'code', 'name', 'priority', 'status'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('inventory_sources')->select(
@@ -43,6 +45,9 @@ class AdminSettingsInventorySourceCollectionProvider extends AbstractAdminCollec
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['code'])) {
@@ -66,6 +71,9 @@ class AdminSettingsInventorySourceCollectionProvider extends AbstractAdminCollec
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -78,6 +86,9 @@ class AdminSettingsInventorySourceCollectionProvider extends AbstractAdminCollec
         $query->orderBy($column, $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminSettingsInventorySource
     {
         $dto = new AdminSettingsInventorySource;

@@ -10,10 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerWishlistItemProvider;
 
-/**
- * Customer's wishlist — the right-sidebar "Wishlist Items" panel on the
- * Create-Order screen. Read-only.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerWishlistItem',
@@ -77,27 +73,51 @@ class AdminCustomerWishlistItem
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The product id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $product_id = null;
 
+    /**
+     * The sku.
+     */
     #[ApiProperty(writable: false)]
     public ?string $sku = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The price.
+     */
     #[ApiProperty(writable: false)]
     public ?float $price = null;
 
+    /**
+     * The formatted price.
+     */
     #[ApiProperty(writable: false)]
     public ?string $formatted_price = null;
 
+    /**
+     * The product image.
+     */
     #[ApiProperty(writable: false)]
     public ?string $product_image = null;
 
+    /**
+     * The additional.
+     */
     #[ApiProperty(writable: false)]
     public ?array $additional = null;
 }

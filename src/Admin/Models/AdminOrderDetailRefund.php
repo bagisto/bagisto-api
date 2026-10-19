@@ -6,10 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Slim refund summary — nested sub-resource of AdminOrderDetail. For the full
- * refund use GET /api/admin/refunds/{id}.
- */
 #[ApiResource(
     shortName: 'AdminOrderDetailRefund',
     operations: [],
@@ -33,6 +29,9 @@ class AdminOrderDetailRefund extends Model
         'created_at' => 'datetime',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

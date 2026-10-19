@@ -7,19 +7,19 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsCurrency;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/settings/currencies + adminSettingsCurrencies.
- *
- * Mirrors Webkul\Admin\DataGrids\Settings\CurrencyDataGrid — filters on code,
- * name, symbol; sort on id, code, name.
- */
 class AdminSettingsCurrencyCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'code', 'name'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('currencies')->select(
@@ -36,6 +36,9 @@ class AdminSettingsCurrencyCollectionProvider extends AbstractAdminCollectionPro
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['code'])) {
@@ -51,6 +54,9 @@ class AdminSettingsCurrencyCollectionProvider extends AbstractAdminCollectionPro
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -64,6 +70,9 @@ class AdminSettingsCurrencyCollectionProvider extends AbstractAdminCollectionPro
         $query->orderBy($columnMap[$column] ?? 'currencies.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminSettingsCurrency
     {
         $dto = new AdminSettingsCurrency;

@@ -15,25 +15,18 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Product\Models\Product;
 use Webkul\Product\Repositories\ProductRepository;
 
-/**
- * Admin Catalog Product delete (Phase 5.10).
- *
- * No in-order guard (matches monolith ProductController::destroy). Just:
- *   - permission: catalog.products.delete
- *   - fire catalog.product.delete.before
- *   - repo->delete($id)
- *   - fire catalog.product.delete.after
- *   - return 204 (REST) / { success, message } (GraphQL)
- *
- * For configurable products, cascading deletion of variants is handled by the
- * core Bagisto product type instance.
- */
 class AdminCatalogProductDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ProductRepository $productRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -89,6 +82,9 @@ class AdminCatalogProductDeleteProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

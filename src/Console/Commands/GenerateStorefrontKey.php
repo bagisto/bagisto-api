@@ -5,9 +5,6 @@ namespace Webkul\BagistoApi\Console\Commands;
 use Illuminate\Console\Command;
 use Webkul\BagistoApi\Models\StorefrontKey;
 
-/**
- * Generate a new storefront API key for shop/storefront API authentication
- */
 class GenerateStorefrontKey extends Command
 {
     /**
@@ -15,11 +12,17 @@ class GenerateStorefrontKey extends Command
      */
     protected const MAX_RATE_LIMIT = 5000;
 
+    /**
+     * The signature.
+     */
     protected $signature = 'bagisto-api:generate-key
                             {--name= : Name of the storefront key}
                             {--rate-limit=100 : Rate limit (requests per minute, leave empty for unlimited)}
                             {--no-activation : Create the key in inactive state}';
 
+    /**
+     * The description.
+     */
     protected $description = 'Generate a new storefront API key for shop/storefront APIs';
 
     /**
@@ -43,12 +46,11 @@ class GenerateStorefrontKey extends Command
 
         $rateLimitOption = $this->option('rate-limit');
 
-        // Handle rate limit: null/empty = unlimited (up to MAX), number = capped at MAX
         if (
             $rateLimitOption === ''
             || $rateLimitOption === null
         ) {
-            $rateLimit = null; // null means unlimited in database
+            $rateLimit = null;
         } else {
             $requestedLimit = (int) $rateLimitOption;
             if ($requestedLimit > self::MAX_RATE_LIMIT) {

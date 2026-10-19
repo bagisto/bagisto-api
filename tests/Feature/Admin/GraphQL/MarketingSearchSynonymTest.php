@@ -4,21 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * GraphQL coverage for Admin Marketing → Search Synonyms CRUD (Block F3c).
- */
 class MarketingSearchSynonymTest extends AdminApiTestCase
 {
-    protected function insertSynonym(array $overrides = []): int
-    {
-        return \DB::table('search_synonyms')->insertGetId(array_merge([
-            'name' => 'gqlsyn-'.uniqid(),
-            'terms' => 'shirt,tshirt,tee',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
+    /**
+     * Test query listing.
+     */
     public function test_query_listing(): void
     {
         $admin = $this->createAdmin();
@@ -39,6 +29,9 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         expect($edges)->toBeArray();
     }
 
+    /**
+     * Test query detail.
+     */
     public function test_query_detail(): void
     {
         $admin = $this->createAdmin();
@@ -67,6 +60,9 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test mutation create.
+     */
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();
@@ -90,6 +86,9 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         $this->assertDatabaseHas('search_synonyms', ['name' => 'gqlcr-syn']);
     }
 
+    /**
+     * Test mutation update.
+     */
     public function test_mutation_update(): void
     {
         $admin = $this->createAdmin();
@@ -118,6 +117,9 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -139,6 +141,9 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         $this->assertDatabaseMissing('search_synonyms', ['id' => $id]);
     }
 
+    /**
+     * Test mutation mass delete.
+     */
     public function test_mutation_mass_delete(): void
     {
         $admin = $this->createAdmin();
@@ -162,6 +167,9 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         $this->assertDatabaseMissing('search_synonyms', ['id' => $b]);
     }
 
+    /**
+     * Test query listing requires auth.
+     */
     public function test_query_listing_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -170,5 +178,18 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         $response->assertOk();
         $errors = $response->json('errors');
         expect($errors)->toBeArray();
+    }
+
+    /**
+     * Insert synonym.
+     */
+    protected function insertSynonym(array $overrides = []): int
+    {
+        return \DB::table('search_synonyms')->insertGetId(array_merge([
+            'name' => 'gqlsyn-'.uniqid(),
+            'terms' => 'shirt,tshirt,tee',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
     }
 }

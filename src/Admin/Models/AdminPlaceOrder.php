@@ -59,21 +59,39 @@ use Webkul\BagistoApi\Admin\State\AdminPlaceOrderProcessor;
 )]
 class AdminPlaceOrder
 {
+    /**
+     * The order id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $orderId = null;
 
+    /**
+     * The increment id.
+     */
     #[ApiProperty(writable: false)]
     public ?string $incrementId = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customerId = null;
 
+    /**
+     * The grand total.
+     */
     #[ApiProperty(writable: false)]
     public ?float $grandTotal = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

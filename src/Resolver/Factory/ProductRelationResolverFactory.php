@@ -22,10 +22,19 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
      */
     private const RELATION_FIELDS = ['upSells', 'crossSells', 'relatedProducts', 'superAttributes', 'reviews', 'bookingProducts'];
 
+    /**
+     * The inner factory.
+     */
     private readonly ResolverFactoryInterface $innerFactory;
 
+    /**
+     * The relation provider.
+     */
     private readonly ProductRelationProvider $relationProvider;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         ResolverFactoryInterface $innerFactory,
         ProductRelationProvider $relationProvider
@@ -362,6 +371,9 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
         return $camel;
     }
 
+    /**
+     * Whether sequential array.
+     */
     private function isSequentialArray(mixed $value): bool
     {
         return is_array($value) && array_values($value) === $value;

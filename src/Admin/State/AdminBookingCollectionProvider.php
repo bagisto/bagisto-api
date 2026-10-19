@@ -16,8 +16,14 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
     use BuildsAdminBooking;
     use ChecksAdminPermission;
 
+    /**
+     * The permission constant.
+     */
     protected const PERMISSION = 'sales.bookings';
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin(self::PERMISSION);
@@ -25,11 +31,17 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'order_id', 'qty', 'from', 'to', 'created_at'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('bookings')
@@ -40,6 +52,9 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
             ->select($this->adminBookingSelect());
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['id'])) {
@@ -87,6 +102,9 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -103,6 +121,9 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
         $query->orderBy($map[$column] ?? 'bookings.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminBooking
     {
         return $this->buildAdminBooking($row);

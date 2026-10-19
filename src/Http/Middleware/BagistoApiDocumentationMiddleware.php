@@ -6,11 +6,11 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Intercepts requests for API documentation and returns custom Swagger UI
- */
 class BagistoApiDocumentationMiddleware
 {
+    /**
+     * Handle the request.
+     */
     public function handle(Request $request, Closure $next): Response
     {
         $path = $request->getPathInfo();

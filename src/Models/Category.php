@@ -151,8 +151,14 @@ class Category extends BaseCategory
      */
     protected $casts = [];
 
+    /**
+     * The appends.
+     */
     protected $appends = ['logo_url', 'banner_url', 'url', 'min_price', 'max_price'];
 
+    /**
+     * The category price range.
+     */
     private ?array $categoryPriceRange = null;
 
     /**
@@ -173,6 +179,74 @@ class Category extends BaseCategory
         return $this->resolvePriceRange()['max'];
     }
 
+    /**
+     * Get category translation for the current locale.
+     */
+    #[ApiProperty(readableLink: true, description: 'Current locale translation')]
+    public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
+    {
+        return $this->translation;
+    }
+
+    /**
+     * Override core Category::getUrlAttribute() — when the translated slug is
+     * null (no translation row, common for newly-created categories or admin.
+     */
+    public function getUrlAttribute(): string
+    {
+        try {
+            $slug = $this->translate(core()->getCurrentLocale()->code)?->slug
+                ?? $this->translate(core()->getDefaultLocaleCodeFromDefaultChannel())?->slug;
+
+            return $slug ? (string) url($slug) : '';
+        } catch (\Throwable $exception) {
+            return '';
+        }
+    }
+
+    /**
+     * Unique category identifier.
+     */
+    #[ApiProperty(identifier: true, writable: false)]
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /** IDs only — a nested object tree here makes the serializer recurse the whole catalogue; use /category-trees instead. */
+    #[ApiProperty(readableLink: false, description: 'Direct child category IDs (use /category-trees for the full nested tree)')]
+    public function getChildren(): array
+    {
+        try {
+            return $this->children()->pluck('id')->all();
+        } catch (\Throwable $exception) {
+            return [];
+        }
+    }
+
+    /**
+     * Filterable attributes.
+     */
+    #[ApiProperty(readableLink: true, description: 'Filterable attributes assigned to this category')]
+    public function filterable_attributes(): BelongsToMany
+    {
+        return $this->belongsToMany(Attribute::class, 'category_filterable_attributes')
+            ->with([
+                'options' => fn ($query) => $query->orderBy('sort_order'),
+                'translations',
+                'options.translations',
+            ]);
+    }
+
+    /** Overrides the core relation of the same name so the API's Attribute resource is the related class. */
+    public function filterableAttributes(): BelongsToMany
+    {
+        return $this->filterable_attributes();
+    }
+
+    /**
+     * Resolve price range.
+     */
     private function resolvePriceRange(): array
     {
         if ($this->categoryPriceRange !== null) {
@@ -196,73 +270,5 @@ class Category extends BaseCategory
             'min' => (float) ($range->min_price ?? 0),
             'max' => (float) ($range->max_price ?? 0),
         ];
-    }
-
-    /**
-     * Get category translation for the current locale
-     */
-    #[ApiProperty(readableLink: true, description: 'Current locale translation')]
-    public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
-    {
-        return $this->translation;
-    }
-
-    /**
-     * Override core Category::getUrlAttribute() — when the translated slug is
-     * null (no translation row, common for newly-created categories or admin
-     * locales other than the default), core's `url($null)` returns the
-     * UrlGenerator object instead of a string. Symfony Serializer then tries to
-     * normalize that UrlGenerator → reaches Request::getSession() → throws
-     * SessionNotFoundException on the stateless API.
-     *
-     * Always return a string (or empty string) — never an object.
-     */
-    public function getUrlAttribute(): string
-    {
-        try {
-            $slug = $this->translate(core()->getCurrentLocale()->code)?->slug
-                ?? $this->translate(core()->getDefaultLocaleCodeFromDefaultChannel())?->slug;
-
-            return $slug ? (string) url($slug) : '';
-        } catch (\Throwable $exception) {
-            return '';
-        }
-    }
-
-    /**
-     * Unique category identifier
-     */
-    #[ApiProperty(identifier: true, writable: false)]
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    /** IDs only — a nested object tree here makes the serializer recurse the whole catalogue; use /category-trees instead. */
-    #[ApiProperty(readableLink: false, description: 'Direct child category IDs (use /category-trees for the full nested tree)')]
-    public function getChildren(): array
-    {
-        try {
-            return $this->children()->pluck('id')->all();
-        } catch (\Throwable $exception) {
-            return [];
-        }
-    }
-
-    #[ApiProperty(readableLink: true, description: 'Filterable attributes assigned to this category')]
-    public function filterable_attributes(): BelongsToMany
-    {
-        return $this->belongsToMany(Attribute::class, 'category_filterable_attributes')
-            ->with([
-                'options' => fn ($query) => $query->orderBy('sort_order'),
-                'translations',
-                'options.translations',
-            ]);
-    }
-
-    /** Overrides the core relation of the same name so the API's Attribute resource is the related class. */
-    public function filterableAttributes(): BelongsToMany
-    {
-        return $this->filterable_attributes();
     }
 }

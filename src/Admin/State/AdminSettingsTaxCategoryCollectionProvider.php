@@ -10,20 +10,16 @@ use Webkul\BagistoApi\Admin\Dto\AdminSettingsTaxCategoryRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTaxCategory;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/settings/tax-categories + adminSettingsTaxCategories.
- *
- * Mirrors Webkul\Admin\DataGrids\Settings\TaxCategoryDataGrid — filters on code
- * and name (LIKE); sort on id, code, name.
- *
- * Branches: GraphQL → an AdminSettingsTaxCategory Eloquent row per result (the
- * `tax_rates` connection is set empty on listings — detail-only, no N+1); REST →
- * the flat AdminSettingsTaxCategoryRestDto (taxRates omitted on listing rows).
- */
 class AdminSettingsTaxCategoryCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * The listing is graph ql.
+     */
     protected bool $listingIsGraphQL = false;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
@@ -31,11 +27,17 @@ class AdminSettingsTaxCategoryCollectionProvider extends AbstractAdminCollection
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'code', 'name'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('tax_categories')->select(
@@ -48,6 +50,9 @@ class AdminSettingsTaxCategoryCollectionProvider extends AbstractAdminCollection
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['code'])) {
@@ -59,6 +64,9 @@ class AdminSettingsTaxCategoryCollectionProvider extends AbstractAdminCollection
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -72,6 +80,9 @@ class AdminSettingsTaxCategoryCollectionProvider extends AbstractAdminCollection
         $query->orderBy($columnMap[$column] ?? 'tax_categories.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): object
     {
         if ($this->listingIsGraphQL) {

@@ -82,27 +82,51 @@ class AdminMarketingSitemapGenerate
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The sitemap id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $sitemap_id = null;
 
+    /**
+     * The generated files.
+     */
     #[ApiProperty(writable: false, description: 'What the run wrote, one entry per covered channel — { channelId, channelCode, hostname, index, sitemaps }.')]
     public ?array $generated_files = null;
 
+    /**
+     * The urls.
+     */
     #[ApiProperty(writable: false, description: 'Public index URL per channel — the link to submit to a search engine.')]
     public ?array $urls = null;
 
+    /**
+     * The index file.
+     */
     #[ApiProperty(writable: false, description: 'Legacy: index path of a sitemap generated before generation became channel-aware. Null for anything generated since; read generatedFiles instead.')]
     public ?string $index_file = null;
 
+    /**
+     * The generated sitemaps.
+     */
     #[ApiProperty(writable: false, description: 'Generated child sitemap file paths.')]
     public ?array $generated_sitemaps = null;
 
+    /**
+     * The generated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $generated_at = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

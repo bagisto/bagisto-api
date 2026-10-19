@@ -76,21 +76,39 @@ use Webkul\BagistoApi\State\VerifyTokenProcessor;
 )]
 class VerifyToken
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: false, writable: false, readable: true, required: false)]
     public ?int $id = null;
 
+    /**
+     * The first name.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $firstName = null;
 
+    /**
+     * The last name.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $lastName = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $email = null;
 
+    /**
+     * The is valid.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?bool $isValid = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $message = null;
 }

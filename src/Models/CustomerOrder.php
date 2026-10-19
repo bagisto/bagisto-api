@@ -17,16 +17,6 @@ use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderListDto;
 use Webkul\BagistoApi\State\CustomerOrderProvider;
 use Webkul\Sales\Models\RefundProxy;
 
-/**
- * Customer Order API Resource
- *
- * Standalone model pointing to the `orders` table with explicit field casts
- * and hand-picked relationships. Follows the same pattern as CustomerInvoice
- * to avoid inheriting unwanted relationships from the base Order model
- * (morphTo fields, proxy relationships) that can break API Platform serialization.
- *
- * This is a read-only, customer-scoped resource.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomerOrder',
@@ -157,7 +147,7 @@ class CustomerOrder extends Model
     ];
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int

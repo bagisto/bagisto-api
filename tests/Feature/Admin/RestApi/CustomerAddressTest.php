@@ -9,25 +9,21 @@ use Webkul\Customer\Models\CustomerAddress;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for the Create-Order screen's "saved addresses" sub-resource —
- * GET /api/admin/customers/{id}/addresses.
- */
 class CustomerAddressTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    /** Pick a customer that has at least one address; create one if missing. */
-    protected function aCustomerWithAddresses(): int
-    {
-        return $this->bootstrapCustomerWithAddress();
-    }
-
+    /**
+     * Test requires authentication.
+     */
     public function test_requires_authentication(): void
     {
         $this->publicGet('/api/admin/customers/1/addresses')->assertStatus(401);
     }
 
+    /**
+     * Test unknown customer returns 404.
+     */
     public function test_unknown_customer_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -35,6 +31,9 @@ class CustomerAddressTest extends AdminApiTestCase
         $this->adminGet($admin, '/api/admin/customers/999999999/addresses')->assertStatus(404);
     }
 
+    /**
+     * Test returns data meta envelope of addresses.
+     */
     public function test_returns_data_meta_envelope_of_addresses(): void
     {
         $customerId = $this->aCustomerWithAddresses();
@@ -115,6 +114,12 @@ class CustomerAddressTest extends AdminApiTestCase
             ->assertStatus(403);
 
         expect((int) CustomerAddress::find($first->id)->default_address)->toBe(1);
+    }
+
+    /** Pick a customer that has at least one address; create one if missing. */
+    protected function aCustomerWithAddresses(): int
+    {
+        return $this->bootstrapCustomerWithAddress();
     }
 
     /**

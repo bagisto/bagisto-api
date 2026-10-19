@@ -87,28 +87,64 @@ use Webkul\BagistoApi\State\ReturnableOrderProvider;
 )]
 class ReturnableOrder
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The increment id.
+     */
     public ?string $increment_id = null;
 
+    /**
+     * The status.
+     */
     public ?string $status = null;
 
+    /**
+     * The status label.
+     */
     public ?string $status_label = null;
 
+    /**
+     * The grand total.
+     */
     public ?float $grand_total = null;
 
+    /**
+     * The formatted grand total.
+     */
     public ?string $formatted_grand_total = null;
 
+    /**
+     * The order currency code.
+     */
     public ?string $order_currency_code = null;
 
+    /**
+     * The payment method title.
+     */
     public ?string $payment_method_title = null;
 
+    /**
+     * The total qty ordered.
+     */
     public ?int $total_qty_ordered = null;
 
+    /**
+     * The total returned qty.
+     */
     public ?int $total_returned_qty = null;
 
+    /**
+     * The returnable qty.
+     */
     public ?int $returnable_qty = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 }

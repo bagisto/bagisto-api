@@ -8,6 +8,9 @@ use Webkul\Marketing\Jobs\UpdateCreateSearchTerm;
 
 class ProductSearchTermTest extends RestApiTestCase
 {
+    /**
+     * Test search records the term for the admin.
+     */
     public function test_search_records_the_term_for_the_admin(): void
     {
         $this->seedRequiredData();
@@ -22,6 +25,9 @@ class ProductSearchTermTest extends RestApiTestCase
         });
     }
 
+    /**
+     * Test search with a filter is not recorded.
+     */
     public function test_search_with_a_filter_is_not_recorded(): void
     {
         $this->seedRequiredData();
@@ -32,6 +38,9 @@ class ProductSearchTermTest extends RestApiTestCase
         Queue::assertNotPushed(UpdateCreateSearchTerm::class);
     }
 
+    /**
+     * Test later pages are not recorded.
+     */
     public function test_later_pages_are_not_recorded(): void
     {
         $this->seedRequiredData();
@@ -42,6 +51,9 @@ class ProductSearchTermTest extends RestApiTestCase
         Queue::assertNotPushed(UpdateCreateSearchTerm::class);
     }
 
+    /**
+     * Test listing without a query is not recorded.
+     */
     public function test_listing_without_a_query_is_not_recorded(): void
     {
         $this->seedRequiredData();
@@ -52,6 +64,9 @@ class ProductSearchTermTest extends RestApiTestCase
         Queue::assertNotPushed(UpdateCreateSearchTerm::class);
     }
 
+    /**
+     * Test the term and its use count are saved.
+     */
     public function test_the_term_and_its_use_count_are_saved(): void
     {
         $this->seedRequiredData();

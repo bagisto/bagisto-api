@@ -8,14 +8,11 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException as SerializerUnexpectedValueException;
 
-/**
- * Render BagistoApi exceptions implementing HttpExceptionInterface +
- * ProblemExceptionInterface as RFC 7807 JSON with their declared status code,
- * for any API request. Without this wrapper Laravel's default exception
- * handler maps everything except a small set of built-ins to HTTP 500.
- */
 class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
 {
+    /**
+     * Boot the package services.
+     */
     public function boot(): void
     {
         $this->app->extend(
@@ -66,11 +63,6 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
                         return $this->wrapped->render($request, $exception);
                     }
 
-                    /**
-                     * A field sent with the wrong type is rejected while the request payload is
-                     * hydrated onto its input DTO — before any processor runs. That is a client
-                     * error, not an internal one.
-                     */
                     private function isMalformedInput(\Throwable $exception): bool
                     {
                         if ($exception instanceof SerializerUnexpectedValueException) {
@@ -88,7 +80,6 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
                             return $exception->getMessage();
                         }
 
-                        // "Cannot assign array to property Webkul\…\CustomerAddressInput::$address1 of type ?string"
                         if (preg_match('/Cannot assign (\S+) to property \S+::\$(\S+) of type (\S+)/', $exception->getMessage(), $matches)) {
                             return sprintf('The "%s" field must be of type %s, %s given.', $matches[2], ltrim($matches[3], '?'), $matches[1]);
                         }

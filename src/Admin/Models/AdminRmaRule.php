@@ -272,22 +272,49 @@ class AdminRmaRule
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The name.
+     */
     public ?string $name = null;
 
+    /**
+     * The description.
+     */
     public ?string $description = null;
 
+    /**
+     * The status.
+     */
     public ?int $status = null;
 
+    /**
+     * The return period.
+     */
     public ?int $return_period = null;
 
+    /**
+     * The default.
+     */
     public ?int $default = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

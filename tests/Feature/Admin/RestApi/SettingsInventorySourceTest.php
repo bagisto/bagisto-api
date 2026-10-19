@@ -7,78 +7,13 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\User\Models\Admin;
 
-/**
- * REST coverage for the admin Settings → Inventory Sources CRUD endpoints
- * (Block B Wave 1).
- *
- * Endpoints:
- *   GET    /api/admin/settings/inventory-sources
- *   GET    /api/admin/settings/inventory-sources/{id}
- *   POST   /api/admin/settings/inventory-sources
- *   PUT    /api/admin/settings/inventory-sources/{id}
- *   DELETE /api/admin/settings/inventory-sources/{id}
- *   POST   /api/admin/settings/inventory-sources/mass-delete
- */
 class SettingsInventorySourceTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    protected function insertInventorySource(array $overrides = []): int
-    {
-        return \DB::table('inventory_sources')->insertGetId(array_merge([
-            'code' => 'src-'.str_replace('.', '', uniqid('', true)),
-            'name' => 'Source '.rand(100, 999),
-            'description' => null,
-            'contact_name' => 'Jane Doe',
-            'contact_email' => 'jane'.rand(100, 999).'@example.com',
-            'contact_number' => '1234567890',
-            'contact_fax' => null,
-            'country' => 'US',
-            'state' => 'CA',
-            'city' => 'Los Angeles',
-            'street' => '123 Main St',
-            'postcode' => '90001',
-            'priority' => 0,
-            'latitude' => null,
-            'longitude' => null,
-            'status' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function validPayload(array $overrides = []): array
-    {
-        return array_merge([
-            'code' => 'wh-'.rand(1000, 9999),
-            'name' => 'Warehouse '.rand(100, 999),
-            'description' => 'Test warehouse.',
-            'contact_name' => 'John Doe',
-            'contact_email' => 'john'.rand(100, 999).'@example.com',
-            'contact_number' => '5551234567',
-            'contact_fax' => null,
-            'country' => 'US',
-            'state' => 'CA',
-            'city' => 'Los Angeles',
-            'street' => '500 Test Blvd',
-            'postcode' => '90002',
-            'priority' => 1,
-            'latitude' => null,
-            'longitude' => null,
-            'status' => 1,
-        ], $overrides);
-    }
-
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
+    /**
+     * Test listing requires admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -86,6 +21,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test create requires auth.
+     */
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -93,6 +31,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test detail requires auth.
+     */
     public function test_detail_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -101,6 +42,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test delete requires auth.
+     */
     public function test_delete_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -109,6 +53,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test mass delete requires auth.
+     */
     public function test_mass_delete_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -116,6 +63,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -129,6 +79,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBe(10);
     }
 
+    /**
+     * Test listing returns seeded row.
+     */
     public function test_listing_returns_seeded_row(): void
     {
         $admin = $this->createAdmin();
@@ -146,6 +99,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($row)->toHaveKeys(['id', 'code', 'name', 'contactName', 'contactEmail', 'country', 'priority', 'status', 'createdAt', 'updatedAt']);
     }
 
+    /**
+     * Test listing filter by code.
+     */
     public function test_listing_filter_by_code(): void
     {
         $admin = $this->createAdmin();
@@ -160,6 +116,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test listing filter by status.
+     */
     public function test_listing_filter_by_status(): void
     {
         $admin = $this->createAdmin();
@@ -173,6 +132,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($ids)->not()->toContain($on);
     }
 
+    /**
+     * Test listing filter by country.
+     */
     public function test_listing_filter_by_country(): void
     {
         $admin = $this->createAdmin();
@@ -186,6 +148,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($ids)->not()->toContain($us);
     }
 
+    /**
+     * Test listing sort by code asc.
+     */
     public function test_listing_sort_by_code_asc(): void
     {
         $admin = $this->createAdmin();
@@ -200,6 +165,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($codes)->toBe($sorted);
     }
 
+    /**
+     * Test listing per page above cap clamped.
+     */
     public function test_listing_per_page_above_cap_clamped(): void
     {
         $admin = $this->createAdmin();
@@ -208,6 +176,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test listing page beyond last returns empty.
+     */
     public function test_listing_page_beyond_last_returns_empty(): void
     {
         $admin = $this->createAdmin();
@@ -216,6 +187,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->json('data'))->toBe([]);
     }
 
+    /**
+     * Test detail returns full row.
+     */
     public function test_detail_returns_full_row(): void
     {
         $admin = $this->createAdmin();
@@ -231,6 +205,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect((int) $response->json('priority'))->toBe(7);
     }
 
+    /**
+     * Test detail unknown id returns 404.
+     */
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -238,6 +215,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test create happy path returns 201.
+     */
     public function test_create_happy_path_returns_201(): void
     {
         $admin = $this->createAdmin();
@@ -251,6 +231,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect(\DB::table('inventory_sources')->where('code', $payload['code'])->exists())->toBeTrue();
     }
 
+    /**
+     * Test create missing code returns 422.
+     */
     public function test_create_missing_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -261,6 +244,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create missing name returns 422.
+     */
     public function test_create_missing_name_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -271,6 +257,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create invalid code format returns 422.
+     */
     public function test_create_invalid_code_format_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -279,6 +268,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create invalid email returns 422.
+     */
     public function test_create_invalid_email_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -287,6 +279,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create invalid status returns 422.
+     */
     public function test_create_invalid_status_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -295,6 +290,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create duplicate code returns 422.
+     */
     public function test_create_duplicate_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -305,6 +303,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update changes name.
+     */
     public function test_update_changes_name(): void
     {
         $admin = $this->createAdmin();
@@ -316,6 +317,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect(\DB::table('inventory_sources')->where('id', $id)->value('name'))->toBe('RenamedSrc');
     }
 
+    /**
+     * Test update unknown id returns 404.
+     */
     public function test_update_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -323,6 +327,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test update duplicate code returns 422.
+     */
     public function test_update_duplicate_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -334,6 +341,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update same code excludes self.
+     */
     public function test_update_same_code_excludes_self(): void
     {
         $admin = $this->createAdmin();
@@ -347,6 +357,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -358,6 +371,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect(\DB::table('inventory_sources')->where('id', $id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test delete unknown id returns 404.
+     */
     public function test_delete_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -365,6 +381,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test delete last source returns 400.
+     */
     public function test_delete_last_source_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -376,6 +395,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect(\DB::table('inventory_sources')->where('id', $id)->exists())->toBeTrue();
     }
 
+    /**
+     * Test delete in use returns 400.
+     */
     public function test_delete_in_use_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -401,6 +423,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         \DB::table('product_inventories')->where('inventory_source_id', $id)->delete();
     }
 
+    /**
+     * Test mass delete happy path.
+     */
     public function test_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -418,6 +443,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect(\DB::table('inventory_sources')->where('id', $id2)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mass delete silently skips unknown ids.
+     */
     public function test_mass_delete_silently_skips_unknown_ids(): void
     {
         $admin = $this->createAdmin();
@@ -431,6 +459,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect(\DB::table('inventory_sources')->where('id', $id1)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mass delete empty indices returns 422.
+     */
     public function test_mass_delete_empty_indices_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -438,6 +469,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test mass delete would leave zero sources returns 400.
+     */
     public function test_mass_delete_would_leave_zero_sources_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -450,5 +484,73 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         ]);
         expect($response->getStatusCode())->toBe(400);
         expect(\DB::table('inventory_sources')->whereIn('id', [$id1, $id2])->count())->toBe(2);
+    }
+
+    /**
+     * Insert inventory source.
+     */
+    protected function insertInventorySource(array $overrides = []): int
+    {
+        return \DB::table('inventory_sources')->insertGetId(array_merge([
+            'code' => 'src-'.str_replace('.', '', uniqid('', true)),
+            'name' => 'Source '.rand(100, 999),
+            'description' => null,
+            'contact_name' => 'Jane Doe',
+            'contact_email' => 'jane'.rand(100, 999).'@example.com',
+            'contact_number' => '1234567890',
+            'contact_fax' => null,
+            'country' => 'US',
+            'state' => 'CA',
+            'city' => 'Los Angeles',
+            'street' => '123 Main St',
+            'postcode' => '90001',
+            'priority' => 0,
+            'latitude' => null,
+            'longitude' => null,
+            'status' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Valid payload.
+     */
+    protected function validPayload(array $overrides = []): array
+    {
+        return array_merge([
+            'code' => 'wh-'.rand(1000, 9999),
+            'name' => 'Warehouse '.rand(100, 999),
+            'description' => 'Test warehouse.',
+            'contact_name' => 'John Doe',
+            'contact_email' => 'john'.rand(100, 999).'@example.com',
+            'contact_number' => '5551234567',
+            'contact_fax' => null,
+            'country' => 'US',
+            'state' => 'CA',
+            'city' => 'Los Angeles',
+            'street' => '500 Test Blvd',
+            'postcode' => '90002',
+            'priority' => 1,
+            'latitude' => null,
+            'longitude' => null,
+            'status' => 1,
+        ], $overrides);
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 }

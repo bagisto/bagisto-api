@@ -12,6 +12,9 @@ class CartOptionFileStaging
     /** Disk and directory the staged uploads live on. */
     public const DISK = 'private';
 
+    /**
+     * The stage dir constant.
+     */
     public const STAGE_DIR = 'cart-uploads';
 
     /** How long a staged upload stays resolvable — follows the store's session lifetime. */
@@ -39,11 +42,17 @@ class CartOptionFileStaging
         };
     }
 
+    /**
+     * Cart option file key.
+     */
     public function cartOptionFileKey(string $token): string
     {
         return 'bagistoapi:cart-option-file:'.$token;
     }
 
+    /**
+     * Stage.
+     */
     public function stage(UploadedFile $file, int $productId, int $optionId, int|string $ownerId): array
     {
         $extension = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?: 'bin'));
@@ -67,16 +76,25 @@ class CartOptionFileStaging
         ];
     }
 
+    /**
+     * Resolve.
+     */
     public function resolve(string $token): ?array
     {
         return Cache::get($this->cartOptionFileKey($token));
     }
 
+    /**
+     * Forget.
+     */
     public function forget(string $token): void
     {
         Cache::forget($this->cartOptionFileKey($token));
     }
 
+    /**
+     * Delete staged.
+     */
     public function deleteStaged(string $path): void
     {
         if (Storage::disk(self::DISK)->exists($path)) {
@@ -84,6 +102,9 @@ class CartOptionFileStaging
         }
     }
 
+    /**
+     * Staged uploaded file.
+     */
     public function stagedUploadedFile(array $payload): UploadedFile
     {
         $absolute = Storage::disk(self::DISK)->path($payload['path']);

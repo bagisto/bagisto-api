@@ -6,10 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Product customer-group price — nested sub-resource of AdminCatalogProduct
- * (`customerGroupPrices` connection).
- */
 #[ApiResource(
     shortName: 'AdminProductDetailCgp',
     operations: [],
@@ -28,12 +24,18 @@ class AdminProductDetailCgp extends Model
         'qty' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get value.
+     */
     #[ApiProperty(writable: false)]
     public function getValue(): ?string
     {

@@ -11,20 +11,11 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Shipping\Facades\Shipping;
 
-/**
- * GET /api/admin/carts/{cartId}/shipping-methods — list available shipping
- * rates for a draft cart.
- *
- * Mirrors the rates block inside CartController::storeAddress — once
- * addresses are saved, `Shipping::collectRates()` returns the carrier-grouped
- * rate list. We flatten it into per-rate rows and wrap in the admin
- * collection envelope.
- *
- * Sequence rule: both addresses must already be saved on the cart, otherwise
- * `AdminCartSequenceGuard::requireAddresses()` throws HTTP 409.
- */
 class AdminCartShippingMethodsProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         AdminReadPermissions::authorize($operation, AdminCartShippingRate::class);

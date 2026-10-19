@@ -22,31 +22,20 @@ use Webkul\BagistoApi\Support\CoreCapabilities;
 use Webkul\Marketing\Models\Event as EventModel;
 use Webkul\Marketing\Repositories\EventRepository;
 
-/**
- * Handles POST, PUT, DELETE on AdminMarketingEvent.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Communications\EventController:
- *   store / update / destroy. Events fired:
- *     marketing.events.create.before / after
- *     marketing.events.update.before / after
- *     marketing.events.delete.before / after
- *
- * Permission resolution: Sanctum pattern — read role->permission_type /
- * role->permissions directly. Never calls bouncer().
- *
- * Validation mirrors EventController:
- *   - name        required
- *   - description required
- *   - date        required|date
- */
 class AdminMarketingEventProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected EventRepository $eventRepository,
         protected AdminMarketingEventItemProvider $itemProvider,
         protected CoreCapabilities $capabilities,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -102,6 +91,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminMarketingEvent
     {
         $this->validatePayload($input);
@@ -121,6 +113,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($event);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminMarketingEvent
     {
         $event = EventModel::find($id);
@@ -145,6 +140,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($event);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id): array
     {
         $event = EventModel::find($id);
@@ -152,10 +150,6 @@ class AdminMarketingEventProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.event.not-found'));
         }
 
-        // A campaign is scheduled against this event, so removing it would leave that
-        // campaign with nothing to fire on.
-        // BACKWARD COMPATIBILITY: core exposes the relation from 2.4.10. Drop the guard
-        // on the capability when the minimum supported core is 2.4.10.
         if (
             $this->capabilities->hasCampaignRelations()
             && $event->campaigns()->count()
@@ -183,6 +177,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.event.deleted')];
     }
 
+    /**
+     * Validate payload.
+     */
     protected function validatePayload(array $input): void
     {
         $rules = [
@@ -197,6 +194,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -224,6 +224,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -239,6 +242,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         return $this->normaliseArgs(request()->all());
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -251,6 +257,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -266,6 +275,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         return $this->normaliseArgs(request()->all());
     }
 
+    /**
+     * Normalise args.
+     */
     protected function normaliseArgs(array $input): array
     {
         unset($input['id']);
@@ -273,6 +285,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         return $input;
     }
 
+    /**
+     * Dto to array.
+     */
     protected function dtoToArray(object $dto, array $rawArgs = []): array
     {
         $result = [];

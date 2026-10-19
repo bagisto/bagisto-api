@@ -10,14 +10,29 @@ use Webkul\User\Models\Admin;
 
 class AdminTokenService
 {
+    /**
+     * The default rate limit per minute constant.
+     */
     public const DEFAULT_RATE_LIMIT_PER_MINUTE = 60;
 
+    /**
+     * The default rate limit per day constant.
+     */
     public const DEFAULT_RATE_LIMIT_PER_DAY = 10000;
 
+    /**
+     * The default valid for days constant.
+     */
     public const DEFAULT_VALID_FOR_DAYS = 365;
 
+    /**
+     * The token preview length constant.
+     */
     public const TOKEN_PREVIEW_LENGTH = 8;
 
+    /**
+     * Create draft.
+     */
     public function createDraft(array $data, ?int $createdByAdminId = null): AdminPersonalAccessToken
     {
         return AdminPersonalAccessToken::create([
@@ -32,6 +47,9 @@ class AdminTokenService
         ]);
     }
 
+    /**
+     * Update draft metadata.
+     */
     public function updateDraftMetadata(AdminPersonalAccessToken $token, array $data): AdminPersonalAccessToken
     {
         $token->update([
@@ -45,6 +63,9 @@ class AdminTokenService
         return $token->fresh();
     }
 
+    /**
+     * Update active metadata.
+     */
     public function updateActiveMetadata(AdminPersonalAccessToken $token, array $data): AdminPersonalAccessToken
     {
         $token->update([
@@ -61,6 +82,9 @@ class AdminTokenService
         return $token->fresh();
     }
 
+    /**
+     * Generate.
+     */
     public function generate(AdminPersonalAccessToken $token, array $overrides = []): array
     {
         if ($token->status !== AdminPersonalAccessToken::STATUS_DRAFT) {
@@ -88,6 +112,79 @@ class AdminTokenService
             'token' => $token->fresh(),
             'plain_text' => $this->prefixedPlainText($token->id, $plain),
         ];
+    }
+
+    /**
+     * Regenerate.
+     */
+    public function regenerate(AdminPersonalAccessToken $oldToken, int $regeneratedByAdminId): array
+    {
+        return DB::transaction(function () use ($oldToken, $regeneratedByAdminId) {
+            $newToken = AdminPersonalAccessToken::create([
+                'admin_id' => $oldToken->admin_id,
+                'name' => $oldToken->name,
+                'description' => $oldToken->description,
+                'permission_type' => $oldToken->permission_type,
+                'abilities' => $oldToken->abilities,
+                'rate_limit_per_minute' => $oldToken->rate_limit_per_minute,
+                'rate_limit_per_day' => $oldToken->rate_limit_per_day,
+                'allowed_ips' => $oldToken->allowed_ips,
+                'expires_at' => $oldToken->expires_at,
+                'status' => AdminPersonalAccessToken::STATUS_DRAFT,
+                'created_by_admin_id' => $regeneratedByAdminId,
+            ]);
+
+            $generated = $this->generate($newToken);
+
+            $oldToken->update([
+                'token' => null,
+                'status' => AdminPersonalAccessToken::STATUS_REGENERATED,
+                'regenerated_at' => now(),
+                'regenerated_by_admin_id' => $regeneratedByAdminId,
+                'regenerated_to_id' => $generated['token']->id,
+            ]);
+
+            return $generated;
+        });
+    }
+
+    /**
+     * Revoke.
+     */
+    public function revoke(AdminPersonalAccessToken $token, int $revokedByAdminId): AdminPersonalAccessToken
+    {
+        $token->update([
+            'token' => null,
+            'status' => AdminPersonalAccessToken::STATUS_REVOKED,
+            'revoked_at' => now(),
+            'revoked_by_admin_id' => $revokedByAdminId,
+        ]);
+
+        return $token->fresh();
+    }
+
+    /**
+     * Admins without active token.
+     */
+    public function adminsWithoutActiveToken()
+    {
+        $busyAdminIds = AdminPersonalAccessToken::listed()->pluck('admin_id')->all();
+
+        return Admin::whereNotIn('id', $busyAdminIds)
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Masked preview.
+     */
+    public function maskedPreview(AdminPersonalAccessToken $token): string
+    {
+        if ($token->token_preview === null) {
+            return '—';
+        }
+
+        return $token->id.'|'.$token->token_preview.'...xxxx';
     }
 
     /**
@@ -139,9 +236,7 @@ class AdminTokenService
 
     /**
      * For Generate: resolve allowed_ips from the form overrides.
-     * - ip_mode=any (or omitted with no list)        → NULL (no IP restriction)
-     * - ip_mode=restricted + allowed_ips_text/array  → cleaned array
-     * - omitted from overrides entirely              → preserve existing draft value
+     * - ip_mode=any (or omitted with no list)        → NULL (no IP restriction).
      */
     protected function resolveGenerateAllowedIps(array $overrides, AdminPersonalAccessToken $token): ?array
     {
@@ -173,74 +268,9 @@ class AdminTokenService
         return null;
     }
 
-    public function regenerate(AdminPersonalAccessToken $oldToken, int $regeneratedByAdminId): array
-    {
-        return DB::transaction(function () use ($oldToken, $regeneratedByAdminId) {
-            $newToken = AdminPersonalAccessToken::create([
-                'admin_id' => $oldToken->admin_id,
-                'name' => $oldToken->name,
-                'description' => $oldToken->description,
-                'permission_type' => $oldToken->permission_type,
-                'abilities' => $oldToken->abilities,
-                'rate_limit_per_minute' => $oldToken->rate_limit_per_minute,
-                'rate_limit_per_day' => $oldToken->rate_limit_per_day,
-                'allowed_ips' => $oldToken->allowed_ips,
-                'expires_at' => $oldToken->expires_at,
-                'status' => AdminPersonalAccessToken::STATUS_DRAFT,
-                'created_by_admin_id' => $regeneratedByAdminId,
-            ]);
-
-            $generated = $this->generate($newToken);
-
-            $oldToken->update([
-                'token' => null,
-                'status' => AdminPersonalAccessToken::STATUS_REGENERATED,
-                'regenerated_at' => now(),
-                'regenerated_by_admin_id' => $regeneratedByAdminId,
-                'regenerated_to_id' => $generated['token']->id,
-            ]);
-
-            return $generated;
-        });
-    }
-
-    public function revoke(AdminPersonalAccessToken $token, int $revokedByAdminId): AdminPersonalAccessToken
-    {
-        $token->update([
-            'token' => null,
-            'status' => AdminPersonalAccessToken::STATUS_REVOKED,
-            'revoked_at' => now(),
-            'revoked_by_admin_id' => $revokedByAdminId,
-        ]);
-
-        return $token->fresh();
-    }
-
-    public function adminsWithoutActiveToken()
-    {
-        $busyAdminIds = AdminPersonalAccessToken::listed()->pluck('admin_id')->all();
-
-        return Admin::whereNotIn('id', $busyAdminIds)
-            ->orderBy('name')
-            ->get();
-    }
-
-    public function maskedPreview(AdminPersonalAccessToken $token): string
-    {
-        if ($token->token_preview === null) {
-            return '—';
-        }
-
-        return $token->id.'|'.$token->token_preview.'...xxxx';
-    }
-
     /**
      * Normalise allowed_ips coming in from either form requests (already an
      * array of entries) or the Blade form (textarea text — one entry per line).
-     *
-     * Returns NULL when the caller did not include the key at all (preserve
-     * existing value semantics for partial updates is handled by the request),
-     * or when the resulting list is empty (= no IP restriction).
      */
     protected function normalizeAllowedIps(array $data): ?array
     {
@@ -270,6 +300,9 @@ class AdminTokenService
         return $cleaned === [] ? null : $cleaned;
     }
 
+    /**
+     * Normalize abilities.
+     */
     protected function normalizeAbilities(array $data): array
     {
         $type = $data['permission_type'] ?? AdminPersonalAccessToken::PERMISSION_TYPE_CUSTOM;
@@ -291,6 +324,9 @@ class AdminTokenService
         return array_values(array_unique(array_filter(array_map('strval', $abilities))));
     }
 
+    /**
+     * Resolve rate limit.
+     */
     protected function resolveRateLimit(array $data, string $valueKey, string $modeKey): ?int
     {
         $mode = $data[$modeKey] ?? 'limited';
@@ -311,6 +347,9 @@ class AdminTokenService
         return (int) $value;
     }
 
+    /**
+     * Resolve expires at.
+     */
     protected function resolveExpiresAt(array $data): ?Carbon
     {
         $mode = $data['expires_mode'] ?? 'expires';
@@ -328,11 +367,17 @@ class AdminTokenService
         return Carbon::parse($value);
     }
 
+    /**
+     * Make plain text.
+     */
     protected function makePlainText(): string
     {
         return Str::random(40);
     }
 
+    /**
+     * Prefixed plain text.
+     */
     protected function prefixedPlainText(int $id, string $plain): string
     {
         return $id.'|'.$plain;

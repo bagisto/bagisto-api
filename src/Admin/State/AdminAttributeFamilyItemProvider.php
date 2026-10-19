@@ -8,11 +8,17 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
 
 class AdminAttributeFamilyItemProvider extends AbstractAdminItemProvider
 {
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.family.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return AttributeFamily::with([
@@ -20,9 +26,11 @@ class AdminAttributeFamilyItemProvider extends AbstractAdminItemProvider
         ])->find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $family): AdminAttributeFamily
     {
-        /** @var AttributeFamily $family */
         $dto = new AdminAttributeFamily;
 
         $dto->id = (int) $family->id;

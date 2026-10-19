@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/** Downloadable-sample translation — nested in the downloadableSamples connection. */
 #[ApiResource(
     shortName: 'AdminProductDetailDownloadableSampleTranslation',
     operations: [],
@@ -21,6 +20,9 @@ class AdminProductDetailDownloadableSampleTranslation extends Model
     /** @var array */
     protected $casts = ['id' => 'int'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

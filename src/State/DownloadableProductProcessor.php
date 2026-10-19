@@ -12,15 +12,11 @@ use Webkul\BagistoApi\Models\DownloadableProductDownloadLink;
 use Webkul\Customer\Models\Customer;
 use Webkul\Sales\Repositories\DownloadableLinkPurchasedRepository;
 
-/**
- * Generates secure download links for purchased downloadable products.
- *
- * Implements API Platform processor interface to handle BagistoApi mutations
- * for authenticated customers. Validates permissions and generates temporary
- * download tokens with automatic expiration.
- */
 class DownloadableProductProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AuthManager $auth,
         protected DownloadableLinkPurchasedRepository $downloadableLinkPurchasedRepository,

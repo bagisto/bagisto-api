@@ -8,8 +8,14 @@ use Webkul\BookingProduct\Models\BookingProductEventTicket;
 
 class BookingProductTest extends RestApiTestCase
 {
+    /**
+     * The base url.
+     */
     private string $baseUrl = '/api/shop/booking-products';
 
+    /**
+     * Test get single booking product.
+     */
     public function test_get_single_booking_product(): void
     {
         $this->seedRequiredData();
@@ -27,6 +33,9 @@ class BookingProductTest extends RestApiTestCase
         expect((int) $response->json('id'))->toBe($booking->id);
     }
 
+    /**
+     * Test event booking exposes starting price.
+     */
     public function test_event_booking_exposes_starting_price(): void
     {
         $this->seedRequiredData();
@@ -53,6 +62,9 @@ class BookingProductTest extends RestApiTestCase
         expect($response->json('formattedStartingPrice'))->not->toBeNull();
     }
 
+    /**
+     * Test default booking has null starting price.
+     */
     public function test_default_booking_has_null_starting_price(): void
     {
         $this->seedRequiredData();
@@ -70,6 +82,9 @@ class BookingProductTest extends RestApiTestCase
         expect($response->json('startingPrice'))->toBeNull();
     }
 
+    /**
+     * Test get nonexistent booking product returns error.
+     */
     public function test_get_nonexistent_booking_product_returns_error(): void
     {
         $this->seedRequiredData();

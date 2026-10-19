@@ -26,10 +26,19 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * The allowed mimes constant.
+     */
     protected const ALLOWED_MIMES = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
 
+    /**
+     * The allowed exts constant.
+     */
     protected const ALLOWED_EXTS = ['mp4', 'webm', 'ogg', 'mov'];
 
+    /**
+     * The max bytes constant.
+     */
     protected const MAX_BYTES = 100 * 1024 * 1024;
 
     /**

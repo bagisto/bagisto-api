@@ -39,13 +39,7 @@ Route::prefix(config('app.admin_url'))
 
 /**
  * Signed, login-free revoke link delivered in token lifecycle emails.
- *
- * Uses the `signed` middleware (not `admin`) so the token owner can revoke a
- * token immediately from their inbox — even on a device where they are not
- * logged into the admin panel. The link is HMAC-signed with the app key and
- * expires after 7 days; tampered or expired links are rejected with 403.
- * The GET only shows a confirmation page; a signed POST performs the revoke so
- * link scanners and prefetchers cannot revoke a token.
+ * Uses the `signed` middleware (not `admin`) so the token owner can revoke a.
  */
 Route::prefix(config('app.admin_url'))
     ->middleware(['signed'])

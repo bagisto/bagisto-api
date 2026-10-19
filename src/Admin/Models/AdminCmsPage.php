@@ -26,21 +26,6 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCmsPageProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
 
-/**
- * Admin CMS → Pages endpoints (CMS Phase 1 read-only + CMS Phase 2 CRUD).
- *
- * Standalone Eloquent model on `cms_pages` following the shop CustomerOrder
- * pattern: REST operations map to output DTOs (AdminCmsPageListDto /
- * AdminCmsPageDetailDto) so the REST payload is byte-identical to the original,
- * while GraphQL operations return this Eloquent model so the `translations` and
- * `channels` relations are field-selectable
- * (e.g. `translations { pageTitle urlKey } channels { id code name }`).
- *
- * Providers gate on GraphQL context to return the model for GraphQL and the
- * DTO for REST.
- *
- * Mirrors Webkul\Admin\Http\Controllers\CMS\PageController 1:1.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCmsPage',
@@ -455,14 +440,23 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
 )]
 class AdminCmsPage extends EloquentModel
 {
+    /**
+     * The table.
+     */
     protected $table = 'cms_pages';
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'id' => 'int',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
+    /**
+     * The appends.
+     */
     protected $appends = [
         'url_key',
         'page_title',
@@ -479,78 +473,117 @@ class AdminCmsPage extends EloquentModel
     /** Transient action message (e.g. delete confirmation); not a DB column. */
     public ?string $actionMessage = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
     {
         return $this->id;
     }
 
+    /**
+     * Get message attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getMessageAttribute(): ?string
     {
         return $this->actionMessage;
     }
 
+    /**
+     * Translations.
+     */
     #[ApiProperty(writable: false)]
     public function translations(): HasMany
     {
         return $this->hasMany(AdminCmsPageTranslation::class, 'cms_page_id');
     }
 
+    /**
+     * Channels.
+     */
     #[ApiProperty(writable: false)]
     public function channels(): BelongsToMany
     {
         return $this->belongsToMany(AdminCmsPageChannel::class, 'cms_page_channels', 'cms_page_id', 'channel_id');
     }
 
+    /**
+     * Get url key attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getUrlKeyAttribute(): ?string
     {
         return $this->primaryTranslation()?->url_key;
     }
 
+    /**
+     * Get page title attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getPageTitleAttribute(): ?string
     {
         return $this->primaryTranslation()?->page_title;
     }
 
+    /**
+     * Get html content attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getHtmlContentAttribute(): ?string
     {
         return $this->primaryTranslation()?->html_content;
     }
 
+    /**
+     * Get meta title attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getMetaTitleAttribute(): ?string
     {
         return $this->primaryTranslation()?->meta_title;
     }
 
+    /**
+     * Get meta keywords attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getMetaKeywordsAttribute(): ?string
     {
         return $this->primaryTranslation()?->meta_keywords;
     }
 
+    /**
+     * Get meta description attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getMetaDescriptionAttribute(): ?string
     {
         return $this->primaryTranslation()?->meta_description;
     }
 
+    /**
+     * Get layout attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getLayoutAttribute($value): ?string
     {
         return $value;
     }
 
+    /**
+     * Get locale attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getLocaleAttribute(): ?string
     {
         return $this->primaryTranslation()?->locale;
     }
 
+    /**
+     * Get channel attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getChannelAttribute(): ?string
     {
@@ -559,6 +592,9 @@ class AdminCmsPage extends EloquentModel
         return $codes ? implode(',', $codes) : null;
     }
 
+    /**
+     * Get preview url attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getPreviewUrlAttribute(): ?string
     {
@@ -575,18 +611,27 @@ class AdminCmsPage extends EloquentModel
         }
     }
 
+    /**
+     * Get created at.
+     */
     #[ApiProperty(writable: false)]
     public function getCreatedAt(): ?string
     {
         return $this->created_at?->toIso8601String();
     }
 
+    /**
+     * Get updated at.
+     */
     #[ApiProperty(writable: false)]
     public function getUpdatedAt(): ?string
     {
         return $this->updated_at?->toIso8601String();
     }
 
+    /**
+     * Primary translation.
+     */
     protected function primaryTranslation(): ?AdminCmsPageTranslation
     {
         $translations = $this->translations;

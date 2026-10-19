@@ -8,20 +8,6 @@ use Webkul\BagistoApi\Tests\GraphQLTestCase;
 class CurrencyTest extends GraphQLTestCase
 {
     /**
-     * Ensure at least one currency exists and return its IRI.
-     */
-    private function getFirstCurrencyIri(): string
-    {
-        $id = DB::table('currencies')->orderBy('id')->value('id');
-
-        if (! $id) {
-            $this->markTestSkipped('No currencies found in the database. Run Bagisto seeders.');
-        }
-
-        return '/api/shop/currencies/'.$id;
-    }
-
-    /**
      * Query all currencies — basic fields.
      */
     public function test_get_all_currencies(): void
@@ -130,5 +116,19 @@ class CurrencyTest extends GraphQLTestCase
 
         $response->assertSuccessful();
         $this->assertNull($response->json('data.currency'));
+    }
+
+    /**
+     * Ensure at least one currency exists and return its IRI.
+     */
+    private function getFirstCurrencyIri(): string
+    {
+        $id = DB::table('currencies')->orderBy('id')->value('id');
+
+        if (! $id) {
+            $this->markTestSkipped('No currencies found in the database. Run Bagisto seeders.');
+        }
+
+        return '/api/shop/currencies/'.$id;
     }
 }

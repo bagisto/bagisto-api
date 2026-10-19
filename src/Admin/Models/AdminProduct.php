@@ -10,23 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminProductProvider;
 
-/**
- * Admin Product search/listing — slim row for the Create-Order "Add Product"
- * modal and any other admin product-picker workflow.
- *
- * REST   : GET /api/admin/products → `{ data: [AdminProduct], meta: {...} }`
- *          (envelope applied by AdminCollectionEnvelopeNormalizer).
- * GraphQL: adminProducts query → native cursor pagination.
- *
- * Differences from the shop /api/shop/products listing:
- *   - No automatic status=1 filter — admin sees disabled/draft products too
- *     (optional ?status=1 filter still works).
- *   - Returns booking products too (so they're visible); the booking guard in
- *     AdminCartAddItemProcessor blocks them at add-to-cart time.
- *   - Slim shape: id, sku, type, name, status, price, formattedPrice,
- *     baseImageUrl, isSaleable. NO heavy variants/bundleOptions/superAttributes
- *     relations — the picker just needs to identify the product.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminProduct',
@@ -130,30 +113,57 @@ class AdminProduct
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The sku.
+     */
     #[ApiProperty(writable: false)]
     public ?string $sku = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $type = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(writable: false)]
     public ?int $status = null;
 
+    /**
+     * The price.
+     */
     #[ApiProperty(writable: false)]
     public ?float $price = null;
 
+    /**
+     * The formatted price.
+     */
     #[ApiProperty(writable: false)]
     public ?string $formatted_price = null;
 
+    /**
+     * The base image url.
+     */
     #[ApiProperty(writable: false)]
     public ?string $base_image_url = null;
 
+    /**
+     * The is saleable.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $is_saleable = null;
 }

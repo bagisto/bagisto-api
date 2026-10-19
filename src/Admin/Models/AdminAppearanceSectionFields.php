@@ -11,10 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\Resolver\AdminAppearanceSectionFieldsQueryResolver;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionFieldsProvider;
 
-/**
- * The field set a section of this type is built from, with the values currently held for
- * the locale — everything a client needs to render an editor for it.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAppearanceSectionFields',
@@ -70,11 +66,20 @@ class AdminAppearanceSectionFields
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The section id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $section_id = null;
 
+    /**
+     * The type.
+     */
     public ?string $type = null;
 
+    /**
+     * The locale.
+     */
     public ?string $locale = null;
 
     /**

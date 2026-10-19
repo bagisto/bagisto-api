@@ -13,9 +13,6 @@ use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerAddress;
 
-/**
- * Serves one address of the customer behind the bearer token, for the token address queries.
- */
 class CustomerAddressTokenProvider implements ProviderInterface
 {
     /**

@@ -72,10 +72,19 @@ use Webkul\BagistoApi\State\ReturnReasonProvider;
 )]
 class ReturnReason
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The title.
+     */
     public ?string $title = null;
 
+    /**
+     * The position.
+     */
     public ?int $position = null;
 }

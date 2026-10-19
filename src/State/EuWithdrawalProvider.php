@@ -19,8 +19,14 @@ class EuWithdrawalProvider implements ProviderInterface
 {
     use BuildsEuWithdrawal;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(private readonly WithdrawalRepository $withdrawals) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $customer = Auth::guard('sanctum')->user();
@@ -36,6 +42,9 @@ class EuWithdrawalProvider implements ProviderInterface
             : $this->provideItem($customer, $uriVariables, $context);
     }
 
+    /**
+     * Scoped query.
+     */
     private function scopedQuery(int $customerId)
     {
         return $this->withdrawals->getModel()
@@ -44,6 +53,9 @@ class EuWithdrawalProvider implements ProviderInterface
             ->whereHas('order', fn ($query) => $query->where('customer_id', $customerId));
     }
 
+    /**
+     * Provide item.
+     */
     private function provideItem(object $customer, array $uriVariables, array $context): EuWithdrawal
     {
         $id = $uriVariables['id'] ?? $context['args']['id'] ?? null;
@@ -61,6 +73,9 @@ class EuWithdrawalProvider implements ProviderInterface
         return $this->buildEuWithdrawal($withdrawal);
     }
 
+    /**
+     * Provide collection.
+     */
     private function provideCollection(object $customer, array $context): Paginator
     {
         $args = $context['args'] ?? [];

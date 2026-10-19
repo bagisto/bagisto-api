@@ -8,8 +8,55 @@ use Webkul\CMS\Models\PageTranslation;
 
 class PageTranslationTest extends RestApiTestCase
 {
+    /**
+     * The base url.
+     */
     private string $baseUrl = '/api/shop/page_translations';
 
+    /**
+     * Test get collection.
+     */
+    public function test_get_collection(): void
+    {
+        $this->seedRequiredData();
+        $this->seedTranslation();
+
+        $response = $this->publicGet($this->baseUrl);
+
+        $response->assertOk();
+        expect($response->json())->toBeArray();
+        expect(\count($response->json()))->toBeGreaterThan(0);
+    }
+
+    /**
+     * Test get single page translation.
+     */
+    public function test_get_single_page_translation(): void
+    {
+        $this->seedRequiredData();
+        $translation = $this->seedTranslation();
+
+        $response = $this->publicGet($this->baseUrl.'/'.$translation->id);
+
+        $response->assertOk();
+        expect((int) $response->json('id'))->toBe($translation->id);
+    }
+
+    /**
+     * Test get nonexistent translation returns 404.
+     */
+    public function test_get_nonexistent_translation_returns_404(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicGet($this->baseUrl.'/999999');
+
+        expect($response->getStatusCode())->toBeIn([404, 500]);
+    }
+
+    /**
+     * Seed translation.
+     */
     private function seedTranslation(): PageTranslation
     {
         $page = Page::create([
@@ -27,37 +74,5 @@ class PageTranslationTest extends RestApiTestCase
             'meta_keywords' => 'meta,keys',
             'meta_description' => 'meta desc',
         ]);
-    }
-
-    public function test_get_collection(): void
-    {
-        $this->seedRequiredData();
-        $this->seedTranslation();
-
-        $response = $this->publicGet($this->baseUrl);
-
-        $response->assertOk();
-        expect($response->json())->toBeArray();
-        expect(\count($response->json()))->toBeGreaterThan(0);
-    }
-
-    public function test_get_single_page_translation(): void
-    {
-        $this->seedRequiredData();
-        $translation = $this->seedTranslation();
-
-        $response = $this->publicGet($this->baseUrl.'/'.$translation->id);
-
-        $response->assertOk();
-        expect((int) $response->json('id'))->toBe($translation->id);
-    }
-
-    public function test_get_nonexistent_translation_returns_404(): void
-    {
-        $this->seedRequiredData();
-
-        $response = $this->publicGet($this->baseUrl.'/999999');
-
-        expect($response->getStatusCode())->toBeIn([404, 500]);
     }
 }

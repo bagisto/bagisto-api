@@ -172,6 +172,9 @@ use Webkul\BagistoApi\State\CustomerProcessor;
 )]
 class Customer extends \Webkul\Customer\Models\Customer
 {
+    /**
+     * The appends.
+     */
     protected $appends = [
         'confirm_password',
         'message',
@@ -179,10 +182,7 @@ class Customer extends \Webkul\Customer\Models\Customer
 
     /**
      * Only the cast every supported core agrees on.
-     *
-     * Core 2.5.0 added boolean casts for status, is_verified and is_suspended and a date cast
-     * for date_of_birth. The API contract keeps them as the plain database values (0/1 and
-     * Y-m-d), so the subclass does not inherit those casts.
+     * Core 2.5.0 added boolean casts for status, is_verified and is_suspended and a date cast.
      */
     protected $casts = [
         'subscribed_to_news_letter' => 'boolean',
@@ -211,6 +211,9 @@ class Customer extends \Webkul\Customer\Models\Customer
         'device_token',
     ];
 
+    /**
+     * The visible.
+     */
     protected $visible = [
         'id',
         'password',
@@ -238,18 +241,27 @@ class Customer extends \Webkul\Customer\Models\Customer
         'imageUrl',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public function get_id(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get first name.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -261,11 +273,17 @@ class Customer extends \Webkul\Customer\Models\Customer
         return $this->first_name;
     }
 
+    /**
+     * Set first name.
+     */
     public function setFirst_name(?string $value): void
     {
         $this->first_name = $value;
     }
 
+    /**
+     * Get last name.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -277,11 +295,17 @@ class Customer extends \Webkul\Customer\Models\Customer
         return $this->last_name;
     }
 
+    /**
+     * Set last name.
+     */
     public function setLast_name(?string $value): void
     {
         $this->last_name = $value;
     }
 
+    /**
+     * Get email.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -293,11 +317,17 @@ class Customer extends \Webkul\Customer\Models\Customer
         return $this->email;
     }
 
+    /**
+     * Set email.
+     */
     public function setEmail(?string $value): void
     {
         $this->email = $value;
     }
 
+    /**
+     * Get phone.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -309,11 +339,17 @@ class Customer extends \Webkul\Customer\Models\Customer
         return $this->phone;
     }
 
+    /**
+     * Set phone.
+     */
     public function setPhone(?string $value): void
     {
         $this->phone = $value;
     }
 
+    /**
+     * Get gender.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -325,11 +361,17 @@ class Customer extends \Webkul\Customer\Models\Customer
         return $this->gender;
     }
 
+    /**
+     * Set gender.
+     */
     public function setGender(?string $value): void
     {
         $this->gender = $value;
     }
 
+    /**
+     * Get date of birth.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -341,11 +383,17 @@ class Customer extends \Webkul\Customer\Models\Customer
         return $this->date_of_birth;
     }
 
+    /**
+     * Set date of birth.
+     */
     public function setDate_of_birth(?string $value): void
     {
         $this->date_of_birth = $value;
     }
 
+    /**
+     * Get password.
+     */
     #[ApiProperty(
         writable: true,
         readable: false,
@@ -357,11 +405,17 @@ class Customer extends \Webkul\Customer\Models\Customer
         return $this->password;
     }
 
+    /**
+     * Set password.
+     */
     public function setPassword(?string $value): void
     {
         $this->password = $value;
     }
 
+    /**
+     * The confirm password.
+     */
     #[ApiProperty(
         writable: true,
         readable: false,
@@ -370,21 +424,33 @@ class Customer extends \Webkul\Customer\Models\Customer
     #[Groups(['mutation'])]
     public ?string $confirm_password = null;
 
+    /**
+     * Get confirm password attribute.
+     */
     public function getConfirm_passwordAttribute(): ?string
     {
         return $this->confirm_password;
     }
 
+    /**
+     * Get confirm password.
+     */
     public function getConfirm_password(): ?string
     {
         return $this->getConfirm_passwordAttribute();
     }
 
+    /**
+     * Set confirm password.
+     */
     public function setConfirm_password(?string $value): void
     {
         $this->confirm_password = $value;
     }
 
+    /**
+     * Get status.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -396,11 +462,17 @@ class Customer extends \Webkul\Customer\Models\Customer
         return $this->status;
     }
 
+    /**
+     * Set status.
+     */
     public function setStatus(?string $value): void
     {
         $this->status = $value;
     }
 
+    /**
+     * Get is verified.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -412,11 +484,17 @@ class Customer extends \Webkul\Customer\Models\Customer
         return $this->is_verified;
     }
 
+    /**
+     * Set is verified.
+     */
     public function setIs_verified(?string $value): void
     {
         $this->is_verified = $value;
     }
 
+    /**
+     * Get is suspended.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -428,11 +506,17 @@ class Customer extends \Webkul\Customer\Models\Customer
         return $this->is_suspended;
     }
 
+    /**
+     * Set is suspended.
+     */
     public function setIs_suspended(?string $value): void
     {
         $this->is_suspended = $value;
     }
 
+    /**
+     * Get subscribed to news letter.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -444,11 +528,17 @@ class Customer extends \Webkul\Customer\Models\Customer
         return $this->subscribed_to_news_letter;
     }
 
+    /**
+     * Set subscribed to news letter.
+     */
     public function setSubscribed_to_news_letter(?bool $value): void
     {
         $this->subscribed_to_news_letter = $value;
     }
 
+    /**
+     * Get api token.
+     */
     #[ApiProperty(writable: false, readable: true)]
     #[Groups(['mutation'])]
     public function getApi_token(): ?string
@@ -456,45 +546,69 @@ class Customer extends \Webkul\Customer\Models\Customer
         return $this->api_token;
     }
 
+    /**
+     * Set api token.
+     */
     public function setApi_token(?string $value): void
     {
         $this->api_token = $value;
     }
 
+    /**
+     * Get token.
+     */
     #[ApiProperty(writable: true, readable: true)]
     public function getToken(): ?string
     {
         return $this->token;
     }
 
+    /**
+     * Set token.
+     */
     public function setToken(?string $value): void
     {
         $this->token = $value;
     }
 
+    /**
+     * Get message attribute.
+     */
     #[ApiProperty(writable: false, readable: true, description: 'Registration notice, for example a request to verify the email address')]
     public function getMessageAttribute(): ?string
     {
         return $this->attributes['message'] ?? null;
     }
 
+    /**
+     * Get customer group id.
+     */
     #[ApiProperty(writable: true, readable: true)]
     public function getCustomer_group_id(): ?int
     {
         return $this->customer_group_id;
     }
 
+    /**
+     * Set customer group id.
+     */
     public function setCustomer_group_id(?int $value): void
     {
         $this->customer_group_id = $value;
     }
 
+    /**
+     * Get channel id.
+     */
     #[ApiProperty(writable: true, readable: true)]
     public function getChannel_id(): ?int
     {
         return $this->channel_id;
     }
 
+    /**
+     * Set channel id.
+     */
     public function setChannel_id(?int $value): void
     {
         $this->channel_id = $value;
@@ -516,11 +630,17 @@ class Customer extends \Webkul\Customer\Models\Customer
         return null;
     }
 
+    /**
+     * Set image.
+     */
     public function setImage(?string $value): void
     {
         $this->image = $value;
     }
 
+    /**
+     * Get device token.
+     */
     #[ApiProperty(writable: true, readable: true, required: false)]
     #[Groups(['mutation'])]
     public function getDevice_token(): ?string
@@ -528,13 +648,16 @@ class Customer extends \Webkul\Customer\Models\Customer
         return $this->device_token;
     }
 
+    /**
+     * Set device token.
+     */
     public function setDevice_token(?string $value): void
     {
         $this->device_token = $value;
     }
 
     /**
-     * Get device token (camelCase alias for GraphQL compatibility)
+     * Get device token (camelCase alias for GraphQL compatibility).
      */
     public function getDeviceToken(): ?string
     {
@@ -542,7 +665,7 @@ class Customer extends \Webkul\Customer\Models\Customer
     }
 
     /**
-     * Set device token (camelCase alias for GraphQL compatibility)
+     * Set device token (camelCase alias for GraphQL compatibility).
      */
     public function setDeviceToken(?string $value): void
     {
@@ -550,7 +673,7 @@ class Customer extends \Webkul\Customer\Models\Customer
     }
 
     /**
-     * Get addresses for the customer
+     * Get addresses for the customer.
      */
     public function addresses()
     {

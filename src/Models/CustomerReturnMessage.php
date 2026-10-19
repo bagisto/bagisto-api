@@ -165,21 +165,45 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
 )]
 class CustomerReturnMessage implements SnakeCaseFieldsResource
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The rma id.
+     */
     public ?int $rma_id = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 
+    /**
+     * The is admin.
+     */
     public ?bool $is_admin = null;
 
+    /**
+     * The attachment.
+     */
     public ?string $attachment = null;
 
+    /**
+     * The attachment url.
+     */
     public ?string $attachment_url = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * From model.
+     */
     public static function fromModel($message): self
     {
         $result = new self;

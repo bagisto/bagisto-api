@@ -8,19 +8,27 @@ use Webkul\Inventory\Models\InventorySource;
 
 class AdminSettingsInventorySourceItemProvider extends AbstractAdminItemProvider
 {
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.settings.inventory-source.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return InventorySource::find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $source): AdminSettingsInventorySource
     {
-        /** @var InventorySource $source */
         $dto = new AdminSettingsInventorySource;
 
         $dto->id = (int) $source->id;

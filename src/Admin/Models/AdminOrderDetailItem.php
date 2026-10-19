@@ -8,15 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Order line-item — nested sub-resource of AdminOrderDetail.
- *
- * Eloquent #[ApiResource] (operations: []) so the parent's `items` HasMany
- * resolves as a GraphQL connection (`items { edges { node } }`) with real node
- * data. Money is exposed raw (value + base value); clients format. `children`
- * is a self-referencing connection (configurable/bundle/grouped child lines);
- * `child` / `downloadableLinks` / `additional` are bare JSON leaves.
- */
 #[ApiResource(
     shortName: 'AdminOrderDetailItem',
     operations: [],
@@ -59,6 +50,9 @@ class AdminOrderDetailItem extends Model
         'created_at' => 'datetime',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

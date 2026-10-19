@@ -11,117 +11,20 @@ use Webkul\Marketing\Mail\NewsletterMail;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for Admin Marketing → Campaigns CRUD + send (Block F2c).
- */
 class MarketingCampaignTest extends AdminApiTestCase
 {
-    protected function insertTemplate(array $overrides = []): int
-    {
-        return DB::table('marketing_templates')->insertGetId(array_merge([
-            'name' => 'Tpl '.uniqid(),
-            'status' => 'active',
-            'content' => '<p>Hello {{name}}</p>',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function insertEvent(array $overrides = []): int
-    {
-        return DB::table('marketing_events')->insertGetId(array_merge([
-            'name' => 'Evt '.uniqid(),
-            'description' => 'desc',
-            'date' => null,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function insertCampaign(array $overrides = []): int
-    {
-        return DB::table('marketing_campaigns')->insertGetId($this->existingColumns('marketing_campaigns', array_merge([
-            'name' => 'Camp '.uniqid(),
-            'subject' => 'Subj',
-            'status' => 1,
-            'type' => 'email',
-            'mail_to' => '',
-            'channel_id' => $this->getChannelId(),
-            'customer_group_id' => $this->getCustomerGroupId(),
-            'marketing_template_id' => $this->insertTemplate(),
-            'marketing_event_id' => $this->insertEvent(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides)));
-    }
-
-    protected function getChannelId(): int
-    {
-        return (int) DB::table('channels')->first()->id;
-    }
-
-    protected function getCustomerGroupId(): int
-    {
-        return (int) DB::table('customer_groups')->where('code', '!=', 'guest')->first()->id;
-    }
-
-    protected function getGuestGroupId(): int
-    {
-        return (int) DB::table('customer_groups')->where('code', 'guest')->first()->id;
-    }
-
-    protected function createFreshGroupId(): int
-    {
-        return (int) DB::table('customer_groups')->insertGetId([
-            'code' => 'e2e-cg-'.uniqid(),
-            'name' => 'E2E Group '.uniqid(),
-            'is_user_defined' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
-    protected function adminPut(Admin $admin, string $url, array $data = []): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin));
-    }
-
-    protected function adminDelete(Admin $admin, string $url): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin));
-    }
-
-    protected function createAdminWithoutPermissions(): Admin
-    {
-        $role = Role::create([
-            'name' => 'Limited '.uniqid(),
-            'description' => 'no campaign perms',
-            'permission_type' => 'custom',
-            'permissions' => ['catalog.products'],
-        ]);
-
-        return $this->createAdmin(['role_id' => $role->id]);
-    }
-
-    protected function basePayload(array $overrides = []): array
-    {
-        return array_merge([
-            'name' => 'API Camp '.uniqid(),
-            'subject' => 'Hello there',
-            'marketing_template_id' => $this->insertTemplate(),
-            'marketing_event_id' => $this->insertEvent(),
-            'channel_id' => $this->getChannelId(),
-            'customer_group_id' => $this->getCustomerGroupId(),
-            'status' => 1,
-        ], $overrides);
-    }
-
+    /**
+     * Test listing requires admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
         $this->publicGet('/api/admin/marketing/campaigns')->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -134,6 +37,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         expect($response->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total', 'from', 'to']);
     }
 
+    /**
+     * Test listing row shape.
+     */
     public function test_listing_row_shape(): void
     {
         $admin = $this->createAdmin();
@@ -143,11 +49,13 @@ class MarketingCampaignTest extends AdminApiTestCase
         $response->assertOk();
         $row = $response->json('data.0');
         expect($row)->toHaveKeys(['id', 'name', 'subject', 'status', 'channel', 'customerGroup', 'marketingTemplate', 'marketingEvent']);
-        // The four to-one objects are detail-only — null on listing rows.
         expect($row['channel'])->toBeNull();
         expect($row['marketingTemplate'])->toBeNull();
     }
 
+    /**
+     * Test filter by name.
+     */
     public function test_filter_by_name(): void
     {
         $admin = $this->createAdmin();
@@ -160,6 +68,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test filter by status.
+     */
     public function test_filter_by_status(): void
     {
         $admin = $this->createAdmin();
@@ -179,6 +90,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         expect($ids)->not->toContain($on);
     }
 
+    /**
+     * Test filter by channel and customer group.
+     */
     public function test_filter_by_channel_and_customer_group(): void
     {
         $admin = $this->createAdmin();
@@ -191,6 +105,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test sort by name asc.
+     */
     public function test_sort_by_name_asc(): void
     {
         $admin = $this->createAdmin();
@@ -210,6 +127,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test per page cap.
+     */
     public function test_per_page_cap(): void
     {
         $admin = $this->createAdmin();
@@ -218,6 +138,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test detail returns payload with resolved relations.
+     */
     public function test_detail_returns_payload_with_resolved_relations(): void
     {
         $admin = $this->createAdmin();
@@ -241,12 +164,18 @@ class MarketingCampaignTest extends AdminApiTestCase
         expect($response->json('customerGroup.id'))->toBe($this->getCustomerGroupId());
     }
 
+    /**
+     * Test detail unknown id returns 404.
+     */
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/marketing/campaigns/999999')->assertStatus(404);
     }
 
+    /**
+     * Test detail requires admin token.
+     */
     public function test_detail_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -254,6 +183,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         $this->publicGet('/api/admin/marketing/campaigns/'.$id)->assertStatus(401);
     }
 
+    /**
+     * Test create happy path.
+     */
     public function test_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -266,13 +198,15 @@ class MarketingCampaignTest extends AdminApiTestCase
             'id' => $id,
             'name' => 'Created Camp',
         ]);
-        // Response carries the four to-one objects, not the old FK scalars.
         expect($response->json('channel.id'))->toBe($payload['channel_id']);
         expect($response->json('customerGroup.id'))->toBe($payload['customer_group_id']);
         expect($response->json('marketingTemplate.id'))->toBe($payload['marketing_template_id']);
         expect($response->json('marketingEvent.id'))->toBe($payload['marketing_event_id']);
     }
 
+    /**
+     * Test create missing name returns 422.
+     */
     public function test_create_missing_name_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -281,6 +215,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         $this->adminPost($admin, '/api/admin/marketing/campaigns', $payload)->assertStatus(422);
     }
 
+    /**
+     * Test create missing subject returns 422.
+     */
     public function test_create_missing_subject_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -289,6 +226,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         $this->adminPost($admin, '/api/admin/marketing/campaigns', $payload)->assertStatus(422);
     }
 
+    /**
+     * Test create invalid template returns 422.
+     */
     public function test_create_invalid_template_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -297,6 +237,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         ]))->assertStatus(422);
     }
 
+    /**
+     * Test create invalid channel returns 422.
+     */
     public function test_create_invalid_channel_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -305,18 +248,27 @@ class MarketingCampaignTest extends AdminApiTestCase
         ]))->assertStatus(422);
     }
 
+    /**
+     * Test create requires admin token.
+     */
     public function test_create_requires_admin_token(): void
     {
         $this->seedRequiredData();
         $this->publicPost('/api/admin/marketing/campaigns', $this->basePayload())->assertStatus(401);
     }
 
+    /**
+     * Test create requires permission.
+     */
     public function test_create_requires_permission(): void
     {
         $admin = $this->createAdminWithoutPermissions();
         $this->adminPost($admin, '/api/admin/marketing/campaigns', $this->basePayload())->assertStatus(403);
     }
 
+    /**
+     * Test update happy path.
+     */
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -334,12 +286,18 @@ class MarketingCampaignTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test update unknown id returns 404.
+     */
     public function test_update_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminPut($admin, '/api/admin/marketing/campaigns/999999', $this->basePayload())->assertStatus(404);
     }
 
+    /**
+     * Test update requires permission.
+     */
     public function test_update_requires_permission(): void
     {
         $id = $this->insertCampaign();
@@ -347,6 +305,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         $this->adminPut($admin, '/api/admin/marketing/campaigns/'.$id, $this->basePayload())->assertStatus(403);
     }
 
+    /**
+     * Test update is partial.
+     */
     public function test_update_is_partial(): void
     {
         $admin = $this->createAdmin();
@@ -361,6 +322,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -371,12 +335,18 @@ class MarketingCampaignTest extends AdminApiTestCase
         $this->assertDatabaseMissing('marketing_campaigns', ['id' => $id]);
     }
 
+    /**
+     * Test delete unknown id returns 404.
+     */
     public function test_delete_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminDelete($admin, '/api/admin/marketing/campaigns/999999')->assertStatus(404);
     }
 
+    /**
+     * Test delete requires permission.
+     */
     public function test_delete_requires_permission(): void
     {
         $id = $this->insertCampaign();
@@ -384,6 +354,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         $this->adminDelete($admin, '/api/admin/marketing/campaigns/'.$id)->assertStatus(403);
     }
 
+    /**
+     * Test send happy path queues mailable.
+     */
     public function test_send_happy_path_queues_mailable(): void
     {
         Mail::fake();
@@ -419,6 +392,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         Mail::assertQueued(NewsletterMail::class, 2);
     }
 
+    /**
+     * Test send refuses inactive campaign.
+     */
     public function test_send_refuses_inactive_campaign(): void
     {
         Mail::fake();
@@ -429,12 +405,18 @@ class MarketingCampaignTest extends AdminApiTestCase
         Mail::assertNothingQueued();
     }
 
+    /**
+     * Test send unknown id returns 404.
+     */
     public function test_send_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/marketing/campaigns/999999/send')->assertStatus(404);
     }
 
+    /**
+     * Test send requires admin token.
+     */
     public function test_send_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -442,6 +424,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         $this->publicPost('/api/admin/marketing/campaigns/'.$id.'/send')->assertStatus(401);
     }
 
+    /**
+     * Test send requires permission.
+     */
     public function test_send_requires_permission(): void
     {
         $id = $this->insertCampaign();
@@ -449,6 +434,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         $this->adminPost($admin, '/api/admin/marketing/campaigns/'.$id.'/send')->assertStatus(403);
     }
 
+    /**
+     * Test send with no subscribers returns zero queued.
+     */
     public function test_send_with_no_subscribers_returns_zero_queued(): void
     {
         Mail::fake();
@@ -463,5 +451,138 @@ class MarketingCampaignTest extends AdminApiTestCase
         $response->assertOk();
         expect((int) $response->json('queued'))->toBe(0);
         Mail::assertNothingQueued();
+    }
+
+    /**
+     * Insert template.
+     */
+    protected function insertTemplate(array $overrides = []): int
+    {
+        return DB::table('marketing_templates')->insertGetId(array_merge([
+            'name' => 'Tpl '.uniqid(),
+            'status' => 'active',
+            'content' => '<p>Hello {{name}}</p>',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Insert event.
+     */
+    protected function insertEvent(array $overrides = []): int
+    {
+        return DB::table('marketing_events')->insertGetId(array_merge([
+            'name' => 'Evt '.uniqid(),
+            'description' => 'desc',
+            'date' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Insert campaign.
+     */
+    protected function insertCampaign(array $overrides = []): int
+    {
+        return DB::table('marketing_campaigns')->insertGetId($this->existingColumns('marketing_campaigns', array_merge([
+            'name' => 'Camp '.uniqid(),
+            'subject' => 'Subj',
+            'status' => 1,
+            'type' => 'email',
+            'mail_to' => '',
+            'channel_id' => $this->getChannelId(),
+            'customer_group_id' => $this->getCustomerGroupId(),
+            'marketing_template_id' => $this->insertTemplate(),
+            'marketing_event_id' => $this->insertEvent(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides)));
+    }
+
+    /**
+     * Get channel id.
+     */
+    protected function getChannelId(): int
+    {
+        return (int) DB::table('channels')->first()->id;
+    }
+
+    /**
+     * Get customer group id.
+     */
+    protected function getCustomerGroupId(): int
+    {
+        return (int) DB::table('customer_groups')->where('code', '!=', 'guest')->first()->id;
+    }
+
+    /**
+     * Get guest group id.
+     */
+    protected function getGuestGroupId(): int
+    {
+        return (int) DB::table('customer_groups')->where('code', 'guest')->first()->id;
+    }
+
+    /**
+     * Create fresh group id.
+     */
+    protected function createFreshGroupId(): int
+    {
+        return (int) DB::table('customer_groups')->insertGetId([
+            'code' => 'e2e-cg-'.uniqid(),
+            'name' => 'E2E Group '.uniqid(),
+            'is_user_defined' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = []): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin));
+    }
+
+    /**
+     * Create admin without permissions.
+     */
+    protected function createAdminWithoutPermissions(): Admin
+    {
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no campaign perms',
+            'permission_type' => 'custom',
+            'permissions' => ['catalog.products'],
+        ]);
+
+        return $this->createAdmin(['role_id' => $role->id]);
+    }
+
+    /**
+     * Base payload.
+     */
+    protected function basePayload(array $overrides = []): array
+    {
+        return array_merge([
+            'name' => 'API Camp '.uniqid(),
+            'subject' => 'Hello there',
+            'marketing_template_id' => $this->insertTemplate(),
+            'marketing_event_id' => $this->insertEvent(),
+            'channel_id' => $this->getChannelId(),
+            'customer_group_id' => $this->getCustomerGroupId(),
+            'status' => 1,
+        ], $overrides);
     }
 }

@@ -9,27 +9,26 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Sales\Models\Order;
 use Webkul\User\Models\Admin;
 
-/**
- * Shared auth + eligibility-gate guard for the admin Order Actions wave.
- *
- * One class, used by every Cancel / Invoice / Shipment / Refund / Comment
- * processor + provider. Splits each Order::canX() into specific failure
- * reasons (closed / fraud / nothing-to-X) so the client can disambiguate —
- * mirrors the AdminReorderProcessor "eligibility-split" pattern.
- *
- * Permission resolution is done WITHOUT session: bouncer()->hasPermission()
- * relies on auth()->guard('admin')->user() which Sanctum can't populate.
- * Instead we read $admin->role->permissions directly — same as the Reorder
- * processor.
- */
 class AdminOrderActionGuard
 {
+    /**
+     * The perm cancel constant.
+     */
     public const PERM_CANCEL = 'sales.orders.cancel';
 
+    /**
+     * The perm invoice constant.
+     */
     public const PERM_INVOICE = 'sales.invoices.create';
 
+    /**
+     * The perm shipment constant.
+     */
     public const PERM_SHIPMENT = 'sales.shipments.create';
 
+    /**
+     * The perm refund constant.
+     */
     public const PERM_REFUND = 'sales.refunds.create';
 
     /**
@@ -164,10 +163,7 @@ class AdminOrderActionGuard
 
     /**
      * Refund: closed / fraud / nothing-to-refund / no-permission.
-     *
-     * "Nothing to refund" mirrors Order::canRefund() — at least one item with
-     * qty_to_refund > 0, OR an outstanding invoiced-minus-refunded-minus-fees
-     * balance.
+     * "Nothing to refund" mirrors Order::canRefund() — at least one item with.
      */
     public function assertCanRefund(Order $order, Admin $admin): void
     {

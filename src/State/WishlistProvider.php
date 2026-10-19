@@ -13,20 +13,21 @@ use Webkul\BagistoApi\Models\Wishlist;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\ResolvesListSort;
 
-/**
- * WishlistProvider - Handles retrieval of wishlist items for authenticated customers
- *
- * Filters wishlist items by current customer and channel with pagination support
- */
 class WishlistProvider implements ProviderInterface
 {
     use ClampsPageSize;
     use ResolvesListSort;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $customer = Auth::guard('sanctum')->user();

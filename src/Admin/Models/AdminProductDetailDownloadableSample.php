@@ -8,10 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Downloadable sample — nested sub-resource of AdminCatalogProduct
- * (`downloadableSamples` connection). `translations` is a nested connection.
- */
 #[ApiResource(
     shortName: 'AdminProductDetailDownloadableSample',
     operations: [],
@@ -32,18 +28,27 @@ class AdminProductDetailDownloadableSample extends Model
         'sort_order' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get file url attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFileUrlAttribute(): ?string
     {
         return $this->file ? Storage::url($this->file) : null;
     }
 
+    /**
+     * Translations.
+     */
     #[ApiProperty(writable: false)]
     public function translations(): HasMany
     {

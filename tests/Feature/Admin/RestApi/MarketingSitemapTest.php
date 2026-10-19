@@ -10,77 +10,20 @@ use Webkul\Core\Models\CoreConfig;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for Admin Marketing → Sitemaps CRUD + generate (Block F3d).
- */
 class MarketingSitemapTest extends AdminApiTestCase
 {
-    protected function insertSitemap(array $overrides = []): int
-    {
-        $channels = $overrides['channels'] ?? [$this->defaultChannelId()];
-
-        unset($overrides['channels']);
-
-        $id = DB::table('sitemaps')->insertGetId(array_merge([
-            'file_name' => 'sitemap-'.uniqid().'.xml',
-            'path' => '/',
-            'generated_at' => null,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-
-        foreach ($channels as $channelId) {
-            DB::table('sitemap_channels')->insert([
-                'sitemap_id' => $id,
-                'channel_id' => $channelId,
-            ]);
-        }
-
-        return $id;
-    }
-
-    protected function defaultChannelId(): int
-    {
-        return (int) DB::table('channels')->orderBy('id')->value('id');
-    }
-
-    protected function adminPut(Admin $admin, string $url, array $data = []): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin));
-    }
-
-    protected function adminDelete(Admin $admin, string $url): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin));
-    }
-
-    protected function createAdminWithoutPermissions(): Admin
-    {
-        $role = Role::create([
-            'name' => 'Limited '.uniqid(),
-            'description' => 'no sitemap perms',
-            'permission_type' => 'custom',
-            'permissions' => ['catalog.products'],
-        ]);
-
-        return $this->createAdmin(['role_id' => $role->id]);
-    }
-
-    protected function basePayload(array $overrides = []): array
-    {
-        return array_merge([
-            'file_name' => 'api-sitemap-'.uniqid().'.xml',
-            'path' => '/',
-            'channels' => [$this->defaultChannelId()],
-        ], $overrides);
-    }
-
+    /**
+     * Test listing requires admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
         $this->publicGet('/api/admin/marketing/sitemaps')->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -93,6 +36,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         expect($response->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total', 'from', 'to']);
     }
 
+    /**
+     * Test listing row shape.
+     */
     public function test_listing_row_shape(): void
     {
         $admin = $this->createAdmin();
@@ -104,6 +50,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         expect($row)->toHaveKeys(['id', 'fileName', 'path', 'generatedAt']);
     }
 
+    /**
+     * Test filter by file name.
+     */
     public function test_filter_by_file_name(): void
     {
         $admin = $this->createAdmin();
@@ -116,6 +65,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test sort by file name asc.
+     */
     public function test_sort_by_file_name_asc(): void
     {
         $admin = $this->createAdmin();
@@ -135,6 +87,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test per page cap.
+     */
     public function test_per_page_cap(): void
     {
         $admin = $this->createAdmin();
@@ -143,6 +98,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test detail returns payload.
+     */
     public function test_detail_returns_payload(): void
     {
         $admin = $this->createAdmin();
@@ -158,12 +116,18 @@ class MarketingSitemapTest extends AdminApiTestCase
         expect($response->json('path'))->toBe('/');
     }
 
+    /**
+     * Test detail unknown id returns 404.
+     */
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/marketing/sitemaps/999999')->assertStatus(404);
     }
 
+    /**
+     * Test detail requires admin token.
+     */
     public function test_detail_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -171,6 +135,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         $this->publicGet('/api/admin/marketing/sitemaps/'.$id)->assertStatus(401);
     }
 
+    /**
+     * Test create happy path.
+     */
     public function test_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -185,6 +152,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test create assigns the channels.
+     */
     public function test_create_assigns_the_channels(): void
     {
         $admin = $this->createAdmin();
@@ -206,6 +176,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         expect($response->json('channels'))->toBe([$channelId]);
     }
 
+    /**
+     * Test create without channels returns 422.
+     */
     public function test_create_without_channels_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -215,6 +188,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         $this->adminPost($admin, '/api/admin/marketing/sitemaps', $payload)->assertStatus(422);
     }
 
+    /**
+     * Test create with an unknown channel returns 422.
+     */
     public function test_create_with_an_unknown_channel_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -224,6 +200,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         ]))->assertStatus(422);
     }
 
+    /**
+     * Test update replaces the channels.
+     */
     public function test_update_replaces_the_channels(): void
     {
         $admin = $this->createAdmin();
@@ -256,6 +235,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test update without channels keeps the stored ones.
+     */
     public function test_update_without_channels_keeps_the_stored_ones(): void
     {
         $admin = $this->createAdmin();
@@ -278,6 +260,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test detail carries channels and index urls.
+     */
     public function test_detail_carries_channels_and_index_urls(): void
     {
         $admin = $this->createAdmin();
@@ -299,6 +284,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         expect($response->json('urls.0'))->toContain('urls-sm-'.$id.'-'.$channelId.'.xml');
     }
 
+    /**
+     * Test filter by channel id.
+     */
     public function test_filter_by_channel_id(): void
     {
         $admin = $this->createAdmin();
@@ -322,6 +310,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         expect($ids)->not->toContain($orphan);
     }
 
+    /**
+     * Test generate without channels returns 422.
+     */
     public function test_generate_without_channels_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -330,6 +321,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         $this->adminPost($admin, '/api/admin/marketing/sitemaps/'.$id.'/generate')->assertStatus(422);
     }
 
+    /**
+     * Test create missing file name returns 422.
+     */
     public function test_create_missing_file_name_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -338,6 +332,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         $this->adminPost($admin, '/api/admin/marketing/sitemaps', $payload)->assertStatus(422);
     }
 
+    /**
+     * Test create invalid file name extension returns 422.
+     */
     public function test_create_invalid_file_name_extension_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -346,6 +343,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         ]))->assertStatus(422);
     }
 
+    /**
+     * Test create missing path returns 422.
+     */
     public function test_create_missing_path_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -354,6 +354,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         $this->adminPost($admin, '/api/admin/marketing/sitemaps', $payload)->assertStatus(422);
     }
 
+    /**
+     * Test create invalid path returns 422.
+     */
     public function test_create_invalid_path_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -362,18 +365,27 @@ class MarketingSitemapTest extends AdminApiTestCase
         ]))->assertStatus(422);
     }
 
+    /**
+     * Test create requires admin token.
+     */
     public function test_create_requires_admin_token(): void
     {
         $this->seedRequiredData();
         $this->publicPost('/api/admin/marketing/sitemaps', $this->basePayload())->assertStatus(401);
     }
 
+    /**
+     * Test create requires permission.
+     */
     public function test_create_requires_permission(): void
     {
         $admin = $this->createAdminWithoutPermissions();
         $this->adminPost($admin, '/api/admin/marketing/sitemaps', $this->basePayload())->assertStatus(403);
     }
 
+    /**
+     * Test update happy path.
+     */
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -389,12 +401,18 @@ class MarketingSitemapTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test update unknown id returns 404.
+     */
     public function test_update_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminPut($admin, '/api/admin/marketing/sitemaps/999999', $this->basePayload())->assertStatus(404);
     }
 
+    /**
+     * Test update invalid file name returns 422.
+     */
     public function test_update_invalid_file_name_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -404,6 +422,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         ]))->assertStatus(422);
     }
 
+    /**
+     * Test update requires permission.
+     */
     public function test_update_requires_permission(): void
     {
         $id = $this->insertSitemap();
@@ -411,6 +432,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         $this->adminPut($admin, '/api/admin/marketing/sitemaps/'.$id, $this->basePayload())->assertStatus(403);
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -421,6 +445,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         $this->assertDatabaseMissing('sitemaps', ['id' => $id]);
     }
 
+    /**
+     * Test delete removes storage files.
+     */
     public function test_delete_removes_storage_files(): void
     {
         Storage::fake('local');
@@ -450,12 +477,18 @@ class MarketingSitemapTest extends AdminApiTestCase
         Storage::assertMissing($indexPath);
     }
 
+    /**
+     * Test delete unknown id returns 404.
+     */
     public function test_delete_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminDelete($admin, '/api/admin/marketing/sitemaps/999999')->assertStatus(404);
     }
 
+    /**
+     * Test delete requires permission.
+     */
     public function test_delete_requires_permission(): void
     {
         $id = $this->insertSitemap();
@@ -463,6 +496,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         $this->adminDelete($admin, '/api/admin/marketing/sitemaps/'.$id)->assertStatus(403);
     }
 
+    /**
+     * Test generate happy path.
+     */
     public function test_generate_happy_path(): void
     {
         Storage::fake('public');
@@ -498,12 +534,18 @@ class MarketingSitemapTest extends AdminApiTestCase
         expect($row->generated_at)->not->toBeNull();
     }
 
+    /**
+     * Test generate unknown id returns 404.
+     */
     public function test_generate_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/marketing/sitemaps/999999/generate')->assertStatus(404);
     }
 
+    /**
+     * Test generate requires admin token.
+     */
     public function test_generate_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -511,10 +553,91 @@ class MarketingSitemapTest extends AdminApiTestCase
         $this->publicPost('/api/admin/marketing/sitemaps/'.$id.'/generate')->assertStatus(401);
     }
 
+    /**
+     * Test generate requires permission.
+     */
     public function test_generate_requires_permission(): void
     {
         $id = $this->insertSitemap();
         $admin = $this->createAdminWithoutPermissions();
         $this->adminPost($admin, '/api/admin/marketing/sitemaps/'.$id.'/generate')->assertStatus(403);
+    }
+
+    /**
+     * Insert sitemap.
+     */
+    protected function insertSitemap(array $overrides = []): int
+    {
+        $channels = $overrides['channels'] ?? [$this->defaultChannelId()];
+
+        unset($overrides['channels']);
+
+        $id = DB::table('sitemaps')->insertGetId(array_merge([
+            'file_name' => 'sitemap-'.uniqid().'.xml',
+            'path' => '/',
+            'generated_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+
+        foreach ($channels as $channelId) {
+            DB::table('sitemap_channels')->insert([
+                'sitemap_id' => $id,
+                'channel_id' => $channelId,
+            ]);
+        }
+
+        return $id;
+    }
+
+    /**
+     * Default channel id.
+     */
+    protected function defaultChannelId(): int
+    {
+        return (int) DB::table('channels')->orderBy('id')->value('id');
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = []): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin));
+    }
+
+    /**
+     * Create admin without permissions.
+     */
+    protected function createAdminWithoutPermissions(): Admin
+    {
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no sitemap perms',
+            'permission_type' => 'custom',
+            'permissions' => ['catalog.products'],
+        ]);
+
+        return $this->createAdmin(['role_id' => $role->id]);
+    }
+
+    /**
+     * Base payload.
+     */
+    protected function basePayload(array $overrides = []): array
+    {
+        return array_merge([
+            'file_name' => 'api-sitemap-'.uniqid().'.xml',
+            'path' => '/',
+            'channels' => [$this->defaultChannelId()],
+        ], $overrides);
     }
 }

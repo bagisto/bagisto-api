@@ -9,12 +9,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionMediaProcessor;
 
-/**
- * One uploaded image or video for a section. The returned path is what a client records
- * in the section's options.
- *
- * REST only — a binary upload is not transportable over JSON GraphQL.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAppearanceSectionMedia',
@@ -77,9 +71,15 @@ class AdminAppearanceSectionMedia
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The section id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $section_id = null;
 
+    /**
+     * The path.
+     */
     public ?string $path = null;
 
     /**
@@ -87,5 +87,8 @@ class AdminAppearanceSectionMedia
      */
     public ?string $type = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

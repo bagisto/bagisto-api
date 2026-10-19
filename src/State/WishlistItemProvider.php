@@ -11,6 +11,9 @@ use Webkul\BagistoApi\Models\Wishlist;
 
 class WishlistItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         $customer = Auth::guard('sanctum')->user();

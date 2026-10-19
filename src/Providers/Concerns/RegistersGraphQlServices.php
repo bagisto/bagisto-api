@@ -80,7 +80,6 @@ trait RegistersGraphQlServices
         $this->app->tag(CheckoutMessageQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CustomerQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminProfileQueryResolver::class, QueryItemResolverInterface::class);
-        // Dashboard + Block E — Reporting (read-only providers + resolvers)
         $this->app->tag(AdminDashboardQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminReportingOverviewQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminReportingSalesQueryResolver::class, QueryItemResolverInterface::class);
@@ -92,11 +91,6 @@ trait RegistersGraphQlServices
 
         $this->app->singleton(AdminConfigurationSchemaResolver::class);
         $this->app->tag(AdminConfigurationMenuQueryResolver::class, QueryItemResolverInterface::class);
-        // These resolvers reach the section repository through their providers, and every
-        // tagged resolver is instantiated when the schema is built.
-        //
-        // BACKWARD COMPATIBILITY: unwrap this condition when the minimum supported core is
-        // 2.4.10. The older theme surface has no resolvers — it uses BaseQueryItemResolver.
         if (app(CoreCapabilities::class)->hasAppearanceSections()) {
             $this->app->tag(ThemeQueryResolver::class, QueryItemResolverInterface::class);
             $this->app->tag(AdminAppearanceThemeQueryResolver::class, QueryItemResolverInterface::class);

@@ -22,28 +22,23 @@ use Webkul\CMS\Models\Page;
 use Webkul\CMS\Repositories\PageRepository;
 use Webkul\Core\Repositories\ChannelRepository;
 
-/**
- * Handles POST, PUT, DELETE on the AdminCmsPage resource (Phase 2 — CRUD).
- *
- * Mirrors Webkul\Admin\Http\Controllers\CMS\PageController::
- *   store() / update() / delete()
- * — validation rules, slug regex (replacing the fatal core Slug rule), events.
- *
- * Permission resolution mirrors AdminCategoryProcessor: read role->permission_type
- * / role->permissions directly. Never call bouncer() (Sanctum-token requests have
- * no session-bound admin).
- */
 class AdminCmsPageProcessor implements ProcessorInterface
 {
     /** Slug regex used in place of \Webkul\Core\Rules\Slug (which is fatal in API context). */
     protected const SLUG_REGEX = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected PageRepository $pageRepository,
         protected ChannelRepository $channelRepository,
         protected AdminCmsPageItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -99,6 +94,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input, bool $isGraphQL = false): mixed
     {
         $this->validateCreatePayload($input);
@@ -120,6 +118,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return $this->fetchAndMap((int) $page->id, $isGraphQL);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): mixed
     {
         $page = Page::find($id);
@@ -148,6 +149,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return $this->fetchAndMap($id, $isGraphQL);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false)
     {
         $page = Page::find($id);
@@ -180,6 +184,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return $snapshot;
     }
 
+    /**
+     * Validate create payload.
+     */
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
@@ -205,6 +212,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         $this->validateChannels($input['channels'] ?? []);
     }
 
+    /**
+     * Validate update payload.
+     */
     protected function validateUpdatePayload(array $input, int $excludeId): void
     {
         $locale = $input['locale'] ?? app()->getLocale();
@@ -233,6 +243,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         $this->validateChannels($input['channels'] ?? []);
     }
 
+    /**
+     * Validate channels.
+     */
     protected function validateChannels(array $channels): void
     {
         if (empty($channels)) {
@@ -252,6 +265,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -279,6 +295,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -294,6 +313,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -306,6 +328,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -364,6 +389,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Fetch and map.
+     */
     protected function fetchAndMap(int $id, bool $isGraphQL = false): mixed
     {
         if ($isGraphQL) {

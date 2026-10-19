@@ -5,12 +5,6 @@ namespace Webkul\BagistoApi\Models;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Customer Invoice Item — nested API resource (no standalone endpoints).
- *
- * Exposed only as a relationship of CustomerInvoice.
- * Points to the `invoice_items` table with explicit field casts.
- */
 #[ApiResource(
     shortName: 'CustomerInvoiceItem',
     operations: [],
@@ -46,12 +40,11 @@ class CustomerInvoiceItem extends Model
     ];
 
     /**
-     * toArray override to ensure all properties are included
+     * toArray override to ensure all properties are included.
      */
     public function toArray(): array
     {
         $array = parent::toArray();
-        // Ensure all fields are explicitly included for GraphQL
         $array['id'] = $this->id;
         $array['sku'] = $this->sku;
         $array['name'] = $this->name;

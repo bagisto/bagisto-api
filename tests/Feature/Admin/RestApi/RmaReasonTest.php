@@ -7,27 +7,9 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class RmaReasonTest extends AdminApiTestCase
 {
-    private function createReason(string $title = 'Wrong size', array $resolutions = ['return']): int
-    {
-        $id = DB::table('rma_reasons')->insertGetId([
-            'title' => $title,
-            'status' => 1,
-            'position' => 1,
-            'is_admin' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        foreach ($resolutions as $r) {
-            DB::table('rma_reason_resolutions')->insert([
-                'rma_reason_id' => $id,
-                'resolution_type' => $r,
-            ]);
-        }
-
-        return $id;
-    }
-
+    /**
+     * Test create.
+     */
     public function test_create(): void
     {
         $admin = $this->createAdmin();
@@ -45,6 +27,9 @@ class RmaReasonTest extends AdminApiTestCase
         $this->assertDatabaseHas('rma_reasons', ['title' => 'Defective item']);
     }
 
+    /**
+     * Test create validation.
+     */
     public function test_create_validation(): void
     {
         $admin = $this->createAdmin();
@@ -57,6 +42,9 @@ class RmaReasonTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test list and get.
+     */
     public function test_list_and_get(): void
     {
         $admin = $this->createAdmin();
@@ -73,6 +61,9 @@ class RmaReasonTest extends AdminApiTestCase
         expect($get->json('resolutionType'))->toContain('return');
     }
 
+    /**
+     * Test update.
+     */
     public function test_update(): void
     {
         $admin = $this->createAdmin();
@@ -94,6 +85,9 @@ class RmaReasonTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test delete.
+     */
     public function test_delete(): void
     {
         $admin = $this->createAdmin();
@@ -105,6 +99,9 @@ class RmaReasonTest extends AdminApiTestCase
         $this->assertDatabaseMissing('rma_reasons', ['id' => $id]);
     }
 
+    /**
+     * Test mass delete.
+     */
     public function test_mass_delete(): void
     {
         $admin = $this->createAdmin();
@@ -118,6 +115,9 @@ class RmaReasonTest extends AdminApiTestCase
         $this->assertDatabaseMissing('rma_reasons', ['id' => $b]);
     }
 
+    /**
+     * Test mass update status.
+     */
     public function test_mass_update_status(): void
     {
         $admin = $this->createAdmin();
@@ -134,5 +134,29 @@ class RmaReasonTest extends AdminApiTestCase
             'id' => $a,
             'status' => 0,
         ]);
+    }
+
+    /**
+     * Create reason.
+     */
+    private function createReason(string $title = 'Wrong size', array $resolutions = ['return']): int
+    {
+        $id = DB::table('rma_reasons')->insertGetId([
+            'title' => $title,
+            'status' => 1,
+            'position' => 1,
+            'is_admin' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        foreach ($resolutions as $r) {
+            DB::table('rma_reason_resolutions')->insert([
+                'rma_reason_id' => $id,
+                'resolution_type' => $r,
+            ]);
+        }
+
+        return $id;
     }
 }

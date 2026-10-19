@@ -14,17 +14,16 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\CMS\Models\Page;
 use Webkul\CMS\Repositories\PageRepository;
 
-/**
- * POST /api/admin/cms/pages/mass-delete + createAdminCmsPageMassDelete.
- *
- * Mirrors Webkul\Admin\Http\Controllers\CMS\PageController::massDelete:
- *   - Iterate indices, fire before/after events per id, delete each one.
- *   - Non-existent IDs are silently skipped (mirrors monolith).
- */
 class AdminCmsPageMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected PageRepository $pageRepository) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -71,6 +70,9 @@ class AdminCmsPageMassDeleteProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -98,6 +100,9 @@ class AdminCmsPageMassDeleteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

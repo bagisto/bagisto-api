@@ -66,10 +66,19 @@ use Webkul\BagistoApi\Admin\State\AdminReturnReasonProvider;
 )]
 class AdminReturnReason
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The title.
+     */
     public ?string $title = null;
 
+    /**
+     * The position.
+     */
     public ?int $position = null;
 }

@@ -5,18 +5,15 @@ namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
-/**
- * C2 — auth parity for the GraphQL surface.
- *
- * Mirrors the REST audit: every customer-guarded Shop query must answer with an `errors[]` entry
- * when no customer token is presented, and every public query must answer with data.
- */
 class AuthParityTest extends GraphQLTestCase
 {
     // ====
     // Guarded queries refuse an anonymous caller
     // ====
 
+    /**
+     * Test every customer guarded query refuses an anonymous caller.
+     */
     public function test_every_customer_guarded_query_refuses_an_anonymous_caller(): void
     {
         $this->enableGdpr();
@@ -68,6 +65,9 @@ class AuthParityTest extends GraphQLTestCase
         }
     }
 
+    /**
+     * Test logout mutation refuses an anonymous caller.
+     */
     public function test_logout_mutation_refuses_an_anonymous_caller(): void
     {
         $mutation = <<<'GQL'
@@ -89,6 +89,9 @@ class AuthParityTest extends GraphQLTestCase
         expect($response->json('data.createLogout.logout.message'))->not->toBeEmpty();
     }
 
+    /**
+     * Test gdpr request mutation refuses an anonymous caller.
+     */
     public function test_gdpr_request_mutation_refuses_an_anonymous_caller(): void
     {
         $mutation = <<<'GQL'
@@ -108,6 +111,9 @@ class AuthParityTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test customer return mutation refuses an anonymous caller.
+     */
     public function test_customer_return_mutation_refuses_an_anonymous_caller(): void
     {
         $mutation = <<<'GQL'
@@ -127,6 +133,9 @@ class AuthParityTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test wishlist mutation refuses an anonymous caller.
+     */
     public function test_wishlist_mutation_refuses_an_anonymous_caller(): void
     {
         $mutation = <<<'GQL'
@@ -146,6 +155,9 @@ class AuthParityTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test eu withdrawal mutation refuses an anonymous caller.
+     */
     public function test_eu_withdrawal_mutation_refuses_an_anonymous_caller(): void
     {
         $mutation = <<<'GQL'
@@ -169,6 +181,9 @@ class AuthParityTest extends GraphQLTestCase
     // Public queries answer an anonymous caller
     // ====
 
+    /**
+     * Test public queries answer an anonymous caller.
+     */
     public function test_public_queries_answer_an_anonymous_caller(): void
     {
         $public = [
@@ -199,6 +214,9 @@ class AuthParityTest extends GraphQLTestCase
         }
     }
 
+    /**
+     * Test product query carries no customer identity.
+     */
     public function test_product_query_carries_no_customer_identity(): void
     {
         $this->seedRequiredData();

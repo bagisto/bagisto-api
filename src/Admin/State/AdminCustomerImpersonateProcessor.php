@@ -13,19 +13,11 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Customer\Models\Customer;
 
-/**
- * Issues a Sanctum customer token bound to the target customer.
- *
- * Audit:
- *   - Token name carries the admin id: "admin-impersonate:{adminId}"
- *   - Token ability includes "impersonated-by-admin:{adminId}"
- *   - expires_at = now() + 1 hour
- *
- * Customers use Webkul\Customer\Models\Customer (HasApiTokens trait) — the same
- * Sanctum personal_access_tokens table the storefront API uses.
- */
 class AdminCustomerImpersonateProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -74,6 +66,9 @@ class AdminCustomerImpersonateProcessor implements ProcessorInterface
         return $dto;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin): void
     {
         $role = $admin->role ?? null;

@@ -16,13 +16,6 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CustomerInvoiceProvider;
 use Webkul\Sales\Models\Order;
 
-/**
- * Customer Invoice API Resource
- *
- * Returns invoices belonging to authenticated customer's orders.
- * Read-only, customer-scoped via order relationship.
- * Supports PDF download via separate route.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomerInvoice',
@@ -138,8 +131,7 @@ class CustomerInvoice extends Model
 
     /**
      * Download URL for the invoice PDF
-     * Using Eloquent accessor pattern so it's automatically included in toArray()
-     * Routes through BagistoApi endpoint with bearer token authentication
+     * Using Eloquent accessor pattern so it's automatically included in toArray().
      */
     public function getDownloadUrlAttribute(): string
     {
@@ -156,7 +148,7 @@ class CustomerInvoice extends Model
 
     /**
      * Get the invoice items (top-level only).
-     * Returns HasMany relationship for queries, but provides array access via toArray()
+     * Returns HasMany relationship for queries, but provides array access via toArray().
      */
     public function items(): HasMany
     {
@@ -174,7 +166,7 @@ class CustomerInvoice extends Model
     }
 
     /**
-     * Ensure downloadUrl is included in array serialization for GraphQL
+     * Ensure downloadUrl is included in array serialization for GraphQL.
      */
     public function toArray(): array
     {

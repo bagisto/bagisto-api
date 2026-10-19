@@ -8,12 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCartRuleCoupon;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Placeholder provider so API Platform can route DELETE through the processor
- * without trying to load a real Eloquent entity.
- */
 class AdminMarketingCartRuleCouponWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminMarketingCartRuleCoupon
     {
         if (! AdminAuthHelper::resolveAdmin()) {

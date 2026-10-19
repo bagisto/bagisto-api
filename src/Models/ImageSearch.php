@@ -77,14 +77,23 @@ use Webkul\BagistoApi\State\ImageSearchProcessor;
 )]
 class ImageSearch
 {
+    /**
+     * The image url.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $imageUrl = null;
 
+    /**
+     * The keywords.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public string $keywords = '';
 
+    /**
+     * The engine.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public string $engine = 'tensorflow';

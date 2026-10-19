@@ -5,12 +5,11 @@ namespace Webkul\BagistoApi\Admin\DataGrids;
 use Illuminate\Support\Facades\DB;
 use Webkul\DataGrid\DataGrid;
 
-/**
- * Integration → History datagrid: admin-API changes (who / what / when),
- * with search, filters and a permission-gated delete.
- */
 class AuditHistoryDataGrid extends DataGrid
 {
+    /**
+     * Prepare query builder.
+     */
     public function prepareQueryBuilder()
     {
         return DB::table('admin_api_audits')
@@ -23,6 +22,9 @@ class AuditHistoryDataGrid extends DataGrid
             );
     }
 
+    /**
+     * Prepare columns.
+     */
     public function prepareColumns()
     {
         $this->addColumn([
@@ -83,6 +85,9 @@ class AuditHistoryDataGrid extends DataGrid
         ]);
     }
 
+    /**
+     * Prepare actions.
+     */
     public function prepareActions()
     {
         $this->addAction([
@@ -93,6 +98,9 @@ class AuditHistoryDataGrid extends DataGrid
         ]);
     }
 
+    /**
+     * Prepare mass actions.
+     */
     public function prepareMassActions()
     {
         if (bouncer()->hasPermission('integration.history.delete')) {

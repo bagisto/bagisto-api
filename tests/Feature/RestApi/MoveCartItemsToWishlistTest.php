@@ -7,33 +7,9 @@ use Webkul\Checkout\Repositories\CartRepository;
 
 class MoveCartItemsToWishlistTest extends RestApiTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->app['url']->forceRootUrl('http://localhost');
-    }
-
-    private function createCustomerCartWithItem(): array
-    {
-        $this->seedRequiredData();
-
-        $customer = $this->createCustomer();
-        $product = $this->createTestProduct()['product'];
-
-        $this->authenticatedPost($customer, '/api/shop/add-product-in-cart', [
-            'productId' => $product->id,
-            'quantity' => 1,
-        ])->assertSuccessful();
-
-        $cart = app(CartRepository::class)->findOneWhere([
-            'customer_id' => $customer->id,
-            'is_active' => 1,
-        ]);
-
-        return [$customer, $cart->items()->first(), $product];
-    }
-
+    /**
+     * Test move cart item to wishlist removes it from the cart.
+     */
     public function test_move_cart_item_to_wishlist_removes_it_from_the_cart(): void
     {
         [$customer, $cartItem, $product] = $this->createCustomerCartWithItem();
@@ -52,6 +28,9 @@ class MoveCartItemsToWishlistTest extends RestApiTestCase
         ]);
     }
 
+    /**
+     * Test move to wishlist requires item ids.
+     */
     public function test_move_to_wishlist_requires_item_ids(): void
     {
         [$customer, $cartItem] = $this->createCustomerCartWithItem();
@@ -65,6 +44,9 @@ class MoveCartItemsToWishlistTest extends RestApiTestCase
         $this->assertDatabaseHas('cart_items', ['id' => $cartItem->id]);
     }
 
+    /**
+     * Test customer cannot move another customers cart item to their wishlist.
+     */
     public function test_customer_cannot_move_another_customers_cart_item_to_their_wishlist(): void
     {
         [$owner, $cartItem, $product] = $this->createCustomerCartWithItem();
@@ -86,5 +68,38 @@ class MoveCartItemsToWishlistTest extends RestApiTestCase
             'customer_id' => $owner->id,
             'product_id' => $product->id,
         ]);
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app['url']->forceRootUrl('http://localhost');
+    }
+
+    /**
+     * Create customer cart with item.
+     */
+    private function createCustomerCartWithItem(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $product = $this->createTestProduct()['product'];
+
+        $this->authenticatedPost($customer, '/api/shop/add-product-in-cart', [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ])->assertSuccessful();
+
+        $cart = app(CartRepository::class)->findOneWhere([
+            'customer_id' => $customer->id,
+            'is_active' => 1,
+        ]);
+
+        return [$customer, $cart->items()->first(), $product];
     }
 }

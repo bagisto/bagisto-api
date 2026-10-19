@@ -8,11 +8,11 @@ use Webkul\BagistoApi\Admin\Models\AdminProfile;
 use Webkul\BagistoApi\Admin\State\AdminProfileProvider;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 
-/**
- * GraphQL resolver for the authenticated admin profile query.
- */
 class AdminProfileQueryResolver implements QueryItemResolverInterface
 {
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?object $item, array $context): AdminProfile
     {
         $admin = AdminAuthHelper::resolveAdmin();

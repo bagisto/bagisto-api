@@ -6,13 +6,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 
-/**
- * C2 — auth parity for the REST surface.
- *
- * Every customer-guarded Shop feature must refuse a caller that presents no customer token, and
- * every public feature must answer one. The refusal status is 401 for a missing/invalid token and
- * 403 for a token that is valid but carries no customer; both count as "refused".
- */
 class AuthParityTest extends RestApiTestCase
 {
     /**
@@ -87,6 +80,9 @@ class AuthParityTest extends RestApiTestCase
     // Guarded endpoints refuse an anonymous caller
     // ====
 
+    /**
+     * Test every customer guarded collection refuses an anonymous caller.
+     */
     public function test_every_customer_guarded_collection_refuses_an_anonymous_caller(): void
     {
         $this->enableGdpr();
@@ -99,6 +95,9 @@ class AuthParityTest extends RestApiTestCase
         }
     }
 
+    /**
+     * Test customer profile refuses an anonymous caller.
+     */
     public function test_customer_profile_refuses_an_anonymous_caller(): void
     {
         $response = $this->publicGet('/api/shop/customer-profile');
@@ -109,6 +108,9 @@ class AuthParityTest extends RestApiTestCase
         expect($response->json('detail'))->not->toBeEmpty();
     }
 
+    /**
+     * Test logout refuses an anonymous caller.
+     */
     public function test_logout_refuses_an_anonymous_caller(): void
     {
         $response = $this->publicPost('/api/shop/customer/logout');
@@ -118,6 +120,9 @@ class AuthParityTest extends RestApiTestCase
         expect($response->json('message'))->not->toBeEmpty();
     }
 
+    /**
+     * Test order cancel refuses an anonymous caller.
+     */
     public function test_order_cancel_refuses_an_anonymous_caller(): void
     {
         $response = $this->publicPost('/api/shop/cancel-order', ['order_id' => 1]);
@@ -126,6 +131,9 @@ class AuthParityTest extends RestApiTestCase
             ->toBeTrue('cancel-order answered '.$response->getStatusCode().' to an anonymous caller');
     }
 
+    /**
+     * Test reorder refuses an anonymous caller.
+     */
     public function test_reorder_refuses_an_anonymous_caller(): void
     {
         $response = $this->publicPost('/api/shop/reorder', ['order_id' => 1]);
@@ -134,6 +142,9 @@ class AuthParityTest extends RestApiTestCase
             ->toBeTrue('reorder answered '.$response->getStatusCode().' to an anonymous caller');
     }
 
+    /**
+     * Test gdpr request create refuses an anonymous caller.
+     */
     public function test_gdpr_request_create_refuses_an_anonymous_caller(): void
     {
         $this->enableGdpr();
@@ -147,6 +158,9 @@ class AuthParityTest extends RestApiTestCase
             ->toBeTrue('gdpr-requests answered '.$response->getStatusCode().' to an anonymous caller');
     }
 
+    /**
+     * Test return create refuses an anonymous caller.
+     */
     public function test_return_create_refuses_an_anonymous_caller(): void
     {
         $response = $this->publicPost('/api/shop/returns', ['order_id' => 1]);
@@ -155,6 +169,9 @@ class AuthParityTest extends RestApiTestCase
             ->toBeTrue('returns answered '.$response->getStatusCode().' to an anonymous caller');
     }
 
+    /**
+     * Test eu withdrawal create refuses an anonymous caller.
+     */
     public function test_eu_withdrawal_create_refuses_an_anonymous_caller(): void
     {
         $response = $this->publicPost('/api/shop/eu-withdrawals', ['order_id' => 1]);
@@ -163,6 +180,9 @@ class AuthParityTest extends RestApiTestCase
             ->toBeTrue('eu-withdrawals answered '.$response->getStatusCode().' to an anonymous caller');
     }
 
+    /**
+     * Test wishlist toggle refuses an anonymous caller.
+     */
     public function test_wishlist_toggle_refuses_an_anonymous_caller(): void
     {
         $response = $this->publicPost('/api/shop/wishlists/toggle', ['product_id' => 1]);
@@ -171,6 +191,9 @@ class AuthParityTest extends RestApiTestCase
             ->toBeTrue('wishlists/toggle answered '.$response->getStatusCode().' to an anonymous caller');
     }
 
+    /**
+     * Test delete all wishlists refuses an anonymous caller.
+     */
     public function test_delete_all_wishlists_refuses_an_anonymous_caller(): void
     {
         $response = $this->publicPost('/api/shop/delete-all-wishlists');
@@ -179,6 +202,9 @@ class AuthParityTest extends RestApiTestCase
             ->toBeTrue('delete-all-wishlists answered '.$response->getStatusCode().' to an anonymous caller');
     }
 
+    /**
+     * Test payment methods refuses a caller without a cart token.
+     */
     public function test_payment_methods_refuses_a_caller_without_a_cart_token(): void
     {
         $response = $this->publicGet('/api/shop/payment-methods');
@@ -191,6 +217,9 @@ class AuthParityTest extends RestApiTestCase
     // Public endpoints answer an anonymous caller
     // ====
 
+    /**
+     * Test every public collection answers an anonymous caller.
+     */
     public function test_every_public_collection_answers_an_anonymous_caller(): void
     {
         foreach (self::PUBLIC_COLLECTIONS as $url) {
@@ -200,6 +229,9 @@ class AuthParityTest extends RestApiTestCase
         }
     }
 
+    /**
+     * Test public post endpoints answer an anonymous caller.
+     */
     public function test_public_post_endpoints_answer_an_anonymous_caller(): void
     {
         $this->seedRequiredData();
@@ -213,6 +245,9 @@ class AuthParityTest extends RestApiTestCase
         }
     }
 
+    /**
+     * Test product detail carries no customer identity.
+     */
     public function test_product_detail_carries_no_customer_identity(): void
     {
         $this->seedRequiredData();
@@ -229,6 +264,9 @@ class AuthParityTest extends RestApiTestCase
         }
     }
 
+    /**
+     * Test category list carries no customer identity.
+     */
     public function test_category_list_carries_no_customer_identity(): void
     {
         $json = (string) $this->publicGet('/api/shop/categories')->getContent();

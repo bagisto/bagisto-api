@@ -7,6 +7,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminAppearanceThemeActivateInput
 {
+    /**
+     * The code.
+     */
     #[ApiProperty(description: 'Theme code to activate')]
     #[Groups(['mutation'])]
     public ?string $code = null;

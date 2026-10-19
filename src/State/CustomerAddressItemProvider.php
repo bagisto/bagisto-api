@@ -12,11 +12,11 @@ use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Models\CustomerAddress;
 use Webkul\Customer\Models\Customer;
 
-/**
- * Serves a single customer address, scoped to the authenticated customer.
- */
 class CustomerAddressItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $request = Request::instance() ?? ($context['request'] ?? null);
@@ -51,6 +51,9 @@ class CustomerAddressItemProvider implements ProviderInterface
         return $address;
     }
 
+    /**
+     * Get customer id from token.
+     */
     private function getCustomerIdFromToken(string $token): ?int
     {
         try {

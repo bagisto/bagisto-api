@@ -9,73 +9,8 @@ use Webkul\Customer\Models\Customer;
 class CheckoutShippingPaymentTest extends RestApiTestCase
 {
     /**
-     * Add a product to the customer's cart so there is an active cart to work on.
+     * Test get shipping rates.
      */
-    private function addProductToCart(Customer $customer): void
-    {
-        $product = $this->createTestProduct()['product'];
-
-        $response = $this->authenticatedPost($customer, '/api/shop/add-product-in-cart', [
-            'productId' => $product->id,
-            'quantity' => 1,
-        ]);
-
-        $response->assertSuccessful();
-    }
-
-    /**
-     * Set billing + shipping address so the cart is ready for shipping/payment steps.
-     */
-    private function setAddress(Customer $customer): void
-    {
-        $response = $this->authenticatedPost($customer, '/api/shop/checkout-addresses', [
-            'billingFirstName' => 'John',
-            'billingLastName' => 'Doe',
-            'billingEmail' => 'john@example.com',
-            'billingAddress' => '123 Main St',
-            'billingCity' => 'Los Angeles',
-            'billingCountry' => 'IN',
-            'billingState' => 'UP',
-            'billingPostcode' => '201301',
-            'billingPhoneNumber' => '2125551234',
-            'useForShipping' => true,
-        ]);
-
-        $response->assertCreated();
-    }
-
-    private function enableGateway(string $method, array $settings): void
-    {
-        foreach ([
-            'active' => '1',
-            ...$settings,
-        ] as $field => $value) {
-            $code = "sales.payment_methods.{$method}.{$field}";
-
-            DB::table('core_config')->where('code', $code)->delete();
-
-            DB::table('core_config')->insert([
-                'code' => $code,
-                'value' => $value,
-                'channel_code' => core()->getRequestedChannelCode(),
-                'locale_code' => core()->getRequestedLocaleCode(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        $this->forgetCoreConfigCache();
-    }
-
-    private function createAuthenticatedCustomer(): Customer
-    {
-        $this->seedRequiredData();
-
-        return $this->createCustomer([
-            'token' => md5(uniqid((string) rand(), true)),
-        ]);
-    }
-
     public function test_get_shipping_rates(): void
     {
         $customer = $this->createAuthenticatedCustomer();
@@ -88,6 +23,9 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test get shipping rates requires auth.
+     */
     public function test_get_shipping_rates_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -97,6 +35,9 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403, 404, 500]))->toBeTrue();
     }
 
+    /**
+     * Test set shipping method.
+     */
     public function test_set_shipping_method(): void
     {
         $customer = $this->createAuthenticatedCustomer();
@@ -115,6 +56,9 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         expect($json['shippingMethod'])->toBe('flatrate_flatrate');
     }
 
+    /**
+     * Test set invalid shipping method returns error.
+     */
     public function test_set_invalid_shipping_method_returns_error(): void
     {
         $customer = $this->createAuthenticatedCustomer();
@@ -128,6 +72,9 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [400, 422, 500]))->toBeTrue();
     }
 
+    /**
+     * Test get payment methods.
+     */
     public function test_get_payment_methods(): void
     {
         $customer = $this->createAuthenticatedCustomer();
@@ -139,6 +86,9 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test get payment methods requires auth.
+     */
     public function test_get_payment_methods_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -148,13 +98,15 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403, 404, 500]))->toBeTrue();
     }
 
+    /**
+     * Test set payment method.
+     */
     public function test_set_payment_method(): void
     {
         $customer = $this->createAuthenticatedCustomer();
         $this->addProductToCart($customer);
         $this->setAddress($customer);
 
-        // Need shipping method before payment in the usual flow
         $this->authenticatedPost($customer, '/api/shop/checkout-shipping-methods', [
             'shippingMethod' => 'flatrate_flatrate',
         ]);
@@ -174,6 +126,9 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         expect($json['paymentMethod'])->toBe('moneytransfer');
     }
 
+    /**
+     * Test redirect gateway returns a payment gateway url.
+     */
     public function test_redirect_gateway_returns_a_payment_gateway_url(): void
     {
         $customer = $this->createAuthenticatedCustomer();
@@ -209,6 +164,9 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         }
     }
 
+    /**
+     * Test offline method returns no payment gateway url.
+     */
     public function test_offline_method_returns_no_payment_gateway_url(): void
     {
         $customer = $this->createAuthenticatedCustomer();
@@ -228,6 +186,9 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         expect($response->json('paymentGatewayUrl'))->toBeNull();
     }
 
+    /**
+     * Test set invalid payment method returns error.
+     */
     public function test_set_invalid_payment_method_returns_error(): void
     {
         $customer = $this->createAuthenticatedCustomer();
@@ -239,5 +200,79 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         ]);
 
         expect(in_array($response->getStatusCode(), [400, 422, 500]))->toBeTrue();
+    }
+
+    /**
+     * Add a product to the customer's cart so there is an active cart to work on.
+     */
+    private function addProductToCart(Customer $customer): void
+    {
+        $product = $this->createTestProduct()['product'];
+
+        $response = $this->authenticatedPost($customer, '/api/shop/add-product-in-cart', [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ]);
+
+        $response->assertSuccessful();
+    }
+
+    /**
+     * Set billing + shipping address so the cart is ready for shipping/payment steps.
+     */
+    private function setAddress(Customer $customer): void
+    {
+        $response = $this->authenticatedPost($customer, '/api/shop/checkout-addresses', [
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
+            'billingPhoneNumber' => '2125551234',
+            'useForShipping' => true,
+        ]);
+
+        $response->assertCreated();
+    }
+
+    /**
+     * Enable gateway.
+     */
+    private function enableGateway(string $method, array $settings): void
+    {
+        foreach ([
+            'active' => '1',
+            ...$settings,
+        ] as $field => $value) {
+            $code = "sales.payment_methods.{$method}.{$field}";
+
+            DB::table('core_config')->where('code', $code)->delete();
+
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+    }
+
+    /**
+     * Create authenticated customer.
+     */
+    private function createAuthenticatedCustomer(): Customer
+    {
+        $this->seedRequiredData();
+
+        return $this->createCustomer([
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
     }
 }

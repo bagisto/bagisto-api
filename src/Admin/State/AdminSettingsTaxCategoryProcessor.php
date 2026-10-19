@@ -23,28 +23,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Tax\Models\TaxCategory;
 use Webkul\Tax\Repositories\TaxCategoryRepository;
 
-/**
- * Handles POST, PUT, DELETE on AdminSettingsTaxCategory.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\Tax\TaxCategoryController:
- *   store / update / destroy. Events fired:
- *     tax.category.create.before / after
- *     tax.category.update.before / after
- *     tax.category.delete.before / after
- *
- * Permission resolution: Sanctum pattern — read role->permission_type /
- * role->permissions directly. Never calls bouncer().
- *
- * Delete guard (parity with monolith): refuses with HTTP 400 if any tax_rates
- * remain attached to the category.
- */
 class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected TaxCategoryRepository $taxCategoryRepository,
         protected AdminSettingsTaxCategoryItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -100,6 +91,9 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input, bool $isGraphQL = false): AdminSettingsTaxCategory|AdminSettingsTaxCategoryRestDto
     {
         $this->validateCreatePayload($input);
@@ -118,6 +112,9 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         return $this->buildResult((int) $taxCategory->id, $isGraphQL);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): AdminSettingsTaxCategory|AdminSettingsTaxCategoryRestDto
     {
         $taxCategory = TaxCategory::find($id);
@@ -143,6 +140,9 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         return $this->buildResult($id, $isGraphQL);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsTaxCategory
     {
         $taxCategory = TaxCategory::find($id);
@@ -203,6 +203,9 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         return $this->itemProvider->buildRestDtoPublic(TaxCategory::with('tax_rates')->find($id));
     }
 
+    /**
+     * Validate create payload.
+     */
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
@@ -222,6 +225,9 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Validate update payload.
+     */
     protected function validateUpdatePayload(array $input, int $id): void
     {
         $rules = [
@@ -241,6 +247,9 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -268,6 +277,9 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -283,6 +295,9 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -295,6 +310,9 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -312,8 +330,7 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
 
     /**
      * Normalise DTO + raw GraphQL args into the snake_case shape the validator
-     * and repository expect. (No camelCase mapping needed — all current fields
-     * are already snake_case or single-word.)
+     * and repository expect. (No camelCase mapping needed — all current fields.
      */
     protected function dtoToArray(object $dto, array $rawArgs = []): array
     {
@@ -338,6 +355,9 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Filter repository payload.
+     */
     protected function filterRepositoryPayload(array $input): array
     {
         unset($input['id']);

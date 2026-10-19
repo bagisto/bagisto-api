@@ -8,40 +8,30 @@ use Webkul\Customer\Models\CompareItem;
 use Webkul\Customer\Models\Customer;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for the Create-Order screen's three right-sidebar panels:
- * the customer's own active cart, wishlist, and recent order items.
- */
 class CustomerSidebarTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    protected function aCustomerWithActiveCart(): int
-    {
-        return $this->bootstrapCustomerWithActiveCart();
-    }
-
-    protected function aCustomerWithWishlist(): int
-    {
-        return $this->bootstrapCustomerWithWishlist();
-    }
-
-    protected function aCustomerWithOrders(): int
-    {
-        return $this->bootstrapCustomerWithOrders();
-    }
-
+    /**
+     * Test cart items requires authentication.
+     */
     public function test_cart_items_requires_authentication(): void
     {
         $this->publicGet('/api/admin/customers/1/cart-items')->assertStatus(401);
     }
 
+    /**
+     * Test cart items 404 for unknown customer.
+     */
     public function test_cart_items_404_for_unknown_customer(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/customers/999999999/cart-items')->assertStatus(404);
     }
 
+    /**
+     * Test cart items returns envelope.
+     */
     public function test_cart_items_returns_envelope(): void
     {
         $customerId = $this->aCustomerWithActiveCart();
@@ -55,11 +45,17 @@ class CustomerSidebarTest extends AdminApiTestCase
         expect($response->json('data.0'))->toHaveKeys(['id', 'productId', 'sku', 'type', 'name', 'quantity', 'price']);
     }
 
+    /**
+     * Test wishlist requires authentication.
+     */
     public function test_wishlist_requires_authentication(): void
     {
         $this->publicGet('/api/admin/customers/1/wishlist-items')->assertStatus(401);
     }
 
+    /**
+     * Test wishlist returns envelope.
+     */
     public function test_wishlist_returns_envelope(): void
     {
         $customerId = $this->aCustomerWithWishlist();
@@ -73,11 +69,17 @@ class CustomerSidebarTest extends AdminApiTestCase
         expect($response->json('data.0'))->toHaveKeys(['id', 'productId', 'sku', 'name', 'price', 'productImage']);
     }
 
+    /**
+     * Test recent order items requires authentication.
+     */
     public function test_recent_order_items_requires_authentication(): void
     {
         $this->publicGet('/api/admin/customers/1/recent-order-items')->assertStatus(401);
     }
 
+    /**
+     * Test recent order items returns at most five.
+     */
     public function test_recent_order_items_returns_at_most_five(): void
     {
         $customerId = $this->aCustomerWithOrders();
@@ -147,6 +149,30 @@ class CustomerSidebarTest extends AdminApiTestCase
 
         $this->adminGet($admin, '/api/admin/customers/'.$customer->id.'/compare-items', $this->adminTokenSameAsWeb($admin))
             ->assertStatus(403);
+    }
+
+    /**
+     * A customer with active cart.
+     */
+    protected function aCustomerWithActiveCart(): int
+    {
+        return $this->bootstrapCustomerWithActiveCart();
+    }
+
+    /**
+     * A customer with wishlist.
+     */
+    protected function aCustomerWithWishlist(): int
+    {
+        return $this->bootstrapCustomerWithWishlist();
+    }
+
+    /**
+     * A customer with orders.
+     */
+    protected function aCustomerWithOrders(): int
+    {
+        return $this->bootstrapCustomerWithOrders();
     }
 
     /**

@@ -7,19 +7,9 @@ use Webkul\Product\Models\ProductReview;
 
 class ProductReviewTest extends RestApiTestCase
 {
-    private function seededCustomerAndProduct(): array
-    {
-        $this->seedRequiredData();
-
-        $customer = $this->createCustomer([
-            'token' => md5(uniqid((string) rand(), true)),
-        ]);
-
-        $product = $this->createBaseProduct('simple');
-
-        return [$customer, $product];
-    }
-
+    /**
+     * Test post review creates review.
+     */
     public function test_post_review_creates_review(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -44,6 +34,9 @@ class ProductReviewTest extends RestApiTestCase
             ->exists())->toBeTrue();
     }
 
+    /**
+     * Test post review ignores client status and owner.
+     */
     public function test_post_review_ignores_client_status_and_owner(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -72,6 +65,9 @@ class ProductReviewTest extends RestApiTestCase
         expect($review->name)->toBe($customer->name);
     }
 
+    /**
+     * Test post review without title is rejected.
+     */
     public function test_post_review_without_title_is_rejected(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -87,6 +83,9 @@ class ProductReviewTest extends RestApiTestCase
         expect(ProductReview::where('product_id', $product->id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test post review as guest is refused when guest reviews are off.
+     */
     public function test_post_review_as_guest_is_refused_when_guest_reviews_are_off(): void
     {
         [, $product] = $this->seededCustomerAndProduct();
@@ -103,6 +102,9 @@ class ProductReviewTest extends RestApiTestCase
         expect(ProductReview::where('product_id', $product->id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test post review with nonexistent product returns error.
+     */
     public function test_post_review_with_nonexistent_product_returns_error(): void
     {
         [$customer] = $this->seededCustomerAndProduct();
@@ -118,6 +120,9 @@ class ProductReviewTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
     }
 
+    /**
+     * Test post review with invalid rating returns error.
+     */
     public function test_post_review_with_invalid_rating_returns_error(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -133,6 +138,9 @@ class ProductReviewTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test get reviews collection is public.
+     */
     public function test_get_reviews_collection_is_public(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -149,6 +157,9 @@ class ProductReviewTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test get single review by id.
+     */
     public function test_get_single_review_by_id(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -167,6 +178,9 @@ class ProductReviewTest extends RestApiTestCase
         expect($json['title'])->toBe('Fetch-me');
     }
 
+    /**
+     * Test get single pending review is not public.
+     */
     public function test_get_single_pending_review_is_not_public(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -180,6 +194,9 @@ class ProductReviewTest extends RestApiTestCase
         $this->publicGet('/api/shop/reviews/'.$review->id)->assertNotFound();
     }
 
+    /**
+     * Test patch review updates fields.
+     */
     public function test_patch_review_updates_fields(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -217,6 +234,9 @@ class ProductReviewTest extends RestApiTestCase
         expect($fresh->rating)->toBe(4);
     }
 
+    /**
+     * Test delete review.
+     */
     public function test_delete_review(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -232,6 +252,9 @@ class ProductReviewTest extends RestApiTestCase
         expect(ProductReview::where('id', $review->id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test delete review owned by another customer is refused.
+     */
     public function test_delete_review_owned_by_another_customer_is_refused(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -252,6 +275,9 @@ class ProductReviewTest extends RestApiTestCase
         expect(ProductReview::where('id', $review->id)->exists())->toBeTrue();
     }
 
+    /**
+     * Test delete guest review is refused.
+     */
     public function test_delete_guest_review_is_refused(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -267,6 +293,9 @@ class ProductReviewTest extends RestApiTestCase
         expect(ProductReview::where('id', $review->id)->exists())->toBeTrue();
     }
 
+    /**
+     * Test patch review owned by another customer is refused.
+     */
     public function test_patch_review_owned_by_another_customer_is_refused(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -300,6 +329,123 @@ class ProductReviewTest extends RestApiTestCase
         expect(ProductReview::find($review->id)->title)->toBe('Original title');
     }
 
+    /**
+     * Test nested reviews default excludes pending.
+     */
+    public function test_nested_reviews_default_excludes_pending(): void
+    {
+        [, $product] = $this->seededReviewsForFiltering();
+
+        $response = $this->publicGet('/api/shop/products/'.$product->id.'/reviews');
+
+        $response->assertOk();
+        expect($this->statuses($response))->not()->toContain('pending');
+        expect($this->statuses($response))->not()->toContain('0');
+    }
+
+    /**
+     * Test nested reviews ignore a client supplied status.
+     */
+    public function test_nested_reviews_ignore_a_client_supplied_status(): void
+    {
+        [, $product] = $this->seededReviewsForFiltering();
+
+        $response = $this->publicGet('/api/shop/products/'.$product->id.'/reviews?status=pending');
+
+        $response->assertOk();
+        $statuses = $this->statuses($response);
+        expect($statuses)->not()->toBeEmpty();
+        expect($statuses)->not()->toContain('pending');
+    }
+
+    /**
+     * Test nested reviews rating filter.
+     */
+    public function test_nested_reviews_rating_filter(): void
+    {
+        [, $product] = $this->seededReviewsForFiltering();
+
+        $response = $this->publicGet('/api/shop/products/'.$product->id.'/reviews?rating=3');
+
+        $response->assertOk();
+        foreach ($this->ratings($response) as $r) {
+            expect($r)->toBe(3);
+        }
+    }
+
+    /**
+     * Test nested reviews per page limits results.
+     */
+    public function test_nested_reviews_per_page_limits_results(): void
+    {
+        [, $product] = $this->seededReviewsForFiltering();
+
+        $response = $this->publicGet('/api/shop/products/'.$product->id.'/reviews?per_page=2');
+
+        $response->assertOk();
+        expect(count($response->json()))->toBe(2);
+    }
+
+    /**
+     * Test nested reviews limit alias works.
+     */
+    public function test_nested_reviews_limit_alias_works(): void
+    {
+        [, $product] = $this->seededReviewsForFiltering();
+
+        $response = $this->publicGet('/api/shop/products/'.$product->id.'/reviews?limit=2');
+
+        $response->assertOk();
+        expect(count($response->json()))->toBe(2);
+    }
+
+    /**
+     * Test flat reviews default excludes pending for product.
+     */
+    public function test_flat_reviews_default_excludes_pending_for_product(): void
+    {
+        [, $product] = $this->seededReviewsForFiltering();
+
+        $response = $this->publicGet('/api/shop/reviews?product_id='.$product->id);
+
+        $response->assertOk();
+        expect($this->statuses($response))->not()->toContain('pending');
+    }
+
+    /**
+     * Test flat reviews ignore a client supplied status.
+     */
+    public function test_flat_reviews_ignore_a_client_supplied_status(): void
+    {
+        [, $product] = $this->seededReviewsForFiltering();
+
+        $response = $this->publicGet('/api/shop/reviews?product_id='.$product->id.'&status=pending');
+
+        $response->assertOk();
+        $statuses = $this->statuses($response);
+        expect($statuses)->not()->toBeEmpty();
+        expect($statuses)->not()->toContain('pending');
+    }
+
+    /**
+     * Seeded customer and product.
+     */
+    private function seededCustomerAndProduct(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer([
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+
+        $product = $this->createBaseProduct('simple');
+
+        return [$customer, $product];
+    }
+
+    /**
+     * Seeded reviews for filtering.
+     */
     private function seededReviewsForFiltering(): array
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -316,90 +462,19 @@ class ProductReviewTest extends RestApiTestCase
         return [$customer, $product];
     }
 
+    /**
+     * Statuses.
+     */
     private function statuses($response): array
     {
         return array_map(fn ($r) => (string) ($r['status'] ?? ''), $response->json());
     }
 
+    /**
+     * Ratings.
+     */
     private function ratings($response): array
     {
         return array_map(fn ($r) => (int) ($r['rating'] ?? 0), $response->json());
-    }
-
-    public function test_nested_reviews_default_excludes_pending(): void
-    {
-        [, $product] = $this->seededReviewsForFiltering();
-
-        $response = $this->publicGet('/api/shop/products/'.$product->id.'/reviews');
-
-        $response->assertOk();
-        expect($this->statuses($response))->not()->toContain('pending');
-        expect($this->statuses($response))->not()->toContain('0');
-    }
-
-    public function test_nested_reviews_ignore_a_client_supplied_status(): void
-    {
-        [, $product] = $this->seededReviewsForFiltering();
-
-        $response = $this->publicGet('/api/shop/products/'.$product->id.'/reviews?status=pending');
-
-        $response->assertOk();
-        $statuses = $this->statuses($response);
-        expect($statuses)->not()->toBeEmpty();
-        expect($statuses)->not()->toContain('pending');
-    }
-
-    public function test_nested_reviews_rating_filter(): void
-    {
-        [, $product] = $this->seededReviewsForFiltering();
-
-        $response = $this->publicGet('/api/shop/products/'.$product->id.'/reviews?rating=3');
-
-        $response->assertOk();
-        foreach ($this->ratings($response) as $r) {
-            expect($r)->toBe(3);
-        }
-    }
-
-    public function test_nested_reviews_per_page_limits_results(): void
-    {
-        [, $product] = $this->seededReviewsForFiltering();
-
-        $response = $this->publicGet('/api/shop/products/'.$product->id.'/reviews?per_page=2');
-
-        $response->assertOk();
-        expect(count($response->json()))->toBe(2);
-    }
-
-    public function test_nested_reviews_limit_alias_works(): void
-    {
-        [, $product] = $this->seededReviewsForFiltering();
-
-        $response = $this->publicGet('/api/shop/products/'.$product->id.'/reviews?limit=2');
-
-        $response->assertOk();
-        expect(count($response->json()))->toBe(2);
-    }
-
-    public function test_flat_reviews_default_excludes_pending_for_product(): void
-    {
-        [, $product] = $this->seededReviewsForFiltering();
-
-        $response = $this->publicGet('/api/shop/reviews?product_id='.$product->id);
-
-        $response->assertOk();
-        expect($this->statuses($response))->not()->toContain('pending');
-    }
-
-    public function test_flat_reviews_ignore_a_client_supplied_status(): void
-    {
-        [, $product] = $this->seededReviewsForFiltering();
-
-        $response = $this->publicGet('/api/shop/reviews?product_id='.$product->id.'&status=pending');
-
-        $response->assertOk();
-        $statuses = $this->statuses($response);
-        expect($statuses)->not()->toBeEmpty();
-        expect($statuses)->not()->toContain('pending');
     }
 }

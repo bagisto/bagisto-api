@@ -10,23 +10,23 @@ use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminExportFile;
 
 /**
  * File export for a reporting sub-page (the admin Export button). REST only.
- *
- * Mirrors `Reporting/Controller::export()` — runs the same `?type=` stat in its
- * table form ({ columns, records }) and streams it as csv, xls or xlsx. The columns
- * become the header row; each record's column-keyed values become the data rows.
- * Reporting has no ACL permission gate, so only authentication is required.
- *
- * One concrete subclass per sub-page sets $entity (sales / customers / products).
+ * Mirrors `Reporting/Controller::export()` — runs the same `?type=` stat in its.
  */
 abstract class AdminReportingExportProvider implements ProviderInterface
 {
     use BuildsAdminExportFile;
 
+    /**
+     * The export max rows constant.
+     */
     protected const EXPORT_MAX_ROWS = 50000;
 
     /** Sub-page: sales | customers | products. */
     protected string $entity;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Response
     {
         AdminReadPermissions::authorize($operation, null, $this->entity === 'overview' ? 'reporting' : 'reporting.'.$this->entity);

@@ -104,22 +104,34 @@ use Webkul\Product\Models\ProductGroupedProduct as BaseProductGroupedProduct;
 )]
 class ProductGroupedProduct extends BaseProductGroupedProduct
 {
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Product.
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
 
+    /**
+     * Associated product.
+     */
     public function associated_product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'associated_product_id');
     }
 
+    /**
+     * Get qty.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getQty(): ?int
@@ -127,11 +139,17 @@ class ProductGroupedProduct extends BaseProductGroupedProduct
         return $this->qty;
     }
 
+    /**
+     * Set qty.
+     */
     public function setQty(?int $value): void
     {
         $this->qty = $value;
     }
 
+    /**
+     * Get sort order.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getSortOrder(): ?int
@@ -139,11 +157,17 @@ class ProductGroupedProduct extends BaseProductGroupedProduct
         return $this->sort_order;
     }
 
+    /**
+     * Set sort order.
+     */
     public function setSortOrder(?int $value): void
     {
         $this->sort_order = $value;
     }
 
+    /**
+     * Get associated product id.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getAssociatedProductId(): ?int
@@ -151,11 +175,17 @@ class ProductGroupedProduct extends BaseProductGroupedProduct
         return $this->associated_product_id;
     }
 
+    /**
+     * Set associated product id.
+     */
     public function setAssociatedProductId(?int $value): void
     {
         $this->associated_product_id = $value;
     }
 
+    /**
+     * Get product id.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getProductId(): ?int
@@ -163,6 +193,9 @@ class ProductGroupedProduct extends BaseProductGroupedProduct
         return $this->product_id;
     }
 
+    /**
+     * Set product id.
+     */
     public function setProductId(?int $value): void
     {
         $this->product_id = $value;

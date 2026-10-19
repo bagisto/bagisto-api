@@ -6,10 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Super-attribute option — nested in the `superAttributes` connection
- * (`superAttributes { edges { node { options { edges { node } } } } }`).
- */
 #[ApiResource(
     shortName: 'AdminProductDetailSuperAttributeOption',
     operations: [],
@@ -27,6 +23,9 @@ class AdminProductDetailSuperAttributeOption extends Model
         'sort_order' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

@@ -19,24 +19,6 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGdprProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
 
-/**
- * Admin Customer GDPR Requests — read / status-update / delete.
- *
- * REST:
- *   GET    /api/admin/customers/gdpr-requests
- *   GET    /api/admin/customers/gdpr-requests/{id}
- *   PUT    /api/admin/customers/gdpr-requests/{id}
- *   DELETE /api/admin/customers/gdpr-requests/{id}
- *
- * GraphQL: adminCustomerGdprRequests, adminCustomerGdprRequest,
- *          updateAdminCustomerGdprRequest, deleteAdminCustomerGdprRequest
- *
- * Mirrors Webkul\Admin\Http\Controllers\Customers\GDPRController. The admin
- * panel's only writes are status update + delete; the destructive cascade for
- * type=delete requests happens via the separate /process action (see
- * AdminCustomerGdprProcess) — matches what the customer-facing side does on
- * approval but exposes it as an explicit endpoint for API integrators.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerGdprRequest',
@@ -251,33 +233,63 @@ class AdminCustomerGdprRequest
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customer_id = null;
 
+    /**
+     * The customer name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $customer_name = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(writable: false)]
     public ?string $email = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $type = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(writable: false)]
     public ?string $status = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 
+    /**
+     * The revoked at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $revoked_at = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 }

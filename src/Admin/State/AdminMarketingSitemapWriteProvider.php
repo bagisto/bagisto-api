@@ -8,12 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSitemap;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Placeholder provider for AdminMarketingSitemap PUT/DELETE so API Platform
- * can resolve the resource before dispatching to the processor.
- */
 class AdminMarketingSitemapWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminMarketingSitemap
     {
         if (! AdminAuthHelper::resolveAdmin()) {

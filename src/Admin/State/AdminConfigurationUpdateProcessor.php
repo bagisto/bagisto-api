@@ -17,12 +17,6 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Core\Repositories\CoreConfigRepository;
 
-/**
- * Bulk-updates configuration values for one slug, with server-side validation
- * sourced from the registered system_config tree (NEVER trust the client).
- *
- * See AdminConfigurationUpdate for the per-step pipeline.
- */
 class AdminConfigurationUpdateProcessor implements ProcessorInterface
 {
     /** Permission required for write. */
@@ -31,11 +25,17 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
     /** File-type fields the server treats as binary uploads. */
     protected const FILE_TYPES = ['image', 'file'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminConfigurationSchemaResolver $resolver,
         protected CoreConfigRepository $coreConfigRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -236,8 +236,7 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
 
     /**
      * Run a Laravel Validator against each (code => value) pair using the
-     * field's registered `validation` string. Errors are returned in the
-     * 422 message body as `field-errors: { code: [msg, ...] }`.
+     * field's registered `validation` string. Errors are returned in the.
      */
     protected function validateValues(array $values, array $fieldDefs, bool $isGraphQL): void
     {
@@ -298,8 +297,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
     /**
      * Convert flat {dotted.code => value} into the nested array shape
      * CoreConfigRepository::create() expects, e.g.:
-     *
-     *   { sales: { order_settings: { reorder: { admin: '1' } } } }
      */
     protected function buildNestedPayload(array $values, array $fieldDefs): array
     {
@@ -319,9 +316,7 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
 
     /**
      * Multipart files arrive at request()->file('values')[<code>] but
-     * CoreConfigRepository::create() looks them up via
-     * request()->hasFile($fieldCode). Promote each file into the request's
-     * top-level files map under its full dotted code so the lookup succeeds.
+     * CoreConfigRepository::create() looks them up via.
      */
     protected function aliasMultipartFiles(array $values, array $fieldDefs): void
     {
@@ -338,6 +333,9 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
         $request->files->replace($current);
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin): void
     {
         $role = $admin->role ?? null;

@@ -8,29 +8,9 @@ use Webkul\Checkout\Models\CartAddress;
 
 class CheckoutAddressTest extends RestApiTestCase
 {
-    private function guestPostWithToken(string $url, string $token, array $payload): TestResponse
-    {
-        return $this->withHeaders([
-            ...$this->storefrontHeaders(),
-            'Authorization' => 'Bearer '.$token,
-        ])->postJson($url, $payload);
-    }
-
     /**
-     * Add product to customer's cart via REST so we have an active cart to set addresses on.
+     * Test address response returns the real guest cart token.
      */
-    private function addProductToCart($customer): void
-    {
-        $product = $this->createTestProduct()['product'];
-
-        $response = $this->authenticatedPost($customer, '/api/shop/add-product-in-cart', [
-            'productId' => $product->id,
-            'quantity' => 1,
-        ]);
-
-        $response->assertSuccessful();
-    }
-
     public function test_address_response_returns_the_real_guest_cart_token(): void
     {
         $this->seedRequiredData();
@@ -68,6 +48,9 @@ class CheckoutAddressTest extends RestApiTestCase
         expect($response->json('cartToken'))->toBe($cartToken);
     }
 
+    /**
+     * Test address response returns no cart token for a customer cart.
+     */
     public function test_address_response_returns_no_cart_token_for_a_customer_cart(): void
     {
         $this->seedRequiredData();
@@ -95,6 +78,9 @@ class CheckoutAddressTest extends RestApiTestCase
         expect($response->json('cartToken'))->not->toBe((string) $customer->id);
     }
 
+    /**
+     * Test set checkout address with use for shipping.
+     */
     public function test_set_checkout_address_with_use_for_shipping(): void
     {
         $this->seedRequiredData();
@@ -131,6 +117,9 @@ class CheckoutAddressTest extends RestApiTestCase
             ->exists())->toBeTrue();
     }
 
+    /**
+     * Test set checkout address with different shipping address.
+     */
     public function test_set_checkout_address_with_different_shipping_address(): void
     {
         $this->seedRequiredData();
@@ -172,6 +161,9 @@ class CheckoutAddressTest extends RestApiTestCase
             ->exists())->toBeTrue();
     }
 
+    /**
+     * Test set checkout address without auth returns error.
+     */
     public function test_set_checkout_address_without_auth_returns_error(): void
     {
         $this->seedRequiredData();
@@ -190,5 +182,31 @@ class CheckoutAddressTest extends RestApiTestCase
         ]);
 
         expect(in_array($response->getStatusCode(), [400, 401, 403, 500]))->toBeTrue();
+    }
+
+    /**
+     * Guest post with token.
+     */
+    private function guestPostWithToken(string $url, string $token, array $payload): TestResponse
+    {
+        return $this->withHeaders([
+            ...$this->storefrontHeaders(),
+            'Authorization' => 'Bearer '.$token,
+        ])->postJson($url, $payload);
+    }
+
+    /**
+     * Add product to customer's cart via REST so we have an active cart to set addresses on.
+     */
+    private function addProductToCart($customer): void
+    {
+        $product = $this->createTestProduct()['product'];
+
+        $response = $this->authenticatedPost($customer, '/api/shop/add-product-in-cart', [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ]);
+
+        $response->assertSuccessful();
     }
 }

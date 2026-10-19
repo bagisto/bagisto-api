@@ -19,10 +19,16 @@ class CustomerReturnProvider implements ProviderInterface
 {
     use BuildsCustomerReturn;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly RMARepository $rmaRepository,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $customer = Auth::guard('sanctum')->user();
@@ -38,6 +44,9 @@ class CustomerReturnProvider implements ProviderInterface
             : $this->provideItem($customer, $uriVariables, $context);
     }
 
+    /**
+     * Provide item.
+     */
     private function provideItem(object $customer, array $uriVariables, array $context): CustomerReturn
     {
         $id = $uriVariables['id'] ?? $context['args']['id'] ?? null;
@@ -55,6 +64,9 @@ class CustomerReturnProvider implements ProviderInterface
         return $this->buildCustomerReturn($rma, true, $this->rmaRepository);
     }
 
+    /**
+     * Provide collection.
+     */
     private function provideCollection(object $customer, array $context): Paginator
     {
         $args = $context['args'] ?? [];
@@ -97,6 +109,9 @@ class CustomerReturnProvider implements ProviderInterface
         );
     }
 
+    /**
+     * Scoped query.
+     */
     private function scopedQuery(int $customerId)
     {
         return $this->rmaRepository->with(self::RETURN_RELATIONS)

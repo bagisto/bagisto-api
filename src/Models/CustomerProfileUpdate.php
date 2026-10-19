@@ -15,10 +15,6 @@ use Webkul\BagistoApi\Dto\CustomerProfileOutput;
 use Webkul\BagistoApi\State\AuthenticatedCustomerProvider;
 use Webkul\BagistoApi\State\CustomerProfileProcessor;
 
-/**
- * Customer profile update resource
- * Handles authenticated customer profile updates
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomerProfileUpdate',
@@ -204,74 +200,128 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
 )]
 class CustomerProfileUpdate
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false, identifier: true)]
     #[Groups(['mutation'])]
     public ?string $id = null;
 
+    /**
+     * The first name.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $firstName = null;
 
+    /**
+     * The last name.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $lastName = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $email = null;
 
+    /**
+     * The phone.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $phone = null;
 
+    /**
+     * The gender.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $gender = null;
 
+    /**
+     * The date of birth.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $dateOfBirth = null;
 
+    /**
+     * The current password.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $currentPassword = null;
 
+    /**
+     * The password.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $password = null;
 
+    /**
+     * The confirm password.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $confirmPassword = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $status = null;
 
+    /**
+     * The subscribed to news letter.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?bool $subscribedToNewsLetter = null;
 
+    /**
+     * The is verified.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $isVerified = null;
 
+    /**
+     * The is suspended.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $isSuspended = null;
 
+    /**
+     * The image.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $image = null;
 
+    /**
+     * The delete image.
+     */
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?bool $deleteImage = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $message = null;

@@ -15,20 +15,6 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Product\Models\Product;
 use Webkul\Product\Repositories\ProductRepository;
 
-/**
- * Admin Catalog Product update (Phase 5.9).
- *
- * Pass-through:
- *   - Strip sub-resource fields (images / inventories / customer_group_prices)
- *     and record a `_warnings` entry for each stripped key.
- *   - Validate the small set of fields the API enforces (sku unique,
- *     url_key unique, booleans, special_price vs price, special_price dates).
- *   - Fire catalog.product.update.before, repo->update(), fire .after.
- *   - Return the full detail DTO (same shape as GET /catalog/products/{id})
- *     plus the `_warnings` array.
- *
- * Permission gate: catalog.products.edit.
- */
 class AdminCatalogProductUpdateProcessor implements ProcessorInterface
 {
     /** Sub-resource keys silently stripped from the payload (with a warning). */
@@ -41,9 +27,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
 
     /**
      * Type-structure keys. When any is present the update runs the core's
-     * full-form path (replace semantics for that structure) with the rest of
-     * the product's state reconstructed so nothing else is wiped. When none is
-     * present the update runs the surgical attributes-only path.
+     * full-form path (replace semantics for that structure) with the rest of.
      */
     protected const STRUCTURE_KEYS = [
         'variants',
@@ -64,11 +48,17 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         'related_products',
     ];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ProductRepository $productRepository,
         protected AdminCatalogProductDetailProvider $detailProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -191,9 +181,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
 
     /**
      * Extract the raw payload from either REST body or GraphQL input args,
-     * then merge in the catch-all `extras` map. Also maps a small set of
-     * camelCase aliases used by the typed DTO surface back to the snake_case
-     * keys the monolith repo expects.
+     * then merge in the catch-all `extras` map. Also maps a small set of.
      */
     protected function extractPayload(array $context, bool $isGraphQL): array
     {
@@ -277,20 +265,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
 
     /**
      * Reconstruct the product's current state for every field the core update
-     * would otherwise wipe when omitted, so a partial PATCH only changes the
-     * fields the caller actually sends.
-     *
-     * The core treats the payload as a full admin-form submission:
-     *   - boolean / multiselect / checkbox attribute values are force-written
-     *     (an omitted boolean becomes false, an omitted multiselect becomes '');
-     *   - channels default to the store default channel when empty;
-     *   - categories / up_sells / cross_sells / related_products are synced to
-     *     whatever is in the payload (omitted → emptied);
-     *   - customer_group_prices not in the payload are deleted.
-     *
-     * Inventories are intentionally NOT reconstructed — the core skips them when
-     * absent, and they have a dedicated endpoint. Images/videos are not touched
-     * by the repository update at all.
+     * would otherwise wipe when omitted, so a partial PATCH only changes the.
      */
     protected function mergeCurrentState(array &$payload, Product $product, string $locale, string $channel): void
     {
@@ -362,8 +337,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
 
     /**
      * The family-attribute codes present in the payload. Passed to the core as
-     * the surgical-update attribute list so only these values are written and
-     * the type structure / relations / inventory are left untouched.
+     * the surgical-update attribute list so only these values are written and.
      *
      * @return string[]
      */
@@ -430,6 +404,9 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Validate.
+     */
     protected function validate(array $payload, int $id): void
     {
         if (array_key_exists('sku', $payload)) {
@@ -536,6 +513,9 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

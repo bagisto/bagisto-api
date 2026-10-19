@@ -415,8 +415,14 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
 )]
 class AdminCustomer extends EloquentModel
 {
+    /**
+     * The table.
+     */
     protected $table = 'customers';
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'id' => 'int',
         'customer_group_id' => 'int',
@@ -429,34 +435,55 @@ class AdminCustomer extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
+    /**
+     * The appends.
+     */
     protected $appends = ['name', 'total_addresses', 'total_orders', 'total_amount_spent', 'message'];
 
+    /**
+     * The action message.
+     */
     public ?string $actionMessage = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get message attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getMessageAttribute(): ?string
     {
         return $this->actionMessage;
     }
 
+    /**
+     * Group.
+     */
     #[ApiProperty(writable: false, required: false)]
     public function group(): BelongsTo
     {
         return $this->belongsTo(AdminCustomerGroupRef::class, 'customer_group_id');
     }
 
+    /**
+     * Get name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getNameAttribute(): ?string
     {
         return trim((string) ($this->first_name ?? '').' '.(string) ($this->last_name ?? '')) ?: null;
     }
 
+    /**
+     * Get total addresses attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getTotalAddressesAttribute(): int
     {
@@ -466,12 +493,18 @@ class AdminCustomer extends EloquentModel
             ->count();
     }
 
+    /**
+     * Get total orders attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getTotalOrdersAttribute(): int
     {
         return (int) DB::table('orders')->where('customer_id', $this->id)->count();
     }
 
+    /**
+     * Get total amount spent attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getTotalAmountSpentAttribute(): float
     {

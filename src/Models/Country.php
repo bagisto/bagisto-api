@@ -102,28 +102,43 @@ use Webkul\Core\Models\Country as BaseCountry;
 )]
 class Country extends BaseCountry
 {
+    /**
+     * Get states.
+     */
     #[ApiProperty(readableLink: true)]
     public function getStates()
     {
         return $this->states;
     }
 
+    /**
+     * Get name attribute.
+     */
     public function getNameAttribute($value)
     {
         return $value;
     }
 
+    /**
+     * States.
+     */
     public function states()
     {
         return $this->hasMany(CountryState::class, 'country_id');
     }
 
+    /**
+     * Get translation.
+     */
     #[ApiProperty(readable: false)]
     public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
     {
         return parent::getTranslation($locale, $withFallback);
     }
 
+    /**
+     * Get translations.
+     */
     #[ApiProperty(readableLink: true, description: 'Translations for the country')]
     public function getTranslations()
     {

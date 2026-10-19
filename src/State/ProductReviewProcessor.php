@@ -52,10 +52,16 @@ class ProductReviewProcessor implements ProcessorInterface
      */
     private const STATUS_PENDING = 'pending';
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof CreateProductReviewInput) {
@@ -123,7 +129,7 @@ class ProductReviewProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle create operation for GraphQL mutations
+     * Handle create operation for GraphQL mutations.
      */
     private function handleCreate(CreateProductReviewInput $data)
     {
@@ -161,6 +167,9 @@ class ProductReviewProcessor implements ProcessorInterface
         return $this->mapToOutput($review);
     }
 
+    /**
+     * Assert reviews allowed.
+     */
     private function assertReviewsAllowed(bool $isCustomer): void
     {
         if (! core()->getConfigData('catalog.products.review.customer_review')) {
@@ -175,6 +184,9 @@ class ProductReviewProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert title and comment.
+     */
     private function assertTitleAndComment(mixed $title, mixed $comment): void
     {
         if (blank($title)) {
@@ -186,6 +198,9 @@ class ProductReviewProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Handle update.
+     */
     private function handleUpdate(UpdateProductReviewInput $data)
     {
         $reviewId = $data->id;
@@ -237,6 +252,9 @@ class ProductReviewProcessor implements ProcessorInterface
         return $this->mapToOutput($review);
     }
 
+    /**
+     * Handle delete.
+     */
     private function handleDelete(mixed $data, Operation $operation): mixed
     {
         if (! $data instanceof ProductReview) {
@@ -252,6 +270,9 @@ class ProductReviewProcessor implements ProcessorInterface
         return $operation instanceof DeleteMutation ? $snapshot : null;
     }
 
+    /**
+     * Assert owned review.
+     */
     private function assertOwnedReview(ProductReview $review): void
     {
         $customer = Auth::guard('sanctum')->user();
@@ -270,6 +291,9 @@ class ProductReviewProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Validate review.
+     */
     private function validateReview(ProductReview|CreateProductReviewInput|UpdateProductReviewInput $review): void
     {
         $productId = $review instanceof CreateProductReviewInput ? $review->productId : ($review instanceof UpdateProductReviewInput ? $review->product_id : $review->getAttribute('product_id'));
@@ -312,6 +336,9 @@ class ProductReviewProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Map to output.
+     */
     private function mapToOutput(ProductReview $review): \stdClass
     {
         $output = new \stdClass;
@@ -352,18 +379,24 @@ class ProductReviewProcessor implements ProcessorInterface
         return $output;
     }
 
+    /**
+     * Check image or video.
+     */
     private function checkImageOrVideo(string $imageData): string
     {
         if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $matches)) {
-            return 'image';  // It's an image
+            return 'image';
         }
         if (preg_match('/^data:video\/(\w+);base64,/', $imageData, $matches)) {
-            return 'video';  // It's a video
+            return 'video';
         }
 
         throw new InvalidInputException(__('Invalid file format'));
     }
 
+    /**
+     * Save attachments.
+     */
     private function saveAttachments(string $attachmentsJson, $reviewId): array
     {
         $attachmentUrls = [];
@@ -383,6 +416,9 @@ class ProductReviewProcessor implements ProcessorInterface
         return $attachmentUrls;
     }
 
+    /**
+     * Handle review media.
+     */
     private function handleReviewMedia($mediaData, $reviewId)
     {
         if (! preg_match('/^data:(image|video)\/(\w+);base64,/', $mediaData, $matches)) {

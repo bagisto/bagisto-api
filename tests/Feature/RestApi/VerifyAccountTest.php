@@ -6,6 +6,9 @@ use Webkul\BagistoApi\Tests\RestApiTestCase;
 
 class VerifyAccountTest extends RestApiTestCase
 {
+    /**
+     * Test verify account with valid token verifies customer.
+     */
     public function test_verify_account_with_valid_token_verifies_customer(): void
     {
         $this->seedRequiredData();
@@ -29,6 +32,9 @@ class VerifyAccountTest extends RestApiTestCase
         $this->assertNull($customer->token);
     }
 
+    /**
+     * Test verify account with invalid token fails.
+     */
     public function test_verify_account_with_invalid_token_fails(): void
     {
         $this->seedRequiredData();
@@ -40,6 +46,9 @@ class VerifyAccountTest extends RestApiTestCase
         $this->assertFalse($response->json('success'));
     }
 
+    /**
+     * Test verify account missing token fails.
+     */
     public function test_verify_account_missing_token_fails(): void
     {
         $this->seedRequiredData();

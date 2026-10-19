@@ -16,30 +16,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Product\Models\Product;
 use Webkul\Product\Repositories\ProductInventoryRepository;
 
-/**
- * PUT /api/admin/catalog/products/{productId}/inventories
- * + updateAdminCatalogProductInventories.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Catalog\ProductController::updateInventories:
- *   - Fire catalog.product.update.before
- *   - $productInventoryRepository->saveInventories(request()->all(), $product)
- *   - Fire catalog.product.update.after
- *
- * Returns the refreshed listing payload (same shape as GET) — totalQty in
- * the envelope meta reflects the post-save totals.
- *
- * Permission gate: catalog.products.edit. Validation:
- *   - inventories key is required and must be a non-empty map.
- *   - Each source id must exist in inventory_sources.
- *   - Each quantity must be a non-negative integer.
- */
 class AdminCatalogProductInventoryProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ProductInventoryRepository $productInventoryRepository,
         protected AdminCatalogProductInventoryProvider $listingProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -81,6 +70,9 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
         return $this->listingProvider->buildPayload($fresh);
     }
 
+    /**
+     * Graph ql result.
+     */
     protected function graphQlResult(Product $product, array $inventories): AdminCatalogProductInventory
     {
         $product->load('inventories.inventory_source');
@@ -164,6 +156,9 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -191,6 +186,9 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve product id.
+     */
     protected function resolveProductId(mixed $data, array $uriVariables, array $context): int
     {
         if (isset($uriVariables['productId'])) {

@@ -21,25 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
 
-/**
- * Admin Marketing → Search Synonyms endpoints (Block F3c).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\SearchSEO\SearchSynonymController 1:1.
- *
- * REST:
- *   GET    /api/admin/marketing/search-synonyms
- *   GET    /api/admin/marketing/search-synonyms/{id}
- *   POST   /api/admin/marketing/search-synonyms
- *   PUT    /api/admin/marketing/search-synonyms/{id}
- *   DELETE /api/admin/marketing/search-synonyms/{id}
- *
- * GraphQL:
- *   adminMarketingSearchSynonyms        — cursor listing
- *   adminMarketingSearchSynonym(id:)    — detail
- *   createAdminMarketingSearchSynonym
- *   updateAdminMarketingSearchSynonym
- *   deleteAdminMarketingSearchSynonym
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingSearchSynonym',
@@ -296,18 +277,33 @@ class AdminMarketingSearchSynonym
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The terms.
+     */
     #[ApiProperty(writable: false)]
     public ?string $terms = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 }

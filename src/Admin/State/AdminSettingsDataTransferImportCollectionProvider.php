@@ -7,21 +7,27 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsDataTransferImport;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/settings/data-transfer/imports + adminSettingsDataTransferImports.
- */
 class AdminSettingsDataTransferImportCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'state', 'created_at'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('imports')->select('imports.*');
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         $code = $args['code'] ?? $args['type'] ?? null;
@@ -46,6 +52,9 @@ class AdminSettingsDataTransferImportCollectionProvider extends AbstractAdminCol
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -59,6 +68,9 @@ class AdminSettingsDataTransferImportCollectionProvider extends AbstractAdminCol
         $query->orderBy($columnMap[$column] ?? 'imports.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminSettingsDataTransferImport
     {
         $dto = new AdminSettingsDataTransferImport;
@@ -87,6 +99,9 @@ class AdminSettingsDataTransferImportCollectionProvider extends AbstractAdminCol
         return $dto;
     }
 
+    /**
+     * Parse date.
+     */
     private function parseDate(string $value, bool $endOfDay): string
     {
         try {

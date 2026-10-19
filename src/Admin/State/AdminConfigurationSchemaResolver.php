@@ -5,19 +5,6 @@ namespace Webkul\BagistoApi\Admin\State;
 use Illuminate\Support\Collection;
 use Webkul\Core\SystemConfig\Item;
 
-/**
- * Shared resolver that walks the `system_config()` tree exactly once per
- * request and surfaces field definitions by their full dotted code.
- *
- * Used by:
- *   - AdminConfigurationMenuProvider   (serialise the tree)
- *   - AdminConfigurationValuesProvider (list the field codes under a slug)
- *   - AdminConfigurationUpdateProcessor (look up validation / scope flags)
- *
- * The `system_config()->getItems()` collection itself is memoised by core,
- * but our flattened code→field map is not — we build it once and cache on
- * the instance.
- */
 class AdminConfigurationSchemaResolver
 {
     /**
@@ -134,8 +121,7 @@ class AdminConfigurationSchemaResolver
 
     /**
      * Return every registered slug (section/group key) with its label and a
-     * hint of what it carries — so a client can discover the valid slugs to
-     * pass to the configuration values endpoint without trial and error.
+     * hint of what it carries — so a client can discover the valid slugs to.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -291,8 +277,7 @@ class AdminConfigurationSchemaResolver
 
     /**
      * Options may be: array of {title,value}, callable string, or null.
-     * Normalise to an array; non-array (callable/string ref) becomes null
-     * since the API can't usefully render it.
+     * Normalise to an array; non-array (callable/string ref) becomes null.
      *
      * @return array<int, array<string, mixed>>|null
      */
@@ -320,8 +305,7 @@ class AdminConfigurationSchemaResolver
 
     /**
      * Translate a registered label/lang-key to its human-readable string.
-     * Plain strings (no matching translation) are returned unchanged; null/empty
-     * pass through.
+     * Plain strings (no matching translation) are returned unchanged; null/empty.
      */
     protected function translate(?string $value): ?string
     {

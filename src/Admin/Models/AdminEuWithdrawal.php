@@ -305,60 +305,144 @@ class AdminEuWithdrawal
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The uuid.
+     */
     public ?string $uuid = null;
 
+    /**
+     * The order id.
+     */
     public ?int $order_id = null;
 
+    /**
+     * The order increment id.
+     */
     public ?string $order_increment_id = null;
 
+    /**
+     * The customer id.
+     */
     public ?int $customer_id = null;
 
+    /**
+     * The customer name.
+     */
     public ?string $customer_name = null;
 
+    /**
+     * The customer email.
+     */
     public ?string $customer_email = null;
 
+    /**
+     * The is guest.
+     */
     public ?bool $is_guest = null;
 
+    /**
+     * The channel id.
+     */
     public ?int $channel_id = null;
 
+    /**
+     * The channel code.
+     */
     public ?string $channel_code = null;
 
+    /**
+     * The locale.
+     */
     public ?string $locale = null;
 
+    /**
+     * The reason text.
+     */
     public ?string $reason_text = null;
 
+    /**
+     * The status.
+     */
     public ?string $status = null;
 
+    /**
+     * The received at.
+     */
     public ?string $received_at = null;
 
+    /**
+     * The confirmation sent at.
+     */
     public ?string $confirmation_sent_at = null;
 
+    /**
+     * The final confirmation sent at.
+     */
     public ?string $final_confirmation_sent_at = null;
 
+    /**
+     * The confirmation error.
+     */
     public ?string $confirmation_error = null;
 
+    /**
+     * The declined at.
+     */
     public ?string $declined_at = null;
 
+    /**
+     * The declined reason.
+     */
     public ?string $declined_reason = null;
 
+    /**
+     * The declined by user id.
+     */
     public ?int $declined_by_user_id = null;
 
+    /**
+     * The declined by name.
+     */
     public ?string $declined_by_name = null;
 
+    /**
+     * The refunded at.
+     */
     public ?string $refunded_at = null;
 
+    /**
+     * The refunded by user id.
+     */
     public ?int $refunded_by_user_id = null;
 
+    /**
+     * The refunded by name.
+     */
     public ?string $refunded_by_name = null;
 
+    /**
+     * The refund note.
+     */
     public ?string $refund_note = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

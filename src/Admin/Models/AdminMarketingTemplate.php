@@ -21,25 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
 
-/**
- * Admin Marketing → Email Templates endpoints (Block F2a).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Communications\TemplateController 1:1.
- *
- * REST:
- *   GET    /api/admin/marketing/templates
- *   GET    /api/admin/marketing/templates/{id}
- *   POST   /api/admin/marketing/templates
- *   PUT    /api/admin/marketing/templates/{id}
- *   DELETE /api/admin/marketing/templates/{id}
- *
- * GraphQL:
- *   adminMarketingTemplates           — cursor listing
- *   adminMarketingTemplate(id:)       — detail
- *   createAdminMarketingTemplate
- *   updateAdminMarketingTemplate
- *   deleteAdminMarketingTemplate
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingTemplate',
@@ -313,21 +294,39 @@ class AdminMarketingTemplate
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(writable: false)]
     public ?string $status = null;
 
+    /**
+     * The content.
+     */
     #[ApiProperty(writable: false)]
     public ?string $content = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 }

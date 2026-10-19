@@ -11,45 +11,14 @@ use Webkul\Sales\Models\OrderItem;
 
 class ReturnableOrderTest extends RestApiTestCase
 {
+    /**
+     * The url.
+     */
     private string $url = '/api/shop/returnable-orders';
 
-    private function seedEligibleOrder($customer, array $orderAttributes = [], array $itemAttributes = []): Order
-    {
-        $channel = Channel::first();
-        $product = Product::factory()->create();
-
-        $order = Order::factory()->create(array_merge([
-            'customer_id' => $customer->id,
-            'customer_email' => $customer->email,
-            'channel_id' => $channel->id,
-            'status' => 'completed',
-        ], $orderAttributes));
-
-        OrderItem::factory()->create(array_merge([
-            'order_id' => $order->id,
-            'product_id' => $product->id,
-            'sku' => 'RETURNABLE-'.$order->id,
-            'type' => 'simple',
-            'name' => 'Returnable Product',
-            'qty_ordered' => 2,
-            'qty_invoiced' => 2,
-            'rma_return_period' => 30,
-        ], $itemAttributes));
-
-        return $order;
-    }
-
-    private function rowFor(array $body, int $orderId): ?array
-    {
-        foreach ($body as $row) {
-            if ((int) $row['id'] === $orderId) {
-                return $row;
-            }
-        }
-
-        return null;
-    }
-
+    /**
+     * Test lists an order that can still be returned.
+     */
     public function test_lists_an_order_that_can_still_be_returned(): void
     {
         $this->seedRequiredData();
@@ -73,6 +42,9 @@ class ReturnableOrderTest extends RestApiTestCase
         expect($row)->toHaveKeys(['orderCurrencyCode', 'paymentMethodTitle', 'createdAt']);
     }
 
+    /**
+     * Test excludes an order whose items were sold without returns.
+     */
     public function test_excludes_an_order_whose_items_were_sold_without_returns(): void
     {
         $this->seedRequiredData();
@@ -85,6 +57,9 @@ class ReturnableOrderTest extends RestApiTestCase
         expect($this->rowFor($response->json(), (int) $order->id))->toBeNull();
     }
 
+    /**
+     * Test excludes an order whose return window has closed.
+     */
     public function test_excludes_an_order_whose_return_window_has_closed(): void
     {
         $this->seedRequiredData();
@@ -101,6 +76,9 @@ class ReturnableOrderTest extends RestApiTestCase
         expect($this->rowFor($response->json(), (int) $order->id))->toBeNull();
     }
 
+    /**
+     * Test excludes an order in a state that cannot be returned.
+     */
     public function test_excludes_an_order_in_a_state_that_cannot_be_returned(): void
     {
         $this->seedRequiredData();
@@ -113,6 +91,9 @@ class ReturnableOrderTest extends RestApiTestCase
         expect($this->rowFor($response->json(), (int) $order->id))->toBeNull();
     }
 
+    /**
+     * Test counts quantity already returned.
+     */
     public function test_counts_quantity_already_returned(): void
     {
         $this->seedRequiredData();
@@ -139,6 +120,9 @@ class ReturnableOrderTest extends RestApiTestCase
         expect($row['returnableQty'])->toBe(1);
     }
 
+    /**
+     * Test drops an order once every unit is returned.
+     */
     public function test_drops_an_order_once_every_unit_is_returned(): void
     {
         $this->seedRequiredData();
@@ -160,6 +144,9 @@ class ReturnableOrderTest extends RestApiTestCase
         expect($this->rowFor($response->json(), (int) $order->id))->toBeNull();
     }
 
+    /**
+     * Test never lists another customers order.
+     */
     public function test_never_lists_another_customers_order(): void
     {
         $this->seedRequiredData();
@@ -173,15 +160,13 @@ class ReturnableOrderTest extends RestApiTestCase
         expect($this->rowFor($response->json(), (int) $foreign->id))->toBeNull();
     }
 
+    /**
+     * Test filters by order number.
+     */
     public function test_filters_by_order_number(): void
     {
         $this->seedRequiredData();
         $customer = $this->createCustomer();
-        /**
-         * The filter matches a partial order number, as the storefront datagrid does, so
-         * the two orders need numbers where neither contains the other — sequential ids
-         * such as 1 and 10 would both match a search for "1".
-         */
         $wanted = $this->seedEligibleOrder($customer, ['increment_id' => 'RMA-WANTED-'.uniqid()]);
         $other = $this->seedEligibleOrder($customer, ['increment_id' => 'RMA-OTHER-'.uniqid()]);
 
@@ -192,6 +177,9 @@ class ReturnableOrderTest extends RestApiTestCase
         expect($this->rowFor($response->json(), (int) $other->id))->toBeNull();
     }
 
+    /**
+     * Test filters by status.
+     */
     public function test_filters_by_status(): void
     {
         $this->seedRequiredData();
@@ -206,6 +194,9 @@ class ReturnableOrderTest extends RestApiTestCase
         expect($this->rowFor($response->json(), (int) $completed->id))->toBeNull();
     }
 
+    /**
+     * Test requires an authenticated customer.
+     */
     public function test_requires_an_authenticated_customer(): void
     {
         $this->seedRequiredData();
@@ -213,5 +204,48 @@ class ReturnableOrderTest extends RestApiTestCase
         $response = $this->publicGet($this->url);
 
         expect($response->getStatusCode())->toBeIn([401, 403]);
+    }
+
+    /**
+     * Seed eligible order.
+     */
+    private function seedEligibleOrder($customer, array $orderAttributes = [], array $itemAttributes = []): Order
+    {
+        $channel = Channel::first();
+        $product = Product::factory()->create();
+
+        $order = Order::factory()->create(array_merge([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
+        ], $orderAttributes));
+
+        OrderItem::factory()->create(array_merge([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'RETURNABLE-'.$order->id,
+            'type' => 'simple',
+            'name' => 'Returnable Product',
+            'qty_ordered' => 2,
+            'qty_invoiced' => 2,
+            'rma_return_period' => 30,
+        ], $itemAttributes));
+
+        return $order;
+    }
+
+    /**
+     * Row for.
+     */
+    private function rowFor(array $body, int $orderId): ?array
+    {
+        foreach ($body as $row) {
+            if ((int) $row['id'] === $orderId) {
+                return $row;
+            }
+        }
+
+        return null;
     }
 }

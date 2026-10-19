@@ -8,21 +8,33 @@ use Webkul\Customer\Models\CustomerGroup;
 
 class AdminCustomerGroupItemProvider extends AbstractAdminItemProvider
 {
-    protected function getNotFoundLangKey(): string
-    {
-        return 'bagistoapi::app.admin.customer.group.not-found';
-    }
-
-    protected function findEntity(int $id): ?object
-    {
-        return CustomerGroup::find($id);
-    }
-
+    /**
+     * Map to dto.
+     */
     public function mapToDto(object $entity): object
     {
         return $this->doMap($entity);
     }
 
+    /**
+     * Get not found lang key.
+     */
+    protected function getNotFoundLangKey(): string
+    {
+        return 'bagistoapi::app.admin.customer.group.not-found';
+    }
+
+    /**
+     * Find entity.
+     */
+    protected function findEntity(int $id): ?object
+    {
+        return CustomerGroup::find($id);
+    }
+
+    /**
+     * Do map.
+     */
     protected function doMap(CustomerGroup $customerGroup): AdminCustomerGroup
     {
         $dto = new AdminCustomerGroup;

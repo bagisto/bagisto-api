@@ -6,16 +6,19 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Webkul\BagistoApi\Services\StorefrontKeyService;
 
-/**
- * Authenticates GraphQL operations using X-STOREFRONT-KEY header
- */
 class StorefrontKeyGraphqlAuthenticator
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected StorefrontKeyService $storefrontKeyService,
         protected Request $request
     ) {}
 
+    /**
+     * Authenticate.
+     */
     public function authenticate(): void
     {
         if ($this->isIntrospectionQuery($this->request)) {
@@ -46,6 +49,9 @@ class StorefrontKeyGraphqlAuthenticator
         $this->request->attributes->set('rate_limit', $rateLimit);
     }
 
+    /**
+     * Whether introspection query.
+     */
     protected function isIntrospectionQuery(Request $request): bool
     {
         $body = $request->getContent();

@@ -23,21 +23,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
 
-/**
- * Admin Marketing → Search Terms (Block F3b).
- *
- * REST:
- *   GET    /api/admin/marketing/search-terms
- *   GET    /api/admin/marketing/search-terms/{id}
- *   PUT    /api/admin/marketing/search-terms/{id}
- *   DELETE /api/admin/marketing/search-terms/{id}
- *
- * GraphQL: adminMarketingSearchTerms, adminMarketingSearchTerm,
- *          updateAdminMarketingSearchTerm, deleteAdminMarketingSearchTerm
- *
- * Search terms are auto-recorded by storefront searches; admin only edits/deletes.
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\SearchSEO\SearchTermController.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingSearchTerm',
@@ -365,6 +350,9 @@ class AdminMarketingSearchTerm extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
@@ -373,8 +361,7 @@ class AdminMarketingSearchTerm extends EloquentModel
 
     /**
      * Channel this term was searched in (GraphQL to-one object —
-     * `channel { id _id code name }`). The belongsTo on `channel_id` consumes
-     * that FK column, replacing the old channelId / channelName scalars.
+     * `channel { id _id code name }`). The belongsTo on `channel_id` consumes.
      */
     #[ApiProperty(writable: false)]
     public function channel(): BelongsTo

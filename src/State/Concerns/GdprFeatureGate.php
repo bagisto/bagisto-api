@@ -6,6 +6,9 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 
 trait GdprFeatureGate
 {
+    /**
+     * Assert gdpr enabled.
+     */
     protected function assertGdprEnabled(): void
     {
         if (! core()->getConfigData('general.gdpr.settings.enabled')) {

@@ -4,22 +4,29 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 
-/**
- * CheckoutShippingMethodPayloadOutput - Response model for CreateCheckoutShippingMethod mutation
- *
- * Defines the structure of the GraphQL response for the checkout shipping method mutation
- */
 class CheckoutShippingMethodPayloadOutput
 {
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public bool $success = false;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public string $message = '';
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $cartToken = null;
 
+    /**
+     * The shipping method.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $shippingMethod = null;
 }

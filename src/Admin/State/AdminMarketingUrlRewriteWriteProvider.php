@@ -8,12 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingUrlRewrite;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Placeholder provider for AdminMarketingUrlRewrite PUT/DELETE so API Platform
- * can resolve the resource before dispatching to the processor.
- */
 class AdminMarketingUrlRewriteWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminMarketingUrlRewrite
     {
         if (! AdminAuthHelper::resolveAdmin()) {

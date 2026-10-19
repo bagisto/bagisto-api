@@ -10,11 +10,11 @@ use Webkul\Customer\Models\Customer;
 use Webkul\Product\Models\Product;
 use Webkul\Sales\Models\Order;
 
-/**
- * The storefront checkout rules the API must apply exactly as core does.
- */
 class CheckoutRulesTest extends RestApiTestCase
 {
+    /**
+     * The address.
+     */
     private array $address = [
         'billingFirstName' => 'John',
         'billingLastName' => 'Doe',
@@ -28,72 +28,9 @@ class CheckoutRulesTest extends RestApiTestCase
         'useForShipping' => true,
     ];
 
-    private function setCoreConfig(string $code, string $value): void
-    {
-        DB::table('core_config')->where('code', $code)->delete();
-
-        DB::table('core_config')->insert([
-            'code' => $code,
-            'value' => $value,
-            'channel_code' => core()->getRequestedChannelCode(),
-            'locale_code' => core()->getRequestedLocaleCode(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $this->forgetCoreConfigCache();
-    }
-
     /**
-     * Send a request carrying only the bearer token, as a real API client does, without
-     * signing the customer into the session guard first.
+     * Test smart button payment method is rejected.
      */
-    private function bearerPost(Customer $customer, string $url, array $data = []): TestResponse
-    {
-        return $this->withHeaders($this->authHeaders($customer))->postJson($url, $data);
-    }
-
-    private function guestPost(string $token, string $url, array $data = []): TestResponse
-    {
-        return $this->withHeaders([
-            ...$this->storefrontHeaders(),
-            'Authorization' => 'Bearer '.$token,
-        ])->postJson($url, $data);
-    }
-
-    private function createActiveCustomer(): Customer
-    {
-        $this->seedRequiredData();
-
-        return $this->createCustomer([
-            'token' => md5(uniqid((string) rand(), true)),
-            'status' => 1,
-            'is_suspended' => 0,
-        ]);
-    }
-
-    private function prepareCheckoutCart(Customer $customer, string $paymentMethod = 'cashondelivery'): Product
-    {
-        $product = $this->createTestProduct()['product'];
-
-        $this->bearerPost($customer, '/api/shop/add-product-in-cart', [
-            'productId' => $product->id,
-            'quantity' => 1,
-        ])->assertSuccessful();
-
-        $this->bearerPost($customer, '/api/shop/checkout-addresses', $this->address)->assertCreated();
-
-        $this->bearerPost($customer, '/api/shop/checkout-shipping-methods', [
-            'shippingMethod' => 'flatrate_flatrate',
-        ])->assertCreated();
-
-        $this->bearerPost($customer, '/api/shop/checkout-payment-methods', [
-            'paymentMethod' => $paymentMethod,
-        ])->assertCreated();
-
-        return $product;
-    }
-
     public function test_smart_button_payment_method_is_rejected(): void
     {
         $customer = $this->createActiveCustomer();
@@ -117,6 +54,9 @@ class CheckoutRulesTest extends RestApiTestCase
         expect($response->getStatusCode())->not->toBeIn([200, 201]);
     }
 
+    /**
+     * Test disabled payment method is rejected at order time.
+     */
     public function test_disabled_payment_method_is_rejected_at_order_time(): void
     {
         $customer = $this->createActiveCustomer();
@@ -132,6 +72,9 @@ class CheckoutRulesTest extends RestApiTestCase
         expect(Order::count())->toBe($ordersBefore);
     }
 
+    /**
+     * Test guest cannot check out when guest checkout is disabled.
+     */
     public function test_guest_cannot_check_out_when_guest_checkout_is_disabled(): void
     {
         $this->seedRequiredData();
@@ -154,6 +97,9 @@ class CheckoutRulesTest extends RestApiTestCase
         expect($response->getStatusCode())->not->toBeIn([200, 201]);
     }
 
+    /**
+     * Test out of stock item cannot be ordered.
+     */
     public function test_out_of_stock_item_cannot_be_ordered(): void
     {
         $customer = $this->createActiveCustomer();
@@ -169,6 +115,9 @@ class CheckoutRulesTest extends RestApiTestCase
         expect(Order::count())->toBe($ordersBefore);
     }
 
+    /**
+     * Test suspended customer cannot place an order.
+     */
     public function test_suspended_customer_cannot_place_an_order(): void
     {
         $customer = $this->createActiveCustomer();
@@ -184,6 +133,9 @@ class CheckoutRulesTest extends RestApiTestCase
         expect(Order::count())->toBe($ordersBefore);
     }
 
+    /**
+     * Test cart rule for the customers group applies to a bearer request.
+     */
     public function test_cart_rule_for_the_customers_group_applies_to_a_bearer_request(): void
     {
         $customer = $this->createActiveCustomer();
@@ -251,6 +203,9 @@ class CheckoutRulesTest extends RestApiTestCase
         expect((float) $cart->discount_amount)->toBeGreaterThan(0.0);
     }
 
+    /**
+     * Test order is placed when the minimum order amount is met.
+     */
     public function test_order_is_placed_when_the_minimum_order_amount_is_met(): void
     {
         $customer = $this->createActiveCustomer();
@@ -266,6 +221,9 @@ class CheckoutRulesTest extends RestApiTestCase
         expect(Order::count())->toBe($ordersBefore + 1);
     }
 
+    /**
+     * Test order below the minimum order amount is rejected.
+     */
     public function test_order_below_the_minimum_order_amount_is_rejected(): void
     {
         $customer = $this->createActiveCustomer();
@@ -283,6 +241,9 @@ class CheckoutRulesTest extends RestApiTestCase
         expect(Order::count())->toBe($ordersBefore);
     }
 
+    /**
+     * Test customer order carries the account details and currencies.
+     */
     public function test_customer_order_carries_the_account_details_and_currencies(): void
     {
         $customer = $this->createActiveCustomer();
@@ -304,6 +265,9 @@ class CheckoutRulesTest extends RestApiTestCase
         expect($order->order_currency_code)->not->toBeEmpty();
     }
 
+    /**
+     * Test guest order is flagged as guest with the billing details.
+     */
     public function test_guest_order_is_flagged_as_guest_with_the_billing_details(): void
     {
         $this->seedRequiredData();
@@ -343,6 +307,9 @@ class CheckoutRulesTest extends RestApiTestCase
         expect($order->base_currency_code)->not->toBeEmpty();
     }
 
+    /**
+     * Test buy now leaves a single active cart holding only that product.
+     */
     public function test_buy_now_leaves_a_single_active_cart_holding_only_that_product(): void
     {
         $customer = $this->createActiveCustomer();
@@ -370,6 +337,9 @@ class CheckoutRulesTest extends RestApiTestCase
         expect($activeCarts->first()->items()->pluck('product_id')->all())->toBe([$buyNow->id]);
     }
 
+    /**
+     * Test address with a missing required field is rejected.
+     */
     public function test_address_with_a_missing_required_field_is_rejected(): void
     {
         $customer = $this->createActiveCustomer();
@@ -389,6 +359,9 @@ class CheckoutRulesTest extends RestApiTestCase
         expect((string) $response->getContent())->toContain('billingPhoneNumber');
     }
 
+    /**
+     * Test saving the address again resets the chosen shipping method.
+     */
     public function test_saving_the_address_again_resets_the_chosen_shipping_method(): void
     {
         $customer = $this->createActiveCustomer();
@@ -401,5 +374,83 @@ class CheckoutRulesTest extends RestApiTestCase
         $this->bearerPost($customer, '/api/shop/checkout-addresses', $this->address)->assertCreated();
 
         expect($cart->fresh()->shipping_method)->toBeNull();
+    }
+
+    /**
+     * Set core config.
+     */
+    private function setCoreConfig(string $code, string $value): void
+    {
+        DB::table('core_config')->where('code', $code)->delete();
+
+        DB::table('core_config')->insert([
+            'code' => $code,
+            'value' => $value,
+            'channel_code' => core()->getRequestedChannelCode(),
+            'locale_code' => core()->getRequestedLocaleCode(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->forgetCoreConfigCache();
+    }
+
+    /**
+     * Send a request carrying only the bearer token, as a real API client does, without
+     * signing the customer into the session guard first.
+     */
+    private function bearerPost(Customer $customer, string $url, array $data = []): TestResponse
+    {
+        return $this->withHeaders($this->authHeaders($customer))->postJson($url, $data);
+    }
+
+    /**
+     * Guest post.
+     */
+    private function guestPost(string $token, string $url, array $data = []): TestResponse
+    {
+        return $this->withHeaders([
+            ...$this->storefrontHeaders(),
+            'Authorization' => 'Bearer '.$token,
+        ])->postJson($url, $data);
+    }
+
+    /**
+     * Create active customer.
+     */
+    private function createActiveCustomer(): Customer
+    {
+        $this->seedRequiredData();
+
+        return $this->createCustomer([
+            'token' => md5(uniqid((string) rand(), true)),
+            'status' => 1,
+            'is_suspended' => 0,
+        ]);
+    }
+
+    /**
+     * Prepare checkout cart.
+     */
+    private function prepareCheckoutCart(Customer $customer, string $paymentMethod = 'cashondelivery'): Product
+    {
+        $product = $this->createTestProduct()['product'];
+
+        $this->bearerPost($customer, '/api/shop/add-product-in-cart', [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ])->assertSuccessful();
+
+        $this->bearerPost($customer, '/api/shop/checkout-addresses', $this->address)->assertCreated();
+
+        $this->bearerPost($customer, '/api/shop/checkout-shipping-methods', [
+            'shippingMethod' => 'flatrate_flatrate',
+        ])->assertCreated();
+
+        $this->bearerPost($customer, '/api/shop/checkout-payment-methods', [
+            'paymentMethod' => $paymentMethod,
+        ])->assertCreated();
+
+        return $product;
     }
 }

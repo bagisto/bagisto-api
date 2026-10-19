@@ -13,11 +13,17 @@ use Webkul\RMA\Repositories\RMARepository;
 
 class CustomerReturnMessageProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly RMARepository $rmaRepository,
         private readonly RMAMessageRepository $rmaMessageRepository,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): iterable
     {
         $customer = Auth::guard('sanctum')->user();

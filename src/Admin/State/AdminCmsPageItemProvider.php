@@ -10,17 +10,13 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsCmsPagePreviewUrl;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
-/**
- * Item provider for the admin CMS → Pages detail endpoint.
- *
- * Returns the AdminCmsPage Eloquent model for GraphQL (so translations and
- * channels are field-selectable) and the AdminCmsPageDetailDto for REST (so the
- * REST payload stays byte-identical).
- */
 class AdminCmsPageItemProvider extends AbstractAdminItemProvider
 {
     use BuildsCmsPagePreviewUrl;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         AdminReadPermissions::authorize($operation, AdminCmsPage::class);
@@ -44,19 +40,27 @@ class AdminCmsPageItemProvider extends AbstractAdminItemProvider
         return $this->mapToDto($page);
     }
 
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.cms.page.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return AdminCmsPage::with(['translations', 'channels'])->find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $page): AdminCmsPageDetailDto
     {
-        /** @var AdminCmsPage $page */
         $dto = new AdminCmsPageDetailDto;
         $dto->id = (int) $page->id;
 

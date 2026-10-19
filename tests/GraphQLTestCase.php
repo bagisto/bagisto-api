@@ -7,17 +7,15 @@ use Webkul\Customer\Models\Customer;
 
 /**
  * Base test case for GraphQL API tests.
- *
- * Provides convenience methods for public and authenticated
- * GraphQL requests with storefront key handling.
+ * Provides convenience methods for public and authenticated.
  */
 abstract class GraphQLTestCase extends BagistoApiTestCase
 {
-    /** GraphQL endpoint URL */
+    /** GraphQL endpoint URL. */
     protected string $graphqlUrl = '/api/graphql';
 
     /**
-     * Execute a public GraphQL query (storefront key only, no auth)
+     * Execute a public GraphQL query (storefront key only, no auth).
      */
     protected function graphQL(string $query, array $variables = [], array $headers = []): TestResponse
     {
@@ -33,7 +31,7 @@ abstract class GraphQLTestCase extends BagistoApiTestCase
     }
 
     /**
-     * Execute an authenticated GraphQL query (storefront key + customer token)
+     * Execute an authenticated GraphQL query (storefront key + customer token).
      */
     protected function authenticatedGraphQL(Customer $customer, string $query, array $variables = []): TestResponse
     {

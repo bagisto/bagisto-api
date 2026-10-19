@@ -12,17 +12,11 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\CartRule\Models\CartRule;
 
-/**
- * Cart rule detail — GET /api/admin/marketing/cart-rules/{id} +
- * adminMarketingCartRule.
- *
- * Branches: GraphQL → the AdminMarketingCartRule Eloquent model (channels /
- * customerGroups connections resolve); REST → the flat
- * AdminMarketingCartRuleRestDto built from the core CartRule (channels /
- * customer_groups as object arrays).
- */
 class AdminMarketingCartRuleItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminMarketingCartRule|AdminMarketingCartRuleRestDto
     {
         AdminReadPermissions::authorize($operation, AdminMarketingCartRule::class);
@@ -67,9 +61,11 @@ class AdminMarketingCartRuleItemProvider implements ProviderInterface
         return CartRule::with(['cart_rule_channels', 'cart_rule_customer_groups', 'coupon_code'])->find($id);
     }
 
+    /**
+     * Build rest dto.
+     */
     protected function buildRestDto(object $rule): AdminMarketingCartRuleRestDto
     {
-        /** @var CartRule $rule */
         $dto = new AdminMarketingCartRuleRestDto;
 
         $dto->id = (int) $rule->id;

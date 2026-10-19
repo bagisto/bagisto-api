@@ -436,14 +436,42 @@ class Product extends BaseProduct
     use ProductSystemAttributes;
     use ProductWishlistCompareFlags;
 
+    /**
+     * The av null constant.
+     */
+    private const AV_NULL = "\0NULL";
+
+    /**
+     * The flat attributes constant.
+     */
+    private const FLAT_ATTRIBUTES = [
+        'sku', 'name', 'url_key', 'short_description', 'description',
+        'new', 'featured', 'status', 'visible_individually',
+        'meta_title', 'meta_keywords', 'meta_description',
+        'price', 'special_price', 'special_price_from', 'special_price_to',
+        'weight', 'product_number',
+    ];
+
+    /**
+     * The locale.
+     */
     public $locale;
 
+    /**
+     * The channel.
+     */
     public $channel;
 
+    /**
+     * The with.
+     */
     protected $with = [
         'attribute_family',
     ];
 
+    /**
+     * The appends.
+     */
     protected $appends = [
         'name', 'description', 'short_description', 'price', 'special_price',
         'weight', 'product_number', 'status', 'new', 'featured',
@@ -459,6 +487,9 @@ class Product extends BaseProduct
         'is_in_wishlist', 'is_in_compare',
     ];
 
+    /**
+     * The system attributes.
+     */
     protected static array $systemAttributes = [
         'sku' => ['id' => 1],
         'name' => ['id' => 2],
@@ -490,6 +521,44 @@ class Product extends BaseProduct
         'brand' => ['id' => 25],
     ];
 
+    /**
+     * Cache for attribute values to avoid repeated lookups.
+     */
+    protected array $attributeValueCache = [];
+
+    /**
+     * The flat row resolved.
+     */
+    private bool $flatRowResolved = false;
+
+    /**
+     * The flat row.
+     */
+    private mixed $flatRow = null;
+
+    /**
+     * The attribute value index.
+     */
+    private ?array $attributeValueIndex = null;
+
+    /**
+     * The price scope by request.
+     */
+    private static ?\WeakMap $priceScopeByRequest = null;
+
+    /**
+     * The price index memo.
+     */
+    private ?object $priceIndexMemo = null;
+
+    /**
+     * The price index resolved.
+     */
+    private bool $priceIndexResolved = false;
+
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     #[Groups(['product:list'])]
     public function getId(): ?int
@@ -497,19 +566,19 @@ class Product extends BaseProduct
         return $this->id;
     }
 
-    /** Parent */
+    /** Parent. */
     #[ApiProperty(writable: true, readable: true, required: false)]
     public function getParent(): mixed
     {
         return $this->parent_id;
     }
 
-    public function setParent(mixed $value): void
-    {
-        // Parent cannot be modified via API
-    }
+    /**
+     * Set parent.
+     */
+    public function setParent(mixed $value): void {}
 
-    /** Is Saleable */
+    /** Is Saleable. */
     #[ApiProperty(
         writable: false,
         readable: true
@@ -520,17 +589,23 @@ class Product extends BaseProduct
         return parent::isSaleable();
     }
 
+    /**
+     * Whether saleable.
+     */
     public function isSaleable(): bool
     {
         return $this->getIsSaleableAttribute();
     }
 
+    /**
+     * Available for sale attribute.
+     */
     public function availableForSaleAttribute(): bool
     {
         return $this->status && $this->isSaleable();
     }
 
-    /** Available for Sale */
+    /** Available for Sale. */
     #[ApiProperty(
         writable: false,
         readable: true
@@ -598,11 +673,17 @@ class Product extends BaseProduct
         $this->channel = $value;
     }
 
+    /**
+     * Get index attribute.
+     */
     public function getIndexAttribute(): string
     {
         return $this->getCombinationsAttribute();
     }
 
+    /**
+     * Get index.
+     */
     #[ApiProperty(deprecationReason: 'Use the VariantAttributeMap property instead', writable: false, readable: true, required: false)]
     public function getIndex(): ?string
     {
@@ -611,6 +692,9 @@ class Product extends BaseProduct
         return $indexJson !== '{}' ? $indexJson : null;
     }
 
+    /**
+     * Get combinations attribute.
+     */
     public function getCombinationsAttribute(): string
     {
         if ($this->type !== 'configurable') {
@@ -646,33 +730,8 @@ class Product extends BaseProduct
     }
 
     /**
-     * Map a variant's super attribute values by attribute code.
+     * Get combinations.
      */
-    private function variantCombination(mixed $variant, array $superAttributeIds, array $attributeCodeMap): array
-    {
-        if (! $variant->relationLoaded('attribute_values')) {
-            $variant->load('attribute_values.attribute');
-        }
-
-        $combination = [];
-
-        foreach ($variant->attribute_values as $attributeValue) {
-            if (! in_array($attributeValue->attribute_id, $superAttributeIds)) {
-                continue;
-            }
-
-            $attributeCode = $attributeCodeMap[$attributeValue->attribute_id] ?? null;
-
-            if (! $attributeCode) {
-                continue;
-            }
-
-            $combination[$attributeCode] = $attributeValue->value;
-        }
-
-        return $combination;
-    }
-
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getCombinations(): ?string
     {
@@ -681,6 +740,9 @@ class Product extends BaseProduct
         return $indexJson !== '{}' ? $indexJson : null;
     }
 
+    /**
+     * Get super attribute options attribute.
+     */
     public function getSuperAttributeOptionsAttribute(): string
     {
         if ($this->type !== 'configurable') {
@@ -738,6 +800,9 @@ class Product extends BaseProduct
         return json_encode($result);
     }
 
+    /**
+     * Get super attribute options.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getSuper_attribute_options(): ?string
     {
@@ -746,11 +811,17 @@ class Product extends BaseProduct
         return $indexJson !== '{}' ? $indexJson : null;
     }
 
+    /**
+     * Get sku attribute.
+     */
     public function getSkuAttribute(): ?string
     {
         return $this->getSystemAttributeValue('sku');
     }
 
+    /**
+     * Get sku.
+     */
     #[ApiProperty(
         writable: true,
         readable: true
@@ -761,11 +832,17 @@ class Product extends BaseProduct
         return $this->getSkuAttribute();
     }
 
+    /**
+     * Set sku.
+     */
     public function setSku(?string $value): void
     {
         $this->setSystemAttributeValue('sku', $value);
     }
 
+    /**
+     * Get type.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -777,93 +854,17 @@ class Product extends BaseProduct
         return $this->type;
     }
 
+    /**
+     * Set type.
+     */
     public function setType(?string $value): void
     {
         $this->type = $value;
     }
 
     /**
-     * Cache for attribute values to avoid repeated lookups
+     * Get system attribute value.
      */
-    protected array $attributeValueCache = [];
-
-    private const AV_NULL = "\0NULL";
-
-    private const FLAT_ATTRIBUTES = [
-        'sku', 'name', 'url_key', 'short_description', 'description',
-        'new', 'featured', 'status', 'visible_individually',
-        'meta_title', 'meta_keywords', 'meta_description',
-        'price', 'special_price', 'special_price_from', 'special_price_to',
-        'weight', 'product_number',
-    ];
-
-    private bool $flatRowResolved = false;
-
-    private mixed $flatRow = null;
-
-    private function flatRow(): mixed
-    {
-        if ($this->flatRowResolved) {
-            return $this->flatRow;
-        }
-
-        $this->flatRowResolved = true;
-
-        if (! $this->relationLoaded('product_flats')) {
-            return $this->flatRow = null;
-        }
-
-        $locale = $this->locale ?? app()->getLocale();
-        $channel = $this->channel ?? (core()->getCurrentChannel()->code ?? 'default');
-
-        $rows = $this->product_flats;
-
-        $match = null;
-
-        foreach ($rows as $row) {
-            if (
-                $row->locale === $locale
-                && $row->channel === $channel
-            ) {
-                $match = $row;
-
-                break;
-            }
-
-            if (
-                $match === null
-                && $row->locale === $locale
-            ) {
-                $match = $row;
-            }
-        }
-
-        return $this->flatRow = $match ?? $rows->first();
-    }
-
-    private ?array $attributeValueIndex = null;
-
-    private function attributeValueIndex(): array
-    {
-        if ($this->attributeValueIndex !== null) {
-            return $this->attributeValueIndex;
-        }
-
-        $index = [];
-
-        foreach ($this->attribute_values as $attributeValue) {
-            $key = $attributeValue->attribute_id
-                .'|'.($attributeValue->locale ?? self::AV_NULL)
-                .'|'.($attributeValue->channel ?? self::AV_NULL);
-
-            if (! array_key_exists($key, $index)) {
-                $index[$key] = $attributeValue;
-            }
-        }
-
-        return $this->attributeValueIndex = $index;
-    }
-
     protected function getSystemAttributeValue(string $attributeCode): mixed
     {
         if (array_key_exists($attributeCode, $this->attributeValueCache)) {
@@ -956,18 +957,107 @@ class Product extends BaseProduct
         return $this->attributeValueCache[$attributeCode] = ($attributeValue ? $attributeValue->value : '');
     }
 
+    /**
+     * Set system attribute value.
+     */
     protected function setSystemAttributeValue(string $attributeCode, mixed $value): void
     {
         $tempKey = "_temp_{$attributeCode}";
         $this->attributes[$tempKey] = $value;
     }
 
-    private static ?\WeakMap $priceScopeByRequest = null;
+    /**
+     * Map a variant's super attribute values by attribute code.
+     */
+    private function variantCombination(mixed $variant, array $superAttributeIds, array $attributeCodeMap): array
+    {
+        if (! $variant->relationLoaded('attribute_values')) {
+            $variant->load('attribute_values.attribute');
+        }
 
-    private ?object $priceIndexMemo = null;
+        $combination = [];
 
-    private bool $priceIndexResolved = false;
+        foreach ($variant->attribute_values as $attributeValue) {
+            if (! in_array($attributeValue->attribute_id, $superAttributeIds)) {
+                continue;
+            }
 
-    // ─── Formatted Price Accessors ──────────────────────────────────────
+            $attributeCode = $attributeCodeMap[$attributeValue->attribute_id] ?? null;
 
+            if (! $attributeCode) {
+                continue;
+            }
+
+            $combination[$attributeCode] = $attributeValue->value;
+        }
+
+        return $combination;
+    }
+
+    /**
+     * Flat row.
+     */
+    private function flatRow(): mixed
+    {
+        if ($this->flatRowResolved) {
+            return $this->flatRow;
+        }
+
+        $this->flatRowResolved = true;
+
+        if (! $this->relationLoaded('product_flats')) {
+            return $this->flatRow = null;
+        }
+
+        $locale = $this->locale ?? app()->getLocale();
+        $channel = $this->channel ?? (core()->getCurrentChannel()->code ?? 'default');
+
+        $rows = $this->product_flats;
+
+        $match = null;
+
+        foreach ($rows as $row) {
+            if (
+                $row->locale === $locale
+                && $row->channel === $channel
+            ) {
+                $match = $row;
+
+                break;
+            }
+
+            if (
+                $match === null
+                && $row->locale === $locale
+            ) {
+                $match = $row;
+            }
+        }
+
+        return $this->flatRow = $match ?? $rows->first();
+    }
+
+    /**
+     * Attribute value index.
+     */
+    private function attributeValueIndex(): array
+    {
+        if ($this->attributeValueIndex !== null) {
+            return $this->attributeValueIndex;
+        }
+
+        $index = [];
+
+        foreach ($this->attribute_values as $attributeValue) {
+            $key = $attributeValue->attribute_id
+                .'|'.($attributeValue->locale ?? self::AV_NULL)
+                .'|'.($attributeValue->channel ?? self::AV_NULL);
+
+            if (! array_key_exists($key, $index)) {
+                $index[$key] = $attributeValue;
+            }
+        }
+
+        return $this->attributeValueIndex = $index;
+    }
 }

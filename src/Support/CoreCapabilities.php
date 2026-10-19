@@ -11,12 +11,6 @@ use Webkul\Product\Models\ProductImageTranslation;
 use Webkul\Theme\Models\Section;
 use Webkul\Theme\Repositories\SectionRepository;
 
-/**
- * What the installed Bagisto core can do. Every version-dependent branch reads this.
- *
- * BACKWARD COMPATIBILITY: remove this class, and its callers, when the minimum
- * supported core is 2.4.10.
- */
 class CoreCapabilities
 {
     /** @var array<string, bool> */

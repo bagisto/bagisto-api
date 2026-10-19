@@ -14,15 +14,21 @@ use ApiPlatform\OpenApi\Model\Server;
 use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
 
-/**
- * Generates separate OpenAPI specs for Shop and Admin APIs
- */
 class SplitOpenApiFactory implements OpenApiFactoryInterface
 {
+    /**
+     * The http methods constant.
+     */
     private const HTTP_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(private OpenApiFactoryInterface $decorated) {}
 
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(array $context = []): OpenApi
     {
         $openApi = ($this->decorated)($context);
@@ -75,6 +81,9 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         return $openApi;
     }
 
+    /**
+     * Clean path parameters.
+     */
     private function cleanPathParameters(OpenApi $openApi): OpenApi
     {
         $paths = new Paths;
@@ -144,7 +153,7 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * Detect which endpoint is being accessed (/api/shop/docs vs /api/admin/docs)
+     * Detect which endpoint is being accessed (/api/shop/docs vs /api/admin/docs).
      */
     private function detectEndpoint(): string
     {
@@ -159,6 +168,9 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         return 'api/shop';
     }
 
+    /**
+     * Filter shop paths.
+     */
     private function filterShopPaths(OpenApi $openApi): OpenApi
     {
         $paths = $openApi->getPaths();
@@ -174,6 +186,9 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         return $openApi->withPaths($filteredPaths);
     }
 
+    /**
+     * Filter admin paths.
+     */
     private function filterAdminPaths(OpenApi $openApi): OpenApi
     {
         $paths = $openApi->getPaths();
@@ -189,6 +204,9 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         return $openApi->withPaths($filteredPaths);
     }
 
+    /**
+     * Normalize path.
+     */
     private function normalizePath(string $path, string $endpoint): string
     {
         $prefix = '/api/'.$endpoint.'/';
@@ -198,14 +216,14 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         }
 
         if (strpos($path, '/api/') === 0) {
-            return substr($path, 4); // Remove '/api'
+            return substr($path, 4);
         }
 
         return $path;
     }
 
     /**
-     * Add servers configuration to OpenAPI spec
+     * Add servers configuration to OpenAPI spec.
      */
     private function withServers(OpenApi $openApi, array $servers): OpenApi
     {
@@ -232,7 +250,7 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * Add description to OpenAPI spec
+     * Add description to OpenAPI spec.
      */
     private function withDescription(OpenApi $openApi, string $description): OpenApi
     {
@@ -294,7 +312,7 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * Filter OpenAPI tags to only include those that are actually used
+     * Filter OpenAPI tags to only include those that are actually used.
      */
     private function filterTags(OpenApi $openApi, array $usedTags): OpenApi
     {
@@ -307,10 +325,6 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         $filteredTags = [];
         foreach ($tags as $tag) {
             if (isset($usedTags[$tag->getName()])) {
-                // Drop the tag description. It is auto-derived from a resource
-                // class docblock, which carries internal implementation notes
-                // (e.g. "bypass API Platform's ID requirement") not meant for
-                // consumers. The tag name alone labels the group.
                 $filteredTags[] = new Tag($tag->getName());
             }
         }
@@ -319,7 +333,7 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * Extract all schema references from a path item recursively
+     * Extract all schema references from a path item recursively.
      */
     private function extractSchemaReferences($item, &$usedSchemas): void
     {
@@ -363,7 +377,7 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * Filter components to only include schemas that are actually used
+     * Filter components to only include schemas that are actually used.
      */
     private function filterComponents($components, array $usedSchemas): ?Components
     {
@@ -411,6 +425,9 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         return $components;
     }
 
+    /**
+     * Add storefront key header.
+     */
     private function addStorefrontKeyHeader(OpenApi $openApi): OpenApi
     {
         $paths = $openApi->getPaths();
@@ -425,7 +442,7 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * Add X-STOREFRONT-KEY header parameter to all operations in a path item
+     * Add X-STOREFRONT-KEY header parameter to all operations in a path item.
      */
     private function addHeaderToPathItem($pathItem)
     {
@@ -459,7 +476,7 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * Add X-STOREFRONT-KEY header parameter to an operation
+     * Add X-STOREFRONT-KEY header parameter to an operation.
      */
     private function addHeaderToOperation($operation)
     {
@@ -560,6 +577,9 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         return $operation;
     }
 
+    /**
+     * Add laravel backed shop paths.
+     */
     private function addLaravelBackedShopPaths(OpenApi $openApi): OpenApi
     {
         $paths = $openApi->getPaths();

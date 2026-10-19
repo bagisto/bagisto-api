@@ -68,28 +68,64 @@ use Webkul\BagistoApi\Admin\State\AdminReturnableItemProvider;
 )]
 class AdminReturnableItem
 {
+    /**
+     * The order item id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $order_item_id = null;
 
+    /**
+     * The product id.
+     */
     public ?int $product_id = null;
 
+    /**
+     * The sku.
+     */
     public ?string $sku = null;
 
+    /**
+     * The name.
+     */
     public ?string $name = null;
 
+    /**
+     * The type.
+     */
     public ?string $type = null;
 
+    /**
+     * The price.
+     */
     public ?float $price = null;
 
+    /**
+     * The qty ordered.
+     */
     public ?int $qty_ordered = null;
 
+    /**
+     * The current quantity.
+     */
     public ?int $current_quantity = null;
 
+    /**
+     * The for return quantity.
+     */
     public ?int $for_return_quantity = null;
 
+    /**
+     * The for cancel quantity.
+     */
     public ?int $for_cancel_quantity = null;
 
+    /**
+     * The rma quantity.
+     */
     public ?int $rma_quantity = null;
 
+    /**
+     * The rma return period.
+     */
     public ?int $rma_return_period = null;
 }

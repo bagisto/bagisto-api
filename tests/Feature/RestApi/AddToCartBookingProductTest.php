@@ -12,10 +12,80 @@ use Webkul\BookingProduct\Repositories\BookingProductRepository;
 
 class AddToCartBookingProductTest extends RestApiTestCase
 {
+    /**
+     * The cart tokens url.
+     */
     private string $cartTokensUrl = '/api/shop/cart-tokens';
 
+    /**
+     * The add product url.
+     */
     private string $addProductUrl = '/api/shop/add-product-in-cart';
 
+    /**
+     * Test add default booking product to cart as guest.
+     */
+    public function test_add_default_booking_product_to_cart_as_guest(): void
+    {
+        $this->seedRequiredData();
+        $fixture = $this->createDefaultBookingFixture();
+
+        $slot = $this->getSlotTimestamp((int) $fixture['product']->id, $fixture['date']);
+        if (! $slot) {
+            $this->markTestSkipped('No valid slot found for default booking product.');
+        }
+
+        $token = $this->createGuestCartToken();
+
+        $response = $this->postWithToken($this->addProductUrl, $token, [
+            'productId' => (int) $fixture['product']->id,
+            'quantity' => 1,
+            'booking' => json_encode([
+                'type' => 'default',
+                'date' => $fixture['date'],
+                'slot' => $slot,
+            ], JSON_UNESCAPED_SLASHES),
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('isGuest'))->toBeTrue();
+        expect((int) $response->json('itemsCount'))->toBeGreaterThan(0);
+    }
+
+    /**
+     * Test add default booking product to customer cart.
+     */
+    public function test_add_default_booking_product_to_customer_cart(): void
+    {
+        $this->seedRequiredData();
+        $fixture = $this->createDefaultBookingFixture();
+
+        $slot = $this->getSlotTimestamp((int) $fixture['product']->id, $fixture['date']);
+        if (! $slot) {
+            $this->markTestSkipped('No valid slot found for default booking product.');
+        }
+
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
+            'productId' => (int) $fixture['product']->id,
+            'quantity' => 1,
+            'booking' => json_encode([
+                'type' => 'default',
+                'date' => $fixture['date'],
+                'slot' => $slot,
+            ], JSON_UNESCAPED_SLASHES),
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('isGuest'))->toBeFalse();
+    }
+
+    /**
+     * Create guest cart token.
+     */
     private function createGuestCartToken(): string
     {
         $response = $this->publicPost($this->cartTokensUrl, ['createNew' => true]);
@@ -24,6 +94,9 @@ class AddToCartBookingProductTest extends RestApiTestCase
         return (string) ($response->json('cartToken') ?? $response->json('sessionToken'));
     }
 
+    /**
+     * Post with token.
+     */
     private function postWithToken(string $url, string $token, array $payload): TestResponse
     {
         return $this->withHeaders([
@@ -32,6 +105,9 @@ class AddToCartBookingProductTest extends RestApiTestCase
         ])->postJson($url, $payload);
     }
 
+    /**
+     * Create default booking fixture.
+     */
     private function createDefaultBookingFixture(): array
     {
         $product = $this->createBaseProduct('booking', [
@@ -72,6 +148,9 @@ class AddToCartBookingProductTest extends RestApiTestCase
         ];
     }
 
+    /**
+     * Get slot timestamp.
+     */
     private function getSlotTimestamp(int $productId, string $date): ?string
     {
         try {
@@ -90,60 +169,5 @@ class AddToCartBookingProductTest extends RestApiTestCase
         } catch (\Throwable) {
             return null;
         }
-    }
-
-    public function test_add_default_booking_product_to_cart_as_guest(): void
-    {
-        $this->seedRequiredData();
-        $fixture = $this->createDefaultBookingFixture();
-
-        $slot = $this->getSlotTimestamp((int) $fixture['product']->id, $fixture['date']);
-        if (! $slot) {
-            $this->markTestSkipped('No valid slot found for default booking product.');
-        }
-
-        $token = $this->createGuestCartToken();
-
-        $response = $this->postWithToken($this->addProductUrl, $token, [
-            'productId' => (int) $fixture['product']->id,
-            'quantity' => 1,
-            'booking' => json_encode([
-                'type' => 'default',
-                'date' => $fixture['date'],
-                'slot' => $slot,
-            ], JSON_UNESCAPED_SLASHES),
-        ]);
-
-        expect($response->getStatusCode())->toBeIn([200, 201]);
-        expect($response->json('success'))->toBeTrue();
-        expect($response->json('isGuest'))->toBeTrue();
-        expect((int) $response->json('itemsCount'))->toBeGreaterThan(0);
-    }
-
-    public function test_add_default_booking_product_to_customer_cart(): void
-    {
-        $this->seedRequiredData();
-        $fixture = $this->createDefaultBookingFixture();
-
-        $slot = $this->getSlotTimestamp((int) $fixture['product']->id, $fixture['date']);
-        if (! $slot) {
-            $this->markTestSkipped('No valid slot found for default booking product.');
-        }
-
-        $customer = $this->createCustomer();
-
-        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId' => (int) $fixture['product']->id,
-            'quantity' => 1,
-            'booking' => json_encode([
-                'type' => 'default',
-                'date' => $fixture['date'],
-                'slot' => $slot,
-            ], JSON_UNESCAPED_SLASHES),
-        ]);
-
-        expect($response->getStatusCode())->toBeIn([200, 201]);
-        expect($response->json('success'))->toBeTrue();
-        expect($response->json('isGuest'))->toBeFalse();
     }
 }

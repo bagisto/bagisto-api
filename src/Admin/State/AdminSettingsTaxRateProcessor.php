@@ -22,26 +22,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Tax\Models\TaxRate;
 use Webkul\Tax\Repositories\TaxRateRepository;
 
-/**
- * Handles POST / PUT / DELETE for AdminSettingsTaxRate.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\Tax\TaxRateController.
- *
- * is_zip conditional validation:
- *   - is_zip = false → zip_code required
- *   - is_zip = true  → zip_from + zip_to required
- *
- * Permission resolution mirrors AdminSettingsExchangeRateProcessor (Sanctum
- * pattern — read role->permission_type / role->permissions directly, never
- * call bouncer()).
- */
 class AdminSettingsTaxRateProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected TaxRateRepository $taxRateRepository,
         protected AdminSettingsTaxRateItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -97,6 +90,9 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminSettingsTaxRate
     {
         $payload = $this->normalisePayload($input);
@@ -111,6 +107,9 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         return $this->fetchAndMap((int) $rate->id);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminSettingsTaxRate
     {
         $existing = TaxRate::find($id);
@@ -141,6 +140,9 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsTaxRate
     {
         $existing = TaxRate::find($id);
@@ -174,6 +176,9 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.settings.tax-rate.deleted')];
     }
 
+    /**
+     * Validate create payload.
+     */
     protected function validateCreatePayload(array $input): void
     {
         $value = Validator::make($input, [
@@ -190,6 +195,9 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         $this->validateConditionalZipRules($input);
     }
 
+    /**
+     * Validate update payload.
+     */
     protected function validateUpdatePayload(array $input, int $excludeId): void
     {
         $value = Validator::make($input, [
@@ -265,6 +273,9 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         return $out;
     }
 
+    /**
+     * Only fillable.
+     */
     protected function onlyFillable(array $payload): array
     {
         return array_intersect_key($payload, array_flip([
@@ -273,6 +284,9 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         ]));
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -300,6 +314,9 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -315,6 +332,9 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -327,6 +347,9 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -377,11 +400,17 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Fetch and map.
+     */
     protected function fetchAndMap(int $id): AdminSettingsTaxRate
     {
         return $this->mapModel(TaxRate::find($id));
     }
 
+    /**
+     * Map model.
+     */
     protected function mapModel(object $model): AdminSettingsTaxRate
     {
         $reflection = new \ReflectionClass($this->itemProvider);

@@ -171,6 +171,36 @@ class Section extends \Webkul\Theme\Models\Section
         'draft_sort_order',
     ];
 
+    /**
+     * Get id.
+     */
+    #[ApiProperty(identifier: true, writable: false)]
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * Get translation.
+     */
+    #[ApiProperty(readable: true, writable: false, readableLink: true, description: 'Current locale translation')]
+    public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
+    {
+        return $this->translation;
+    }
+
+    /**
+     * Get translations.
+     */
+    #[ApiProperty(readable: true, writable: false, readableLink: true, description: 'All translations')]
+    public function getTranslations()
+    {
+        return $this->translations;
+    }
+
+    /**
+     * Booted.
+     */
     protected static function booted(): void
     {
         static::addGlobalScope('bagisto_api_storefront', function (Builder $builder) {
@@ -182,23 +212,5 @@ class Section extends \Webkul\Theme\Models\Section
                 ->where('theme_sections.theme_code', $channel->theme ?: config('themes.shop-default'))
                 ->orderBy('theme_sections.sort_order');
         });
-    }
-
-    #[ApiProperty(identifier: true, writable: false)]
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    #[ApiProperty(readable: true, writable: false, readableLink: true, description: 'Current locale translation')]
-    public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
-    {
-        return $this->translation;
-    }
-
-    #[ApiProperty(readable: true, writable: false, readableLink: true, description: 'All translations')]
-    public function getTranslations()
-    {
-        return $this->translations;
     }
 }

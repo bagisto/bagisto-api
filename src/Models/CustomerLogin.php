@@ -97,21 +97,39 @@ use Webkul\BagistoApi\State\LoginProcessor;
 )]
 class CustomerLogin
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: false, writable: false, readable: true, required: false)]
     public ?int $id = null;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public ?int $_id = null;
 
+    /**
+     * The api token.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $apiToken = null;
 
+    /**
+     * The token.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $token = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $message = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?bool $success = null;
 }

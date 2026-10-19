@@ -7,11 +7,9 @@ use Webkul\BagistoApi\Tests\BagistoApiTestCase;
 
 class ApiPlatformConfigConsistencyTest extends BagistoApiTestCase
 {
-    private function packageConfig(string $file): array
-    {
-        return require dirname(__DIR__, 2).'/config/'.$file;
-    }
-
+    /**
+     * Test vendor config carries the same middleware as the package config.
+     */
     public function test_vendor_config_carries_the_same_middleware_as_the_package_config(): void
     {
         $package = $this->packageConfig('api-platform.php');
@@ -21,6 +19,9 @@ class ApiPlatformConfigConsistencyTest extends BagistoApiTestCase
         $this->assertSame($package['graphql']['middleware'], $vendor['graphql']['middleware']);
     }
 
+    /**
+     * Test every config applies the locale channel headers.
+     */
     public function test_every_config_applies_the_locale_channel_headers(): void
     {
         foreach (['api-platform.php', 'api-platform-vendor.php'] as $file) {
@@ -32,5 +33,13 @@ class ApiPlatformConfigConsistencyTest extends BagistoApiTestCase
 
         $this->assertContains(SetLocaleChannel::class, config('api-platform.routes.middleware'));
         $this->assertContains(SetLocaleChannel::class, config('api-platform.graphql.middleware'));
+    }
+
+    /**
+     * Package config.
+     */
+    private function packageConfig(string $file): array
+    {
+        return require dirname(__DIR__, 2).'/config/'.$file;
     }
 }

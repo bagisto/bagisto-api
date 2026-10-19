@@ -5,37 +5,20 @@ namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Product\Models\Product;
 
-/**
- * Products GraphQL API Test Cases
- *
- * Organized by test categories:
- * - Products - Sorting
- * - Products - Search
- * - Products - Single Product
- * - Products - Variants
- * - Products - Full Details
- */
 class ProductTest extends GraphQLTestCase
 {
+    /**
+     * The test product id.
+     */
     protected int $testProductId = 0;
 
+    /**
+     * The test product sku.
+     */
     protected string $testProductSku = '';
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $product = $this->createBaseProduct('simple', [
-            'sku' => 'TEST-PRODUCT-FIXTURE-'.uniqid(),
-        ]);
-        $this->ensureInventory($product, 50);
-
-        $this->testProductId = (int) $product->id;
-        $this->testProductSku = (string) $product->sku;
-    }
-
     /**
-     * Test: Query products sorted A-Z
+     * Test: Query products sorted A-Z.
      */
     public function test_get_products_sorted_az(): void
     {
@@ -69,7 +52,7 @@ class ProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query products sorted Z to A
+     * Test: Query products sorted Z to A.
      */
     public function test_get_products_sorted_za(): void
     {
@@ -103,7 +86,7 @@ class ProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query products sorted by newest first
+     * Test: Query products sorted by newest first.
      */
     public function test_get_products_newest_first(): void
     {
@@ -139,7 +122,7 @@ class ProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query products sorted by oldest first
+     * Test: Query products sorted by oldest first.
      */
     public function test_get_products_oldest_first(): void
     {
@@ -175,7 +158,7 @@ class ProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query products sorted by cheapest first
+     * Test: Query products sorted by cheapest first.
      */
     public function test_get_products_cheapest_first(): void
     {
@@ -209,7 +192,7 @@ class ProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query products sorted by most expensive first
+     * Test: Query products sorted by most expensive first.
      */
     public function test_get_products_most_expensive_first(): void
     {
@@ -243,7 +226,7 @@ class ProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Search products with query filter
+     * Test: Search products with query filter.
      */
     public function test_search_products(): void
     {
@@ -273,7 +256,6 @@ class ProductTest extends GraphQLTestCase
 
         $response->assertOk();
 
-        // Check if products exist (search might return empty)
         $edges = $response->json('data.products.edges');
 
         if (! empty($edges)) {
@@ -289,7 +271,7 @@ class ProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Get product by ID
+     * Test: Get product by ID.
      */
     public function test_get_product_by_id(): void
     {
@@ -325,7 +307,7 @@ class ProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Search product by SKU
+     * Test: Search product by SKU.
      */
     public function test_search_product_by_sku(): void
     {
@@ -349,7 +331,6 @@ class ProductTest extends GraphQLTestCase
 
         $response->assertOk();
 
-        // Check if product exists
         $product = $response->json('data.product');
 
         if ($product) {
@@ -364,7 +345,7 @@ class ProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Get product with variants
+     * Test: Get product with variants.
      */
     public function test_get_product_with_variants(): void
     {
@@ -420,7 +401,6 @@ class ProductTest extends GraphQLTestCase
             'variants',
         ]);
 
-        // Check variants if they exist
         $variants = $response->json('data.product.variants.edges');
 
         if (! empty($variants)) {
@@ -453,7 +433,7 @@ class ProductTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Get full product details
+     * Test: Get full product details.
      */
     public function test_get_full_product_details(): void
     {
@@ -542,7 +522,6 @@ class ProductTest extends GraphQLTestCase
                 'categories',
             ]);
 
-            // Check images if they exist
             $images = $response->json('data.product.images.edges');
             if (! empty($images)) {
                 $imageNode = $response->json('data.product.images.edges.0.node');
@@ -553,7 +532,6 @@ class ProductTest extends GraphQLTestCase
                 ]);
             }
 
-            // Check attributes if they exist
             $attributes = $response->json('data.product.attributes');
             if (! empty($attributes)) {
                 $attribute = $response->json('data.product.attributes.0');
@@ -563,7 +541,6 @@ class ProductTest extends GraphQLTestCase
                 ]);
             }
 
-            // Check variants if they exist
             $variants = $response->json('data.product.variants.edges');
             if (! empty($variants)) {
                 $variantNode = $response->json('data.product.variants.edges.0.node');
@@ -576,7 +553,6 @@ class ProductTest extends GraphQLTestCase
                 ]);
             }
 
-            // Check categories if they exist
             $categories = $response->json('data.product.categories.edges');
             if (! empty($categories)) {
                 $categoryNode = $response->json('data.product.categories.edges.0.node');
@@ -592,23 +568,17 @@ class ProductTest extends GraphQLTestCase
 
     /**
      * Test: Search Products with Filter - With Test Data
-     *
      * This test creates a specific product and verifies the search functionality works.
-     * Note: The search uses SKU and attribute text_value for matching.
      */
     public function test_search_products_with_filter_and_test_data(): void
     {
-        // Seed required data first
         $this->seedRequiredData();
 
-        // Create test product with 'shirt' in the SKU
         $product = $this->createShirtProduct();
 
-        // Verify product was created
         $this->assertNotNull($product->id, 'Product should be created');
         $this->assertEquals('SHIRT-001', $product->sku);
 
-        // Query all products first to verify the product exists
         $allProductsQuery = <<<'GQL'
             query getAllProducts($first: Int) {
               products(first: $first) {
@@ -627,11 +597,9 @@ class ProductTest extends GraphQLTestCase
         $response = $this->graphQL($allProductsQuery, ['first' => 50]);
         $response->assertSuccessful();
 
-        // Verify product is in the list
         $edges = $response->json('data.products.edges');
         $this->assertNotEmpty($edges, 'Products list should not be empty');
 
-        // Now test the search query
         $searchQuery = <<<'GQL'
             query getProductsSearchFilter($query: String, $sortKey: String, $reverse: Boolean, $first: Int) {
               products(query: $query, sortKey: $sortKey, reverse: $reverse, first: $first) {
@@ -647,7 +615,6 @@ class ProductTest extends GraphQLTestCase
             }
         GQL;
 
-        // Test with SKU search - use the SKU of the product we just created
         $variables = [
             'query' => 'SHIRT-001',
             'sortKey' => 'TITLE',
@@ -659,35 +626,28 @@ class ProductTest extends GraphQLTestCase
 
         $response->assertSuccessful();
 
-        // Verify the response structure
         $this->assertArrayHasKey('data', $response->json());
         $this->assertArrayHasKey('products', $response->json('data'));
         $this->assertArrayHasKey('edges', $response->json('data.products'));
 
-        // Verify that at least one product is returned when searching by SKU
         $edges = $response->json('data.products.edges');
         $this->assertNotEmpty($edges, 'Search should return at least one product with SKU "SHIRT-001"');
 
-        // Verify the first product has expected fields
         $productNode = $response->json('data.products.edges.0.node');
         $this->assertArrayHasKey('id', $productNode);
         $this->assertArrayHasKey('name', $productNode);
         $this->assertArrayHasKey('sku', $productNode);
         $this->assertArrayHasKey('price', $productNode);
 
-        // Verify the product SKU matches
         $this->assertEquals('SHIRT-001', $productNode['sku']);
     }
 
     /**
      * Test: Search Products by Category ID with Pagination
-     *
-     * This test verifies that products can be filtered by category ID
-     * with proper pagination support.
+     * This test verifies that products can be filtered by category ID.
      */
     public function test_search_products_by_category_id_with_pagination(): void
     {
-        // Seed required data first
         $this->seedRequiredData();
 
         $query = <<<'GQL'
@@ -717,7 +677,6 @@ class ProductTest extends GraphQLTestCase
             }
         GQL;
 
-        // Test with category filter
         $variables = [
             'filter' => '{"category_id": "22"}',
             'first' => 2,
@@ -728,21 +687,18 @@ class ProductTest extends GraphQLTestCase
 
         $response->assertSuccessful();
 
-        // Verify the response structure
         $this->assertArrayHasKey('data', $response->json());
         $this->assertArrayHasKey('products', $response->json('data'));
         $this->assertArrayHasKey('edges', $response->json('data.products'));
         $this->assertArrayHasKey('pageInfo', $response->json('data.products'));
         $this->assertArrayHasKey('totalCount', $response->json('data.products'));
 
-        // Verify pageInfo structure
         $pageInfo = $response->json('data.products.pageInfo');
         $this->assertArrayHasKey('hasNextPage', $pageInfo);
         $this->assertArrayHasKey('hasPreviousPage', $pageInfo);
         $this->assertArrayHasKey('startCursor', $pageInfo);
         $this->assertArrayHasKey('endCursor', $pageInfo);
 
-        // Verify edges structure
         $edges = $response->json('data.products.edges');
         if (! empty($edges)) {
             $firstProduct = $response->json('data.products.edges.0.node');
@@ -760,12 +716,10 @@ class ProductTest extends GraphQLTestCase
 
     /**
      * Test: Filter Products by Type
-     *
-     * This test verifies that products can be filtered by type (e.g., configurable, simple, etc.)
+     * This test verifies that products can be filtered by type (e.g., configurable, simple, etc.).
      */
     public function test_filter_products_by_type(): void
     {
-        // Seed required data first
         $this->seedRequiredData();
 
         $query = <<<'GQL'
@@ -782,7 +736,6 @@ class ProductTest extends GraphQLTestCase
             }
         GQL;
 
-        // Test with type filter - configurable products
         $variables = [
             'filter' => '{"type": "configurable"}',
         ];
@@ -791,13 +744,11 @@ class ProductTest extends GraphQLTestCase
 
         $response->assertSuccessful();
 
-        // Verify the response structure
         $this->assertArrayHasKey('data', $response->json());
         $this->assertArrayHasKey('products', $response->json('data'));
         $this->assertArrayHasKey('edges', $response->json('data.products'));
         $this->assertArrayHasKey('totalCount', $response->json('data.products'));
 
-        // Verify edges structure
         $edges = $response->json('data.products.edges');
         if (! empty($edges)) {
             $firstProduct = $response->json('data.products.edges.0.node');
@@ -805,7 +756,6 @@ class ProductTest extends GraphQLTestCase
             $this->assertArrayHasKey('sku', $firstProduct);
         }
 
-        // Verify totalCount is an integer
         $totalCount = $response->json('data.products.totalCount');
         $this->assertIsInt($totalCount);
     }
@@ -852,7 +802,6 @@ class ProductTest extends GraphQLTestCase
 
         $node = $edges[0]['node'];
 
-        // Verify numeric price fields
         $this->assertArrayHasKey('price', $node);
         $this->assertArrayHasKey('specialPrice', $node);
         $this->assertArrayHasKey('minimumPrice', $node);
@@ -860,7 +809,6 @@ class ProductTest extends GraphQLTestCase
         $this->assertArrayHasKey('regularMinimumPrice', $node);
         $this->assertArrayHasKey('regularMaximumPrice', $node);
 
-        // Verify formatted price fields exist and are strings (or null for specialPrice)
         $this->assertArrayHasKey('formattedPrice', $node);
         $this->assertArrayHasKey('formattedSpecialPrice', $node);
         $this->assertArrayHasKey('formattedMinimumPrice', $node);
@@ -868,13 +816,11 @@ class ProductTest extends GraphQLTestCase
         $this->assertArrayHasKey('formattedRegularMinimumPrice', $node);
         $this->assertArrayHasKey('formattedRegularMaximumPrice', $node);
 
-        // formattedPrice should be a currency string when price is non-zero
         if ((float) $node['price'] > 0) {
             $this->assertIsString($node['formattedPrice']);
             $this->assertNotEmpty($node['formattedPrice']);
         }
 
-        // formattedMinimumPrice should always be a string
         $this->assertIsString($node['formattedMinimumPrice']);
         $this->assertIsString($node['formattedMaximumPrice']);
         $this->assertIsString($node['formattedRegularMinimumPrice']);
@@ -882,7 +828,23 @@ class ProductTest extends GraphQLTestCase
     }
 
     /**
-     * Helper method to create a shirt product for testing
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $product = $this->createBaseProduct('simple', [
+            'sku' => 'TEST-PRODUCT-FIXTURE-'.uniqid(),
+        ]);
+        $this->ensureInventory($product, 50);
+
+        $this->testProductId = (int) $product->id;
+        $this->testProductSku = (string) $product->sku;
+    }
+
+    /**
+     * Helper method to create a shirt product for testing.
      */
     protected function createShirtProduct()
     {

@@ -7,20 +7,11 @@ use Webkul\Checkout\Models\Cart;
 use Webkul\Checkout\Models\CartAddress;
 use Webkul\Checkout\Models\CartItem;
 
-/**
- * Maps a Cart model + its children to the AdminCart resource shape used by
- * every /api/admin/carts/* endpoint. Shared by the GET endpoint and by every
- * write processor (add item, update qty, save address, apply coupon, ...) so
- * a single response shape is guaranteed across the cart group.
- *
- * Items and addresses are rendered as plain associative arrays — declared as
- * `?array` / `array` on `AdminCart` — so API Platform's serializer keeps
- * them inline rather than collapsing to IRIs (the auto-discovered DTO
- * approach surfaced nested resources as "/api/admin_cart_item_dtos/{id}"
- * strings; plain arrays sidestep that).
- */
 class AdminCartPresenter
 {
+    /**
+     * Present.
+     */
     public static function present(Cart $cart, ?bool $success = null, ?string $message = null): AdminCart
     {
         $cart->load([
@@ -78,6 +69,9 @@ class AdminCartPresenter
         return $dto;
     }
 
+    /**
+     * To item array.
+     */
     protected static function toItemArray(CartItem $item, bool $withChildren = true): array
     {
         $row = [
@@ -114,6 +108,9 @@ class AdminCartPresenter
         return $row;
     }
 
+    /**
+     * To address array.
+     */
     protected static function toAddressArray(?CartAddress $address): ?array
     {
         if (! $address) {
@@ -136,6 +133,9 @@ class AdminCartPresenter
         ];
     }
 
+    /**
+     * Nullable float.
+     */
     protected static function nullableFloat($value): ?float
     {
         return $value === null ? null : (float) $value;

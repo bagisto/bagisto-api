@@ -11,10 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminAppearanceSectionReorderInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionReorderProcessor;
 
-/**
- * Render order is staged like any other edit. Footer links are always drawn last, so
- * they are moved back to the end of whatever order is sent.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAppearanceSectionReorder',
@@ -85,6 +81,9 @@ class AdminAppearanceSectionReorder
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $id = 'reorder';
 
@@ -98,5 +97,8 @@ class AdminAppearanceSectionReorder
      */
     public array $has_draft = [];
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

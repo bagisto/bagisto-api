@@ -13,11 +13,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\State\CheckoutProcessor;
 
-/**
- * CheckoutPaymentMethod - GraphQL API Resource for Checkout Payment Method
- *
- * Provides mutation for selecting and saving payment method during checkout
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CheckoutPaymentMethod',
@@ -112,30 +107,51 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
 )]
 class CheckoutPaymentMethod
 {
+    /**
+     * The success.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public bool $success = false;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public string $message = '';
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $cartToken = null;
 
+    /**
+     * The payment method.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $paymentMethod = null;
 
+    /**
+     * The payment redirect url.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $paymentRedirectUrl = null;
 
+    /**
+     * The payment gateway url.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $paymentGatewayUrl = null;
 
+    /**
+     * The payment data.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $paymentData = null;

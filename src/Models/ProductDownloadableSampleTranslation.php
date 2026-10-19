@@ -69,23 +69,41 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 )]
 class ProductDownloadableSampleTranslation extends Model
 {
+    /**
+     * The table.
+     */
     protected $table = 'product_downloadable_sample_translations';
 
+    /**
+     * The timestamps.
+     */
     public $timestamps = false;
 
+    /**
+     * The fillable.
+     */
     protected $fillable = ['title', 'product_downloadable_sample_id', 'locale'];
 
+    /**
+     * Downloadable sample.
+     */
     public function downloadableSample(): BelongsTo
     {
         return $this->belongsTo(ProductDownloadableSample::class, 'product_downloadable_sample_id');
     }
 
+    /**
+     * Get title.
+     */
     #[ApiProperty(writable: true, readable: true)]
     public function getTitle(): ?string
     {
         return $this->title;
     }
 
+    /**
+     * Set title.
+     */
     public function setTitle(?string $value): void
     {
         $this->title = $value;

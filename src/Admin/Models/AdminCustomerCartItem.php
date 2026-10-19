@@ -10,13 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
 
-/**
- * Items in the customer's OWN active storefront cart — the right-sidebar
- * "Cart Items" panel on the Create-Order screen.
- *
- * Reads `carts.is_active = 1` for the given customer; not the admin draft
- * cart. Returns only top-level items (`cart_items.parent_id IS NULL`).
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerCartItem',
@@ -82,36 +75,69 @@ class AdminCustomerCartItem
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The product id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $product_id = null;
 
+    /**
+     * The sku.
+     */
     #[ApiProperty(writable: false)]
     public ?string $sku = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $type = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The quantity.
+     */
     #[ApiProperty(writable: false)]
     public ?int $quantity = null;
 
+    /**
+     * The price.
+     */
     #[ApiProperty(writable: false)]
     public ?float $price = null;
 
+    /**
+     * The formatted price.
+     */
     #[ApiProperty(writable: false)]
     public ?string $formatted_price = null;
 
+    /**
+     * The total.
+     */
     #[ApiProperty(writable: false)]
     public ?float $total = null;
 
+    /**
+     * The formatted total.
+     */
     #[ApiProperty(writable: false)]
     public ?string $formatted_total = null;
 
+    /**
+     * The additional.
+     */
     #[ApiProperty(writable: false)]
     public ?array $additional = null;
 }

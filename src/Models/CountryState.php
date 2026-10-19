@@ -17,10 +17,7 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
 
 /**
  * CountryState - Subresource of Country with REST and GraphQL support
- *
- * Pattern: Like AttributeOption - multiple #[ApiResource] annotations
- * - Subresource routes: /countries/{country_id}/states
- * - Root routes: /country-states (for GraphQL queries and root REST access)
+ * Pattern: Like AttributeOption - multiple #[ApiResource] annotations.
  */
 
 // Subresource nested collection: /countries/{country_id}/states

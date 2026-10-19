@@ -22,25 +22,20 @@ use Webkul\Category\Models\Category;
 use Webkul\Category\Repositories\CategoryRepository;
 use Webkul\Core\Repositories\ChannelRepository;
 
-/**
- * Handles POST, PUT, DELETE on the AdminCategory resource (Phase 2 — CRUD).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Catalog\CategoryController::
- *   store() / update() / destroy()
- * — validation, events, and the isCategoryDeletable guard (id===1 || channel root).
- *
- * Permission resolution mirrors AdminAttributeFamilyProcessor: read
- * role->permission_type / role->permissions directly. Never call bouncer()
- * (Sanctum-token requests have no session-bound admin).
- */
 class AdminCategoryProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CategoryRepository $categoryRepository,
         protected ChannelRepository $channelRepository,
         protected AdminCategoryItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -96,6 +91,9 @@ class AdminCategoryProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminCategory
     {
         $this->validateCreatePayload($input);
@@ -113,6 +111,9 @@ class AdminCategoryProcessor implements ProcessorInterface
         return $this->fetchAndMap((int) $category->id);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminCategory
     {
         $category = Category::find($id);
@@ -137,6 +138,9 @@ class AdminCategoryProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminCategory
     {
         $category = Category::find($id);
@@ -176,6 +180,9 @@ class AdminCategoryProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.category.deleted')];
     }
 
+    /**
+     * Validate create payload.
+     */
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
@@ -206,6 +213,9 @@ class AdminCategoryProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Validate update payload.
+     */
     protected function validateUpdatePayload(array $input, int $excludeId): void
     {
         $locale = $input['locale'] ?? app()->getLocale();
@@ -239,6 +249,9 @@ class AdminCategoryProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Whether category deletable.
+     */
     protected function isCategoryDeletable($category): bool
     {
         if ((int) $category->id === 1) {
@@ -250,6 +263,9 @@ class AdminCategoryProcessor implements ProcessorInterface
         return ! in_array((int) $category->id, $rootIds, true);
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -277,6 +293,9 @@ class AdminCategoryProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -292,6 +311,9 @@ class AdminCategoryProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -304,6 +326,9 @@ class AdminCategoryProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -367,11 +392,17 @@ class AdminCategoryProcessor implements ProcessorInterface
         return $input;
     }
 
+    /**
+     * Fetch and map.
+     */
     protected function fetchAndMap(int $id): AdminCategory
     {
         return $this->mapModel(Category::with(['translations', 'filterableAttributes'])->find($id));
     }
 
+    /**
+     * Map model.
+     */
     protected function mapModel(object $model): AdminCategory
     {
         $reflection = new \ReflectionClass($this->itemProvider);

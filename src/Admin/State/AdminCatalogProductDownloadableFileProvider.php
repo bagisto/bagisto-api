@@ -16,6 +16,9 @@ class AdminCatalogProductDownloadableFileProvider implements ProviderInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $admin = AdminAuthHelper::resolveAdmin();

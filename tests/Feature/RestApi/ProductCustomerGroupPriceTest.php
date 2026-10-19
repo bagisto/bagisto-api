@@ -7,9 +7,6 @@ use Webkul\Customer\Models\CustomerGroup;
 use Webkul\Product\Models\Product;
 use Webkul\Product\Models\ProductCustomerGroupPrice;
 
-/**
- * REST coverage for GET /api/shop/products/{productId}/customer-group-prices.
- */
 class ProductCustomerGroupPriceTest extends RestApiTestCase
 {
     /**

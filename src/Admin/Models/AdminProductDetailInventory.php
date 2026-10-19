@@ -7,10 +7,6 @@ use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Product inventory row — nested sub-resource of AdminCatalogProduct
- * (`inventories` connection). sourceCode resolved from inventory_sources.
- */
 #[ApiResource(
     shortName: 'AdminProductDetailInventory',
     operations: [],
@@ -31,18 +27,27 @@ class AdminProductDetailInventory extends Model
         'qty' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get source id attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getSourceIdAttribute(): ?int
     {
         return $this->inventory_source_id !== null ? (int) $this->inventory_source_id : null;
     }
 
+    /**
+     * Get source code attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getSourceCodeAttribute(): ?string
     {

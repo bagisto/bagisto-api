@@ -11,30 +11,31 @@ use Webkul\BagistoApi\Admin\Models\AdminCatalogProduct;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Support\CoreCapabilities;
 
-/**
- * Provider for the admin Catalog → Products datagrid endpoint.
- *
- * REST: GET /api/admin/catalog/products
- * GraphQL: adminCatalogProducts query
- *
- * Mirrors Webkul\Admin\DataGrids\Catalog\ProductDataGrid 1:1 — same DB joins,
- * same Elasticsearch branch gated by core config.
- *
- * Quantity, image count, base image, stock handling, category names and the family name
- * are read from the flat table's own derived columns, as the admin listing reads them, so
- * the row matches the screen. A core older than 2.4.10 has no such columns and the listing
- * computes the same values per returned row.
- */
 class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * The filter args.
+     */
     protected array $filterArgs = [];
 
+    /**
+     * The resolved locale.
+     */
     protected ?string $resolvedLocale = null;
 
+    /**
+     * The resolved channel.
+     */
     protected ?string $resolvedChannel = null;
 
+    /**
+     * The listing is graph ql.
+     */
     protected bool $listingIsGraphQL = false;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected CoreCapabilities $capabilities) {}
 
     /**
@@ -51,6 +52,9 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return [
@@ -59,6 +63,9 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         ];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         $tablePrefix = DB::getTablePrefix();
@@ -107,9 +114,6 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
                 'product_flat.attribute_family_name as attribute_family',
             );
         } else {
-            // BACKWARD COMPATIBILITY: a core before 2.4.10 has no derived columns on the
-            // flat table, so the listing computes the same values per returned row. Drop
-            // this arm when the minimum supported core is 2.4.10.
             $query->leftJoin('attribute_families as af', 'product_flat.attribute_family_id', '=', 'af.id')
                 ->addSelect('af.name as attribute_family')
                 ->selectRaw('(SELECT COALESCE(SUM(qty), 0) FROM '.$tablePrefix.'product_inventories WHERE '.$tablePrefix.'product_inventories.product_id = '.$tablePrefix.'product_flat.product_id) as quantity')
@@ -125,6 +129,9 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
             ->where('product_flat.channel', $channel);
     }
 
+    /**
+     * Count total.
+     */
     protected function countTotal($query): int
     {
         $count = DB::table('product_flat')
@@ -136,6 +143,9 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         return $count->distinct()->count('product_flat.product_id');
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['product_id'])) {
@@ -180,6 +190,9 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -189,7 +202,6 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
             'sku' => 'product_flat.sku',
             'attribute_family' => 'product_flat.attribute_family_id',
             'price' => 'product_flat.price',
-            // BACKWARD COMPATIBILITY: before 2.4.10 the quantity is a selected alias, not a column.
             'quantity' => $this->capabilities->hasProductFlatDerivedColumns() ? 'product_flat.quantity' : 'quantity',
             'product_id' => 'product_flat.product_id',
             'status' => 'product_flat.status',
@@ -202,6 +214,9 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         $query->orderBy($orderColumn, $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): object
     {
         if ($this->listingIsGraphQL) {
@@ -248,6 +263,9 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         return $dto;
     }
 
+    /**
+     * Map row to eloquent.
+     */
     protected function mapRowToEloquent(object $row): AdminCatalogProduct
     {
         $model = (new AdminCatalogProduct)->forceFill([
@@ -300,6 +318,9 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         return $model;
     }
 
+    /**
+     * Resolve price range.
+     */
     protected function resolvePriceRange(array $args): array
     {
         $from = $args['price_from'] ?? null;
@@ -323,6 +344,9 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         return [$from, $to];
     }
 
+    /**
+     * Should use elasticsearch.
+     */
     protected function shouldUseElasticsearch(): bool
     {
         return core()->getConfigData('catalog.products.search.engine') === 'elastic'

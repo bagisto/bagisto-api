@@ -284,24 +284,48 @@ class AdminRmaReason
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The title.
+     */
     public ?string $title = null;
 
+    /**
+     * The status.
+     */
     public ?int $status = null;
 
+    /**
+     * The position.
+     */
     public ?int $position = null;
 
+    /**
+     * The is admin.
+     */
     public ?int $is_admin = null;
 
     /** @var array<int,string>|null */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $resolution_type = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

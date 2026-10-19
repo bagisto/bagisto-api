@@ -12,6 +12,9 @@ use ApiPlatform\Metadata\ApiResource;
 )]
 class CategoryTranslation extends \Webkul\Category\Models\CategoryTranslation
 {
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

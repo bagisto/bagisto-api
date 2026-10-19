@@ -6,12 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Locale — nested sub-resource of AdminSettingsChannel (`locales` connection).
- * Backed by `locales` via a straight belongsToMany over `channel_locales`
- * (`channel_id`, `locale_id`) — the pivot has no own `id`, so the node `_id`
- * resolves to the related locale's real id. Surfaces `code`/`name`/`direction`.
- */
 #[ApiResource(
     shortName: 'AdminSettingsChannelLocaleRef',
     operations: [],
@@ -31,6 +25,9 @@ class AdminSettingsChannelLocaleRef extends Model
         'id' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

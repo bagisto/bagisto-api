@@ -15,10 +15,19 @@ use Webkul\Product\Repositories\ProductReviewRepository;
 
 class AdminCustomerReviewMassUpdateStatusProcessor implements ProcessorInterface
 {
+    /**
+     * The allowed statuses constant.
+     */
     public const ALLOWED_STATUSES = ['pending', 'approved', 'disapproved'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected ProductReviewRepository $reviewRepository) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -63,6 +72,9 @@ class AdminCustomerReviewMassUpdateStatusProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin): void
     {
         $role = $admin->role ?? null;
@@ -87,6 +99,9 @@ class AdminCustomerReviewMassUpdateStatusProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve payload.
+     */
     protected function resolvePayload(mixed $data, array $context): array
     {
         if ($data instanceof AdminCustomerReviewMassUpdateStatusInput) {

@@ -10,11 +10,6 @@ use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Dto\PaymentMethodOutput;
 use Webkul\BagistoApi\State\PaymentMethodsProvider;
 
-/**
- * PaymentMethods - GraphQL API Resource for Payment Methods
- *
- * Provides query for fetching available payment methods during checkout
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'PaymentMethods',

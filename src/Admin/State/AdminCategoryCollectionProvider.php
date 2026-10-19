@@ -8,22 +8,19 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Models\AdminCategory;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for the admin Catalog → Categories datagrid endpoint.
- *
- * REST: GET /api/admin/catalog/categories
- *
- * Mirrors Webkul\Admin\DataGrids\Catalog\CategoryDataGrid 1:1 — same DB join
- * (categories × category_translations on the active locale), same filterable
- * columns, same sort columns.
- */
 class AdminCategoryCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'name', 'position', 'status'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         $locale = $args['locale'] ?? app()->getLocale();
@@ -65,6 +62,9 @@ class AdminCategoryCollectionProvider extends AbstractAdminCollectionProvider
             );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['category_id'])) {
@@ -105,6 +105,9 @@ class AdminCategoryCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -121,6 +124,9 @@ class AdminCategoryCollectionProvider extends AbstractAdminCollectionProvider
         $query->orderBy($orderColumn, $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminCategory
     {
         $locale = app()->getLocale();

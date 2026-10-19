@@ -21,14 +21,6 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
-/**
- * Handles POST, PUT, DELETE on AdminAttributeOption sub-resource.
- *
- * POST   /api/admin/catalog/attributes/{attributeId}/options
- * PUT    /api/admin/catalog/attributes/{attributeId}/options/{optionId}
- * DELETE /api/admin/catalog/attributes/{attributeId}/options/{optionId}
- * + matching GraphQL mutations.
- */
 class AdminAttributeOptionProcessor implements ProcessorInterface
 {
     /** Types that support options. */
@@ -38,11 +30,17 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         AttributeTypeEnum::CHECKBOX->value,
     ];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AttributeOptionRepository $attributeOptionRepository,
         protected AdminAttributeItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         AdminReadPermissions::authorize(null, null, 'catalog.attributes.edit');
@@ -101,6 +99,9 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(int $attributeId, array $input, bool $asOption = false): AdminAttribute|AdminAttributeOption
     {
         $attribute = Attribute::with(['translations', 'options.translations'])->find($attributeId);
@@ -138,6 +139,9 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($attribute);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $attributeId, int $optionId, array $input, bool $asOption = false): AdminAttribute|AdminAttributeOption
     {
         $attribute = Attribute::with(['translations', 'options.translations'])->find($attributeId);
@@ -169,6 +173,9 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($attribute);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $attributeId, int $optionId, bool $asResource = false): array|AdminAttributeOption
     {
         $attribute = Attribute::find($attributeId);
@@ -210,6 +217,9 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.attribute.option-delete-success')];
     }
 
+    /**
+     * Map option.
+     */
     protected function mapOption(AttributeOption $option): AdminAttributeOption
     {
         $dto = new AdminAttributeOption;
@@ -222,6 +232,9 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         return $dto;
     }
 
+    /**
+     * Build option data.
+     */
     protected function buildOptionData(int $attributeId, array $input): array
     {
         $optData = [
@@ -249,6 +262,9 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         return $optData;
     }
 
+    /**
+     * Resolve attribute id.
+     */
     protected function resolveAttributeId(array $uriVariables, array $context, mixed $data): int
     {
         $raw = $uriVariables['attributeId']
@@ -261,6 +277,9 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         return (int) ($raw ?? 0);
     }
 
+    /**
+     * Resolve option id.
+     */
     protected function resolveOptionId(array $uriVariables, array $context, mixed $data): int
     {
         $raw = $uriVariables['optionId']
@@ -273,6 +292,9 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         return (int) ($raw ?? 0);
     }
 
+    /**
+     * Resolve input.
+     */
     protected function resolveInput(mixed $data, array $context): array
     {
         $args = $context['args']['input'] ?? $context['args'] ?? [];

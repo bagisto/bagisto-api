@@ -6,10 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Order comment — nested sub-resource of AdminOrderDetail (the order-view
- * Comments panel, newest first).
- */
 #[ApiResource(
     shortName: 'AdminOrderDetailComment',
     operations: [],
@@ -28,6 +24,9 @@ class AdminOrderDetailComment extends Model
         'created_at' => 'datetime',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

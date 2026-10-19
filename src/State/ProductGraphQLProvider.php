@@ -17,14 +17,26 @@ class ProductGraphQLProvider implements ProviderInterface
 {
     use ClampsPageSize;
 
+    /**
+     * The attribute type cache.
+     */
+    private ?array $attributeTypeCache = null;
+
+    /**
+     * The attribute scope cache.
+     */
+    private ?array $attributeScopeCache = null;
+
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
-    private ?array $attributeTypeCache = null;
-
-    private ?array $attributeScopeCache = null;
-
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $this->loadAttributeCaches();
@@ -334,6 +346,9 @@ class ProductGraphQLProvider implements ProviderInterface
         unset($filters['new'], $filters['featured']);
     }
 
+    /**
+     * Apply category filter.
+     */
     private function applyCategoryFilter($query, array &$filters): void
     {
         if (empty($filters['category_id'])) {
@@ -548,18 +563,14 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Apply attribute filter logic to a query based on attribute type
+     * Apply attribute filter logic to a query based on attribute type.
      */
     private function applyAttributeFilter($query, $term, $matchType, $locale, $channel, $alias, $attributeType = null, $attrCode = null)
     {
-        // Fallback to text_value if attribute type not provided
         if (! $attributeType) {
             $attributeType = 'text';
         }
 
-        // Only constrain locale/channel when the attribute is actually scoped —
-        // non-scoped attributes store NULL in locale/channel columns, so adding
-        // a WHERE locale = 'en' would exclude every match.
         $scope = $attrCode ? ($this->attributeScopeCache[$attrCode] ?? null) : null;
 
         if (
@@ -584,7 +595,7 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Get the correct column name based on attribute type
+     * Get the correct column name based on attribute type.
      */
     private function getColumnForType($attributeType)
     {
@@ -602,7 +613,7 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Apply partial (LIKE) filter based on attribute type
+     * Apply partial (LIKE) filter based on attribute type.
      */
     private function applyPartialFilter($query, $term, $alias, $attributeType)
     {
@@ -611,7 +622,7 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Apply exact match filter based on attribute type
+     * Apply exact match filter based on attribute type.
      */
     private function applyExactFilter($query, $term, $alias, $attributeType)
     {
@@ -623,7 +634,6 @@ class ProductGraphQLProvider implements ProviderInterface
         ) {
             $values = array_filter(array_map('trim', explode(',', $term)));
 
-            // Convert values based on attribute type
             $convertedValues = $this->convertValuesForType($values, $attributeType);
 
             $query->whereIn($alias.'.'.$column, $convertedValues);
@@ -635,7 +645,7 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Convert a single value based on attribute type
+     * Convert a single value based on attribute type.
      */
     private function convertValueForType($value, $attributeType)
     {
@@ -648,7 +658,7 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Convert multiple values based on attribute type
+     * Convert multiple values based on attribute type.
      */
     private function convertValuesForType($values, $attributeType)
     {

@@ -12,17 +12,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminConfigurationTreeItem;
 use Webkul\BagistoApi\Admin\Resolver\AdminConfigurationMenuQueryResolver;
 use Webkul\BagistoApi\Admin\State\AdminConfigurationMenuProvider;
 
-/**
- * Admin Configuration menu — returns the merged system_config tree (schema).
- *
- * REST   : GET /api/admin/configuration/menu
- * GraphQL: adminConfigurationMenu query
- *
- * Optional `?slug=` scopes the response to one menu node (a section or group).
- * `?include_values=true` embeds the currently-effective value per field, using
- * `?channel=` and `?locale=` to scope the lookup (defaults to the request's
- * channel/locale resolution).
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminConfigurationMenu',
@@ -110,10 +99,16 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationMenuProvider;
 )]
 class AdminConfigurationMenu
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $id = 'configuration-menu';
 
+    /**
+     * The slug.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $slug = null;

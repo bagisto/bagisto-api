@@ -12,13 +12,13 @@ use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\State\Concerns\ResolvesCartToken;
 
-/**
- * Provides address data from BagistoApi queries.
- */
 class CheckoutAddressProvider implements ProviderInterface
 {
     use ResolvesCartToken;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct() {}
 
     /**
@@ -31,7 +31,6 @@ class CheckoutAddressProvider implements ProviderInterface
     ): object|array|null {
         $request = Request::instance() ?? ($context['request'] ?? null);
 
-        // Extract Bearer token from Authorization header
         $token = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
 
         if (! $token) {

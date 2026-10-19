@@ -76,24 +76,45 @@ class AdminCatalogProductCopy
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The source id.
+     */
     #[ApiProperty(writable: false, description: 'ID of the source product that was copied.')]
     public ?int $source_id = null;
 
+    /**
+     * The sku.
+     */
     #[ApiProperty(writable: false, description: 'SKU of the newly created copy (auto-suffixed by Bagisto core).')]
     public ?string $sku = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(writable: false, description: 'Product type of the copy — matches the source.')]
     public ?string $type = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false, description: 'Display name of the copy, when available.')]
     public ?string $name = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

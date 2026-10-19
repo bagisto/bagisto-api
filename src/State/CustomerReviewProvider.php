@@ -15,22 +15,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerReview;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
-/**
- * CustomerReviewProvider — Retrieves reviews authored by the authenticated customer
- *
- * Supports cursor-based pagination, status and rating filters.
- * All queries are scoped to the current customer for multi-tenant isolation.
- */
 class CustomerReviewProvider implements ProviderInterface
 {
     use ClampsPageSize;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
     /**
-     * Provide customer reviews for collection or single-item operations
+     * Provide customer reviews for collection or single-item operations.
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
@@ -40,7 +37,6 @@ class CustomerReviewProvider implements ProviderInterface
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
 
-        /** Single item — GET /api/shop/customer-reviews/{id} */
         if (
             ! $operation instanceof GetCollection
             && ! ($operation instanceof QueryCollection)
@@ -52,7 +48,7 @@ class CustomerReviewProvider implements ProviderInterface
     }
 
     /**
-     * Return a single review owned by the customer
+     * Return a single review owned by the customer.
      */
     private function provideItem(object $customer, array $uriVariables): CustomerReview
     {
@@ -76,7 +72,7 @@ class CustomerReviewProvider implements ProviderInterface
     }
 
     /**
-     * Return a paginated collection of reviews owned by the customer
+     * Return a paginated collection of reviews owned by the customer.
      */
     private function provideCollection(object $customer, array $context): Paginator
     {
@@ -86,7 +82,6 @@ class CustomerReviewProvider implements ProviderInterface
         $query = CustomerReview::where('customer_id', $customer->id)
             ->with(['product', 'customer']);
 
-        /** Apply optional filters */
         $status = $args['status'] ?? $filters['status'] ?? null;
         if ($status !== null) {
             $query->where('status', (string) $status);
@@ -97,7 +92,6 @@ class CustomerReviewProvider implements ProviderInterface
             $query->where('rating', (int) $rating);
         }
 
-        /** Cursor-based pagination (offset-based cursors from API Platform) */
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
         $after = $args['after'] ?? null;

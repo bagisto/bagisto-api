@@ -42,6 +42,217 @@ class BookingSlotQueryTest extends GraphQLTestCase
         }
     GQL;
 
+    // ─── Default Booking (flat) ─────────────────────────────────────────
+
+    /**
+     * Test booking slots for default type.
+     */
+    public function test_booking_slots_for_default_type(): void
+    {
+        $this->seedRequiredData();
+        $fixture = $this->createBookingFixture('default');
+
+        $response = $this->graphQL($this->buildFlatQuery((int) $fixture['booking']->id, $fixture['tomorrowDate']));
+
+        $response->assertSuccessful();
+
+        $json = $response->json();
+        $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
+
+        $slots = $response->json('data.bookingSlots');
+        $this->assertNotNull($slots);
+        $this->assertIsArray($slots);
+        $this->assertNotEmpty($slots, 'Default booking should return at least one slot');
+
+        foreach ($slots as $slot) {
+            $this->assertFlatSlotStructure($slot);
+            $this->assertNotNull($slot['timestamp']);
+            $this->assertMatchesRegularExpression('/^\d+-\d+$/', $slot['timestamp']);
+        }
+    }
+
+    // ─── Appointment Booking (flat) ─────────────────────────────────────
+
+    /**
+     * Test booking slots for appointment type.
+     */
+    public function test_booking_slots_for_appointment_type(): void
+    {
+        $this->seedRequiredData();
+        $fixture = $this->createBookingFixture('appointment');
+
+        $response = $this->graphQL($this->buildFlatQuery((int) $fixture['booking']->id, $fixture['tomorrowDate']));
+
+        $response->assertSuccessful();
+
+        $json = $response->json();
+        $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
+
+        $slots = $response->json('data.bookingSlots');
+        $this->assertNotNull($slots);
+        $this->assertIsArray($slots);
+        $this->assertNotEmpty($slots, 'Appointment booking should return at least one slot');
+
+        foreach ($slots as $slot) {
+            $this->assertFlatSlotStructure($slot);
+            $this->assertNotNull($slot['timestamp']);
+            $this->assertMatchesRegularExpression('/^\d+-\d+$/', $slot['timestamp']);
+        }
+    }
+
+    // ─── Table Booking (flat) ───────────────────────────────────────────
+
+    /**
+     * Test booking slots for table type.
+     */
+    public function test_booking_slots_for_table_type(): void
+    {
+        $this->seedRequiredData();
+        $fixture = $this->createBookingFixture('table');
+
+        $response = $this->graphQL($this->buildFlatQuery((int) $fixture['booking']->id, $fixture['tomorrowDate']));
+
+        $response->assertSuccessful();
+
+        $json = $response->json();
+        $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
+
+        $slots = $response->json('data.bookingSlots');
+        $this->assertNotNull($slots);
+        $this->assertIsArray($slots);
+        $this->assertNotEmpty($slots, 'Table booking should return at least one slot');
+
+        foreach ($slots as $slot) {
+            $this->assertFlatSlotStructure($slot);
+            $this->assertNotNull($slot['timestamp']);
+            $this->assertMatchesRegularExpression('/^\d+-\d+$/', $slot['timestamp']);
+        }
+    }
+
+    // ─── Rental Booking (grouped) — single group ────────────────────────
+
+    /**
+     * Test booking slots for rental hourly type.
+     */
+    public function test_booking_slots_for_rental_hourly_type(): void
+    {
+        $this->seedRequiredData();
+        $fixture = $this->createBookingFixture('rental');
+
+        $response = $this->graphQL($this->buildRentalQuery((int) $fixture['booking']->id, $fixture['tomorrowDate']));
+
+        $response->assertSuccessful();
+
+        $json = $response->json();
+        $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
+
+        $groups = $response->json('data.bookingSlots');
+        $this->assertNotNull($groups);
+        $this->assertIsArray($groups);
+        $this->assertNotEmpty($groups, 'Rental hourly booking should return at least one group');
+
+        $this->assertCount(1, $groups);
+
+        $group = $groups[0];
+        $this->assertRentalGroupStructure($group);
+        $this->assertGreaterThan(1, count($group['slots']), 'Group should have multiple hourly sub-slots');
+    }
+
+    // ─── Rental Booking (grouped) — multiple groups ─────────────────────
+
+    /**
+     * Test booking slots for rental hourly with multiple groups.
+     */
+    public function test_booking_slots_for_rental_hourly_with_multiple_groups(): void
+    {
+        $this->seedRequiredData();
+        $fixture = $this->createMultiGroupRentalFixture();
+
+        $response = $this->graphQL($this->buildRentalQuery((int) $fixture['booking']->id, $fixture['tomorrowDate']));
+
+        $response->assertSuccessful();
+
+        $json = $response->json();
+        $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
+
+        $groups = $response->json('data.bookingSlots');
+        $this->assertNotNull($groups);
+        $this->assertIsArray($groups);
+
+        $this->assertCount(2, $groups, 'Should have 2 time range groups');
+
+        foreach ($groups as $group) {
+            $this->assertRentalGroupStructure($group);
+        }
+
+        $groupDetails = [];
+        foreach ($groups as $group) {
+            $groupDetails[] = [
+                'time' => $group['time'],
+                'slotCount' => count($group['slots']),
+            ];
+        }
+
+        usort($groupDetails, fn ($a, $b) => $a['slotCount'] <=> $b['slotCount']);
+
+        $this->assertSame(2, $groupDetails[0]['slotCount'], 'Smaller group should have 2 hourly slots');
+        $this->assertSame(9, $groupDetails[1]['slotCount'], 'Larger group should have 9 hourly slots');
+
+        foreach ($groups as $group) {
+            $firstSlot = $group['slots'][0];
+            $lastSlot = end($group['slots']);
+
+            $this->assertNotNull($firstSlot['from']);
+            $this->assertNotNull($lastSlot['to']);
+        }
+    }
+
+    // ─── Event Booking (flat) ───────────────────────────────────────────
+
+    /**
+     * Test booking slots for event type.
+     */
+    public function test_booking_slots_for_event_type(): void
+    {
+        $this->seedRequiredData();
+        $fixture = $this->createBookingFixture('event');
+
+        $response = $this->graphQL($this->buildFlatQuery((int) $fixture['booking']->id, $fixture['tomorrowDate']));
+
+        $response->assertSuccessful();
+
+        $json = $response->json();
+        $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
+
+        $slots = $response->json('data.bookingSlots');
+        $this->assertNotNull($slots);
+        $this->assertIsArray($slots);
+    }
+
+    // ─── Edge cases ─────────────────────────────────────────────────────
+
+    /**
+     * Test booking slots with past date returns empty.
+     */
+    public function test_booking_slots_with_past_date_returns_empty(): void
+    {
+        $this->seedRequiredData();
+        $fixture = $this->createBookingFixture('appointment');
+
+        $pastDate = Carbon::now()->subDays(7)->format('Y-m-d');
+
+        $response = $this->graphQL($this->buildFlatQuery((int) $fixture['booking']->id, $pastDate));
+
+        $response->assertSuccessful();
+
+        $json = $response->json();
+        if (! isset($json['errors'])) {
+            $slots = $response->json('data.bookingSlots');
+            $this->assertIsArray($slots);
+            $this->assertEmpty($slots, 'Past date should return no available slots');
+        }
+    }
+
     /**
      * Create a booking product fixture with slots for the given type.
      */
@@ -173,7 +384,6 @@ class BookingSlotQueryTest extends GraphQLTestCase
             'available_every_week' => 1,
         ]);
 
-        // Two slot groups like in the screenshot: 10:00-12:00 and 12:00-21:00
         BookingProductRentalSlot::query()->create([
             'booking_product_id' => $booking->id,
             'renting_type' => 'hourly',
@@ -199,11 +409,17 @@ class BookingSlotQueryTest extends GraphQLTestCase
         ];
     }
 
+    /**
+     * Build flat query.
+     */
     private function buildFlatQuery(int $bookingProductId, string $date): string
     {
         return sprintf($this->flatQuery, $bookingProductId, $date);
     }
 
+    /**
+     * Build rental query.
+     */
     private function buildRentalQuery(int $bookingProductId, string $date): string
     {
         return sprintf($this->rentalQuery, $bookingProductId, $date);
@@ -244,204 +460,6 @@ class BookingSlotQueryTest extends GraphQLTestCase
             $this->assertNotNull($subSlot['to']);
             $this->assertNotNull($subSlot['timestamp']);
             $this->assertMatchesRegularExpression('/^\d+-\d+$/', $subSlot['timestamp']);
-        }
-    }
-
-    // ─── Default Booking (flat) ─────────────────────────────────────────
-
-    public function test_booking_slots_for_default_type(): void
-    {
-        $this->seedRequiredData();
-        $fixture = $this->createBookingFixture('default');
-
-        $response = $this->graphQL($this->buildFlatQuery((int) $fixture['booking']->id, $fixture['tomorrowDate']));
-
-        $response->assertSuccessful();
-
-        $json = $response->json();
-        $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
-
-        $slots = $response->json('data.bookingSlots');
-        $this->assertNotNull($slots);
-        $this->assertIsArray($slots);
-        $this->assertNotEmpty($slots, 'Default booking should return at least one slot');
-
-        foreach ($slots as $slot) {
-            $this->assertFlatSlotStructure($slot);
-            $this->assertNotNull($slot['timestamp']);
-            $this->assertMatchesRegularExpression('/^\d+-\d+$/', $slot['timestamp']);
-        }
-    }
-
-    // ─── Appointment Booking (flat) ─────────────────────────────────────
-
-    public function test_booking_slots_for_appointment_type(): void
-    {
-        $this->seedRequiredData();
-        $fixture = $this->createBookingFixture('appointment');
-
-        $response = $this->graphQL($this->buildFlatQuery((int) $fixture['booking']->id, $fixture['tomorrowDate']));
-
-        $response->assertSuccessful();
-
-        $json = $response->json();
-        $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
-
-        $slots = $response->json('data.bookingSlots');
-        $this->assertNotNull($slots);
-        $this->assertIsArray($slots);
-        $this->assertNotEmpty($slots, 'Appointment booking should return at least one slot');
-
-        foreach ($slots as $slot) {
-            $this->assertFlatSlotStructure($slot);
-            $this->assertNotNull($slot['timestamp']);
-            $this->assertMatchesRegularExpression('/^\d+-\d+$/', $slot['timestamp']);
-        }
-    }
-
-    // ─── Table Booking (flat) ───────────────────────────────────────────
-
-    public function test_booking_slots_for_table_type(): void
-    {
-        $this->seedRequiredData();
-        $fixture = $this->createBookingFixture('table');
-
-        $response = $this->graphQL($this->buildFlatQuery((int) $fixture['booking']->id, $fixture['tomorrowDate']));
-
-        $response->assertSuccessful();
-
-        $json = $response->json();
-        $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
-
-        $slots = $response->json('data.bookingSlots');
-        $this->assertNotNull($slots);
-        $this->assertIsArray($slots);
-        $this->assertNotEmpty($slots, 'Table booking should return at least one slot');
-
-        foreach ($slots as $slot) {
-            $this->assertFlatSlotStructure($slot);
-            $this->assertNotNull($slot['timestamp']);
-            $this->assertMatchesRegularExpression('/^\d+-\d+$/', $slot['timestamp']);
-        }
-    }
-
-    // ─── Rental Booking (grouped) — single group ────────────────────────
-
-    public function test_booking_slots_for_rental_hourly_type(): void
-    {
-        $this->seedRequiredData();
-        $fixture = $this->createBookingFixture('rental');
-
-        $response = $this->graphQL($this->buildRentalQuery((int) $fixture['booking']->id, $fixture['tomorrowDate']));
-
-        $response->assertSuccessful();
-
-        $json = $response->json();
-        $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
-
-        $groups = $response->json('data.bookingSlots');
-        $this->assertNotNull($groups);
-        $this->assertIsArray($groups);
-        $this->assertNotEmpty($groups, 'Rental hourly booking should return at least one group');
-
-        // Single group (09:00-17:00) with 8 hourly sub-slots
-        $this->assertCount(1, $groups);
-
-        $group = $groups[0];
-        $this->assertRentalGroupStructure($group);
-        $this->assertGreaterThan(1, count($group['slots']), 'Group should have multiple hourly sub-slots');
-    }
-
-    // ─── Rental Booking (grouped) — multiple groups ─────────────────────
-
-    public function test_booking_slots_for_rental_hourly_with_multiple_groups(): void
-    {
-        $this->seedRequiredData();
-        $fixture = $this->createMultiGroupRentalFixture();
-
-        $response = $this->graphQL($this->buildRentalQuery((int) $fixture['booking']->id, $fixture['tomorrowDate']));
-
-        $response->assertSuccessful();
-
-        $json = $response->json();
-        $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
-
-        $groups = $response->json('data.bookingSlots');
-        $this->assertNotNull($groups);
-        $this->assertIsArray($groups);
-
-        // Should have 2 groups: 10:00-12:00 and 12:00-21:00
-        $this->assertCount(2, $groups, 'Should have 2 time range groups');
-
-        foreach ($groups as $group) {
-            $this->assertRentalGroupStructure($group);
-        }
-
-        // Collect group details
-        $groupDetails = [];
-        foreach ($groups as $group) {
-            $groupDetails[] = [
-                'time' => $group['time'],
-                'slotCount' => count($group['slots']),
-            ];
-        }
-
-        // Sort by slot count to assert predictably
-        usort($groupDetails, fn ($a, $b) => $a['slotCount'] <=> $b['slotCount']);
-
-        // Smaller group (10:00-12:00) = 2 hourly slots
-        $this->assertSame(2, $groupDetails[0]['slotCount'], 'Smaller group should have 2 hourly slots');
-        // Larger group (12:00-21:00) = 9 hourly slots
-        $this->assertSame(9, $groupDetails[1]['slotCount'], 'Larger group should have 9 hourly slots');
-
-        // Verify first sub-slot of each group has correct from/to
-        foreach ($groups as $group) {
-            $firstSlot = $group['slots'][0];
-            $lastSlot = end($group['slots']);
-
-            // First slot's "from" should match the start of the group time
-            $this->assertNotNull($firstSlot['from']);
-            $this->assertNotNull($lastSlot['to']);
-        }
-    }
-
-    // ─── Event Booking (flat) ───────────────────────────────────────────
-
-    public function test_booking_slots_for_event_type(): void
-    {
-        $this->seedRequiredData();
-        $fixture = $this->createBookingFixture('event');
-
-        $response = $this->graphQL($this->buildFlatQuery((int) $fixture['booking']->id, $fixture['tomorrowDate']));
-
-        $response->assertSuccessful();
-
-        $json = $response->json();
-        $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
-
-        $slots = $response->json('data.bookingSlots');
-        $this->assertNotNull($slots);
-        $this->assertIsArray($slots);
-    }
-
-    // ─── Edge cases ─────────────────────────────────────────────────────
-
-    public function test_booking_slots_with_past_date_returns_empty(): void
-    {
-        $this->seedRequiredData();
-        $fixture = $this->createBookingFixture('appointment');
-
-        $pastDate = Carbon::now()->subDays(7)->format('Y-m-d');
-
-        $response = $this->graphQL($this->buildFlatQuery((int) $fixture['booking']->id, $pastDate));
-
-        $response->assertSuccessful();
-
-        $json = $response->json();
-        if (! isset($json['errors'])) {
-            $slots = $response->json('data.bookingSlots');
-            $this->assertIsArray($slots);
-            $this->assertEmpty($slots, 'Past date should return no available slots');
         }
     }
 }

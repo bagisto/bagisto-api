@@ -13,21 +13,33 @@ class AdminOrderExportProvider implements ProviderInterface
     use ResolvesAdminDateRange;
     use StreamsAdminExport;
 
+    /**
+     * Export permission.
+     */
     protected function exportPermission(): string
     {
         return 'sales.orders.view';
     }
 
+    /**
+     * Export filename.
+     */
     protected function exportFilename(): string
     {
         return 'orders';
     }
 
+    /**
+     * Export headers.
+     */
     protected function exportHeaders(): array
     {
         return ['ID', 'Status', 'Grand Total', 'Payment Method', 'Channel', 'Customer', 'Email', 'Order Date'];
     }
 
+    /**
+     * Export row.
+     */
     protected function exportRow(object $row): array
     {
         return [
@@ -42,6 +54,9 @@ class AdminOrderExportProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Export query.
+     */
     protected function exportQuery(array $args)
     {
         $prefix = DB::getTablePrefix();

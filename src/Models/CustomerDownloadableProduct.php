@@ -14,12 +14,6 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CustomerDownloadableProductProvider;
 use Webkul\Sales\Models\DownloadableLinkPurchased;
 
-/**
- * Customer Downloadable Product API Resource
- *
- * Returns downloadable link purchases belonging to the authenticated customer.
- * This is a read-only, customer-scoped resource.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomerDownloadableProduct',
@@ -89,7 +83,7 @@ class CustomerDownloadableProduct extends DownloadableLinkPurchased
     ];
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -98,7 +92,7 @@ class CustomerDownloadableProduct extends DownloadableLinkPurchased
     }
 
     /**
-     * Remaining downloads accessor
+     * Remaining downloads accessor.
      */
     #[ApiProperty(writable: false, readable: true, description: 'Number of remaining downloads')]
     public function getRemainingDownloadsAttribute(): ?int
@@ -120,7 +114,7 @@ class CustomerDownloadableProduct extends DownloadableLinkPurchased
     }
 
     /**
-     * Customer relationship
+     * Customer relationship.
      */
     #[ApiProperty(writable: false, description: 'Customer who purchased the downloadable product')]
     public function customer(): BelongsTo
@@ -129,7 +123,7 @@ class CustomerDownloadableProduct extends DownloadableLinkPurchased
     }
 
     /**
-     * Order relationship
+     * Order relationship.
      */
     #[ApiProperty(writable: false, description: 'Associated order')]
     public function order(): BelongsTo

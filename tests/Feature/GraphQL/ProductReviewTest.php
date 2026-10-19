@@ -10,26 +10,9 @@ use Webkul\Product\Models\ProductReview;
 
 class ProductReviewTest extends GraphQLTestCase
 {
-    private function enableReviewTranslation(): void
-    {
-        foreach ([
-            'magic_ai.general.settings.enabled' => '1',
-            'magic_ai.storefront_features.review_translation.enabled' => '1',
-        ] as $code => $value) {
-            DB::table('core_config')->where('code', $code)->delete();
-            DB::table('core_config')->insert([
-                'code' => $code,
-                'value' => $value,
-                'channel_code' => core()->getRequestedChannelCode(),
-                'locale_code' => core()->getRequestedLocaleCode(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        $this->forgetCoreConfigCache();
-    }
-
+    /**
+     * Test translate approved review through graphql.
+     */
     public function test_translate_approved_review_through_graphql(): void
     {
         $this->seedRequiredData();
@@ -280,6 +263,29 @@ class ProductReviewTest extends GraphQLTestCase
         expect($ids)->toBe([$approved->id]);
         expect($ids)->not->toContain($pending->id);
         expect($ids)->not->toContain($foreign->id);
+    }
+
+    /**
+     * Enable review translation.
+     */
+    private function enableReviewTranslation(): void
+    {
+        foreach ([
+            'magic_ai.general.settings.enabled' => '1',
+            'magic_ai.storefront_features.review_translation.enabled' => '1',
+        ] as $code => $value) {
+            DB::table('core_config')->where('code', $code)->delete();
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
     }
 
     /**

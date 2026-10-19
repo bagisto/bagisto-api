@@ -21,6 +21,9 @@ class AdminTransactionCreateProcessor implements ProcessorInterface
     use BuildsAdminTransaction;
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected OrderRepository $orderRepository,
         protected InvoiceRepository $invoiceRepository,
@@ -28,6 +31,9 @@ class AdminTransactionCreateProcessor implements ProcessorInterface
         protected OrderTransactionRepository $orderTransactionRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminTransaction
     {
         $this->authorizedAdmin('sales.transactions.view', 'bagistoapi::app.admin.sales.transaction.no-permission');
@@ -105,6 +111,9 @@ class AdminTransactionCreateProcessor implements ProcessorInterface
         return $this->loadTransaction((int) $transaction->id);
     }
 
+    /**
+     * Load transaction.
+     */
     protected function loadTransaction(int $id): AdminTransaction
     {
         $row = DB::table('order_transactions')
@@ -116,6 +125,9 @@ class AdminTransactionCreateProcessor implements ProcessorInterface
         return $this->buildAdminTransaction($row);
     }
 
+    /**
+     * Input.
+     */
     protected function input(array $context, string $camel, string $snake): mixed
     {
         return $context['args']['input'][$camel]

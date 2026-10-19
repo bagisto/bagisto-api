@@ -479,27 +479,60 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
 )]
 class CustomerReturn implements SnakeCaseFieldsResource
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The order id.
+     */
     public ?int $order_id = null;
 
+    /**
+     * The order increment id.
+     */
     public ?string $order_increment_id = null;
 
+    /**
+     * The status id.
+     */
     public ?int $status_id = null;
 
+    /**
+     * The status title.
+     */
     public ?string $status_title = null;
 
+    /**
+     * The status color.
+     */
     public ?string $status_color = null;
 
+    /**
+     * The package condition.
+     */
     public ?string $package_condition = null;
 
+    /**
+     * The information.
+     */
     public ?string $information = null;
 
+    /**
+     * The can close.
+     */
     public ?bool $can_close = null;
 
+    /**
+     * The can reopen.
+     */
     public ?bool $can_reopen = null;
 
+    /**
+     * The is expired.
+     */
     public ?bool $is_expired = null;
 
     /** @var array<string,mixed>|null */
@@ -514,9 +547,18 @@ class CustomerReturn implements SnakeCaseFieldsResource
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $custom_attributes = null;
 
+    /**
+     * The messages count.
+     */
     public ?int $messages_count = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

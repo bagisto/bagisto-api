@@ -5,13 +5,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * Phase 5.12 — GraphQL coverage for the product-inventory sub-resource.
- *   - adminCatalogProductInventories(productId:)
- *   - updateAdminCatalogProductInventories(input: { productId, inventories })
- */
 class CatalogProductInventoryTest extends AdminApiTestCase
 {
+    /**
+     * Test query returns inventories for product.
+     */
     public function test_query_returns_inventories_for_product(): void
     {
         $admin = $this->createAdmin();
@@ -51,6 +49,9 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $this->assertSame(18, (int) $node['qty']);
     }
 
+    /**
+     * Test mutation updates inventories.
+     */
     public function test_mutation_updates_inventories(): void
     {
         $admin = $this->createAdmin();

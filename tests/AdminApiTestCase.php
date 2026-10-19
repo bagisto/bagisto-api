@@ -10,18 +10,11 @@ use Webkul\User\Models\Admin;
 
 /**
  * Base test case for the Admin API (REST + GraphQL).
- *
- * As of the 2026-05-27 auth refactor, admin endpoints authenticate via
- * pre-issued AdminPersonalAccessToken rows (table `admin_personal_access_tokens`)
- * resolved by the `admin-api` guard (AdminApiGuard). This base class issues
- * a fresh token per test admin via createToken() / actingAsAdminViaToken().
- *
- * This is distinct from Sanctum's `personal_access_tokens` table, which still
- * powers the storefront customer API.
+ * As of the 2026-05-27 auth refactor, admin endpoints authenticate via.
  */
 abstract class AdminApiTestCase extends BagistoApiTestCase
 {
-    /** GraphQL endpoint URL */
+    /** GraphQL endpoint URL. */
     protected string $graphqlUrl = '/api/graphql';
 
     /** Known plaintext password for admins created in tests. */
@@ -43,11 +36,6 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
     /**
      * Issue a fresh admin integration token (AdminPersonalAccessToken) for
      * an admin and return the plaintext Bearer token (`<id>|<random>`).
-     *
-     * Tokens issued by this helper:
-     *   - status = active, permission_type = all (passes every role check)
-     *   - expires_at = +1 day so they never auto-expire mid-test
-     *   - no rate limits so parallel test runs don't hit throttles
      */
     protected function adminToken(Admin $admin): string
     {
@@ -72,13 +60,7 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
 
     /**
      * Issue a role-bound admin token. The token's `permission_type='same_as_web'`
-     * means it inherits the admin's current role permissions at runtime — every
-     * permission check on the API goes through the admin's role.
-     *
-     * Use this when the test is verifying that a specific role permission is
-     * enforced (e.g. an admin without `sales.orders.cancel` should get 403).
-     * Use the default `adminToken()` (permission_type=all) when the test is
-     * verifying API behaviour itself and doesn't care about role gating.
+     * means it inherits the admin's current role permissions at runtime — every.
      */
     protected function adminTokenSameAsWeb(Admin $admin): string
     {
@@ -175,9 +157,7 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
 
     /**
      * Keep only the keys that are real columns on the running core's schema.
-     *
-     * Fixtures written against one core version carry columns another version dropped
-     * (core 2.5.0 removed marketing_campaigns.type and .mail_to).
+     * Fixtures written against one core version carry columns another version dropped.
      */
     protected function existingColumns(string $table, array $row): array
     {

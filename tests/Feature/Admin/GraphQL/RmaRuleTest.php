@@ -10,14 +10,9 @@ use Webkul\User\Models\Role;
 
 class RmaRuleTest extends AdminApiTestCase
 {
-    private function createRule(string $name = 'Rule'): int
-    {
-        return DB::table('rma_rules')->insertGetId([
-            'name' => $name, 'description' => 'desc', 'status' => 1, 'return_period' => 30,
-            'default' => 0, 'created_at' => now(), 'updated_at' => now(),
-        ]);
-    }
-
+    /**
+     * Test create and list.
+     */
     public function test_create_and_list(): void
     {
         $admin = $this->createAdmin();
@@ -39,6 +34,9 @@ class RmaRuleTest extends AdminApiTestCase
         expect($list->json('data.adminRmaRules.edges'))->toBeArray();
     }
 
+    /**
+     * Test update and delete.
+     */
     public function test_update_and_delete(): void
     {
         $admin = $this->createAdmin();
@@ -66,6 +64,9 @@ class RmaRuleTest extends AdminApiTestCase
         $this->assertDatabaseMissing('rma_rules', ['id' => $id]);
     }
 
+    /**
+     * Test mass delete.
+     */
     public function test_mass_delete(): void
     {
         $admin = $this->createAdmin();
@@ -188,5 +189,16 @@ class RmaRuleTest extends AdminApiTestCase
         GQL;
 
         return $this->adminGraphQL($mutation, ['input' => $input], $admin, $token);
+    }
+
+    /**
+     * Create rule.
+     */
+    private function createRule(string $name = 'Rule'): int
+    {
+        return DB::table('rma_rules')->insertGetId([
+            'name' => $name, 'description' => 'desc', 'status' => 1, 'return_period' => 30,
+            'default' => 0, 'created_at' => now(), 'updated_at' => now(),
+        ]);
     }
 }

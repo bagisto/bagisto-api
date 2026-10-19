@@ -14,8 +14,14 @@ use Webkul\BagistoApi\Support\Sql;
 
 class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * The is graph ql.
+     */
     protected bool $isGraphQL = false;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->isGraphQL = ! empty($context['graphql_operation_name']);
@@ -23,11 +29,17 @@ class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'email', 'first_name'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('customers')
@@ -54,6 +66,9 @@ class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
             );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
@@ -112,6 +127,9 @@ class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -125,11 +143,17 @@ class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
         $query->orderBy($map[$column] ?? 'customers.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): object
     {
         return $this->isGraphQL ? $this->toEloquent($row) : $this->toListDto($row);
     }
 
+    /**
+     * To eloquent.
+     */
     protected function toEloquent(object $row): AdminCustomer
     {
         $model = (new AdminCustomer)->forceFill([
@@ -164,6 +188,9 @@ class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
         return $model;
     }
 
+    /**
+     * To list dto.
+     */
     protected function toListDto(object $row): AdminCustomerListDto
     {
         $dto = new AdminCustomerListDto;
@@ -187,6 +214,9 @@ class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
         return $dto;
     }
 
+    /**
+     * Map group.
+     */
     protected function mapGroup(object $row): ?array
     {
         if ($row->customer_group_id === null) {

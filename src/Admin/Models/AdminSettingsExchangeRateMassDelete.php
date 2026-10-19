@@ -10,12 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsExchangeRateMassDeleteInput;
 use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateMassDeleteProcessor;
 
-/**
- * Mass-delete admin settings exchange rates.
- *
- * REST:    POST /api/admin/settings/exchange-rates/mass-delete
- * GraphQL: createAdminSettingsExchangeRateMassDelete
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsExchangeRateMassDelete',
@@ -77,6 +71,9 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateMassDeleteProcessor;
 )]
 class AdminSettingsExchangeRateMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -84,6 +81,9 @@ class AdminSettingsExchangeRateMassDelete
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

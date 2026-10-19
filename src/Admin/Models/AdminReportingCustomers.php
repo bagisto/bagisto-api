@@ -15,17 +15,6 @@ use Webkul\BagistoApi\Admin\State\AdminReportingCustomersExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminReportingCustomersProvider;
 use Webkul\BagistoApi\Admin\State\AdminReportingCustomersViewProvider;
 
-/**
- * Admin reporting — customers (read-only).
- *
- * REST   : GET /api/admin/reporting/customers
- * GraphQL: adminReportingCustomers query
- *
- * Mirrors `Reporting/CustomerController::stats()`. `?type=`:
- *   total-customers (default), customers-with-most-sales,
- *   customers-with-most-orders, customers-with-most-reviews,
- *   top-customer-groups.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminReportingCustomers',
@@ -147,10 +136,16 @@ class AdminReportingCustomers
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The entity.
+     */
     #[ApiProperty(readable: true, writable: false, identifier: true)]
     #[Groups(['query'])]
     public ?string $entity = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $type = null;

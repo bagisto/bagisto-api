@@ -22,16 +22,28 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * The types constant.
+     */
     private const TYPES = ['text', 'textarea', 'select', 'multiselect', 'checkbox', 'radio', 'date'];
 
+    /**
+     * The option types constant.
+     */
     private const OPTION_TYPES = ['select', 'multiselect', 'checkbox', 'radio'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private readonly RMACustomFieldRepository $rmaCustomFieldRepository,
         private readonly RMACustomFieldOptionRepository $rmaCustomFieldOptionRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof AdminRmaCustomFieldCreateInput) {
@@ -61,6 +73,9 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }
 
+    /**
+     * Handle create.
+     */
     private function handleCreate(AdminRmaCustomFieldCreateInput $input): AdminRmaCustomField
     {
         $this->authorizedAdmin('sales.rma.custom-fields.create', 'bagistoapi::app.admin.rma.no-permission');
@@ -86,6 +101,9 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
         return $this->map((int) $field->id);
     }
 
+    /**
+     * Handle update.
+     */
     private function handleUpdate(int $id, AdminRmaCustomFieldUpdateInput $input): AdminRmaCustomField
     {
         $this->authorizedAdmin('sales.rma.custom-fields.edit', 'bagistoapi::app.admin.rma.no-permission');
@@ -117,6 +135,9 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
         return $this->map($id);
     }
 
+    /**
+     * Handle delete.
+     */
     private function handleDelete(int $id, bool $asResource = false): array|AdminRmaCustomField
     {
         $this->authorizedAdmin('sales.rma.custom-fields.delete', 'bagistoapi::app.admin.rma.no-permission');
@@ -125,8 +146,6 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.rma.custom-field-not-found'));
         }
 
-        // GraphQL delete returns the deleted record (so fields can be selected);
-        // REST delete returns a message only — matching every other delete endpoint.
         $snapshot = $asResource ? $this->map($id) : null;
 
         Event::dispatch('sales.rma.custom-field.delete.before', $id);
@@ -144,6 +163,9 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.rma.custom-field-deleted')];
     }
 
+    /**
+     * Sync options.
+     */
     private function syncOptions(int $fieldId, ?string $type, ?array $options): void
     {
         if (
@@ -159,6 +181,9 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
         ], $fieldId);
     }
 
+    /**
+     * Validate payload.
+     */
     private function validatePayload(?string $code, ?string $label, ?int $position, ?string $type, ?array $options, string $codeUniqueRule): void
     {
         $validator = Validator::make([
@@ -187,6 +212,9 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Map.
+     */
     private function map(int $id): AdminRmaCustomField
     {
         return AdminRmaCustomFieldItemProvider::toDto(DB::table('rma_custom_fields')->where('id', $id)->first(), true);

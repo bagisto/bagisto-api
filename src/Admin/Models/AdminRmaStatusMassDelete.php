@@ -67,11 +67,17 @@ class AdminRmaStatusMassDelete
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = 0;
 
     /** @var array<int,int>|null */
     public ?array $deleted = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

@@ -11,36 +11,19 @@ use Webkul\BagistoApi\Tests\BagistoApiTest;
 
 class SchemaExportTest extends BagistoApiTest
 {
+    /**
+     * The storefront key prefix constant.
+     */
     private const STOREFRONT_KEY_PREFIX = 'pk_storefront_';
 
+    /**
+     * The export path.
+     */
     private static string $exportPath = '';
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        if (self::$exportPath !== '') {
-            return;
-        }
-
-        self::$exportPath = sys_get_temp_dir().'/bagisto-schema-export-'.getmypid();
-
-        File::deleteDirectory(self::$exportPath);
-
-        Artisan::call('bagisto-api-platform:export-schema', ['--path' => self::$exportPath]);
-
-        // The collections ship from the standalone collection repository, not from this package,
-        // so build them into the same temp directory to exercise the generator end to end.
-        File::ensureDirectoryExists(self::$exportPath.'/collections');
-
-        exec(sprintf(
-            'cd %s && php %s %s 2>&1',
-            escapeshellarg(self::$exportPath),
-            escapeshellarg(dirname(__DIR__, 2).'/schema/tools/build-collection.php'),
-            escapeshellarg(self::$exportPath.'/collections'),
-        ));
-    }
-
+    /**
+     * Tear down the shared test environment.
+     */
     public static function tearDownAfterClass(): void
     {
         if (self::$exportPath !== '') {
@@ -52,6 +35,9 @@ class SchemaExportTest extends BagistoApiTest
         parent::tearDownAfterClass();
     }
 
+    /**
+     * Test export writes both surfaces for both transports.
+     */
     public function test_export_writes_both_surfaces_for_both_transports(): void
     {
         $expected = [
@@ -68,6 +54,9 @@ class SchemaExportTest extends BagistoApiTest
         }
     }
 
+    /**
+     * Test storefront spec carries no admin definition.
+     */
     public function test_storefront_spec_carries_no_admin_definition(): void
     {
         $spec = $this->spec('shop');
@@ -86,6 +75,9 @@ class SchemaExportTest extends BagistoApiTest
         expect($tags)->toBe([]);
     }
 
+    /**
+     * Test every schema reference resolves.
+     */
     public function test_every_schema_reference_resolves(): void
     {
         foreach (['shop', 'admin'] as $surface) {
@@ -100,6 +92,9 @@ class SchemaExportTest extends BagistoApiTest
         }
     }
 
+    /**
+     * Test no schema is orphaned.
+     */
     public function test_no_schema_is_orphaned(): void
     {
         foreach (['shop', 'admin'] as $surface) {
@@ -114,6 +109,9 @@ class SchemaExportTest extends BagistoApiTest
         }
     }
 
+    /**
+     * Test spec is import ready.
+     */
     public function test_spec_is_import_ready(): void
     {
         foreach ([
@@ -128,6 +126,9 @@ class SchemaExportTest extends BagistoApiTest
         }
     }
 
+    /**
+     * Test top level tags cover every operation tag.
+     */
     public function test_top_level_tags_cover_every_operation_tag(): void
     {
         foreach (['shop', 'admin'] as $surface) {
@@ -152,6 +153,9 @@ class SchemaExportTest extends BagistoApiTest
         }
     }
 
+    /**
+     * Test no exported artifact contains a storefront key.
+     */
     public function test_no_exported_artifact_contains_a_storefront_key(): void
     {
         $files = array_merge(
@@ -166,6 +170,9 @@ class SchemaExportTest extends BagistoApiTest
         }
     }
 
+    /**
+     * Test graphql schemas do not overlap.
+     */
     public function test_graphql_schemas_do_not_overlap(): void
     {
         $shop = (string) file_get_contents(self::$exportPath.'/shop.graphql');
@@ -184,23 +191,25 @@ class SchemaExportTest extends BagistoApiTest
         )))->toBe([]);
     }
 
+    /**
+     * Test exported graphql keeps array typed fields.
+     */
     public function test_exported_graphql_keeps_array_typed_fields(): void
     {
         foreach (['shop', 'admin'] as $surface) {
             $sdl = (string) file_get_contents(self::$exportPath."/{$surface}.graphql");
 
-            // Array-valued fields carry the Iterable scalar. Rebuilding the types container
-            // between the two surfaces once left the type converter reading the old one, and
-            // every one of these fields was dropped from the printed schema in silence.
             expect(substr_count($sdl, 'Iterable'))->toBeGreaterThan(0, "{$surface}.graphql lost every array-typed field");
 
             expect(preg_match('/^scalar Iterable$/m', $sdl))->toBe(1, "{$surface}.graphql uses Iterable without defining it");
         }
     }
 
+    /**
+     * Test exported graphql matches the running schema.
+     */
     public function test_exported_graphql_matches_the_running_schema(): void
     {
-        // BACKWARD COMPATIBILITY: remove when the minimum supported core is 2.4.10.
         $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'The storefront Theme type');
 
         $sdl = (string) file_get_contents(self::$exportPath.'/shop.graphql');
@@ -210,6 +219,9 @@ class SchemaExportTest extends BagistoApiTest
         expect($matches[1] ?? '')->toContain('sectionTypes: Iterable!');
     }
 
+    /**
+     * Test collection graphql requests validate against the schema.
+     */
     public function test_collection_graphql_requests_validate_against_the_schema(): void
     {
         foreach ([
@@ -231,6 +243,9 @@ class SchemaExportTest extends BagistoApiTest
         }
     }
 
+    /**
+     * Test graphql folder covers every root operation.
+     */
     public function test_graphql_folder_covers_every_root_operation(): void
     {
         $pairs = [
@@ -248,6 +263,9 @@ class SchemaExportTest extends BagistoApiTest
         }
     }
 
+    /**
+     * Test graphql folders mirror the rest folders.
+     */
     public function test_graphql_folders_mirror_the_rest_folders(): void
     {
         foreach (['Bagisto-Shop-API', 'Bagisto-Admin-API'] as $collection) {
@@ -266,6 +284,9 @@ class SchemaExportTest extends BagistoApiTest
         }
     }
 
+    /**
+     * Test every request url is well formed.
+     */
     public function test_every_request_url_is_well_formed(): void
     {
         foreach (['Bagisto-Shop-API', 'Bagisto-Admin-API'] as $collection) {
@@ -330,6 +351,33 @@ class SchemaExportTest extends BagistoApiTest
                 "{$file} is stale; {$fix}",
             );
         }
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        if (self::$exportPath !== '') {
+            return;
+        }
+
+        self::$exportPath = sys_get_temp_dir().'/bagisto-schema-export-'.getmypid();
+
+        File::deleteDirectory(self::$exportPath);
+
+        Artisan::call('bagisto-api-platform:export-schema', ['--path' => self::$exportPath]);
+
+        File::ensureDirectoryExists(self::$exportPath.'/collections');
+
+        exec(sprintf(
+            'cd %s && php %s %s 2>&1',
+            escapeshellarg(self::$exportPath),
+            escapeshellarg(dirname(__DIR__, 2).'/schema/tools/build-collection.php'),
+            escapeshellarg(self::$exportPath.'/collections'),
+        ));
     }
 
     /**

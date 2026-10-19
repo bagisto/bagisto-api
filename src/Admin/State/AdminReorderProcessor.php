@@ -13,18 +13,16 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Sales\Models\Order;
 
-/**
- * Admin Reorder — POST /api/admin/orders/{id}/reorder + GraphQL createAdminReorder.
- *
- * Mirrors the monolith admin Reorder button: build a fresh admin draft cart
- * (`is_active = false`) for the order's customer, re-add every order item
- * via Cart::addProduct($item->product, $item->additional), and return the new
- * cart id. Per-item add failures are swallowed (best-effort), matching core.
- */
 class AdminReorderProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(private readonly AdminOrderActionGuard $actionGuard) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminReorder
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -160,14 +158,16 @@ class AdminReorderProcessor implements ProcessorInterface
 
     /**
      * Check (C): `sales.order_settings.reorder.admin` config toggle.
-     * `core()->getConfigData()` works in API context — it reads the
-     * core_config table directly with no session dependency.
+     * `core()->getConfigData()` works in API context — it reads the.
      */
     protected function adminReorderEnabled(): bool
     {
         return (bool) core()->getConfigData('sales.order_settings.reorder.admin');
     }
 
+    /**
+     * Result.
+     */
     protected function result(int $id, bool $success, string $message, ?int $cartId = null): AdminReorder
     {
         $reorder = new AdminReorder;

@@ -11,6 +11,9 @@ use Webkul\BagistoApi\Service\GenericIdNormalizer;
 
 class CompareItemQueryResolver implements QueryItemResolverInterface
 {
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?object $item, array $context): object
     {
         $customer = Auth::guard('sanctum')->user();

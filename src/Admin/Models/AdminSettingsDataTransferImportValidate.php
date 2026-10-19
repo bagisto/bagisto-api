@@ -10,13 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsDataTransferImportActionInput;
 use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor;
 
-/**
- * POST /api/admin/settings/data-transfer/imports/{id}/validate
- * + validateAdminSettingsDataTransferImportValidate mutation.
- *
- * Runs the import validator and returns { is_valid, import } (mapped onto the
- * AdminSettingsDataTransferImport output). Permission: settings.data_transfer.imports.import.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsDataTransferImportValidate',
@@ -58,6 +51,9 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor
 )]
 class AdminSettingsDataTransferImportValidate
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 }

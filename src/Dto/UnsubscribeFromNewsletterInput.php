@@ -7,6 +7,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class UnsubscribeFromNewsletterInput
 {
+    /**
+     * The token.
+     */
     #[ApiProperty(description: 'Opaque unsubscribe token from the newsletter email.')]
     #[Groups(['mutation'])]
     public ?string $token = null;

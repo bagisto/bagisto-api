@@ -6,12 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Customer Invoice Address — nested API resource (no standalone endpoints).
- *
- * Exposed only as a relationship of CustomerInvoice.
- * Points to the `addresses` table filtered by address_type (invoice_billing/invoice_shipping).
- */
 #[ApiResource(
     shortName: 'CustomerInvoiceAddress',
     operations: [],
@@ -52,7 +46,7 @@ class CustomerInvoiceAddress extends Model
     protected $appends = ['name'];
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -62,7 +56,7 @@ class CustomerInvoiceAddress extends Model
 
     /**
      * Full name computed from first + last name.
-     * Using Laravel's accessor pattern: getNameAttribute() -> 'name' property
+     * Using Laravel's accessor pattern: getNameAttribute() -> 'name' property.
      */
     #[ApiProperty(writable: false, description: 'Full name')]
     public function getNameAttribute(): string
@@ -71,7 +65,7 @@ class CustomerInvoiceAddress extends Model
     }
 
     /**
-     * Explicit getter for address
+     * Explicit getter for address.
      */
     #[ApiProperty(writable: false)]
     public function getAddress(): ?string
@@ -80,7 +74,7 @@ class CustomerInvoiceAddress extends Model
     }
 
     /**
-     * Explicit getter for city
+     * Explicit getter for city.
      */
     #[ApiProperty(writable: false)]
     public function getCity(): ?string
@@ -89,7 +83,7 @@ class CustomerInvoiceAddress extends Model
     }
 
     /**
-     * Explicit getter for state
+     * Explicit getter for state.
      */
     #[ApiProperty(writable: false)]
     public function getState(): ?string
@@ -98,7 +92,7 @@ class CustomerInvoiceAddress extends Model
     }
 
     /**
-     * Explicit getter for postcode
+     * Explicit getter for postcode.
      */
     #[ApiProperty(writable: false)]
     public function getPostcode(): ?string
@@ -107,7 +101,7 @@ class CustomerInvoiceAddress extends Model
     }
 
     /**
-     * Explicit getter for country ID
+     * Explicit getter for country ID.
      */
     #[ApiProperty(writable: false)]
     public function getCountryId(): ?string
@@ -116,7 +110,7 @@ class CustomerInvoiceAddress extends Model
     }
 
     /**
-     * Explicit getter for phone
+     * Explicit getter for phone.
      */
     #[ApiProperty(writable: false)]
     public function getPhone(): ?string
@@ -125,7 +119,7 @@ class CustomerInvoiceAddress extends Model
     }
 
     /**
-     * Explicit getter for address type
+     * Explicit getter for address type.
      */
     #[ApiProperty(writable: false)]
     public function getAddressType(): ?string
@@ -134,12 +128,11 @@ class CustomerInvoiceAddress extends Model
     }
 
     /**
-     * toArray override to ensure all address fields are included
+     * toArray override to ensure all address fields are included.
      */
     public function toArray(): array
     {
         $array = parent::toArray();
-        // Ensure all critical address fields are in the array
         $array['id'] = $this->id;
         $array['name'] = $this->name;
         $array['address'] = $this->address;

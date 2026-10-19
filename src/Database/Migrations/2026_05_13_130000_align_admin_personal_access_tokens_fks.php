@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Coerce the admin id columns to unsigned int, drop orphaned rows and add the missing foreign keys.
-     */
     public function up(): void
     {
         if (
@@ -80,9 +77,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Drop the foreign keys this migration manages that are present on the table.
-     */
     public function down(): void
     {
         if (! Schema::hasTable('admin_personal_access_tokens')) {
@@ -102,9 +96,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Foreign keys the table must carry: column => [referenced table, on-delete action].
-     */
     private function foreignKeys(): array
     {
         return [

@@ -12,16 +12,15 @@ use Webkul\BagistoApi\Models\Customer as ApiCustomer;
 use Webkul\BagistoApi\Support\DateOfBirth;
 use Webkul\Customer\Models\Customer;
 
-/**
- * Fetch customer profile via query.
- */
 class CustomerProfileProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $request = Request::instance() ?? ($context['request'] ?? null);
 
-        // Extract Bearer token from Authorization header
         $token = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
 
         if (! $token) {
@@ -34,7 +33,6 @@ class CustomerProfileProvider implements ProviderInterface
             throw new AuthenticationException(__('bagistoapi::app.graphql.customer-profile.invalid-token'));
         }
 
-        // Map customer data to return array
         return [
             'id' => (string) $authenticatedCustomer->id,
             'firstName' => $authenticatedCustomer->first_name,

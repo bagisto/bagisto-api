@@ -11,13 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminCancelOrderInput;
 use Webkul\BagistoApi\Admin\Dto\OrderDetailRestDto;
 use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
 
-/**
- * Admin Cancel Order — POST /api/admin/orders/{id}/cancel
- * (GraphQL: createAdminCancelOrder).
- *
- * The mutation returns the updated `OrderDetail` shape directly so the client
- * can refresh the order-view screen without a follow-up GET.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCancelOrder',
@@ -62,33 +55,63 @@ use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
 )]
 class AdminCancelOrder
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The order id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $orderId = null;
 
+    /**
+     * The increment id.
+     */
     #[ApiProperty(writable: false)]
     public ?string $incrementId = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(writable: false)]
     public ?string $status = null;
 
+    /**
+     * The status label.
+     */
     #[ApiProperty(writable: false)]
     public ?string $statusLabel = null;
 
+    /**
+     * The grand total.
+     */
     #[ApiProperty(writable: false)]
     public ?float $grandTotal = null;
 
+    /**
+     * The base grand total.
+     */
     #[ApiProperty(writable: false)]
     public ?float $baseGrandTotal = null;
 
+    /**
+     * The total qty ordered.
+     */
     #[ApiProperty(writable: false)]
     public ?int $totalQtyOrdered = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

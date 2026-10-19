@@ -9,33 +9,9 @@ use Webkul\Product\Models\ProductReview;
 
 class ProductReviewTranslationTest extends RestApiTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->app['url']->forceRootUrl('http://localhost');
-    }
-
-    private function setTranslationEnabled(bool $enabled): void
-    {
-        foreach ([
-            'magic_ai.general.settings.enabled' => $enabled ? '1' : '0',
-            'magic_ai.storefront_features.review_translation.enabled' => $enabled ? '1' : '0',
-        ] as $code => $value) {
-            DB::table('core_config')->where('code', $code)->delete();
-            DB::table('core_config')->insert([
-                'code' => $code,
-                'value' => $value,
-                'channel_code' => core()->getRequestedChannelCode(),
-                'locale_code' => core()->getRequestedLocaleCode(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        $this->forgetCoreConfigCache();
-    }
-
+    /**
+     * Test approved review is translated when magic ai is enabled.
+     */
     public function test_approved_review_is_translated_when_magic_ai_is_enabled(): void
     {
         $this->seedRequiredData();
@@ -57,6 +33,9 @@ class ProductReviewTranslationTest extends RestApiTestCase
         $response->assertOk()->assertJsonPath('content', 'Ce produit est excellent.');
     }
 
+    /**
+     * Test review translation is forbidden when magic ai is disabled.
+     */
     public function test_review_translation_is_forbidden_when_magic_ai_is_disabled(): void
     {
         $this->seedRequiredData();
@@ -72,6 +51,9 @@ class ProductReviewTranslationTest extends RestApiTestCase
         expect($response->getStatusCode())->toBe(403);
     }
 
+    /**
+     * Test pending review translation is rejected.
+     */
     public function test_pending_review_translation_is_rejected(): void
     {
         $this->seedRequiredData();
@@ -85,5 +67,38 @@ class ProductReviewTranslationTest extends RestApiTestCase
         $response = $this->publicGet('/api/shop/products/'.$product->id.'/reviews/'.$review->id.'/translation');
 
         expect($response->getStatusCode())->toBe(400);
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app['url']->forceRootUrl('http://localhost');
+    }
+
+    /**
+     * Set translation enabled.
+     */
+    private function setTranslationEnabled(bool $enabled): void
+    {
+        foreach ([
+            'magic_ai.general.settings.enabled' => $enabled ? '1' : '0',
+            'magic_ai.storefront_features.review_translation.enabled' => $enabled ? '1' : '0',
+        ] as $code => $value) {
+            DB::table('core_config')->where('code', $code)->delete();
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
     }
 }

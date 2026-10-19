@@ -26,37 +26,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
 
-/**
- * Admin Marketing → Cart Rules CRUD endpoints (Block F1b; objectified 2026-06-23).
- *
- * Bare Eloquent `#[ApiResource]` parent. The assigned channels / customer groups
- * are field-selectable:
- *   GraphQL → `channels { edges { node { id code name } } }` and
- *             `customerGroups { edges { node { id code name } } }` Relay connections.
- *   REST    → the same data as flat arrays of objects `[{id, code, name}]`.
- *
- * BREAKING (user-approved): the old bare int arrays `channels: [1]` /
- * `customerGroups: [2]` are REPLACED by the object connections (GraphQL) /
- * object arrays (REST). `conditions` stays a JSON scalar (dynamic rule rows);
- * `couponCode` stays a scalar string (primary coupon).
- *
- * REST shape stays flat via `output: AdminMarketingCartRuleRestDto`; GraphQL ops
- * carry NO output so they return this Eloquent model → connections resolve.
- *
- * REST:
- *   GET    /api/admin/marketing/cart-rules
- *   GET    /api/admin/marketing/cart-rules/{id}
- *   POST   /api/admin/marketing/cart-rules
- *   PUT    /api/admin/marketing/cart-rules/{id}
- *   DELETE /api/admin/marketing/cart-rules/{id}
- *   POST   /api/admin/marketing/cart-rules/{id}/copy
- *
- * GraphQL: adminMarketingCartRules, adminMarketingCartRule,
- *          createAdminMarketingCartRule, updateAdminMarketingCartRule,
- *          deleteAdminMarketingCartRule, copyAdminMarketingCartRule
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Promotions\CartRuleController.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingCartRule',
@@ -845,6 +814,9 @@ class AdminMarketingCartRule extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
@@ -853,8 +825,7 @@ class AdminMarketingCartRule extends EloquentModel
 
     /**
      * Primary coupon code — a STRING accessor (safe over GraphQL) recomputed from
-     * the row's own id, so it resolves on the Eloquent parent (the listing
-     * forceFills it as a no-N+1 fast-path).
+     * the row's own id, so it resolves on the Eloquent parent (the listing.
      */
     #[ApiProperty(writable: false)]
     public function getCouponCodeAttribute(): ?string
@@ -875,8 +846,7 @@ class AdminMarketingCartRule extends EloquentModel
 
     /**
      * Assigned channels (GraphQL connection — `channels { edges }`). belongsToMany
-     * over `cart_rule_channels` — the pivot has no own id, so the node `_id` is the
-     * channel's real id.
+     * over `cart_rule_channels` — the pivot has no own id, so the node `_id` is the.
      */
     #[ApiProperty(writable: false)]
     public function channels(): BelongsToMany
@@ -891,8 +861,7 @@ class AdminMarketingCartRule extends EloquentModel
 
     /**
      * Assigned customer groups (GraphQL connection — `customerGroups { edges }`).
-     * The relation METHOD is snake_case (`customer_groups`) so the central
-     * converter resolves it; the GraphQL field surfaces as `customerGroups`.
+     * The relation METHOD is snake_case (`customer_groups`) so the central.
      */
     #[ApiProperty(writable: false)]
     public function customer_groups(): BelongsToMany

@@ -4,14 +4,6 @@ namespace Webkul\BagistoApi\Admin\Dto;
 
 use ApiPlatform\Metadata\ApiResource;
 
-/**
- * One attribute option, surfaced inline inside the options array on the
- * attribute detail response.
- *
- * Annotated with empty operations / graphQlOperations so API Platform registers
- * it as a schema type (needed for GraphQL nested-object validation) without
- * exposing CRUD endpoints.
- */
 #[ApiResource(
     operations: [],
     graphQlOperations: [],
@@ -19,14 +11,29 @@ use ApiPlatform\Metadata\ApiResource;
 )]
 class AdminAttributeOptionDto
 {
+    /**
+     * The id.
+     */
     public ?int $id = null;
 
+    /**
+     * The admin name.
+     */
     public ?string $adminName = null;
 
+    /**
+     * The sort order.
+     */
     public ?int $sortOrder = null;
 
+    /**
+     * The swatch value.
+     */
     public ?string $swatchValue = null;
 
+    /**
+     * The swatch value url.
+     */
     public ?string $swatchValueUrl = null;
 
     /**

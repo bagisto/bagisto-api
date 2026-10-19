@@ -7,18 +7,6 @@ use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Channel — shared nested sub-resource for Marketing resources that reference
- * channels (catalog rules / cart rules `channels` connections; campaigns /
- * subscribers / search terms `channel` to-one). Backed by `channels`.
- *
- * Used as a belongsToMany node (pivot has no own id → node `_id` is the
- * channel's real id) and as a BelongsTo typed object.
- *
- * `name` is computed from `channel_translations` (channels has no name column);
- * it is a STRING accessor (safe over GraphQL) recomputed from the node's own
- * `id`, so it survives connection re-resolution.
- */
 #[ApiResource(
     shortName: 'AdminMarketingChannelRef',
     operations: [],
@@ -41,12 +29,18 @@ class AdminMarketingChannelRef extends Model
     /** @var array */
     protected $appends = ['name'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id !== null ? (int) $this->id : null;
     }
 
+    /**
+     * Get name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getNameAttribute(): ?string
     {

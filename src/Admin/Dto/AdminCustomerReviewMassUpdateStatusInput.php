@@ -12,6 +12,9 @@ class AdminCustomerReviewMassUpdateStatusInput
     #[Groups(['mutation'])]
     public ?array $indices = null;
 
+    /**
+     * The value.
+     */
     #[ApiProperty(description: 'pending|approved|disapproved')]
     #[Groups(['mutation'])]
     public ?string $value = null;

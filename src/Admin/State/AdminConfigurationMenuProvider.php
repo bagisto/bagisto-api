@@ -8,14 +8,16 @@ use Webkul\BagistoApi\Admin\Models\AdminConfigurationMenu;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
-/**
- * Returns the merged system_config tree, optionally scoped to a slug and
- * optionally embedding current values per field.
- */
 class AdminConfigurationMenuProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected AdminConfigurationSchemaResolver $resolver) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         AdminReadPermissions::authorize($operation, AdminConfigurationMenu::class);
@@ -63,6 +65,19 @@ class AdminConfigurationMenuProvider implements ProviderInterface
     }
 
     /**
+     * Convert raw payload array → DTO instance.
+     * `tree` is kept as a plain nested array (a JSON scalar over GraphQL) —.
+     */
+    public static function toDto(array $payload): AdminConfigurationMenu
+    {
+        $dto = new AdminConfigurationMenu;
+        $dto->slug = $payload['slug'] ?? null;
+        $dto->tree = $payload['tree'] ?? null;
+
+        return $dto;
+    }
+
+    /**
      * Walk the serialised tree and embed `value` per field via core helper.
      *
      * @param  array<int, array<string, mixed>>  $nodes
@@ -101,22 +116,5 @@ class AdminConfigurationMenuProvider implements ProviderInterface
             );
         }
         unset($field);
-    }
-
-    /**
-     * Convert raw payload array → DTO instance.
-     *
-     * `tree` is kept as a plain nested array (a JSON scalar over GraphQL) —
-     * the configuration schema is synthetic/dynamic, so it cannot resolve as
-     * typed connection nodes (those re-read from a real table). Clients query
-     * `tree` bare and receive the whole structure.
-     */
-    public static function toDto(array $payload): AdminConfigurationMenu
-    {
-        $dto = new AdminConfigurationMenu;
-        $dto->slug = $payload['slug'] ?? null;
-        $dto->tree = $payload['tree'] ?? null;
-
-        return $dto;
     }
 }

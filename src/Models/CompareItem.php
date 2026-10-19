@@ -22,11 +22,6 @@ use Webkul\BagistoApi\State\CompareItemItemProvider;
 use Webkul\BagistoApi\State\CompareItemProcessor;
 use Webkul\BagistoApi\State\CompareItemProvider;
 
-/**
- * Compare Item API Resource
- *
- * Allows customers to compare products
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
@@ -173,7 +168,7 @@ use Webkul\BagistoApi\State\CompareItemProvider;
 class CompareItem extends \Webkul\Customer\Models\CompareItem
 {
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -182,7 +177,7 @@ class CompareItem extends \Webkul\Customer\Models\CompareItem
     }
 
     /**
-     * Product relationship for API
+     * Product relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Associated product')]
     public function product(): BelongsTo
@@ -191,7 +186,7 @@ class CompareItem extends \Webkul\Customer\Models\CompareItem
     }
 
     /**
-     * Customer relationship for API
+     * Customer relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Customer who added the item')]
     public function customer(): BelongsTo

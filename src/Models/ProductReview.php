@@ -438,6 +438,9 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
      */
     public const STATUS_APPROVED = 'approved';
 
+    /**
+     * The fillable.
+     */
     protected $fillable = [
         'comment',
         'title',
@@ -448,6 +451,9 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         'name',
     ];
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'id' => 'int',
         'product_id' => 'int',
@@ -461,6 +467,9 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         'updated_at' => 'datetime',
     ];
 
+    /**
+     * Handle the get magic method.
+     */
     public function __get($key)
     {
         if ($this->hasAttribute($key)) {
@@ -470,11 +479,17 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         return parent::__get($key);
     }
 
+    /**
+     * Get id.
+     */
     public function getId()
     {
         return $this->getAttribute('id');
     }
 
+    /**
+     * Handle the isset magic method.
+     */
     public function __isset($key)
     {
         if ($this->hasAttribute($key)) {
@@ -484,6 +499,9 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         return parent::__isset($key);
     }
 
+    /**
+     * Handle the set magic method.
+     */
     public function __set($key, $value)
     {
         if (in_array($key, ['id', 'product_id', 'customer_id', 'title', 'comment', 'rating', 'name', 'email', 'status', 'created_at', 'updated_at'])) {
@@ -493,11 +511,17 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         }
     }
 
+    /**
+     * Get attachments attribute.
+     */
     public function getAttachmentsAttribute()
     {
         return $this->getAttachmentUrls();
     }
 
+    /**
+     * Get attachment urls.
+     */
     public function getAttachmentUrls()
     {
         return $this->images->first() ? $this->images->map(function ($item) {

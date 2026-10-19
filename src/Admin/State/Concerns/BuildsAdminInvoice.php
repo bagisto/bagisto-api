@@ -7,16 +7,6 @@ use Webkul\BagistoApi\Admin\Models\AdminInvoice;
 use Webkul\Sales\Models\Invoice;
 use Webkul\Sales\Models\OrderTransaction;
 
-/**
- * Builds the invoice payload for both transports (the AdminReview connection
- * recipe):
- *   - GraphQL → `loadInvoiceForGraphQL()` returns the AdminInvoice Eloquent
- *     model with relations, so items/addresses resolve as connections.
- *   - REST    → `buildInvoiceRestDto()` maps the core Invoice to the flat
- *     AdminInvoiceRestDto (addresses + items as flat arrays).
- *
- * Shared by AdminInvoiceProvider (read) and AdminInvoiceCreateProcessor (create).
- */
 trait BuildsAdminInvoice
 {
     use MapsOrderActionItems;
@@ -28,6 +18,9 @@ trait BuildsAdminInvoice
         return AdminInvoice::with(['items', 'order.addresses'])->find($id);
     }
 
+    /**
+     * Build invoice rest dto.
+     */
     protected function buildInvoiceRestDto(Invoice $invoice): AdminInvoiceRestDto
     {
         $order = $invoice->order;
@@ -42,12 +35,10 @@ trait BuildsAdminInvoice
         $dto->emailSent = (bool) $invoice->email_sent;
         $dto->totalQty = (int) $invoice->total_qty;
 
-        // --- Currency codes ---
         $dto->orderCurrencyCode = $currency;
         $dto->baseCurrencyCode = $invoice->base_currency_code;
         $dto->channelCurrencyCode = $invoice->channel_currency_code;
 
-        // --- Sub-total ---
         $dto->subTotal = (float) $invoice->sub_total;
         $dto->formattedSubTotal = core()->formatPrice((float) $invoice->sub_total, $currency);
         $dto->baseSubTotal = (float) $invoice->base_sub_total;
@@ -57,25 +48,21 @@ trait BuildsAdminInvoice
         $dto->baseSubTotalInclTax = (float) $invoice->base_sub_total_incl_tax;
         $dto->formattedBaseSubTotalInclTax = core()->formatBasePrice((float) $invoice->base_sub_total_incl_tax);
 
-        // --- Grand total ---
         $dto->grandTotal = (float) $invoice->grand_total;
         $dto->formattedGrandTotal = core()->formatPrice((float) $invoice->grand_total, $currency);
         $dto->baseGrandTotal = (float) $invoice->base_grand_total;
         $dto->formattedBaseGrandTotal = core()->formatBasePrice((float) $invoice->base_grand_total);
 
-        // --- Tax ---
         $dto->taxAmount = (float) $invoice->tax_amount;
         $dto->formattedTaxAmount = core()->formatPrice((float) $invoice->tax_amount, $currency);
         $dto->baseTaxAmount = (float) $invoice->base_tax_amount;
         $dto->formattedBaseTaxAmount = core()->formatBasePrice((float) $invoice->base_tax_amount);
 
-        // --- Discount ---
         $dto->discountAmount = (float) $invoice->discount_amount;
         $dto->formattedDiscountAmount = core()->formatPrice((float) $invoice->discount_amount, $currency);
         $dto->baseDiscountAmount = (float) $invoice->base_discount_amount;
         $dto->formattedBaseDiscountAmount = core()->formatBasePrice((float) $invoice->base_discount_amount);
 
-        // --- Shipping ---
         $dto->shippingAmount = (float) $invoice->shipping_amount;
         $dto->formattedShippingAmount = core()->formatPrice((float) $invoice->shipping_amount, $currency);
         $dto->baseShippingAmount = (float) $invoice->base_shipping_amount;
@@ -95,7 +82,6 @@ trait BuildsAdminInvoice
         $dto->createdAt = $invoice->created_at ? (string) $invoice->created_at : null;
         $dto->updatedAt = $invoice->updated_at ? (string) $invoice->updated_at : null;
 
-        // --- Order / customer context (mirrors the admin invoice view's right column) ---
         $dto->orderStatus = $order?->status;
         $dto->orderStatusLabel = $order?->status_label;
         $dto->orderDate = $order?->created_at ? (string) $order->created_at : null;
@@ -119,9 +105,7 @@ trait BuildsAdminInvoice
 
     /**
      * The `invoices.transaction_id` column is only set for gateway captures; the
-     * admin "Create Transaction" path records the payment in `order_transactions`
-     * (linked by `invoice_id`) and never back-fills the invoice column. Fall back
-     * to that linked transaction so the invoice surfaces its transaction id.
+     * admin "Create Transaction" path records the payment in `order_transactions`.
      */
     protected function resolveInvoiceTransactionId(Invoice $invoice): ?string
     {

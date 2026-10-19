@@ -16,14 +16,13 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Sitemap\Jobs\ProcessSitemap;
 use Webkul\Sitemap\Models\Sitemap;
 
-/**
- * Handles POST /api/admin/marketing/sitemaps/{id}/generate +
- * createAdminMarketingSitemapGenerate.
- */
 class AdminMarketingSitemapGenerateProcessor implements ProcessorInterface
 {
     use MapsSitemapChannels;
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -73,6 +72,9 @@ class AdminMarketingSitemapGenerateProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Resolve sitemap id.
+     */
     protected function resolveSitemapId(mixed $data, array $uriVariables, array $context): int
     {
         if (! empty($uriVariables['id'])) {
@@ -106,6 +108,9 @@ class AdminMarketingSitemapGenerateProcessor implements ProcessorInterface
         return (int) (request()->input('sitemapId') ?? request()->input('sitemap_id') ?? 0);
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

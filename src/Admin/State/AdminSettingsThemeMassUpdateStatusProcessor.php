@@ -12,13 +12,16 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Theme\Repositories\ThemeCustomizationRepository;
 
-/**
- * POST /api/admin/settings/themes/mass-update-status + createAdminSettingsThemeMassUpdateStatus.
- */
 class AdminSettingsThemeMassUpdateStatusProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected ThemeCustomizationRepository $repository) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -51,6 +54,9 @@ class AdminSettingsThemeMassUpdateStatusProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -78,6 +84,9 @@ class AdminSettingsThemeMassUpdateStatusProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (
@@ -100,6 +109,9 @@ class AdminSettingsThemeMassUpdateStatusProcessor implements ProcessorInterface
         return [];
     }
 
+    /**
+     * Resolve value.
+     */
     protected function resolveValue(mixed $data, array $context): ?int
     {
         if (

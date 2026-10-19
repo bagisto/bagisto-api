@@ -12,22 +12,6 @@ use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\Resolver\AdminDashboardQueryResolver;
 use Webkul\BagistoApi\Admin\State\AdminDashboardProvider;
 
-/**
- * Admin dashboard statistics (read-only).
- *
- * REST   : GET /api/admin/dashboard/stats
- * GraphQL: adminDashboardStats query
- *
- * Mirrors `Webkul\Admin\Http\Controllers\DashboardController::stats()`.
- * The `type` query param selects which named stat group is returned by
- * the `Webkul\Admin\Helpers\Dashboard` helper:
- *
- *   over-all (default), today, stock-threshold-products, total-sales,
- *   top-selling-products, top-customers
- *
- * `start` / `end` (ISO dates) and `channel` (channel code) narrow the
- * window; the helper falls back to "last 30 days" when omitted.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminDashboard',
@@ -123,10 +107,16 @@ class AdminDashboard
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(readable: true, writable: false, identifier: true)]
     #[Groups(['query'])]
     public ?string $type = null;
 
+    /**
+     * The date range.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $date_range = null;

@@ -8,6 +8,9 @@ use Webkul\Shop\Mail\Customer\EmailVerificationNotification;
 
 class ResendVerificationEmailTest extends GraphQLTestCase
 {
+    /**
+     * The mutation constant.
+     */
     private const MUTATION = <<<'GQL'
         mutation resend($input: createResendVerificationEmailInput!) {
           createResendVerificationEmail(input: $input) {
@@ -16,6 +19,9 @@ class ResendVerificationEmailTest extends GraphQLTestCase
         }
     GQL;
 
+    /**
+     * Test resend verification email for existing customer rotates token.
+     */
     public function test_resend_verification_email_for_existing_customer_rotates_token(): void
     {
         Mail::fake();
@@ -44,6 +50,9 @@ class ResendVerificationEmailTest extends GraphQLTestCase
         Mail::assertQueued(EmailVerificationNotification::class);
     }
 
+    /**
+     * Test resend verification email for unknown email returns generic success.
+     */
     public function test_resend_verification_email_for_unknown_email_returns_generic_success(): void
     {
         Mail::fake();

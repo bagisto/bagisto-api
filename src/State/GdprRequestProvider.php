@@ -20,10 +20,16 @@ class GdprRequestProvider implements ProviderInterface
     use GdprFeatureGate;
     use ResolvesListSort;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $this->assertGdprEnabled();

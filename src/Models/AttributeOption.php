@@ -126,18 +126,27 @@ class AttributeOption extends \Webkul\Attribute\Models\AttributeOption
      */
     protected $with = ['translations'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get translations.
+     */
     #[ApiProperty(readableLink: true)]
     public function getTranslations()
     {
         return $this->translations;
     }
 
+    /**
+     * Get translation.
+     */
     #[ApiProperty(readableLink: true, description: 'Current locale translation')]
     public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?EloquentModel
     {

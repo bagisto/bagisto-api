@@ -11,23 +11,17 @@ class SalesTransactionsTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    /** Bootstrap a transaction and return its id. */
-    protected function aTransactionId(): int
-    {
-        $existing = OrderTransaction::query()->value('id');
-        if ($existing) {
-            return $existing;
-        }
-        $order = $this->bootstrapOrderWithInvoice('processing');
-
-        return $this->bootstrapOrderTransaction($order);
-    }
-
+    /**
+     * Test list requires authentication.
+     */
     public function test_list_requires_authentication(): void
     {
         $this->publicGet('/api/admin/transactions')->assertStatus(401);
     }
 
+    /**
+     * Test list returns envelope.
+     */
     public function test_list_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -37,6 +31,9 @@ class SalesTransactionsTest extends AdminApiTestCase
         expect($response->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total']);
     }
 
+    /**
+     * Test row shape.
+     */
     public function test_row_shape(): void
     {
         $admin = $this->createAdmin();
@@ -51,6 +48,9 @@ class SalesTransactionsTest extends AdminApiTestCase
         expect($rows[0])->toHaveKeys(['id', 'transactionId', 'invoiceId', 'orderId', 'orderIncrementId', 'amount', 'status', 'createdAt']);
     }
 
+    /**
+     * Test per page caps at 50.
+     */
     public function test_per_page_caps_at_50(): void
     {
         $admin = $this->createAdmin();
@@ -59,6 +59,9 @@ class SalesTransactionsTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test filter by status.
+     */
     public function test_filter_by_status(): void
     {
         $admin = $this->createAdmin();
@@ -69,12 +72,18 @@ class SalesTransactionsTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test detail 404 on unknown id.
+     */
     public function test_detail_404_on_unknown_id(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/transactions/99999999')->assertStatus(404);
     }
 
+    /**
+     * Test detail returns dto.
+     */
     public function test_detail_returns_dto(): void
     {
         $admin = $this->createAdmin();
@@ -90,9 +99,7 @@ class SalesTransactionsTest extends AdminApiTestCase
 
     /**
      * Regression — `OrderTransaction` does NOT declare an `order()` relation
-     * in Bagisto core, so `OrderTransaction::with('order')` used to throw
-     * "Call to undefined relationship [order]" (HTTP 500). Detail provider
-     * now resolves the order manually via `Order::find($order_id)`.
+     * in Bagisto core, so `OrderTransaction::with('order')` used to throw.
      */
     public function test_detail_does_not_500_on_missing_order_relation(): void
     {
@@ -109,6 +116,9 @@ class SalesTransactionsTest extends AdminApiTestCase
         expect($response->json('order'))->toHaveKeys(['id', 'incrementId']);
     }
 
+    /**
+     * Test no permission returns 403.
+     */
     public function test_no_permission_returns_403(): void
     {
         $role = Role::factory()->create([
@@ -119,6 +129,9 @@ class SalesTransactionsTest extends AdminApiTestCase
         $this->adminGet($admin, '/api/admin/transactions')->assertStatus(403);
     }
 
+    /**
+     * Test detail returns full payload.
+     */
     public function test_detail_returns_full_payload(): void
     {
         $id = $this->aTransactionId();
@@ -133,6 +146,9 @@ class SalesTransactionsTest extends AdminApiTestCase
         expect($response->json('id'))->toBe((int) $id);
     }
 
+    /**
+     * Test export returns csv.
+     */
     public function test_export_returns_csv(): void
     {
         $admin = $this->createAdmin();
@@ -147,6 +163,9 @@ class SalesTransactionsTest extends AdminApiTestCase
         expect($response->getContent())->toContain('ID,"Transaction ID","Invoice ID","Order ID",Status,Date');
     }
 
+    /**
+     * Test export supports xlsx.
+     */
     public function test_export_supports_xlsx(): void
     {
         $admin = $this->createAdmin();
@@ -162,6 +181,9 @@ class SalesTransactionsTest extends AdminApiTestCase
         expect($response->headers->get('Content-Disposition'))->toContain('.xlsx');
     }
 
+    /**
+     * Test export unsupported format returns 422.
+     */
     public function test_export_unsupported_format_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -171,11 +193,17 @@ class SalesTransactionsTest extends AdminApiTestCase
         ))->assertStatus(422);
     }
 
+    /**
+     * Test export requires authentication.
+     */
     public function test_export_requires_authentication(): void
     {
         $this->get('/api/admin/transactions/export', ['Accept' => 'text/csv'])->assertStatus(401);
     }
 
+    /**
+     * Test export no permission returns 403.
+     */
     public function test_export_no_permission_returns_403(): void
     {
         $role = Role::factory()->create([
@@ -187,5 +215,17 @@ class SalesTransactionsTest extends AdminApiTestCase
             $this->adminHeaders($admin),
             ['Accept' => 'text/csv'],
         ))->assertStatus(403);
+    }
+
+    /** Bootstrap a transaction and return its id. */
+    protected function aTransactionId(): int
+    {
+        $existing = OrderTransaction::query()->value('id');
+        if ($existing) {
+            return $existing;
+        }
+        $order = $this->bootstrapOrderWithInvoice('processing');
+
+        return $this->bootstrapOrderTransaction($order);
     }
 }

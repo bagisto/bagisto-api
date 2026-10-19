@@ -4,22 +4,29 @@ namespace Webkul\BagistoApi\Dto;
 
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * DTO for customer login via GraphQL mutation input
- * This explicitly defines all input fields for the GraphQL schema
- * Note: No 'id' field here - only email and password are input
- */
 class LoginInput
 {
+    /**
+     * The email.
+     */
     #[Groups(['mutation'])]
     public string $email;
 
+    /**
+     * The password.
+     */
     #[Groups(['mutation'])]
     public string $password;
 
+    /**
+     * The device token.
+     */
     #[Groups(['mutation'])]
     public ?string $deviceToken = null;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         string $email = '',
         string $password = '',

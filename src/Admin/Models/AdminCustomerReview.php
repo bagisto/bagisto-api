@@ -270,8 +270,14 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
 )]
 class AdminCustomerReview extends EloquentModel
 {
+    /**
+     * The table.
+     */
     protected $table = 'product_reviews';
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'id' => 'int',
         'title' => 'string',
@@ -285,34 +291,55 @@ class AdminCustomerReview extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
+    /**
+     * The appends.
+     */
     protected $appends = ['message'];
 
+    /**
+     * The action message.
+     */
     public ?string $actionMessage = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
     {
         return $this->id;
     }
 
+    /**
+     * Get message attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getMessageAttribute(): ?string
     {
         return $this->actionMessage;
     }
 
+    /**
+     * Images.
+     */
     #[ApiProperty(writable: false)]
     public function images(): HasMany
     {
         return $this->hasMany(AdminCustomerReviewImage::class, 'review_id');
     }
 
+    /**
+     * Product.
+     */
     #[ApiProperty(writable: false)]
     public function product(): BelongsTo
     {
         return $this->belongsTo(AdminCustomerReviewProductRef::class, 'product_id');
     }
 
+    /**
+     * Customer.
+     */
     #[ApiProperty(writable: false)]
     public function customer(): BelongsTo
     {

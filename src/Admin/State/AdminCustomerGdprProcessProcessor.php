@@ -18,25 +18,19 @@ use Webkul\Customer\Repositories\CustomerRepository;
 use Webkul\GDPR\Models\GDPRDataRequest;
 use Webkul\GDPR\Repositories\GDPRDataRequestRepository;
 
-/**
- * POST /api/admin/customers/gdpr-requests/{id}/process +
- * createAdminCustomerGdprProcess mutation.
- *
- * Marks the request approved and, for type=delete, cascades the customer
- * delete via CustomerRepository::delete() (which fires the customer.delete.*
- * events). For type=update the admin is expected to apply the requested
- * profile edits manually through the regular customer-update endpoint —
- * the GDPR table only carries a free-form `message`, not a structured patch.
- *
- * Refuses to re-process an already-approved or revoked request.
- */
 class AdminCustomerGdprProcessProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected GDPRDataRequestRepository $gdprRepository,
         protected CustomerRepository $customerRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -122,6 +116,9 @@ class AdminCustomerGdprProcessProcessor implements ProcessorInterface
         return $dto;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin): void
     {
         $role = $admin->role ?? null;

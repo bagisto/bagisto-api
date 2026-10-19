@@ -87,7 +87,7 @@ use Webkul\CMS\Models\PageTranslation as BasePageTranslation;
 class PageTranslation extends BasePageTranslation
 {
     /**
-     * Get unique translation identifier
+     * Get unique translation identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int

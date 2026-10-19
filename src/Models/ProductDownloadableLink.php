@@ -193,11 +193,13 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
      */
     protected $hidden = ['url', 'file', 'file_name'];
 
+    /**
+     * Get the array representation.
+     */
     public function toArray(): array
     {
         $array = parent::toArray();
 
-        // Ensure title is included in serialization from translations
         if (
             ! isset($array['title'])
             && $this->title
@@ -205,7 +207,6 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
             $array['title'] = $this->title;
         }
 
-        // Override sample_file_url to return null instead of empty string when no sample file
         if (
             ! $this->sample_file
             || empty($this->sample_file)
@@ -224,17 +225,26 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $value !== null ? (float) core()->convertPrice((float) $value) : null;
     }
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Product.
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
 
+    /**
+     * Translation.
+     */
     public function translation(): HasOne
     {
         return $this->hasOne(ProductDownloadableLinkTranslation::class, 'product_downloadable_link_id');
@@ -242,8 +252,7 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
 
     /**
      * Override parent's sample_file_url to return the REST download endpoint.
-     * Sample files for links are stored on the private disk,
-     * so a direct public Storage URL would 404.
+     * Sample files for links are stored on the private disk,.
      */
     public function sample_file_url(): string
     {
@@ -257,17 +266,26 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return url('/api/downloadable/download-sample/link/'.$this->id);
     }
 
+    /**
+     * Get title.
+     */
     #[ApiProperty(writable: true, readable: true)]
     public function getTitle(): ?string
     {
         return $this->title;
     }
 
+    /**
+     * Set title.
+     */
     public function setTitle(?string $value): void
     {
         $this->title = $value;
     }
 
+    /**
+     * Get price.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getPrice(): ?float
@@ -275,11 +293,17 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return (float) $this->price;
     }
 
+    /**
+     * Set price.
+     */
     public function setPrice(?float $value): void
     {
         $this->price = $value;
     }
 
+    /**
+     * Get formatted price attribute.
+     */
     public function getFormattedPriceAttribute(): ?string
     {
         $price = $this->getPrice();
@@ -287,12 +311,18 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $price !== null ? core()->formatPrice($price) : null;
     }
 
+    /**
+     * Get formatted price.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public function getFormatted_price(): ?string
     {
         return $this->getFormattedPriceAttribute();
     }
 
+    /**
+     * Get url.
+     */
     #[ApiProperty(writable: true, readable: false)]
     #[Groups(['mutation'])]
     public function getUrl(): ?string
@@ -300,11 +330,17 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $this->url;
     }
 
+    /**
+     * Set url.
+     */
     public function setUrl(?string $value): void
     {
         $this->url = $value;
     }
 
+    /**
+     * Get file.
+     */
     #[ApiProperty(writable: true, readable: false)]
     #[Groups(['mutation'])]
     public function getFile(): ?string
@@ -312,11 +348,17 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $this->file;
     }
 
+    /**
+     * Set file.
+     */
     public function setFile(?string $value): void
     {
         $this->file = $value;
     }
 
+    /**
+     * Get file name.
+     */
     #[ApiProperty(writable: true, readable: false)]
     #[Groups(['mutation'])]
     public function getFileName(): ?string
@@ -324,11 +366,17 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $this->file_name;
     }
 
+    /**
+     * Set file name.
+     */
     public function setFileName(?string $value): void
     {
         $this->file_name = $value;
     }
 
+    /**
+     * Get type.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getType(): ?string
@@ -336,11 +384,17 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $this->type;
     }
 
+    /**
+     * Set type.
+     */
     public function setType(?string $value): void
     {
         $this->type = $value;
     }
 
+    /**
+     * Get sample url.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getSampleUrl(): ?string
@@ -348,11 +402,17 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $this->sample_url;
     }
 
+    /**
+     * Set sample url.
+     */
     public function setSampleUrl(?string $value): void
     {
         $this->sample_url = $value;
     }
 
+    /**
+     * Get sample file.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getSampleFile(): ?string
@@ -360,11 +420,17 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $this->sample_file;
     }
 
+    /**
+     * Set sample file.
+     */
     public function setSampleFile(?string $value): void
     {
         $this->sample_file = $value;
     }
 
+    /**
+     * Get sample file name.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getSampleFileName(): ?string
@@ -372,11 +438,17 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $this->sample_file_name;
     }
 
+    /**
+     * Set sample file name.
+     */
     public function setSampleFileName(?string $value): void
     {
         $this->sample_file_name = $value;
     }
 
+    /**
+     * Get sample type.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getSampleType(): ?string
@@ -384,11 +456,17 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $this->sample_type;
     }
 
+    /**
+     * Set sample type.
+     */
     public function setSampleType(?string $value): void
     {
         $this->sample_type = $value;
     }
 
+    /**
+     * Get sort order.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getSortOrder(): ?int
@@ -396,11 +474,17 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $this->sort_order;
     }
 
+    /**
+     * Set sort order.
+     */
     public function setSortOrder(?int $value): void
     {
         $this->sort_order = $value;
     }
 
+    /**
+     * Get downloads.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getDownloads(): ?int
@@ -408,22 +492,34 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $this->downloads;
     }
 
+    /**
+     * Set downloads.
+     */
     public function setDownloads(?int $value): void
     {
         $this->downloads = $value;
     }
 
+    /**
+     * Get product id.
+     */
     #[ApiProperty(writable: true, readable: true)]
     public function getProductId(): ?int
     {
         return $this->product_id;
     }
 
+    /**
+     * Set product id.
+     */
     public function setProductId(?int $value): void
     {
         $this->product_id = $value;
     }
 
+    /**
+     * Get file url.
+     */
     #[ApiProperty(writable: false, readable: false)]
     public function getFileUrl(): ?string
     {
@@ -440,6 +536,9 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $url;
     }
 
+    /**
+     * Get sample file url.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public function getSampleFileUrl(): ?string
     {

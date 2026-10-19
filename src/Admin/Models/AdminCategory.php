@@ -21,16 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCategoryProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
 
-/**
- * Admin Catalog → Categories endpoints.
- *
- * REST    : GET /api/admin/catalog/categories  → datagrid-parity listing
- *           (detail and GraphQL operations added in later Phase 1.3 tasks)
- *
- * Mirrors Webkul\Admin\DataGrids\Catalog\CategoryDataGrid 1:1 — same join
- * (categories × category_translations on the active locale), same filters,
- * same sort columns.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCategory',
@@ -485,42 +475,81 @@ class AdminCategory
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The position.
+     */
     #[ApiProperty(writable: false)]
     public ?int $position = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(writable: false)]
     public ?int $status = null;
 
+    /**
+     * The parent id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $parent_id = null;
 
+    /**
+     * The display mode.
+     */
     #[ApiProperty(writable: false)]
     public ?string $display_mode = null;
 
+    /**
+     * The logo url.
+     */
     #[ApiProperty(writable: false)]
     public ?string $logo_url = null;
 
+    /**
+     * The banner url.
+     */
     #[ApiProperty(writable: false)]
     public ?string $banner_url = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The slug.
+     */
     #[ApiProperty(writable: false)]
     public ?string $slug = null;
 
+    /**
+     * The description.
+     */
     #[ApiProperty(writable: false)]
     public ?string $description = null;
 
+    /**
+     * The locale.
+     */
     #[ApiProperty(writable: false)]
     public ?string $locale = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 

@@ -7,9 +7,6 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Webkul\BagistoApi\State\CustomerAddressProvider;
 use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
 
-/**
- * API resource for querying customer addresses with cursor-based pagination.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'GetCustomerAddresses',

@@ -11,16 +11,11 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Core\Models\Channel;
 use Webkul\Marketing\Models\SearchTerm;
 
-/**
- * Search term detail — GET /api/admin/marketing/search-terms/{id} +
- * adminMarketingSearchTerm.
- *
- * Branches: GraphQL → the AdminMarketingSearchTerm Eloquent model (the `channel`
- * to-one object resolves); REST → the flat AdminMarketingSearchTermRestDto with
- * `channel` as an object `{ id, code, name }`.
- */
 class AdminMarketingSearchTermItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminMarketingSearchTerm|AdminMarketingSearchTermRestDto
     {
         AdminReadPermissions::authorize($operation, AdminMarketingSearchTerm::class);
@@ -50,14 +45,19 @@ class AdminMarketingSearchTermItemProvider implements ProviderInterface
         return $this->buildRestDto($term);
     }
 
+    /**
+     * Build rest dto public.
+     */
     public function buildRestDtoPublic(object $term): AdminMarketingSearchTermRestDto
     {
         return $this->buildRestDto($term);
     }
 
+    /**
+     * Build rest dto.
+     */
     protected function buildRestDto(object $term): AdminMarketingSearchTermRestDto
     {
-        /** @var SearchTerm $term */
         $dto = new AdminMarketingSearchTermRestDto;
 
         $dto->id = (int) $term->id;

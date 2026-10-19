@@ -14,10 +14,16 @@ class AdminRmaReasonMassUpdateStatusProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly RMAReasonRepository $rmaReasonRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminRmaReasonMassUpdateStatus
     {
         $this->authorizedAdmin('sales.rma.reasons.edit', 'bagistoapi::app.admin.rma.no-permission');

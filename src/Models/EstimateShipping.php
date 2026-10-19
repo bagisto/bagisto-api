@@ -15,11 +15,6 @@ use Webkul\BagistoApi\Dto\CartInput;
 use Webkul\BagistoApi\State\CartTokenMutationProvider;
 use Webkul\BagistoApi\State\CartTokenProcessor;
 
-/**
- * EstimateShipping - GraphQL API Resource for Estimating Shipping Methods and Tax
- *
- * Provides mutation for estimating shipping methods and tax based on address.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'EstimateShipping',
@@ -103,10 +98,16 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
 )]
 class EstimateShipping
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $id = null;
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $cartToken = null;

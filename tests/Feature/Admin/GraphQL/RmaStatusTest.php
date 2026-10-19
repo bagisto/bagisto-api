@@ -10,18 +10,9 @@ use Webkul\User\Models\Role;
 
 class RmaStatusTest extends AdminApiTestCase
 {
-    private function createStatus(string $title, int $default = 0): int
-    {
-        return DB::table('rma_statuses')->insertGetId([
-            'title' => $title,
-            'status' => 1,
-            'color' => '#abcdef',
-            'default' => $default,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
+    /**
+     * Test create and list.
+     */
     public function test_create_and_list(): void
     {
         $admin = $this->createAdmin();
@@ -45,6 +36,9 @@ class RmaStatusTest extends AdminApiTestCase
         expect($list->json('data.adminRmaStatuses.edges'))->toBeArray();
     }
 
+    /**
+     * Test update and delete.
+     */
     public function test_update_and_delete(): void
     {
         $admin = $this->createAdmin();
@@ -75,6 +69,9 @@ class RmaStatusTest extends AdminApiTestCase
         $this->assertDatabaseMissing('rma_statuses', ['id' => $id]);
     }
 
+    /**
+     * Test mass delete skips default.
+     */
     public function test_mass_delete_skips_default(): void
     {
         $admin = $this->createAdmin();
@@ -200,5 +197,20 @@ class RmaStatusTest extends AdminApiTestCase
         GQL;
 
         return $this->adminGraphQL($mutation, ['input' => $input], $admin, $token);
+    }
+
+    /**
+     * Create status.
+     */
+    private function createStatus(string $title, int $default = 0): int
+    {
+        return DB::table('rma_statuses')->insertGetId([
+            'title' => $title,
+            'status' => 1,
+            'color' => '#abcdef',
+            'default' => $default,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

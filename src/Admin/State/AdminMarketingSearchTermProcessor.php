@@ -23,10 +23,16 @@ use Webkul\Marketing\Models\SearchTerm;
 
 class AdminMarketingSearchTermProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminMarketingSearchTermItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -83,6 +89,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $payload, bool $isGraphQL = false): AdminMarketingSearchTerm|AdminMarketingSearchTermRestDto
     {
         $value = Validator::make($payload, [
@@ -110,6 +119,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return $this->buildResult((int) $term->id, $isGraphQL);
     }
 
+    /**
+     * Resolve create payload.
+     */
     protected function resolveCreatePayload(mixed $data, array $context, bool $isGraphQL): array
     {
         $payload = [];
@@ -151,6 +163,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return $payload;
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $payload, bool $isGraphQL = false): AdminMarketingSearchTerm|AdminMarketingSearchTermRestDto
     {
         $existing = SearchTerm::find($id);
@@ -186,6 +201,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return $this->buildResult($id, $isGraphQL);
     }
 
+    /**
+     * Build result.
+     */
     protected function buildResult(int $id, bool $isGraphQL): AdminMarketingSearchTerm|AdminMarketingSearchTermRestDto
     {
         if ($isGraphQL) {
@@ -195,6 +213,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return $this->itemProvider->buildRestDtoPublic(SearchTerm::find($id));
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id): array
     {
         $existing = SearchTerm::find($id);
@@ -209,6 +230,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.search-term.deleted')];
     }
 
+    /**
+     * Resolve payload.
+     */
     protected function resolvePayload(mixed $data, array $context, bool $isGraphQL): array
     {
         $payload = [];
@@ -251,6 +275,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return $payload;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

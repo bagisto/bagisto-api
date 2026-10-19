@@ -140,7 +140,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get id
+     * Get id.
      */
     #[ApiProperty(
         identifier: true,
@@ -154,7 +154,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get type
+     * Get type.
      */
     #[ApiProperty(
         writable: false,
@@ -167,7 +167,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get label (translated attribute)
+     * Get label (translated attribute).
      */
     #[ApiProperty(
         writable: false,
@@ -176,15 +176,13 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     #[Groups(['read'])]
     public function getLabel(): ?string
     {
-        // For TranslatableModel, label is stored in translations table
-        // Try to get from current locale first
         $translation = $this->translations()->first();
 
         return $translation ? $translation->label : null;
     }
 
     /**
-     * Get is_required
+     * Get is_required.
      */
     #[ApiProperty(
         writable: false,
@@ -197,7 +195,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get max_characters
+     * Get max_characters.
      */
     #[ApiProperty(
         writable: false,
@@ -210,7 +208,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get sort_order
+     * Get sort_order.
      */
     #[ApiProperty(
         writable: false,
@@ -223,7 +221,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get supported_file_extensions
+     * Get supported_file_extensions.
      */
     #[ApiProperty(
         writable: false,
@@ -236,7 +234,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get the customizable option prices with explicit constraint
+     * Get the customizable option prices with explicit constraint.
      */
     #[ApiProperty(
         writable: false,
@@ -246,7 +244,6 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     #[Groups(['read'])]
     public function getCustomizable_option_prices()
     {
-        // Fetch with explicit constraint to ensure we get only prices for this option
         return $this->customizable_option_prices()
             ->where('product_customizable_option_id', $this->id)
             ->orderBy('sort_order')
@@ -254,7 +251,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get translations
+     * Get translations.
      */
     #[ApiProperty(
         writable: false,

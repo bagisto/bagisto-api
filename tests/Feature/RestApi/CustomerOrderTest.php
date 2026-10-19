@@ -11,66 +11,10 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerOrderTest extends RestApiTestCase
 {
-    /**
-     * Create test data — customer with orders
-     */
-    private function createTestData(): array
-    {
-        $this->seedRequiredData();
-
-        $customer = $this->createCustomer();
-        $channel = Channel::first();
-        $product = Product::factory()->create();
-
-        $order1 = Order::factory()->create([
-            'customer_id' => $customer->id,
-            'customer_email' => $customer->email,
-            'customer_first_name' => $customer->first_name,
-            'customer_last_name' => $customer->last_name,
-            'channel_id' => $channel->id,
-            'status' => 'pending',
-        ]);
-
-        OrderItem::factory()->create([
-            'order_id' => $order1->id,
-            'product_id' => $product->id,
-            'sku' => 'TEST-SKU-001',
-            'type' => 'simple',
-            'name' => 'Test Product One',
-        ]);
-
-        OrderPayment::factory()->create([
-            'order_id' => $order1->id,
-        ]);
-
-        $order2 = Order::factory()->create([
-            'customer_id' => $customer->id,
-            'customer_email' => $customer->email,
-            'customer_first_name' => $customer->first_name,
-            'customer_last_name' => $customer->last_name,
-            'channel_id' => $channel->id,
-            'status' => 'completed',
-        ]);
-
-        OrderItem::factory()->create([
-            'order_id' => $order2->id,
-            'product_id' => $product->id,
-            'sku' => 'TEST-SKU-002',
-            'type' => 'simple',
-            'name' => 'Test Product Two',
-        ]);
-
-        OrderPayment::factory()->create([
-            'order_id' => $order2->id,
-        ]);
-
-        return compact('customer', 'channel', 'product', 'order1', 'order2');
-    }
-
     // ── Collection ────────────────────────────────────────────
 
     /**
-     * Test: GET /api/shop/customer-orders returns collection
+     * Test: GET /api/shop/customer-orders returns collection.
      */
     public function test_get_customer_orders_collection(): void
     {
@@ -86,7 +30,7 @@ class CustomerOrderTest extends RestApiTestCase
     }
 
     /**
-     * Test: GET /api/shop/customer-orders without auth returns error
+     * Test: GET /api/shop/customer-orders without auth returns error.
      */
     public function test_get_customer_orders_requires_auth(): void
     {
@@ -98,13 +42,12 @@ class CustomerOrderTest extends RestApiTestCase
     }
 
     /**
-     * Test: Customer only sees own orders
+     * Test: Customer only sees own orders.
      */
     public function test_customer_only_sees_own_orders(): void
     {
         $testData = $this->createTestData();
 
-        /** Create another customer with their own order */
         $otherCustomer = $this->createCustomer();
         $channel = Channel::first();
 
@@ -122,12 +65,11 @@ class CustomerOrderTest extends RestApiTestCase
         $response->assertOk();
         $json = $response->json();
 
-        /** Should only see the 2 orders belonging to testData customer */
         expect(count($json))->toBe(2);
     }
 
     /**
-     * Test: Customer with no orders returns empty collection
+     * Test: Customer with no orders returns empty collection.
      */
     public function test_customer_with_no_orders_returns_empty(): void
     {
@@ -146,7 +88,7 @@ class CustomerOrderTest extends RestApiTestCase
     // ── Single Item ───────────────────────────────────────────
 
     /**
-     * Test: GET /api/shop/customer-orders/{id} returns single order
+     * Test: GET /api/shop/customer-orders/{id} returns single order.
      */
     public function test_get_single_customer_order(): void
     {
@@ -181,7 +123,7 @@ class CustomerOrderTest extends RestApiTestCase
     }
 
     /**
-     * Test: GET /api/shop/customer-orders/{id} with invalid id returns 404
+     * Test: GET /api/shop/customer-orders/{id} with invalid id returns 404.
      */
     public function test_get_customer_order_not_found(): void
     {
@@ -194,7 +136,7 @@ class CustomerOrderTest extends RestApiTestCase
     }
 
     /**
-     * Test: Cannot access another customer's order by ID
+     * Test: Cannot access another customer's order by ID.
      */
     public function test_cannot_access_other_customers_order(): void
     {
@@ -206,12 +148,11 @@ class CustomerOrderTest extends RestApiTestCase
             '/api/shop/customer-orders/'.$testData['order1']->id
         );
 
-        /** Should return 404/500 because the order doesn't belong to otherCustomer */
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
     }
 
     /**
-     * Test: Single order without auth returns error
+     * Test: Single order without auth returns error.
      */
     public function test_get_single_order_requires_auth(): void
     {
@@ -227,7 +168,7 @@ class CustomerOrderTest extends RestApiTestCase
     // ── Response Shape ────────────────────────────────────────
 
     /**
-     * Test: Order response includes financial fields
+     * Test: Order response includes financial fields.
      */
     public function test_order_response_includes_financial_fields(): void
     {
@@ -251,7 +192,7 @@ class CustomerOrderTest extends RestApiTestCase
     }
 
     /**
-     * Test: Collection returns orders with correct statuses
+     * Test: Collection returns orders with correct statuses.
      */
     public function test_collection_returns_orders_with_correct_statuses(): void
     {
@@ -457,5 +398,61 @@ class CustomerOrderTest extends RestApiTestCase
         ] as $field) {
             expect($json)->toHaveKey($field);
         }
+    }
+
+    /**
+     * Create test data — customer with orders.
+     */
+    private function createTestData(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $channel = Channel::first();
+        $product = Product::factory()->create();
+
+        $order1 = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'customer_first_name' => $customer->first_name,
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'pending',
+        ]);
+
+        OrderItem::factory()->create([
+            'order_id' => $order1->id,
+            'product_id' => $product->id,
+            'sku' => 'TEST-SKU-001',
+            'type' => 'simple',
+            'name' => 'Test Product One',
+        ]);
+
+        OrderPayment::factory()->create([
+            'order_id' => $order1->id,
+        ]);
+
+        $order2 = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'customer_first_name' => $customer->first_name,
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
+        ]);
+
+        OrderItem::factory()->create([
+            'order_id' => $order2->id,
+            'product_id' => $product->id,
+            'sku' => 'TEST-SKU-002',
+            'type' => 'simple',
+            'name' => 'Test Product Two',
+        ]);
+
+        OrderPayment::factory()->create([
+            'order_id' => $order2->id,
+        ]);
+
+        return compact('customer', 'channel', 'product', 'order1', 'order2');
     }
 }

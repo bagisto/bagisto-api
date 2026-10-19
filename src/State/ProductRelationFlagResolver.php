@@ -6,21 +6,6 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\Customer\Models\CompareItem;
 use Webkul\Customer\Models\Wishlist;
 
-/**
- * Resolves the authenticated customer's relation flags for products — currently
- * whether a product sits in their wishlist or compare list, extensible to future
- * per-customer relations (e.g. recently viewed).
- *
- * Registered as a request-scoped singleton so the membership sets are loaded once
- * per request (one query per list, lazily on first access) and reused across every
- * product in a paginated response — no N+1.
- *
- * Memoization is keyed by the resolved customer id: if the authenticated customer
- * changes mid-process (e.g. an authenticated request followed by a guest request in
- * the same test run) the cached sets are reset and reloaded. This mirrors the
- * AdminApiGuard re-resolution fix — never memoize across requests without an
- * identity-stable cache key.
- */
 class ProductRelationFlagResolver
 {
     /** Customer id the cached sets were built for (null = guest / not yet loaded). */
@@ -35,6 +20,9 @@ class ProductRelationFlagResolver
     /** @var array<int, true> product_id => true for the customer's compare list */
     private array $compareIds = [];
 
+    /**
+     * Whether in wishlist.
+     */
     public function isInWishlist(int $productId): bool
     {
         $this->ensureLoaded();
@@ -42,6 +30,9 @@ class ProductRelationFlagResolver
         return isset($this->wishlistIds[$productId]);
     }
 
+    /**
+     * Whether in compare.
+     */
     public function isInCompare(int $productId): bool
     {
         $this->ensureLoaded();
@@ -51,8 +42,7 @@ class ProductRelationFlagResolver
 
     /**
      * Load (or reload) the membership sets for the currently authenticated customer.
-     * Resets when the customer identity changes so the singleton stays correct across
-     * multiple requests in one process.
+     * Resets when the customer identity changes so the singleton stays correct across.
      */
     private function ensureLoaded(): void
     {

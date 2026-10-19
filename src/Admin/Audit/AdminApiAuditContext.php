@@ -4,40 +4,69 @@ namespace Webkul\BagistoApi\Admin\Audit;
 
 use Webkul\User\Models\Admin;
 
-/**
- * Request-scoped holder for the "who / where" context of an admin-API write.
- *
- * Populated by SetAdminApiAuditContext middleware (only on admin-API write
- * requests) and read by AdminApiAuditRecorder when Eloquent model events fire.
- * Bound as a singleton, so it is effectively one-per-request.
- */
 class AdminApiAuditContext
 {
+    /**
+     * The active.
+     */
     protected bool $active = false;
 
+    /**
+     * The history id.
+     */
     public ?string $historyId = null;
 
+    /**
+     * The admin id.
+     */
     public ?int $adminId = null;
 
+    /**
+     * The admin name.
+     */
     public ?string $adminName = null;
 
+    /**
+     * The token id.
+     */
     public ?int $tokenId = null;
 
+    /**
+     * The token name.
+     */
     public ?string $tokenName = null;
 
+    /**
+     * The method.
+     */
     public ?string $method = null;
 
+    /**
+     * The url.
+     */
     public ?string $url = null;
 
+    /**
+     * The ip address.
+     */
     public ?string $ipAddress = null;
 
+    /**
+     * The user agent.
+     */
     public ?string $userAgent = null;
 
+    /**
+     * The tags.
+     */
     public ?string $tags = null;
 
     /** Number of audit rows written during this request (envelope fallback). */
     protected int $rowCount = 0;
 
+    /**
+     * Activate.
+     */
     public function activate(array $data): void
     {
         $this->active = true;
@@ -53,16 +82,25 @@ class AdminApiAuditContext
         $this->tags = $data['tags'] ?? null;
     }
 
+    /**
+     * Whether active.
+     */
     public function isActive(): bool
     {
         return $this->active;
     }
 
+    /**
+     * Record written.
+     */
     public function recordWritten(): void
     {
         $this->rowCount++;
     }
 
+    /**
+     * Row count.
+     */
     public function rowCount(): int
     {
         return $this->rowCount;

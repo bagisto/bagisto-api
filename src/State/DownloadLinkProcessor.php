@@ -5,14 +5,11 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 
-/**
- * Wrapper processor that returns download link data without API Platform normalization.
- *
- * Delegates to DownloadableProductProcessor and returns the raw DTO,
- * preventing ReadProvider from attempting database lookups.
- */
 class DownloadLinkProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected DownloadableProductProcessor $downloadableProductProcessor,
     ) {}

@@ -5,16 +5,18 @@ namespace Webkul\BagistoApi\Serializer;
 use ApiPlatform\GraphQl\Serializer\ItemNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-/**
- * Custom normalizer for ProductReviewOutput DTO
- * Ensures proper serialization to GraphQL response format
- */
 class ProductReviewOutputNormalizer implements NormalizerInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly NormalizerInterface $decorated,
     ) {}
 
+    /**
+     * Normalize.
+     */
     public function normalize(mixed $object, ?string $format = null, array $context = []): mixed
     {
         if (! $object instanceof ProductReviewOutput) {
@@ -36,11 +38,17 @@ class ProductReviewOutputNormalizer implements NormalizerInterface
         ];
     }
 
+    /**
+     * Supports normalization.
+     */
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof ProductReviewOutput;
     }
 
+    /**
+     * Get supported types.
+     */
     public function getSupportedTypes(?string $format): array
     {
         return [ProductReviewOutput::class => true];

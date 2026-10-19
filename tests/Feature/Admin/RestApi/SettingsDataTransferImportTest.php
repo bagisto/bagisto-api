@@ -421,6 +421,102 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     }
 
     /**
+     * Only the image entries of an uploaded archive are unpacked.
+     */
+    public function test_create_with_an_upload_source_unpacks_only_images(): void
+    {
+        Storage::fake('private');
+        $admin = $this->createAdmin();
+
+        $response = $this->adminMultipart($admin, 'POST', '/api/admin/settings/data-transfer/imports', array_merge(
+            $this->createPayload(['image_source' => 'upload']),
+            [
+                'file' => $this->sampleCsv(),
+                'upload_images' => $this->imagesArchive([
+                    'shirt.jpg' => 'not-really-a-jpeg',
+                    'nested/hat.png' => 'not-really-a-png',
+                    'shell.php' => '<?php echo 1;',
+                    'page.html' => '<script>alert(1)</script>',
+                    'notes.txt' => 'plain text',
+                ]),
+            ],
+        ));
+
+        $response->assertStatus(201);
+
+        $directory = 'imports/'.(int) $response->json('id').'/images';
+
+        Storage::disk('private')->assertExists($directory.'/shirt.jpg');
+        Storage::disk('private')->assertExists($directory.'/nested/hat.png');
+        Storage::disk('private')->assertMissing($directory.'/shell.php');
+        Storage::disk('private')->assertMissing($directory.'/page.html');
+        Storage::disk('private')->assertMissing($directory.'/notes.txt');
+    }
+
+    /**
+     * Archive entries whose names climb out of the images directory are skipped.
+     */
+    public function test_create_with_an_upload_source_skips_traversal_entries(): void
+    {
+        Storage::fake('private');
+        $admin = $this->createAdmin();
+
+        $response = $this->adminMultipart($admin, 'POST', '/api/admin/settings/data-transfer/imports', array_merge(
+            $this->createPayload(['image_source' => 'upload']),
+            [
+                'file' => $this->sampleCsv(),
+                'upload_images' => $this->imagesArchive([
+                    'safe.jpg' => 'not-really-a-jpeg',
+                    '../escaped.jpg' => 'not-really-a-jpeg',
+                    '../../escaped-twice.jpg' => 'not-really-a-jpeg',
+                    'dir\\backslash.jpg' => 'not-really-a-jpeg',
+                ]),
+            ],
+        ));
+
+        $response->assertStatus(201);
+
+        $files = Storage::disk('private')->allFiles();
+
+        expect($files)->toContain('imports/'.(int) $response->json('id').'/images/safe.jpg');
+        expect(collect($files)->filter(fn ($path) => str_contains($path, 'escaped') || str_contains($path, 'backslash'))->all())->toBe([]);
+    }
+
+    /**
+     * An archive holding more files than core allows is refused before any import is created.
+     */
+    public function test_create_rejects_an_archive_over_the_entry_cap(): void
+    {
+        Storage::fake('private');
+        $admin = $this->createAdmin();
+
+        $entries = [];
+
+        for ($index = 0; $index <= 5000; $index++) {
+            $entries['image-'.$index.'.jpg'] = 'x';
+        }
+
+        $importsBefore = \DB::table('imports')->count();
+
+        $response = $this->adminMultipart($admin, 'POST', '/api/admin/settings/data-transfer/imports', array_merge(
+            $this->createPayload(['image_source' => 'upload']),
+            [
+                'file' => $this->sampleCsv(),
+                'upload_images' => $this->imagesArchive($entries),
+            ],
+        ));
+
+        $response->assertStatus(422);
+
+        expect($response->json('detail') ?? $response->json('message'))->toBe(trans('bagistoapi::app.admin.settings.data-transfer.import.images-archive-too-large', [
+            'entries' => 5000,
+            'size' => 1024,
+        ]));
+        expect(\DB::table('imports')->count())->toBe($importsBefore);
+        expect(Storage::disk('private')->allFiles())->toBe([]);
+    }
+
+    /**
      * Test create with an upload source needs the archive.
      */
     public function test_create_with_an_upload_source_needs_the_archive(): void
@@ -1030,6 +1126,27 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $zip = new ZipArchive;
         $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
         $zip->addFromString('shirt.jpg', 'not-really-a-jpeg');
+        $zip->close();
+
+        return new UploadedFile($path, 'images.zip', 'application/zip', null, true);
+    }
+
+    /**
+     * Build a zip archive upload out of the given entry names and contents.
+     *
+     * @param  array<string, string>  $entries
+     */
+    protected function imagesArchive(array $entries): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'imgs').'.zip';
+
+        $zip = new ZipArchive;
+        $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        foreach ($entries as $name => $contents) {
+            $zip->addFromString($name, $contents);
+        }
+
         $zip->close();
 
         return new UploadedFile($path, 'images.zip', 'application/zip', null, true);

@@ -4,11 +4,14 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AssertsSanitisedHtml;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
 class CmsPageTest extends AdminApiTestCase
 {
+    use AssertsSanitisedHtml;
+
     /**
      * Test listing requires admin token.
      */
@@ -220,6 +223,29 @@ class CmsPageTest extends AdminApiTestCase
     }
 
     /**
+     * Creating a page stores its HTML content as core's `clean_content()` leaves it.
+     */
+    public function test_create_sanitises_html_content(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'cr-xss-'.uniqid();
+
+        $response = $this->adminPost($admin, '/api/admin/cms/pages', [
+            'url_key' => $slug,
+            'page_title' => 'Sanitised',
+            'html_content' => $this->unsafeHtml(),
+            'channels' => [$this->defaultChannelId()],
+        ]);
+
+        $response->assertStatus(201);
+
+        $this->assertSanitisedHtml(
+            \DB::table('cms_page_translations')->where('url_key', $slug)->value('html_content'),
+            $this->unsafeHtml(),
+        );
+    }
+
+    /**
      * Test create missing url key returns 422.
      */
     public function test_create_missing_url_key_returns_422(): void
@@ -378,6 +404,34 @@ class CmsPageTest extends AdminApiTestCase
 
         $response->assertOk();
         expect(\DB::table('cms_page_translations')->where('cms_page_id', $id)->where('locale', 'en')->value('page_title'))->toBe('After Update');
+    }
+
+    /**
+     * Updating a page stores the requested locale's HTML content as core's `clean_content()` leaves it.
+     */
+    public function test_update_sanitises_html_content(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'upd-xss-'.uniqid();
+        $id = $this->insertCmsPage(['url_key' => $slug]);
+
+        $response = $this->adminPut($admin, '/api/admin/cms/pages/'.$id, [
+            'locale' => 'en',
+            'channels' => [$this->defaultChannelId()],
+
+            'en' => [
+                'url_key' => $slug,
+                'page_title' => 'Sanitised Update',
+                'html_content' => $this->unsafeHtml(),
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertSanitisedHtml(
+            \DB::table('cms_page_translations')->where('cms_page_id', $id)->where('locale', 'en')->value('html_content'),
+            $this->unsafeHtml(),
+        );
     }
 
     /**

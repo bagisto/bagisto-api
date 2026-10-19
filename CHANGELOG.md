@@ -5,6 +5,14 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Security
+- Admin product image uploads (REST `POST /api/admin/catalog/products/{productId}/images`) are accepted only when both the type detected from the file's contents and the extension it was sent with are an allowed image type (bmp, jpeg, jpg, png, webp), so a JPEG named `x.php` or `x.html`, an SVG, or an HTML file named `x.png` is refused with 422. The image is re-encoded to webp and stored under a generated name in core's product directory (`products/{id}/<random>.webp`), as the admin panel stores it; a file that cannot be decoded as an image is refused with 422. The response fields are unchanged; only the stored `path` and `url` now end in `.webp`.
+- Admin product video uploads (REST `POST /api/admin/catalog/products/{productId}/videos`) need both an allowed detected type and an allowed extension (mp4, webm, ogg, mov), and the file is stored under a generated name with the extension taken from its contents, never from the client, in core's product directory.
+- HTML sent through the admin API is now run through core's `clean_content()` before it is saved, as the admin panel does: CMS page `html_content` (create, and the requested locale on update), email template `content` (create and update), category `description` (create and update, top level and every locale block) and every WYSIWYG textarea product attribute on product update. Script tags, Blade echoes and directives, and raw PHP are stripped over REST and GraphQL alike.
+- The images archive of an admin import (REST `POST`/`PUT /api/admin/settings/data-transfer/imports`, `upload_images`) is no longer extracted whole. As in core, only image entries (bmp, gif, jpeg, jpg, png, webp) are unpacked, entry by entry, and entries whose names contain `..`, a backslash or a leading `/` are skipped. An archive with more than 5,000 entries or more than 1 GB unpacked is refused with 422 before the import is created.
+
 ## [2.5.0] - 2026-10-15
 
 ### Added

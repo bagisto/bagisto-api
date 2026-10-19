@@ -3,9 +3,12 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AssertsSanitisedHtml;
 
 class MarketingTemplateTest extends AdminApiTestCase
 {
+    use AssertsSanitisedHtml;
+
     /**
      * Test query listing.
      */
@@ -118,6 +121,73 @@ class MarketingTemplateTest extends AdminApiTestCase
             'name' => 'gqlupd-updated',
             'status' => 'inactive',
         ]);
+    }
+
+    /**
+     * The create mutation stores the content as core's `clean_content()` leaves it.
+     */
+    public function test_mutation_create_sanitises_content(): void
+    {
+        $admin = $this->createAdmin();
+        $name = 'gqlxss-tpl-'.uniqid();
+
+        $mutation = <<<'GQL'
+            mutation Create($input: createAdminMarketingTemplateInput!) {
+              createAdminMarketingTemplate(input: $input) {
+                adminMarketingTemplate { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'name' => $name,
+                'status' => 'active',
+                'content' => $this->unsafeHtml(),
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeEmpty();
+
+        $this->assertSanitisedHtml(
+            \DB::table('marketing_templates')->where('name', $name)->value('content'),
+            $this->unsafeHtml(),
+        );
+    }
+
+    /**
+     * The update mutation stores the content as core's `clean_content()` leaves it.
+     */
+    public function test_mutation_update_sanitises_content(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertTemplate();
+
+        $mutation = <<<'GQL'
+            mutation Update($input: updateAdminMarketingTemplateInput!) {
+              updateAdminMarketingTemplate(input: $input) {
+                adminMarketingTemplate { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => "/api/admin/marketing/templates/{$id}",
+                'name' => 'gqlxss-updated-'.uniqid(),
+                'status' => 'inactive',
+                'content' => $this->unsafeHtml(),
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeEmpty();
+
+        $this->assertSanitisedHtml(
+            \DB::table('marketing_templates')->where('id', $id)->value('content'),
+            $this->unsafeHtml(),
+        );
     }
 
     /**

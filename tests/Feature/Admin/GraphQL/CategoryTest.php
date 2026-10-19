@@ -3,10 +3,13 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AssertsSanitisedHtml;
 use Webkul\Category\Models\Category;
 
 class CategoryTest extends AdminApiTestCase
 {
+    use AssertsSanitisedHtml;
+
     /**
      * Test query listing returns seeded category.
      */
@@ -358,6 +361,85 @@ class CategoryTest extends AdminApiTestCase
 
         $response->assertOk();
         expect(\DB::table('category_translations')->where('slug', $slug)->exists())->toBeTrue();
+    }
+
+    /**
+     * The create mutation stores the description as core's `clean_content()` leaves it.
+     */
+    public function test_mutation_create_category_sanitises_description(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'gql-cat-xss-'.uniqid();
+
+        $mutation = <<<'GQL'
+            mutation($input: createAdminCategoryInput!) {
+              createAdminCategory(input: $input) {
+                adminCategory { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'slug' => $slug,
+                'name' => 'GQL Sanitised Category',
+                'description' => $this->unsafeHtml(),
+                'displayMode' => 'products_and_description',
+                'position' => 1,
+                'attributes' => [1],
+                'locale' => 'en',
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $this->assertSanitisedHtml(
+            \DB::table('category_translations')->where('slug', $slug)->value('description'),
+            $this->unsafeHtml(),
+        );
+    }
+
+    /**
+     * The update mutation stores the locale's description as core's `clean_content()` leaves it.
+     */
+    public function test_mutation_update_category_sanitises_description(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'gql-cat-upd-xss-'.uniqid();
+        $id = $this->insertCategory(['slug' => $slug]);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminCategoryInput!) {
+              updateAdminCategory(input: $input) {
+                adminCategory { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => '/api/admin/catalog/categories/'.$id,
+                'locale' => 'en',
+                'position' => 1,
+                'attributes' => [1],
+                'displayMode' => 'products_and_description',
+
+                'en' => [
+                    'slug' => $slug,
+                    'name' => 'GQL Sanitised Update',
+                    'description' => $this->unsafeHtml(),
+                ],
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $this->assertSanitisedHtml(
+            \DB::table('category_translations')->where('category_id', $id)->where('locale', 'en')->value('description'),
+            $this->unsafeHtml(),
+        );
     }
 
     /**

@@ -1306,6 +1306,7 @@ return [
                     'error-report-not-found' => 'Nu este disponibil niciun raport de erori pentru descărcare.',
                     'sample-not-found' => 'Nu este disponibil niciun fișier exemplu pentru tipul și formatul solicitate.',
                     'sample-format-invalid' => 'Formatul exemplului trebuie să fie unul dintre: csv, xls, xlsx, xml.',
+                    'images-archive-too-large' => 'Arhiva de imagini poate conține cel mult :entries fișiere și se poate dezarhiva la cel mult :size MB.',
                 ],
             ],
         ],

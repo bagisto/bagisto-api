@@ -4,11 +4,14 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AssertsSanitisedHtml;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
 class MarketingTemplateTest extends AdminApiTestCase
 {
+    use AssertsSanitisedHtml;
+
     /**
      * Test listing requires admin token.
      */
@@ -187,6 +190,25 @@ class MarketingTemplateTest extends AdminApiTestCase
     }
 
     /**
+     * Creating a template stores its content as core's `clean_content()` leaves it.
+     */
+    public function test_create_sanitises_content(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminPost($admin, '/api/admin/marketing/templates', $this->basePayload([
+            'content' => $this->unsafeHtml(),
+        ]));
+
+        $response->assertStatus(201);
+
+        $this->assertSanitisedHtml(
+            \DB::table('marketing_templates')->where('id', $response->json('id'))->value('content'),
+            $this->unsafeHtml(),
+        );
+    }
+
+    /**
      * Test create missing name returns 422.
      */
     public function test_create_missing_name_returns_422(): void
@@ -290,6 +312,26 @@ class MarketingTemplateTest extends AdminApiTestCase
             'name' => 'After',
             'status' => 'inactive',
         ]);
+    }
+
+    /**
+     * Updating a template stores its content as core's `clean_content()` leaves it.
+     */
+    public function test_update_sanitises_content(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertTemplate();
+
+        $response = $this->adminPut($admin, '/api/admin/marketing/templates/'.$id, $this->basePayload([
+            'content' => $this->unsafeHtml(),
+        ]));
+
+        $response->assertOk();
+
+        $this->assertSanitisedHtml(
+            \DB::table('marketing_templates')->where('id', $id)->value('content'),
+            $this->unsafeHtml(),
+        );
     }
 
     /**

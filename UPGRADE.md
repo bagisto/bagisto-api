@@ -102,3 +102,8 @@ On Bagisto 2.5, flag fields such as customer `status`, `isVerified` and `isSuspe
 ## 6. Theme endpoints
 
 On Bagisto v2.5.0 the theme endpoints are `/api/admin/appearance/themes`, `/api/admin/appearance/sections`, `/api/shop/sections` and `/api/shop/theme`, and they need the `appearance.*` permissions. The installer in step 3 clears the caches, so this set is picked up.
+
+## 7. Admin uploads and rich text (unreleased)
+
+- HTML sent to the admin API for CMS pages, email templates, category descriptions and WYSIWYG product attributes is now cleaned with core's `clean_content()` before it is saved. Content that was saved through the API before this change keeps its markup until it is next saved; open and save it again, through the API or the admin panel, to clean it.
+- Product images uploaded through the admin API are stored as webp under a generated name in `products/{id}/`, as the admin panel stores them. Images uploaded earlier stay where they are.

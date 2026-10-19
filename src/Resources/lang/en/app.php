@@ -1311,6 +1311,7 @@ return [
                     'error-report-not-found' => 'No error report is available for download.',
                     'sample-not-found' => 'No sample file is available for the requested type and format.',
                     'sample-format-invalid' => 'The sample format must be one of: csv, xls, xlsx, xml.',
+                    'images-archive-too-large' => 'The images archive may hold at most :entries files and unpack to at most :size MB.',
                 ],
             ],
         ],

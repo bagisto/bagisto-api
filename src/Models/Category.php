@@ -146,10 +146,12 @@ use Webkul\Category\Models\Category as BaseCategory;
 class Category extends BaseCategory
 {
     /**
-     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
-     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     * The status and position are cast so the value is typed identically on every database engine.
      */
-    protected $casts = [];
+    protected $casts = [
+        'status' => 'boolean',
+        'position' => 'integer',
+    ];
 
     /**
      * The appends.

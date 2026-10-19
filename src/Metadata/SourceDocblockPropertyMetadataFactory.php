@@ -107,22 +107,8 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
     {
         $native = $metadata->getNativeType();
 
-        if (
-            $native !== null
-            && str_contains((string) $native, '\\')
-        ) {
-            return true;
-        }
-
-        foreach ($metadata->getBuiltinTypes() ?? [] as $type) {
-            foreach ($type->getCollectionValueTypes() as $value) {
-                if ($value->getClassName() !== null) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return $native !== null
+            && str_contains((string) $native, '\\');
     }
 
     /**

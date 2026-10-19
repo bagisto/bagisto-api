@@ -88,6 +88,8 @@ class WishlistProcessor implements ProcessorInterface
      */
     private function handleCreate(CreateWishlistInput $input, array $context = []): Wishlist
     {
+        $user = $this->authenticatedCustomer();
+
         if (empty($input->product_id)) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.wishlist.product-id-required'));
         }
@@ -99,12 +101,6 @@ class WishlistProcessor implements ProcessorInterface
 
         if (! $product->status) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.wishlist.product-disabled'));
-        }
-
-        $user = Auth::guard('sanctum')->user();
-
-        if (! $user) {
-            throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
 
         $customerId = $user->id;
@@ -137,6 +133,8 @@ class WishlistProcessor implements ProcessorInterface
      */
     private function handleToggle(CreateWishlistInput $input, array $context = [], ?Operation $operation = null): Wishlist
     {
+        $user = $this->authenticatedCustomer();
+
         if (empty($input->product_id)) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.wishlist.product-id-required'));
         }
@@ -148,12 +146,6 @@ class WishlistProcessor implements ProcessorInterface
 
         if (! $product->status) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.wishlist.product-disabled'));
-        }
-
-        $user = Auth::guard('sanctum')->user();
-
-        if (! $user) {
-            throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
 
         $customerId = $user->id;
@@ -193,6 +185,20 @@ class WishlistProcessor implements ProcessorInterface
         $wishlistItem->setMessage(__('bagistoapi::app.graphql.wishlist.added'));
 
         return $wishlistItem;
+    }
+
+    /**
+     * The customer signed in through the bearer token, refusing an anonymous caller before any lookup.
+     */
+    private function authenticatedCustomer(): object
+    {
+        $user = Auth::guard('sanctum')->user();
+
+        if (! $user) {
+            throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
+        }
+
+        return $user;
     }
 
     /**
@@ -309,11 +315,7 @@ class WishlistProcessor implements ProcessorInterface
      */
     private function handleDeleteFromInput(DeleteWishlistInput $input, array $context): Wishlist
     {
-        $user = Auth::guard('sanctum')->user();
-
-        if (! $user) {
-            throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
-        }
+        $user = $this->authenticatedCustomer();
 
         if (empty($input->id)) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.wishlist.id-required'));
@@ -345,11 +347,7 @@ class WishlistProcessor implements ProcessorInterface
      */
     private function handleDelete(mixed $data, array $uriVariables, array $context): null
     {
-        $user = Auth::guard('sanctum')->user();
-
-        if (! $user) {
-            throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
-        }
+        $user = $this->authenticatedCustomer();
 
         $wishlistItemId = $uriVariables['id'] ?? null;
 

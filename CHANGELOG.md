@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updating an admin role or admin user checks that the caller may grant the role before the last all-access role and admin guards, as core does, so a caller without that right gets 403 instead of a message about the last all-access admin.
 - The admin GraphiQL playground (`/api/admin/graphiql`) and the API documentation (`/api/docs`) are served as HTML instead of being forced to a JSON content type.
 - The generated OpenAPI documents, GraphQL schemas and Postman collections are regenerated from the current resources.
+- The API works with `symfony/property-info` 8, which removed the legacy `Symfony\Component\PropertyInfo\Type` class: the package's property metadata factories read only the native `symfony/type-info` type, so a fresh install that resolves Symfony 8 no longer fails with `Class "Symfony\Component\PropertyInfo\Type" not found`.
+- Adding or toggling a wishlist item checks the customer token before it looks up the product, so an anonymous caller gets 401/403 instead of a product-not-found or product-disabled error.
+
+- The exported schema (`php artisan bagisto-api-platform:export-schema`) is identical on MySQL, MariaDB and PostgreSQL, so the committed `schema/generated/` files and the Postman collections no longer go stale when they are regenerated on another database. The GraphQL SDL prints the fields of every type in alphabetical order; field order carries no meaning in GraphQL.
+
+### Changed
+- On MySQL and MariaDB, model properties that the model does not cast now have the type PostgreSQL gives them and the published schema documents: `int`/`int unsigned` columns are `Int`/`integer` (they were `String` for unsigned columns), `tinyint(1)` columns are `Boolean`/`boolean` (they were `String`), and `decimal`, `timestamp`/`datetime`, `bigint` and `double` columns are `String`/`string` (decimals were `Float`/`number` and timestamps `date-time`). REST bodies are unchanged; GraphQL now serialises these fields by the declared type, so on MySQL a flag that came back as `"1"` comes back as `true`.
+- Flag fields on attributes (`isRequired`, `isUnique`, `isFilterable`, `isConfigurable`, `isVisibleOnFront`, `isComparable`, `isUserDefined`, `valuePerLocale`, `valuePerChannel`, `enableWysiwyg`), categories (`status`, and `position` as an integer), bundle options (`isRequired`), bundle option products (`isUserDefined`, `isDefault`) and customizable options (`isRequired`) are cast as core casts them, so they are `true`/`false` on every database. On MySQL the GraphQL `Boolean!` fields returned the string `"1"` and REST returned `1`/`0`; PostgreSQL already returned booleans. This replaces the 2.5.0 entry that kept `0`/`1` for these resources.
 
 
 ### Added

@@ -308,7 +308,7 @@ class ExportSchemaCommand extends Command
     }
 
     /**
-     * Export graph ql.
+     * Export the GraphQL schema and operation map of each surface, printing fields in a stable order.
      */
     private function exportGraphQl(string $path): void
     {
@@ -318,7 +318,10 @@ class ExportSchemaCommand extends Command
         ] as $surface => $adminScope) {
             $file = "{$path}/{$surface}.graphql";
 
-            File::put($file, SchemaPrinter::doPrint($this->buildGraphQlSchema($adminScope)));
+            File::put($file, SchemaPrinter::doPrint($this->buildGraphQlSchema($adminScope), [
+                'sortFields' => true,
+                'sortInputFields' => true,
+            ]));
 
             $this->info("Wrote {$file}");
 

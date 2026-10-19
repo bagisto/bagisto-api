@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Providers\Concerns;
 
 use ApiPlatform\GraphQl\Type\Definition\IterableType;
+use ApiPlatform\Laravel\Eloquent\Metadata\ModelMetadata;
 use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
 use ApiPlatform\Metadata\Resource\Factory\ResourceNameCollectionFactoryInterface;
 use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
@@ -10,6 +11,7 @@ use Webkul\BagistoApi\Admin\Audit\AdminApiAuditContext;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
 use Webkul\BagistoApi\Admin\Metadata\NullableToOnePropertyMetadataFactory;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
+use Webkul\BagistoApi\Metadata\DatabaseIndependentColumnTypePropertyMetadataFactory;
 use Webkul\BagistoApi\Metadata\PathGatedResourceNameCollectionFactory;
 use Webkul\BagistoApi\Metadata\SourceDocblockPropertyMetadataFactory;
 use Webkul\BagistoApi\Metadata\VersionGatedResourceNameCollectionFactory;
@@ -68,6 +70,13 @@ trait RegistersCoreServices
         $this->app->extend(ResourceNameCollectionFactoryInterface::class, function ($inner) {
             return new PathGatedResourceNameCollectionFactory($inner);
         });
+
+        $this->app->extend(
+            PropertyMetadataFactoryInterface::class,
+            function ($decorated, $app) {
+                return new DatabaseIndependentColumnTypePropertyMetadataFactory($decorated, $app->make(ModelMetadata::class));
+            }
+        );
 
         $this->app->extend(
             PropertyMetadataFactoryInterface::class,

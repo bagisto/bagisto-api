@@ -2,8 +2,11 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
+use Webkul\BookingProduct\Models\BookingProduct;
+use Webkul\BookingProduct\Models\BookingProductDefaultSlot;
 
 class AuthParityTest extends GraphQLTestCase
 {
@@ -186,6 +189,9 @@ class AuthParityTest extends GraphQLTestCase
      */
     public function test_public_queries_answer_an_anonymous_caller(): void
     {
+        $bookingProductId = $this->createDefaultBookingProduct();
+        $tomorrow = Carbon::now()->addDay()->format('Y-m-d');
+
         $public = [
             'storeConfig' => '{ storeConfig { guestCheckoutEnabled } }',
             'categories' => '{ categories { edges { node { id } } } }',
@@ -194,7 +200,7 @@ class AuthParityTest extends GraphQLTestCase
             'attributeOptions' => '{ attributeOptions { edges { node { id } } } }',
             'countries' => '{ countries { edges { node { id } } } }',
             'countryStates' => '{ countryStates(countryId: 1) { edges { node { id } } } }',
-            'bookingSlots' => '{ bookingSlots(id: 1, date: "2026-01-01") { id } }',
+            'bookingSlots' => '{ bookingSlots(id: '.$bookingProductId.', date: "'.$tomorrow.'") { slotId } }',
             'theme' => '{ theme { id } }',
             'sections' => '{ sections { edges { node { id } } } }',
             'pageByUrlKeypages' => '{ pageByUrlKeypages(urlKey: "home") { id } }',
@@ -236,6 +242,42 @@ class AuthParityTest extends GraphQLTestCase
         foreach (['customer_email', 'customer_id', 'password', 'remember_token'] as $secret) {
             expect($json)->not->toContain($secret, "product query leaked {$secret}");
         }
+    }
+
+    /**
+     * Create a default-type booking product with a slot tomorrow and return its booking id.
+     */
+    private function createDefaultBookingProduct(): int
+    {
+        $product = $this->createBaseProduct('booking', [
+            'sku' => 'TEST-AUTH-PARITY-BOOKING-'.uniqid(),
+        ]);
+
+        $booking = BookingProduct::query()->create([
+            'product_id' => $product->id,
+            'type' => 'default',
+            'qty' => 100,
+            'available_every_week' => 1,
+        ]);
+
+        BookingProductDefaultSlot::query()->create([
+            'booking_product_id' => $booking->id,
+            'booking_type' => 'many',
+            'duration' => 30,
+            'break_time' => 0,
+            'slots' => [
+                (string) Carbon::now()->addDay()->format('w') => [
+                    [
+                        'from' => '09:00',
+                        'to' => '17:00',
+                        'qty' => 10,
+                        'status' => 1,
+                    ],
+                ],
+            ],
+        ]);
+
+        return $booking->id;
     }
 
     /**

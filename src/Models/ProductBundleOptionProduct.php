@@ -97,10 +97,12 @@ use Webkul\Product\Models\ProductBundleOptionProduct as BaseProductBundleOptionP
 class ProductBundleOptionProduct extends BaseProductBundleOptionProduct
 {
     /**
-     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
-     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     * The boolean flags are cast so the value is typed identically on every database engine.
      */
-    protected $casts = [];
+    protected $casts = [
+        'is_user_defined' => 'boolean',
+        'is_default' => 'boolean',
+    ];
 
     /**
      * Get the product bundle option product identifier.

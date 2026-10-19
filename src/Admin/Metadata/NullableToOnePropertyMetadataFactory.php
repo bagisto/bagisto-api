@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
-use Symfony\Component\PropertyInfo\Type as LegacyType;
 use Symfony\Component\TypeInfo\Type as NativeType;
 use Webkul\BagistoApi\Admin\Models\AdminCustomer;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerReview;
@@ -66,32 +65,14 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
 
         $native = $metadata->getNativeType();
 
-        if ($native !== null) {
-            return $native->isNullable()
-                ? $metadata
-                : $metadata->withNativeType(NativeType::nullable($native));
-        }
-
-        $types = $metadata->getBuiltinTypes() ?? [];
-
-        if ($types === []) {
+        if (
+            $native === null
+            || $native->isNullable()
+        ) {
             return $metadata;
         }
 
-        $nullable = [];
-
-        foreach ($types as $type) {
-            $nullable[] = new LegacyType(
-                $type->getBuiltinType(),
-                true,
-                $type->getClassName(),
-                $type->isCollection(),
-                $type->getCollectionKeyTypes(),
-                $type->getCollectionValueTypes(),
-            );
-        }
-
-        return $metadata->withBuiltinTypes($nullable);
+        return $metadata->withNativeType(NativeType::nullable($native));
     }
 
     /**

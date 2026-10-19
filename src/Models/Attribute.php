@@ -134,10 +134,20 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
     use ServesLoadedTranslation;
 
     /**
-     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
-     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     * The boolean flags are cast so the value is typed identically on every database engine.
      */
-    protected $casts = [];
+    protected $casts = [
+        'is_required' => 'boolean',
+        'is_unique' => 'boolean',
+        'is_filterable' => 'boolean',
+        'is_configurable' => 'boolean',
+        'is_visible_on_front' => 'boolean',
+        'is_comparable' => 'boolean',
+        'is_user_defined' => 'boolean',
+        'value_per_locale' => 'boolean',
+        'value_per_channel' => 'boolean',
+        'enable_wysiwyg' => 'boolean',
+    ];
 
     /**
      * @var list<string>

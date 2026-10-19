@@ -20722,8 +20722,8 @@
                                         "rmaId": 12,
                                         "message": "The hoodie zipper is broken.",
                                         "isAdmin": false,
-                                        "attachment": "rma/12/messages/zipper.jpg",
-                                        "attachmentUrl": "https://example.com/storage/rma/12/messages/zipper.jpg",
+                                        "attachment": "zipper.jpg",
+                                        "attachmentUrl": "https://example.com/api/admin/rma/messages/87/attachment",
                                         "createdAt": "2026-07-20T10:20:00+00:00"
                                     }
                                 ]
@@ -20732,7 +20732,7 @@
                     }
                 },
                 "summary": "List the conversation messages of an RMA request",
-                "description": "Messages on the RMA named by `?return_id=`, newest first.",
+                "description": "Messages on the RMA named by `?return_id=`, newest first. `attachment` is the original file name and `attachmentUrl` points at `GET /api/admin/rma/messages/{id}/attachment`, which needs the admin token.",
                 "parameters": [
                     {
                         "name": "return_id",
@@ -20781,7 +20781,7 @@
                     }
                 },
                 "summary": "Send an admin message on an RMA request",
-                "description": "Adds an admin message to the RMA conversation and notifies the customer. Body `{ return_id, message }`; optional multipart `file` (REST only). Permission: sales.rma.requests.",
+                "description": "Adds an admin message to the RMA conversation and notifies the customer. Body `{ return_id, message }`; optional multipart `file` (REST only), stored on the private disk under `rmas/{return_id}/conversations/{message_id}`. Permission: sales.rma.requests.",
                 "parameters": [],
                 "requestBody": {
                     "description": "The new AdminReturnMessage resource",
@@ -20808,6 +20808,53 @@
                     },
                     "required": true
                 }
+            }
+        },
+        "/rma/messages/{id}/attachment": {
+            "get": {
+                "operationId": "api_apiadminrmamessages_idattachment_get",
+                "tags": [
+                    "Admin Sales: RMA"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The attachment is downloaded.",
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid admin token."
+                    },
+                    "403": {
+                        "description": "Admin role lacks sales.rma.requests."
+                    },
+                    "404": {
+                        "description": "Message, attachment or stored file not found."
+                    }
+                },
+                "summary": "Download the attachment of an RMA message",
+                "description": "Streams the file attached to one RMA conversation message as a download under its original name, as the admin panel does. The id is a message id from `GET /api/admin/rma/messages`. Send `Accept: application/octet-stream`. Binary response, not JSON. Permission: sales.rma.requests.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "RMA message id.",
+                        "required": true,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 87
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ]
             }
         },
         "/rma/reasons": {
@@ -21472,6 +21519,53 @@
                 }
             }
         },
+        "/rma/requests/images/{id}": {
+            "get": {
+                "operationId": "api_apiadminrmarequestsimages_id_get",
+                "tags": [
+                    "Admin Sales: RMA"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The image is streamed inline.",
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid admin token."
+                    },
+                    "403": {
+                        "description": "Admin role lacks sales.rma.requests."
+                    },
+                    "404": {
+                        "description": "Image or stored file not found."
+                    }
+                },
+                "summary": "Show an image attached to an RMA request",
+                "description": "Streams one image of a return request for display (inline, with the stored file's content type), as the admin panel does. The id is an `images[].id` from `GET /api/admin/rma/requests/{id}`. Send `Accept: application/octet-stream`. Binary response, not JSON. Permission: sales.rma.requests.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "RMA image id.",
+                        "required": true,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ]
+            }
+        },
         "/rma/requests/order-items": {
             "get": {
                 "operationId": "api_apiadminrmarequestsorder-items_get_collection",
@@ -21514,6 +21608,216 @@
                         "deprecated": false,
                         "schema": {
                             "type": "integer"
+                        },
+                        "style": "form",
+                        "explode": true
+                    }
+                ]
+            }
+        },
+        "/rma/requests/orders": {
+            "get": {
+                "operationId": "api_apiadminrmarequestsorders_get_collection",
+                "tags": [
+                    "Admin Sales: RMA"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The orders a return can be opened for.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "data": [
+                                        {
+                                            "id": 45,
+                                            "incrementId": "000000045",
+                                            "status": "completed",
+                                            "customerName": "Jane Doe",
+                                            "isGuest": false,
+                                            "grandTotal": 120,
+                                            "formattedGrandTotal": "$120.00",
+                                            "orderCurrencyCode": "USD",
+                                            "methodTitle": "Cash On Delivery",
+                                            "totalQtyOrdered": 2,
+                                            "totalRmaQty": 0,
+                                            "returnableQty": 2,
+                                            "createdAt": "2026-07-18T09:00:00+00:00"
+                                        }
+                                    ],
+                                    "meta": {
+                                        "currentPage": 1,
+                                        "perPage": 10,
+                                        "lastPage": 1,
+                                        "total": 1,
+                                        "from": 1,
+                                        "to": 1
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid admin token."
+                    },
+                    "403": {
+                        "description": "Admin role lacks sales.rma.requests.create."
+                    }
+                },
+                "summary": "List the orders a return can be opened for (RMA create form)",
+                "description": "The order picker of the admin RMA create form (OrderRMADataGrid parity): orders that are not canceled, closed, fraud or pending payment and still hold an item inside its return window with quantity not yet put on a return. Filters: id, increment_id, customer_name, status, method_title, grand_total_from/grand_total_to, created_at_from/created_at_to. Sort: id (default desc), increment_id, customer_name, created_at, grand_total, method_title, status. Returns a `{ data, meta }` envelope. Permission: sales.rma.requests.create.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (1-based).",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page (default 10, max 50).",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "Filter by order id.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "increment_id",
+                        "in": "query",
+                        "description": "Partial order increment id match.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "customer_name",
+                        "in": "query",
+                        "description": "Partial customer name match.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by order status.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "method_title",
+                        "in": "query",
+                        "description": "Filter by payment method title.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "grand_total_from",
+                        "in": "query",
+                        "description": "Minimum grand total.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "number"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "grand_total_to",
+                        "in": "query",
+                        "description": "Maximum grand total.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "number"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "created_at_from",
+                        "in": "query",
+                        "description": "Orders placed on or after this date (Y-m-d).",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "created_at_to",
+                        "in": "query",
+                        "description": "Orders placed on or before this date (Y-m-d).",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sort column.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "Sort direction (asc or desc).",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string"
                         },
                         "style": "form",
                         "explode": true
@@ -21609,8 +21913,8 @@
                                     "images": [
                                         {
                                             "id": 5,
-                                            "path": "rma/12/damage-front.png",
-                                            "url": "https://example.com/storage/rma/12/damage-front.png"
+                                            "path": "rmas/12/images/damage-front.png",
+                                            "url": "https://example.com/api/admin/rma/requests/images/5"
                                         }
                                     ],
                                     "availableStatuses": [
@@ -21636,7 +21940,7 @@
                     }
                 },
                 "summary": "Get one RMA request",
-                "description": "Full detail of a single return request — the returned item, images, status, the customer/order context, whether it can be reopened, and the list of status transitions the admin may set next.",
+                "description": "Full detail of a single return request — the returned item, images, status, the customer/order context, whether it can be reopened, and the list of status transitions the admin may set next. Each image `url` points at `GET /api/admin/rma/requests/images/{id}`, which needs the admin token.",
                 "parameters": [
                     {
                         "name": "id",

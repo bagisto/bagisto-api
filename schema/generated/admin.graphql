@@ -781,6 +781,7 @@ type Query {
     "Order id"
     orderId: Int!
   ): [AdminReturnableItem]
+  adminReturnableOrders(id: Int, increment_id: String, customer_name: String, status: String, method_title: String, grand_total_from: Float, grand_total_to: Float, created_at_from: String, created_at_to: String, sort: String, order: String, first: Int, after: String): AdminReturnableOrderCursorConnection
   adminReturns(id: Int, order_id: Int, status: String, customer_name: String, sort: String, order: String, first: Int, after: String): AdminReturnCursorConnection
   adminRmaCustomField(id: ID!): AdminRmaCustomField
   adminRmaCustomFields(code: String, label: String, type: String, status: Int, sort: String, order: String, first: Int, after: String): AdminRmaCustomFieldCursorConnection
@@ -5166,6 +5167,44 @@ type AdminReturnableItem implements Node {
   rmaReturnPeriod: Int
   sku: String
   type: String
+}
+
+"Cursor connection for AdminReturnableOrder."
+type AdminReturnableOrderCursorConnection {
+  edges: [AdminReturnableOrderEdge]
+  pageInfo: AdminReturnableOrderPageInfo!
+  totalCount: Int!
+}
+
+"Edge of AdminReturnableOrder."
+type AdminReturnableOrderEdge {
+  cursor: String!
+  node: AdminReturnableOrder
+}
+
+type AdminReturnableOrder implements Node {
+  _id: Int
+  createdAt: String
+  customerName: String
+  formattedGrandTotal: String
+  grandTotal: Float
+  id: ID!
+  incrementId: String
+  isGuest: Boolean
+  methodTitle: String
+  orderCurrencyCode: String
+  returnableQty: Int
+  status: String
+  totalQtyOrdered: Int
+  totalRmaQty: Int
+}
+
+"Information about the current page."
+type AdminReturnableOrderPageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
 }
 
 "Cursor connection for AdminRmaCustomField."

@@ -9,11 +9,12 @@ use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditContext;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
+use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 
 class SetAdminApiAuditContext
 {
     /**
-     * The write methods constant.
+     * The HTTP methods of the requests that are audited.
      */
     protected const WRITE_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
@@ -26,22 +27,21 @@ class SetAdminApiAuditContext
     ) {}
 
     /**
-     * Handle the request.
+     * Start auditing an authenticated admin API write, recording which session or API token made it and how.
      */
     public function handle(Request $request, Closure $next): Response
     {
         if ($this->shouldAudit($request)) {
-            $admin = Auth::guard('admin-api')->user();
-            $token = $admin?->current_access_token ?? null;
-
-            $tokenId = $token->id ?? $this->tokenIdFromBearer($request);
+            $credential = AdminAuthHelper::credential();
 
             $this->context->activate([
                 'history_id' => (string) Str::uuid(),
-                'admin_id' => $admin?->id,
-                'admin_name' => $admin?->name,
-                'token_id' => $tokenId,
-                'token_name' => $token->name ?? null,
+                'admin_id' => $credential?->admin->id,
+                'admin_name' => $credential?->admin->name,
+                'token_id' => $credential?->id(),
+                'token_name' => $credential?->name(),
+                'token_kind' => $credential?->kind(),
+                'channel' => AdminAuthHelper::channel($request),
                 'method' => $request->method(),
                 'url' => $request->fullUrl(),
                 'ip_address' => $request->ip(),
@@ -54,7 +54,7 @@ class SetAdminApiAuditContext
     }
 
     /**
-     * Terminate.
+     * Write the envelope row for an audited write that changed no audited model.
      */
     public function terminate(Request $request, Response $response): void
     {
@@ -72,12 +72,12 @@ class SetAdminApiAuditContext
             null,
             $this->idFromPath($request),
             $this->eventFromMethod($request->method()),
-            $request->except(['password', 'password_confirmation']) ?: null,
+            $request->except(['password', 'password_confirmation', 'current_password', 'refresh_token']) ?: null,
         );
     }
 
     /**
-     * Should audit.
+     * Whether the request is an authenticated admin API write while auditing is enabled.
      */
     protected function shouldAudit(Request $request): bool
     {
@@ -88,18 +88,7 @@ class SetAdminApiAuditContext
     }
 
     /**
-     * Token id from bearer.
-     */
-    protected function tokenIdFromBearer(Request $request): ?int
-    {
-        $bearer = (string) $request->bearerToken();
-        $id = explode('|', $bearer)[0] ?? null;
-
-        return ctype_digit((string) $id) ? (int) $id : null;
-    }
-
-    /**
-     * Tags from path.
+     * The first two path segments after the admin prefix, as dotted tags.
      */
     protected function tagsFromPath(Request $request): ?string
     {
@@ -114,7 +103,7 @@ class SetAdminApiAuditContext
     }
 
     /**
-     * Id from path.
+     * The last numeric path segment, taken as the audited record's id.
      */
     protected function idFromPath(Request $request): ?int
     {
@@ -124,7 +113,7 @@ class SetAdminApiAuditContext
     }
 
     /**
-     * Event from method.
+     * The audit event an HTTP method stands for.
      */
     protected function eventFromMethod(string $method): string
     {

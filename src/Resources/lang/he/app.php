@@ -1665,6 +1665,26 @@ return [
                 'access-token-expired' => 'תוקף אסימון הגישה פג. רענן אותו כדי להמשיך.',
                 'api-token-expired' => 'תוקף אסימון ה-API פג.',
                 'refresh-token-invalid' => 'אסימון הרענון אינו תקף או שפג תוקפו. נא להתחבר מחדש.',
+                'api-token-revoked' => 'אסימון ה-API בוטל.',
+                'api-token-domain-mismatch' => 'לא ניתן להשתמש באסימון ה-API מדומיין זה.',
+                'access-token-required' => 'פעולה זו דורשת את אסימון הגישה של סשן התחברות; אסימוני API אינם יכולים להשתמש בה.',
+                'two-factor-required' => 'אימות דו-שלבי מופעל עבור חשבון זה, והתחברות ל-API עם גורם שני עדיין אינה זמינה.',
+                'too-many-login-attempts' => 'יותר מדי ניסיונות התחברות. נסה שוב בעוד :seconds שניות.',
+                'rate-limit-exceeded' => 'יותר מדי ניסיונות.',
+                'no-permission' => 'אין לך הרשאה לנהל סשנים של API המנהלים.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'התנתקת.',
+                'logged-out-all' => 'התנתקת מכל הסשנים.',
+                'not-found' => 'הסשן לא נמצא.',
+                'revoked' => 'הסשן בוטל.',
+                'revoked-for-admin' => 'סשנים שבוטלו: :count.',
+            ],
+
+            'acl' => [
+                'api-sessions' => 'סשנים של API',
+                'revoke' => 'ביטול סשנים',
             ],
         ],
     ],

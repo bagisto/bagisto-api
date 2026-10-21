@@ -1665,6 +1665,26 @@ return [
                 'access-token-expired' => 'Token dostępu wygasł. Odśwież go, aby kontynuować.',
                 'api-token-expired' => 'Token API wygasł.',
                 'refresh-token-invalid' => 'Token odświeżania jest nieprawidłowy lub wygasł. Zaloguj się ponownie.',
+                'api-token-revoked' => 'Token API został unieważniony.',
+                'api-token-domain-mismatch' => 'Tokenu API nie można używać z tej domeny.',
+                'access-token-required' => 'Ta operacja wymaga tokenu dostępu sesji logowania; tokeny API nie mogą z niej korzystać.',
+                'two-factor-required' => 'Dla tego konta włączone jest uwierzytelnianie dwuskładnikowe, a logowanie do API z drugim składnikiem nie jest jeszcze dostępne.',
+                'too-many-login-attempts' => 'Zbyt wiele prób logowania. Spróbuj ponownie za :seconds s.',
+                'rate-limit-exceeded' => 'Zbyt wiele prób.',
+                'no-permission' => 'Nie masz uprawnień do zarządzania sesjami API administratorów.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'Wylogowano.',
+                'logged-out-all' => 'Wylogowano ze wszystkich sesji.',
+                'not-found' => 'Nie znaleziono sesji.',
+                'revoked' => 'Sesja została unieważniona.',
+                'revoked-for-admin' => 'Unieważnione sesje: :count.',
+            ],
+
+            'acl' => [
+                'api-sessions' => 'Sesje API',
+                'revoke' => 'Unieważnij sesje',
             ],
         ],
     ],

@@ -1665,6 +1665,26 @@ return [
                 'access-token-expired' => 'Das Zugriffstoken ist abgelaufen. Aktualisieren Sie es, um fortzufahren.',
                 'api-token-expired' => 'Das API-Token ist abgelaufen.',
                 'refresh-token-invalid' => 'Das Aktualisierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an.',
+                'api-token-revoked' => 'Das API-Token wurde widerrufen.',
+                'api-token-domain-mismatch' => 'Das API-Token kann von dieser Domain aus nicht verwendet werden.',
+                'access-token-required' => 'Diese Aktion erfordert das Zugriffstoken einer Anmeldesitzung; API-Tokens können sie nicht verwenden.',
+                'two-factor-required' => 'Für dieses Konto ist die Zwei-Faktor-Authentifizierung aktiviert, und die API-Anmeldung mit einem zweiten Faktor ist noch nicht verfügbar.',
+                'too-many-login-attempts' => 'Zu viele Anmeldeversuche. Bitte versuchen Sie es in :seconds Sekunden erneut.',
+                'rate-limit-exceeded' => 'Zu viele Versuche.',
+                'no-permission' => 'Sie haben keine Berechtigung, Admin-API-Sitzungen zu verwalten.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'Sie wurden abgemeldet.',
+                'logged-out-all' => 'Sie wurden von allen Sitzungen abgemeldet.',
+                'not-found' => 'Sitzung nicht gefunden.',
+                'revoked' => 'Die Sitzung wurde widerrufen.',
+                'revoked-for-admin' => 'Widerrufene Sitzungen: :count.',
+            ],
+
+            'acl' => [
+                'api-sessions' => 'API-Sitzungen',
+                'revoke' => 'Sitzungen widerrufen',
             ],
         ],
     ],

@@ -7,11 +7,6 @@ use Webkul\User\Models\Admin;
 class AdminApiAuditContext
 {
     /**
-     * The active.
-     */
-    protected bool $active = false;
-
-    /**
      * The history id.
      */
     public ?string $historyId = null;
@@ -35,6 +30,16 @@ class AdminApiAuditContext
      * The token name.
      */
     public ?string $tokenName = null;
+
+    /**
+     * The token kind: "session" or "api_token".
+     */
+    public ?string $tokenKind = null;
+
+    /**
+     * The channel: "rest" or "graphql".
+     */
+    public ?string $channel = null;
 
     /**
      * The method.
@@ -62,6 +67,11 @@ class AdminApiAuditContext
     public ?string $tags = null;
 
     /**
+     * Whether the request is being audited.
+     */
+    protected bool $active = false;
+
+    /**
      * Number of audit rows written during this request (envelope fallback).
      */
     protected int $rowCount = 0;
@@ -77,6 +87,8 @@ class AdminApiAuditContext
         $this->adminName = $data['admin_name'] ?? null;
         $this->tokenId = $data['token_id'] ?? null;
         $this->tokenName = $data['token_name'] ?? null;
+        $this->tokenKind = $data['token_kind'] ?? null;
+        $this->channel = $data['channel'] ?? null;
         $this->method = $data['method'] ?? null;
         $this->url = $data['url'] ?? null;
         $this->ipAddress = $data['ip_address'] ?? null;
@@ -120,6 +132,8 @@ class AdminApiAuditContext
             'admin_name' => $this->adminName,
             'token_id' => $this->tokenId,
             'token_name' => $this->tokenName,
+            'token_kind' => $this->tokenKind,
+            'channel' => $this->channel,
             'method' => $this->method,
             'url' => $this->url,
             'ip_address' => $this->ipAddress,

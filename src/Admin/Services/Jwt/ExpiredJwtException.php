@@ -9,19 +9,16 @@ class ExpiredJwtException extends InvalidJwtException
      */
     public function __construct(protected string $tokenType)
     {
-        parent::__construct(trans($tokenType === JwtSigner::TYPE_API
-            ? 'bagistoapi::app.admin.auth.errors.api-token-expired'
-            : 'bagistoapi::app.admin.auth.errors.access-token-expired'));
-    }
+        $isApiToken = $tokenType === JwtSigner::TYPE_API;
 
-    /**
-     * The machine-readable error code returned to the client.
-     */
-    public function errorCode(): string
-    {
-        return $this->tokenType === JwtSigner::TYPE_API
-            ? 'api_token_expired'
-            : 'access_token_expired';
+        parent::__construct(
+            trans($isApiToken
+                ? 'bagistoapi::app.admin.auth.errors.api-token-expired'
+                : 'bagistoapi::app.admin.auth.errors.access-token-expired'),
+            $isApiToken
+                ? self::CODE_API_TOKEN_EXPIRED
+                : self::CODE_ACCESS_TOKEN_EXPIRED,
+        );
     }
 
     /**

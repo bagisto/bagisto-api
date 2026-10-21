@@ -1665,6 +1665,26 @@ return [
                 'access-token-expired' => 'El token de acceso ha caducado. Actualízalo para continuar.',
                 'api-token-expired' => 'El token de API ha caducado.',
                 'refresh-token-invalid' => 'El token de actualización no es válido o ha caducado. Vuelve a iniciar sesión.',
+                'api-token-revoked' => 'El token de API ha sido revocado.',
+                'api-token-domain-mismatch' => 'El token de API no se puede usar desde este dominio.',
+                'access-token-required' => 'Esta acción necesita el token de acceso de una sesión iniciada; los tokens de API no pueden usarla.',
+                'two-factor-required' => 'La autenticación de dos factores está activada para esta cuenta y el inicio de sesión en la API con un segundo factor aún no está disponible.',
+                'too-many-login-attempts' => 'Demasiados intentos de inicio de sesión. Vuelva a intentarlo en :seconds segundos.',
+                'rate-limit-exceeded' => 'Demasiados intentos.',
+                'no-permission' => 'No tiene permiso para gestionar las sesiones de la API de administración.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'Ha cerrado la sesión.',
+                'logged-out-all' => 'Ha cerrado todas las sesiones.',
+                'not-found' => 'Sesión no encontrada.',
+                'revoked' => 'La sesión ha sido revocada.',
+                'revoked-for-admin' => 'Sesiones revocadas: :count.',
+            ],
+
+            'acl' => [
+                'api-sessions' => 'Sesiones de API',
+                'revoke' => 'Revocar sesiones',
             ],
         ],
     ],

@@ -11,7 +11,7 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 class AdminProfileQueryResolver implements QueryItemResolverInterface
 {
     /**
-     * Handle the invoke magic method.
+     * Resolve the signed-in admin's profile for the GraphQL query.
      */
     public function __invoke(?object $item, array $context): AdminProfile
     {
@@ -21,7 +21,7 @@ class AdminProfileQueryResolver implements QueryItemResolverInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $data = AdminProfileProvider::toArray($admin);
+        $data = AdminProfileProvider::toArray($admin, AdminAuthHelper::credential());
 
         $profile = new AdminProfile;
         $profile->id = $data['id'];
@@ -31,6 +31,9 @@ class AdminProfileQueryResolver implements QueryItemResolverInterface
         $profile->status = $data['status'];
         $profile->roleId = $data['roleId'];
         $profile->roleName = $data['roleName'];
+        $profile->tokenKind = $data['tokenKind'];
+        $profile->tokenId = $data['tokenId'];
+        $profile->tokenExpiresAt = $data['tokenExpiresAt'];
         $profile->success = true;
         $profile->message = null;
 

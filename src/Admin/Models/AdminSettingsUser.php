@@ -13,12 +13,14 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Admin\Dto\AdminSessionRevokeInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsUserCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsUserUpdateInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserProcessor;
+use Webkul\BagistoApi\Admin\State\AdminSettingsUserRevokeSessionsProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
 
 #[ApiResource(
@@ -162,6 +164,39 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
                 ],
             ),
         ),
+        new Post(
+            uriTemplate: '/settings/users/{id}/revoke-sessions',
+            processor: AdminSettingsUserRevokeSessionsProcessor::class,
+            requirements: ['id' => '\d+'],
+            status: 200,
+            read: false,
+            deserialize: false,
+            openapi: new Model\Operation(
+                tags: ['Admin Settings: Users'],
+                summary: 'Revoke every session of an admin user',
+                description: 'Revokes every live login session of the admin user, so their access and refresh tokens stop working at once. API tokens are not affected. Requires `settings.api_sessions.delete`.',
+                parameters: [
+                    new Model\Parameter('id', 'path', 'Admin ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 5,
+                    ]),
+                ],
+                requestBody: new Model\RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => ['type' => 'object'],
+                            'example' => new \stdClass,
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(description: 'Sessions revoked; `message` says how many.'),
+                    '403' => new Model\Response(description: 'The role lacks `settings.api_sessions.delete`.'),
+                    '404' => new Model\Response(description: 'Admin not found.'),
+                ],
+            ),
+        ),
         new Get(
             uriTemplate: '/settings/users/{id}',
             provider: AdminSettingsUserItemProvider::class,
@@ -250,6 +285,13 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             input: AdminSettingsUserUpdateInput::class,
             processor: AdminSettingsUserProcessor::class,
             description: 'Update an admin user. Becomes updateAdminSettingsUser.',
+        ),
+        new Mutation(
+            name: 'revokeSessions',
+            input: AdminSessionRevokeInput::class,
+            processor: AdminSettingsUserRevokeSessionsProcessor::class,
+            read: false,
+            description: 'Revoke every login session of an admin user. Becomes revokeSessionsAdminSettingsUser; requires settings.api_sessions.delete.',
         ),
         new Mutation(
             name: 'delete',

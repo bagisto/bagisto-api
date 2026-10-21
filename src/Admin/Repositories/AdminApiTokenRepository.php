@@ -77,6 +77,42 @@ class AdminApiTokenRepository extends Repository
     }
 
     /**
+     * Record where and how an API token was last used.
+     */
+    public function touchUsage(AdminApiToken $token, array $usage): AdminApiToken
+    {
+        $token->forceFill($usage)->save();
+
+        return $token;
+    }
+
+    /**
+     * Cache the addresses the token's domain resolved to.
+     */
+    public function storeResolvedIps(AdminApiToken $token, array $addresses): AdminApiToken
+    {
+        $token->forceFill([
+            'resolved_ips' => array_values($addresses),
+            'resolved_at' => now(),
+        ])->save();
+
+        return $token;
+    }
+
+    /**
+     * Count one more request made with the token from a domain it is not bound to.
+     */
+    public function recordDomainMismatch(AdminApiToken $token): AdminApiToken
+    {
+        $token->forceFill([
+            'domain_mismatch_count' => (int) $token->domain_mismatch_count + 1,
+            'last_domain_mismatch_at' => now(),
+        ])->save();
+
+        return $token;
+    }
+
+    /**
      * The query over API tokens that are neither revoked nor expired.
      */
     protected function activeQuery()

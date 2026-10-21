@@ -1665,6 +1665,26 @@ return [
                 'access-token-expired' => 'アクセストークンの有効期限が切れました。続行するにはリフレッシュしてください。',
                 'api-token-expired' => 'API トークンの有効期限が切れました。',
                 'refresh-token-invalid' => 'リフレッシュトークンが無効か期限切れです。再度ログインしてください。',
+                'api-token-revoked' => 'APIトークンは取り消されました。',
+                'api-token-domain-mismatch' => 'このドメインからはAPIトークンを使用できません。',
+                'access-token-required' => 'この操作にはログインセッションのアクセストークンが必要です。APIトークンでは使用できません。',
+                'two-factor-required' => 'このアカウントでは二要素認証が有効になっており、第二要素を使ったAPIログインはまだ利用できません。',
+                'too-many-login-attempts' => 'ログイン試行回数が多すぎます。:seconds 秒後にもう一度お試しください。',
+                'rate-limit-exceeded' => '試行回数が多すぎます。',
+                'no-permission' => '管理者APIセッションを管理する権限がありません。',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'ログアウトしました。',
+                'logged-out-all' => 'すべてのセッションからログアウトしました。',
+                'not-found' => 'セッションが見つかりません。',
+                'revoked' => 'セッションは取り消されました。',
+                'revoked-for-admin' => '取り消されたセッション: :count。',
+            ],
+
+            'acl' => [
+                'api-sessions' => 'APIセッション',
+                'revoke' => 'セッションを取り消す',
             ],
         ],
     ],

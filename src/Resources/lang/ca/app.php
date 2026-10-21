@@ -1665,6 +1665,26 @@ return [
                 'access-token-expired' => 'El token d\'accés ha caducat. Refresca\'l per continuar.',
                 'api-token-expired' => 'El token d\'API ha caducat.',
                 'refresh-token-invalid' => 'El token de refresc no és vàlid o ha caducat. Torna a iniciar sessió.',
+                'api-token-revoked' => 'El testimoni de l\'API s\'ha revocat.',
+                'api-token-domain-mismatch' => 'El testimoni de l\'API no es pot utilitzar des d\'aquest domini.',
+                'access-token-required' => 'Aquesta acció necessita el testimoni d\'accés d\'una sessió iniciada; els testimonis de l\'API no la poden utilitzar.',
+                'two-factor-required' => 'L\'autenticació de dos factors està activada per a aquest compte, i l\'inici de sessió a l\'API amb un segon factor encara no està disponible.',
+                'too-many-login-attempts' => 'Massa intents d\'inici de sessió. Torneu-ho a provar d\'aquí a :seconds segons.',
+                'rate-limit-exceeded' => 'Massa intents.',
+                'no-permission' => 'No teniu permís per gestionar les sessions de l\'API d\'administració.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'Heu tancat la sessió.',
+                'logged-out-all' => 'Heu tancat totes les sessions.',
+                'not-found' => 'No s\'ha trobat la sessió.',
+                'revoked' => 'S\'ha revocat la sessió.',
+                'revoked-for-admin' => 'Sessions revocades: :count.',
+            ],
+
+            'acl' => [
+                'api-sessions' => 'Sessions de l\'API',
+                'revoke' => 'Revoca les sessions',
             ],
         ],
     ],

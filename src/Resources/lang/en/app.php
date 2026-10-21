@@ -1661,10 +1661,30 @@ return [
             ],
 
             'errors' => [
-                'unauthenticated' => 'You are not authenticated.',
+                'unauthenticated' => 'Unauthenticated.',
                 'access-token-expired' => 'The access token has expired. Refresh it to continue.',
                 'api-token-expired' => 'The API token has expired.',
                 'refresh-token-invalid' => 'The refresh token is invalid or has expired. Please log in again.',
+                'api-token-revoked' => 'The API token has been revoked.',
+                'api-token-domain-mismatch' => 'The API token cannot be used from this domain.',
+                'access-token-required' => 'This action needs the access token of a login session; API tokens cannot use it.',
+                'two-factor-required' => 'Two-factor authentication is enabled for this account, and API login with a second factor is not available yet.',
+                'too-many-login-attempts' => 'Too many login attempts. Please try again in :seconds seconds.',
+                'rate-limit-exceeded' => 'Too Many Attempts.',
+                'no-permission' => 'You do not have permission to manage admin API sessions.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'You have been logged out.',
+                'logged-out-all' => 'You have been logged out of every session.',
+                'not-found' => 'Session not found.',
+                'revoked' => 'The session has been revoked.',
+                'revoked-for-admin' => 'Sessions revoked: :count.',
+            ],
+
+            'acl' => [
+                'api-sessions' => 'API Sessions',
+                'revoke' => 'Revoke Sessions',
             ],
         ],
     ],

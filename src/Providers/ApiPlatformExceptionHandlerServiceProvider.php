@@ -10,6 +10,7 @@ use Illuminate\Support\ServiceProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface as SymfonyHttpExceptionInterface;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException as SerializerUnexpectedValueException;
+use Webkul\BagistoApi\Exception\AdminAuthException;
 
 class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
 {
@@ -64,12 +65,18 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
                                 || $request->expectsJson()
                             )
                         ) {
-                            return response()->json([
+                            $body = [
                                 'type' => $exception->getType(),
                                 'title' => $exception->getTitle(),
                                 'status' => $exception->getStatus(),
                                 'detail' => $exception->getDetail(),
-                            ], $exception->getStatusCode());
+                            ];
+
+                            if ($exception instanceof AdminAuthException) {
+                                $body += $exception->toResponseBody();
+                            }
+
+                            return response()->json($body, $exception->getStatusCode(), $exception->getHeaders());
                         }
 
                         if ($this->isUnroutedApiRequest($request, $exception)) {

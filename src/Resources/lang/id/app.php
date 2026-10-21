@@ -1665,6 +1665,26 @@ return [
                 'access-token-expired' => 'Token akses telah kedaluwarsa. Segarkan untuk melanjutkan.',
                 'api-token-expired' => 'Token API telah kedaluwarsa.',
                 'refresh-token-invalid' => 'Token penyegaran tidak valid atau telah kedaluwarsa. Silakan login kembali.',
+                'api-token-revoked' => 'Token API telah dicabut.',
+                'api-token-domain-mismatch' => 'Token API tidak dapat digunakan dari domain ini.',
+                'access-token-required' => 'Tindakan ini memerlukan token akses dari sesi login; token API tidak dapat menggunakannya.',
+                'two-factor-required' => 'Autentikasi dua faktor aktif untuk akun ini, dan login API dengan faktor kedua belum tersedia.',
+                'too-many-login-attempts' => 'Terlalu banyak percobaan login. Silakan coba lagi dalam :seconds detik.',
+                'rate-limit-exceeded' => 'Terlalu banyak percobaan.',
+                'no-permission' => 'Anda tidak memiliki izin untuk mengelola sesi API admin.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'Anda telah keluar.',
+                'logged-out-all' => 'Anda telah keluar dari semua sesi.',
+                'not-found' => 'Sesi tidak ditemukan.',
+                'revoked' => 'Sesi telah dicabut.',
+                'revoked-for-admin' => 'Sesi yang dicabut: :count.',
+            ],
+
+            'acl' => [
+                'api-sessions' => 'Sesi API',
+                'revoke' => 'Cabut Sesi',
             ],
         ],
     ],

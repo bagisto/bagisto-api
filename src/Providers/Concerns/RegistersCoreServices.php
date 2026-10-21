@@ -11,6 +11,8 @@ use Webkul\BagistoApi\Admin\Audit\AdminApiAuditContext;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
 use Webkul\BagistoApi\Admin\Metadata\NullableToOnePropertyMetadataFactory;
 use Webkul\BagistoApi\Admin\Services\AdminApiAuthSettings;
+use Webkul\BagistoApi\Admin\Services\DnsDomainResolver;
+use Webkul\BagistoApi\Admin\Services\DomainResolver;
 use Webkul\BagistoApi\Admin\Services\Jwt\JwtKeyStore;
 use Webkul\BagistoApi\Admin\Services\Jwt\JwtSigner;
 use Webkul\BagistoApi\Admin\Services\Jwt\JwtVerifier;
@@ -54,6 +56,7 @@ trait RegistersCoreServices
         $this->app->singleton(JwtKeyStore::class);
         $this->app->singleton(JwtSigner::class);
         $this->app->singleton(JwtVerifier::class);
+        $this->app->singleton(DomainResolver::class, DnsDomainResolver::class);
 
         $this->registerApiAwareCacheProfile();
 

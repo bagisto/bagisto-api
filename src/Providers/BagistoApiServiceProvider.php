@@ -18,7 +18,6 @@ use ApiPlatform\Laravel\ServiceLocator;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
 use ApiPlatform\Metadata\Resource\Factory\ResourceNameCollectionFactoryInterface;
 use ApiPlatform\State\Pagination\Pagination;
-use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
@@ -31,6 +30,7 @@ use Negotiation\Negotiator;
 use Symfony\Component\Serializer\SerializerInterface;
 use Webkul\Attribute\Contracts\Attribute as AttributeContract;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
+use Webkul\BagistoApi\Admin\Auth\AdminApiAuthenticator;
 use Webkul\BagistoApi\Admin\Auth\AdminApiGuard;
 use Webkul\BagistoApi\Admin\Contracts\AdminApiRefreshToken as AdminApiRefreshTokenContract;
 use Webkul\BagistoApi\Admin\Contracts\AdminApiSession as AdminApiSessionContract;
@@ -38,7 +38,7 @@ use Webkul\BagistoApi\Admin\Contracts\AdminApiToken as AdminApiTokenContract;
 use Webkul\BagistoApi\Admin\Models\AdminApiRefreshToken;
 use Webkul\BagistoApi\Admin\Models\AdminApiSession;
 use Webkul\BagistoApi\Admin\Models\AdminApiToken;
-use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
+use Webkul\BagistoApi\Admin\Services\AdminApiAuthSettings;
 use Webkul\BagistoApi\CacheProfiles\ApiAwareResponseCache;
 use Webkul\BagistoApi\Console\Commands\ApiKeyMaintenanceCommand;
 use Webkul\BagistoApi\Console\Commands\ApiKeyManagementCommand;
@@ -523,38 +523,15 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->registerIntegrationMenu();
 
         Auth::extend('admin-api', function ($app, $name, array $config) {
-            $provider = Auth::createUserProvider($config['provider']);
-
             return new AdminApiGuard(
-                $provider,
-                $app['request']
+                Auth::createUserProvider($config['provider']),
+                $app['request'],
+                $app->make(AdminApiAuthenticator::class),
             );
         });
 
-        RateLimiter::for('admin-api', function (Request $request) {
-            $admin = method_exists($request, 'user') ? $request->user('admin-api') : null;
-
-            $token = $admin?->currentAccessToken() ?? $admin?->getAttribute('current_access_token');
-
-            if (! $token instanceof AdminPersonalAccessToken) {
-                return app()->environment('testing')
-                    ? Limit::none()
-                    : Limit::perMinute(60)->by('admin-api-unauthenticated:'.$request->ip());
-            }
-
-            $limits = [];
-
-            if ($token->rate_limit_per_minute !== null) {
-                $limits[] = Limit::perMinute($token->rate_limit_per_minute)
-                    ->by('admin-api-token:min:'.$token->id);
-            }
-
-            if ($token->rate_limit_per_day !== null) {
-                $limits[] = Limit::perDay($token->rate_limit_per_day)
-                    ->by('admin-api-token:day:'.$token->id);
-            }
-
-            return $limits ?: Limit::none();
+        RateLimiter::for(ThrottleAdminApi::LIMITER, function (Request $request) {
+            return ThrottleAdminApi::limitFor($request, $this->app->make(AdminApiAuthSettings::class));
         });
     }
 

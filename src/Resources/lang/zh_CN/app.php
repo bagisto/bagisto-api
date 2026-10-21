@@ -1665,6 +1665,26 @@ return [
                 'access-token-expired' => '访问令牌已过期。请刷新后继续。',
                 'api-token-expired' => 'API 令牌已过期。',
                 'refresh-token-invalid' => '刷新令牌无效或已过期。请重新登录。',
+                'api-token-revoked' => 'API 令牌已被撤销。',
+                'api-token-domain-mismatch' => '无法从此域名使用该 API 令牌。',
+                'access-token-required' => '此操作需要登录会话的访问令牌；API 令牌无法使用。',
+                'two-factor-required' => '此账户已启用双重身份验证，暂不支持使用第二因素登录 API。',
+                'too-many-login-attempts' => '登录尝试次数过多。请在 :seconds 秒后重试。',
+                'rate-limit-exceeded' => '尝试次数过多。',
+                'no-permission' => '您没有管理管理员 API 会话的权限。',
+            ],
+
+            'sessions' => [
+                'logged-out' => '您已退出登录。',
+                'logged-out-all' => '您已退出所有会话。',
+                'not-found' => '未找到会话。',
+                'revoked' => '会话已被撤销。',
+                'revoked-for-admin' => '已撤销的会话：:count。',
+            ],
+
+            'acl' => [
+                'api-sessions' => 'API 会话',
+                'revoke' => '撤销会话',
             ],
         ],
     ],

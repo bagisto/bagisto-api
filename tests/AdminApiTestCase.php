@@ -5,7 +5,8 @@ namespace Webkul\BagistoApi\Tests;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
-use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
+use Webkul\BagistoApi\Admin\Services\AdminApiTokenService;
+use Webkul\BagistoApi\Admin\Services\Jwt\JwtKeyStore;
 use Webkul\User\Models\Admin;
 
 abstract class AdminApiTestCase extends BagistoApiTestCase
@@ -34,53 +35,26 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
     }
 
     /**
-     * Issue a fresh admin integration token (AdminPersonalAccessToken) for
-     * an admin and return the plaintext Bearer token (`<id>|<random>`).
+     * Start a real login session for an admin and return its JWT access token.
      */
     protected function adminToken(Admin $admin): string
     {
-        $plain = Str::random(40);
+        $this->ensureJwtKeys();
 
-        $row = AdminPersonalAccessToken::create([
-            'admin_id' => $admin->id,
-            'name' => 'admin-api-test-'.Str::random(6),
-            'token' => hash('sha256', $plain),
-            'token_preview' => substr($plain, 0, 8),
-            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_ALL,
-            'abilities' => [],
-            'rate_limit_per_minute' => null,
-            'rate_limit_per_day' => null,
-            'expires_at' => now()->addDay(),
-            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
-            'created_by_admin_id' => $admin->id,
-        ]);
-
-        return $row->id.'|'.$plain;
+        return app(AdminApiTokenService::class)
+            ->issue($admin, [
+                'name' => 'admin-api-test-'.Str::random(6),
+                'client_type' => 'other',
+            ])
+            ->accessToken;
     }
 
     /**
-     * Issue a role-bound admin token. The token's `permission_type='same_as_web'`
-     * means it inherits the admin's current role permissions at runtime — every.
+     * Issue an access token for an admin; permissions always follow the admin's role now.
      */
     protected function adminTokenSameAsWeb(Admin $admin): string
     {
-        $plain = Str::random(40);
-
-        $row = AdminPersonalAccessToken::create([
-            'admin_id' => $admin->id,
-            'name' => 'admin-api-test-saw-'.Str::random(6),
-            'token' => hash('sha256', $plain),
-            'token_preview' => substr($plain, 0, 8),
-            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_SAME_AS_WEB,
-            'abilities' => [],
-            'rate_limit_per_minute' => null,
-            'rate_limit_per_day' => null,
-            'expires_at' => now()->addDay(),
-            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
-            'created_by_admin_id' => $admin->id,
-        ]);
-
-        return $row->id.'|'.$plain;
+        return $this->adminToken($admin);
     }
 
     /**
@@ -153,6 +127,20 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
         $headers = $admin ? $this->adminHeaders($admin, $token) : [];
 
         return $this->postJson($this->graphqlUrl, $payload, $headers);
+    }
+
+    /**
+     * Point the JWT key store at a per-process temporary directory and create a key pair there once.
+     */
+    protected function ensureJwtKeys(): void
+    {
+        config(['bagistoapi.admin_auth.jwt.path' => sys_get_temp_dir().'/bagisto-api-test-jwt-'.(getenv('TEST_TOKEN') ?: '0')]);
+
+        $keys = app(JwtKeyStore::class);
+
+        if (! $keys->exists()) {
+            $keys->create();
+        }
     }
 
     /**

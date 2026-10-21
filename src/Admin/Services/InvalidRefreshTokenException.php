@@ -2,24 +2,22 @@
 
 namespace Webkul\BagistoApi\Admin\Services;
 
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Models\AdminApiSession;
+use Webkul\BagistoApi\Exception\AdminAuthException;
 
-class InvalidRefreshTokenException extends AuthenticationException
+class InvalidRefreshTokenException extends AdminAuthException
 {
     /**
      * Create an exception for a refresh token that cannot be exchanged.
      */
-    public function __construct(protected bool $reused = false)
-    {
-        parent::__construct(trans('bagistoapi::app.admin.auth.errors.refresh-token-invalid'));
-    }
-
-    /**
-     * The machine-readable error code returned to the client.
-     */
-    public function errorCode(): string
-    {
-        return 'refresh_token_invalid';
+    public function __construct(
+        protected bool $reused = false,
+        protected ?AdminApiSession $session = null,
+    ) {
+        parent::__construct(
+            trans('bagistoapi::app.admin.auth.errors.refresh-token-invalid'),
+            self::CODE_REFRESH_TOKEN_INVALID,
+        );
     }
 
     /**
@@ -28,5 +26,13 @@ class InvalidRefreshTokenException extends AuthenticationException
     public function wasReused(): bool
     {
         return $this->reused;
+    }
+
+    /**
+     * The session the token belonged to, when it was found.
+     */
+    public function session(): ?AdminApiSession
+    {
+        return $this->session;
     }
 }

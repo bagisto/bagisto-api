@@ -135,6 +135,25 @@ class AdminApiAuditRecorder
     }
 
     /**
+     * Write one audit row for an authentication event, with or without an audited request.
+     */
+    public function writeEvent(array $attributes): void
+    {
+        try {
+            AdminApiAudit::create(array_merge($attributes, [
+                'version_id' => $this->nextVersion($attributes['auditable_type'] ?? null, $attributes['auditable_id'] ?? null),
+                'created_at' => now(),
+            ]));
+
+            if ($this->context->isActive()) {
+                $this->context->recordWritten();
+            }
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
+    }
+
+    /**
      * Persist.
      */
     protected function persist(Model $model, string $event, ?array $old, ?array $new): void

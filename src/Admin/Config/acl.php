@@ -71,5 +71,20 @@ return [
         ],
 
         'sort' => 2,
+    ], [
+        'key' => 'settings.api_sessions',
+        'name' => 'bagistoapi::app.admin.auth.acl.api-sessions',
+        'route' => 'admin.settings.api_sessions.index',
+        'sort' => 11,
+    ], [
+        'key' => 'settings.api_sessions.delete',
+        'name' => 'bagistoapi::app.admin.auth.acl.revoke',
+
+        'route' => [
+            'admin.settings.api_sessions.delete',
+            'admin.settings.api_sessions.revoke_all',
+        ],
+
+        'sort' => 1,
     ],
 ];

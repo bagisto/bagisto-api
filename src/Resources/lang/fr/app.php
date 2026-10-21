@@ -1665,6 +1665,26 @@ return [
                 'access-token-expired' => 'Le jeton d\'accès a expiré. Rafraîchissez-le pour continuer.',
                 'api-token-expired' => 'Le jeton d\'API a expiré.',
                 'refresh-token-invalid' => 'Le jeton de rafraîchissement est invalide ou a expiré. Veuillez vous reconnecter.',
+                'api-token-revoked' => 'Le jeton d\'API a été révoqué.',
+                'api-token-domain-mismatch' => 'Le jeton d\'API ne peut pas être utilisé depuis ce domaine.',
+                'access-token-required' => 'Cette action nécessite le jeton d\'accès d\'une session connectée ; les jetons d\'API ne peuvent pas l\'utiliser.',
+                'two-factor-required' => 'L\'authentification à deux facteurs est activée pour ce compte, et la connexion à l\'API avec un second facteur n\'est pas encore disponible.',
+                'too-many-login-attempts' => 'Trop de tentatives de connexion. Veuillez réessayer dans :seconds secondes.',
+                'rate-limit-exceeded' => 'Trop de tentatives.',
+                'no-permission' => 'Vous n\'avez pas l\'autorisation de gérer les sessions de l\'API d\'administration.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'Vous avez été déconnecté.',
+                'logged-out-all' => 'Vous avez été déconnecté de toutes les sessions.',
+                'not-found' => 'Session introuvable.',
+                'revoked' => 'La session a été révoquée.',
+                'revoked-for-admin' => 'Sessions révoquées : :count.',
+            ],
+
+            'acl' => [
+                'api-sessions' => 'Sessions d\'API',
+                'revoke' => 'Révoquer les sessions',
             ],
         ],
     ],

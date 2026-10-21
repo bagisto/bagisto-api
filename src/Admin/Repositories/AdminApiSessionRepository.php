@@ -3,6 +3,8 @@
 namespace Webkul\BagistoApi\Admin\Repositories;
 
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Webkul\BagistoApi\Admin\Contracts\AdminApiSession as AdminApiSessionContract;
 use Webkul\BagistoApi\Admin\Models\AdminApiSession;
@@ -33,12 +35,35 @@ class AdminApiSessionRepository extends Repository
      */
     public function activeForAdmin(int $adminId): Collection
     {
-        return $this->model->newQuery()
+        return $this->activeQuery()
             ->where('admin_id', $adminId)
-            ->whereNull('revoked_at')
-            ->where('expires_at', '>', now())
             ->orderByDesc('id')
             ->get();
+    }
+
+    /**
+     * One live session of an admin, or null when the admin has no live session with this id.
+     */
+    public function findActiveForAdmin(int $adminId, int $id): ?AdminApiSession
+    {
+        return $this->activeQuery()
+            ->with('admin')
+            ->where('admin_id', $adminId)
+            ->whereKey($id)
+            ->first();
+    }
+
+    /**
+     * A page of live sessions, newest first, optionally of one admin and one client type.
+     */
+    public function paginateActive(?int $adminId, ?string $clientType, int $page, int $perPage): LengthAwarePaginator
+    {
+        return $this->activeQuery()
+            ->with('admin')
+            ->when($adminId !== null, fn ($query) => $query->where('admin_id', $adminId))
+            ->when($clientType !== null, fn ($query) => $query->where('client_type', $clientType))
+            ->orderByDesc('id')
+            ->paginate($perPage, ['*'], 'page', $page);
     }
 
     /**
@@ -96,5 +121,15 @@ class AdminApiSessionRepository extends Repository
                     ->orWhere('refresh_expires_at', '<', $before);
             })
             ->delete();
+    }
+
+    /**
+     * The query over sessions that are neither revoked nor past their absolute lifetime.
+     */
+    protected function activeQuery(): Builder
+    {
+        return $this->model->newQuery()
+            ->whereNull('revoked_at')
+            ->where('expires_at', '>', now());
     }
 }

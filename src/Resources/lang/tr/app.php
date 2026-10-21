@@ -1665,6 +1665,26 @@ return [
                 'access-token-expired' => 'Erişim belirtecinin süresi doldu. Devam etmek için yenileyin.',
                 'api-token-expired' => 'API belirtecinin süresi doldu.',
                 'refresh-token-invalid' => 'Yenileme belirteci geçersiz veya süresi dolmuş. Lütfen yeniden giriş yapın.',
+                'api-token-revoked' => 'API belirteci iptal edildi.',
+                'api-token-domain-mismatch' => 'API belirteci bu alan adından kullanılamaz.',
+                'access-token-required' => 'Bu işlem bir oturum açma oturumunun erişim belirtecini gerektirir; API belirteçleri bunu kullanamaz.',
+                'two-factor-required' => 'Bu hesap için iki faktörlü kimlik doğrulama etkin ve ikinci faktörle API girişi henüz kullanılamıyor.',
+                'too-many-login-attempts' => 'Çok fazla giriş denemesi. Lütfen :seconds saniye sonra tekrar deneyin.',
+                'rate-limit-exceeded' => 'Çok fazla deneme.',
+                'no-permission' => 'Yönetici API oturumlarını yönetme izniniz yok.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'Oturumunuz kapatıldı.',
+                'logged-out-all' => 'Tüm oturumlarınız kapatıldı.',
+                'not-found' => 'Oturum bulunamadı.',
+                'revoked' => 'Oturum iptal edildi.',
+                'revoked-for-admin' => 'İptal edilen oturumlar: :count.',
+            ],
+
+            'acl' => [
+                'api-sessions' => 'API Oturumları',
+                'revoke' => 'Oturumları İptal Et',
             ],
         ],
     ],

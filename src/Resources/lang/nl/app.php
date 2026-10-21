@@ -1665,6 +1665,26 @@ return [
                 'access-token-expired' => 'Het toegangstoken is verlopen. Vernieuw het om door te gaan.',
                 'api-token-expired' => 'Het API-token is verlopen.',
                 'refresh-token-invalid' => 'Het vernieuwingstoken is ongeldig of verlopen. Log opnieuw in.',
+                'api-token-revoked' => 'Het API-token is ingetrokken.',
+                'api-token-domain-mismatch' => 'Het API-token kan niet vanaf dit domein worden gebruikt.',
+                'access-token-required' => 'Deze actie vereist het toegangstoken van een inlogsessie; API-tokens kunnen deze niet gebruiken.',
+                'two-factor-required' => 'Tweestapsverificatie is ingeschakeld voor dit account en inloggen op de API met een tweede factor is nog niet beschikbaar.',
+                'too-many-login-attempts' => 'Te veel inlogpogingen. Probeer het over :seconds seconden opnieuw.',
+                'rate-limit-exceeded' => 'Te veel pogingen.',
+                'no-permission' => 'U hebt geen toestemming om admin-API-sessies te beheren.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'U bent uitgelogd.',
+                'logged-out-all' => 'U bent uitgelogd van alle sessies.',
+                'not-found' => 'Sessie niet gevonden.',
+                'revoked' => 'De sessie is ingetrokken.',
+                'revoked-for-admin' => 'Ingetrokken sessies: :count.',
+            ],
+
+            'acl' => [
+                'api-sessions' => 'API-sessies',
+                'revoke' => 'Sessies intrekken',
             ],
         ],
     ],

@@ -7,138 +7,110 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
+use Webkul\BagistoApi\Exception\AdminAuthException;
 
 class AdminApiGuard implements Guard
 {
     use GuardHelpers;
 
     /**
-     * The request.
+     * The request the guard was created for.
      */
     protected Request $request;
 
     /**
-     * The current token.
+     * The request the cached result belongs to.
      */
-    protected ?AdminPersonalAccessToken $currentToken = null;
+    protected ?Request $resolvedRequest = null;
+
+    /**
+     * The bearer token the cached result belongs to.
+     */
+    protected ?string $resolvedBearer = null;
+
+    /**
+     * The session or API token the current request authenticated with.
+     */
+    protected ?AdminApiCredential $credential = null;
+
+    /**
+     * Why the current request's bearer token was rejected.
+     */
+    protected ?AdminAuthException $failure = null;
 
     /**
      * Create a new instance.
      */
-    public function __construct(UserProvider $provider, Request $request)
-    {
+    public function __construct(
+        UserProvider $provider,
+        Request $request,
+        protected AdminApiAuthenticator $authenticator,
+    ) {
         $this->provider = $provider;
         $this->request = $request;
     }
 
     /**
-     * User.
+     * The admin behind the request's access token or API token, resolved once per request.
      */
     public function user(): ?Authenticatable
     {
-        $request = app('request') ?: $this->request;
+        $request = $this->currentRequest();
 
         $bearer = $request->bearerToken();
 
         if (
-            $this->user !== null
-            && $this->currentToken !== null
-            && $bearer !== null
-            && str_contains($bearer, '|')
+            $this->resolvedRequest === $request
+            && $this->resolvedBearer === $bearer
         ) {
-            [$id] = explode('|', $bearer, 2);
-
-            if (
-                ctype_digit($id)
-                && (int) $id === (int) $this->currentToken->id
-            ) {
-                return $this->user;
-            }
+            return $this->user;
         }
 
-        $this->user = null;
-        $this->currentToken = null;
+        $this->forgetResolution();
 
-        if (! $bearer) {
-            return null;
-        }
-
-        if (! str_contains($bearer, '|')) {
-            return null;
-        }
-
-        [$id, $plain] = explode('|', $bearer, 2);
+        $this->resolvedRequest = $request;
+        $this->resolvedBearer = $bearer;
 
         if (
-            ! ctype_digit($id)
-            || $plain === ''
+            $bearer === null
+            || $bearer === ''
         ) {
             return null;
         }
 
-        $token = AdminPersonalAccessToken::find((int) $id);
-
-        if (
-            ! $token
-            || ! $token->isUsable()
-        ) {
-            return null;
-        }
-
-        if (! hash_equals((string) $token->token, hash('sha256', $plain))) {
-            return null;
-        }
-
-        $clientIp = $this->request->ip() ?? '';
-
-        if (! $token->isIpAllowed($clientIp)) {
-            Log::warning('Admin API token denied by IP allowlist', [
-                'token_id' => $token->id,
-                'admin_id' => $token->admin_id,
-                'client_ip' => $clientIp,
-            ]);
+        try {
+            $this->credential = $this->authenticator->authenticate($bearer, $request);
+        } catch (AdminAuthException $exception) {
+            $this->failure = $exception;
 
             return null;
         }
 
-        $admin = $this->provider->retrieveById($token->admin_id);
-
-        if (
-            ! $admin
-            || ! $admin->status
-        ) {
-            return null;
-        }
-
-        $token->forceFill(['last_used_at' => now()])->saveQuietly();
-
-        $this->currentToken = $token;
-
-        if (method_exists($admin, 'withAccessToken')) {
-            $admin->withAccessToken($token);
-        } else {
-            $admin->setAttribute('current_access_token', $token);
-        }
-
-        $token->applyAbilityScope($admin);
-
-        return $this->user = $admin;
+        return $this->user = $this->credential->admin;
     }
 
     /**
-     * Current access token.
+     * The session or API token the current request authenticated with.
      */
-    public function currentAccessToken(): ?AdminPersonalAccessToken
+    public function credential(): ?AdminApiCredential
     {
         $this->user();
 
-        return $this->currentToken;
+        return $this->credential;
     }
 
     /**
-     * Validate.
+     * Why the current request's bearer token was rejected, or null when it was accepted or absent.
+     */
+    public function failure(): ?AdminAuthException
+    {
+        $this->user();
+
+        return $this->failure;
+    }
+
+    /**
+     * Validate a token without remembering it as the current request's credential.
      */
     public function validate(array $credentials = []): bool
     {
@@ -146,16 +118,58 @@ class AdminApiGuard implements Guard
             return false;
         }
 
-        $request = Request::create('/', 'GET');
-        $request->headers->set('Authorization', 'Bearer '.$credentials['token']);
+        try {
+            $this->authenticator->authenticate((string) $credentials['token'], $this->currentRequest());
+        } catch (AdminAuthException $exception) {
+            return false;
+        }
 
-        $previousRequest = $this->request;
+        return true;
+    }
+
+    /**
+     * Forget the resolved admin, so the next call authenticates the bearer token again.
+     */
+    public function forgetUser(): static
+    {
+        $this->forgetResolution();
+
+        return $this;
+    }
+
+    /**
+     * Use another request from now on.
+     */
+    public function setRequest(Request $request): static
+    {
         $this->request = $request;
 
-        try {
-            return $this->user() !== null;
-        } finally {
-            $this->request = $previousRequest;
-        }
+        $this->forgetResolution();
+
+        return $this;
+    }
+
+    /**
+     * The request being handled: the container's current one, or the one the guard was created for.
+     */
+    protected function currentRequest(): Request
+    {
+        $request = app()->bound('request') ? app('request') : null;
+
+        return $request instanceof Request
+            ? $request
+            : $this->request;
+    }
+
+    /**
+     * Drop the cached admin, credential and failure.
+     */
+    protected function forgetResolution(): void
+    {
+        $this->user = null;
+        $this->credential = null;
+        $this->failure = null;
+        $this->resolvedRequest = null;
+        $this->resolvedBearer = null;
     }
 }

@@ -95,7 +95,7 @@ class AdminApiTokenService
             || $token->isExpired()
             || ! $this->isAdminActive($session)
         ) {
-            throw new InvalidRefreshTokenException;
+            throw new InvalidRefreshTokenException(session: $session);
         }
 
         if (! $this->refreshTokenRepository->claim($token->id)) {
@@ -265,7 +265,7 @@ class AdminApiTokenService
             $this->revoke($session, AdminApiSession::REVOKED_REFRESH_REUSE);
         }
 
-        throw new InvalidRefreshTokenException(reused: true);
+        throw new InvalidRefreshTokenException(reused: true, session: $session);
     }
 
     /**

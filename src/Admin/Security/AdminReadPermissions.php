@@ -73,6 +73,8 @@ use Webkul\BagistoApi\Admin\Models\AdminRmaCustomField;
 use Webkul\BagistoApi\Admin\Models\AdminRmaReason;
 use Webkul\BagistoApi\Admin\Models\AdminRmaRule;
 use Webkul\BagistoApi\Admin\Models\AdminRmaStatus;
+use Webkul\BagistoApi\Admin\Models\AdminSession;
+use Webkul\BagistoApi\Admin\Models\AdminSettingsApiSession;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsChannel;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsCurrency;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsDataTransferImport;
@@ -86,6 +88,7 @@ use Webkul\BagistoApi\Admin\Models\AdminSettingsTaxCategory;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTaxRate;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTheme;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsUser;
+use Webkul\BagistoApi\Admin\Models\AdminSettingsUserSession;
 use Webkul\BagistoApi\Admin\Models\AdminShipment;
 use Webkul\BagistoApi\Admin\Models\AdminTransaction;
 use Webkul\BagistoApi\Admin\Models\OrderDetail;
@@ -103,6 +106,7 @@ class AdminReadPermissions
         AdminProfile::class => null,
         AdminMenu::class => null,
         AdminPermissions::class => null,
+        AdminSession::class => null,
 
         AdminDashboard::class => 'dashboard',
 
@@ -179,6 +183,8 @@ class AdminReadPermissions
         AdminSettingsChannel::class => 'settings.channels',
         AdminSettingsUser::class => 'settings.users',
         AdminSettingsRole::class => 'settings.roles',
+        AdminSettingsUserSession::class => 'settings.api_sessions',
+        AdminSettingsApiSession::class => 'settings.api_sessions',
         AdminSettingsTaxCategory::class => 'settings.taxes.tax_categories',
         AdminSettingsTaxRate::class => 'settings.taxes.tax_rates',
         AdminSettingsTheme::class => 'settings.themes',

@@ -1665,6 +1665,26 @@ return [
                 'access-token-expired' => 'Tokenul de acces a expirat. Reîmprospătează-l pentru a continua.',
                 'api-token-expired' => 'Tokenul API a expirat.',
                 'refresh-token-invalid' => 'Tokenul de reîmprospătare este invalid sau a expirat. Autentifică-te din nou.',
+                'api-token-revoked' => 'Tokenul API a fost revocat.',
+                'api-token-domain-mismatch' => 'Tokenul API nu poate fi folosit de pe acest domeniu.',
+                'access-token-required' => 'Această acțiune necesită tokenul de acces al unei sesiuni de autentificare; tokenurile API nu o pot folosi.',
+                'two-factor-required' => 'Autentificarea în doi pași este activată pentru acest cont, iar autentificarea în API cu un al doilea factor nu este încă disponibilă.',
+                'too-many-login-attempts' => 'Prea multe încercări de autentificare. Încercați din nou peste :seconds secunde.',
+                'rate-limit-exceeded' => 'Prea multe încercări.',
+                'no-permission' => 'Nu aveți permisiunea de a gestiona sesiunile API ale administratorilor.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'Ați fost deconectat.',
+                'logged-out-all' => 'Ați fost deconectat din toate sesiunile.',
+                'not-found' => 'Sesiunea nu a fost găsită.',
+                'revoked' => 'Sesiunea a fost revocată.',
+                'revoked-for-admin' => 'Sesiuni revocate: :count.',
+            ],
+
+            'acl' => [
+                'api-sessions' => 'Sesiuni API',
+                'revoke' => 'Revocă sesiunile',
             ],
         ],
     ],

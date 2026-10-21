@@ -104,6 +104,7 @@ Security and correctness release from the Bagisto v2.4.10 API audit. Tested agai
 
 ### Fixed
 
+- Return messages (`createCustomerReturnMessage`, `POST /api/shop/return-messages` with a JSON body) accept an attachment as a base64 data URI in `attachment`, with an optional `attachmentName`, so an app can attach a file as the storefront conversation does. Before, only a multipart REST request could attach a file.
 - Returns (RMA) now refuse what the storefront refuses: a solved, declined, received or item-canceled return can no longer be canceled, a return can only be closed while core's `canCloseRma` allows it, and closing or reopening is refused once the return window has passed. Before, the API canceled or closed a return in any state.
 - Updating the profile now applies the storefront rules to the fields sent: email unique within the channel (it was checked across all channels), the core phone format (a leading `+` is now accepted) and phone uniqueness, a birth date in the past, and a new password of at least 6 characters with `confirmPassword`. A password change now fires `customer.password.update.after`, so the "password changed" email is sent.
 - Customer addresses (`/api/shop/customer-addresses`) now apply the storefront address rules: `phone` (core format) and `email` are required, and country, state and postcode follow the store's required-field settings, with the core postcode and VAT rules.
@@ -156,6 +157,7 @@ Security and correctness release from the Bagisto v2.4.10 API audit. Tested agai
 - **Breaking:** a GDPR request `message` is limited to 500 characters, and a request can be revoked only while `pending`, as on the storefront.
 - **Breaking:** wishlist endpoints return 403 when the wishlist is switched off (Configuration → Customer → Settings → Wishlist), and compare endpoints and `compare-attributes` return 403 when product comparison is switched off (Configuration → Catalog → Products → Settings).
 - **Breaking:** Contact Us rejects a `contact` value that is not a phone number (an optional `+` followed by digits), as the storefront does.
+- The quantity of an appointment or event booking item in the cart can be changed (`POST /api/shop/update-cart-item`, `createUpdateCartItem`), as on the storefront cart page. The API refused it even though the cart reported `canChangeQty: true`. Core's availability check still applies.
 
 ## [2.4.4] - 2026-09-14
 

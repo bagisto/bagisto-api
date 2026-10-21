@@ -31,8 +31,6 @@ return [
             'cart-item-id-required' => 'Cart item ID is required',
             'item-ids-required' => 'Item IDs array is required',
 
-            'event-booking-quantity-not-changeable' => 'Event booking product quantity cannot be changed. Quantity is determined by ticket selection.',
-            'appointment-booking-quantity-not-changeable' => 'Appointment booking product quantity cannot be changed.',
             'coupon-code-required' => 'Coupon code is required',
             'address-data-required' => 'Country, state, and postcode are required',
             'grouped-qty-required' => 'Grouped product requires selected quantities. Pass groupedQty as JSON string, e.g. {"101":2,"102":1}.',

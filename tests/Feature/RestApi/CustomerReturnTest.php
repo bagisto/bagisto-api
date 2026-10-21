@@ -365,6 +365,27 @@ class CustomerReturnTest extends RestApiTestCase
         ]);
     }
 
+    public function test_send_message_accepts_a_base64_attachment_in_a_json_body(): void
+    {
+        $this->seedRequiredData();
+        Storage::fake();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/return-messages', [
+            'return_id' => $data['rma']->id,
+            'message' => 'Photo attached.',
+            'attachment' => 'data:image/png;base64,'.base64_encode(UploadedFile::fake()->image('zipper.png')->get()),
+            'attachment_name' => 'zipper.png',
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('attachment'))->toBe('zipper.png');
+        expect($response->json('attachmentUrl'))->not->toBeNull();
+
+        Storage::assertExists(DB::table('rma_messages')->where('id', $response->json('id'))->value('attachment_path'));
+    }
+
     public function test_messages_of_another_customer_blocked(): void
     {
         $this->seedRequiredData();

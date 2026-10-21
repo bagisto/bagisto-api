@@ -5,8 +5,10 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\Mime\MimeTypes;
 use Webkul\Admin\Mail\Admin\RMA\CustomerToAdminConversationNotification;
@@ -15,11 +17,14 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerReturnMessage;
+use Webkul\BagistoApi\State\Concerns\DecodesBase64Files;
 use Webkul\RMA\Repositories\RMAMessageRepository;
 use Webkul\RMA\Repositories\RMARepository;
 
 class CustomerReturnMessageProcessor implements ProcessorInterface
 {
+    use DecodesBase64Files;
+
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private readonly RMARepository $rmaRepository,
@@ -29,21 +34,34 @@ class CustomerReturnMessageProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof SendCustomerReturnMessageInput) {
-            return $this->handleSend($data->return_id, $data->message, null);
+            $input = $context['args']['input'] ?? [];
+
+            return $this->handleSend(
+                $data->return_id,
+                $data->message,
+                $data->attachment ?? $input['attachment'] ?? null,
+                $data->attachment_name ?? $input['attachmentName'] ?? null,
+            );
         }
 
         if ($operation instanceof Post) {
             $returnId = request()->input('return_id', request()->input('returnId'));
-            $message = request()->input('message');
-            $file = request()->hasFile('file') ? request()->file('file') : null;
 
-            return $this->handleSend($returnId !== null ? (int) $returnId : null, $message, $file);
+            return $this->handleSend(
+                $returnId !== null ? (int) $returnId : null,
+                request()->input('message'),
+                request()->hasFile('file') ? request()->file('file') : $this->stringInput('attachment'),
+                $this->stringInput('attachment_name') ?? $this->stringInput('attachmentName'),
+            );
         }
 
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }
 
-    private function handleSend(?int $returnId, ?string $message, $file): CustomerReturnMessage
+    /**
+     * @param  UploadedFile|string|null  $file  multipart upload or base64 data URI
+     */
+    private function handleSend(?int $returnId, ?string $message, UploadedFile|string|null $file, ?string $fileName): CustomerReturnMessage
     {
         $customer = Auth::guard('sanctum')->user();
 
@@ -68,7 +86,13 @@ class CustomerReturnMessageProcessor implements ProcessorInterface
             explode(',', (string) core()->getConfigData('sales.rma.setting.allowed_file_extension'))
         ));
 
-        if ($file && ! in_array($file->getMimeType(), $allowedTypes, true)) {
+        if (is_string($file)) {
+            $file = $file === '' ? null : $this->decodeBase64File($file, $allowedTypes);
+
+            if ($file && empty($allowedTypes)) {
+                throw new InvalidInputException(__('bagistoapi::app.graphql.return.invalid-image'));
+            }
+        } elseif ($file && ! in_array($file->getMimeType(), $allowedTypes, true)) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.return.invalid-image'));
         }
 
@@ -79,17 +103,7 @@ class CustomerReturnMessageProcessor implements ProcessorInterface
         ]);
 
         if ($file) {
-            $extension = MimeTypes::getDefault()->getExtensions($file->getMimeType())[0] ?? null;
-
-            $path = $file->storeAs(
-                'rma-conversation/'.$stored->id,
-                Str::random(40).($extension ? '.'.$extension : '')
-            );
-
-            $this->rmaMessageRepository->update([
-                'attachment_path' => $path,
-                'attachment' => $file->getClientOriginalName(),
-            ], $stored->id);
+            $this->storeAttachment($file, $fileName, $stored->id);
         }
 
         try {
@@ -98,5 +112,39 @@ class CustomerReturnMessageProcessor implements ProcessorInterface
         }
 
         return CustomerReturnMessage::fromModel($stored->refresh());
+    }
+
+    private function stringInput(string $key): ?string
+    {
+        $value = request()->input($key);
+
+        return is_string($value) ? $value : null;
+    }
+
+    /**
+     * Stores the file under rma-conversation/{messageId}, as the storefront does.
+     *
+     * @param  UploadedFile|array{bytes: string, mime: string, extension: string}  $file
+     */
+    private function storeAttachment(UploadedFile|array $file, ?string $fileName, int $messageId): void
+    {
+        $directory = 'rma-conversation/'.$messageId;
+
+        if ($file instanceof UploadedFile) {
+            $extension = MimeTypes::getDefault()->getExtensions($file->getMimeType())[0] ?? null;
+
+            $path = $file->storeAs($directory, Str::random(40).($extension ? '.'.$extension : ''));
+            $name = $file->getClientOriginalName();
+        } else {
+            $path = $directory.'/'.Str::random(40).'.'.$file['extension'];
+            $name = filled($fileName) ? basename($fileName) : basename($path);
+
+            Storage::put($path, $file['bytes']);
+        }
+
+        $this->rmaMessageRepository->update([
+            'attachment_path' => $path,
+            'attachment' => $name,
+        ], $messageId);
     }
 }

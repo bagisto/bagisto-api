@@ -15,6 +15,14 @@ class SendCustomerReturnMessageInput
     #[Groups(['mutation'])]
     public ?string $message = null;
 
+    #[ApiProperty(description: 'Attachment as a base64 data URI (data:image/png;base64,...), max 5 MB. Allowed types follow Configuration > Sales > RMA > Allowed file extension.')]
+    #[Groups(['mutation'])]
+    public ?string $attachment = null;
+
+    #[ApiProperty(description: 'File name shown for the attachment. Defaults to a generated name.')]
+    #[Groups(['mutation'])]
+    public ?string $attachment_name = null;
+
     public function getReturn_id(): ?int
     {
         return $this->return_id;
@@ -33,5 +41,25 @@ class SendCustomerReturnMessageInput
     public function setMessage(?string $v): void
     {
         $this->message = $v;
+    }
+
+    public function getAttachment(): ?string
+    {
+        return $this->attachment;
+    }
+
+    public function setAttachment(?string $v): void
+    {
+        $this->attachment = $v;
+    }
+
+    public function getAttachment_name(): ?string
+    {
+        return $this->attachment_name;
+    }
+
+    public function setAttachment_name(?string $v): void
+    {
+        $this->attachment_name = $v;
     }
 }

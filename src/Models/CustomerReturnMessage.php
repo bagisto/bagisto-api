@@ -78,7 +78,7 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
             openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'Send a message on a return request',
-                description: 'Sends a message on a return. Attach a file in `file`.',
+                description: 'Sends a message on a return. Attach one file in `file` (multipart) or as a base64 data URI in `attachment` (JSON).',
                 requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -100,6 +100,8 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
                                 'properties' => [
                                     'return_id' => ['type' => 'integer', 'example' => 12],
                                     'message' => ['type' => 'string', 'example' => 'Any update on my return?'],
+                                    'attachment' => ['type' => 'string', 'description' => 'Attachment as a base64 data URI, max 5 MB.', 'example' => 'data:image/png;base64,iVBORw0KGgo...'],
+                                    'attachment_name' => ['type' => 'string', 'description' => 'File name shown for the attachment.', 'example' => 'zipper.png'],
                                 ],
                             ],
                         ],

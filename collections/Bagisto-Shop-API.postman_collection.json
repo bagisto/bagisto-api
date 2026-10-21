@@ -5375,10 +5375,10 @@
                                         "return-messages"
                                     ]
                                 },
-                                "description": "Sends a message on a return. Attach a file in `file`.",
+                                "description": "Sends a message on a return. Attach one file in `file` (multipart) or as a base64 data URI in `attachment` (JSON).",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"return_id\": 12,\n    \"message\": \"Any update on my return?\"\n}",
+                                    "raw": "{\n    \"return_id\": 12,\n    \"message\": \"Photo of the damaged zipper attached.\",\n    \"attachment\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\",\n    \"attachment_name\": \"zipper.png\"\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -13501,10 +13501,10 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateCustomerReturnMessage($input: createCustomerReturnMessageInput!) {\n  createCustomerReturnMessage(input: $input) {\n    customerReturnMessage {\n      id\n      _id\n      rmaId\n      message\n      isAdmin\n      attachment\n      attachmentUrl\n      createdAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"returnId\": 1,\n        \"message\": \"Sample text\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"returnId\": 1,\n        \"message\": \"Photo of the damaged zipper attached.\",\n        \"attachment\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==\",\n        \"attachmentName\": \"zipper.png\"\n    }\n}"
                                             }
                                         },
-                                        "description": "Creates a CustomerReturnMessage."
+                                        "description": "Sends a message on a return. `attachment` takes one file as a base64 data URI (max 5 MB, allowed types follow the RMA allowed file extension setting); `attachmentName` is the file name shown."
                                     }
                                 },
                                 {

@@ -965,9 +965,6 @@ class CartTokenProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.graphql.cart.unauthorized-access'));
         }
 
-        // Prevent quantity update for event and appointment booking products
-        $this->guardBookingCartItemUpdate($cart, (int) $data->cartItemId);
-
         CartFacade::setCart($cart);
 
         Event::dispatch('cart.item.before.update', ['cartItem' => $data->cartItemId]);
@@ -1462,42 +1459,6 @@ class CartTokenProcessor implements ProcessorInterface
             return (array) $cartData;
         } catch (\Exception $e) {
             throw new OperationFailedException($e->getMessage(), 0, $e);
-        }
-    }
-
-    /**
-     * Prevent quantity updates for booking products that don't allow it.
-     *
-     * - Event booking: quantity is determined by ticket selection, not changeable after add-to-cart.
-     * - Appointment booking: always quantity 1, cannot be changed.
-     */
-    private function guardBookingCartItemUpdate(CartModel $cart, int $cartItemId): void
-    {
-        $cartItem = $cart->items->firstWhere('id', $cartItemId);
-
-        if (! $cartItem || $cartItem->type !== 'booking') {
-            return;
-        }
-
-        // Check additional.booking.type first, then fall back to DB lookup
-        $bookingType = $cartItem->additional['booking']['type'] ?? null;
-
-        if (! $bookingType) {
-            $bookingType = BookingProduct::query()
-                ->where('product_id', $cartItem->product_id)
-                ->value('type');
-        }
-
-        if ($bookingType === 'event') {
-            throw new InvalidInputException(
-                __('bagistoapi::app.graphql.cart.event-booking-quantity-not-changeable')
-            );
-        }
-
-        if ($bookingType === 'appointment') {
-            throw new InvalidInputException(
-                __('bagistoapi::app.graphql.cart.appointment-booking-quantity-not-changeable')
-            );
         }
     }
 }

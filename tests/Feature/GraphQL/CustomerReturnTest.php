@@ -506,6 +506,84 @@ class CustomerReturnTest extends GraphQLTestCase
         expect(count($listResponse->json('data.customerReturnMessages')))->toBeGreaterThan(0);
     }
 
+    private function sendMessage($customer, array $input)
+    {
+        $mutation = <<<'GQL'
+            mutation Send($input: createCustomerReturnMessageInput!) {
+              createCustomerReturnMessage(input: $input) {
+                customerReturnMessage {
+                  _id
+                  message
+                  attachment
+                  attachmentUrl
+                }
+              }
+            }
+        GQL;
+
+        return $this->authenticatedGraphQL($customer, $mutation, ['input' => $input]);
+    }
+
+    public function test_send_message_with_base64_attachment(): void
+    {
+        $this->seedRequiredData();
+        Storage::fake();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        $response = $this->sendMessage($customer, [
+            'returnId' => $data['rma']->id,
+            'message' => 'Photo of the damaged zipper attached.',
+            'attachment' => $this->base64Image('zipper.png'),
+            'attachmentName' => 'zipper.png',
+        ]);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $msg = $response->json('data.createCustomerReturnMessage.customerReturnMessage');
+
+        expect($msg['attachment'])->toBe('zipper.png');
+        expect($msg['attachmentUrl'])->not->toBeNull();
+
+        $path = DB::table('rma_messages')->where('id', $msg['_id'])->value('attachment_path');
+
+        expect($path)->toStartWith('rma-conversation/'.$msg['_id'].'/');
+        Storage::assertExists($path);
+    }
+
+    public function test_send_message_rejects_a_disallowed_attachment_type(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        $response = $this->sendMessage($customer, [
+            'returnId' => $data['rma']->id,
+            'message' => 'Video attached.',
+            'attachment' => 'data:video/mp4;base64,'.base64_encode(random_bytes(64)),
+        ]);
+
+        expect($response->json('errors'))->not->toBeNull();
+        $this->assertDatabaseMissing('rma_messages', ['rma_id' => $data['rma']->id, 'message' => 'Video attached.']);
+    }
+
+    public function test_send_message_rejects_invalid_base64_attachment(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        $response = $this->sendMessage($customer, [
+            'returnId' => $data['rma']->id,
+            'message' => 'Broken file.',
+            'attachment' => 'not-a-data-uri',
+        ]);
+
+        expect($response->json('errors'))->not->toBeNull();
+        $this->assertDatabaseMissing('rma_messages', ['rma_id' => $data['rma']->id, 'message' => 'Broken file.']);
+    }
+
     private function seedCustomFields(): array
     {
         $text = RMACustomField::create([

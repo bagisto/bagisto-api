@@ -1380,4 +1380,61 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         $data = $json['data']['createAddProductInCart']['addProductInCart'];
         $this->assertFullBookingCartResponse($data, (int) $fixture['product']->id, false);
     }
+
+    public function test_appointment_booking_quantity_can_be_updated(): void
+    {
+        $token = $this->getGuestCartToken();
+        $headers = $this->guestHeaders($token);
+
+        $this->seedRequiredData();
+
+        $fixture = $this->createBookingProductFixture('appointment');
+        $date = $fixture['tomorrowDate'];
+
+        $slot = $this->getSlotTimestamp((int) $fixture['product']->id, $date);
+
+        if (! $slot) {
+            $this->markTestSkipped('No valid slot found for appointment booking product.');
+        }
+
+        $add = $this->graphQL(<<<'GQL'
+            mutation createAddProductInCart($productId: Int!, $booking: String!) {
+              createAddProductInCart(input: { productId: $productId, booking: $booking }) {
+                addProductInCart {
+                  success
+                }
+              }
+            }
+        GQL, [
+            'productId' => (int) $fixture['product']->id,
+            'booking' => json_encode(['type' => 'appointment', 'date' => $date, 'slot' => $slot], JSON_UNESCAPED_SLASHES),
+        ], $headers);
+
+        $this->assertCartSuccess($add->json());
+
+        $cartItemId = (int) DB::table('cart_items')
+            ->where('product_id', $fixture['product']->id)
+            ->latest('id')
+            ->value('id');
+
+        $update = $this->graphQL(<<<'GQL'
+            mutation createUpdateCartItem($cartItemId: Int!, $quantity: Int!) {
+              createUpdateCartItem(input: { cartItemId: $cartItemId, quantity: $quantity }) {
+                updateCartItem {
+                  items {
+                    edges {
+                      node {
+                        id
+                        quantity
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        GQL, ['cartItemId' => $cartItemId, 'quantity' => 2], $headers);
+
+        expect($update->json('errors'))->toBeNull();
+        expect((int) DB::table('cart_items')->where('id', $cartItemId)->value('quantity'))->toBe(2);
+    }
 }

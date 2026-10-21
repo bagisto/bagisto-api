@@ -84,11 +84,13 @@ class RmaStatusTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->createStatus('Deletable-'.uniqid());
+        $other = $this->createStatus('Bystander-'.uniqid());
 
         $response = $this->deleteJson('/api/admin/rma/statuses/'.$id, [], $this->adminHeaders($admin));
 
         expect($response->getStatusCode())->toBeIn([200, 204]);
         $this->assertDatabaseMissing('rma_statuses', ['id' => $id]);
+        $this->assertDatabaseHas('rma_statuses', ['id' => $other]);
     }
 
     /**
@@ -113,12 +115,14 @@ class RmaStatusTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $keep = $this->createStatus('DefaultKeep-'.uniqid(), 1);
         $gone = $this->createStatus('Gone-'.uniqid());
+        $other = $this->createStatus('Bystander-'.uniqid());
 
         $response = $this->adminPost($admin, '/api/admin/rma/statuses/mass-delete', ['indices' => [$keep, $gone]]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
         $this->assertDatabaseHas('rma_statuses', ['id' => $keep]);
         $this->assertDatabaseMissing('rma_statuses', ['id' => $gone]);
+        $this->assertDatabaseHas('rma_statuses', ['id' => $other]);
     }
 
     /**

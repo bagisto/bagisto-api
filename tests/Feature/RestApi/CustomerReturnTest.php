@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Product\Models\Product;
@@ -11,6 +12,7 @@ use Webkul\RMA\Models\RMA;
 use Webkul\RMA\Models\RMACustomField;
 use Webkul\RMA\Models\RMACustomFieldOption;
 use Webkul\RMA\Models\RMAItem;
+use Webkul\RMA\Models\RMAMessage;
 use Webkul\RMA\Models\RMAStatus;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderItem;
@@ -336,6 +338,8 @@ class CustomerReturnTest extends RestApiTestCase
      */
     public function test_send_message_accepts_multipart_with_an_attachment(): void
     {
+        Storage::fake('private');
+        Storage::fake();
         $this->seedRequiredData();
         $customer = $this->createCustomer();
         $data = $this->createReturn($customer);
@@ -349,12 +353,110 @@ class CustomerReturnTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([200, 201]);
         expect($response->json('message'))->toBe('Photo of the damaged zipper attached.');
         expect($response->json('attachment'))->toBe('zipper.png');
-        expect($response->json('attachmentUrl'))->not->toBeNull();
+        expect($response->json('attachmentUrl'))->toEndWith('/api/shop/return-messages/'.$response->json('id').'/attachment');
 
         $this->assertDatabaseHas('rma_messages', [
             'rma_id' => $data['rma']->id,
             'attachment' => 'zipper.png',
         ]);
+    }
+
+    /**
+     * Test a message attachment is stored on the private disk under the core conversation path.
+     */
+    public function test_message_attachment_is_stored_on_the_private_disk(): void
+    {
+        Storage::fake('private');
+        Storage::fake();
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/return-messages', [
+            'return_id' => $data['rma']->id,
+            'message' => 'Receipt attached.',
+            'file' => UploadedFile::fake()->image('receipt.png'),
+        ]);
+
+        $path = RMAMessage::query()->findOrFail($response->json('id'))->attachment_path;
+
+        expect($path)->toStartWith('rmas/'.$data['rma']->id.'/conversations/'.$response->json('id').'/');
+        Storage::disk('private')->assertExists($path);
+        Storage::assertMissing($path);
+    }
+
+    /**
+     * Test the owner downloads a message attachment.
+     */
+    public function test_download_message_attachment(): void
+    {
+        Storage::fake('private');
+        Storage::fake();
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        $sent = $this->authenticatedPost($customer, '/api/shop/return-messages', [
+            'return_id' => $data['rma']->id,
+            'message' => 'Label attached.',
+            'file' => UploadedFile::fake()->image('label.png'),
+        ]);
+
+        $response = $this->authenticatedGet($customer, '/api/shop/return-messages/'.$sent->json('id').'/attachment');
+
+        $response->assertOk();
+        expect((string) $response->headers->get('content-disposition'))->toContain('label.png');
+    }
+
+    /**
+     * Test an attachment stored on the default disk before the private disk was used still downloads.
+     */
+    public function test_download_message_attachment_falls_back_to_the_default_disk(): void
+    {
+        Storage::fake('private');
+        Storage::fake();
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        Storage::put('rma-conversation/1/legacy.png', 'legacy-body');
+
+        $message = RMAMessage::query()->create([
+            'rma_id' => $data['rma']->id,
+            'message' => 'Older message.',
+            'is_admin' => 0,
+            'attachment' => 'legacy.png',
+            'attachment_path' => 'rma-conversation/1/legacy.png',
+        ]);
+
+        $response = $this->authenticatedGet($customer, '/api/shop/return-messages/'.$message->id.'/attachment');
+
+        $response->assertOk();
+        expect($response->streamedContent())->toBe('legacy-body');
+    }
+
+    /**
+     * Test another customer cannot download a message attachment.
+     */
+    public function test_download_message_attachment_of_another_customer_is_not_found(): void
+    {
+        Storage::fake('private');
+        Storage::fake();
+        $this->seedRequiredData();
+        $owner = $this->createCustomer();
+        $data = $this->createReturn($owner);
+        $other = $this->createCustomer();
+
+        $sent = $this->authenticatedPost($owner, '/api/shop/return-messages', [
+            'return_id' => $data['rma']->id,
+            'message' => 'Private photo.',
+            'file' => UploadedFile::fake()->image('private.png'),
+        ]);
+
+        $this->app['auth']->forgetGuards();
+
+        $this->authenticatedGet($other, '/api/shop/return-messages/'.$sent->json('id').'/attachment')
+            ->assertNotFound();
     }
 
     /**
@@ -421,6 +523,39 @@ class CustomerReturnTest extends RestApiTestCase
         expect(count($response->json('images')))->toBe(1);
         expect($response->json('customAttributes.0.value'))->toBe('INV-9921');
         $this->assertDatabaseHas('rma_additional_fields', ['value' => 'INV-9921']);
+    }
+
+    /**
+     * Test create accepts a single image sent as images rather than images[].
+     */
+    public function test_create_accepts_a_single_image_file(): void
+    {
+        Storage::fake('private');
+        $this->seedRequiredData();
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
+        $customer = $this->createCustomer();
+        $seed = $this->seedEligibleOrderItem($customer);
+        $fields = $this->seedCustomFields();
+
+        $response = $this->authenticatedPost($customer, '/api/shop/returns', [
+            'order_id' => $seed['order']->id,
+            'order_item_id' => $seed['orderItem']->id,
+            'rma_qty' => 1,
+            'resolution_type' => 'return',
+            'rma_reason_id' => 1,
+            'package_condition' => 'packed',
+            'agreement' => true,
+            'custom_attributes' => [$fields['text']->id => 'INV-1'],
+            'images' => UploadedFile::fake()->image('evidence.png'),
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect(count($response->json('images')))->toBe(1);
+        $this->assertDatabaseHas('rma_images', ['rma_id' => $response->json('id')]);
     }
 
     /**
@@ -492,7 +627,7 @@ class CustomerReturnTest extends RestApiTestCase
         ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
-        $this->seedCustomFields();
+        $fields = $this->seedCustomFields();
 
         $response = $this->authenticatedPost($customer, '/api/shop/returns', [
             'order_id' => $seed['order']->id,

@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'इवेंट टिकट की मात्रा एक गैर-ऋणात्मक संख्या होनी चाहिए।',
             'booking-ticket-required' => 'इवेंट बुकिंग के लिए कम से कम एक टिकट की मात्रा चुनें।',
             'booking-slot-unavailable' => 'चयनित स्लॉट दी गई तिथि के लिए उपलब्ध नहीं है।',
+            'invalid-quantity' => 'मात्रा कम से कम 1 होनी चाहिए',
+            'product-id-required' => 'उत्पाद ID आवश्यक है',
+            'shipping-address-required' => 'शिपिंग का अनुमान लगाने के लिए देश और पोस्टकोड आवश्यक हैं',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'उत्पाद समीक्षा ID आवश्यक है',
             'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/reviews/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
             'not-found' => 'ID ":id" वाली उत्पाद समीक्षा नहीं मिली',
+            'item-not-found' => 'आइटम ":id" नहीं मिला।',
             'product-id-required' => 'उत्पाद ID आवश्यक है',
             'product-not-found' => 'उत्पाद नहीं मिला',
             'rating-invalid' => 'रेटिंग 1 और 5 के बीच होनी चाहिए',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'अपनी समीक्षा प्रबंधित करने के लिए कृपया लॉगिन करें',
             'not-owned' => 'यह समीक्षा आपके द्वारा नहीं लिखी गई थी और इसे संशोधित या हटाया नहीं जा सकता',
             'invalid-attachments' => 'अमान्य अनुलग्नक प्रारूप।',
+            'invalid-product-id-format' => 'अमान्य उत्पाद ID प्रारूप। "/api/shop/products/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'यह वापसी अनुरोध फिर से नहीं खोला जा सकता।',
             'closed' => 'वापसी अनुरोध सफलतापूर्वक बंद किया गया।',
             'message-sent' => 'संदेश सफलतापूर्वक भेजा गया।',
+            'attachment-not-found' => 'संदेश अनुलग्नक नहीं मिला।',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'शिपमेंट ID आवश्यक है',
             'not-found' => 'ID ":id" वाला शिपमेंट नहीं मिला या इस ग्राहक से संबंधित नहीं है',
             'item-not-found' => 'ID ":id" वाला शिपमेंट आइटम नहीं मिला या इस ग्राहक से संबंधित नहीं है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/customer-order-shipments/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'ग्राहक डाउनलोड योग्य उत्पाद ID आवश्यक है',
             'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/customer-downloadable-products/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
             'not-found' => 'ID ":id" वाला ग्राहक डाउनलोड योग्य उत्पाद नहीं मिला',
+
+            'download' => [
+                'unauthenticated' => 'अनधिकृत: ग्राहक प्रमाणीकरण आवश्यक है।',
+                'not-found' => 'डाउनलोड योग्य उत्पाद नहीं मिला।',
+                'pending' => 'डाउनलोड लंबित है। कृपया ऑर्डर का चालान बनने तक प्रतीक्षा करें।',
+                'limit-exceeded' => 'डाउनलोड सीमा पार हो गई।',
+                'no-downloads-remaining' => 'अब और डाउनलोड उपलब्ध नहीं हैं।',
+                'file-not-found' => 'फ़ाइल नहीं मिली।',
+                'link-not-found' => 'डाउनलोड योग्य लिंक नहीं मिला।',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'आकार',
             'brand' => 'ब्रांड',
             'super-attributes' => 'सुपर विशेषताएँ',
+            'id-required' => 'उत्पाद ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/products/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Rest API स्टोरफ्रंट Swagger: :url',
             'rest-api-admin' => 'Rest API व्यवस्थापक Swagger: :url',
             'key-rotation-invalid-key' => 'अमान्य या समाप्त कुंजी को रोटेट नहीं किया जा सकता',
+            'env-file-not-found' => '.env फ़ाइल नहीं मिली',
+            'env-permission-denied' => 'अनुमति अस्वीकृत: .env फ़ाइल में लिखा नहीं जा सकता। कृपया फ़ाइल अनुमतियाँ जाँचें।',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'एट्रिब्यूट अनुवाद ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/attribute-translations/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+            'not-found' => 'एट्रिब्यूट अनुवाद नहीं मिला',
+        ],
+
+        'currency' => [
+            'id-required' => 'मुद्रा ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/currencies/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+            'not-found' => 'मुद्रा नहीं मिली',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'ग्राहक पता ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/customer-addresses/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'शिपमेंट आइटम ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/customer-order-shipment-items/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+            'not-found' => 'शिपमेंट आइटम नहीं मिला',
+        ],
+
+        'page' => [
+            'id-required' => 'पेज ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/pages/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+            'not-found' => 'पेज नहीं मिला',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'पेज अनुवाद ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/page-translations/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+            'not-found' => 'पेज अनुवाद नहीं मिला',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'बंडल विकल्प ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/product-bundle-options/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+            'not-found' => 'बंडल विकल्प नहीं मिला',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'बंडल विकल्प उत्पाद ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/product-bundle-option-products/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+            'not-found' => 'बंडल विकल्प उत्पाद नहीं मिला',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'डाउनलोड योग्य लिंक ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/product-downloadable-links/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+            'not-found' => 'डाउनलोड योग्य लिंक नहीं मिला',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'डाउनलोड योग्य नमूना ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/product-downloadable-samples/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+            'not-found' => 'डाउनलोड योग्य नमूना नहीं मिला',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'समूहीकृत उत्पाद ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/product-grouped-products/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+            'not-found' => 'समूहीकृत उत्पाद नहीं मिला',
+        ],
+
+        'product-images' => [
+            'id-required' => 'उत्पाद छवि ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/product-images/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+            'not-found' => 'उत्पाद छवि नहीं मिली',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'उत्पाद वीडियो ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/product-videos/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+            'not-found' => 'उत्पाद वीडियो नहीं मिला',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'थीम अनुकूलन ID आवश्यक है',
+            'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/theme-customizations/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',
+            'not-found' => 'थीम अनुकूलन नहीं मिला',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'संसाधन ID आवश्यक है',
+            'not-found' => 'संसाधन नहीं मिला',
         ],
     ],
 

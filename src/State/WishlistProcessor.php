@@ -330,7 +330,7 @@ class WishlistProcessor implements ProcessorInterface
         }
 
         if ($wishlistItem->customer_id !== $user->id) {
-            throw new AuthorizationException(__('bagistoapi::app.auth.cannot-update-other-profile'));
+            throw new AuthorizationException(__('bagistoapi::app.graphql.auth.cannot-update-other-profile'));
         }
 
         $this->safeDispatch('customer.wishlist.delete.before', $wishlistItemId);
@@ -362,7 +362,7 @@ class WishlistProcessor implements ProcessorInterface
         }
 
         if ($wishlistItem->customer_id !== $user->id) {
-            throw new AuthorizationException(__('bagistoapi::app.auth.cannot-update-other-profile'));
+            throw new AuthorizationException(__('bagistoapi::app.graphql.auth.cannot-update-other-profile'));
         }
 
         $this->safeDispatch('customer.wishlist.delete.before', $wishlistItemId);

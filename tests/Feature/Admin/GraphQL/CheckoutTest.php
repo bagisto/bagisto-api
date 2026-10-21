@@ -114,6 +114,54 @@ class CheckoutTest extends AdminApiTestCase
     }
 
     /**
+     * The shipping rates query fills the multi-word fields of each rate.
+     */
+    public function test_list_shipping_methods_returns_multi_word_fields(): void
+    {
+        $cart = $this->bootstrapPlaceableCart();
+
+        $q = 'query Q($id: Int!) { adminCartShippingRates(cartId: $id) { edges { node { method carrierCode carrierTitle methodTitle formattedPrice baseTotal formattedBaseTotal } } } }';
+        $resp = $this->adminGraphQL($q, ['id' => $cart->id], $this->createAdmin());
+
+        expect($resp->json('errors'))->toBeNull();
+
+        $nodes = collect($resp->json('data.adminCartShippingRates.edges'))->pluck('node');
+
+        expect($nodes)->not->toBeEmpty();
+
+        foreach ($nodes as $node) {
+            expect($node['carrierCode'])->toBeString();
+            expect($node['method'])->toStartWith($node['carrierCode'].'_');
+            expect($node['carrierTitle'])->toBeString();
+            expect($node['methodTitle'])->toBeString();
+            expect($node['formattedPrice'])->toBeString();
+            expect($node['baseTotal'])->not->toBeNull();
+            expect($node['formattedBaseTotal'])->toBeString();
+        }
+    }
+
+    /**
+     * The payment methods query fills the method title of each method.
+     */
+    public function test_list_payment_methods_returns_method_title(): void
+    {
+        $cart = $this->bootstrapPlaceableCart();
+
+        $q = 'query Q($id: Int!) { adminCartPaymentMethods(cartId: $id) { edges { node { method methodTitle } } } }';
+        $resp = $this->adminGraphQL($q, ['id' => $cart->id], $this->createAdmin());
+
+        expect($resp->json('errors'))->toBeNull();
+
+        $nodes = collect($resp->json('data.adminCartPaymentMethods.edges'))->pluck('node');
+
+        expect($nodes)->not->toBeEmpty();
+
+        foreach ($nodes as $node) {
+            expect($node['methodTitle'])->toBeString();
+        }
+    }
+
+    /**
      * Bootstrap draft cart.
      */
     protected function bootstrapDraftCart(): int

@@ -329,6 +329,6 @@ class ApiKeyManagementCommand extends Command
             return $key;
         }
 
-        throw new \Exception(__('bagistoapi::app.graphql.key-not-found', ['identifier' => $keyIdentifier]));
+        throw new \Exception(__('bagistoapi::app.graphql.install.key-not-found', ['identifier' => $keyIdentifier]));
     }
 }

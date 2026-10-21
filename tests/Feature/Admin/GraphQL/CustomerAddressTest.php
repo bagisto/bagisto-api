@@ -41,6 +41,40 @@ class CustomerAddressTest extends AdminApiTestCase
     }
 
     /**
+     * The address list and the single address resolve their id as the nested address IRI.
+     */
+    public function test_query_resolves_the_address_iri(): void
+    {
+        [$customer, $first] = $this->aCustomerWithTwoAddresses();
+
+        $admin = $this->createAdmin();
+        $iri = '/api/admin/customers/'.$customer->id.'/addresses/'.$first->id;
+
+        $list = $this->adminGraphQL(
+            'query addresses($customerId: Int!) { adminCustomerAddresses(customerId: $customerId) { edges { node { id _id } } } }',
+            ['customerId' => $customer->id],
+            $admin
+        );
+
+        $list->assertOk();
+
+        expect($list->json('errors'))->toBeNull()
+            ->and(array_column(array_column($list->json('data.adminCustomerAddresses.edges'), 'node'), 'id'))->toContain($iri);
+
+        $item = $this->adminGraphQL(
+            'query address($customerId: Int!, $id: ID!) { adminCustomerAddress(customerId: $customerId, id: $id) { id _id } }',
+            ['customerId' => $customer->id, 'id' => $iri],
+            $admin
+        );
+
+        $item->assertOk();
+
+        expect($item->json('errors'))->toBeNull()
+            ->and($item->json('data.adminCustomerAddress.id'))->toBe($iri)
+            ->and((int) $item->json('data.adminCustomerAddress._id'))->toBe($first->id);
+    }
+
+    /**
      * Test query requires authentication.
      */
     public function test_query_requires_authentication(): void

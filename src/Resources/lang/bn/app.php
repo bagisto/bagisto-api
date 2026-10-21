@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'ইভেন্ট টিকিটের পরিমাণ অবশ্যই একটি অ-ঋণাত্মক সংখ্যা হতে হবে।',
             'booking-ticket-required' => 'ইভেন্ট বুকিংয়ের জন্য অন্তত একটি টিকিটের পরিমাণ নির্বাচন করুন।',
             'booking-slot-unavailable' => 'নির্বাচিত স্লটটি প্রদত্ত তারিখে উপলব্ধ নয়।',
+            'invalid-quantity' => 'পরিমাণ কমপক্ষে 1 হতে হবে',
+            'product-id-required' => 'পণ্য আইডি প্রয়োজন',
+            'shipping-address-required' => 'শিপিং অনুমান করতে দেশ এবং পোস্টকোড প্রয়োজন',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'পণ্য রিভিউ আইডি প্রয়োজন',
             'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/reviews/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
             'not-found' => 'আইডি ":id" সহ পণ্য রিভিউ পাওয়া যায়নি',
+            'item-not-found' => 'আইটেম ":id" পাওয়া যায়নি।',
             'product-id-required' => 'পণ্য আইডি প্রয়োজন',
             'product-not-found' => 'পণ্য পাওয়া যায়নি',
             'rating-invalid' => 'রেটিং ১ এবং ৫ এর মধ্যে হতে হবে',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'আপনার রিভিউ পরিচালনা করতে অনুগ্রহ করে লগইন করুন',
             'not-owned' => 'এই রিভিউটি আপনার লেখা নয় এবং এটি পরিবর্তন বা মোছা যাবে না',
             'invalid-attachments' => 'অবৈধ সংযুক্তি ফর্ম্যাট।',
+            'invalid-product-id-format' => 'অবৈধ পণ্য আইডি ফর্ম্যাট। "/api/shop/products/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'এই রিটার্ন অনুরোধটি পুনরায় খোলা যাবে না।',
             'closed' => 'রিটার্ন অনুরোধ সফলভাবে বন্ধ করা হয়েছে।',
             'message-sent' => 'বার্তা সফলভাবে পাঠানো হয়েছে।',
+            'attachment-not-found' => 'বার্তার সংযুক্তি পাওয়া যায়নি।',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'শিপমেন্ট আইডি প্রয়োজন',
             'not-found' => 'আইডি ":id" সহ শিপমেন্ট পাওয়া যায়নি অথবা এটি এই গ্রাহকের নয়',
             'item-not-found' => 'আইডি ":id" সহ শিপমেন্ট আইটেম পাওয়া যায়নি অথবা এটি এই গ্রাহকের নয়',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/customer-order-shipments/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'গ্রাহকের ডাউনলোডযোগ্য পণ্য আইডি প্রয়োজন',
             'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/customer-downloadable-products/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
             'not-found' => 'আইডি ":id" সহ গ্রাহকের ডাউনলোডযোগ্য পণ্য পাওয়া যায়নি',
+
+            'download' => [
+                'unauthenticated' => 'অননুমোদিত: গ্রাহক প্রমাণীকরণ প্রয়োজন।',
+                'not-found' => 'ডাউনলোডযোগ্য পণ্য পাওয়া যায়নি।',
+                'pending' => 'ডাউনলোড মুলতুবি আছে। অর্ডারের ইনভয়েস তৈরি না হওয়া পর্যন্ত অনুগ্রহ করে অপেক্ষা করুন।',
+                'limit-exceeded' => 'ডাউনলোডের সীমা অতিক্রম করেছে।',
+                'no-downloads-remaining' => 'আর কোনো ডাউনলোড উপলব্ধ নেই।',
+                'file-not-found' => 'ফাইল খুঁজে পাওয়া যায় নি।',
+                'link-not-found' => 'ডাউনলোডযোগ্য লিংক পাওয়া যায়নি।',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'আকার',
             'brand' => 'ব্র্যান্ড',
             'super-attributes' => 'সুপার অ্যাট্রিবিউট',
+            'id-required' => 'পণ্য আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/products/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Rest API Storefront Swagger: :url',
             'rest-api-admin' => 'Rest API Admin Swagger: :url',
             'key-rotation-invalid-key' => 'অবৈধ বা মেয়াদোত্তীর্ণ কী রোটেট করা যাবে না',
+            'env-file-not-found' => '.env ফাইল পাওয়া যায়নি',
+            'env-permission-denied' => 'অনুমতি অস্বীকৃত: .env ফাইলে লেখা যাচ্ছে না। অনুগ্রহ করে ফাইলের অনুমতি পরীক্ষা করুন।',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'অ্যাট্রিবিউট অনুবাদ আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/attribute-translations/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => 'অ্যাট্রিবিউট অনুবাদ পাওয়া যায়নি',
+        ],
+
+        'currency' => [
+            'id-required' => 'মুদ্রা আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/currencies/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => 'মুদ্রা পাওয়া যায়নি',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'গ্রাহকের ঠিকানা আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/customer-addresses/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'শিপমেন্ট আইটেম আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/customer-order-shipment-items/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => 'শিপমেন্ট আইটেম পাওয়া যায়নি',
+        ],
+
+        'page' => [
+            'id-required' => 'পৃষ্ঠা আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/pages/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => 'পৃষ্ঠা পাওয়া যায়নি',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'পৃষ্ঠা অনুবাদ আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/page-translations/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => 'পৃষ্ঠা অনুবাদ পাওয়া যায়নি',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'বান্ডেল অপশন আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/product-bundle-options/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => 'বান্ডেল অপশন পাওয়া যায়নি',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'বান্ডেল অপশন পণ্য আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/product-bundle-option-products/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => 'বান্ডেল অপশন পণ্য পাওয়া যায়নি',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'ডাউনলোডযোগ্য লিঙ্ক আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/product-downloadable-links/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => 'ডাউনলোডযোগ্য লিঙ্ক পাওয়া যায়নি',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'ডাউনলোডযোগ্য নমুনা আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/product-downloadable-samples/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => 'ডাউনলোডযোগ্য নমুনা পাওয়া যায়নি',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'গ্রুপ পণ্য আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/product-grouped-products/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => 'গ্রুপ পণ্য পাওয়া যায়নি',
+        ],
+
+        'product-images' => [
+            'id-required' => 'পণ্যের ছবি আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/product-images/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => 'পণ্যের ছবি পাওয়া যায়নি',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'পণ্যের ভিডিও আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/product-videos/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => 'পণ্যের ভিডিও পাওয়া যায়নি',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'থিম কাস্টমাইজেশন আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/theme-customizations/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => 'থিম কাস্টমাইজেশন পাওয়া যায়নি',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'রিসোর্স আইডি প্রয়োজন',
+            'not-found' => 'রিসোর্স পাওয়া যায়নি',
         ],
     ],
 

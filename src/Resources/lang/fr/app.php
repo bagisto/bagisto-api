@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'La quantité de billets de l\'événement doit être un nombre non négatif.',
             'booking-ticket-required' => 'Sélectionnez au moins une quantité de billets pour la réservation d\'événement.',
             'booking-slot-unavailable' => 'Le créneau sélectionné n\'est pas disponible pour la date indiquée.',
+            'invalid-quantity' => 'La quantité doit être au moins égale à 1',
+            'product-id-required' => 'L\'ID du produit est requis',
+            'shipping-address-required' => 'Le pays et le code postal sont requis pour estimer la livraison',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'L\'ID de l\'avis produit est requis',
             'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/reviews/1" ou ID numérique',
             'not-found' => 'Avis produit avec l\'ID ":id" introuvable',
+            'item-not-found' => 'Élément ":id" introuvable.',
             'product-id-required' => 'L\'ID du produit est requis',
             'product-not-found' => 'Produit introuvable',
             'rating-invalid' => 'La note doit être comprise entre 1 et 5',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'Veuillez vous connecter pour gérer votre avis',
             'not-owned' => 'Cet avis n\'a pas été rédigé par vous et ne peut être ni modifié ni supprimé',
             'invalid-attachments' => 'Format des pièces jointes invalide.',
+            'invalid-product-id-format' => 'Format d\'ID de produit invalide. Format IRI attendu comme "/api/shop/products/1" ou ID numérique',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'Cette demande de retour ne peut pas être rouverte.',
             'closed' => 'Demande de retour clôturée avec succès.',
             'message-sent' => 'Message envoyé avec succès.',
+            'attachment-not-found' => 'Pièce jointe du message introuvable.',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'L\'ID de l\'expédition est requis',
             'not-found' => 'Expédition avec l\'ID ":id" introuvable ou n\'appartenant pas à ce client',
             'item-not-found' => 'Article d\'expédition avec l\'ID ":id" introuvable ou n\'appartenant pas à ce client',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/customer-order-shipments/1" ou ID numérique',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'L\'ID du produit téléchargeable du client est requis',
             'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/customer-downloadable-products/1" ou ID numérique',
             'not-found' => 'Produit téléchargeable du client avec l\'ID ":id" introuvable',
+
+            'download' => [
+                'unauthenticated' => 'Non autorisé : authentification du client requise.',
+                'not-found' => 'Produit téléchargeable introuvable.',
+                'pending' => 'Le téléchargement est en attente. Veuillez attendre que la commande soit facturée.',
+                'limit-exceeded' => 'Limite de téléchargement dépassée.',
+                'no-downloads-remaining' => 'Plus aucun téléchargement disponible.',
+                'file-not-found' => 'Fichier introuvable.',
+                'link-not-found' => 'Lien téléchargeable introuvable.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'Taille',
             'brand' => 'Marque',
             'super-attributes' => 'Super attributs',
+            'id-required' => 'L\'ID du produit est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/products/1" ou ID numérique',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Swagger de l\'API REST de la boutique : :url',
             'rest-api-admin' => 'Swagger de l\'API REST d\'administration : :url',
             'key-rotation-invalid-key' => 'Impossible d\'effectuer la rotation d\'une clé invalide ou expirée',
+            'env-file-not-found' => 'Le fichier .env est introuvable',
+            'env-permission-denied' => 'Permission refusée : impossible d\'écrire dans le fichier .env. Veuillez vérifier les permissions du fichier.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'L\'ID de la traduction d\'attribut est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/attribute-translations/1" ou ID numérique',
+            'not-found' => 'Traduction d\'attribut introuvable',
+        ],
+
+        'currency' => [
+            'id-required' => 'L\'ID de la devise est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/currencies/1" ou ID numérique',
+            'not-found' => 'Devise introuvable',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'L\'ID de l\'adresse client est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/customer-addresses/1" ou ID numérique',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'L\'ID de l\'article d\'expédition est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/customer-order-shipment-items/1" ou ID numérique',
+            'not-found' => 'Article d\'expédition introuvable',
+        ],
+
+        'page' => [
+            'id-required' => 'L\'ID de la page est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/pages/1" ou ID numérique',
+            'not-found' => 'Page introuvable',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'L\'ID de la traduction de page est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/page-translations/1" ou ID numérique',
+            'not-found' => 'Traduction de page introuvable',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'L\'ID de l\'option de lot est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-bundle-options/1" ou ID numérique',
+            'not-found' => 'Option de lot introuvable',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'L\'ID du produit de l\'option de lot est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-bundle-option-products/1" ou ID numérique',
+            'not-found' => 'Produit de l\'option de lot introuvable',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'L\'ID du lien téléchargeable est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-downloadable-links/1" ou ID numérique',
+            'not-found' => 'Lien téléchargeable introuvable',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'L\'ID de l\'échantillon téléchargeable est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-downloadable-samples/1" ou ID numérique',
+            'not-found' => 'Échantillon téléchargeable introuvable',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'L\'ID du produit groupé est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-grouped-products/1" ou ID numérique',
+            'not-found' => 'Produit groupé introuvable',
+        ],
+
+        'product-images' => [
+            'id-required' => 'L\'ID de l\'image du produit est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-images/1" ou ID numérique',
+            'not-found' => 'Image du produit introuvable',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'L\'ID de la vidéo du produit est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-videos/1" ou ID numérique',
+            'not-found' => 'Vidéo du produit introuvable',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'L\'ID de la personnalisation du thème est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/theme-customizations/1" ou ID numérique',
+            'not-found' => 'Personnalisation du thème introuvable',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'L\'ID de la ressource est requis',
+            'not-found' => 'Ressource introuvable',
         ],
     ],
 

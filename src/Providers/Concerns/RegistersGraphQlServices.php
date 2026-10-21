@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Providers\Concerns;
 
+use ApiPlatform\GraphQl\Error\ErrorHandlerInterface;
 use ApiPlatform\GraphQl\Resolver\Factory\ResolverFactoryInterface;
 use ApiPlatform\GraphQl\Resolver\QueryCollectionResolverInterface;
 use ApiPlatform\GraphQl\Resolver\QueryItemResolverInterface;
@@ -29,6 +30,7 @@ use Webkul\BagistoApi\Admin\Resolver\AdminReportingProductsViewResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminReportingSalesQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminReportingSalesViewResolver;
 use Webkul\BagistoApi\Admin\State\AdminConfigurationSchemaResolver;
+use Webkul\BagistoApi\GraphQl\Error\ClientSafeCursorErrorHandler;
 use Webkul\BagistoApi\GraphQl\Serializer\FixedSerializerContextBuilder;
 use Webkul\BagistoApi\Metadata\CustomIdentifiersExtractor;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
@@ -129,6 +131,10 @@ trait RegistersGraphQlServices
                 $converter,
                 $app->make(ResourceMetadataCollectionFactoryInterface::class)
             );
+        });
+
+        $this->app->extend(ErrorHandlerInterface::class, function ($handler) {
+            return new ClientSafeCursorErrorHandler($handler);
         });
 
         $this->app->extend(GraphQlSerializerContextBuilder::class, function ($builder, $app) {

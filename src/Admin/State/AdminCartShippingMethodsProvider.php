@@ -79,13 +79,13 @@ class AdminCartShippingMethodsProvider implements ProviderInterface
 
         $row = new AdminCartShippingRate;
         $row->method = $method;
-        $row->carrierCode = $carrierCode;
-        $row->carrierTitle = $carrierTitle;
-        $row->methodTitle = $methodTitle;
+        $row->carrier_code = $carrierCode;
+        $row->carrier_title = $carrierTitle;
+        $row->method_title = $methodTitle;
         $row->price = $price !== null ? (float) $price : null;
-        $row->formattedPrice = core()->formatPrice($price ?? 0);
-        $row->baseTotal = $baseTotal !== null ? (float) $baseTotal : null;
-        $row->formattedBaseTotal = core()->formatPrice($baseTotal ?? 0);
+        $row->formatted_price = core()->formatPrice($price ?? 0);
+        $row->base_total = $baseTotal !== null ? (float) $baseTotal : null;
+        $row->formatted_base_total = core()->formatPrice($baseTotal ?? 0);
 
         return $row;
     }

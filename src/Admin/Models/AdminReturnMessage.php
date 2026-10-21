@@ -62,6 +62,11 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
         ),
         new Post(
             uriTemplate: '/rma/messages',
+            inputFormats: [
+                'json' => ['application/json'],
+                'multipart' => ['multipart/form-data'],
+            ],
+            deserialize: false,
             processor: AdminReturnMessageProcessor::class,
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
@@ -84,6 +89,31 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
                                     'message' => [
                                         'type' => 'string',
                                         'example' => 'We have received your package.',
+                                    ],
+                                ],
+                            ],
+                        ],
+
+                        'multipart/form-data' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['return_id', 'message'],
+
+                                'properties' => [
+                                    'return_id' => [
+                                        'type' => 'integer',
+                                        'example' => 12,
+                                    ],
+
+                                    'message' => [
+                                        'type' => 'string',
+                                        'example' => 'We have received your package.',
+                                    ],
+
+                                    'file' => [
+                                        'type' => 'string',
+                                        'format' => 'binary',
+                                        'description' => 'Attachment for this message.',
                                     ],
                                 ],
                             ],

@@ -57,13 +57,13 @@ class AdminCancelOrderProcessor implements ProcessorInterface
     {
         $summary = new AdminCancelOrder;
         $summary->id = $order->id;
-        $summary->orderId = $order->id;
-        $summary->incrementId = $order->increment_id;
+        $summary->order_id = $order->id;
+        $summary->increment_id = $order->increment_id;
         $summary->status = $order->status;
-        $summary->statusLabel = $order->status_label;
-        $summary->grandTotal = $order->grand_total !== null ? (float) $order->grand_total : null;
-        $summary->baseGrandTotal = $order->base_grand_total !== null ? (float) $order->base_grand_total : null;
-        $summary->totalQtyOrdered = $order->total_qty_ordered !== null ? (int) $order->total_qty_ordered : null;
+        $summary->status_label = $order->status_label;
+        $summary->grand_total = $order->grand_total !== null ? (float) $order->grand_total : null;
+        $summary->base_grand_total = $order->base_grand_total !== null ? (float) $order->base_grand_total : null;
+        $summary->total_qty_ordered = $order->total_qty_ordered !== null ? (int) $order->total_qty_ordered : null;
         $summary->success = true;
         $summary->message = __('bagistoapi::app.admin.order.actions.cancel.success');
 

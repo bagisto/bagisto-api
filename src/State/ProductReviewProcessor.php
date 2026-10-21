@@ -3,7 +3,7 @@
 namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\GraphQl\DeleteMutation;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
@@ -74,9 +74,9 @@ class ProductReviewProcessor implements ProcessorInterface
 
         if (
             $operation instanceof Delete
-            || $operation instanceof DeleteMutation
+            || $this->isDeleteMutation($operation)
         ) {
-            return $this->handleDelete($data, $operation);
+            return $this->handleDelete($data, $operation, $context);
         }
 
         if (! ($data instanceof ProductReview)) {
@@ -253,12 +253,17 @@ class ProductReviewProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle delete.
+     * Delete the caller's review, returning the deleted review to a GraphQL delete mutation.
      */
-    private function handleDelete(mixed $data, Operation $operation): mixed
+    private function handleDelete(mixed $data, Operation $operation, array $context): mixed
     {
-        if (! $data instanceof ProductReview) {
-            throw new ResourceNotFoundException(__('bagistoapi::app.graphql.product-review.not-found', ['id' => '']));
+        if (
+            ! $data instanceof ProductReview
+            || ! $data->exists
+        ) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.graphql.product-review.item-not-found', [
+                'id' => $context['args']['input']['id'] ?? '',
+            ]));
         }
 
         $this->assertOwnedReview($data);
@@ -267,7 +272,16 @@ class ProductReviewProcessor implements ProcessorInterface
 
         $data->delete();
 
-        return $operation instanceof DeleteMutation ? $snapshot : null;
+        return $this->isDeleteMutation($operation) ? $snapshot : null;
+    }
+
+    /**
+     * Determine whether the operation is the GraphQL delete mutation.
+     */
+    private function isDeleteMutation(Operation $operation): bool
+    {
+        return $operation instanceof Mutation
+            && $operation->getName() === 'delete';
     }
 
     /**

@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'Het aantal evenementtickets moet een niet-negatief getal zijn.',
             'booking-ticket-required' => 'Selecteer voor een evenementboeking een aantal voor ten minste één ticket.',
             'booking-slot-unavailable' => 'Het geselecteerde tijdslot is niet beschikbaar voor de opgegeven datum.',
+            'invalid-quantity' => 'De hoeveelheid moet minimaal 1 zijn',
+            'product-id-required' => 'Product-ID is vereist',
+            'shipping-address-required' => 'Land en postcode zijn vereist om de verzending te schatten',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'Productbeoordeling-ID is vereist',
             'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/reviews/1" of een numerieke ID',
             'not-found' => 'Productbeoordeling met ID ":id" niet gevonden',
+            'item-not-found' => 'Item ":id" niet gevonden.',
             'product-id-required' => 'Product-ID is vereist',
             'product-not-found' => 'Product niet gevonden',
             'rating-invalid' => 'Beoordeling moet tussen 1 en 5 liggen',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'Log in om uw beoordeling te beheren',
             'not-owned' => 'Deze beoordeling is niet door u geschreven en kan niet worden gewijzigd of verwijderd',
             'invalid-attachments' => 'Ongeldig formaat van bijlagen.',
+            'invalid-product-id-format' => 'Ongeldig product-ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/products/1" of een numerieke ID',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'Dit retourverzoek kan niet worden heropend.',
             'closed' => 'Retourverzoek succesvol gesloten.',
             'message-sent' => 'Bericht succesvol verzonden.',
+            'attachment-not-found' => 'Bijlage van bericht niet gevonden.',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'Verzending-ID is vereist',
             'not-found' => 'Verzending met ID ":id" niet gevonden of behoort niet toe aan deze klant',
             'item-not-found' => 'Verzenditem met ID ":id" niet gevonden of behoort niet toe aan deze klant',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/customer-order-shipments/1" of een numerieke ID',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'ID van downloadbaar klantproduct is vereist',
             'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/customer-downloadable-products/1" of een numerieke ID',
             'not-found' => 'Downloadbaar klantproduct met ID ":id" niet gevonden',
+
+            'download' => [
+                'unauthenticated' => 'Niet geautoriseerd: klantauthenticatie vereist.',
+                'not-found' => 'Downloadbaar product niet gevonden.',
+                'pending' => 'De download is in behandeling. Wacht tot de bestelling is gefactureerd.',
+                'limit-exceeded' => 'Downloadlimiet overschreden.',
+                'no-downloads-remaining' => 'Geen downloads meer beschikbaar.',
+                'file-not-found' => 'Bestand niet gevonden.',
+                'link-not-found' => 'Downloadlink niet gevonden.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'Maat',
             'brand' => 'Merk',
             'super-attributes' => 'Superattributen',
+            'id-required' => 'Product-ID is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/products/1" of een numerieke ID',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'REST API Storefront Swagger: :url',
             'rest-api-admin' => 'REST API Admin Swagger: :url',
             'key-rotation-invalid-key' => 'Een ongeldige of verlopen sleutel kan niet worden geroteerd',
+            'env-file-not-found' => 'Het .env-bestand is niet gevonden',
+            'env-permission-denied' => 'Toegang geweigerd: kan niet naar het .env-bestand schrijven. Controleer de bestandsrechten.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'Attribuutvertaling-ID is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/attribute-translations/1" of een numerieke ID',
+            'not-found' => 'Attribuutvertaling niet gevonden',
+        ],
+
+        'currency' => [
+            'id-required' => 'Valuta-ID is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/currencies/1" of een numerieke ID',
+            'not-found' => 'Valuta niet gevonden',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'Klantadres-ID is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/customer-addresses/1" of een numerieke ID',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'Zendingsartikel-ID is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/customer-order-shipment-items/1" of een numerieke ID',
+            'not-found' => 'Zendingsartikel niet gevonden',
+        ],
+
+        'page' => [
+            'id-required' => 'Pagina-ID is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/pages/1" of een numerieke ID',
+            'not-found' => 'Pagina niet gevonden',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'Paginavertaling-ID is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/page-translations/1" of een numerieke ID',
+            'not-found' => 'Paginavertaling niet gevonden',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'Bundeloptie-ID is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/product-bundle-options/1" of een numerieke ID',
+            'not-found' => 'Bundeloptie niet gevonden',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'ID van het bundeloptieproduct is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/product-bundle-option-products/1" of een numerieke ID',
+            'not-found' => 'Bundeloptieproduct niet gevonden',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'Downloadlink-ID is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/product-downloadable-links/1" of een numerieke ID',
+            'not-found' => 'Downloadlink niet gevonden',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'Downloadvoorbeeld-ID is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/product-downloadable-samples/1" of een numerieke ID',
+            'not-found' => 'Downloadvoorbeeld niet gevonden',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'ID van het gegroepeerde product is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/product-grouped-products/1" of een numerieke ID',
+            'not-found' => 'Gegroepeerd product niet gevonden',
+        ],
+
+        'product-images' => [
+            'id-required' => 'Productafbeelding-ID is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/product-images/1" of een numerieke ID',
+            'not-found' => 'Productafbeelding niet gevonden',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'Productvideo-ID is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/product-videos/1" of een numerieke ID',
+            'not-found' => 'Productvideo niet gevonden',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'Thema-aanpassing-ID is vereist',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/theme-customizations/1" of een numerieke ID',
+            'not-found' => 'Thema-aanpassing niet gevonden',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'Resource-ID is vereist',
+            'not-found' => 'Resource niet gevonden',
         ],
     ],
 

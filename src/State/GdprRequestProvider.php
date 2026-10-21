@@ -6,18 +6,19 @@ use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\GdprRequest;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\GdprFeatureGate;
+use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
 use Webkul\BagistoApi\State\Concerns\ResolvesListSort;
 
 class GdprRequestProvider implements ProviderInterface
 {
     use ClampsPageSize;
     use GdprFeatureGate;
+    use ResolvesCursorWindow;
     use ResolvesListSort;
 
     /**
@@ -41,24 +42,8 @@ class GdprRequestProvider implements ProviderInterface
         }
 
         $args = $context['args'] ?? [];
-        $first = isset($args['first']) ? (int) $args['first'] : null;
-        $last = isset($args['last']) ? (int) $args['last'] : null;
-        $after = $args['after'] ?? null;
-        $before = $args['before'] ?? null;
-
-        $perPage = $this->clampPageSize($first ?? $last ?? 30);
-        $offset = 0;
-
-        if ($after) {
-            $decoded = base64_decode($after, true);
-            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
-        }
-
-        if ($before) {
-            $decoded = base64_decode($before, true);
-            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset = max(0, $cursor - $perPage);
-        }
+        $requested = $this->requestedCursorLimit($args, 30);
+        $limit = $requested > 0 ? $this->clampPageSize($requested) : 0;
 
         [$sortColumn, $sortDirection] = $this->resolveListSort($args, ['id', 'created_at'], 'desc');
 
@@ -69,27 +54,6 @@ class GdprRequestProvider implements ProviderInterface
             $query->orderBy('id', $sortDirection);
         }
 
-        $total = (clone $query)->count();
-
-        if ($offset > $total) {
-            $offset = max(0, $total - $perPage);
-        }
-
-        $items = $query
-            ->offset($offset)
-            ->limit($perPage)
-            ->get();
-
-        $currentPage = $total > 0 ? (int) floor($offset / $perPage) + 1 : 1;
-
-        return new Paginator(
-            new LengthAwarePaginator(
-                $items,
-                $total,
-                $perPage,
-                $currentPage,
-                ['path' => request()->url()]
-            )
-        );
+        return new Paginator($this->paginateCursorWindow($query, $args, $limit));
     }
 }

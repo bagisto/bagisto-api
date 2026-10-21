@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Product\Models\Product;
 
@@ -303,6 +304,48 @@ class ProductTest extends GraphQLTestCase
             'sku',
             'urlKey',
             'price',
+        ]);
+    }
+
+    /**
+     * The customizable options of a product carry the label of the current locale.
+     */
+    public function test_product_customizable_options_return_the_translated_label(): void
+    {
+        $optionId = DB::table('product_customizable_options')->insertGetId([
+            'product_id' => $this->testProductId,
+            'type' => 'text',
+            'is_required' => 0,
+            'sort_order' => 1,
+        ]);
+
+        DB::table('product_customizable_option_translations')->insert([
+            [
+                'product_customizable_option_id' => $optionId,
+                'locale' => 'fr',
+                'label' => 'Gravure',
+            ],
+            [
+                'product_customizable_option_id' => $optionId,
+                'locale' => 'en',
+                'label' => 'Engraving',
+            ],
+        ]);
+
+        $query = <<<'GQL'
+            query getProduct($id: ID!) {
+              product(id: $id) {
+                customizableOptions { edges { node { _id label } } }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, ['id' => (string) $this->testProductId]);
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.product.customizableOptions.edges.0.node'))->toBe([
+            '_id' => $optionId,
+            'label' => 'Engraving',
         ]);
     }
 

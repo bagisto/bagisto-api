@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCartPaymentMethodsProvider;
 
 #[ApiResource(
@@ -79,6 +80,8 @@ use Webkul\BagistoApi\Admin\State\AdminCartPaymentMethodsProvider;
 )]
 class AdminCartPaymentMethod
 {
+    use AcceptsCamelCaseWrites;
+
     /**
      * The method.
      */
@@ -89,7 +92,7 @@ class AdminCartPaymentMethod
      * The method title.
      */
     #[ApiProperty(writable: false)]
-    public ?string $methodTitle = null;
+    public ?string $method_title = null;
 
     /**
      * The description.

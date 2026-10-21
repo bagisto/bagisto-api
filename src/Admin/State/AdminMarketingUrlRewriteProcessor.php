@@ -61,7 +61,7 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.search_seo.url_rewrites.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if (
@@ -143,12 +143,14 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
     /**
      * Handle delete.
      */
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingUrlRewrite
     {
         $rewrite = URLRewrite::find($id);
         if (! $rewrite) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.url-rewrite.not-found'));
         }
+
+        $snapshot = $asResource ? $this->itemProvider->mapToDtoPublic($rewrite) : null;
 
         Event::dispatch('marketing.search_seo.url_rewrites.delete.before', $id);
 
@@ -164,7 +166,7 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
 
         Event::dispatch('marketing.search_seo.url_rewrites.delete.after', $id);
 
-        return ['message' => __('bagistoapi::app.admin.marketing.url-rewrite.deleted')];
+        return $snapshot ?? ['message' => __('bagistoapi::app.admin.marketing.url-rewrite.deleted')];
     }
 
     /**

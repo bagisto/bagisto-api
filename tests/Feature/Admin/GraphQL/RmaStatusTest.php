@@ -43,6 +43,7 @@ class RmaStatusTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->createStatus('Old-'.uniqid());
+        $other = $this->createStatus('Bystander-'.uniqid());
 
         $update = <<<GQL
             mutation {
@@ -67,6 +68,7 @@ class RmaStatusTest extends AdminApiTestCase
         $deleteResponse = $this->adminGraphQL($delete, [], $admin);
         $deleteResponse->assertOk();
         $this->assertDatabaseMissing('rma_statuses', ['id' => $id]);
+        $this->assertDatabaseHas('rma_statuses', ['id' => $other]);
     }
 
     /**
@@ -77,6 +79,7 @@ class RmaStatusTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $keep = $this->createStatus('DefaultKeep-'.uniqid(), 1);
         $gone = $this->createStatus('Gone-'.uniqid());
+        $other = $this->createStatus('Bystander-'.uniqid());
 
         $mutation = <<<GQL
             mutation {
@@ -90,6 +93,7 @@ class RmaStatusTest extends AdminApiTestCase
         $response->assertOk();
         $this->assertDatabaseHas('rma_statuses', ['id' => $keep]);
         $this->assertDatabaseMissing('rma_statuses', ['id' => $gone]);
+        $this->assertDatabaseHas('rma_statuses', ['id' => $other]);
     }
 
     /**

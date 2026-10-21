@@ -5,11 +5,17 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Models\CountryState;
+use Webkul\BagistoApi\Repositories\CountryStateRepository;
 
 class CountryStateQueryProvider implements ProviderInterface
 {
     /**
-     * Provide.
+     * Create a new provider instance.
+     */
+    public function __construct(protected CountryStateRepository $countryStateRepository) {}
+
+    /**
+     * Provide the state, scoped to the country in the URI when the route is nested under one.
      */
     public function provide(
         Operation $operation,
@@ -28,15 +34,28 @@ class CountryStateQueryProvider implements ProviderInterface
             return null;
         }
 
-        return CountryState::find($numericId);
+        $countryId = null;
+
+        if (array_key_exists('country_id', $uriVariables)) {
+            $countryId = $this->extractNumericId($uriVariables['country_id']);
+
+            if ($countryId === null) {
+                return null;
+            }
+        }
+
+        return $this->countryStateRepository->findForCountry($numericId, $countryId);
     }
 
     /**
-     * Extract numeric ID from any format
-     * Supports:
+     * Extract the numeric id from a numeric value, an IRI or a single-identifier array.
      */
     private function extractNumericId($id): ?int
     {
+        if (is_array($id)) {
+            $id = $id['id'] ?? reset($id);
+        }
+
         if (is_numeric($id)) {
             return intval($id);
         }

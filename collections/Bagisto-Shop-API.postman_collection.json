@@ -4745,7 +4745,7 @@
                                         }
                                     ]
                                 },
-                                "description": "Messages on the RMA named by `?return_id=`, newest first. Requires the RMA to belong to the authenticated customer."
+                                "description": "Messages on the RMA named by `?return_id=`, newest first. Requires the RMA to belong to the authenticated customer. `attachmentUrl` points at `GET /api/shop/return-messages/{id}/attachment`, which needs the customer token."
                             }
                         },
                         {
@@ -5008,7 +5008,7 @@
                                         "return-messages"
                                     ]
                                 },
-                                "description": "Sends a message on a return. Attach a file in `file`.",
+                                "description": "Sends a message on a return. Attach a file in `file`; it is stored on the private disk and downloaded through `attachmentUrl`.",
                                 "body": {
                                     "mode": "raw",
                                     "raw": "{\n    \"return_id\": 12,\n    \"message\": \"Any update on my return?\"\n}",

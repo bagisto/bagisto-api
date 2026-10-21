@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'Etkinlik bileti miktarı negatif olmayan bir sayı olmalıdır.',
             'booking-ticket-required' => 'Etkinlik rezervasyonu için en az bir bilet miktarı seçin.',
             'booking-slot-unavailable' => 'Seçilen zaman dilimi verilen tarih için uygun değil.',
+            'invalid-quantity' => 'Miktar en az 1 olmalıdır',
+            'product-id-required' => 'Ürün kimliği gereklidir',
+            'shipping-address-required' => 'Kargo tahmini için ülke ve posta kodu gereklidir',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'Ürün değerlendirmesi kimliği gereklidir',
             'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/reviews/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
             'not-found' => '":id" kimlikli ürün değerlendirmesi bulunamadı',
+            'item-not-found' => '":id" öğesi bulunamadı.',
             'product-id-required' => 'Ürün kimliği gereklidir',
             'product-not-found' => 'Ürün bulunamadı',
             'rating-invalid' => 'Değerlendirme 1 ile 5 arasında olmalıdır',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'Değerlendirmenizi yönetmek için lütfen giriş yapın',
             'not-owned' => 'Bu değerlendirme size ait değil; değiştirilemez veya silinemez',
             'invalid-attachments' => 'Geçersiz ek biçimi.',
+            'invalid-product-id-format' => 'Geçersiz ürün kimliği biçimi. "/api/shop/products/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'Bu iade talebi yeniden açılamaz.',
             'closed' => 'İade talebi başarıyla kapatıldı.',
             'message-sent' => 'Mesaj başarıyla gönderildi.',
+            'attachment-not-found' => 'Mesaj eki bulunamadı.',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'Gönderi kimliği gereklidir',
             'not-found' => '":id" kimlikli gönderi bulunamadı veya bu müşteriye ait değil',
             'item-not-found' => '":id" kimlikli gönderi öğesi bulunamadı veya bu müşteriye ait değil',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/customer-order-shipments/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'Müşteri indirilebilir ürün kimliği gereklidir',
             'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/customer-downloadable-products/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
             'not-found' => '":id" kimlikli müşteri indirilebilir ürünü bulunamadı',
+
+            'download' => [
+                'unauthenticated' => 'Yetkisiz: Müşteri kimlik doğrulaması gereklidir.',
+                'not-found' => 'İndirilebilir ürün bulunamadı.',
+                'pending' => 'İndirme beklemede. Lütfen siparişin faturalandırılmasını bekleyin.',
+                'limit-exceeded' => 'İndirme sınırı aşıldı.',
+                'no-downloads-remaining' => 'Kullanılabilir indirme hakkı kalmadı.',
+                'file-not-found' => 'Dosya bulunamadı.',
+                'link-not-found' => 'İndirilebilir bağlantı bulunamadı.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'Boyut',
             'brand' => 'Marka',
             'super-attributes' => 'Süper Öznitelikler',
+            'id-required' => 'Ürün kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/products/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Rest API Mağaza Swagger: :url',
             'rest-api-admin' => 'Rest API Yönetici Swagger: :url',
             'key-rotation-invalid-key' => 'Geçersiz veya süresi dolmuş bir anahtar yenilenemez',
+            'env-file-not-found' => '.env dosyası bulunamadı',
+            'env-permission-denied' => 'İzin reddedildi: .env dosyasına yazılamıyor. Lütfen dosya izinlerini kontrol edin.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'Özellik çevirisi kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/attribute-translations/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => 'Özellik çevirisi bulunamadı',
+        ],
+
+        'currency' => [
+            'id-required' => 'Para birimi kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/currencies/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => 'Para birimi bulunamadı',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'Müşteri adresi kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/customer-addresses/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'Gönderi kalemi kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/customer-order-shipment-items/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => 'Gönderi kalemi bulunamadı',
+        ],
+
+        'page' => [
+            'id-required' => 'Sayfa kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/pages/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => 'Sayfa bulunamadı',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'Sayfa çevirisi kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/page-translations/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => 'Sayfa çevirisi bulunamadı',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'Paket seçeneği kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/product-bundle-options/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => 'Paket seçeneği bulunamadı',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'Paket seçeneği ürünü kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/product-bundle-option-products/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => 'Paket seçeneği ürünü bulunamadı',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'İndirilebilir bağlantı kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/product-downloadable-links/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => 'İndirilebilir bağlantı bulunamadı',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'İndirilebilir örnek kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/product-downloadable-samples/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => 'İndirilebilir örnek bulunamadı',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'Gruplanmış ürün kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/product-grouped-products/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => 'Gruplanmış ürün bulunamadı',
+        ],
+
+        'product-images' => [
+            'id-required' => 'Ürün görseli kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/product-images/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => 'Ürün görseli bulunamadı',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'Ürün videosu kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/product-videos/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => 'Ürün videosu bulunamadı',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'Tema özelleştirmesi kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/theme-customizations/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => 'Tema özelleştirmesi bulunamadı',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'Kaynak kimliği gereklidir',
+            'not-found' => 'Kaynak bulunamadı',
         ],
     ],
 

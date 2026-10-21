@@ -5,7 +5,6 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
@@ -16,6 +15,7 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerReturn;
 use Webkul\BagistoApi\State\Concerns\BuildsCustomerReturn;
+use Webkul\BagistoApi\State\Concerns\ReadsReturnImages;
 use Webkul\BagistoApi\State\Concerns\ResolvesReturnableItems;
 use Webkul\BagistoApi\State\Concerns\ResolvesReturnCustomFields;
 use Webkul\RMA\Enums\DefaultRMAResolution;
@@ -33,6 +33,7 @@ use Webkul\Shop\Mail\Customer\RMA\CustomerRMARequestNotification;
 class CustomerReturnProcessor implements ProcessorInterface
 {
     use BuildsCustomerReturn;
+    use ReadsReturnImages;
     use ResolvesReturnableItems;
     use ResolvesReturnCustomFields;
 
@@ -76,7 +77,7 @@ class CustomerReturnProcessor implements ProcessorInterface
                 return $this->handleAction($action, $uriVariables['id'] ?? null);
             }
 
-            return $this->handleCreate($this->inputFromRequest(), $this->imagesFromRequest());
+            return $this->handleCreate($this->inputFromRequest(), $this->returnImagesFromRequest());
         }
 
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
@@ -107,38 +108,6 @@ class CustomerReturnProcessor implements ProcessorInterface
         $input->custom_attributes = is_array($customAttributes) ? $customAttributes : null;
 
         return $input;
-    }
-
-    /**
-     * Uploaded evidence images, checked against the configured mime types.
-     *
-     * @return array<int,UploadedFile>
-     */
-    private function imagesFromRequest(): array
-    {
-        if (! request()->hasFile('images')) {
-            return [];
-        }
-
-        $images = request()->file('images');
-
-        $images = is_array($images) ? $images : [$images];
-
-        $allowed = array_filter(array_map(
-            'trim',
-            explode(',', (string) core()->getConfigData('sales.rma.setting.allowed_file_extension'))
-        ));
-
-        foreach ($images as $image) {
-            if (
-                ! empty($allowed)
-                && ! in_array($image->getMimeType(), $allowed, true)
-            ) {
-                throw new InvalidInputException(__('bagistoapi::app.graphql.return.invalid-image'));
-            }
-        }
-
-        return array_values($images);
     }
 
     /**

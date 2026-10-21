@@ -136,7 +136,7 @@ class AdminRmaStatusProcessor implements ProcessorInterface
 
         Event::dispatch('sales.rma.rma-status.delete.before', $id);
 
-        $this->rmaStatusRepository->where('default', 0)->delete($id);
+        $this->rmaStatusRepository->delete($id);
 
         Event::dispatch('sales.rma.rma-status.delete.after', $id);
 

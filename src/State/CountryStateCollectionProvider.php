@@ -9,9 +9,12 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Webkul\BagistoApi\Models\CountryState;
+use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
 
 class CountryStateCollectionProvider implements ProviderInterface
 {
+    use ResolvesCursorWindow;
+
     /**
      * Create a new instance.
      */
@@ -43,31 +46,6 @@ class CountryStateCollectionProvider implements ProviderInterface
 
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
-        $after = $args['after'] ?? null;
-        $before = $args['before'] ?? null;
-
-        $defaultPerPage = 10;
-
-        if ($first !== null) {
-            $perPage = $first;
-        } elseif ($last !== null) {
-            $perPage = $last;
-        } else {
-            $perPage = $defaultPerPage;
-        }
-
-        $offset = 0;
-
-        if ($after) {
-            $decoded = base64_decode($after, true);
-            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
-        }
-
-        if ($before) {
-            $decoded = base64_decode($before, true);
-            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset = max(0, $cursor - $perPage);
-        }
 
         $query = CountryState::where('country_id', $countryId)
             ->with('translations')
@@ -75,15 +53,13 @@ class CountryStateCollectionProvider implements ProviderInterface
 
         $total = (clone $query)->count();
 
-        if ($offset > $total) {
-            $offset = max(0, $total - $perPage);
-        }
+        [$offset, $limit] = $this->resolveCursorWindow($args, $total, max(0, $first ?? $last ?? 10));
 
-        $items = $query
-            ->offset($offset)
-            ->limit($perPage)
-            ->get();
+        $items = $limit > 0
+            ? $query->offset($offset)->limit($limit)->get()
+            : $query->getModel()->newCollection();
 
+        $perPage = max(1, $limit);
         $currentPage = $total > 0 ? (int) floor($offset / $perPage) + 1 : 1;
 
         return new Paginator(

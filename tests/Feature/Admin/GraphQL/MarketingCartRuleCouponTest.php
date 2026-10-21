@@ -118,24 +118,22 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation ($input: deleteAdminMarketingCartRuleCouponInput!) {
               deleteAdminMarketingCartRuleCoupon(input: $input) {
-                adminMarketingCartRuleCoupon { id }
+                adminMarketingCartRuleCoupon { id message }
               }
             }
         GQL;
 
         $iri = '/api/admin/marketing/cart-rules/'.$rule->id.'/coupons/'.$coupon->id;
         $response = $this->adminGraphQL($mutation, [
-            'input' => [
-                'id' => $iri,
-                'cartRuleId' => $rule->id,
-            ],
+            'input' => ['id' => $iri],
         ], $admin);
 
         $response->assertOk();
 
-        $gone = ! CartRuleCoupon::where('id', $coupon->id)->exists();
-        $hasErrors = ! empty($response->json('errors'));
-        expect($gone || $hasErrors)->toBeTrue();
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.deleteAdminMarketingCartRuleCoupon.adminMarketingCartRuleCoupon.id'))->toBeString()
+            ->and($response->json('data.deleteAdminMarketingCartRuleCoupon.adminMarketingCartRuleCoupon.message'))->toBe(__('bagistoapi::app.admin.marketing.cart-rule-coupon.deleted'))
+            ->and(CartRuleCoupon::where('id', $coupon->id)->exists())->toBeFalse();
     }
 
     /**

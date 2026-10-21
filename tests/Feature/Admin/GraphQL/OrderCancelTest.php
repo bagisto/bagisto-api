@@ -32,21 +32,37 @@ class OrderCancelTest extends AdminApiTestCase
     }
 
     /**
-     * Test cancel succeeds on cancellable.
+     * The cancel mutation returns the order summary with its multi-word fields filled.
      */
     public function test_cancel_succeeds_on_cancellable(): void
     {
-        $id = $this->findOrCreateCancellableOrder()->id;
+        $order = $this->bootstrapAdminOrder();
 
-        $admin = $this->createAdmin();
-        $mutation = 'mutation($input: createAdminCancelOrderInput!){ createAdminCancelOrder(input:$input){ adminOrderDetail { _id status } } }';
-        $response = $this->adminGraphQL($mutation, ['input' => ['orderId' => $id]], $admin);
+        $mutation = <<<'GQL'
+            mutation($input: createAdminCancelOrderInput!) {
+              createAdminCancelOrder(input: $input) {
+                adminCancelOrder {
+                  _id orderId incrementId status statusLabel grandTotal baseGrandTotal totalQtyOrdered success message
+                }
+              }
+            }
+        GQL;
 
-        $node = $response->json('data.createAdminCancelOrder.adminOrderDetail');
-        if ($node) {
-            expect($node['_id'])->toBe($id);
-        } else {
-            expect($response->json('errors'))->toBeArray();
-        }
+        $response = $this->adminGraphQL($mutation, ['input' => ['orderId' => $order->id]], $this->createAdmin());
+
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.createAdminCancelOrder.adminCancelOrder');
+
+        expect($node['_id'])->toBe($order->id);
+        expect($node['orderId'])->toBe($order->id);
+        expect($node['incrementId'])->toBe((string) $order->increment_id);
+        expect($node['status'])->toBe('canceled');
+        expect($node['statusLabel'])->not->toBeNull();
+        expect($node['grandTotal'])->not->toBeNull();
+        expect($node['baseGrandTotal'])->not->toBeNull();
+        expect($node['totalQtyOrdered'])->not->toBeNull();
+        expect($node['success'])->toBeTrue();
+        expect($node['message'])->toBe(trans('bagistoapi::app.admin.order.actions.cancel.success'));
     }
 }

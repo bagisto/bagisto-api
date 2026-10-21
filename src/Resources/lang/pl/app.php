@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'Liczba biletów na wydarzenie musi być liczbą nieujemną.',
             'booking-ticket-required' => 'Wybierz ilość co najmniej jednego biletu dla rezerwacji wydarzenia.',
             'booking-slot-unavailable' => 'Wybrany termin nie jest dostępny w podanym dniu.',
+            'invalid-quantity' => 'Ilość musi wynosić co najmniej 1',
+            'product-id-required' => 'Identyfikator produktu jest wymagany',
+            'shipping-address-required' => 'Kraj i kod pocztowy są wymagane do oszacowania wysyłki',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'Identyfikator recenzji produktu jest wymagany',
             'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/reviews/1" lub identyfikator liczbowy',
             'not-found' => 'Recenzja produktu o identyfikatorze ":id" nie znaleziona',
+            'item-not-found' => 'Nie znaleziono elementu ":id".',
             'product-id-required' => 'Identyfikator produktu jest wymagany',
             'product-not-found' => 'Produkt nie znaleziony',
             'rating-invalid' => 'Ocena musi być pomiędzy 1 a 5',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'Zaloguj się, aby zarządzać swoją recenzją',
             'not-owned' => 'Ta recenzja nie została napisana przez Ciebie i nie może zostać zmodyfikowana ani usunięta',
             'invalid-attachments' => 'Nieprawidłowy format załączników.',
+            'invalid-product-id-format' => 'Nieprawidłowy format identyfikatora produktu. Oczekiwany format IRI taki jak "/api/shop/products/1" lub identyfikator liczbowy',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'Tego zgłoszenia zwrotu nie można ponownie otworzyć.',
             'closed' => 'Zgłoszenie zwrotu pomyślnie zamknięte.',
             'message-sent' => 'Wiadomość pomyślnie wysłana.',
+            'attachment-not-found' => 'Załącznik wiadomości nie znaleziony.',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'Identyfikator przesyłki jest wymagany',
             'not-found' => 'Przesyłka o identyfikatorze ":id" nie znaleziona lub nie należy do tego klienta',
             'item-not-found' => 'Pozycja przesyłki o identyfikatorze ":id" nie znaleziona lub nie należy do tego klienta',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/customer-order-shipments/1" lub identyfikator liczbowy',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'Identyfikator produktu do pobrania klienta jest wymagany',
             'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/customer-downloadable-products/1" lub identyfikator liczbowy',
             'not-found' => 'Produkt do pobrania klienta o identyfikatorze ":id" nie znaleziony',
+
+            'download' => [
+                'unauthenticated' => 'Brak autoryzacji: wymagane jest uwierzytelnienie klienta.',
+                'not-found' => 'Nie znaleziono produktu do pobrania.',
+                'pending' => 'Pobieranie oczekuje. Poczekaj na wystawienie faktury dla zamówienia.',
+                'limit-exceeded' => 'Przekroczono limit pobrań.',
+                'no-downloads-remaining' => 'Brak dostępnych pobrań.',
+                'file-not-found' => 'Plik nie znaleziony.',
+                'link-not-found' => 'Link do pobrania nie znaleziony.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'Rozmiar',
             'brand' => 'Marka',
             'super-attributes' => 'Superatrybuty',
+            'id-required' => 'Identyfikator produktu jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/products/1" lub identyfikator liczbowy',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Rest API Storefront Swagger: :url',
             'rest-api-admin' => 'Rest API Admin Swagger: :url',
             'key-rotation-invalid-key' => 'Nie można poddać rotacji nieprawidłowego lub wygasłego klucza',
+            'env-file-not-found' => 'Nie znaleziono pliku .env',
+            'env-permission-denied' => 'Odmowa dostępu: nie można zapisać pliku .env. Sprawdź uprawnienia pliku.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'Identyfikator tłumaczenia atrybutu jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/attribute-translations/1" lub identyfikator liczbowy',
+            'not-found' => 'Nie znaleziono tłumaczenia atrybutu',
+        ],
+
+        'currency' => [
+            'id-required' => 'Identyfikator waluty jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/currencies/1" lub identyfikator liczbowy',
+            'not-found' => 'Nie znaleziono waluty',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'Identyfikator adresu klienta jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/customer-addresses/1" lub identyfikator liczbowy',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'Identyfikator pozycji przesyłki jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/customer-order-shipment-items/1" lub identyfikator liczbowy',
+            'not-found' => 'Nie znaleziono pozycji przesyłki',
+        ],
+
+        'page' => [
+            'id-required' => 'Identyfikator strony jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/pages/1" lub identyfikator liczbowy',
+            'not-found' => 'Nie znaleziono strony',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'Identyfikator tłumaczenia strony jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/page-translations/1" lub identyfikator liczbowy',
+            'not-found' => 'Nie znaleziono tłumaczenia strony',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'Identyfikator opcji pakietu jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/product-bundle-options/1" lub identyfikator liczbowy',
+            'not-found' => 'Nie znaleziono opcji pakietu',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'Identyfikator produktu opcji pakietu jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/product-bundle-option-products/1" lub identyfikator liczbowy',
+            'not-found' => 'Nie znaleziono produktu opcji pakietu',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'Identyfikator linku do pobrania jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/product-downloadable-links/1" lub identyfikator liczbowy',
+            'not-found' => 'Nie znaleziono linku do pobrania',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'Identyfikator próbki do pobrania jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/product-downloadable-samples/1" lub identyfikator liczbowy',
+            'not-found' => 'Nie znaleziono próbki do pobrania',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'Identyfikator produktu grupowego jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/product-grouped-products/1" lub identyfikator liczbowy',
+            'not-found' => 'Nie znaleziono produktu grupowego',
+        ],
+
+        'product-images' => [
+            'id-required' => 'Identyfikator zdjęcia produktu jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/product-images/1" lub identyfikator liczbowy',
+            'not-found' => 'Nie znaleziono zdjęcia produktu',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'Identyfikator filmu produktu jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/product-videos/1" lub identyfikator liczbowy',
+            'not-found' => 'Nie znaleziono filmu produktu',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'Identyfikator dostosowania motywu jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/theme-customizations/1" lub identyfikator liczbowy',
+            'not-found' => 'Nie znaleziono dostosowania motywu',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'Identyfikator zasobu jest wymagany',
+            'not-found' => 'Nie znaleziono zasobu',
         ],
     ],
 

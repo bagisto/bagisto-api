@@ -2962,7 +2962,6 @@ type AdminCustomerEdge {
 "Admin customers listing (cursor pagination)."
 type AdminCustomer implements Node {
   _id: Int!
-  apiToken: String
   channelId: Int
   createdAt: String
   dateOfBirth: String
@@ -2977,12 +2976,9 @@ type AdminCustomer implements Node {
   lastName: String!
   message: String
   name: String
-  password: String
   phone: String
-  rememberToken: String
   status: Int!
   subscribedToNewsLetter: Boolean!
-  token: String
   totalAddresses: String
   totalAmountSpent: String
   totalOrders: String
@@ -3339,7 +3335,6 @@ type AdminCustomerReviewProductRef implements Node {
 
 type AdminCustomerReviewCustomerRef implements Node {
   _id: Int!
-  apiToken: String
   channelId: Int
   createdAt: String
   customerGroupId: Int
@@ -3353,12 +3348,9 @@ type AdminCustomerReviewCustomerRef implements Node {
   isVerified: Boolean!
   lastName: String!
   name: String
-  password: String
   phone: String
-  rememberToken: String
   status: String!
   subscribedToNewsLetter: Boolean!
-  token: String
   updatedAt: String
 }
 
@@ -4027,7 +4019,6 @@ type AdminOrderDetailCommentPageInfo {
 
 type AdminOrderDetailCustomer implements Node {
   _id: Int!
-  apiToken: String
   channelId: Int
   createdAt: String
   dateOfBirth: String
@@ -4041,12 +4032,9 @@ type AdminOrderDetailCustomer implements Node {
   isVerified: Boolean!
   lastName: String!
   name: String
-  password: String
   phone: String
-  rememberToken: String
   status: Int!
   subscribedToNewsLetter: Boolean!
-  token: String
   updatedAt: String
 }
 
@@ -10010,10 +9998,11 @@ input previewAdminRefundInput {
   "Positive adjustment added to the refund total."
   adjustmentRefund: Float
   clientMutationId: String
-  id: ID!
 
   "Items to refund: array of { orderItemId, quantity }."
   items: Iterable!
+
+  "Order id to preview the refund for."
   orderId: Int
 
   "Amount of original shipping to refund (in base currency)."

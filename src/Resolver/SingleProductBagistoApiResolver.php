@@ -49,7 +49,7 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
             return $this->applyLocaleChannel($product, $locale, $channel);
         }
 
-        throw new InvalidInputException(__('bagistoapi::app.graphql.product.missing-query-parameter'));
+        throw new InvalidInputException(__('bagistoapi::app.graphql.product.parameters-required'));
     }
 
     /**

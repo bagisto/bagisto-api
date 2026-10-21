@@ -323,6 +323,32 @@ use Webkul\BagistoApi\Admin\State\AdminRefundProvider;
         ),
         new Mutation(
             name: 'preview',
+            args: [
+                'orderId' => [
+                    'type' => 'Int',
+                    'description' => 'Order id to preview the refund for.',
+                ],
+
+                'items' => [
+                    'type' => 'Iterable!',
+                    'description' => 'Items to refund: array of { orderItemId, quantity }.',
+                ],
+
+                'shipping' => [
+                    'type' => 'Float',
+                    'description' => 'Amount of original shipping to refund (in base currency).',
+                ],
+
+                'adjustmentRefund' => [
+                    'type' => 'Float',
+                    'description' => 'Positive adjustment added to the refund total.',
+                ],
+
+                'adjustmentFee' => [
+                    'type' => 'Float',
+                    'description' => 'Fee subtracted from the refund total.',
+                ],
+            ],
             input: AdminRefundCreateInput::class,
             output: RefundTotalsSummary::class,
             processor: AdminRefundPreviewProcessor::class,

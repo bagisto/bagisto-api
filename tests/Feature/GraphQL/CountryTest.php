@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
+use Webkul\Core\Models\CountryState;
 
 class CountryTest extends GraphQLTestCase
 {
@@ -564,6 +565,29 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
+     * An empty or undecodable cursor is reported to the client as an invalid cursor.
+     */
+    public function test_get_countries_with_an_invalid_cursor_reports_it(): void
+    {
+        $query = <<<'GQL'
+            query countries($first: Int, $after: String) {
+              countries(first: $first, after: $after) {
+                edges { cursor node { _id } }
+                totalCount
+              }
+            }
+        GQL;
+
+        foreach (['' => 'Empty cursor is invalid', 'invalid-cursor' => 'Cursor invalid-cursor is invalid'] as $cursor => $message) {
+            $response = $this->graphQL($query, ['first' => 5, 'after' => (string) $cursor]);
+
+            $response->assertOk();
+            expect($response->json('errors.0.message'))->toBe($message);
+            expect($response->json('data.countries'))->toBeNull();
+        }
+    }
+
+    /**
      * Get Countries with All Translations.
      */
     public function test_get_countries_with_all_translations(): void
@@ -1066,5 +1090,64 @@ class CountryTest extends GraphQLTestCase
         $this->assertArrayHasKey('defaultName', $node);
         $this->assertArrayHasKey('countryId', $node);
         $this->assertArrayHasKey('countryCode', $node);
+    }
+
+    /**
+     * Last without before returns the final states of the country, with matching cursors.
+     */
+    public function test_country_states_last_returns_the_final_rows(): void
+    {
+        $ids = CountryState::query()->where('country_id', 16)->orderBy('id')->pluck('id')->all();
+
+        expect(count($ids))->toBeGreaterThan(2);
+
+        $response = $this->graphQL(<<<'GQL'
+            query { countryStates(countryId: 16, last: 2) { edges { node { _id } cursor } pageInfo { hasPreviousPage } totalCount } }
+        GQL);
+
+        $response->assertOk();
+
+        $edges = $response->json('data.countryStates.edges');
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $edges))->toBe(array_slice($ids, -2))
+            ->and(array_column($edges, 'cursor'))->toBe([base64_encode((string) (count($ids) - 2)), base64_encode((string) (count($ids) - 1))])
+            ->and($response->json('data.countryStates.pageInfo.hasPreviousPage'))->toBeTrue();
+    }
+
+    /**
+     * Last with before returns only the states that precede the cursor.
+     */
+    public function test_country_states_last_before_stops_at_the_cursor(): void
+    {
+        $firstId = CountryState::query()->where('country_id', 16)->orderBy('id')->value('id');
+
+        $response = $this->graphQL(
+            'query getStates($before: String) { countryStates(countryId: 16, last: 5, before: $before) { edges { node { _id } } } }',
+            ['before' => base64_encode('1')]
+        );
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $response->json('data.countryStates.edges')))->toBe([$firstId]);
+    }
+
+    /**
+     * A zero page size returns an empty page rather than an error.
+     */
+    public function test_country_states_zero_page_size_returns_an_empty_page(): void
+    {
+        foreach (['first', 'last'] as $argument) {
+            $response = $this->graphQL(
+                'query { countryStates(countryId: 16, '.$argument.': 0) { edges { node { _id } } pageInfo { hasNextPage } totalCount } }'
+            );
+
+            $response->assertOk();
+
+            expect($response->json('errors'))->toBeNull()
+                ->and($response->json('data.countryStates.edges'))->toBe([])
+                ->and($response->json('data.countryStates.totalCount'))->toBeGreaterThan(0);
+        }
     }
 }

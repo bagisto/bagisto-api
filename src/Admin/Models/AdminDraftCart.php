@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCreateDraftCartInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminDraftCartProcessor;
 
 #[ApiResource(
@@ -19,7 +20,7 @@ use Webkul\BagistoApi\Admin\State\AdminDraftCartProcessor;
         new Post(
             uriTemplate: '/customers/{customerId}/draft-carts',
             uriVariables: [
-                'customerId' => new Link(parameterName: 'customerId', fromClass: AdminDraftCart::class, identifiers: ['cartId']),
+                'customerId' => new Link(parameterName: 'customerId', fromClass: AdminDraftCart::class, identifiers: ['cart_id']),
             ],
             input: false,
             processor: AdminDraftCartProcessor::class,
@@ -61,17 +62,19 @@ use Webkul\BagistoApi\Admin\State\AdminDraftCartProcessor;
 )]
 class AdminDraftCart
 {
+    use AcceptsCamelCaseWrites;
+
     /**
      * The cart id.
      */
     #[ApiProperty(identifier: true, writable: false)]
-    public ?int $cartId = null;
+    public ?int $cart_id = null;
 
     /**
      * The customer id.
      */
     #[ApiProperty(writable: false)]
-    public ?int $customerId = null;
+    public ?int $customer_id = null;
 
     /**
      * The success.

@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\BookingProduct\Models\BookingProduct;
+use Webkul\BookingProduct\Models\BookingProductDefaultSlot;
 use Webkul\BookingProduct\Models\BookingProductEventTicket;
 
 class BookingProductTest extends RestApiTestCase
@@ -80,6 +81,32 @@ class BookingProductTest extends RestApiTestCase
 
         $response->assertOk();
         expect($response->json('startingPrice'))->toBeNull();
+    }
+
+    /**
+     * The default slot endpoint returns the booking product the slot belongs to.
+     */
+    public function test_default_slot_exposes_booking_product_id(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->createBaseProduct('booking', ['sku' => 'BP-SLOT-'.uniqid()]);
+        $booking = BookingProduct::create([
+            'product_id' => $product->id,
+            'type' => 'default',
+            'qty' => 10,
+            'available_every_week' => 1,
+        ]);
+        $slot = BookingProductDefaultSlot::create([
+            'booking_product_id' => $booking->id,
+            'booking_type' => 'one',
+            'slots' => [],
+        ]);
+
+        $response = $this->publicGet('/api/shop/booking_product_default_slots/'.$slot->id);
+
+        $response->assertOk();
+        expect($response->json('bookingProductId'))->toBe($booking->id);
+        expect($response->json('bookingType'))->toBe('one');
     }
 
     /**

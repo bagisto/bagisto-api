@@ -296,6 +296,26 @@ class CartTest extends RestApiTestCase
     }
 
     /**
+     * Reading an empty guest cart returns it with no items and keeps it for the next read.
+     */
+    public function test_read_empty_cart_returns_the_cart(): void
+    {
+        $this->seedRequiredData();
+        $token = $this->createGuestCartToken();
+
+        $read = $this->postWithToken('/api/shop/cart', $token, []);
+
+        expect($read->getStatusCode())->toBe(201);
+        expect($read->json('itemsCount'))->toBe(0);
+        expect($read->json('items'))->toBe([]);
+
+        $again = $this->postWithToken('/api/shop/cart', $token, []);
+
+        expect($again->getStatusCode())->toBe(201);
+        expect($again->json('id'))->toBe($read->json('id'));
+    }
+
+    /**
      * Reading the cart returns the mini cart offer text when the mini cart is on.
      */
     public function test_read_cart_returns_the_mini_cart_offer_info(): void
@@ -406,7 +426,9 @@ class CartTest extends RestApiTestCase
             'cartItemId' => 999999,
         ]);
 
-        expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
+        $response->assertStatus(400);
+
+        expect($response->json('detail') ?? $response->json('message'))->toBe(__('bagistoapi::app.graphql.cart.cart-item-not-found'));
     }
 
     /**

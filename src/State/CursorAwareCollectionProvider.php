@@ -9,10 +9,12 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Models\Category;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
+use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
 
 class CursorAwareCollectionProvider implements ProviderInterface
 {
     use ClampsPageSize;
+    use ResolvesCursorWindow;
 
     /**
      * Create a new instance.
@@ -33,22 +35,8 @@ class CursorAwareCollectionProvider implements ProviderInterface
 
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
-        $after = $args['after'] ?? null;
-        $before = $args['before'] ?? null;
-
-        $limit = $this->clampPageSize($first ?? $last ?? 10);
-        $offset = 0;
-
-        if ($after) {
-            $decoded = base64_decode($after, true);
-            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
-        }
-
-        if ($before) {
-            $decoded = base64_decode($before, true);
-            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset = max(0, $cursor - $limit);
-        }
+        $requested = $first ?? $last ?? 10;
+        $limit = $requested > 0 ? $this->clampPageSize($requested) : 0;
 
         $query = $this->linksHandler->handleLinks(
             $model->newQuery(),
@@ -71,16 +59,17 @@ class CursorAwareCollectionProvider implements ProviderInterface
             }
         }
 
-        $total = (clone $query)->count();
-
-        if ($offset > $total) {
-            $offset = max(0, $total - $limit);
+        if (empty($query->getQuery()->orders)) {
+            $query->orderBy($model->getQualifiedKeyName());
         }
 
-        $items = $query
-            ->offset($offset)
-            ->limit($limit)
-            ->get();
+        $total = (clone $query)->count();
+
+        [$offset, $limit] = $this->resolveCursorWindow($args, $total, $limit);
+
+        $items = $limit > 0
+            ? $query->offset($offset)->limit($limit)->get()
+            : $model->newCollection();
 
         $divisor = max(1, $limit);
         $currentPage = $total > 0 ? (int) floor($offset / $divisor) + 1 : 1;

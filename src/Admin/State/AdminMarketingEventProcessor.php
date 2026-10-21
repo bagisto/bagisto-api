@@ -53,7 +53,7 @@ class AdminMarketingEventProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.communications.events.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if (
@@ -143,7 +143,7 @@ class AdminMarketingEventProcessor implements ProcessorInterface
     /**
      * Handle delete.
      */
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingEvent
     {
         $event = EventModel::find($id);
         if (! $event) {
@@ -160,6 +160,8 @@ class AdminMarketingEventProcessor implements ProcessorInterface
             );
         }
 
+        $snapshot = $asResource ? $this->itemProvider->mapToDtoPublic($event) : null;
+
         Event::dispatch('marketing.events.delete.before', $id);
 
         try {
@@ -174,7 +176,7 @@ class AdminMarketingEventProcessor implements ProcessorInterface
 
         Event::dispatch('marketing.events.delete.after', $id);
 
-        return ['message' => __('bagistoapi::app.admin.marketing.event.deleted')];
+        return $snapshot ?? ['message' => __('bagistoapi::app.admin.marketing.event.deleted')];
     }
 
     /**

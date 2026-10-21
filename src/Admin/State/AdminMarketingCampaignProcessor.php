@@ -53,7 +53,7 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.communications.campaigns.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if (
@@ -171,12 +171,14 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
     /**
      * Handle delete.
      */
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingCampaign
     {
         $campaign = Campaign::find($id);
         if (! $campaign) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.campaign.not-found'));
         }
+
+        $snapshot = $asResource ? $this->buildResult($id, true) : null;
 
         Event::dispatch('marketing.campaigns.delete.before', $id);
 
@@ -192,7 +194,7 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
 
         Event::dispatch('marketing.campaigns.delete.after', $id);
 
-        return ['message' => __('bagistoapi::app.admin.marketing.campaign.deleted')];
+        return $snapshot ?? ['message' => __('bagistoapi::app.admin.marketing.campaign.deleted')];
     }
 
     /**

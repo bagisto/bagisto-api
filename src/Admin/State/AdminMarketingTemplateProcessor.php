@@ -63,7 +63,7 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.communications.email_templates.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if (
@@ -148,7 +148,7 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
     /**
      * Delete a template that no campaign uses.
      */
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingTemplate
     {
         $template = $this->templateRepository->find($id);
 
@@ -166,6 +166,8 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             );
         }
 
+        $snapshot = $asResource ? $this->itemProvider->mapToDtoPublic($template) : null;
+
         Event::dispatch('marketing.templates.delete.before', $id);
 
         try {
@@ -181,7 +183,7 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
 
         Event::dispatch('marketing.templates.delete.after', $id);
 
-        return ['message' => __('bagistoapi::app.admin.marketing.template.deleted')];
+        return $snapshot ?? ['message' => __('bagistoapi::app.admin.marketing.template.deleted')];
     }
 
     /**

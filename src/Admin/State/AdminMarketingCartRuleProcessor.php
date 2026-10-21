@@ -58,7 +58,7 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if (
@@ -183,12 +183,14 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
     /**
      * Handle delete.
      */
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingCartRule
     {
         $existing = $this->repository->find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule.not-found'));
         }
+
+        $snapshot = $asResource ? $this->buildResult($id, true) : null;
 
         try {
             Event::dispatch('promotions.cart_rule.delete.before', $id);
@@ -199,7 +201,7 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.marketing.cart-rule.delete-failed'), 500);
         }
 
-        return ['message' => __('bagistoapi::app.admin.marketing.cart-rule.deleted')];
+        return $snapshot ?? ['message' => __('bagistoapi::app.admin.marketing.cart-rule.deleted')];
     }
 
     /**

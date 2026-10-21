@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'イベントチケットの数量は 0 以上の数値である必要があります。',
             'booking-ticket-required' => 'イベント予約のチケット数量を少なくとも 1 つ選択してください。',
             'booking-slot-unavailable' => '選択されたスロットは指定された日付では利用できません。',
+            'invalid-quantity' => '数量は1以上である必要があります',
+            'product-id-required' => '商品IDが必要です',
+            'shipping-address-required' => '配送料の見積もりには国と郵便番号が必要です',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => '商品レビューIDが必要です',
             'invalid-id-format' => '無効なID形式です。"/api/shop/reviews/1"のようなIRI形式または数値IDが想定されています',
             'not-found' => 'ID「:id」の商品レビューが見つかりません',
+            'item-not-found' => 'アイテム「:id」が見つかりません。',
             'product-id-required' => '商品IDが必要です',
             'product-not-found' => '商品が見つかりません',
             'rating-invalid' => '評価は1から5の間である必要があります',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'レビューを管理するにはログインしてください',
             'not-owned' => 'このレビューはお客様が書いたものではないため、変更または削除できません',
             'invalid-attachments' => '添付ファイルの形式が無効です。',
+            'invalid-product-id-format' => '無効な商品ID形式です。"/api/shop/products/1"のようなIRI形式または数値IDが想定されています',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'この返品リクエストは再開できません。',
             'closed' => '返品リクエストが正常にクローズされました。',
             'message-sent' => 'メッセージが正常に送信されました。',
+            'attachment-not-found' => 'メッセージの添付ファイルが見つかりません。',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => '出荷IDが必要です',
             'not-found' => 'ID「:id」の出荷が見つからないか、この顧客に属していません',
             'item-not-found' => 'ID「:id」の出荷アイテムが見つからないか、この顧客に属していません',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/customer-order-shipments/1"のようなIRI形式または数値IDが想定されています',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => '顧客のダウンロード可能商品IDが必要です',
             'invalid-id-format' => '無効なID形式です。"/api/shop/customer-downloadable-products/1"のようなIRI形式または数値IDが想定されています',
             'not-found' => 'ID「:id」の顧客のダウンロード可能商品が見つかりません',
+
+            'download' => [
+                'unauthenticated' => '権限がありません: 顧客認証が必要です。',
+                'not-found' => 'ダウンロード商品が見つかりません。',
+                'pending' => 'ダウンロードは保留中です。注文の請求書が発行されるまでお待ちください。',
+                'limit-exceeded' => 'ダウンロード回数の上限を超えました。',
+                'no-downloads-remaining' => 'これ以上ダウンロードできません。',
+                'file-not-found' => 'ファイルが見つかりません。',
+                'link-not-found' => 'ダウンロードリンクが見つかりません。',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'サイズ',
             'brand' => 'ブランド',
             'super-attributes' => 'スーパー属性',
+            'id-required' => '商品IDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/products/1"のようなIRI形式または数値IDが想定されています',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'REST API ストアフロント Swagger: :url',
             'rest-api-admin' => 'REST API 管理 Swagger: :url',
             'key-rotation-invalid-key' => '無効または期限切れのキーはローテーションできません',
+            'env-file-not-found' => '.envファイルが見つかりません',
+            'env-permission-denied' => '権限が拒否されました: .envファイルに書き込めません。ファイルの権限を確認してください。',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => '属性翻訳IDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/attribute-translations/1"のようなIRI形式または数値IDが想定されています',
+            'not-found' => '属性翻訳が見つかりません',
+        ],
+
+        'currency' => [
+            'id-required' => '通貨IDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/currencies/1"のようなIRI形式または数値IDが想定されています',
+            'not-found' => '通貨が見つかりません',
+        ],
+
+        'customer-address' => [
+            'id-required' => '顧客住所IDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/customer-addresses/1"のようなIRI形式または数値IDが想定されています',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => '出荷アイテムIDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/customer-order-shipment-items/1"のようなIRI形式または数値IDが想定されています',
+            'not-found' => '出荷アイテムが見つかりません',
+        ],
+
+        'page' => [
+            'id-required' => 'ページIDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/pages/1"のようなIRI形式または数値IDが想定されています',
+            'not-found' => 'ページが見つかりません',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'ページ翻訳IDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/page-translations/1"のようなIRI形式または数値IDが想定されています',
+            'not-found' => 'ページ翻訳が見つかりません',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'バンドルオプションIDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/product-bundle-options/1"のようなIRI形式または数値IDが想定されています',
+            'not-found' => 'バンドルオプションが見つかりません',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'バンドルオプション商品IDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/product-bundle-option-products/1"のようなIRI形式または数値IDが想定されています',
+            'not-found' => 'バンドルオプション商品が見つかりません',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'ダウンロードリンクIDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/product-downloadable-links/1"のようなIRI形式または数値IDが想定されています',
+            'not-found' => 'ダウンロードリンクが見つかりません',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'ダウンロードサンプルIDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/product-downloadable-samples/1"のようなIRI形式または数値IDが想定されています',
+            'not-found' => 'ダウンロードサンプルが見つかりません',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'グループ商品IDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/product-grouped-products/1"のようなIRI形式または数値IDが想定されています',
+            'not-found' => 'グループ商品が見つかりません',
+        ],
+
+        'product-images' => [
+            'id-required' => '商品画像IDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/product-images/1"のようなIRI形式または数値IDが想定されています',
+            'not-found' => '商品画像が見つかりません',
+        ],
+
+        'product-videos' => [
+            'id-required' => '商品動画IDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/product-videos/1"のようなIRI形式または数値IDが想定されています',
+            'not-found' => '商品動画が見つかりません',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'テーマカスタマイズIDが必要です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/theme-customizations/1"のようなIRI形式または数値IDが想定されています',
+            'not-found' => 'テーマカスタマイズが見つかりません',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'リソースIDが必要です',
+            'not-found' => 'リソースが見つかりません',
         ],
     ],
 

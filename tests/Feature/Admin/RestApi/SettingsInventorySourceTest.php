@@ -318,6 +318,38 @@ class SettingsInventorySourceTest extends AdminApiTestCase
     }
 
     /**
+     * Test update keeps the fields it was not sent.
+     */
+    public function test_update_keeps_omitted_fields(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertInventorySource(['status' => 1, 'priority' => 7]);
+
+        $response = $this->adminPut($admin, '/api/admin/settings/inventory-sources/'.$id, ['name' => 'PartialSrc']);
+
+        $response->assertOk();
+
+        $row = \DB::table('inventory_sources')->where('id', $id)->first();
+
+        expect($row->name)->toBe('PartialSrc')
+            ->and((int) $row->status)->toBe(1)
+            ->and((int) $row->priority)->toBe(7);
+    }
+
+    /**
+     * Test update can still switch the source off.
+     */
+    public function test_update_can_disable_the_source(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertInventorySource(['status' => 1]);
+
+        $this->adminPut($admin, '/api/admin/settings/inventory-sources/'.$id, ['status' => 0])->assertOk();
+
+        expect((int) \DB::table('inventory_sources')->where('id', $id)->value('status'))->toBe(0);
+    }
+
+    /**
      * Test update unknown id returns 404.
      */
     public function test_update_unknown_id_returns_404(): void

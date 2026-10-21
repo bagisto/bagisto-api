@@ -2,16 +2,21 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Customer;
 use Webkul\Product\Models\Product;
 use Webkul\RMA\Models\RMA;
 use Webkul\RMA\Models\RMAItem;
+use Webkul\RMA\Models\RMAMessage;
 use Webkul\RMA\Models\RMAStatus;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderItem;
+use Webkul\User\Models\Admin;
 
 class ReturnTest extends AdminApiTestCase
 {
@@ -259,6 +264,72 @@ class ReturnTest extends AdminApiTestCase
         $list->assertOk();
         expect(count($list->json()))->toBeGreaterThan(0);
         expect($list->json('0.message'))->toBe('Package received.');
+    }
+
+    /**
+     * Test send message accepts a multipart attachment and stores it on the private disk.
+     */
+    public function test_send_message_accepts_a_multipart_attachment(): void
+    {
+        Storage::fake('private');
+        $admin = $this->createAdmin();
+        $data = $this->createReturn();
+
+        $response = $this->multipartPost($admin, '/api/admin/rma/messages', [
+            'return_id' => $data['rma']->id,
+            'message' => 'Return label attached.',
+            'file' => UploadedFile::fake()->image('label.png'),
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('message'))->toBe('Return label attached.');
+        expect($response->json('attachment'))->toBe('label.png');
+        expect($response->json('attachmentUrl'))->toEndWith('/api/admin/rma/messages/'.$response->json('id').'/attachment');
+
+        $path = RMAMessage::query()->findOrFail($response->json('id'))->attachment_path;
+
+        expect($path)->toStartWith('rmas/'.$data['rma']->id.'/conversations/'.$response->json('id').'/');
+        Storage::disk('private')->assertExists($path);
+    }
+
+    /**
+     * Test create request accepts a single multipart image sent as images rather than images[].
+     */
+    public function test_create_request_accepts_a_single_multipart_image(): void
+    {
+        Storage::fake('private');
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
+        $admin = $this->createAdmin();
+        $seed = $this->seedEligibleItem();
+
+        $response = $this->multipartPost($admin, '/api/admin/rma/requests', [
+            'order_id' => $seed['order']->id,
+            'order_item_id' => $seed['orderItem']->id,
+            'rma_qty' => 1,
+            'resolution_type' => 'return',
+            'rma_reason_id' => 1,
+            'information' => 'Defective',
+            'images' => UploadedFile::fake()->image('evidence.png'),
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect(count($response->json('images')))->toBe(1);
+        $this->assertDatabaseHas('rma_images', ['rma_id' => $response->json('id')]);
+    }
+
+    /**
+     * Authenticated admin multipart POST.
+     */
+    private function multipartPost(Admin $admin, string $url, array $data): TestResponse
+    {
+        return $this->withHeaders(array_merge($this->adminHeaders($admin), [
+            'Accept' => 'application/json',
+            'Content-Type' => 'multipart/form-data',
+        ]))->post($url, $data);
     }
 
     /**

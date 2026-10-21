@@ -1754,6 +1754,7 @@ type ProductCustomizableOption implements Node {
   ): ProductCustomizableOptionPriceCursorConnection
   id: ID!
   isRequired: Boolean!
+  label: String
   maxCharacters: String
   product: Product
   sortOrder: Int!
@@ -1947,6 +1948,7 @@ type BookingProduct implements Node {
 type BookingProductDefaultSlot implements Node {
   _id: Int!
   allowSlotOverlap: Boolean!
+  bookingProductId: Int!
   bookingType: String!
   breakTime: Int
   duration: Int

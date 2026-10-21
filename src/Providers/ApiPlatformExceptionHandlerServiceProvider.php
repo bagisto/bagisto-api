@@ -5,7 +5,10 @@ namespace Webkul\BagistoApi\Providers;
 use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
 use ApiPlatform\Metadata\Exception\ProblemExceptionInterface;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\ServiceProvider;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface as SymfonyHttpExceptionInterface;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException as SerializerUnexpectedValueException;
 
 class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
@@ -20,13 +23,22 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
             function ($wrapped) {
                 return new class($wrapped) implements ExceptionHandler
                 {
+                    /**
+                     * Create a new instance around the wrapped handler.
+                     */
                     public function __construct(private $wrapped) {}
 
+                    /**
+                     * Report the exception through the wrapped handler.
+                     */
                     public function report(\Throwable $exception)
                     {
                         return $this->wrapped->report($exception);
                     }
 
+                    /**
+                     * Render the exception, answering API requests with JSON and their real status.
+                     */
                     public function render($request, \Throwable $exception)
                     {
                         if (
@@ -60,9 +72,32 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
                             ], $exception->getStatusCode());
                         }
 
+                        if ($this->isUnroutedApiRequest($request, $exception)) {
+                            return $this->renderRoutingException($exception);
+                        }
+
                         return $this->wrapped->render($request, $exception);
                     }
 
+                    /**
+                     * Render the exception for the console through the wrapped handler.
+                     */
+                    public function renderForConsole($output, \Throwable $exception)
+                    {
+                        return $this->wrapped->renderForConsole($output, $exception);
+                    }
+
+                    /**
+                     * Determine through the wrapped handler whether the exception is reported.
+                     */
+                    public function shouldReport(\Throwable $exception)
+                    {
+                        return $this->wrapped->shouldReport($exception);
+                    }
+
+                    /**
+                     * Determine whether the exception comes from malformed request input.
+                     */
                     private function isMalformedInput(\Throwable $exception): bool
                     {
                         if ($exception instanceof SerializerUnexpectedValueException) {
@@ -74,6 +109,9 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
                             && str_contains($exception->getMessage(), 'Cannot assign');
                     }
 
+                    /**
+                     * Build the client-facing detail for a malformed input exception.
+                     */
                     private function malformedInputDetail(\Throwable $exception): string
                     {
                         if (! $exception instanceof \TypeError) {
@@ -87,14 +125,30 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
                         return $exception->getMessage();
                     }
 
-                    public function renderForConsole($output, \Throwable $exception)
+                    /**
+                     * Determine whether the router refused an API request before any route matched.
+                     */
+                    private function isUnroutedApiRequest($request, \Throwable $exception): bool
                     {
-                        return $this->wrapped->renderForConsole($output, $exception);
+                        return $exception instanceof SymfonyHttpExceptionInterface
+                            && $request->is('api/*')
+                            && $request->route() === null;
                     }
 
-                    public function shouldReport(\Throwable $exception)
+                    /**
+                     * Render a routing exception as JSON with its own status and headers.
+                     */
+                    private function renderRoutingException(SymfonyHttpExceptionInterface $exception): JsonResponse
                     {
-                        return $this->wrapped->shouldReport($exception);
+                        $status = $exception->getStatusCode();
+
+                        return response()->json([
+                            'type' => '/errors/'.$status,
+                            'title' => Response::$statusTexts[$status] ?? 'Error',
+                            'status' => $status,
+                            'detail' => $exception->getMessage(),
+                            'message' => $exception->getMessage(),
+                        ], $status, $exception->getHeaders());
                     }
                 };
             }

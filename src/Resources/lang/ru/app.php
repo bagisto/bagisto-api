@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'Количество билетов на мероприятие должно быть неотрицательным числом.',
             'booking-ticket-required' => 'Выберите количество хотя бы для одного билета для бронирования мероприятия.',
             'booking-slot-unavailable' => 'Выбранный слот недоступен на указанную дату.',
+            'invalid-quantity' => 'Количество должно быть не менее 1',
+            'product-id-required' => 'Требуется ID товара',
+            'shipping-address-required' => 'Для расчёта доставки требуются страна и почтовый индекс',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'Требуется ID отзыва о продукте',
             'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/reviews/1", или числовой ID',
             'not-found' => 'Отзыв о продукте с ID ":id" не найден',
+            'item-not-found' => 'Элемент ":id" не найден.',
             'product-id-required' => 'Требуется ID продукта',
             'product-not-found' => 'Продукт не найден',
             'rating-invalid' => 'Оценка должна быть от 1 до 5',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'Пожалуйста, войдите, чтобы управлять своим отзывом',
             'not-owned' => 'Этот отзыв написан не вами, и его нельзя изменить или удалить',
             'invalid-attachments' => 'Недопустимый формат вложений.',
+            'invalid-product-id-format' => 'Недопустимый формат ID товара. Ожидается формат IRI, например "/api/shop/products/1", или числовой ID',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'Этот запрос на возврат нельзя открыть повторно.',
             'closed' => 'Запрос на возврат успешно закрыт.',
             'message-sent' => 'Сообщение успешно отправлено.',
+            'attachment-not-found' => 'Вложение сообщения не найдено.',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'Требуется ID отгрузки',
             'not-found' => 'Отгрузка с ID ":id" не найдена или не принадлежит этому клиенту',
             'item-not-found' => 'Позиция отгрузки с ID ":id" не найдена или не принадлежит этому клиенту',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/customer-order-shipments/1", или числовой ID',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'Требуется ID загружаемого продукта клиента',
             'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/customer-downloadable-products/1", или числовой ID',
             'not-found' => 'Загружаемый продукт клиента с ID ":id" не найден',
+
+            'download' => [
+                'unauthenticated' => 'Нет доступа: требуется аутентификация клиента.',
+                'not-found' => 'Загружаемый товар не найден.',
+                'pending' => 'Загрузка ожидает. Пожалуйста, дождитесь выставления счета по заказу.',
+                'limit-exceeded' => 'Превышен лимит загрузок.',
+                'no-downloads-remaining' => 'Больше нет доступных загрузок.',
+                'file-not-found' => 'Файл не найден.',
+                'link-not-found' => 'Ссылка для загрузки не найдена.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'Размер',
             'brand' => 'Бренд',
             'super-attributes' => 'Суператрибуты',
+            'id-required' => 'Требуется ID товара',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/products/1", или числовой ID',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Swagger REST API витрины: :url',
             'rest-api-admin' => 'Swagger REST API администратора: :url',
             'key-rotation-invalid-key' => 'Невозможно ротировать недействительный или истекший ключ',
+            'env-file-not-found' => 'Файл .env не найден',
+            'env-permission-denied' => 'Доступ запрещён: невозможно записать в файл .env. Проверьте права доступа к файлу.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'Требуется ID перевода атрибута',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/attribute-translations/1", или числовой ID',
+            'not-found' => 'Перевод атрибута не найден',
+        ],
+
+        'currency' => [
+            'id-required' => 'Требуется ID валюты',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/currencies/1", или числовой ID',
+            'not-found' => 'Валюта не найдена',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'Требуется ID адреса клиента',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/customer-addresses/1", или числовой ID',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'Требуется ID позиции отгрузки',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/customer-order-shipment-items/1", или числовой ID',
+            'not-found' => 'Позиция отгрузки не найдена',
+        ],
+
+        'page' => [
+            'id-required' => 'Требуется ID страницы',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/pages/1", или числовой ID',
+            'not-found' => 'Страница не найдена',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'Требуется ID перевода страницы',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/page-translations/1", или числовой ID',
+            'not-found' => 'Перевод страницы не найден',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'Требуется ID опции комплекта',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/product-bundle-options/1", или числовой ID',
+            'not-found' => 'Опция комплекта не найдена',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'Требуется ID товара опции комплекта',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/product-bundle-option-products/1", или числовой ID',
+            'not-found' => 'Товар опции комплекта не найден',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'Требуется ID ссылки для скачивания',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/product-downloadable-links/1", или числовой ID',
+            'not-found' => 'Ссылка для скачивания не найдена',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'Требуется ID образца для скачивания',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/product-downloadable-samples/1", или числовой ID',
+            'not-found' => 'Образец для скачивания не найден',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'Требуется ID сгруппированного товара',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/product-grouped-products/1", или числовой ID',
+            'not-found' => 'Сгруппированный товар не найден',
+        ],
+
+        'product-images' => [
+            'id-required' => 'Требуется ID изображения товара',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/product-images/1", или числовой ID',
+            'not-found' => 'Изображение товара не найдено',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'Требуется ID видео товара',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/product-videos/1", или числовой ID',
+            'not-found' => 'Видео товара не найдено',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'Требуется ID настройки темы',
+            'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/theme-customizations/1", или числовой ID',
+            'not-found' => 'Настройка темы не найдена',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'Требуется ID ресурса',
+            'not-found' => 'Ресурс не найден',
         ],
     ],
 

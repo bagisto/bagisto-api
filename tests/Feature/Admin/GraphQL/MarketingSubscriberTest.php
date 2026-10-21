@@ -152,7 +152,7 @@ class MarketingSubscriberTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: deleteAdminMarketingSubscriberInput!) {
               deleteAdminMarketingSubscriber(input: $input) {
-                adminMarketingSubscriber { id }
+                adminMarketingSubscriber { id _id }
               }
             }
         GQL;
@@ -160,6 +160,10 @@ class MarketingSubscriberTest extends AdminApiTestCase
             'input' => ['id' => '/api/admin/marketing/subscribers/'.$s->id],
         ], $admin);
         $resp->assertOk();
+
+        expect($resp->json('errors'))->toBeNull()
+            ->and($resp->json('data.deleteAdminMarketingSubscriber.adminMarketingSubscriber.id'))->toBe('/api/admin/marketing/subscribers/'.$s->id);
+
         expect(SubscribersList::find($s->id))->toBeNull();
     }
 

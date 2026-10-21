@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'සිදුවීම් ටිකට්පත් ප්‍රමාණය සෘණ නොවන සංඛ්‍යාවක් විය යුතුය.',
             'booking-ticket-required' => 'සිදුවීම් වෙන්කිරීම සඳහා අවම වශයෙන් එක් ටිකට්පත් ප්‍රමාණයක් තෝරන්න.',
             'booking-slot-unavailable' => 'තෝරාගත් කාල සටහන ලබා දී ඇති දිනය සඳහා ලබා ගත නොහැක.',
+            'invalid-quantity' => 'ප්‍රමාණය අවම වශයෙන් 1 විය යුතුය',
+            'product-id-required' => 'නිෂ්පාදන ID අවශ්‍ය වේ',
+            'shipping-address-required' => 'නැව්ගත කිරීම ඇස්තමේන්තු කිරීමට රට සහ තැපැල් කේතය අවශ්‍ය වේ',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'නිෂ්පාදන සමාලෝචන ID අවශ්‍ය වේ',
             'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/reviews/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
             'not-found' => '":id" ID සහිත නිෂ්පාදන සමාලෝචනය හමු නොවිණි',
+            'item-not-found' => '":id" අයිතමය හමු නොවිණි.',
             'product-id-required' => 'නිෂ්පාදන ID අවශ්‍ය වේ',
             'product-not-found' => 'නිෂ්පාදනය හමු නොවිණි',
             'rating-invalid' => 'ශ්‍රේණිගත කිරීම 1 සහ 5 අතර විය යුතුය',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'ඔබගේ සමාලෝචනය කළමනාකරණය කිරීමට කරුණාකර පුරනය වන්න',
             'not-owned' => 'මෙම සමාලෝචනය ඔබ විසින් ලියා නොමැති බැවින් එය වෙනස් කිරීමට හෝ මකා දැමීමට නොහැක',
             'invalid-attachments' => 'අවලංගු ඇමුණුම් ආකෘතිය.',
+            'invalid-product-id-format' => 'අවලංගු නිෂ්පාදන ID ආකෘතිය. "/api/shop/products/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'මෙම ආපසු යැවීමේ ඉල්ලීම නැවත විවෘත කළ නොහැක.',
             'closed' => 'ආපසු යැවීමේ ඉල්ලීම සාර්ථකව වසා දමන ලදී.',
             'message-sent' => 'පණිවිඩය සාර්ථකව යවන ලදී.',
+            'attachment-not-found' => 'පණිවිඩ ඇමුණුම හමු නොවිණි.',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'නැව්ගත කිරීමේ ID අවශ්‍ය වේ',
             'not-found' => '":id" ID සහිත නැව්ගත කිරීම හමු නොවිණි හෝ මෙම පාරිභෝගිකයාට අයත් නොවේ',
             'item-not-found' => '":id" ID සහිත නැව්ගත කිරීමේ අයිතමය හමු නොවිණි හෝ මෙම පාරිභෝගිකයාට අයත් නොවේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/customer-order-shipments/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'පාරිභෝගික බාගත කළ හැකි නිෂ්පාදන ID අවශ්‍ය වේ',
             'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/customer-downloadable-products/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
             'not-found' => '":id" ID සහිත පාරිභෝගික බාගත කළ හැකි නිෂ්පාදනය හමු නොවිණි',
+
+            'download' => [
+                'unauthenticated' => 'අනවසර: පාරිභෝගික සත්‍යාපනය අවශ්‍ය වේ.',
+                'not-found' => 'බාගත කළ හැකි නිෂ්පාදනය හමු නොවිණි.',
+                'pending' => 'බාගැනීම පොරොත්තුවෙන් පවතී. කරුණාකර ඇණවුම ඉන්වොයිස් කරන තෙක් රැඳී සිටින්න.',
+                'limit-exceeded' => 'බාගැනීම් සීමාව ඉක්මවා ඇත.',
+                'no-downloads-remaining' => 'තවත් බාගැනීම් ලබා ගත නොහැක.',
+                'file-not-found' => 'ගොනුව හමු නොවිණි.',
+                'link-not-found' => 'බාගත කළ හැකි සබැඳිය හමු නොවිණි.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'ප්‍රමාණය',
             'brand' => 'වෙළඳ නාමය',
             'super-attributes' => 'සුපිරි ගුණාංග',
+            'id-required' => 'නිෂ්පාදන ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/products/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Rest API Storefront Swagger: :url',
             'rest-api-admin' => 'Rest API Admin Swagger: :url',
             'key-rotation-invalid-key' => 'අවලංගු හෝ කල් ඉකුත් වූ යතුරක් භ්‍රමණය කළ නොහැක',
+            'env-file-not-found' => '.env ගොනුව හමු නොවිණි',
+            'env-permission-denied' => 'අවසරය ප්‍රතික්ෂේප විය: .env ගොනුවට ලිවිය නොහැක. කරුණාකර ගොනු අවසර පරීක්ෂා කරන්න.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'ගුණාංග පරිවර්තන ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/attribute-translations/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => 'ගුණාංග පරිවර්තනය හමු නොවිණි',
+        ],
+
+        'currency' => [
+            'id-required' => 'මුදල් ඒකක ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/currencies/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => 'මුදල් ඒකකය හමු නොවිණි',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'පාරිභෝගික ලිපින ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/customer-addresses/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'නැව්ගත කිරීමේ අයිතම ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/customer-order-shipment-items/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => 'නැව්ගත කිරීමේ අයිතමය හමු නොවිණි',
+        ],
+
+        'page' => [
+            'id-required' => 'පිටු ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/pages/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => 'පිටුව හමු නොවිණි',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'පිටු පරිවර්තන ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/page-translations/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => 'පිටු පරිවර්තනය හමු නොවිණි',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'පැකේජ විකල්ප ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/product-bundle-options/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => 'පැකේජ විකල්පය හමු නොවිණි',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'පැකේජ විකල්ප නිෂ්පාදන ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/product-bundle-option-products/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => 'පැකේජ විකල්ප නිෂ්පාදනය හමු නොවිණි',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'බාගත කළ හැකි සබැඳි ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/product-downloadable-links/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => 'බාගත කළ හැකි සබැඳිය හමු නොවිණි',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'බාගත කළ හැකි නියැදි ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/product-downloadable-samples/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => 'බාගත කළ හැකි නියැදිය හමු නොවිණි',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'සමූහගත නිෂ්පාදන ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/product-grouped-products/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => 'සමූහගත නිෂ්පාදනය හමු නොවිණි',
+        ],
+
+        'product-images' => [
+            'id-required' => 'නිෂ්පාදන රූප ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/product-images/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => 'නිෂ්පාදන රූපය හමු නොවිණි',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'නිෂ්පාදන වීඩියෝ ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/product-videos/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => 'නිෂ්පාදන වීඩියෝව හමු නොවිණි',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'තේමා අභිරුචිකරණ ID අවශ්‍ය වේ',
+            'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/theme-customizations/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => 'තේමා අභිරුචිකරණය හමු නොවිණි',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'සම්පත් ID අවශ්‍ය වේ',
+            'not-found' => 'සම්පත හමු නොවිණි',
         ],
     ],
 

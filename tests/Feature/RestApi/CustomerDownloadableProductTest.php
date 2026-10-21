@@ -208,6 +208,28 @@ class CustomerDownloadableProductTest extends RestApiTestCase
     }
 
     /**
+     * A purchased file missing from the private disk is reported without consuming a download.
+     */
+    public function test_download_of_a_missing_purchased_file_does_not_count_the_download(): void
+    {
+        Storage::fake('private');
+
+        $testData = $this->createTestData();
+
+        $this->invoiceOrder($testData['order']);
+
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            '/api/shop/customer-downloadable-products/'.$testData['purchase1']->id.'/download'
+        );
+
+        $response->assertNotFound();
+        expect($response->json('error'))->toBe('file_not_found');
+        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(1);
+        expect($testData['purchase1']->fresh()->status)->toBe('available');
+    }
+
+    /**
      * Downloading a purchased file without a customer token is refused.
      */
     public function test_download_purchased_file_requires_authentication(): void

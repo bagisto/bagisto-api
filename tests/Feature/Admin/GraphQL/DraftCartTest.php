@@ -3,10 +3,12 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
-use Webkul\Customer\Models\Customer;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 
 class DraftCartTest extends AdminApiTestCase
 {
+    use AdminFixtureFactory;
+
     /**
      * The mutation.
      */
@@ -48,27 +50,33 @@ class DraftCartTest extends AdminApiTestCase
     }
 
     /**
-     * Test create draft cart success.
+     * The draft cart mutation returns the new cart id and the customer id.
      */
     public function test_create_draft_cart_success(): void
     {
-        $admin = $this->createAdmin();
-        $customer = Customer::query()->first();
+        $customer = $this->findOrCreateCustomer();
 
-        if (! $customer) {
-            $this->markTestSkipped('No customer fixture in DB.');
-        }
+        $mutation = <<<'GQL'
+            mutation CreateAdminDraftCart($input: createAdminDraftCartInput!) {
+              createAdminDraftCart(input: $input) {
+                adminDraftCart { id cartId customerId success message }
+              }
+            }
+        GQL;
 
-        $resp = $this->adminGraphQL($this->mutation, ['input' => ['customerId' => $customer->id]], $admin);
-        $resp->assertOk();
+        $resp = $this->adminGraphQL($mutation, ['input' => ['customerId' => $customer->id]], $this->createAdmin());
 
-        $cartId = $resp->json('data.createAdminDraftCart.adminDraftCart.id');
+        expect($resp->json('errors'))->toBeNull();
 
-        if (
-            $cartId !== null
-            && is_string($cartId)
-        ) {
-            expect($cartId)->toContain('/');
-        }
+        $node = $resp->json('data.createAdminDraftCart.adminDraftCart');
+
+        expect($node['cartId'])->toBeInt()->toBeGreaterThan(0);
+        expect($node['customerId'])->toBe($customer->id);
+        expect($node['success'])->toBeTrue();
+        expect($node['id'])->toContain('/');
+        $this->assertDatabaseHas('cart', [
+            'id' => $node['cartId'],
+            'customer_id' => $customer->id,
+        ]);
     }
 }

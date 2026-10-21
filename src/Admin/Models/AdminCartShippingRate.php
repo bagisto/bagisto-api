@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCartShippingMethodsProvider;
 
 #[ApiResource(
@@ -76,6 +77,8 @@ use Webkul\BagistoApi\Admin\State\AdminCartShippingMethodsProvider;
 )]
 class AdminCartShippingRate
 {
+    use AcceptsCamelCaseWrites;
+
     /**
      * The method.
      */
@@ -86,19 +89,19 @@ class AdminCartShippingRate
      * The carrier code.
      */
     #[ApiProperty(writable: false)]
-    public ?string $carrierCode = null;
+    public ?string $carrier_code = null;
 
     /**
      * The carrier title.
      */
     #[ApiProperty(writable: false)]
-    public ?string $carrierTitle = null;
+    public ?string $carrier_title = null;
 
     /**
      * The method title.
      */
     #[ApiProperty(writable: false)]
-    public ?string $methodTitle = null;
+    public ?string $method_title = null;
 
     /**
      * The price.
@@ -110,17 +113,17 @@ class AdminCartShippingRate
      * The formatted price.
      */
     #[ApiProperty(writable: false)]
-    public ?string $formattedPrice = null;
+    public ?string $formatted_price = null;
 
     /**
      * The base total.
      */
     #[ApiProperty(writable: false)]
-    public ?float $baseTotal = null;
+    public ?float $base_total = null;
 
     /**
      * The formatted base total.
      */
     #[ApiProperty(writable: false)]
-    public ?string $formattedBaseTotal = null;
+    public ?string $formatted_base_total = null;
 }

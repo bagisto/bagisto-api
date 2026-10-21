@@ -34,6 +34,10 @@ trait HandlesCartLifecycle
             throw new AuthorizationException(__('bagistoapi::app.graphql.cart.unauthorized-access'));
         }
 
+        if (! $cart->items()->exists()) {
+            return (array) CartData::fromModel($cart->load('items.product'));
+        }
+
         CartFacade::setCart($cart);
 
         if (
@@ -46,6 +50,11 @@ trait HandlesCartLifecycle
         CartFacade::collectTotals();
 
         $cart = CartFacade::getCart();
+
+        if (! $cart) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.cart-not-found'));
+        }
+
         $cart->load('items.product');
 
         $cartData = CartData::fromModel($cart);

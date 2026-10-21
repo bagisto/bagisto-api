@@ -316,10 +316,32 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
 
         expect($node['_id'])->toBe($id);
         expect($node['success'])->toBeTrue();
-        expect($node['stats'])->toBeArray();
+        expect($node['stats']['batches'])->toMatchArray([
+            'total' => 1,
+            'completed' => 1,
+            'remaining' => 0,
+        ]);
+        expect($node['stats']['progress'])->toEqual(100);
 
         expect(\DB::table('import_batches')->where('id', $batchId)->value('state'))->toBe('linked');
         expect(\DB::table('imports')->where('id', $id)->value('state'))->toBe('linking');
+    }
+
+    /**
+     * Linking an import already in linking reports the batch it just linked as completed.
+     */
+    public function test_link_mutation_reports_fresh_stats_for_an_import_already_linking(): void
+    {
+        [$id] = $this->insertProcessableImport('linking', 'processed');
+
+        $response = $this->runImportAction('link', $id, $this->createAdmin());
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.linkAdminSettingsDataTransferImportLink.adminSettingsDataTransferImportLink.stats.batches'))->toMatchArray([
+            'total' => 1,
+            'completed' => 1,
+            'remaining' => 0,
+        ]);
     }
 
     /**
@@ -382,10 +404,32 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
 
         expect($node['_id'])->toBe($id);
         expect($node['success'])->toBeTrue();
-        expect($node['stats'])->toBeArray();
+        expect($node['stats']['batches'])->toMatchArray([
+            'total' => 1,
+            'completed' => 1,
+            'remaining' => 0,
+        ]);
+        expect($node['stats']['progress'])->toEqual(100);
 
         expect(\DB::table('import_batches')->where('id', $batchId)->value('state'))->toBe('indexed');
         expect(\DB::table('imports')->where('id', $id)->value('state'))->toBe('indexing');
+    }
+
+    /**
+     * Indexing an import already in indexing reports the batch it just indexed as completed.
+     */
+    public function test_index_mutation_reports_fresh_stats_for_an_import_already_indexing(): void
+    {
+        [$id] = $this->insertProcessableImport('indexing', 'linked');
+
+        $response = $this->runImportAction('index', $id, $this->createAdmin());
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.indexAdminSettingsDataTransferImportIndex.adminSettingsDataTransferImportIndex.stats.batches'))->toMatchArray([
+            'total' => 1,
+            'completed' => 1,
+            'remaining' => 0,
+        ]);
     }
 
     /**

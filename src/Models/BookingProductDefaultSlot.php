@@ -72,6 +72,11 @@ class BookingProductDefaultSlot extends BaseModel
     protected $casts = [];
 
     /**
+     * Hide the booking product relation so its foreign key stays a readable column.
+     */
+    protected $hidden = ['booking_product'];
+
+    /**
      * Get booking type.
      */
     #[ApiProperty(writable: false, readable: true, required: false)]

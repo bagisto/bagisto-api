@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'La quantitat d\'entrades de l\'esdeveniment ha de ser un nombre no negatiu.',
             'booking-ticket-required' => 'Seleccioneu almenys una quantitat d\'entrades per a la reserva de l\'esdeveniment.',
             'booking-slot-unavailable' => 'La franja seleccionada no està disponible per a la data indicada.',
+            'invalid-quantity' => 'La quantitat ha de ser com a mínim 1',
+            'product-id-required' => 'Cal l\'ID del producte',
+            'shipping-address-required' => 'Cal el país i el codi postal per estimar l\'enviament',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'Cal l\'ID de la ressenya del producte',
             'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/reviews/1" o un ID numèric',
             'not-found' => 'No s\'ha trobat la ressenya del producte amb l\'ID ":id"',
+            'item-not-found' => 'No s\'ha trobat l\'element ":id".',
             'product-id-required' => 'Es requereix l\'ID del producte',
             'product-not-found' => 'Producte no trobat',
             'rating-invalid' => 'La valoració ha d\'estar entre 1 i 5',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'Inicieu la sessió per gestionar la vostra ressenya',
             'not-owned' => 'Aquesta ressenya no l\'heu escrita vosaltres i no es pot modificar ni suprimir',
             'invalid-attachments' => 'Format de fitxers adjunts no vàlid.',
+            'invalid-product-id-format' => 'Format d\'ID de producte no vàlid. S\'espera el format IRI com "/api/shop/products/1" o un ID numèric',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'Aquesta sol·licitud de devolució no es pot reobrir.',
             'closed' => 'Sol·licitud de devolució tancada correctament.',
             'message-sent' => 'Missatge enviat correctament.',
+            'attachment-not-found' => 'Fitxer adjunt del missatge no trobat.',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'Cal l\'ID de l\'enviament',
             'not-found' => 'L\'enviament amb l\'ID ":id" no s\'ha trobat o no pertany a aquest client',
             'item-not-found' => 'L\'element d\'enviament amb l\'ID ":id" no s\'ha trobat o no pertany a aquest client',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/customer-order-shipments/1" o un ID numèric',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'Cal l\'ID del producte descarregable del client',
             'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/customer-downloadable-products/1" o un ID numèric',
             'not-found' => 'No s\'ha trobat el producte descarregable del client amb l\'ID ":id"',
+
+            'download' => [
+                'unauthenticated' => 'No autoritzat: cal l\'autenticació del client.',
+                'not-found' => 'Producte descarregable no trobat.',
+                'pending' => 'La descàrrega està pendent. Espereu que la comanda es facturi.',
+                'limit-exceeded' => 'S\'ha superat el límit de descàrregues.',
+                'no-downloads-remaining' => 'No queden més descàrregues disponibles.',
+                'file-not-found' => 'Fitxer no trobat.',
+                'link-not-found' => 'Enllaç descarregable no trobat.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'Mida',
             'brand' => 'Marca',
             'super-attributes' => 'Superatributs',
+            'id-required' => 'Cal l\'ID del producte',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/products/1" o un ID numèric',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Swagger de l\'API REST de la botiga: :url',
             'rest-api-admin' => 'Swagger de l\'API REST d\'administració: :url',
             'key-rotation-invalid-key' => 'No es pot rotar una clau no vàlida o caducada',
+            'env-file-not-found' => 'No s\'ha trobat el fitxer .env',
+            'env-permission-denied' => 'Permís denegat: no es pot escriure al fitxer .env. Comproveu els permisos del fitxer.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'Cal l\'ID de la traducció de l\'atribut',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/attribute-translations/1" o un ID numèric',
+            'not-found' => 'Traducció de l\'atribut no trobada',
+        ],
+
+        'currency' => [
+            'id-required' => 'Cal l\'ID de la moneda',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/currencies/1" o un ID numèric',
+            'not-found' => 'Moneda no trobada',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'Cal l\'ID de l\'adreça del client',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/customer-addresses/1" o un ID numèric',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'Cal l\'ID de l\'article de l\'enviament',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/customer-order-shipment-items/1" o un ID numèric',
+            'not-found' => 'Article de l\'enviament no trobat',
+        ],
+
+        'page' => [
+            'id-required' => 'Cal l\'ID de la pàgina',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/pages/1" o un ID numèric',
+            'not-found' => 'Pàgina no trobada',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'Cal l\'ID de la traducció de la pàgina',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/page-translations/1" o un ID numèric',
+            'not-found' => 'Traducció de la pàgina no trobada',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'Cal l\'ID de l\'opció del paquet',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/product-bundle-options/1" o un ID numèric',
+            'not-found' => 'Opció del paquet no trobada',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'Cal l\'ID del producte de l\'opció del paquet',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/product-bundle-option-products/1" o un ID numèric',
+            'not-found' => 'Producte de l\'opció del paquet no trobat',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'Cal l\'ID de l\'enllaç descarregable',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/product-downloadable-links/1" o un ID numèric',
+            'not-found' => 'Enllaç descarregable no trobat',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'Cal l\'ID de la mostra descarregable',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/product-downloadable-samples/1" o un ID numèric',
+            'not-found' => 'Mostra descarregable no trobada',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'Cal l\'ID del producte agrupat',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/product-grouped-products/1" o un ID numèric',
+            'not-found' => 'Producte agrupat no trobat',
+        ],
+
+        'product-images' => [
+            'id-required' => 'Cal l\'ID de la imatge del producte',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/product-images/1" o un ID numèric',
+            'not-found' => 'Imatge del producte no trobada',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'Cal l\'ID del vídeo del producte',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/product-videos/1" o un ID numèric',
+            'not-found' => 'Vídeo del producte no trobat',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'Cal l\'ID de la personalització del tema',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/theme-customizations/1" o un ID numèric',
+            'not-found' => 'Personalització del tema no trobada',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'Cal l\'ID del recurs',
+            'not-found' => 'Recurs no trobat',
         ],
     ],
 

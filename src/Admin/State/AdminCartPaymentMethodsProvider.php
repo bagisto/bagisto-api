@@ -41,7 +41,7 @@ class AdminCartPaymentMethodsProvider implements ProviderInterface
         foreach ($methods as $method) {
             $row = new AdminCartPaymentMethod;
             $row->method = $method['method'] ?? null;
-            $row->methodTitle = $method['method_title'] ?? null;
+            $row->method_title = $method['method_title'] ?? null;
             $row->description = $method['description'] ?? null;
             $row->sort = isset($method['sort']) ? (int) $method['sort'] : null;
             $row->image = $method['image'] ?? null;

@@ -17,6 +17,7 @@ use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminReturn;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\State\Concerns\ReadsReturnImages;
 use Webkul\RMA\Enums\DefaultRMAResolution;
 use Webkul\RMA\Enums\DefaultRMAStatusEnum;
 use Webkul\RMA\Repositories\RMAAdditionalFieldRepository;
@@ -36,6 +37,7 @@ class AdminReturnProcessor implements ProcessorInterface
 {
     use BuildsAdminReturn;
     use ChecksAdminPermission;
+    use ReadsReturnImages;
 
     /**
      * Create a new instance.
@@ -70,10 +72,7 @@ class AdminReturnProcessor implements ProcessorInterface
             return $this->handleReopen(self::basename($data->id));
         }
 
-        if (
-            $data instanceof AdminReturn
-            && $operation instanceof Post
-        ) {
+        if ($operation instanceof Post) {
             $action = $this->actionFromTemplate($operation->getUriTemplate());
 
             if ($action === 'update-status') {
@@ -99,9 +98,7 @@ class AdminReturnProcessor implements ProcessorInterface
                 'variant' => self::intOrNull(request()->input('variant')),
             ];
 
-            $images = request()->hasFile('images') ? request()->file('images') : [];
-
-            return $this->handleCreate($input, $images);
+            return $this->handleCreate($input, $this->returnImagesFromRequest());
         }
 
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);

@@ -51,7 +51,7 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.search_seo.sitemaps.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if (
@@ -145,12 +145,14 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
     /**
      * Handle delete.
      */
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingSitemap
     {
         $sitemap = Sitemap::find($id);
         if (! $sitemap) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.sitemap.not-found'));
         }
+
+        $snapshot = $asResource ? $this->itemProvider->mapToDtoPublic($sitemap) : null;
 
         try {
             $sitemap->deleteFromStorage();
@@ -172,7 +174,7 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
 
         Event::dispatch('marketing.search_seo.sitemap.delete.after', $id);
 
-        return ['message' => __('bagistoapi::app.admin.marketing.sitemap.deleted')];
+        return $snapshot ?? ['message' => __('bagistoapi::app.admin.marketing.sitemap.deleted')];
     }
 
     /**

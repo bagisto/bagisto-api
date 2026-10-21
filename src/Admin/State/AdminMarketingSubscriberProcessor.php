@@ -46,7 +46,7 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.communications.subscribers.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if (
@@ -112,12 +112,14 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
     /**
      * Handle delete.
      */
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingSubscriber
     {
         $existing = SubscribersList::find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.subscriber.not-found'));
         }
+
+        $snapshot = $asResource ? $this->buildResult($id, true) : null;
 
         if ($existing->customer) {
             $existing->customer->subscribed_to_news_letter = false;
@@ -126,7 +128,7 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
 
         $existing->delete();
 
-        return ['message' => __('bagistoapi::app.admin.marketing.subscriber.deleted')];
+        return $snapshot ?? ['message' => __('bagistoapi::app.admin.marketing.subscriber.deleted')];
     }
 
     /**

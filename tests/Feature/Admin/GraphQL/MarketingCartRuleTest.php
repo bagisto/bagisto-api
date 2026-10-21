@@ -255,12 +255,18 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: deleteAdminMarketingCartRuleInput!) {
               deleteAdminMarketingCartRule(input: $input) {
-                adminMarketingCartRule { id }
+                adminMarketingCartRule { id _id }
               }
             }
         GQL;
         $iri = '/api/admin/marketing/cart-rules/'.$id;
-        $this->adminGraphQL($mutation, ['input' => ['id' => $iri]], $admin)->assertOk();
+        $response = $this->adminGraphQL($mutation, ['input' => ['id' => $iri]], $admin);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.deleteAdminMarketingCartRule.adminMarketingCartRule.id'))->toBe($iri);
+
         expect(\DB::table('cart_rules')->where('id', $id)->exists())->toBeFalse();
     }
 

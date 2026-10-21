@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'La quantità di biglietti per l\'evento deve essere un numero non negativo.',
             'booking-ticket-required' => 'Seleziona la quantità di almeno un biglietto per la prenotazione dell\'evento.',
             'booking-slot-unavailable' => 'La fascia oraria selezionata non è disponibile per la data indicata.',
+            'invalid-quantity' => 'La quantità deve essere almeno 1',
+            'product-id-required' => 'L\'ID del prodotto è obbligatorio',
+            'shipping-address-required' => 'Paese e CAP sono obbligatori per stimare la spedizione',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'L\'ID della recensione del prodotto è obbligatorio',
             'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/reviews/1" o ID numerico',
             'not-found' => 'Recensione del prodotto con ID ":id" non trovata',
+            'item-not-found' => 'Elemento ":id" non trovato.',
             'product-id-required' => 'L\'ID del prodotto è obbligatorio',
             'product-not-found' => 'Prodotto non trovato',
             'rating-invalid' => 'La valutazione deve essere compresa tra 1 e 5',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'Accedi per gestire la tua recensione',
             'not-owned' => 'Questa recensione non è stata scritta da te e non può essere modificata o eliminata',
             'invalid-attachments' => 'Formato degli allegati non valido.',
+            'invalid-product-id-format' => 'Formato ID prodotto non valido. Previsto formato IRI come "/api/shop/products/1" o ID numerico',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'Questa richiesta di reso non può essere riaperta.',
             'closed' => 'Richiesta di reso chiusa con successo.',
             'message-sent' => 'Messaggio inviato con successo.',
+            'attachment-not-found' => 'Allegato del messaggio non trovato.',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'L\'ID della spedizione è obbligatorio',
             'not-found' => 'Spedizione con ID ":id" non trovata o non appartenente a questo cliente',
             'item-not-found' => 'Articolo della spedizione con ID ":id" non trovato o non appartenente a questo cliente',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/customer-order-shipments/1" o ID numerico',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'L\'ID del prodotto scaricabile del cliente è obbligatorio',
             'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/customer-downloadable-products/1" o ID numerico',
             'not-found' => 'Prodotto scaricabile del cliente con ID ":id" non trovato',
+
+            'download' => [
+                'unauthenticated' => 'Non autorizzato: è richiesta l\'autenticazione del cliente.',
+                'not-found' => 'Prodotto scaricabile non trovato.',
+                'pending' => 'Il download è in sospeso. Attendi che l\'ordine venga fatturato.',
+                'limit-exceeded' => 'Limite di download superato.',
+                'no-downloads-remaining' => 'Nessun altro download disponibile.',
+                'file-not-found' => 'File non trovato.',
+                'link-not-found' => 'Link scaricabile non trovato.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'Taglia',
             'brand' => 'Marca',
             'super-attributes' => 'Super attributi',
+            'id-required' => 'L\'ID del prodotto è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/products/1" o ID numerico',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Swagger REST API Storefront: :url',
             'rest-api-admin' => 'Swagger REST API Admin: :url',
             'key-rotation-invalid-key' => 'Impossibile ruotare una chiave non valida o scaduta',
+            'env-file-not-found' => 'File .env non trovato',
+            'env-permission-denied' => 'Permesso negato: impossibile scrivere nel file .env. Controlla i permessi del file.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'L\'ID della traduzione dell\'attributo è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/attribute-translations/1" o ID numerico',
+            'not-found' => 'Traduzione dell\'attributo non trovata',
+        ],
+
+        'currency' => [
+            'id-required' => 'L\'ID della valuta è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/currencies/1" o ID numerico',
+            'not-found' => 'Valuta non trovata',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'L\'ID dell\'indirizzo del cliente è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/customer-addresses/1" o ID numerico',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'L\'ID dell\'articolo della spedizione è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/customer-order-shipment-items/1" o ID numerico',
+            'not-found' => 'Articolo della spedizione non trovato',
+        ],
+
+        'page' => [
+            'id-required' => 'L\'ID della pagina è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/pages/1" o ID numerico',
+            'not-found' => 'Pagina non trovata',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'L\'ID della traduzione della pagina è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/page-translations/1" o ID numerico',
+            'not-found' => 'Traduzione della pagina non trovata',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'L\'ID dell\'opzione del bundle è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/product-bundle-options/1" o ID numerico',
+            'not-found' => 'Opzione del bundle non trovata',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'L\'ID del prodotto dell\'opzione del bundle è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/product-bundle-option-products/1" o ID numerico',
+            'not-found' => 'Prodotto dell\'opzione del bundle non trovato',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'L\'ID del link scaricabile è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/product-downloadable-links/1" o ID numerico',
+            'not-found' => 'Link scaricabile non trovato',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'L\'ID del campione scaricabile è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/product-downloadable-samples/1" o ID numerico',
+            'not-found' => 'Campione scaricabile non trovato',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'L\'ID del prodotto raggruppato è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/product-grouped-products/1" o ID numerico',
+            'not-found' => 'Prodotto raggruppato non trovato',
+        ],
+
+        'product-images' => [
+            'id-required' => 'L\'ID dell\'immagine del prodotto è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/product-images/1" o ID numerico',
+            'not-found' => 'Immagine del prodotto non trovata',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'L\'ID del video del prodotto è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/product-videos/1" o ID numerico',
+            'not-found' => 'Video del prodotto non trovato',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'L\'ID della personalizzazione del tema è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/theme-customizations/1" o ID numerico',
+            'not-found' => 'Personalizzazione del tema non trovata',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'L\'ID della risorsa è obbligatorio',
+            'not-found' => 'Risorsa non trovata',
         ],
     ],
 

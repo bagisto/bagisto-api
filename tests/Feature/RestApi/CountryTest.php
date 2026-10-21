@@ -304,6 +304,31 @@ class CountryTest extends RestApiTestCase
         expect($body['countryId'])->toBe($this->countryWithStates);
     }
 
+    /**
+     * Test get nested state under a different country returns not found.
+     */
+    public function test_get_nested_state_under_different_country_returns_not_found(): void
+    {
+        $this->seedRequiredData();
+        $stateId = $this->firstStateIdForCountry($this->countryWithStates);
+
+        $response = $this->publicGet($this->nestedStateUrl($this->countryWithoutStates, $stateId));
+
+        $response->assertNotFound();
+    }
+
+    /**
+     * Test get nested unknown state returns not found.
+     */
+    public function test_get_nested_unknown_state_returns_not_found(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicGet($this->nestedStateUrl($this->countryWithStates, 999999));
+
+        $response->assertNotFound();
+    }
+
     // ============================================================================
     // GET /country-states/{id} (Root Single)
     // ============================================================================
@@ -404,7 +429,7 @@ class CountryTest extends RestApiTestCase
      */
     private function firstStateIdForCountry(int $countryId): int
     {
-        $id = CountryState::where('country_id', $countryId)->orderBy('id')->value('id');
+        $id = CountryState::query()->where('country_id', $countryId)->orderBy('id')->value('id');
 
         if (! $id) {
             $this->markTestSkipped("No states found for country {$countryId}.");

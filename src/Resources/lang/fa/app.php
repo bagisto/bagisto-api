@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'تعداد بلیت رویداد باید یک عدد نامنفی باشد.',
             'booking-ticket-required' => 'برای رزرو رویداد حداقل تعداد یک بلیت را انتخاب کنید.',
             'booking-slot-unavailable' => 'بازه زمانی انتخاب‌شده برای تاریخ داده‌شده در دسترس نیست.',
+            'invalid-quantity' => 'مقدار باید حداقل 1 باشد',
+            'product-id-required' => 'شناسه محصول الزامی است',
+            'shipping-address-required' => 'کشور و کد پستی برای تخمین هزینه ارسال الزامی است',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'شناسه نظر محصول الزامی است',
             'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/reviews/1" یا شناسه عددی انتظار می‌رود',
             'not-found' => 'نظر محصول با شناسه ":id" یافت نشد',
+            'item-not-found' => 'مورد ":id" یافت نشد.',
             'product-id-required' => 'شناسه محصول الزامی است',
             'product-not-found' => 'محصول یافت نشد',
             'rating-invalid' => 'امتیاز باید بین 1 و 5 باشد',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'لطفاً برای مدیریت نظر خود وارد شوید',
             'not-owned' => 'این نظر توسط شما نوشته نشده است و قابل ویرایش یا حذف نیست',
             'invalid-attachments' => 'قالب پیوست‌ها نامعتبر است.',
+            'invalid-product-id-format' => 'قالب شناسه محصول نامعتبر است. قالب IRI مانند "/api/shop/products/1" یا شناسه عددی انتظار می‌رود',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'این درخواست مرجوعی قابل بازگشایی نیست.',
             'closed' => 'درخواست مرجوعی با موفقیت بسته شد.',
             'message-sent' => 'پیام با موفقیت ارسال شد.',
+            'attachment-not-found' => 'پیوست پیام یافت نشد.',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'شناسه مرسوله الزامی است',
             'not-found' => 'مرسوله با شناسه ":id" یافت نشد یا متعلق به این مشتری نیست',
             'item-not-found' => 'آیتم مرسوله با شناسه ":id" یافت نشد یا متعلق به این مشتری نیست',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/customer-order-shipments/1" یا شناسه عددی انتظار می‌رود',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'شناسه محصول قابل دانلود مشتری الزامی است',
             'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/customer-downloadable-products/1" یا شناسه عددی انتظار می‌رود',
             'not-found' => 'محصول قابل دانلود مشتری با شناسه ":id" یافت نشد',
+
+            'download' => [
+                'unauthenticated' => 'غیرمجاز: احراز هویت مشتری الزامی است.',
+                'not-found' => 'محصول دانلودی یافت نشد.',
+                'pending' => 'دانلود در انتظار است. لطفاً تا صدور فاکتور سفارش صبر کنید.',
+                'limit-exceeded' => 'از حد مجاز دانلود فراتر رفته‌اید.',
+                'no-downloads-remaining' => 'دانلود دیگری در دسترس نیست.',
+                'file-not-found' => 'فایل یافت نشد.',
+                'link-not-found' => 'پیوند دانلود یافت نشد.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'اندازه',
             'brand' => 'برند',
             'super-attributes' => 'ابرویژگی‌ها',
+            'id-required' => 'شناسه محصول الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/products/1" یا شناسه عددی انتظار می‌رود',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Swagger رابط REST API فروشگاه: :url',
             'rest-api-admin' => 'Swagger رابط REST API مدیریت: :url',
             'key-rotation-invalid-key' => 'چرخش کلید نامعتبر یا منقضی‌شده ممکن نیست',
+            'env-file-not-found' => 'فایل .env یافت نشد',
+            'env-permission-denied' => 'دسترسی رد شد: امکان نوشتن در فایل .env وجود ندارد. لطفاً مجوزهای فایل را بررسی کنید.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'شناسه ترجمه ویژگی الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/attribute-translations/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'ترجمه ویژگی یافت نشد',
+        ],
+
+        'currency' => [
+            'id-required' => 'شناسه ارز الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/currencies/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'ارز یافت نشد',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'شناسه آدرس مشتری الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/customer-addresses/1" یا شناسه عددی انتظار می‌رود',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'شناسه قلم محموله الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/customer-order-shipment-items/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'قلم محموله یافت نشد',
+        ],
+
+        'page' => [
+            'id-required' => 'شناسه صفحه الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/pages/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'صفحه یافت نشد',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'شناسه ترجمه صفحه الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/page-translations/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'ترجمه صفحه یافت نشد',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'شناسه گزینه بسته الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/product-bundle-options/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'گزینه بسته یافت نشد',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'شناسه محصول گزینه بسته الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/product-bundle-option-products/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'محصول گزینه بسته یافت نشد',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'شناسه لینک دانلودی الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/product-downloadable-links/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'لینک دانلودی یافت نشد',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'شناسه نمونه دانلودی الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/product-downloadable-samples/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'نمونه دانلودی یافت نشد',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'شناسه محصول گروهی الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/product-grouped-products/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'محصول گروهی یافت نشد',
+        ],
+
+        'product-images' => [
+            'id-required' => 'شناسه تصویر محصول الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/product-images/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'تصویر محصول یافت نشد',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'شناسه ویدیوی محصول الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/product-videos/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'ویدیوی محصول یافت نشد',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'شناسه سفارشی‌سازی پوسته الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/theme-customizations/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'سفارشی‌سازی پوسته یافت نشد',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'شناسه منبع الزامی است',
+            'not-found' => 'منبع یافت نشد',
         ],
     ],
 

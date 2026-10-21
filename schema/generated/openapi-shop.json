@@ -10789,8 +10789,8 @@
                                         "rmaId": 12,
                                         "message": "The hoodie zipper is broken.",
                                         "isAdmin": false,
-                                        "attachment": "rma/12/messages/zipper.jpg",
-                                        "attachmentUrl": "https://example.com/storage/rma/12/messages/zipper.jpg",
+                                        "attachment": "zipper.jpg",
+                                        "attachmentUrl": "https://example.com/api/shop/return-messages/87/attachment",
                                         "createdAt": "2026-07-20T10:20:00+00:00"
                                     }
                                 ]
@@ -10799,7 +10799,7 @@
                     }
                 },
                 "summary": "List the conversation messages of a return request",
-                "description": "Messages on the RMA named by `?return_id=`, newest first. Requires the RMA to belong to the authenticated customer.",
+                "description": "Messages on the RMA named by `?return_id=`, newest first. Requires the RMA to belong to the authenticated customer. `attachmentUrl` points at `GET /api/shop/return-messages/{id}/attachment`, which needs the customer token.",
                 "parameters": [
                     {
                         "name": "return_id",
@@ -10904,7 +10904,7 @@
                     }
                 },
                 "summary": "Send a message on a return request",
-                "description": "Sends a message on a return. Attach a file in `file`.",
+                "description": "Sends a message on a return. Attach a file in `file`; it is stored on the private disk and downloaded through `attachmentUrl`.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",

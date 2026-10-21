@@ -135,7 +135,7 @@ class CompareItemProcessor implements ProcessorInterface
         }
 
         if ($compareItem->customer_id !== $user->id) {
-            throw new AuthorizationException(__('bagistoapi::app.auth.cannot-update-other-profile'));
+            throw new AuthorizationException(__('bagistoapi::app.graphql.auth.cannot-update-other-profile'));
         }
 
         $compareItem->load(['product', 'customer']);

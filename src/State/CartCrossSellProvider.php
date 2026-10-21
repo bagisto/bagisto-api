@@ -2,9 +2,11 @@
 
 namespace Webkul\BagistoApi\State;
 
+use ApiPlatform\Metadata\GraphQl\Operation as GraphQlOperation;
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\Pagination\ArrayPaginator;
+use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use Webkul\BagistoApi\Dto\ProductDetail\ProductSummaryDto;
 use Webkul\BagistoApi\Exception\AuthenticationException;
@@ -18,16 +20,41 @@ class CartCrossSellProvider implements ProviderInterface
     /**
      * Create a new provider instance.
      */
-    public function __construct(protected ProductRepository $productRepository) {}
+    public function __construct(
+        protected ProductRepository $productRepository,
+        protected Pagination $pagination,
+    ) {}
 
     /**
-     * Provide configured cross-sell products for the current cart.
+     * Provide configured cross-sell products for the current cart, as a cursor page over GraphQL.
+     *
+     * @return ProductSummaryDto[]|ArrayPaginator
+     */
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|ArrayPaginator
+    {
+        $rows = $this->crossSells();
+
+        if (! $operation instanceof GraphQlOperation) {
+            return $rows;
+        }
+
+        $context['count'] = count($rows);
+
+        return new ArrayPaginator(
+            $rows,
+            $this->pagination->getOffset($operation, $context),
+            $this->pagination->getLimit($operation, $context),
+        );
+    }
+
+    /**
+     * The cross-sell product summaries of the bearer cart, leaving out products already in it.
      *
      * @return ProductSummaryDto[]
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
+    protected function crossSells(): array
     {
-        $request = Request::instance() ?? ($context['request'] ?? null);
+        $request = Request::instance();
         $token = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
 
         if (! $token) {
@@ -46,11 +73,14 @@ class CartCrossSellProvider implements ProviderInterface
             return [];
         }
 
-        $crossSellIds = DB::table('product_cross_sells')
-            ->whereIn('parent_id', $productIds)
-            ->whereNotIn('child_id', $productIds)
-            ->distinct()
-            ->pluck('child_id');
+        $crossSellIds = $this->productRepository
+            ->with('cross_sells')
+            ->findWhereIn('id', $productIds)
+            ->flatMap(fn ($product) => $product->cross_sells->pluck('id'))
+            ->diff($productIds)
+            ->unique()
+            ->values()
+            ->all();
 
         return $this->productRepository
             ->whereIn('products.id', $crossSellIds)

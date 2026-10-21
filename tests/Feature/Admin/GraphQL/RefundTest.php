@@ -39,8 +39,9 @@ class RefundTest extends AdminApiTestCase
 
         $item = $order->items->firstWhere(fn ($i) => $i->qty_to_refund > 0);
         $admin = $this->createAdmin();
+        $refundsBefore = Refund::query()->where('order_id', $order->id)->count();
 
-        $mutation = 'mutation($input: previewAdminRefundInput!){ previewAdminRefund(input:$input){ refundTotalsSummary { grandTotal subtotal } } }';
+        $mutation = 'mutation($input: previewAdminRefundInput!){ previewAdminRefund(input:$input){ adminRefund { orderId grandTotal subtotal formattedGrandTotal } } }';
         $response = $this->adminGraphQL($mutation, [
             'input' => [
                 'orderId' => $order->id,
@@ -54,12 +55,15 @@ class RefundTest extends AdminApiTestCase
             ],
         ], $admin);
 
-        $node = $response->json('data.previewAdminRefund.refundTotalsSummary');
-        if ($node) {
-            expect($node)->toHaveKey('grandTotal');
-        } else {
-            expect($response->json('errors'))->toBeArray();
-        }
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.previewAdminRefund.adminRefund');
+
+        expect($node['orderId'])->toBe($order->id);
+        expect($node['grandTotal'])->toBeGreaterThan(0);
+        expect($node['subtotal'])->toBeGreaterThan(0);
+        expect($node['formattedGrandTotal'])->toBeString()->not->toBeEmpty();
+        expect(Refund::query()->where('order_id', $order->id)->count())->toBe($refundsBefore);
     }
 
     /**

@@ -192,10 +192,12 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
     }
 
     /**
-     * Stats result.
+     * Build the action result, reloading the batches so the stats count the batch the action just moved.
      */
     protected function statsResult(string $state): AdminSettingsDataTransferImport
     {
+        $this->importHelper->getImport()->load('batches');
+
         $stats = $this->importHelper->stats($state);
 
         $result = $this->itemProvider->mapToDtoPublic($this->importHelper->getImport());

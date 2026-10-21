@@ -611,6 +611,40 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * The customizable options of a product carry the label of the current locale.
+     */
+    public function test_subresource_customizable_options_return_the_translated_label(): void
+    {
+        $product = $this->seedSaleableProduct();
+
+        $optionId = DB::table('product_customizable_options')->insertGetId([
+            'product_id' => $product->id,
+            'type' => 'text',
+            'is_required' => 0,
+            'sort_order' => 1,
+        ]);
+
+        DB::table('product_customizable_option_translations')->insert([
+            [
+                'product_customizable_option_id' => $optionId,
+                'locale' => 'fr',
+                'label' => 'Gravure',
+            ],
+            [
+                'product_customizable_option_id' => $optionId,
+                'locale' => 'en',
+                'label' => 'Engraving',
+            ],
+        ]);
+
+        $response = $this->publicGet($this->collectionUrl.'/'.$product->id.'/customizable-options');
+
+        $response->assertOk();
+        expect($response->json('0.id'))->toBe($optionId);
+        expect($response->json('0.label'))->toBe('Engraving');
+    }
+
     // ============================================================================
     // Type-Specific Sub-Resources (Product Types Tag)
     // ============================================================================

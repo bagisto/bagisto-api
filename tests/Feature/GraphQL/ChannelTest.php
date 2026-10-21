@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
+use Webkul\Core\Models\Channel;
 
 class ChannelTest extends GraphQLTestCase
 {
@@ -898,5 +899,66 @@ class ChannelTest extends GraphQLTestCase
 
         expect($response->json('errors'))->not->toBeEmpty()
             ->and($response->json('data'))->toBeNull();
+    }
+
+    /**
+     * Last without before returns the final channels with cursors that match them.
+     */
+    public function test_get_channels_last_returns_the_final_channels(): void
+    {
+        $ids = $this->channelIds();
+
+        $response = $this->graphQL('query { channels(last: 1) { edges { cursor node { _id } } pageInfo { hasPreviousPage } } }');
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $response->json('data.channels.edges')))->toBe(array_slice($ids, -1))
+            ->and(array_column($response->json('data.channels.edges'), 'cursor'))->toBe([base64_encode((string) (count($ids) - 1))])
+            ->and($response->json('data.channels.pageInfo.hasPreviousPage'))->toBeTrue();
+    }
+
+    /**
+     * Last with before returns only the channels that precede the cursor.
+     */
+    public function test_get_channels_last_before_stops_at_the_cursor(): void
+    {
+        $ids = $this->channelIds();
+
+        $response = $this->graphQL(
+            'query getChannels($before: String) { channels(last: 5, before: $before) { edges { node { _id } } } }',
+            ['before' => base64_encode('1')]
+        );
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $response->json('data.channels.edges')))->toBe([$ids[0]]);
+    }
+
+    /**
+     * A zero page size returns an empty channel page that still reports the total.
+     */
+    public function test_get_channels_zero_page_size_returns_an_empty_page(): void
+    {
+        $ids = $this->channelIds();
+
+        $response = $this->graphQL('query { channels(first: 0) { edges { node { _id } } totalCount } }');
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.channels.edges'))->toBe([])
+            ->and($response->json('data.channels.totalCount'))->toBe(count($ids));
+    }
+
+    /**
+     * Create a second channel and return every channel id in ascending order.
+     */
+    private function channelIds(): array
+    {
+        Channel::factory()->create();
+
+        return Channel::query()->orderBy('id')->pluck('id')->all();
     }
 }

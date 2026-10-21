@@ -1623,6 +1623,65 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
+     * Last without before returns the final wishlist items with cursors that match them.
+     */
+    public function test_wishlists_last_returns_the_final_items(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGraphQL($testData['customer'], <<<'GQL'
+            query { wishlists(last: 1) { edges { cursor node { _id } } pageInfo { hasPreviousPage } totalCount } }
+        GQL);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $response->json('data.wishlists.edges')))->toBe([$testData['wishlistItem2']->id])
+            ->and(array_column($response->json('data.wishlists.edges'), 'cursor'))->toBe([base64_encode('1')])
+            ->and($response->json('data.wishlists.pageInfo.hasPreviousPage'))->toBeTrue();
+    }
+
+    /**
+     * Last with before returns only the wishlist items that precede the cursor.
+     */
+    public function test_wishlists_last_before_stops_at_the_cursor(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGraphQL(
+            $testData['customer'],
+            'query getWishlists($before: String) { wishlists(last: 5, before: $before) { edges { node { _id } } } }',
+            ['before' => base64_encode('1')]
+        );
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $response->json('data.wishlists.edges')))->toBe([$testData['wishlistItem1']->id]);
+    }
+
+    /**
+     * A zero page size returns an empty wishlist page that still reports the total.
+     */
+    public function test_wishlists_zero_page_size_returns_an_empty_page(): void
+    {
+        $testData = $this->createTestData();
+
+        foreach (['first', 'last'] as $argument) {
+            $response = $this->authenticatedGraphQL(
+                $testData['customer'],
+                'query { wishlists('.$argument.': 0) { edges { node { _id } } totalCount } }'
+            );
+
+            $response->assertOk();
+
+            expect($response->json('errors'))->toBeNull()
+                ->and($response->json('data.wishlists.edges'))->toBe([])
+                ->and($response->json('data.wishlists.totalCount'))->toBe(2);
+        }
+    }
+
+    /**
      * Create test data - customer, products and wishlist items.
      */
     private function createTestData(): array

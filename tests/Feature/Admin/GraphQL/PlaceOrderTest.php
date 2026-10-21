@@ -82,4 +82,36 @@ class PlaceOrderTest extends AdminApiTestCase
         $resp = $this->adminGraphQL($this->mutation, ['input' => ['cartId' => $cart->id]], $admin);
         expect($resp->json('errors'))->not->toBeNull();
     }
+
+    /**
+     * Placing a ready draft cart returns the order id, increment id, customer id and grand total.
+     */
+    public function test_place_order_returns_multi_word_fields(): void
+    {
+        $cart = $this->bootstrapPlaceableCart();
+
+        $mutation = <<<'GQL'
+            mutation Place($input: createAdminPlaceOrderInput!) {
+              createAdminPlaceOrder(input: $input) {
+                adminPlaceOrder { orderId incrementId customerId grandTotal success message }
+              }
+            }
+        GQL;
+
+        $resp = $this->adminGraphQL($mutation, ['input' => ['cartId' => $cart->id]], $this->createAdmin());
+
+        expect($resp->json('errors'))->toBeNull();
+
+        $node = $resp->json('data.createAdminPlaceOrder.adminPlaceOrder');
+
+        expect($node['success'])->toBeTrue();
+        expect($node['orderId'])->toBeInt()->toBeGreaterThan(0);
+        expect($node['incrementId'])->not->toBeNull();
+        expect($node['customerId'])->toBe($cart->customer_id);
+        expect($node['grandTotal'])->not->toBeNull();
+        $this->assertDatabaseHas('orders', [
+            'id' => $node['orderId'],
+            'increment_id' => $node['incrementId'],
+        ]);
+    }
 }

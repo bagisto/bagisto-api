@@ -136,7 +136,7 @@ class MarketingSitemapTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation Del($input: deleteAdminMarketingSitemapInput!) {
               deleteAdminMarketingSitemap(input: $input) {
-                adminMarketingSitemap { _id }
+                adminMarketingSitemap { id _id }
               }
             }
         GQL;
@@ -146,6 +146,10 @@ class MarketingSitemapTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.deleteAdminMarketingSitemap.adminMarketingSitemap.id'))->toBe("/api/admin/marketing/sitemaps/{$id}");
+
         $this->assertDatabaseMissing('sitemaps', ['id' => $id]);
     }
 

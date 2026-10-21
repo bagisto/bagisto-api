@@ -50,7 +50,7 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.search_seo.search_terms.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if (
@@ -216,18 +216,20 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
     /**
      * Handle delete.
      */
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingSearchTerm
     {
         $existing = SearchTerm::find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.search-term.not-found'));
         }
 
+        $snapshot = $asResource ? $this->buildResult($id, true) : null;
+
         Event::dispatch('marketing.search_seo.search_terms.delete.before', $id);
         $existing->delete();
         Event::dispatch('marketing.search_seo.search_terms.delete.after', $id);
 
-        return ['message' => __('bagistoapi::app.admin.marketing.search-term.deleted')];
+        return $snapshot ?? ['message' => __('bagistoapi::app.admin.marketing.search-term.deleted')];
     }
 
     /**

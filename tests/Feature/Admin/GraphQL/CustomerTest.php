@@ -206,6 +206,34 @@ class CustomerTest extends AdminApiTestCase
     }
 
     /**
+     * Test the customer's password hash and tokens are not part of the schema.
+     */
+    public function test_detail_does_not_expose_secret_columns(): void
+    {
+        $admin = $this->createAdmin();
+        $c = $this->seedCustomer();
+        \DB::table('customers')->where('id', $c->id)->update([
+            'api_token' => 'secret-api-token',
+            'token' => 'secret-token',
+        ]);
+
+        foreach (['password', 'apiToken', 'token', 'rememberToken'] as $field) {
+            $query = 'query($id: ID!) { adminCustomer(id: $id) { _id '.$field.' } }';
+            $resp = $this->adminGraphQL($query, ['id' => '/api/admin/customers/'.$c->id], $admin);
+
+            expect($resp->json('errors.0.message'))->toBe('Cannot query field "'.$field.'" on type "AdminCustomer".');
+            expect($resp->getContent())->not->toContain('secret-');
+        }
+
+        foreach (['AdminCustomer', 'AdminOrderDetailCustomer', 'AdminCustomerReviewCustomerRef'] as $type) {
+            $fields = collect($this->adminGraphQL('query { __type(name: "'.$type.'") { fields { name } } }', [], $admin)
+                ->json('data.__type.fields'))->pluck('name');
+
+            expect($fields)->not->toContain('password', 'apiToken', 'token', 'rememberToken');
+        }
+    }
+
+    /**
      * Test mutation create.
      */
     public function test_mutation_create(): void

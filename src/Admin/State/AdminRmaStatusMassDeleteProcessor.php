@@ -46,7 +46,7 @@ class AdminRmaStatusMassDeleteProcessor implements ProcessorInterface
                 $status
                 && (int) $status->default === 0
             ) {
-                $this->rmaStatusRepository->where('default', 0)->delete((int) $id);
+                $this->rmaStatusRepository->delete((int) $id);
                 $deleted[] = (int) $id;
             }
         }

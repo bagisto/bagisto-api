@@ -145,6 +145,30 @@ class CheckoutOrderTest extends RestApiTestCase
     }
 
     /**
+     * The checkout message is a null message field, not an empty body, when the feature is disabled.
+     */
+    public function test_checkout_message_is_null_when_the_feature_is_disabled(): void
+    {
+        $customer = $this->createAuthenticatedCustomer();
+        $this->addProductToCart($customer);
+        $this->setCheckoutAddress($customer);
+        $this->setShippingMethod($customer);
+        $this->setPaymentMethod($customer);
+        $this->setConfig([
+            'magic_ai.storefront_features.checkout_message.enabled' => '0',
+        ]);
+
+        $orderId = $this->authenticatedPost($customer, $this->url)->assertCreated()->json('orderId');
+
+        MagicAI::shouldReceive('checkoutMessage')->never();
+
+        $response = $this->authenticatedGet($customer, "/api/shop/checkout-messages/{$orderId}");
+
+        $response->assertOk();
+        expect($response->json())->toBe(['message' => null]);
+    }
+
+    /**
      * Test checkout message is not given for another customers order.
      */
     public function test_checkout_message_is_not_given_for_another_customers_order(): void

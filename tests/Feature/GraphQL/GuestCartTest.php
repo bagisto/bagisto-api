@@ -514,6 +514,32 @@ class GuestCartTest extends GraphQLTestCase
     }
 
     /**
+     * Reading an empty guest cart returns it with no items and keeps it for the next read.
+     */
+    public function test_read_empty_cart_returns_the_cart_graphql(): void
+    {
+        $headers = $this->guestHeaders($this->getGuestCartToken());
+
+        $query = <<<'GQL'
+            mutation read {
+              createReadCart(input: {}) {
+                readCart { id itemsCount items { totalCount } }
+              }
+            }
+        GQL;
+
+        $read = $this->graphQL($query, [], $headers);
+
+        expect($read->json('errors'))->toBeNull();
+        expect($read->json('data.createReadCart.readCart.itemsCount'))->toBe(0);
+
+        $again = $this->graphQL($query, [], $headers);
+
+        expect($again->json('errors'))->toBeNull();
+        expect($again->json('data.createReadCart.readCart.id'))->toBe($read->json('data.createReadCart.readCart.id'));
+    }
+
+    /**
      * Test read cart returns the issued guest token not the cart id.
      */
     public function test_read_cart_returns_the_issued_guest_token_not_the_cart_id(): void

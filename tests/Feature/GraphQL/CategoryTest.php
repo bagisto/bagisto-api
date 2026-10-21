@@ -444,6 +444,27 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
+     * An undecodable cursor is reported to the client as an invalid cursor.
+     */
+    public function test_get_categories_with_an_invalid_cursor_reports_it(): void
+    {
+        $query = <<<'GQL'
+            query getCategories($first: Int, $after: String) {
+              categories(first: $first, after: $after) {
+                edges { cursor node { _id } }
+                pageInfo { endCursor hasNextPage }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, ['first' => 5, 'after' => 'invalid-cursor']);
+
+        $response->assertOk();
+        expect($response->json('errors.0.message'))->toBe('Cursor invalid-cursor is invalid');
+        expect($response->json('data.categories'))->toBeNull();
+    }
+
+    /**
      * Test: Query categories with cursor pagination.
      */
     public function test_get_categories_cursor_pagination(): void
@@ -1369,5 +1390,41 @@ class CategoryTest extends GraphQLTestCase
                 ]);
             }
         }
+    }
+
+    /**
+     * Last without before returns the final categories of the collection, with matching cursors.
+     */
+    public function test_categories_last_returns_the_final_rows(): void
+    {
+        foreach ([97, 98] as $position) {
+            Category::factory()->create(['parent_id' => 1, 'position' => $position, 'status' => 1]);
+        }
+
+        $ids = Category::query()->where('status', 1)->orderBy('id')->pluck('id')->all();
+
+        $response = $this->graphQL('query { categories(last: 2) { edges { node { _id } cursor } totalCount } }');
+
+        $response->assertOk();
+
+        $edges = $response->json('data.categories.edges');
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.categories.totalCount'))->toBe(count($ids))
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $edges))->toBe(array_slice($ids, -2))
+            ->and(array_column($edges, 'cursor'))->toBe([base64_encode((string) (count($ids) - 2)), base64_encode((string) (count($ids) - 1))]);
+    }
+
+    /**
+     * A zero page size returns an empty page rather than a row.
+     */
+    public function test_categories_zero_first_returns_an_empty_page(): void
+    {
+        $response = $this->graphQL('query { categories(first: 0) { edges { node { _id } } totalCount } }');
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.categories.edges'))->toBe([]);
     }
 }

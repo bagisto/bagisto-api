@@ -11,11 +11,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
+use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
 use Webkul\Marketing\Jobs\UpdateCreateSearchTerm;
 
 class ProductGraphQLProvider implements ProviderInterface
 {
     use ClampsPageSize;
+    use ResolvesCursorWindow;
 
     /**
      * The attribute type cache.
@@ -80,23 +82,17 @@ class ProductGraphQLProvider implements ProviderInterface
             'booking_products' => fn ($query) => $query->select('id', 'product_id', 'type'),
         ]);
 
-        [$limit, $offset] = $this->resolveWindow($args);
-        $isFirstPage = $offset === 0;
-
         $total = (clone $query)
             ->reorder()
             ->distinct()
             ->count('products.id');
 
-        if ($offset > $total) {
-            $offset = max(0, $total - $limit);
-        }
+        [$offset, $limit] = $this->resolveCursorWindow($args, $total, $this->requestedPageSize($args));
+        $isFirstPage = $offset === 0;
 
-        $items = $query
-            ->distinct()
-            ->offset($offset)
-            ->limit($limit)
-            ->get();
+        $items = $limit > 0
+            ? $query->distinct()->offset($offset)->limit($limit)->get()
+            : $query->getModel()->newCollection();
 
         $this->propagateContext($items, $locale, $channel);
 
@@ -111,8 +107,8 @@ class ProductGraphQLProvider implements ProviderInterface
             new LaravelPaginator(
                 $items,
                 $total,
-                $limit,
-                $total > 0 ? (int) floor($offset / $limit) + 1 : 1,
+                max(1, $limit),
+                $total > 0 ? (int) floor($offset / max(1, $limit)) + 1 : 1,
                 ['path' => request()->url()]
             )
         );
@@ -317,7 +313,7 @@ class ProductGraphQLProvider implements ProviderInterface
     {
         foreach (['type', 'sku'] as $column) {
             if (! empty($filters[$column])) {
-                $query->where($column, $filters[$column]);
+                $query->where('products.'.$column, $filters[$column]);
                 unset($filters[$column]);
             }
         }
@@ -512,29 +508,15 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Resolve the page size and the offset from the cursor arguments.
-     *
-     * @return array{0: int, 1: int}
+     * The page size the first or last argument asks for, clamped, or zero for an empty page.
      */
-    private function resolveWindow(array $args): array
+    private function requestedPageSize(array $args): int
     {
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
-        $limit = $this->clampPageSize($first ?? $last ?? 30);
-        $offset = 0;
+        $requested = $first ?? $last ?? 30;
 
-        if (! empty($args['after'])) {
-            $decoded = base64_decode($args['after'], true);
-            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
-        }
-
-        if (! empty($args['before'])) {
-            $decoded = base64_decode($args['before'], true);
-            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset = max(0, $cursor - $limit);
-        }
-
-        return [$limit, $offset];
+        return $requested > 0 ? $this->clampPageSize($requested) : 0;
     }
 
     /**
@@ -628,26 +610,38 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Apply exact match filter based on attribute type.
+     * Apply an exact match filter, matching nothing when an integer column gets no numeric term.
      */
     private function applyExactFilter($query, $term, $alias, $attributeType)
     {
         $column = $this->getColumnForType($attributeType);
+
+        $values = [$term];
 
         if (
             is_string($term)
             && str_contains($term, ',')
         ) {
             $values = array_filter(array_map('trim', explode(',', $term)));
-
-            $convertedValues = $this->convertValuesForType($values, $attributeType);
-
-            $query->whereIn($alias.'.'.$column, $convertedValues);
-        } else {
-            $convertedValue = $this->convertValueForType($term, $attributeType);
-
-            $query->where($alias.'.'.$column, $convertedValue);
         }
+
+        if ($column === 'integer_value') {
+            $values = array_filter($values, fn ($value) => is_numeric($value));
+        }
+
+        if (count($values) > 1) {
+            $query->whereIn($alias.'.'.$column, $this->convertValuesForType(array_values($values), $attributeType));
+
+            return;
+        }
+
+        if (! $values) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->where($alias.'.'.$column, $this->convertValueForType(reset($values), $attributeType));
     }
 
     /**
@@ -657,7 +651,7 @@ class ProductGraphQLProvider implements ProviderInterface
     {
         return match ($attributeType) {
             'decimal', 'price' => (float) $value,
-            'integer' => (int) $value,
+            'integer', 'select', 'multiselect', 'dropdown' => (int) $value,
             'boolean' => $value ? '1' : '0',
             default => $value,
         };
@@ -670,7 +664,7 @@ class ProductGraphQLProvider implements ProviderInterface
     {
         return match ($attributeType) {
             'decimal', 'price' => array_map('floatval', $values),
-            'integer' => array_map('intval', $values),
+            'integer', 'select', 'multiselect', 'dropdown' => array_map('intval', $values),
             'boolean' => array_map(fn ($value) => (int) filter_var($value, FILTER_VALIDATE_BOOLEAN), $values),
             default => $values,
         };

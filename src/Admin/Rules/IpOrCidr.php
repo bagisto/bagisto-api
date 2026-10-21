@@ -38,7 +38,7 @@ class IpOrCidr implements ValidationRule
         }
 
         if (! ctype_digit($prefix)) {
-            $fail(trans('bagistoapi::app.admin.integration.validation.cidr-prefix-invalid'));
+            $fail(trans('bagistoapi::app.integration.validation.cidr-prefix-invalid'));
 
             return;
         }
@@ -51,7 +51,7 @@ class IpOrCidr implements ValidationRule
             $prefix < 0
             || $prefix > $maxPrefix
         ) {
-            $fail(trans('bagistoapi::app.admin.integration.validation.cidr-prefix-invalid'));
+            $fail(trans('bagistoapi::app.integration.validation.cidr-prefix-invalid'));
         }
     }
 }

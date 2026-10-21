@@ -51,7 +51,7 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.search_seo.search_synonyms.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if (
@@ -139,12 +139,14 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
     /**
      * Handle delete.
      */
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingSearchSynonym
     {
         $synonym = SearchSynonym::find($id);
         if (! $synonym) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.search-synonym.not-found'));
         }
+
+        $snapshot = $asResource ? $this->itemProvider->mapToDtoPublic($synonym) : null;
 
         Event::dispatch('marketing.search_seo.search_synonyms.delete.before', $id);
 
@@ -160,7 +162,7 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
 
         Event::dispatch('marketing.search_seo.search_synonyms.delete.after', $id);
 
-        return ['message' => __('bagistoapi::app.admin.marketing.search-synonym.deleted')];
+        return $snapshot ?? ['message' => __('bagistoapi::app.admin.marketing.search-synonym.deleted')];
     }
 
     /**

@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\GraphQl\DeleteMutation;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
@@ -356,7 +355,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
             processor: ProductReviewProcessor::class,
             description: 'Update an existing product review'
         ),
-        new DeleteMutation(
+        new Mutation(
             name: 'delete',
             processor: ProductReviewProcessor::class,
             description: 'Delete a product review'

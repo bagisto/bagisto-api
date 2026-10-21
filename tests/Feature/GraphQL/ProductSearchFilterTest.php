@@ -311,6 +311,63 @@ class ProductSearchFilterTest extends GraphQLTestCase
     }
 
     /**
+     * A sku or type filter combined with an attribute filter reads the product's own columns, not the variant join's.
+     */
+    public function test_filter_by_sku_and_type_together_with_an_attribute(): void
+    {
+        $option = $this->colorOption();
+
+        $product = $this->createBaseProduct('simple', [
+            'sku' => 'TEST-SKU-COLOR-'.uniqid(),
+        ]);
+        $this->ensureInventory($product, 10);
+        $this->upsertProductAttributeValue($product->id, 'color', $option->id, null, 'default');
+
+        $response = $this->graphQL($this->productIdsQuery(), [
+            'filter' => json_encode([
+                'sku' => $product->sku,
+                'type' => 'simple',
+                'color' => (string) $option->id,
+            ]),
+        ]);
+
+        expect($response->json('errors'))->toBeNull();
+        expect($this->nodeIds($response))->toBe([$product->id]);
+    }
+
+    /**
+     * A non-numeric term on a select attribute matches no product and never reaches the integer column.
+     */
+    public function test_filter_by_a_select_attribute_with_a_non_numeric_term_matches_nothing(): void
+    {
+        $option = $this->colorOption();
+
+        $product = $this->createBaseProduct('simple', [
+            'sku' => 'TEST-COLOR-TERM-'.uniqid(),
+        ]);
+        $this->ensureInventory($product, 10);
+        $this->upsertProductAttributeValue($product->id, 'color', $option->id, null, 'default');
+
+        $bindings = [];
+
+        DB::listen(function ($query) use (&$bindings) {
+            $bindings = array_merge($bindings, $query->bindings);
+        });
+
+        foreach (['red-term', 'red-term,blue-term'] as $term) {
+            $response = $this->graphQL($this->productIdsQuery(), [
+                'filter' => json_encode(['color' => $term]),
+            ]);
+
+            expect($response->json('errors'))->toBeNull();
+            expect($this->nodeIds($response))->toBe([]);
+        }
+
+        expect($bindings)->not->toContain('red-term');
+        expect($bindings)->not->toContain('blue-term');
+    }
+
+    /**
      * Filter by multiple attributes (color + size + brand).
      * Matches spec: products(filter: "{\"color\": \"5\", \"size\": \"1\", \"brand\": \"5\"}", first: 10).
      */
@@ -881,28 +938,55 @@ class ProductSearchFilterTest extends GraphQLTestCase
     }
 
     /**
-     * first: 0 and first: -1 are clamped to a single-item page, never an unbounded query or a 500.
+     * A first or last of zero or below returns an empty page with the total still counted.
      */
-    public function test_first_zero_and_negative_are_clamped_to_one(): void
+    public function test_first_and_last_zero_or_negative_return_an_empty_page(): void
     {
-        foreach ([0, -1] as $first) {
-            $query = <<<GQL
-                query getProducts {
-                  products(first: {$first}) {
-                    edges {
-                      node { id sku }
-                    }
-                  }
-                }
-            GQL;
+        $this->createBaseProduct('simple', ['sku' => 'TEST-EMPTY-PAGE-'.uniqid()]);
 
-            $response = $this->graphQL($query);
+        foreach (['first: 0', 'first: -1', 'last: 0', 'last: -1'] as $window) {
+            $response = $this->graphQL("query { products({$window}) { totalCount edges { node { id } } } }");
 
             $response->assertSuccessful();
 
             expect($response->json('errors'))->toBeNull();
-            expect(count($response->json('data.products.edges')))->toBeLessThanOrEqual(1);
+            expect($response->json('data.products.edges'))->toBe([]);
+            expect($response->json('data.products.totalCount'))->toBeGreaterThan(0);
         }
+    }
+
+    /**
+     * Last N without before returns the last N products of the set, and before stops at the cursor.
+     */
+    public function test_last_returns_the_final_rows_and_before_stops_at_the_cursor(): void
+    {
+        foreach (range(1, 3) as $index) {
+            $this->createBaseProduct('simple', ['sku' => 'TEST-LAST-'.$index.'-'.uniqid()]);
+        }
+
+        $all = $this->graphQL('query { products(first: 50) { totalCount edges { cursor node { _id } } } }');
+
+        expect($all->json('errors'))->toBeNull();
+
+        $edges = $all->json('data.products.edges');
+        $total = $all->json('data.products.totalCount');
+
+        expect($total)->toBeGreaterThanOrEqual(3)->toBeLessThanOrEqual(50);
+
+        $ids = array_map(fn ($edge) => (int) $edge['node']['_id'], $edges);
+
+        $last = $this->graphQL('query { products(last: 2) { totalCount edges { cursor node { _id } } } }');
+
+        expect($last->json('errors'))->toBeNull();
+        expect($this->nodeIds($last))->toBe(array_slice($ids, -2));
+        expect(array_column($last->json('data.products.edges'), 'cursor'))->toBe(array_column(array_slice($edges, -2), 'cursor'));
+
+        $before = $this->graphQL('query($before: String) { products(last: 5, before: $before) { edges { node { _id } } } }', [
+            'before' => $edges[1]['cursor'],
+        ]);
+
+        expect($before->json('errors'))->toBeNull();
+        expect($this->nodeIds($before))->toBe([$ids[0]]);
     }
 
     /**
@@ -1105,6 +1189,20 @@ class ProductSearchFilterTest extends GraphQLTestCase
               }
             }
         GQL;
+    }
+
+    /**
+     * The first option of the color attribute, skipping the test when the store has none.
+     */
+    private function colorOption(): object
+    {
+        $option = Attribute::query()->where('code', 'color')->first()?->options()->first();
+
+        if (! $option) {
+            $this->markTestSkipped('The color attribute has no options. Run Bagisto seeders for attributes.');
+        }
+
+        return $option;
     }
 
     /**

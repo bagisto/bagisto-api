@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'Jumlah tiket acara harus berupa angka non-negatif.',
             'booking-ticket-required' => 'Pilih setidaknya satu jumlah tiket untuk pemesanan acara.',
             'booking-slot-unavailable' => 'Slot yang dipilih tidak tersedia untuk tanggal tersebut.',
+            'invalid-quantity' => 'Jumlah minimal harus 1',
+            'product-id-required' => 'ID produk diperlukan',
+            'shipping-address-required' => 'Negara dan kode pos diperlukan untuk memperkirakan pengiriman',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'ID ulasan produk diperlukan',
             'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/reviews/1" atau ID numerik',
             'not-found' => 'Ulasan produk dengan ID ":id" tidak ditemukan',
+            'item-not-found' => 'Item ":id" tidak ditemukan.',
             'product-id-required' => 'ID produk diperlukan',
             'product-not-found' => 'Produk tidak ditemukan',
             'rating-invalid' => 'Peringkat harus antara 1 dan 5',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'Silakan masuk untuk mengelola ulasan Anda',
             'not-owned' => 'Ulasan ini tidak ditulis oleh Anda dan tidak dapat diubah atau dihapus',
             'invalid-attachments' => 'Format lampiran tidak valid.',
+            'invalid-product-id-format' => 'Format ID produk tidak valid. Diharapkan format IRI seperti "/api/shop/products/1" atau ID numerik',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'Permintaan pengembalian ini tidak dapat dibuka kembali.',
             'closed' => 'Permintaan pengembalian berhasil ditutup.',
             'message-sent' => 'Pesan berhasil dikirim.',
+            'attachment-not-found' => 'Lampiran pesan tidak ditemukan.',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'ID pengiriman diperlukan',
             'not-found' => 'Pengiriman dengan ID ":id" tidak ditemukan atau bukan milik pelanggan ini',
             'item-not-found' => 'Item pengiriman dengan ID ":id" tidak ditemukan atau bukan milik pelanggan ini',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/customer-order-shipments/1" atau ID numerik',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'ID produk unduhan pelanggan diperlukan',
             'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/customer-downloadable-products/1" atau ID numerik',
             'not-found' => 'Produk unduhan pelanggan dengan ID ":id" tidak ditemukan',
+
+            'download' => [
+                'unauthenticated' => 'Tidak sah: Autentikasi pelanggan diperlukan.',
+                'not-found' => 'Produk unduhan tidak ditemukan.',
+                'pending' => 'Unduhan tertunda. Silakan tunggu hingga faktur pesanan dibuat.',
+                'limit-exceeded' => 'Batas unduhan terlampaui.',
+                'no-downloads-remaining' => 'Tidak ada lagi unduhan yang tersedia.',
+                'file-not-found' => 'File tidak ditemukan.',
+                'link-not-found' => 'Tautan unduhan tidak ditemukan.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'Ukuran',
             'brand' => 'Merek',
             'super-attributes' => 'Atribut Super',
+            'id-required' => 'ID produk diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/products/1" atau ID numerik',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Swagger Rest API Storefront: :url',
             'rest-api-admin' => 'Swagger Rest API Admin: :url',
             'key-rotation-invalid-key' => 'Tidak dapat merotasi kunci yang tidak valid atau kedaluwarsa',
+            'env-file-not-found' => 'File .env tidak ditemukan',
+            'env-permission-denied' => 'Izin ditolak: Tidak dapat menulis ke file .env. Silakan periksa izin file.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'ID terjemahan atribut diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/attribute-translations/1" atau ID numerik',
+            'not-found' => 'Terjemahan atribut tidak ditemukan',
+        ],
+
+        'currency' => [
+            'id-required' => 'ID mata uang diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/currencies/1" atau ID numerik',
+            'not-found' => 'Mata uang tidak ditemukan',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'ID alamat pelanggan diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/customer-addresses/1" atau ID numerik',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'ID item pengiriman diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/customer-order-shipment-items/1" atau ID numerik',
+            'not-found' => 'Item pengiriman tidak ditemukan',
+        ],
+
+        'page' => [
+            'id-required' => 'ID halaman diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/pages/1" atau ID numerik',
+            'not-found' => 'Halaman tidak ditemukan',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'ID terjemahan halaman diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/page-translations/1" atau ID numerik',
+            'not-found' => 'Terjemahan halaman tidak ditemukan',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'ID opsi bundel diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/product-bundle-options/1" atau ID numerik',
+            'not-found' => 'Opsi bundel tidak ditemukan',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'ID produk opsi bundel diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/product-bundle-option-products/1" atau ID numerik',
+            'not-found' => 'Produk opsi bundel tidak ditemukan',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'ID tautan unduhan diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/product-downloadable-links/1" atau ID numerik',
+            'not-found' => 'Tautan unduhan tidak ditemukan',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'ID sampel unduhan diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/product-downloadable-samples/1" atau ID numerik',
+            'not-found' => 'Sampel unduhan tidak ditemukan',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'ID produk grup diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/product-grouped-products/1" atau ID numerik',
+            'not-found' => 'Produk grup tidak ditemukan',
+        ],
+
+        'product-images' => [
+            'id-required' => 'ID gambar produk diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/product-images/1" atau ID numerik',
+            'not-found' => 'Gambar produk tidak ditemukan',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'ID video produk diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/product-videos/1" atau ID numerik',
+            'not-found' => 'Video produk tidak ditemukan',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'ID kustomisasi tema diperlukan',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/theme-customizations/1" atau ID numerik',
+            'not-found' => 'Kustomisasi tema tidak ditemukan',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'ID sumber daya diperlukan',
+            'not-found' => 'Sumber daya tidak ditemukan',
         ],
     ],
 

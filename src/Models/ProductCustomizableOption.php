@@ -124,6 +124,11 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     ];
 
     /**
+     * The accessors appended to the serialized option.
+     */
+    protected $appends = ['label'];
+
+    /**
      * Get the product that owns the option.
      */
     public function product(): BelongsTo
@@ -168,18 +173,16 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get label (translated attribute).
+     * Get the label of the current locale, falling back to the first translation.
      */
     #[ApiProperty(
         writable: false,
         readable: true
     )]
     #[Groups(['read'])]
-    public function getLabel(): ?string
+    public function getLabelAttribute(?string $value): ?string
     {
-        $translation = $this->translations()->first();
-
-        return $translation ? $translation->label : null;
+        return $value ?? $this->translations->first()?->label;
     }
 
     /**

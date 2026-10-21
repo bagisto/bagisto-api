@@ -118,7 +118,7 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.inventory-source.not-found'));
         }
 
-        $merged = array_merge($existing->toArray(), $this->normalizePayload($input));
+        $merged = $this->normalizePayload(array_merge($existing->toArray(), $input));
 
         $this->validatePayload($merged, $id);
 

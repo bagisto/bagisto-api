@@ -18,6 +18,7 @@ use Webkul\BagistoApi\State\CheckoutMessageProvider;
             uriTemplate: '/checkout-messages/{orderId}',
             requirements: ['orderId' => '\\d+'],
             output: CheckoutMessageOutput::class,
+            normalizationContext: ['skip_null_values' => false],
             provider: CheckoutMessageProvider::class,
             openapi: new Model\Operation(
                 tags: ['Checkout'],

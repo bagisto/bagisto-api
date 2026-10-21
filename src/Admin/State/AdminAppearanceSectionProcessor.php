@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\GraphQl\Operation as GraphQlOperation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
@@ -45,11 +46,11 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
         }
 
         if ($data instanceof AdminAppearanceSectionUpdateInput) {
-            return $this->handleUpdate($data, $uriVariables, $context);
+            return $this->handleUpdate($data, $operation, $uriVariables, $context);
         }
 
         if ($data instanceof AdminAppearanceSectionCreateInput) {
-            return $this->handleCreate($data, $uriVariables, $context);
+            return $this->handleCreate($data, $operation, $uriVariables, $context);
         }
 
         throw new InvalidInputException(__('bagistoapi::app.admin.appearance.section.invalid-payload'), 422);
@@ -58,7 +59,7 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
     /**
      * Handle create.
      */
-    protected function handleCreate(AdminAppearanceSectionCreateInput $input, array $uriVariables, array $context): mixed
+    protected function handleCreate(AdminAppearanceSectionCreateInput $input, Operation $operation, array $uriVariables, array $context): mixed
     {
         $this->authorizedAdmin('appearance.sections.create', 'bagistoapi::app.admin.appearance.no-permission');
 
@@ -98,7 +99,7 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
 
         return $this->present(
             $this->scope->sectionOrFail((int) $section->id),
-            $context,
+            $operation,
             __('bagistoapi::app.admin.appearance.section.created'),
         );
     }
@@ -106,7 +107,7 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
     /**
      * Handle update.
      */
-    protected function handleUpdate(AdminAppearanceSectionUpdateInput $input, array $uriVariables, array $context): mixed
+    protected function handleUpdate(AdminAppearanceSectionUpdateInput $input, Operation $operation, array $uriVariables, array $context): mixed
     {
         $this->authorizedAdmin('appearance.sections.edit', 'bagistoapi::app.admin.appearance.no-permission');
 
@@ -178,7 +179,7 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
 
         return $this->present(
             $this->scope->sectionOrFail((int) $updated->id),
-            $context,
+            $operation,
             __('bagistoapi::app.admin.appearance.section.updated'),
         );
     }
@@ -286,11 +287,11 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
     }
 
     /**
-     * Present.
+     * Present the section as the GraphQL resource or the REST body, depending on the transport.
      */
-    protected function present(Section $section, array $context, string $message): mixed
+    protected function present(Section $section, Operation $operation, string $message): mixed
     {
-        if ($this->isGraphQL($context)) {
+        if ($operation instanceof GraphQlOperation) {
             $resource = $this->toEloquent($section);
 
             $resource->actionMessage = $message;

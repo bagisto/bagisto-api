@@ -141,10 +141,10 @@ class AdminPlaceOrderProcessor implements ProcessorInterface
     protected function result(?int $orderId, ?string $incrementId, ?int $customerId, ?float $grandTotal, bool $success, string $message): AdminPlaceOrder
     {
         $placeOrder = new AdminPlaceOrder;
-        $placeOrder->orderId = $orderId;
-        $placeOrder->incrementId = $incrementId;
-        $placeOrder->customerId = $customerId;
-        $placeOrder->grandTotal = $grandTotal;
+        $placeOrder->order_id = $orderId;
+        $placeOrder->increment_id = $incrementId;
+        $placeOrder->customer_id = $customerId;
+        $placeOrder->grand_total = $grandTotal;
         $placeOrder->success = $success;
         $placeOrder->message = $message;
 

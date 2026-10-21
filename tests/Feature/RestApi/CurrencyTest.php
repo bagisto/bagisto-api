@@ -192,6 +192,42 @@ class CurrencyTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
     }
 
+    // ============================================================================
+    // Unsupported Methods
+    // ============================================================================
+
+    /**
+     * A POST on the read-only collection is refused with 405 and the allowed methods, also with debug off.
+     */
+    public function test_post_on_read_only_collection_returns_method_not_allowed(): void
+    {
+        $this->seedRequiredData();
+        config(['app.debug' => false]);
+
+        $response = $this->postJson($this->collectionUrl, ['code' => 'XYZ'], $this->storefrontHeaders());
+
+        $response->assertStatus(405);
+        expect($response->headers->get('Allow'))->toContain('GET');
+        expect($response->json('status'))->toBe(405);
+        expect($response->json('message'))->toContain('The POST method is not supported for route api/shop/currencies.');
+        $this->assertDatabaseMissing('currencies', ['code' => 'XYZ']);
+    }
+
+    /**
+     * A missing currency keeps API Platform's own 404 problem response with debug off.
+     */
+    public function test_missing_currency_keeps_the_api_not_found_response_with_debug_off(): void
+    {
+        $this->seedRequiredData();
+        config(['app.debug' => false]);
+
+        $response = $this->publicGet($this->itemUrl(999999));
+
+        $response->assertStatus(404);
+        expect($response->json('status'))->toBe(404);
+        expect($response->json('detail'))->toBeString()->not->toBeEmpty();
+    }
+
     /**
      * Item url.
      */

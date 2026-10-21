@@ -27,6 +27,11 @@ class AdminOrderDetailCustomer extends Model
     protected $table = 'customers';
 
     /**
+     * The secret customer columns that are never serialized.
+     */
+    protected $hidden = ['password', 'api_token', 'remember_token', 'token'];
+
+    /**
      * The computed attributes appended when the order customer is serialized.
      *
      * @var array

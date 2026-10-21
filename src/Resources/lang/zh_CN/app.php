@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => '活动门票数量必须为非负数。',
             'booking-ticket-required' => '活动预订请至少选择一种门票的数量。',
             'booking-slot-unavailable' => '所选时段在指定日期不可用。',
+            'invalid-quantity' => '数量必须至少为1',
+            'product-id-required' => '需要商品ID',
+            'shipping-address-required' => '估算运费需要国家和邮政编码',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => '需要产品评价ID',
             'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/reviews/1"的IRI格式或数字ID',
             'not-found' => '未找到ID为":id"的产品评价',
+            'item-not-found' => '未找到项目":id"。',
             'product-id-required' => '需要产品ID',
             'product-not-found' => '未找到产品',
             'rating-invalid' => '评分必须介于1到5之间',
@@ -163,6 +167,7 @@ return [
             'owner-required' => '请登录以管理您的评价',
             'not-owned' => '此评价并非由您撰写，无法修改或删除',
             'invalid-attachments' => '附件格式无效。',
+            'invalid-product-id-format' => '商品ID格式无效。应为类似"/api/shop/products/1"的IRI格式或数字ID',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => '此退货申请无法重新打开。',
             'closed' => '退货申请已成功关闭。',
             'message-sent' => '消息已成功发送。',
+            'attachment-not-found' => '未找到消息附件。',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => '需要发货ID',
             'not-found' => '未找到ID为":id"的发货记录，或该记录不属于此客户',
             'item-not-found' => '未找到ID为":id"的发货项目，或该项目不属于此客户',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/customer-order-shipments/1"的IRI格式或数字ID',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => '需要客户可下载产品ID',
             'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/customer-downloadable-products/1"的IRI格式或数字ID',
             'not-found' => '未找到ID为":id"的客户可下载产品',
+
+            'download' => [
+                'unauthenticated' => '未授权：需要客户身份验证。',
+                'not-found' => '未找到可下载商品。',
+                'pending' => '下载待处理。请等待订单开具发票。',
+                'limit-exceeded' => '已超出下载次数限制。',
+                'no-downloads-remaining' => '没有剩余的下载次数。',
+                'file-not-found' => '文件未找到。',
+                'link-not-found' => '未找到下载链接。',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => '尺寸',
             'brand' => '品牌',
             'super-attributes' => '超级属性',
+            'id-required' => '需要商品ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/products/1"的IRI格式或数字ID',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'REST API 店面 Swagger：:url',
             'rest-api-admin' => 'REST API 后台 Swagger：:url',
             'key-rotation-invalid-key' => '无法轮换无效或已过期的密钥',
+            'env-file-not-found' => '未找到.env文件',
+            'env-permission-denied' => '权限被拒绝：无法写入.env文件。请检查文件权限。',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => '需要属性翻译ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/attribute-translations/1"的IRI格式或数字ID',
+            'not-found' => '未找到属性翻译',
+        ],
+
+        'currency' => [
+            'id-required' => '需要货币ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/currencies/1"的IRI格式或数字ID',
+            'not-found' => '未找到货币',
+        ],
+
+        'customer-address' => [
+            'id-required' => '需要客户地址ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/customer-addresses/1"的IRI格式或数字ID',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => '需要发货项目ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/customer-order-shipment-items/1"的IRI格式或数字ID',
+            'not-found' => '未找到发货项目',
+        ],
+
+        'page' => [
+            'id-required' => '需要页面ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/pages/1"的IRI格式或数字ID',
+            'not-found' => '未找到页面',
+        ],
+
+        'page-translation' => [
+            'id-required' => '需要页面翻译ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/page-translations/1"的IRI格式或数字ID',
+            'not-found' => '未找到页面翻译',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => '需要捆绑选项ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/product-bundle-options/1"的IRI格式或数字ID',
+            'not-found' => '未找到捆绑选项',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => '需要捆绑选项商品ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/product-bundle-option-products/1"的IRI格式或数字ID',
+            'not-found' => '未找到捆绑选项商品',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => '需要下载链接ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/product-downloadable-links/1"的IRI格式或数字ID',
+            'not-found' => '未找到下载链接',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => '需要下载样例ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/product-downloadable-samples/1"的IRI格式或数字ID',
+            'not-found' => '未找到下载样例',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => '需要组合商品ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/product-grouped-products/1"的IRI格式或数字ID',
+            'not-found' => '未找到组合商品',
+        ],
+
+        'product-images' => [
+            'id-required' => '需要商品图片ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/product-images/1"的IRI格式或数字ID',
+            'not-found' => '未找到商品图片',
+        ],
+
+        'product-videos' => [
+            'id-required' => '需要商品视频ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/product-videos/1"的IRI格式或数字ID',
+            'not-found' => '未找到商品视频',
+        ],
+
+        'theme-customization' => [
+            'id-required' => '需要主题定制ID',
+            'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/theme-customizations/1"的IRI格式或数字ID',
+            'not-found' => '未找到主题定制',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => '需要资源ID',
+            'not-found' => '未找到资源',
         ],
     ],
 

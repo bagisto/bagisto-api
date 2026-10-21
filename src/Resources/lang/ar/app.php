@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'يجب أن تكون كمية تذاكر الفعالية رقمًا غير سالب.',
             'booking-ticket-required' => 'حدد كمية تذكرة واحدة على الأقل لحجز الفعالية.',
             'booking-slot-unavailable' => 'الفترة الزمنية المحددة غير متاحة في التاريخ المحدد.',
+            'invalid-quantity' => 'يجب أن تكون الكمية 1 على الأقل',
+            'product-id-required' => 'معرف المنتج مطلوب',
+            'shipping-address-required' => 'الدولة والرمز البريدي مطلوبان لتقدير الشحن',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'معرف مراجعة المنتج مطلوب',
             'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/reviews/1" أو معرف رقمي',
             'not-found' => 'لم يتم العثور على مراجعة المنتج ذات المعرف ":id"',
+            'item-not-found' => 'العنصر ":id" غير موجود.',
             'product-id-required' => 'معرف المنتج مطلوب',
             'product-not-found' => 'لم يتم العثور على المنتج',
             'rating-invalid' => 'يجب أن تكون التقييمات بين 1 و 5',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'يرجى تسجيل الدخول لإدارة مراجعتك',
             'not-owned' => 'لم تكتب هذه المراجعة ولا يمكن تعديلها أو حذفها',
             'invalid-attachments' => 'تنسيق المرفقات غير صحيح.',
+            'invalid-product-id-format' => 'تنسيق معرف المنتج غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/products/1" أو معرف رقمي',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'لا يمكن إعادة فتح طلب الإرجاع هذا.',
             'closed' => 'تم إغلاق طلب الإرجاع بنجاح.',
             'message-sent' => 'تم إرسال الرسالة بنجاح.',
+            'attachment-not-found' => 'لم يتم العثور على مرفق الرسالة.',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'معرف الشحنة مطلوب',
             'not-found' => 'لم يتم العثور على الشحنة ذات المعرف ":id" أو أنها لا تنتمي إلى هذا العميل',
             'item-not-found' => 'لم يتم العثور على عنصر الشحنة ذي المعرف ":id" أو أنه لا ينتمي إلى هذا العميل',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/customer-order-shipments/1" أو معرف رقمي',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'معرف المنتج القابل للتنزيل الخاص بالعميل مطلوب',
             'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/customer-downloadable-products/1" أو معرف رقمي',
             'not-found' => 'لم يتم العثور على المنتج القابل للتنزيل الخاص بالعميل ذي المعرف ":id"',
+
+            'download' => [
+                'unauthenticated' => 'غير مصرح: مصادقة العميل مطلوبة.',
+                'not-found' => 'لم يتم العثور على المنتج القابل للتنزيل.',
+                'pending' => 'التنزيل معلق. يرجى الانتظار حتى تتم فوترة الطلب.',
+                'limit-exceeded' => 'تم تجاوز حد التنزيل.',
+                'no-downloads-remaining' => 'لا توجد تنزيلات متاحة أخرى.',
+                'file-not-found' => 'الملف غير موجود.',
+                'link-not-found' => 'لم يتم العثور على رابط التنزيل.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'الحجم',
             'brand' => 'العلامة التجارية',
             'super-attributes' => 'السمات العليا',
+            'id-required' => 'معرف المنتج مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/products/1" أو معرف رقمي',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Swagger لواجهة REST API للمتجر: :url',
             'rest-api-admin' => 'Swagger لواجهة REST API للمسؤول: :url',
             'key-rotation-invalid-key' => 'لا يمكن تدوير مفتاح غير صالح أو منتهي الصلاحية',
+            'env-file-not-found' => 'لم يتم العثور على ملف .env',
+            'env-permission-denied' => 'تم رفض الإذن: لا يمكن الكتابة في ملف .env. يرجى التحقق من أذونات الملف.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'معرف ترجمة السمة مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/attribute-translations/1" أو معرف رقمي',
+            'not-found' => 'لم يتم العثور على ترجمة السمة',
+        ],
+
+        'currency' => [
+            'id-required' => 'معرف العملة مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/currencies/1" أو معرف رقمي',
+            'not-found' => 'لم يتم العثور على العملة',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'معرف عنوان العميل مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/customer-addresses/1" أو معرف رقمي',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'معرف عنصر الشحنة مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/customer-order-shipment-items/1" أو معرف رقمي',
+            'not-found' => 'لم يتم العثور على عنصر الشحنة',
+        ],
+
+        'page' => [
+            'id-required' => 'معرف الصفحة مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/pages/1" أو معرف رقمي',
+            'not-found' => 'لم يتم العثور على الصفحة',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'معرف ترجمة الصفحة مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/page-translations/1" أو معرف رقمي',
+            'not-found' => 'لم يتم العثور على ترجمة الصفحة',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'معرف خيار الحزمة مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/product-bundle-options/1" أو معرف رقمي',
+            'not-found' => 'لم يتم العثور على خيار الحزمة',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'معرف منتج خيار الحزمة مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/product-bundle-option-products/1" أو معرف رقمي',
+            'not-found' => 'لم يتم العثور على منتج خيار الحزمة',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'معرف رابط التنزيل مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/product-downloadable-links/1" أو معرف رقمي',
+            'not-found' => 'لم يتم العثور على رابط التنزيل',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'معرف عينة التنزيل مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/product-downloadable-samples/1" أو معرف رقمي',
+            'not-found' => 'لم يتم العثور على عينة التنزيل',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'معرف المنتج المجمّع مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/product-grouped-products/1" أو معرف رقمي',
+            'not-found' => 'لم يتم العثور على المنتج المجمّع',
+        ],
+
+        'product-images' => [
+            'id-required' => 'معرف صورة المنتج مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/product-images/1" أو معرف رقمي',
+            'not-found' => 'لم يتم العثور على صورة المنتج',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'معرف فيديو المنتج مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/product-videos/1" أو معرف رقمي',
+            'not-found' => 'لم يتم العثور على فيديو المنتج',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'معرف تخصيص القالب مطلوب',
+            'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/theme-customizations/1" أو معرف رقمي',
+            'not-found' => 'لم يتم العثور على تخصيص القالب',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'معرف المورد مطلوب',
+            'not-found' => 'لم يتم العثور على المورد',
         ],
     ],
 

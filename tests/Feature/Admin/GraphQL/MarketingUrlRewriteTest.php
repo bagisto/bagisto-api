@@ -142,7 +142,7 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation Del($input: deleteAdminMarketingUrlRewriteInput!) {
               deleteAdminMarketingUrlRewrite(input: $input) {
-                adminMarketingUrlRewrite { _id }
+                adminMarketingUrlRewrite { id _id }
               }
             }
         GQL;
@@ -152,6 +152,10 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.deleteAdminMarketingUrlRewrite.adminMarketingUrlRewrite.id'))->toBe("/api/admin/marketing/url-rewrites/{$id}");
+
         $this->assertDatabaseMissing('url_rewrites', ['id' => $id]);
     }
 

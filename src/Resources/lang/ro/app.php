@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'Cantitatea de bilete pentru eveniment trebuie să fie un număr nenegativ.',
             'booking-ticket-required' => 'Selectați cantitatea pentru cel puțin un bilet pentru rezervarea la eveniment.',
             'booking-slot-unavailable' => 'Intervalul selectat nu este disponibil pentru data specificată.',
+            'invalid-quantity' => 'Cantitatea trebuie să fie de cel puțin 1',
+            'product-id-required' => 'ID-ul produsului este obligatoriu',
+            'shipping-address-required' => 'Țara și codul poștal sunt obligatorii pentru estimarea livrării',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'ID-ul recenziei produsului este obligatoriu',
             'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/reviews/1" sau un ID numeric',
             'not-found' => 'Recenzia produsului cu ID-ul „:id” nu a fost găsită',
+            'item-not-found' => 'Elementul „:id” nu a fost găsit.',
             'product-id-required' => 'ID-ul produsului este obligatoriu',
             'product-not-found' => 'Produsul nu a fost găsit',
             'rating-invalid' => 'Evaluarea trebuie să fie între 1 și 5',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'Vă rugăm să vă autentificați pentru a vă gestiona recenzia',
             'not-owned' => 'Această recenzie nu a fost scrisă de dumneavoastră și nu poate fi modificată sau ștearsă',
             'invalid-attachments' => 'Format invalid al atașamentelor.',
+            'invalid-product-id-format' => 'Format de ID de produs invalid. Se așteaptă un format IRI precum "/api/shop/products/1" sau un ID numeric',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'Această cerere de retur nu poate fi redeschisă.',
             'closed' => 'Cererea de retur a fost închisă cu succes.',
             'message-sent' => 'Mesajul a fost trimis cu succes.',
+            'attachment-not-found' => 'Atașamentul mesajului nu a fost găsit.',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'ID-ul expedierii este obligatoriu',
             'not-found' => 'Expedierea cu ID-ul „:id” nu a fost găsită sau nu aparține acestui client',
             'item-not-found' => 'Articolul expedierii cu ID-ul „:id” nu a fost găsit sau nu aparține acestui client',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/customer-order-shipments/1" sau un ID numeric',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'ID-ul produsului descărcabil al clientului este obligatoriu',
             'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/customer-downloadable-products/1" sau un ID numeric',
             'not-found' => 'Produsul descărcabil al clientului cu ID-ul „:id” nu a fost găsit',
+
+            'download' => [
+                'unauthenticated' => 'Neautorizat: este necesară autentificarea clientului.',
+                'not-found' => 'Produsul descărcabil nu a fost găsit.',
+                'pending' => 'Descărcarea este în așteptare. Vă rugăm să așteptați facturarea comenzii.',
+                'limit-exceeded' => 'Limita de descărcări a fost depășită.',
+                'no-downloads-remaining' => 'Nu mai sunt descărcări disponibile.',
+                'file-not-found' => 'Fișierul nu a fost găsit.',
+                'link-not-found' => 'Linkul descărcabil nu a fost găsit.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'Mărime',
             'brand' => 'Marcă',
             'super-attributes' => 'Super atribute',
+            'id-required' => 'ID-ul produsului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/products/1" sau un ID numeric',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Swagger REST API Storefront: :url',
             'rest-api-admin' => 'Swagger REST API Admin: :url',
             'key-rotation-invalid-key' => 'Nu se poate roti o cheie invalidă sau expirată',
+            'env-file-not-found' => 'Fișierul .env nu a fost găsit',
+            'env-permission-denied' => 'Permisiune refuzată: nu se poate scrie în fișierul .env. Verificați permisiunile fișierului.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'ID-ul traducerii atributului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/attribute-translations/1" sau un ID numeric',
+            'not-found' => 'Traducerea atributului nu a fost găsită',
+        ],
+
+        'currency' => [
+            'id-required' => 'ID-ul monedei este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/currencies/1" sau un ID numeric',
+            'not-found' => 'Moneda nu a fost găsită',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'ID-ul adresei clientului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/customer-addresses/1" sau un ID numeric',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'ID-ul articolului din expediere este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/customer-order-shipment-items/1" sau un ID numeric',
+            'not-found' => 'Articolul din expediere nu a fost găsit',
+        ],
+
+        'page' => [
+            'id-required' => 'ID-ul paginii este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/pages/1" sau un ID numeric',
+            'not-found' => 'Pagina nu a fost găsită',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'ID-ul traducerii paginii este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/page-translations/1" sau un ID numeric',
+            'not-found' => 'Traducerea paginii nu a fost găsită',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'ID-ul opțiunii pachetului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-bundle-options/1" sau un ID numeric',
+            'not-found' => 'Opțiunea pachetului nu a fost găsită',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'ID-ul produsului opțiunii pachetului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-bundle-option-products/1" sau un ID numeric',
+            'not-found' => 'Produsul opțiunii pachetului nu a fost găsit',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'ID-ul linkului descărcabil este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-downloadable-links/1" sau un ID numeric',
+            'not-found' => 'Linkul descărcabil nu a fost găsit',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'ID-ul mostrei descărcabile este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-downloadable-samples/1" sau un ID numeric',
+            'not-found' => 'Mostra descărcabilă nu a fost găsită',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'ID-ul produsului grupat este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-grouped-products/1" sau un ID numeric',
+            'not-found' => 'Produsul grupat nu a fost găsit',
+        ],
+
+        'product-images' => [
+            'id-required' => 'ID-ul imaginii produsului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-images/1" sau un ID numeric',
+            'not-found' => 'Imaginea produsului nu a fost găsită',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'ID-ul videoclipului produsului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-videos/1" sau un ID numeric',
+            'not-found' => 'Videoclipul produsului nu a fost găsit',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'ID-ul personalizării temei este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/theme-customizations/1" sau un ID numeric',
+            'not-found' => 'Personalizarea temei nu a fost găsită',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'ID-ul resursei este obligatoriu',
+            'not-found' => 'Resursa nu a fost găsită',
         ],
     ],
 

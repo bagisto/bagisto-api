@@ -54,6 +54,7 @@ use Webkul\BagistoApi\Http\Controllers\DownloadSampleController;
 use Webkul\BagistoApi\Http\Controllers\GdprDataPdfController;
 use Webkul\BagistoApi\Http\Controllers\GraphQLPlaygroundController;
 use Webkul\BagistoApi\Http\Controllers\InvoicePdfController;
+use Webkul\BagistoApi\Http\Controllers\ReturnMessageAttachmentController;
 use Webkul\BagistoApi\Http\Controllers\SwaggerUIController;
 use Webkul\BagistoApi\Http\Middleware\EnforceAdminApiAuth;
 use Webkul\BagistoApi\Http\Middleware\EnsureJsonContentType;
@@ -303,6 +304,11 @@ class BagistoApiServiceProvider extends ServiceProvider
             ->where('id', '[0-9]+')
             ->middleware(['Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey'])
             ->name('bagistoapi.customer_downloadable_product_download');
+
+        Route::get('/api/shop/return-messages/{id}/attachment', ReturnMessageAttachmentController::class)
+            ->where('id', '[0-9]+')
+            ->middleware(['Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey'])
+            ->name('bagistoapi.customer_return_message_attachment');
     }
 
     /**

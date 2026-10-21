@@ -453,6 +453,60 @@ class CustomerOrderTest extends GraphQLTestCase
         expect($secondOrderId)->not()->toBe($firstOrderId);
     }
 
+    /**
+     * Last without before returns the oldest orders, which sort last.
+     */
+    public function test_customer_orders_last_returns_the_final_orders(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGraphQL($testData['customer'], <<<'GQL'
+            query { customerOrders(last: 1) { edges { cursor node { _id } } pageInfo { hasPreviousPage } } }
+        GQL);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $response->json('data.customerOrders.edges')))->toBe([$testData['order1']->id])
+            ->and(array_column($response->json('data.customerOrders.edges'), 'cursor'))->toBe([base64_encode('1')])
+            ->and($response->json('data.customerOrders.pageInfo.hasPreviousPage'))->toBeTrue();
+    }
+
+    /**
+     * Last with before returns only the orders that precede the cursor.
+     */
+    public function test_customer_orders_last_before_stops_at_the_cursor(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGraphQL(
+            $testData['customer'],
+            'query getOrders($before: String) { customerOrders(last: 5, before: $before) { edges { node { _id } } } }',
+            ['before' => base64_encode('1')]
+        );
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $response->json('data.customerOrders.edges')))->toBe([$testData['order2']->id]);
+    }
+
+    /**
+     * A zero page size returns an empty order page that still reports the total.
+     */
+    public function test_customer_orders_zero_page_size_returns_an_empty_page(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGraphQL($testData['customer'], 'query { customerOrders(first: 0) { edges { node { _id } } totalCount } }');
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.customerOrders.edges'))->toBe([])
+            ->and($response->json('data.customerOrders.totalCount'))->toBe(2);
+    }
+
     // ============================================================================
     // Schema Introspection
     // ============================================================================

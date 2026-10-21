@@ -130,7 +130,7 @@ class MarketingEventTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation Del($input: deleteAdminMarketingEventInput!) {
               deleteAdminMarketingEvent(input: $input) {
-                adminMarketingEvent { _id }
+                adminMarketingEvent { id _id }
               }
             }
         GQL;
@@ -140,6 +140,10 @@ class MarketingEventTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.deleteAdminMarketingEvent.adminMarketingEvent.id'))->toBe("/api/admin/marketing/events/{$id}");
+
         $this->assertDatabaseMissing('marketing_events', ['id' => $id]);
     }
 

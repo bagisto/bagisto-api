@@ -71,6 +71,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
         ),
         new Get(
             uriTemplate: '/customers/{customerId}/addresses/{id}',
+            uriVariables: [
+                'customerId' => new Link(parameterName: 'customerId', fromClass: AdminCustomerAddress::class, identifiers: ['customer_id']),
+                'id' => new Link(parameterName: 'id', fromClass: AdminCustomerAddress::class, identifiers: ['id']),
+            ],
             provider: AdminCustomerAddressItemProvider::class,
             requirements: [
                 'customerId' => '\d+',

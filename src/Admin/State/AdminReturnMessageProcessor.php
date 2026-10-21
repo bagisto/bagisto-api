@@ -39,10 +39,7 @@ class AdminReturnMessageProcessor implements ProcessorInterface
             return $this->handleSend($data->return_id, $data->message, null);
         }
 
-        if (
-            $data instanceof AdminReturnMessage
-            && $operation instanceof Post
-        ) {
+        if ($operation instanceof Post) {
             $returnId = request()->input('return_id');
             $file = request()->hasFile('file') ? request()->file('file') : null;
 

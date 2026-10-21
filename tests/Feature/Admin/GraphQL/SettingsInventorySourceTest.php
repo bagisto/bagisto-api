@@ -252,6 +252,39 @@ class SettingsInventorySourceTest extends AdminApiTestCase
     }
 
     /**
+     * Test mutation update keeps the fields it was not sent.
+     */
+    public function test_mutation_update_keeps_omitted_fields(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertInventorySource(['status' => 1, 'priority' => 7]);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminSettingsInventorySourceInput!) {
+              updateAdminSettingsInventorySource(input: $input) {
+                adminSettingsInventorySource { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => '/api/admin/settings/inventory-sources/'.$id,
+                'name' => 'PartialGqlSrc',
+            ],
+        ], $admin);
+
+        $response->assertOk();
+
+        $row = \DB::table('inventory_sources')->where('id', $id)->first();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($row->name)->toBe('PartialGqlSrc')
+            ->and((int) $row->status)->toBe(1)
+            ->and((int) $row->priority)->toBe(7);
+    }
+
+    /**
      * Test mutation delete happy path.
      */
     public function test_mutation_delete_happy_path(): void

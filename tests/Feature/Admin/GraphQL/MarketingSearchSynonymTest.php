@@ -128,7 +128,7 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation Del($input: deleteAdminMarketingSearchSynonymInput!) {
               deleteAdminMarketingSearchSynonym(input: $input) {
-                adminMarketingSearchSynonym { _id }
+                adminMarketingSearchSynonym { id _id }
               }
             }
         GQL;
@@ -138,6 +138,10 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.deleteAdminMarketingSearchSynonym.adminMarketingSearchSynonym.id'))->toBe("/api/admin/marketing/search-synonyms/{$id}");
+
         $this->assertDatabaseMissing('search_synonyms', ['id' => $id]);
     }
 

@@ -513,6 +513,10 @@ trait HandlesCartItems
             throw new AuthorizationException(__('bagistoapi::app.graphql.cart.unauthorized-access'));
         }
 
+        if (! $cart->items->pluck('id')->contains((int) $data->cartItemId)) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.cart-item-not-found'));
+        }
+
         CartFacade::setCart($cart);
 
         Event::dispatch('cart.item.before.remove', ['cartItem' => $data->cartItemId]);
@@ -521,7 +525,7 @@ trait HandlesCartItems
             $removed = CartFacade::removeItem($data->cartItemId);
 
             if (! $removed) {
-                throw new InvalidInputException(__('bagistoapi::app.graphql.cart.cart-item-not-found'));
+                throw new OperationFailedException(__('bagistoapi::app.graphql.cart.remove-item-failed'));
             }
 
             CartFacade::collectTotals();

@@ -147,12 +147,17 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
         ),
         new Post(
             uriTemplate: '/rma/requests',
+            inputFormats: [
+                'json' => ['application/json'],
+                'multipart' => ['multipart/form-data'],
+            ],
             processor: AdminReturnProcessor::class,
             read: false,
+            deserialize: false,
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'Create an RMA request for a customer order',
-                description: 'Admin-side return creation for any order. `rmaQty` is capped server-side by the item\'s returnable/cancelable quantity. Optional image files via multipart `images[]` (REST only). Returns the created RMA. Permission: sales.rma.requests.create.',
+                description: 'Admin-side return creation for any order. `rmaQty` is capped server-side by the item\'s returnable/cancelable quantity. Optional image files via multipart `images[]`, or a single `images` file (REST only). Returns the created RMA. Permission: sales.rma.requests.create.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -196,6 +201,60 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                                     'package_condition' => [
                                         'type' => 'string',
                                         'example' => 'opened',
+                                    ],
+                                ],
+                            ],
+                        ],
+
+                        'multipart/form-data' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['order_id', 'order_item_id', 'rma_qty', 'resolution_type', 'rma_reason_id'],
+
+                                'properties' => [
+                                    'order_id' => [
+                                        'type' => 'integer',
+                                        'example' => 12,
+                                    ],
+
+                                    'order_item_id' => [
+                                        'type' => 'integer',
+                                        'example' => 45,
+                                    ],
+
+                                    'rma_qty' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'resolution_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['return', 'cancel_items'],
+                                        'example' => 'return',
+                                    ],
+
+                                    'rma_reason_id' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'information' => [
+                                        'type' => 'string',
+                                        'example' => 'Customer reported a defect.',
+                                    ],
+
+                                    'package_condition' => [
+                                        'type' => 'string',
+                                        'example' => 'opened',
+                                    ],
+
+                                    'images[]' => [
+                                        'type' => 'array',
+                                        'items' => [
+                                            'type' => 'string',
+                                            'format' => 'binary',
+                                        ],
+                                        'description' => 'Photos of the returned item.',
                                     ],
                                 ],
                             ],

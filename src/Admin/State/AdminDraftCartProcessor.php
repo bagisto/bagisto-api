@@ -87,8 +87,8 @@ class AdminDraftCartProcessor implements ProcessorInterface
     protected function result(?int $cartId, ?int $customerId, bool $success, string $message): AdminDraftCart
     {
         $draftCart = new AdminDraftCart;
-        $draftCart->cartId = $cartId;
-        $draftCart->customerId = $customerId;
+        $draftCart->cart_id = $cartId;
+        $draftCart->customer_id = $customerId;
         $draftCart->success = $success;
         $draftCart->message = $message;
 

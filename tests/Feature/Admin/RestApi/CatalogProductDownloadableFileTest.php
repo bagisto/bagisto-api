@@ -118,6 +118,10 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
         )->assertStatus(403);
     }
 
+    // ============================================================================
+    // CAT3: Download
+    // ============================================================================
+
     /**
      * Test download streams stored file.
      */
@@ -134,6 +138,22 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
         );
 
         expect($response->getStatusCode())->toBe(200);
+    }
+
+    /**
+     * Test download refuses an attribute that does not hold a file.
+     */
+    public function test_download_refuses_an_attribute_that_does_not_hold_a_file(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $attributeId = $this->insertFileAttribute('text');
+        $this->seedStoredAttributeFile($product->id, $attributeId);
+
+        $this->get(
+            "/api/admin/catalog/products/{$product->id}/downloadable/{$attributeId}/download",
+            array_merge($this->adminHeaders($admin), ['Accept' => 'application/octet-stream']),
+        )->assertStatus(404);
     }
 
     /**
@@ -187,19 +207,15 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
         return $this->createAdmin(['role_id' => $role->id]);
     }
 
-    // ============================================================================
-    // CAT3: Download
-    // ============================================================================
-
     /**
-     * Insert file attribute.
+     * Insert an attribute of the given type, a file attribute by default.
      */
-    protected function insertFileAttribute(): int
+    protected function insertFileAttribute(string $type = 'file'): int
     {
         return DB::table('attributes')->insertGetId([
             'code' => 'file_attr_'.uniqid(),
             'admin_name' => 'File Attr',
-            'type' => 'file',
+            'type' => $type,
             'position' => 1,
             'is_required' => 0,
             'is_unique' => 0,

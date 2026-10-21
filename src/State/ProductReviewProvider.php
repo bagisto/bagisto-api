@@ -9,10 +9,12 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Models\ProductReview;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
+use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
 
 class ProductReviewProvider implements ProviderInterface
 {
     use ClampsPageSize;
+    use ResolvesCursorWindow;
 
     /**
      * The default per page constant.
@@ -111,48 +113,12 @@ class ProductReviewProvider implements ProviderInterface
     }
 
     /**
-     * GraphQL cursor pagination (offset-based cursors from API Platform).
-     * Behaviour unchanged from the original provider.
+     * GraphQL cursor pagination over offset-based cursors.
      */
     private function graphQlPaginate($query, array $args): Paginator
     {
-        $first = isset($args['first']) ? (int) $args['first'] : null;
-        $last = isset($args['last']) ? (int) $args['last'] : null;
-        $after = $args['after'] ?? null;
-        $before = $args['before'] ?? null;
+        $requested = $this->requestedCursorLimit($args, self::DEFAULT_PER_PAGE);
 
-        $perPage = $this->clampPageSize($first ?? $last ?? self::DEFAULT_PER_PAGE);
-        $offset = 0;
-
-        if ($after) {
-            $decoded = base64_decode($after, true);
-            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
-        }
-
-        if ($before) {
-            $decoded = base64_decode($before, true);
-            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset = max(0, $cursor - $perPage);
-        }
-
-        $total = (clone $query)->count();
-
-        if ($offset > $total) {
-            $offset = max(0, $total - $perPage);
-        }
-
-        $items = $query->offset($offset)->limit($perPage)->get();
-
-        $currentPage = $total > 0 ? (int) floor($offset / $perPage) + 1 : 1;
-
-        return new Paginator(
-            new LengthAwarePaginator(
-                $items,
-                $total,
-                $perPage,
-                $currentPage,
-                ['path' => request()->url()]
-            )
-        );
+        return new Paginator($this->paginateCursorWindow($query, $args, $requested > 0 ? $this->clampPageSize($requested) : 0));
     }
 }

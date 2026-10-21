@@ -72,6 +72,7 @@ class AdminCustomerAddressProvider implements ProviderInterface
         $dto = new AdminCustomerAddress;
 
         $dto->id = $address->id;
+        $dto->customerId = $address->customer_id;
         $dto->addressType = $address->address_type;
         $dto->firstName = $address->first_name;
         $dto->lastName = $address->last_name;

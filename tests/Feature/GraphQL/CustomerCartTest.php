@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Checkout\Models\Cart;
 
@@ -672,6 +673,10 @@ class CustomerCartTest extends GraphQLTestCase
     {
         $token = $this->loginCustomerAndGetToken();
 
+        $this->createCustomerCartWithItem($token);
+
+        Event::fake(['cart.item.before.remove']);
+
         $mutation = <<<'GQL'
             mutation createRemoveCartItem($cartItemId: Int!) {
               createRemoveCartItem(input: {cartItemId: $cartItemId}) {
@@ -687,7 +692,10 @@ class CustomerCartTest extends GraphQLTestCase
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();
-        $this->assertNotEmpty($response->json('errors'));
+
+        expect($response->json('errors.0.message'))->toBe(__('bagistoapi::app.graphql.cart.cart-item-not-found'));
+
+        Event::assertNotDispatched('cart.item.before.remove');
     }
 
     /**

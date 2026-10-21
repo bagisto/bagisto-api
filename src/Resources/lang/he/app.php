@@ -69,6 +69,9 @@ return [
             'booking-ticket-qty-invalid' => 'כמות כרטיסי האירוע חייבת להיות מספר אי-שלילי.',
             'booking-ticket-required' => 'בחר כמות של כרטיס אחד לפחות עבור הזמנת האירוע.',
             'booking-slot-unavailable' => 'המשבצת שנבחרה אינה זמינה בתאריך הנתון.',
+            'invalid-quantity' => 'הכמות חייבת להיות לפחות 1',
+            'product-id-required' => 'מזהה המוצר נדרש',
+            'shipping-address-required' => 'מדינה ומיקוד נדרשים להערכת המשלוח',
         ],
 
         'token-verification' => [
@@ -153,6 +156,7 @@ return [
             'id-required' => 'מזהה ביקורת המוצר נדרש',
             'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/reviews/1" או מזהה מספרי',
             'not-found' => 'ביקורת המוצר עם המזהה ":id" לא נמצאה',
+            'item-not-found' => 'הפריט ":id" לא נמצא.',
             'product-id-required' => 'מזהה המוצר נדרש',
             'product-not-found' => 'המוצר לא נמצא',
             'rating-invalid' => 'הדירוג חייב להיות בין 1 ל-5',
@@ -163,6 +167,7 @@ return [
             'owner-required' => 'אנא התחבר כדי לנהל את הביקורת שלך',
             'not-owned' => 'ביקורת זו לא נכתבה על ידך ולא ניתן לשנות או למחוק אותה',
             'invalid-attachments' => 'פורמט הקבצים המצורפים אינו תקף.',
+            'invalid-product-id-format' => 'פורמט מזהה מוצר לא חוקי. צפוי פורמט IRI כמו "/api/shop/products/1" או מזהה מספרי',
         ],
 
         'customer-review' => [
@@ -210,6 +215,7 @@ return [
             'reopen-not-allowed' => 'לא ניתן לפתוח מחדש בקשת החזרה זו.',
             'closed' => 'בקשת ההחזרה נסגרה בהצלחה.',
             'message-sent' => 'ההודעה נשלחה בהצלחה.',
+            'attachment-not-found' => 'הקובץ המצורף להודעה לא נמצא.',
         ],
 
         'eu-withdrawal' => [
@@ -223,6 +229,7 @@ return [
             'id-required' => 'מזהה המשלוח נדרש',
             'not-found' => 'המשלוח עם המזהה ":id" לא נמצא או שאינו שייך ללקוח זה',
             'item-not-found' => 'פריט המשלוח עם המזהה ":id" לא נמצא או שאינו שייך ללקוח זה',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/customer-order-shipments/1" או מזהה מספרי',
         ],
 
         'cancel-order' => [
@@ -243,6 +250,16 @@ return [
             'id-required' => 'מזהה המוצר הניתן להורדה של הלקוח נדרש',
             'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/customer-downloadable-products/1" או מזהה מספרי',
             'not-found' => 'המוצר הניתן להורדה של הלקוח עם המזהה ":id" לא נמצא',
+
+            'download' => [
+                'unauthenticated' => 'לא מורשה: נדרש אימות לקוח.',
+                'not-found' => 'המוצר להורדה לא נמצא.',
+                'pending' => 'ההורדה ממתינה. אנא המתן עד להפקת חשבונית עבור ההזמנה.',
+                'limit-exceeded' => 'חריגה ממגבלת ההורדות.',
+                'no-downloads-remaining' => 'אין הורדות נוספות זמינות.',
+                'file-not-found' => 'הקובץ לא נמצא.',
+                'link-not-found' => 'קישור ההורדה לא נמצא.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -382,6 +399,8 @@ return [
             'size' => 'גודל',
             'brand' => 'מותג',
             'super-attributes' => 'מאפייני-על',
+            'id-required' => 'מזהה המוצר נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/products/1" או מזהה מספרי',
         ],
 
         'downloadable-product' => [
@@ -631,6 +650,96 @@ return [
             'rest-api-storefront' => 'Swagger של REST API לחנות: :url',
             'rest-api-admin' => 'Swagger של REST API לניהול: :url',
             'key-rotation-invalid-key' => 'לא ניתן להחליף מפתח לא תקף או שפג תוקפו',
+            'env-file-not-found' => 'קובץ ה-.env לא נמצא',
+            'env-permission-denied' => 'ההרשאה נדחתה: לא ניתן לכתוב לקובץ ה-.env. אנא בדוק את הרשאות הקובץ.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'מזהה תרגום התכונה נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/attribute-translations/1" או מזהה מספרי',
+            'not-found' => 'תרגום התכונה לא נמצא',
+        ],
+
+        'currency' => [
+            'id-required' => 'מזהה המטבע נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/currencies/1" או מזהה מספרי',
+            'not-found' => 'המטבע לא נמצא',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'מזהה כתובת הלקוח נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/customer-addresses/1" או מזהה מספרי',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'מזהה פריט המשלוח נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/customer-order-shipment-items/1" או מזהה מספרי',
+            'not-found' => 'פריט המשלוח לא נמצא',
+        ],
+
+        'page' => [
+            'id-required' => 'מזהה הדף נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/pages/1" או מזהה מספרי',
+            'not-found' => 'הדף לא נמצא',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'מזהה תרגום הדף נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/page-translations/1" או מזהה מספרי',
+            'not-found' => 'תרגום הדף לא נמצא',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'מזהה אפשרות החבילה נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/product-bundle-options/1" או מזהה מספרי',
+            'not-found' => 'אפשרות החבילה לא נמצאה',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'מזהה מוצר אפשרות החבילה נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/product-bundle-option-products/1" או מזהה מספרי',
+            'not-found' => 'מוצר אפשרות החבילה לא נמצא',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'מזהה קישור ההורדה נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/product-downloadable-links/1" או מזהה מספרי',
+            'not-found' => 'קישור ההורדה לא נמצא',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'מזהה דוגמת ההורדה נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/product-downloadable-samples/1" או מזהה מספרי',
+            'not-found' => 'דוגמת ההורדה לא נמצאה',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'מזהה המוצר המקובץ נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/product-grouped-products/1" או מזהה מספרי',
+            'not-found' => 'המוצר המקובץ לא נמצא',
+        ],
+
+        'product-images' => [
+            'id-required' => 'מזהה תמונת המוצר נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/product-images/1" או מזהה מספרי',
+            'not-found' => 'תמונת המוצר לא נמצאה',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'מזהה סרטון המוצר נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/product-videos/1" או מזהה מספרי',
+            'not-found' => 'סרטון המוצר לא נמצא',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'מזהה התאמת ערכת הנושא נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/theme-customizations/1" או מזהה מספרי',
+            'not-found' => 'התאמת ערכת הנושא לא נמצאה',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'מזהה המשאב נדרש',
+            'not-found' => 'המשאב לא נמצא',
         ],
     ],
 

@@ -339,7 +339,7 @@ class CartTokenProcessor implements ProcessorInterface
     private function validateRemoveItems(CartInput $data): void
     {
         if (empty($data->itemIds)) {
-            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.cart-item-ids-required'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.item-ids-required'));
         }
     }
 

@@ -94,8 +94,9 @@ class CustomerReturnMessageProcessor implements ProcessorInterface
             $extension = MimeTypes::getDefault()->getExtensions($file->getMimeType())[0] ?? null;
 
             $path = $file->storeAs(
-                'rma-conversation/'.$stored->id,
-                Str::random(40).($extension ? '.'.$extension : '')
+                'rmas/'.$rma->id.'/conversations/'.$stored->id,
+                Str::random(40).($extension ? '.'.$extension : ''),
+                'private'
             );
 
             $this->rmaMessageRepository->update([

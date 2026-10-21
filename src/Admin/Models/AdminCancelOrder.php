@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCancelOrderInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\Dto\OrderDetailRestDto;
 use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
 
@@ -55,6 +56,8 @@ use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
 )]
 class AdminCancelOrder
 {
+    use AcceptsCamelCaseWrites;
+
     /**
      * The id.
      */
@@ -65,13 +68,13 @@ class AdminCancelOrder
      * The order id.
      */
     #[ApiProperty(writable: false)]
-    public ?int $orderId = null;
+    public ?int $order_id = null;
 
     /**
      * The increment id.
      */
     #[ApiProperty(writable: false)]
-    public ?string $incrementId = null;
+    public ?string $increment_id = null;
 
     /**
      * The status.
@@ -83,25 +86,25 @@ class AdminCancelOrder
      * The status label.
      */
     #[ApiProperty(writable: false)]
-    public ?string $statusLabel = null;
+    public ?string $status_label = null;
 
     /**
      * The grand total.
      */
     #[ApiProperty(writable: false)]
-    public ?float $grandTotal = null;
+    public ?float $grand_total = null;
 
     /**
      * The base grand total.
      */
     #[ApiProperty(writable: false)]
-    public ?float $baseGrandTotal = null;
+    public ?float $base_grand_total = null;
 
     /**
      * The total qty ordered.
      */
     #[ApiProperty(writable: false)]
-    public ?int $totalQtyOrdered = null;
+    public ?int $total_qty_ordered = null;
 
     /**
      * The success.

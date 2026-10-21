@@ -1,185 +1,162 @@
-// Shop — Customizable-option file upload e2e (REST).
-// Covers the live multipart upload (the fixture product + its file-type option are
-// built through the admin API) plus the endpoint's guards: auth gate, unknown
-// product, missing binary, and the add-to-cart token-resolution path.
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { sendAdminRequest } from '../../rest/helpers/adminClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
 import { env } from '../../config/env';
+import { bearer, expectProblem, readJson, registerShopCustomer, ShopCustomer, uniqueSuffix } from '../../rest/helpers/coverage/shopCart.helpers';
 
-function uniqueEmail(): string {
-  return `file-opt-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.com`;
+const MSG = {
+  UNAUTHENTICATED: 'Unauthenticated. Please login to perform this action',
+  PRODUCT_NOT_FOUND: 'Product not found',
+  FILE_INVALID: 'The file is missing, has an unsupported extension, or is too large.',
+  FILE_TOKEN_INVALID: 'The uploaded file reference is invalid or has expired. Upload the file again.',
+};
+
+const MISSING_PRODUCT_ID = 2147480000;
+
+interface FileOptionProduct {
+  productId: number;
+  optionId: number;
 }
 
-test.describe('Customizable Option File Upload REST API', () => {
-  let authToken: string | null = null;
-  let productId: number | null = null;
+async function createFileOptionProduct(request: APIRequestContext): Promise<FileOptionProduct> {
+  const createResp = await sendAdminRequest(request, '/api/admin/catalog/products', {
+    method: 'POST',
+    data: {
+      sku: `e2e-fileopt-${uniqueSuffix()}`,
+      attribute_family_id: 1,
+      type: 'simple',
+    },
+  });
+  const created = await readJson(createResp);
+  expect(createResp.status(), JSON.stringify(created)).toBe(201);
+  const productId = Number(created.id);
 
-  test.beforeAll(async ({ request }) => {
-    const email = uniqueEmail();
-    const password = 'Password123!';
-
-    await sendRestRequest(request, ENDPOINTS.CUSTOMER_REGISTER, {
-      method: 'POST',
-      data: {
-        first_name: 'File',
-        last_name: 'Option',
-        email,
-        password,
-        password_confirmation: password,
+  const optionResp = await sendAdminRequest(request, `/api/admin/catalog/products/${productId}`, {
+    method: 'PUT',
+    data: {
+      status: 1,
+      customizable_options: {
+        option_1: {
+          label: 'Upload your design',
+          type: 'file',
+          is_required: 1,
+          sort_order: 0,
+          supported_file_extensions: 'pdf,jpg,png',
+          prices: { price_1: { label: '', price: 0, sort_order: 0 } },
+        },
       },
-    });
+    },
+  });
+  const updated = await readJson(optionResp);
+  expect(optionResp.status(), JSON.stringify(updated)).toBe(200);
+  expect(updated.status).toBe(1);
 
-    const login = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-      method: 'POST',
-      data: { email, password },
-    });
+  const fileOption = (updated.customizableOptions ?? []).find((option: any) => option.type === 'file');
+  expect(fileOption, JSON.stringify(updated.customizableOptions)).toBeDefined();
 
-    if ([200, 201].includes(login.status())) {
-      authToken = (await login.json()).token ?? null;
-    }
+  return { productId, optionId: Number(fileOption.id) };
+}
 
-    // A simple product: a configurable one fails add-to-cart on its missing variant
-    // options before the file-token path is ever reached.
-    const products = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '5', type: 'simple' },
-    });
-    if (products.status() === 200) {
-      const body = await products.json();
-      if (Array.isArray(body) && body.length > 0) productId = body[0].id;
-    }
+async function deleteProduct(request: APIRequestContext, productId: number): Promise<void> {
+  await sendAdminRequest(request, `/api/admin/catalog/products/${productId}`, { method: 'DELETE' });
+}
+
+async function uploadFile(request: APIRequestContext, customer: ShopCustomer, product: FileOptionProduct) {
+  return request.post(`${env.baseUrl}${ENDPOINTS.CUSTOMIZABLE_OPTION_FILE_UPLOAD}`, {
+    headers: {
+      'X-STOREFRONT-KEY': env.storefrontAccessKey,
+      Authorization: `Bearer ${customer.token}`,
+      Accept: 'application/json',
+    },
+    multipart: {
+      product_id: String(product.productId),
+      option_id: String(product.optionId),
+      file: {
+        name: 'spec.pdf',
+        mimeType: 'application/pdf',
+        buffer: Buffer.from('%PDF-1.4 e2e upload'),
+      },
+    },
+  });
+}
+
+test.describe('customizable option file upload rest api', () => {
+  let customer: ShopCustomer;
+
+  test.beforeEach(async ({ request }) => {
+    customer = await registerShopCustomer(request);
   });
 
-  function authHeaders(): Record<string, string> {
-    return authToken ? { Authorization: `Bearer ${authToken}` } : {};
-  }
-
   test('live multipart upload returns a file token', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'customer login failed');
-      return;
-    }
-
-    // Build the fixture: a product carrying a file-type customizable option.
-    // Core keys new options with an `option_`-prefixed key; a numeric key means "existing id".
-    const createResp = await sendAdminRequest(request, '/api/admin/catalog/products', {
-      method: 'POST',
-      data: {
-        sku: `e2e-fileopt-${Date.now()}-${Math.floor(Math.random() * 1e6)}`,
-        attribute_family_id: 1,
-        type: 'simple',
-      },
-    });
-    expect([200, 201]).toContain(createResp.status());
-    const optionProductId = (await createResp.json()).id as number;
+    const product = await createFileOptionProduct(request);
 
     try {
-      const optionResp = await sendAdminRequest(request, `/api/admin/catalog/products/${optionProductId}`, {
-        method: 'PUT',
-        data: {
-          customizable_options: {
-            option_1: {
-              label: 'Upload your design',
-              type: 'file',
-              is_required: 1,
-              sort_order: 0,
-              supported_file_extensions: 'pdf,jpg,png',
-              prices: { price_1: { label: '', price: 0, sort_order: 0 } },
-            },
-          },
-        },
-      });
-      expect(optionResp.status()).toBe(200);
+      const upload = await uploadFile(request, customer, product);
+      const body = await readJson(upload);
 
-      const detail = await sendAdminRequest(request, `/api/admin/catalog/products/${optionProductId}`);
-      const options = (await detail.json())?.customizableOptions ?? [];
-      const fileOption = options.find((o: any) => o.type === 'file');
-      expect(fileOption, 'file-type customizable option must exist on the product').toBeTruthy();
-
-      const upload = await request.post(
-        `${env.baseUrl}${ENDPOINTS.CUSTOMIZABLE_OPTION_FILE_UPLOAD}`,
-        {
-          headers: {
-            'X-STOREFRONT-KEY': env.storefrontAccessKey,
-            Authorization: `Bearer ${authToken}`,
-            Accept: 'application/json',
-          },
-          multipart: {
-            product_id: String(optionProductId),
-            option_id: String(fileOption.id),
-            file: {
-              name: 'spec.pdf',
-              mimeType: 'application/pdf',
-              buffer: Buffer.from('%PDF-1.4 e2e upload'),
-            },
-          },
-        }
-      );
-
-      expect([200, 201]).toContain(upload.status());
-      const body = await upload.json();
-      expect(body.token, 'upload must return a resolution token').toBeTruthy();
+      expect(upload.status(), JSON.stringify(body)).toBe(201);
+      expect(typeof body.token).toBe('string');
+      expect(body.token.length).toBeGreaterThan(0);
       expect(body.fileName).toBe('spec.pdf');
-      expect(Number(body.optionId)).toBe(Number(fileOption.id));
+      expect(Number(body.optionId)).toBe(product.optionId);
     } finally {
-      await sendAdminRequest(request, `/api/admin/catalog/products/${optionProductId}`, { method: 'DELETE' });
+      await deleteProduct(request, product.productId);
     }
   });
 
   test('upload requires authentication', async ({ request }) => {
-    // Storefront key only, no Bearer — the endpoint must reject before any work.
     const resp = await sendRestRequest(request, ENDPOINTS.CUSTOMIZABLE_OPTION_FILE_UPLOAD, {
       method: 'POST',
-      data: { product_id: productId ?? 1, option_id: 1 },
+      data: { product_id: MISSING_PRODUCT_ID, option_id: 1 },
     });
-    expect([401, 403]).toContain(resp.status());
+
+    await expectProblem(resp, 401, MSG.UNAUTHENTICATED);
   });
 
   test('upload on an unknown product is rejected', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'customer login failed');
-      return;
-    }
     const resp = await sendRestRequest(request, ENDPOINTS.CUSTOMIZABLE_OPTION_FILE_UPLOAD, {
       method: 'POST',
-      headers: authHeaders(),
-      data: { product_id: 99999999, option_id: 1 },
+      headers: bearer(customer.token),
+      data: { product_id: MISSING_PRODUCT_ID, option_id: 1 },
     });
-    expect([400, 404, 422]).toContain(resp.status());
+
+    await expectProblem(resp, 404, MSG.PRODUCT_NOT_FOUND);
   });
 
   test('upload without a file is rejected', async ({ request }) => {
-    if (!authToken || !productId) {
-      test.skip(true, 'no customer token or product available');
-      return;
+    const product = await createFileOptionProduct(request);
+
+    try {
+      const resp = await sendRestRequest(request, ENDPOINTS.CUSTOMIZABLE_OPTION_FILE_UPLOAD, {
+        method: 'POST',
+        headers: bearer(customer.token),
+        data: { product_id: product.productId, option_id: product.optionId },
+      });
+
+      await expectProblem(resp, 400, MSG.FILE_INVALID);
+    } finally {
+      await deleteProduct(request, product.productId);
     }
-    const resp = await sendRestRequest(request, ENDPOINTS.CUSTOMIZABLE_OPTION_FILE_UPLOAD, {
-      method: 'POST',
-      headers: authHeaders(),
-      data: { product_id: productId, option_id: 1 },
-    });
-    // No binary + option is not a file option (or missing) → validation rejects.
-    expect([400, 404, 422]).toContain(resp.status());
   });
 
-  test('add to cart with a bogus file token is handled', async ({ request }) => {
-    if (!authToken || !productId) {
-      test.skip(true, 'no customer token or product available');
-      return;
+  test('add to cart with a bogus file token is rejected', async ({ request }) => {
+    const product = await createFileOptionProduct(request);
+
+    try {
+      const resp = await sendRestRequest(request, ENDPOINTS.ADD_PRODUCT_TO_CART, {
+        method: 'POST',
+        headers: bearer(customer.token),
+        data: {
+          productId: product.productId,
+          quantity: 1,
+          customizableOptions: { [String(product.optionId)]: ['not-a-real-upload-token'] },
+        },
+      });
+
+      await expectProblem(resp, 400, MSG.FILE_TOKEN_INVALID);
+    } finally {
+      await deleteProduct(request, product.productId);
     }
-    const resp = await sendRestRequest(request, ENDPOINTS.ADD_PRODUCT_TO_CART, {
-      method: 'POST',
-      headers: authHeaders(),
-      data: {
-        productId,
-        quantity: 1,
-        customizableOptions: { '1': ['not-a-real-upload-token'] },
-      },
-    });
-    // If the product has a file option, the bogus token is rejected (400);
-    // otherwise the token is ignored and the add succeeds — both are valid.
-    expect([200, 201, 400, 404, 422]).toContain(resp.status());
   });
 });

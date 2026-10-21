@@ -1,17 +1,19 @@
 import { test, expect } from '@playwright/test';
 import { SHOP_DOCS_QUERIES } from '../../graphql/Queries/shopDocs.queries';
 import { sendGraphQLRequest } from '../../graphql/helpers/graphqlClient';
-import { expectConnection, expectGraphQLSuccess, graphQLErrorMessages } from '../../graphql/helpers/testSupport';
+import { expectConnection, expectGraphQLSuccess } from '../../graphql/helpers/testSupport';
 
-test.describe('CMS Pages GraphQL API Tests', () => {
-  test('Should get all CMS pages successfully', async ({ request }) => {
+const INVALID_ID_FORMAT = /invalid[- ]id[- ]format/i;
+
+test.describe('cms pages graphql api tests', () => {
+  test('should get all cms pages successfully', async ({ request }) => {
     const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getPages, { first: 10 });
     expect(response.status()).toBe(200);
     const body = await response.json();
     expectConnection(body, 'data.pages');
   });
 
-  test('Should return CMS pages with pagination', async ({ request }) => {
+  test('should return cms pages with pagination', async ({ request }) => {
     const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getPages, { first: 5 });
     expect(response.status()).toBe(200);
     const body = await response.json();
@@ -19,29 +21,33 @@ test.describe('CMS Pages GraphQL API Tests', () => {
     expect(typeof pages.pageInfo.hasNextPage).toBe('boolean');
   });
 
-  test('Should get CMS page by valid ID', async ({ request }) => {
+  test('should get cms page by valid id', async ({ request }) => {
     const allResponse = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getPages, { first: 1 });
+    expect(allResponse.status()).toBe(200);
     const allBody = await allResponse.json();
+    const pages = expectConnection(allBody, 'data.pages');
+    expect(pages.edges.length, 'the store seeds cms pages such as about-us').toBeGreaterThan(0);
 
-    if (allBody.data?.pages?.edges?.length > 0) {
-      const pageId = allBody.data.pages.edges[0].node.id;
-      const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getPage, { id: pageId });
-      expect(response.status()).toBe(200);
-      const body = await response.json();
-      expectGraphQLSuccess(body, 'data.page');
-    } else {
-      console.log('No CMS pages found - skipping single page test');
-    }
+    const listed = pages.edges[0].node;
+    const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getPage, { id: listed.id });
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    expectGraphQLSuccess(body, 'data.page');
+    expect(body.data.page.id).toBe(listed.id);
+    expect(body.data.page._id).toBe(listed._id);
   });
 
-  test('Should handle invalid CMS page ID gracefully', async ({ request }) => {
+  test('should refuse a cms page id that is neither numeric nor an iri', async ({ request }) => {
     const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getPage, { id: 'invalid-id-99999' });
     expect(response.status()).toBe(200);
     const body = await response.json();
-    expect(body.data?.page === null || graphQLErrorMessages(body).length > 0).toBeTruthy();
+
+    expect(body.data?.page ?? null).toBeNull();
+    expect(body.errors).toHaveLength(1);
+    expect(body.errors[0].message).toMatch(INVALID_ID_FORMAT);
   });
 
-  test('Should handle missing ID parameter gracefully', async ({ request }) => {
+  test('should reject the page query when the required id is missing', async ({ request }) => {
     const invalidQuery = `
       query getCmsPageDetail {
         page {
@@ -53,6 +59,7 @@ test.describe('CMS Pages GraphQL API Tests', () => {
     const response = await sendGraphQLRequest(request, invalidQuery);
     expect(response.status()).toBe(200);
     const body = await response.json();
-    expect(graphQLErrorMessages(body).length).toBeGreaterThan(0);
+    expect(body.data ?? null).toBeNull();
+    expect(body.errors[0].message).toBe('Field "page" argument "id" of type "ID!" is required but not provided.');
   });
 });

@@ -1,26 +1,55 @@
-// Admin Marketing — Catalog Rules GraphQL e2e.
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminGraphQLRequest } from '../../../../graphql/helpers/adminGraphqlClient';
 import {
-  ADMIN_CATALOG_RULES_QUERY,
   ADMIN_CATALOG_RULE_QUERY,
   ADMIN_CATALOG_RULE_CREATE_MUTATION,
-  ADMIN_CATALOG_RULE_UPDATE_MUTATION,
-  ADMIN_CATALOG_RULE_DELETE_MUTATION,
-  ADMIN_CATALOG_RULE_MASS_DELETE_MUTATION,
 } from '../../../../graphql/Queries/admin/marketing/catalogRules.queries';
 
 test.describe.configure({ timeout: 120_000 });
 
-// GraphQL inputs use camelCase keys (API Platform rewrites snake_case at the
-// schema level). REST inputs accept snake_case; GraphQL inputs do NOT.
-function basePayload(ts: number) {
+const UNKNOWN_IRI = '/api/admin/marketing/catalog-rules/999999999';
+
+const NOT_FOUND = 'Catalog rule not found.';
+
+const DEFAULT_CHANNEL_ID = 1;
+
+const GENERAL_CUSTOMER_GROUP_ID = 2;
+
+const CATALOG_RULES_FILTER_QUERY = `
+  query adminMarketingCatalogRules($first: Int, $name: String, $status: Int) {
+    adminMarketingCatalogRules(first: $first, name: $name, status: $status) {
+      totalCount
+      edges { node { _id name status actionType discountAmount } }
+    }
+  }
+`;
+
+const CATALOG_RULE_DELETE_MUTATION = `
+  mutation deleteAdminMarketingCatalogRule($input: deleteAdminMarketingCatalogRuleInput!) {
+    deleteAdminMarketingCatalogRule(input: $input) {
+      adminMarketingCatalogRule { _id message }
+    }
+  }
+`;
+
+const CATALOG_RULE_MASS_DELETE_MUTATION = `
+  mutation createAdminMarketingCatalogRuleMassDelete($input: createAdminMarketingCatalogRuleMassDeleteInput!) {
+    createAdminMarketingCatalogRuleMassDelete(input: $input) {
+      adminMarketingCatalogRuleMassDelete { deleted skipped message }
+    }
+  }
+`;
+
+function uniqueName(): string {
+  return `e2e_gql_cr_${Date.now()}_${Math.floor(Math.random() * 1_000_000)}`;
+}
+
+function ruleInput(name: string): Record<string, any> {
   return {
-    name: `e2e_gql_cr_${ts}`,
+    name,
     description: 'gql e2e',
-    channels: [1],
-    customerGroups: [2],
+    channels: [DEFAULT_CHANNEL_ID],
+    customerGroups: [GENERAL_CUSTOMER_GROUP_ID],
     actionType: 'by_percent',
     discountAmount: 10,
     sortOrder: 0,
@@ -29,102 +58,125 @@ function basePayload(ts: number) {
   };
 }
 
-async function safeBody(resp: any) {
-  try { return await resp.json(); } catch { return null; }
+async function gql(request: APIRequestContext, query: string, variables: Record<string, any> = {}): Promise<any> {
+  const resp = await sendAdminGraphQLRequest(request, query, variables);
+  expect(resp.status()).toBe(200);
+  return resp.json();
 }
 
-test.describe('Admin Marketing — Catalog Rules GraphQL', () => {
-  test('listing returns edges', async ({ request }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CATALOG_RULES_QUERY, { first: 5 });
-    expect(resp.status()).toBe(200);
-    const body = await safeBody(resp);
-    expect(body?.data?.adminMarketingCatalogRules).toBeTruthy();
-    expect(Array.isArray(body?.data?.adminMarketingCatalogRules?.edges)).toBe(true);
+function dataOf(body: any, field: string): any {
+  expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+  return body.data[field];
+}
+
+function firstError(body: any): string | undefined {
+  return body.errors?.[0]?.message;
+}
+
+async function catalogRules(request: APIRequestContext, variables: Record<string, any>): Promise<any> {
+  return dataOf(await gql(request, CATALOG_RULES_FILTER_QUERY, { first: 5, ...variables }), 'adminMarketingCatalogRules');
+}
+
+test.describe('admin marketing catalog rules graphql', () => {
+  let created: string[];
+
+  test.beforeEach(() => {
+    created = [];
   });
 
-  test('listing with name filter', async ({ request }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CATALOG_RULES_QUERY, {
-      first: 5, name: 'nonexistent-xyz-gql',
-    });
-    expect(resp.status()).toBe(200);
+  test.afterEach(async ({ request }) => {
+    for (const id of created) {
+      await sendAdminGraphQLRequest(request, CATALOG_RULE_DELETE_MUTATION, { input: { id } });
+    }
   });
 
-  test('detail unknown id surfaces errors[]', async ({ request }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CATALOG_RULE_QUERY, {
-      id: '/api/admin/marketing/catalog-rules/99999999',
-    });
-    expect(resp.status()).toBe(200);
-    const body = await safeBody(resp);
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const isNull = body?.data?.adminMarketingCatalogRule === null;
-    expect(hasErrors || isNull).toBe(true);
+  async function createRule(request: APIRequestContext, input: Record<string, any>): Promise<any> {
+    const rule = dataOf(await gql(request, ADMIN_CATALOG_RULE_CREATE_MUTATION, { input }), 'createAdminMarketingCatalogRule').adminMarketingCatalogRule;
+    created.push(rule.id);
+    return rule;
+  }
+
+  test('listing filtered by name returns only the created rule', async ({ request }) => {
+    const name = uniqueName();
+    const rule = await createRule(request, ruleInput(name));
+
+    const connection = await catalogRules(request, { name });
+    expect(connection.totalCount).toBe(1);
+    expect(connection.edges[0].node).toEqual({ _id: rule._id, name, status: 1, actionType: 'by_percent', discountAmount: 10 });
   });
 
-  test('create empty payload is rejected', async ({ request }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CATALOG_RULE_CREATE_MUTATION, {
-      input: {},
-    });
-    expect(resp.status()).toBe(200);
-    const body = await safeBody(resp);
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    expect(hasErrors).toBe(true);
+  test('listing with a name nobody uses returns no rules', async ({ request }) => {
+    const connection = await catalogRules(request, { name: uniqueName() });
+    expect(connection.totalCount).toBe(0);
+    expect(connection.edges).toEqual([]);
+  });
+
+  test('detail unknown id reports the rule as not found', async ({ request }) => {
+    const body = await gql(request, ADMIN_CATALOG_RULE_QUERY, { id: UNKNOWN_IRI });
+    expect(firstError(body)).toBe(NOT_FOUND);
+    expect(body.data?.adminMarketingCatalogRule ?? null).toBeNull();
+  });
+
+  test('create empty payload is rejected with the name requirement', async ({ request }) => {
+    const body = await gql(request, ADMIN_CATALOG_RULE_CREATE_MUTATION, { input: {} });
+    expect(firstError(body)).toBe('The name field is required.');
+    expect(body.data?.createAdminMarketingCatalogRule ?? null).toBeNull();
   });
 
   test('create + delete round trip', async ({ request }) => {
-    const ts = Date.now();
-    const createResp = await sendAdminGraphQLRequest(request, ADMIN_CATALOG_RULE_CREATE_MUTATION, {
-      input: basePayload(ts),
+    const name = uniqueName();
+    const rule = await createRule(request, ruleInput(name));
+    expect(rule).toEqual({
+      id: `/api/admin/marketing/catalog-rules/${rule._id}`,
+      _id: rule._id,
+      name,
+      status: 1,
+      actionType: 'by_percent',
+      discountAmount: 10,
     });
-    expect(createResp.status()).toBe(200);
-    const cb = await safeBody(createResp);
-    const id = cb?.data?.createAdminMarketingCatalogRule?.adminMarketingCatalogRule?.id;
-    console.log('gql catalog-rule create id:', id, 'errors:', JSON.stringify(cb?.errors)?.slice(0, 200));
-    if (!id) return;
 
-    const delResp = await sendAdminGraphQLRequest(request, ADMIN_CATALOG_RULE_DELETE_MUTATION, {
-      input: { id },
-    });
-    expect(delResp.status()).toBe(200);
+    const read = dataOf(await gql(request, ADMIN_CATALOG_RULE_QUERY, { id: rule.id }), 'adminMarketingCatalogRule');
+    expect(read).toEqual(expect.objectContaining({ _id: rule._id, name, description: 'gql e2e', status: 1 }));
+    expect(read.channels.edges.map((edge: any) => edge.node._id)).toEqual([DEFAULT_CHANNEL_ID]);
+    expect(read.customerGroups.edges.map((edge: any) => edge.node._id)).toEqual([GENERAL_CUSTOMER_GROUP_ID]);
+
+    const deleted = dataOf(await gql(request, CATALOG_RULE_DELETE_MUTATION, { input: { id: rule.id } }), 'deleteAdminMarketingCatalogRule')
+      .adminMarketingCatalogRule;
+    expect(deleted).toEqual({ _id: rule._id, message: 'Catalog rule deleted successfully.' });
+    created = [];
+
+    expect(firstError(await gql(request, ADMIN_CATALOG_RULE_QUERY, { id: rule.id }))).toBe(NOT_FOUND);
   });
 
-  test('create by_percent>100 is rejected', async ({ request }) => {
-    const ts = Date.now();
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CATALOG_RULE_CREATE_MUTATION, {
-      input: { ...basePayload(ts), discountAmount: 200 },
-    });
-    expect(resp.status()).toBe(200);
-    const body = await safeBody(resp);
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const created = body?.data?.createAdminMarketingCatalogRule?.adminMarketingCatalogRule;
-    expect(hasErrors || created === null).toBe(true);
+  test('create by_percent above 100 is rejected and nothing is stored', async ({ request }) => {
+    const name = uniqueName();
+    const body = await gql(request, ADMIN_CATALOG_RULE_CREATE_MUTATION, { input: { ...ruleInput(name), discountAmount: 200 } });
+    expect(firstError(body)).toBe('The discount amount field must not be greater than 100.');
+    expect(body.data?.createAdminMarketingCatalogRule ?? null).toBeNull();
+    expect((await catalogRules(request, { name })).totalCount).toBe(0);
   });
 
   test('mass-delete empty indices is rejected', async ({ request }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CATALOG_RULE_MASS_DELETE_MUTATION, {
-      input: { indices: [] },
-    });
-    expect(resp.status()).toBe(200);
-    const body = await safeBody(resp);
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    expect(hasErrors).toBe(true);
+    const body = await gql(request, CATALOG_RULE_MASS_DELETE_MUTATION, { input: { indices: [] } });
+    expect(firstError(body)).toBe('No catalog rule IDs supplied for mass-delete.');
+    expect(body.data?.createAdminMarketingCatalogRuleMassDelete ?? null).toBeNull();
   });
 
-  test('mass-delete round trip', async ({ request }) => {
-    const ts = Date.now();
-    const ids: number[] = [];
-    for (let i = 0; i < 2; i++) {
-      const r = await sendAdminGraphQLRequest(request, ADMIN_CATALOG_RULE_CREATE_MUTATION, {
-        input: { ...basePayload(ts + i), name: `e2e_gql_cr_mass_${ts}_${i}` },
-      });
-      const b = await safeBody(r);
-      const _id = b?.data?.createAdminMarketingCatalogRule?.adminMarketingCatalogRule?._id;
-      if (_id) ids.push(_id);
-    }
-    if (ids.length > 0) {
-      const resp = await sendAdminGraphQLRequest(request, ADMIN_CATALOG_RULE_MASS_DELETE_MUTATION, {
-        input: { indices: ids },
-      });
-      expect(resp.status()).toBe(200);
-    }
+  test('mass-delete removes the created rules and skips unknown ids', async ({ request }) => {
+    const first = await createRule(request, ruleInput(uniqueName()));
+    const second = await createRule(request, ruleInput(uniqueName()));
+
+    const result = dataOf(
+      await gql(request, CATALOG_RULE_MASS_DELETE_MUTATION, { input: { indices: [first._id, second._id, 999999999] } }),
+      'createAdminMarketingCatalogRuleMassDelete',
+    ).adminMarketingCatalogRuleMassDelete;
+    expect(result).toEqual({
+      deleted: [first._id, second._id],
+      skipped: [999999999],
+      message: 'Selected catalog rules deleted successfully.',
+    });
+    created = [];
+
+    expect(firstError(await gql(request, ADMIN_CATALOG_RULE_QUERY, { id: first.id }))).toBe(NOT_FOUND);
   });
 });

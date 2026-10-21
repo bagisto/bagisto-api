@@ -1,4 +1,3 @@
-//Category api test cases
 import { test, expect } from '@playwright/test';
 import { sendGraphQLRequest } from '../../graphql/helpers/graphqlClient';
 import { GET_ALL_CATEGORY, GET_TREE_CATEGORY_BASIC, GET_TREE_CATEGORY_COMPLETE, GET_TREE_CATEGORY_BY_PARENT_FILTER,
@@ -20,8 +19,8 @@ import { assertGetAllCategoryResponse, assertTreeCategoryBasicResponse, assertTr
 } 
 from '../../graphql/assertions/category.assertions';
 
-test.describe('Category GraphQL Tests', () => {
-  test('Should fetch all category successfully', async ({ request }) => {
+test.describe('category graphql tests', () => {
+  test('should fetch all category successfully', async ({ request }) => {
 
   console.log('\n📤 Sending treeCategories query...');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -82,8 +81,7 @@ test.describe('Category GraphQL Tests', () => {
   assertGetAllCategoryResponse(body);
 });
 
-
-  test('Should fetch tree category for parentId 1', async ({ request }) => {
+  test('should fetch tree category for parentid 1', async ({ request }) => {
     const response = await sendGraphQLRequest(
       request,
       GET_TREE_CATEGORY_BASIC,
@@ -94,7 +92,7 @@ test.describe('Category GraphQL Tests', () => {
     assertTreeCategoryBasicResponse(body);
   });
 
-  test('Should fetch complete tree category', async ({ request }) => {
+  test('should fetch complete tree category', async ({ request }) => {
   const response = await sendGraphQLRequest(
     request,
     GET_TREE_CATEGORY_COMPLETE,
@@ -105,7 +103,7 @@ test.describe('Category GraphQL Tests', () => {
   assertTreeCategoryCompleteResponse(body);
 });
 
-test('Should fetch filtered tree category for parentId 2', async ({ request }) => {
+test('should fetch filtered tree category for parentid 2', async ({ request }) => {
   const response = await sendGraphQLRequest(
     request,
     GET_TREE_CATEGORY_BY_PARENT_FILTER,
@@ -116,10 +114,7 @@ test('Should fetch filtered tree category for parentId 2', async ({ request }) =
   assertTreeCategoryFilteredResponse(body);
 });
 
- /* ---------------------------------------------------
-   * 1️⃣ GET CATEGORIES – BASIC
-   * --------------------------------------------------- */
-  test('Should fetch categories (basic)', async ({ request }) => {
+  test('should fetch categories (basic)', async ({ request }) => {
     const response = await sendGraphQLRequest(
       request,
       GET_CATEGORIES_BASIC,
@@ -133,11 +128,7 @@ test('Should fetch filtered tree category for parentId 2', async ({ request }) =
     assertGetCategoriesBasicResponse(body);
   });
 
-
-  /* ---------------------------------------------------
-   * 2️⃣ GET CATEGORIES – COMPLETE DETAILS
-   * --------------------------------------------------- */
-  test('Should fetch categories (complete details)', async ({ request }) => {
+  test('should fetch categories (complete details)', async ({ request }) => {
     const response = await sendGraphQLRequest(
       request,
       GET_CATEGORIES_COMPLETE,
@@ -151,11 +142,7 @@ test('Should fetch filtered tree category for parentId 2', async ({ request }) =
     assertGetCategoriesCompleteResponse(body);
   });
 
-
-  /* ---------------------------------------------------
-   * 3️⃣ GET CATEGORIES – CURSOR PAGINATION
-   * --------------------------------------------------- */
-  test('Should fetch categories with cursor pagination', async ({ request }) => {
+  test('should fetch categories with cursor pagination', async ({ request }) => {
     const response = await sendGraphQLRequest(
       request,
       GET_CATEGORIES_CURSOR,
@@ -169,11 +156,7 @@ test('Should fetch filtered tree category for parentId 2', async ({ request }) =
     assertGetCategoriesCursorResponse(body);
   });
 
-
-  /* ---------------------------------------------------
-   * 4️⃣ GET CATEGORIES – WITH CHILD CATEGORIES
-   * --------------------------------------------------- */
-  test('Should fetch categories with child categories', async ({ request }) => {
+  test('should fetch categories with child categories', async ({ request }) => {
     const response = await sendGraphQLRequest(
       request,
       GET_CATEGORIES_WITH_CHILDREN,
@@ -187,9 +170,8 @@ test('Should fetch filtered tree category for parentId 2', async ({ request }) =
     assertGetCategoriesWithChildrenResponse(body);
   });
 
-  test('Should fetch next page using endCursor', async ({ request }) => {
+  test('should fetch next page using endcursor', async ({ request }) => {
 
-  // First call
   const firstResponse = await sendGraphQLRequest(
     request,
     GET_CATEGORIES_BASIC,
@@ -199,7 +181,6 @@ test('Should fetch filtered tree category for parentId 2', async ({ request }) =
   const firstBody = await firstResponse.json();
   const endCursor = firstBody.data.categories.pageInfo.endCursor;
 
-  // Second call using cursor
   const secondResponse = await sendGraphQLRequest(
     request,
     GET_CATEGORIES_BASIC,
@@ -213,7 +194,7 @@ test('Should fetch filtered tree category for parentId 2', async ({ request }) =
   assertGetCategoriesBasicResponse(secondBody);
 });
 
-test('Should handle invalid cursor gracefully', async ({ request }) => {
+test('should handle invalid cursor gracefully', async ({ request }) => {
   const response = await sendGraphQLRequest(
     request,
     GET_CATEGORIES_CURSOR,
@@ -224,18 +205,22 @@ test('Should handle invalid cursor gracefully', async ({ request }) => {
 
   const body = await response.json();
 
-  // Depending on API behavior:
-  if (body.errors) {
-    expect(body.errors.length).toBeGreaterThan(0);
-  } else {
-    assertGetCategoriesCursorResponse(body);
-  }
+  expect(body.errors.map((error: any) => error.message)).toEqual(['Cursor invalid-cursor is invalid']);
+  expect(body.data.categories).toBeNull();
 });
 
-test('Should return empty result when first = 0', async ({ request }) => {
+test('should return an empty page for first = 0 with the full total count', async ({ request }) => {
+  const fullResponse = await sendGraphQLRequest(
+    request,
+    GET_CATEGORIES_CURSOR,
+    { first: 10 }
+  );
+  const fullBody = await fullResponse.json();
+  assertNoGraphQLErrors(fullBody);
+
   const response = await sendGraphQLRequest(
     request,
-    GET_CATEGORIES_BASIC,
+    GET_CATEGORIES_CURSOR,
     { first: 0 }
   );
 
@@ -243,60 +228,50 @@ test('Should return empty result when first = 0', async ({ request }) => {
 
   const body = await response.json();
 
-  if (body.errors) {
-    expect(body.errors.length).toBeGreaterThan(0);
-  } else {
-    expect(Array.isArray(body.data.categories.edges)).toBeTruthy();
-  }
+  assertNoGraphQLErrors(body);
+  expect(body.data.categories.edges).toEqual([]);
+  expect(body.data.categories.totalCount).toBe(fullBody.data.categories.totalCount);
 });
 
-test('Should fetch category by valid IRI ID', async ({ request }) => {
+test('should fetch category by valid iri id', async ({ request }) => {
     const response = await sendGraphQLRequest( request, GET_CATEGORY_BY_ID,
     { id: '/api/shop/categories/1' });
     expect(response.status()).toBe(200);
     const body = await response.json();
-    // Reuse existing assertions
     assertNoGraphQLErrors(body);
     const category = body.data.category;
     assertBasicCategory(category);
-    // Only assert additional field here (not in assertions file)
     expect(category.translation.description).toBeDefined();
     expect(typeof category.translation.description).toBe('string');
   });
 
-test('Should fetch category by valid ID', async ({ request }) => {
+test('should fetch category by valid id', async ({ request }) => {
     const response = await sendGraphQLRequest( request, GET_CATEGORY_BY_ID,
     { id: '1' });
     expect(response.status()).toBe(200);
     const body = await response.json();
-    // Reuse existing assertions
     assertNoGraphQLErrors(body);
     const category = body.data.category;
     assertBasicCategory(category);
-    // Only assert additional field here (not in assertions file)
     expect(category.translation.description).toBeDefined();
     expect(typeof category.translation.description).toBe('string');
   });
 
-  test('Should fetch complete category details by ID', async ({ request }) => {
+  test('should fetch complete category details by id', async ({ request }) => {
     const response = await sendGraphQLRequest( request, GET_CATEGORY_BY_ID_COMPLETE,
     { id: '/api/shop/categories/1' });
     expect(response.status()).toBe(200);
     const body = await response.json();
     assertNoGraphQLErrors(body);
     const category = body.data.category;
-    // Reuse Extended Validation
     assertExtendedCategory(category);
-    // Translation (extra fields)
     expect(category.translation.description).toBeDefined();
     expect(typeof category.translation.description).toBe('string');
     expect(typeof category.translation.metaTitle).toBe('string');
     expect(typeof category.translation.metaDescription).toBe('string');
     expect(typeof category.translation.metaKeywords).toBe('string');
     expect(typeof category.translation.locale).toBe('string');
-    // Translations Connection
     assertTranslationsConnection(category.translations);
-    // Children Connection
     assertChildrenConnection(category.children);
     assertPageInfo(category.children.pageInfo);
     expect(typeof category.children.totalCount).toBe('number');
@@ -305,29 +280,29 @@ test('Should fetch category by valid ID', async ({ request }) => {
       expect(typeof child.id).toBe('string');
       expect(typeof child._id).toBe('number');
       expect(typeof child.position).toBe('number');
-      expect(typeof child.status).toBe('string');
-      // Reuse light translation assertion
+      expect(typeof child.status).toBe('boolean');
       assertLightCategoryTranslation(child.translation);
     });
   });
 
-  test('Should cover category with children and SEO docs query', async ({ request }) => {
-    const listResponse = await sendGraphQLRequest(request, GET_CATEGORIES_BASIC, { first: 1, after: null });
-    expect(listResponse.status()).toBe(200);
-    const listBody = await listResponse.json();
-    const categoryId = listBody.data?.categories?.edges?.[0]?.node?.id;
-
-    if (!categoryId) {
-      console.log('No category available for children/SEO coverage.');
-      expect(true).toBeTruthy();
-      return;
-    }
-
-    const response = await sendGraphQLRequest(request, GET_CATEGORY_BY_ID_WITH_CHILDREN, { id: categoryId });
+  test('should cover category with children and seo docs query', async ({ request }) => {
+    const response = await sendGraphQLRequest(request, GET_CATEGORY_BY_ID_WITH_CHILDREN, { id: '1' });
     expect(response.status()).toBe(200);
     const body = await response.json();
     assertNoGraphQLErrors(body);
-    expect(body.data?.category?.translation?.metaTitle !== undefined || body.data?.category?.translation).toBeTruthy();
-    expect(body.data?.category?.children).toBeTruthy();
+
+    const category = body.data.category;
+    expect(category._id).toBe(1);
+    expect(category.status).toBe(true);
+    expect(typeof category.translation.name).toBe('string');
+    expect(category.translation).toHaveProperty('metaTitle');
+    expect(category.translation).toHaveProperty('metaDescription');
+    expect(category.translation).toHaveProperty('metaKeywords');
+    assertChildrenConnection(category.children);
+    expect(typeof category.children.totalCount).toBe('number');
+    category.children.edges.forEach((edge: any) => {
+      expect(typeof edge.node._id).toBe('number');
+      expect(typeof edge.node.status).toBe('boolean');
+    });
   });
 });

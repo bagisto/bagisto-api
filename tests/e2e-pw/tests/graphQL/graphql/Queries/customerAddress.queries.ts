@@ -105,7 +105,6 @@ export const GET_CUSTOMER_ADDRESSES_WITH_COMPANY = `
   }
 `;
 
-// Get Customer Address by ID
 export const GET_CUSTOMER_ADDRESS = `
   query GetCustomerAddress($id: ID!) {
     customerAddress(id: $id) {
@@ -145,15 +144,12 @@ export const CREATE_ADD_UPDATE_CUSTOMER_ADDRESS = `
         state
         country
         postcode
-        useForShipping
         defaultAddress
       }
     }
   }
 `;
 
-// Pins the companyName round-trip (regression: 2026-05-25). Same mutation,
-// but with companyName explicitly selected on the payload.
 export const CREATE_ADD_UPDATE_CUSTOMER_ADDRESS_WITH_COMPANY = `
   mutation createCustomerAddressWithCompany($input: createAddUpdateCustomerAddressInput!) {
     createAddUpdateCustomerAddress(input: $input) {

@@ -99,3 +99,14 @@ export const GET_CUSTOMER_DOWNLOADABLE_PRODUCT = `
     }
   }
 `;
+
+export const CREATE_DOWNLOADABLE_PRODUCT_DOWNLOAD_LINK = `
+  mutation createDownloadableProductDownloadLink($downloadableLinkPurchasedId: Int!) {
+    createDownloadableProductDownloadLink(input: { downloadableLinkPurchasedId: $downloadableLinkPurchasedId }) {
+      downloadableProductDownloadLink {
+        _id
+        url
+      }
+    }
+  }
+`;

@@ -6,3 +6,4 @@ test-results/
 .env
 .env.local
 *.log
+.e2e-fixtures.json

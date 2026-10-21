@@ -5,13 +5,6 @@ export function assertNoGraphQLErrors(body: any) {
   expect(body.data).toBeTruthy();
 }
 
-/* ---------------------------------------------------
- * ATOMIC ASSERTIONS (Reusable)
- * --------------------------------------------------- */
-
-/**
- * Validate category translation
- */
 export function assertCategoryTranslation(translation: any) {
   expect(translation).toBeTruthy();
   expect(typeof translation.name).toBe('string');
@@ -21,10 +14,6 @@ export function assertCategoryTranslation(translation: any) {
   expect(translation.urlPath).toBeDefined();
 }
 
-
-/**
- * Validate basic category fields (no children logic)
- */
 export function assertBasicCategory(category: any) {
   expect(category).toBeTruthy();
   expect(category).toHaveProperty('id');
@@ -36,23 +25,15 @@ export function assertBasicCategory(category: any) {
   expect(category.id).toMatch(/\/api\/shop\/categories\/\d+/);
   expect(typeof category._id).toBe('number');
   expect(typeof category.position).toBe('number');
-  expect(typeof category.status).toBe('string');
+  expect(typeof category.status).toBe('boolean');
   assertCategoryTranslation(category.translation);
 }
 
-
-/**
- * Validate GraphQL connection structure (children)
- */
 export function assertChildrenConnection(children: any) {
   expect(children).toBeDefined();
   expect(Array.isArray(children.edges)).toBeTruthy();
 }
 
-
-/**
- * Recursive category tree validator (Reusable)
- */
 export function assertCategoryTree(categories: any[]) {
   expect(Array.isArray(categories)).toBeTruthy();
   expect(categories.length).toBeGreaterThan(0);
@@ -62,7 +43,6 @@ export function assertCategoryTree(categories: any[]) {
       category.children.edges.forEach((edge: any) => {
         expect(edge.node).toBeTruthy();
         assertBasicCategory(edge.node);
-        // Recursive call for deeper nesting
         if (edge.node.children?.edges?.length) {
           assertCategoryTree(
             edge.node.children.edges.map((e: any) => e.node)
@@ -73,24 +53,12 @@ export function assertCategoryTree(categories: any[]) {
   });
 }
 
-
-/* ---------------------------------------------------
- * QUERY-SPECIFIC CONTRACT ASSERTIONS
- * --------------------------------------------------- */
-
-/**
- * For GET_ALL_CATEGORY (treeCategories query)
- */
 export function assertGetAllCategoryResponse(body: any) {
   assertNoGraphQLErrors(body);
   expect(Array.isArray(body.data.treeCategories)).toBeTruthy();
   assertCategoryTree(body.data.treeCategories);
 }
 
-
-/**
- * For GET_TREE_CATEGORY_BASIC (parentId-based tree query)
- */
 export function assertTreeCategoryBasicResponse(body: any) {
   assertNoGraphQLErrors(body);
   const categories = body.data.treeCategories;
@@ -98,24 +66,17 @@ export function assertTreeCategoryBasicResponse(body: any) {
   expect(categories.length).toBeGreaterThan(0);
   categories.forEach((category: any) => {
     assertBasicCategory(category);
-    // Validate children connection
     assertChildrenConnection(category.children);
     category.children.edges.forEach((edge: any) => {
       expect(edge.node).toBeTruthy();
       assertBasicCategory(edge.node);
-      // This BASIC query does NOT include nested children
       expect(edge.node.children).toBeUndefined();
     });
   });
 }
 
-/**
- * Validate extended category fields (Complete details query only)
- */
 export function assertExtendedCategory(category: any) {
-  // Reuse existing validation
   assertBasicCategory(category);
-  // New fields (ONLY for complete query)
   expect(category).toHaveProperty('displayMode');
   expect(category).toHaveProperty('_lft');
   expect(category).toHaveProperty('_rgt');
@@ -123,12 +84,11 @@ export function assertExtendedCategory(category: any) {
   expect(category).toHaveProperty('updatedAt');
   expect(category).toHaveProperty('url');
   expect(typeof category.displayMode).toBe('string');
-  expect(typeof category._lft).toBe('string');
-  expect(typeof category._rgt).toBe('string');
+  expect(typeof category._lft).toBe('number');
+  expect(typeof category._rgt).toBe('number');
   expect(typeof category.createdAt).toBe('string');
   expect(typeof category.updatedAt).toBe('string');
   expect(typeof category.url).toBe('string');
-  // Nullable optional fields
   if (category.logoPath !== null)
     expect(typeof category.logoPath).toBe('string');
   if (category.bannerPath !== null)
@@ -143,7 +103,7 @@ export function assertCategoryTranslationNode(node: any) {
   expect(node).toBeTruthy();
   expect(typeof node.id).toBe('string');
   expect(typeof node._id).toBe('number');
-  expect(typeof node.categoryId).toBe('string');
+  expect(typeof node.categoryId).toBe('number');
   expect(typeof node.name).toBe('string');
   expect(typeof node.slug).toBe('string');
   expect(typeof node.locale).toBe('string');
@@ -162,38 +122,27 @@ export function assertTranslationsConnection(translations: any) {
   });
 }
 
-/**
- * For GET_TREE_CATEGORY_COMPLETE
- */
 export function assertTreeCategoryCompleteResponse(body: any) {
   assertNoGraphQLErrors(body);
   const categories = body.data.treeCategories;
   expect(Array.isArray(categories)).toBeTruthy();
   expect(categories.length).toBeGreaterThan(0);
   categories.forEach((category: any) => {
-    // Extended validation
     assertExtendedCategory(category);
-    // Children validation (reuse existing)
     assertChildrenConnection(category.children);
     category.children.edges.forEach((edge: any) => {
       assertBasicCategory(edge.node);
     });
-    // Translations validation
     assertTranslationsConnection(category.translations);
   });
 }
 
-/**
- * For GET_TREE_CATEGORY_BY_PARENT_FILTER
- * (parentId filter with logoPath + displayMode)
- */
 export function assertTreeCategoryFilteredResponse(body: any) {
   assertNoGraphQLErrors(body);
   const categories = body.data.treeCategories;
   expect(Array.isArray(categories)).toBeTruthy();
   expect(categories.length).toBeGreaterThan(0);
   categories.forEach((category: any) => {
-    // Reuse base validation
     assertBasicCategory(category);
     expect(category).toHaveProperty('displayMode');
     expect(typeof category.displayMode).toBe('string');
@@ -263,7 +212,6 @@ export function assertGetCategoriesBasicResponse(body: any) {
   categories.edges.forEach((edge: any) => {
     assertBasicCategory(edge.node);
 
-    // This query does NOT include children
     expect(edge.node.children).toBeUndefined();
   });
 }
@@ -280,13 +228,11 @@ export function assertGetCategoriesCompleteResponse(body: any) {
 
     assertExtendedCategory(node);
 
-    // Children
     assertChildrenConnection(node.children);
     node.children.edges.forEach((childEdge: any) => {
       assertBasicCategory(childEdge.node);
     });
 
-    // Translations
     assertTranslationsConnection(node.translations);
   });
 }
@@ -306,7 +252,7 @@ export function assertGetCategoriesCursorResponse(body: any) {
     expect(typeof node.id).toBe('string');
     expect(typeof node._id).toBe('number');
     expect(typeof node.position).toBe('number');
-    expect(typeof node.status).toBe('string');
+    expect(typeof node.status).toBe('boolean');
 
     assertLightCategoryTranslation(node.translation);
 

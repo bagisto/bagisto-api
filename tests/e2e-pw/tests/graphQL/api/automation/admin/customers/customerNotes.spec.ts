@@ -1,20 +1,64 @@
-// tests/graphQL/api/automation/admin/customers/customerNotes.spec.ts
-//
-// Admin Customer Notes (W2 GraphQL) — POST only. Append-only on the
-// `customer_notes` table; no list/detail endpoint.
-
 import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminGraphQLRequest } from '../../../../graphql/helpers/adminGraphqlClient';
-import {
-  ADMIN_CUSTOMER_CREATE,
-  ADMIN_CUSTOMER_DELETE,
-} from '../../../../graphql/Queries/admin/customers/customers.queries';
-import { ADMIN_CUSTOMER_NOTE_CREATE } from '../../../../graphql/Queries/admin/customers/customerNotes.queries';
+import { ADMIN_CUSTOMER_CREATE } from '../../../../graphql/Queries/admin/customers/customers.queries';
 
 test.describe.configure({ timeout: 120_000 });
 
-async function createCustomer(request: APIRequestContext) {
-  const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_CREATE, {
+const CREATE_NOTE = `
+  mutation createAdminCustomerNote($customerId: Int!, $note: String!, $customerNotified: Boolean) {
+    createAdminCustomerNote(input: { customerId: $customerId, note: $note, customerNotified: $customerNotified }) {
+      adminCustomerNote {
+        _id
+        customerId
+        note
+        customerNotified
+        createdAt
+      }
+    }
+  }
+`;
+
+const LIST_NOTES = `
+  query adminCustomerNotes($customerId: Int!) {
+    adminCustomerNotes(customerId: $customerId) {
+      edges {
+        node {
+          _id
+          customerId
+          note
+          customerNotified
+        }
+      }
+    }
+  }
+`;
+
+const DELETE_CUSTOMER = `
+  mutation deleteAdminCustomer($id: ID!) {
+    deleteAdminCustomer(input: { id: $id }) {
+      adminCustomer {
+        _id
+      }
+    }
+  }
+`;
+
+let customerId: number;
+
+async function gql(request: APIRequestContext, query: string, variables: Record<string, any> = {}): Promise<any> {
+  const response = await sendAdminGraphQLRequest(request, query, variables);
+  expect(response.status()).toBe(200);
+
+  return response.json();
+}
+
+function expectGraphQLError(body: any, field: string, message: string): void {
+  expect(body.data?.[field] ?? null).toBeNull();
+  expect(body.errors?.[0]?.message).toBe(message);
+}
+
+async function createCustomer(request: APIRequestContext): Promise<number> {
+  const body = await gql(request, ADMIN_CUSTOMER_CREATE, {
     firstName: 'Note',
     lastName: 'Subject',
     email: `e2e_gql_note_${Date.now()}_${Math.floor(Math.random() * 100000)}@example.com`,
@@ -23,74 +67,68 @@ async function createCustomer(request: APIRequestContext) {
     sendPassword: false,
     password: 'e2epass123',
   });
-  const body = await resp.json();
-  return body?.data?.createAdminCustomer?.adminCustomer;
+  expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+
+  return body.data.createAdminCustomer.adminCustomer._id;
 }
 
-async function dropCustomer(request: APIRequestContext, id: string) {
-  try {
-    await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_DELETE, { id });
-  } catch {
-    // ignore
-  }
+async function listedNotes(request: APIRequestContext): Promise<any[]> {
+  const body = await gql(request, LIST_NOTES, { customerId });
+  expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+
+  return body.data.adminCustomerNotes.edges.map((edge: any) => edge.node);
 }
 
-test.describe('Admin Customer Notes GraphQL API', () => {
+test.describe('admin customer notes graphql api', () => {
+  test.beforeEach(async ({ request }) => {
+    customerId = await createCustomer(request);
+  });
+
+  test.afterEach(async ({ request }) => {
+    await sendAdminGraphQLRequest(request, DELETE_CUSTOMER, { id: `/api/admin/customers/${customerId}` });
+  });
+
   test('create note with only note text', async ({ request }) => {
-    const customer = await createCustomer(request);
-    expect(customer).toBeTruthy();
+    const text = `e2e gql note ${Date.now()}`;
+    const body = await gql(request, CREATE_NOTE, { customerId, note: text });
 
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_NOTE_CREATE, {
-      customerId: customer._id,
-      note: `e2e gql note ${Date.now()}`,
-    });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    // No errors[] expected on happy path.
-    expect(body.errors, `unexpected errors: ${JSON.stringify(body.errors)}`).toBeUndefined();
+    expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+    const note = body.data.createAdminCustomerNote.adminCustomerNote;
+    expect(note._id).toBeGreaterThan(0);
+    expect(note.customerId).toBe(customerId);
+    expect(note.note).toBe(text);
+    expect(note.customerNotified).toBe(false);
+    expect(typeof note.createdAt).toBe('string');
 
-    await dropCustomer(request, customer.id);
+    expect(await listedNotes(request)).toEqual([
+      { _id: note._id, customerId, note: text, customerNotified: false },
+    ]);
   });
 
-  test('create note with customerNotified=true', async ({ request }) => {
-    const customer = await createCustomer(request);
+  test('create note with customer notified true', async ({ request }) => {
+    const text = `notify ${Date.now()}`;
+    const body = await gql(request, CREATE_NOTE, { customerId, note: text, customerNotified: true });
 
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_NOTE_CREATE, {
-      customerId: customer._id,
-      note: `notify ${Date.now()}`,
-      customerNotified: true,
-    });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    expect(body.errors).toBeUndefined();
+    expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+    const note = body.data.createAdminCustomerNote.adminCustomerNote;
+    expect(note.note).toBe(text);
+    expect(note.customerNotified).toBe(true);
 
-    await dropCustomer(request, customer.id);
+    expect(await listedNotes(request)).toEqual([
+      { _id: note._id, customerId, note: text, customerNotified: true },
+    ]);
   });
 
-  test('create rejects empty note', async ({ request }) => {
-    const customer = await createCustomer(request);
+  test('create rejects an empty note', async ({ request }) => {
+    const body = await gql(request, CREATE_NOTE, { customerId, note: '' });
 
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_NOTE_CREATE, {
-      customerId: customer._id,
-      note: '',
-    });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    expect(hasErrors).toBe(true);
-
-    await dropCustomer(request, customer.id);
+    expectGraphQLError(body, 'createAdminCustomerNote', 'Note text is required.');
+    expect(await listedNotes(request)).toEqual([]);
   });
 
-  test('create for unknown customer surfaces error', async ({ request }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_NOTE_CREATE, {
-      customerId: 99999999,
-      note: 'orphan',
-    });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const isNull = body?.data?.createAdminCustomerNote?.adminCustomerNote === null;
-    expect(hasErrors || isNull).toBe(true);
+  test('create for an unknown customer reports customer not found', async ({ request }) => {
+    const body = await gql(request, CREATE_NOTE, { customerId: 99999999, note: 'orphan' });
+
+    expectGraphQLError(body, 'createAdminCustomerNote', 'Customer not found.');
   });
 });

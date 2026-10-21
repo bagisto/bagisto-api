@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { sendGraphQLRequest } from '../../graphql/helpers/graphqlClient';
+import { graphQLErrorMessages } from '../../graphql/helpers/testSupport';
 import {
   GET_COUNTRY_STATES_BASIC,
   GET_COUNTRY_STATES_WITH_TRANSLATIONS,
@@ -22,677 +23,249 @@ import {
   assertGetCountryStateWithTranslationsResponse,
   assertGetCountryStateForAddressValidationResponse,
   assertGetCountryStateCompleteResponse,
-  assertGraphQLErrors,
-  assertStateWithInternalId,
-  assertCountryStatesConnection,
 } from '../../graphql/assertions/country.assertions';
 
-test.describe('Country States GraphQL API - Complete Test Suite', () => {
-  // Helper to get a valid country ID for testing
-  // Common country IDs in Bagisto: 1 (India), 2 (USA), 3 (UK), etc.
-  const VALID_COUNTRY_IDS = [1, 2, 3];
-  const VALID_COUNTRY_ID = VALID_COUNTRY_IDS[0];
-  let validStateId: string;
+const UNITED_STATES_ID = 244;
 
-  /* ===================================================
-   * POSITIVE TEST CASES - COUNTRY STATES COLLECTION
-   * =================================================== */
+const UNITED_STATES_STATE_TOTAL = 65;
 
-  /* ---------------------------------------------------
-   * TEST 1: GET_COUNTRY_STATES_BASIC - Basic States Query
-   * Positive: Validates basic states contract
-   * --------------------------------------------------- */
-  test('GET_COUNTRY_STATES_BASIC should return valid basic states data', async ({ request }) => {
-    console.log('\n📤 Sending getCountryStates (Basic) query...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+const COUNTRY_WITHOUT_STATES_ID = 1;
 
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_BASIC, { 
-      countryId: VALID_COUNTRY_ID 
-    });
-    expect(response.status()).toBe(200);
+const DEFAULT_PAGE_SIZE = 10;
 
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
+const ALABAMA = {
+  id: '/api/shop/country-states/1',
+  _id: 1,
+  code: 'AL',
+  defaultName: 'Alabama',
+  countryId: UNITED_STATES_ID,
+  countryCode: 'US',
+};
 
+const INVALID_STATE_ID_MESSAGE = 'Invalid ID format. Expected IRI format like "/api/shop/country-states/1" or numeric ID';
+
+const STATE_NOT_FOUND_MESSAGE = 'Country state not found';
+
+const EMPTY_CURSOR_MESSAGE = 'Empty cursor is invalid';
+
+function cursorFor(offset: number): string {
+  return Buffer.from(String(offset)).toString('base64');
+}
+
+function stateIds(connection: any): number[] {
+  return connection.edges.map((edge: any) => edge.node._id);
+}
+
+function expectAlabama(state: any) {
+  expect(state._id).toBe(ALABAMA._id);
+  expect(state.id).toBe(ALABAMA.id);
+  expect(state.code).toBe(ALABAMA.code);
+  expect(state.defaultName).toBe(ALABAMA.defaultName);
+  expect(state.countryId).toBe(ALABAMA.countryId);
+  expect(state.countryCode).toBe(ALABAMA.countryCode);
+}
+
+async function statesBody(request: any, query: string, variables: Record<string, any>): Promise<any> {
+  const response = await sendGraphQLRequest(request, query, variables);
+  expect(response.status()).toBe(200);
+
+  return response.json();
+}
+
+test.describe('country states graphql api - complete test suite', () => {
+  test('get_country_states_basic should return the first page of a country states', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_BASIC, { countryId: UNITED_STATES_ID });
     assertGetCountryStatesBasicResponse(body);
 
     const states = body.data.countryStates;
-    console.log('\n📦 States Details:');
-    console.log(`  Total States: ${states.totalCount}`);
-    
-    if (states.edges.length > 0) {
-      validStateId = states.edges[0].node.id;
-      console.log(`  First State: ${states.edges[0].node.defaultName} (${states.edges[0].node.code})`);
-    }
-
-    console.log('\n✅ GET_COUNTRY_STATES_BASIC Test Passed!\n');
+    expect(states.totalCount).toBe(UNITED_STATES_STATE_TOTAL);
+    expect(states.edges).toHaveLength(DEFAULT_PAGE_SIZE);
+    expectAlabama(states.edges[0].node);
+    expect(states.edges.every((edge: any) => edge.node.countryCode === 'US')).toBe(true);
   });
 
-  /* ---------------------------------------------------
-   * TEST 2: GET_COUNTRY_STATES_WITH_TRANSLATIONS - States with Translations
-   * Positive: Validates states with translations data
-   * --------------------------------------------------- */
-  test('GET_COUNTRY_STATES_WITH_TRANSLATIONS should return states with translations', async ({ request }) => {
-    console.log('\n📤 Sending getCountryStates (With Translations) query...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_WITH_TRANSLATIONS, { 
-      countryId: VALID_COUNTRY_ID 
-    });
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
+  test('get_country_states_with_translations should return states with translations', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_WITH_TRANSLATIONS, { countryId: UNITED_STATES_ID });
     assertGetCountryStatesWithTranslationsResponse(body);
 
     const states = body.data.countryStates;
-    console.log('\n📦 States with Translations:');
-    console.log(`  Total States: ${states.totalCount}`);
-
-    if (states.edges.length > 0) {
-      states.edges.slice(0, 3).forEach((edge: any, index: number) => {
-        const state = edge.node;
-        console.log(`  ${index + 1}. ${state.defaultName} (${state.code})`);
-        console.log(`     Translations: ${state.translations?.edges?.length || 0}`);
-      });
-    }
-
-    console.log('\n✅ GET_COUNTRY_STATES_WITH_TRANSLATIONS Test Passed!\n');
+    expect(states.totalCount).toBe(UNITED_STATES_STATE_TOTAL);
+    expect(states.edges.every((edge: any) => edge.node.countryId === UNITED_STATES_ID)).toBe(true);
   });
 
-  /* ---------------------------------------------------
-   * TEST 3: GET_COUNTRY_STATES_WITH_PAGINATION - States with Pagination
-   * Positive: Validates states with pagination support
-   * --------------------------------------------------- */
-  test('GET_COUNTRY_STATES_WITH_PAGINATION should return states with pagination', async ({ request }) => {
-    console.log('\n📤 Sending getCountryStates (With Pagination) query...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_WITH_PAGINATION, { 
-      countryId: VALID_COUNTRY_ID,
-      first: 2
+  test('get_country_states_with_pagination should return states with pagination', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_WITH_PAGINATION, {
+      countryId: UNITED_STATES_ID,
+      first: 2,
     });
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
     assertGetCountryStatesWithPaginationResponse(body);
 
     const states = body.data.countryStates;
-    console.log('\n📦 Paginated States:');
-    console.log(`  Total States: ${states.totalCount}`);
-    console.log(`  Returned: ${states.edges.length}`);
-    console.log(`  Has Next Page: ${states.pageInfo.hasNextPage}`);
-    
-    if (states.edges.length > 0) {
-      console.log(`  First Cursor: ${states.pageInfo.startCursor}`);
-      console.log(`  Last Cursor: ${states.pageInfo.endCursor}`);
-    }
-
-    console.log('\n✅ GET_COUNTRY_STATES_WITH_PAGINATION Test Passed!\n');
+    expect(states.edges.map((edge: any) => edge.node.code)).toEqual(['AL', 'AK']);
+    expect(states.edges.map((edge: any) => edge.cursor)).toEqual([cursorFor(0), cursorFor(1)]);
+    expect(states.pageInfo).toEqual({
+      startCursor: cursorFor(0),
+      endCursor: cursorFor(1),
+      hasNextPage: true,
+      hasPreviousPage: false,
+    });
+    expect(states.totalCount).toBe(UNITED_STATES_STATE_TOTAL);
   });
 
-  /* ---------------------------------------------------
-   * TEST 4: GET_COUNTRY_STATES_FOR_DROPDOWN - States for Dropdown Form
-   * Positive: Validates states for form dropdowns
-   * --------------------------------------------------- */
-  test('GET_COUNTRY_STATES_FOR_DROPDOWN should return states for dropdown form', async ({ request }) => {
-    console.log('\n📤 Sending getCountryStates (For Dropdown) query...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_FOR_DROPDOWN, { 
-      countryId: VALID_COUNTRY_ID 
-    });
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
+  test('get_country_states_for_dropdown should return states for dropdown form', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_FOR_DROPDOWN, { countryId: UNITED_STATES_ID });
     assertGetCountryStatesForDropdownResponse(body);
 
     const states = body.data.countryStates;
-    console.log('\n📦 States for Dropdown:');
-    console.log(`  Total States: ${states.totalCount}`);
-
-    if (states.edges.length > 0) {
-      states.edges.slice(0, 5).forEach((edge: any, index: number) => {
-        const state = edge.node;
-        console.log(`  ${index + 1}. ${state.defaultName} (${state.code})`);
-      });
-    }
-
-    console.log('\n✅ GET_COUNTRY_STATES_FOR_DROPDOWN Test Passed!\n');
+    expect(states.edges).toHaveLength(DEFAULT_PAGE_SIZE);
+    expect(states.edges[0].node).toEqual({
+      id: ALABAMA.id,
+      _id: ALABAMA._id,
+      code: ALABAMA.code,
+      defaultName: ALABAMA.defaultName,
+    });
   });
 
-  /* ===================================================
-   * POSITIVE TEST CASES - SINGLE COUNTRY STATE
-   * =================================================== */
-
-  /* ---------------------------------------------------
-   * TEST 5: GET_COUNTRY_STATE_BASIC - Basic State Query
-   * Positive: Validates basic state contract
-   * --------------------------------------------------- */
-  test('GET_COUNTRY_STATE_BASIC should return valid basic state data', async ({ request }) => {
-    console.log('\n📤 Sending getCountryState (Basic) query...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    // First, get a valid state ID
-    if (!validStateId) {
-      const statesResponse = await sendGraphQLRequest(request, GET_COUNTRY_STATES_BASIC, { 
-        countryId: VALID_COUNTRY_ID 
-      });
-      const statesBody = await statesResponse.json();
-      if (statesBody.data.countryStates.edges.length > 0) {
-        validStateId = statesBody.data.countryStates.edges[0].node.id;
-      } else {
-        console.log('⚠️ No states found for country, skipping test');
-        return;
-      }
-    }
-
-    console.log('🔑 Using State ID:', validStateId);
-
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATE_BASIC, { 
-      id: validStateId 
-    });
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
+  test('get_country_state_basic should return valid basic state data', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATE_BASIC, { id: ALABAMA.id });
     assertGetCountryStateBasicResponse(body);
-
-    const countryState = body.data.countryState;
-    console.log('\n📦 State Details:');
-    console.log(`  ID: ${countryState.id}`);
-    console.log(`  _id: ${countryState._id}`);
-    console.log(`  Code: ${countryState.code}`);
-    console.log(`  Name: ${countryState.defaultName}`);
-    console.log(`  Country ID: ${countryState.countryId}`);
-    console.log(`  Country Code: ${countryState.countryCode}`);
-
-    console.log('\n✅ GET_COUNTRY_STATE_BASIC Test Passed!\n');
+    expectAlabama(body.data.countryState);
   });
 
-  /* ---------------------------------------------------
-   * TEST 6: GET_COUNTRY_STATE_WITH_TRANSLATIONS - State with Translations
-   * Positive: Validates state with translations data
-   * --------------------------------------------------- */
-  test('GET_COUNTRY_STATE_WITH_TRANSLATIONS should return state with translations', async ({ request }) => {
-    console.log('\n📤 Sending getCountryState (With Translations) query...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    // First, get a valid state ID
-    if (!validStateId) {
-      const statesResponse = await sendGraphQLRequest(request, GET_COUNTRY_STATES_BASIC, { 
-        countryId: VALID_COUNTRY_ID 
-      });
-      const statesBody = await statesResponse.json();
-      if (statesBody.data.countryStates.edges.length > 0) {
-        validStateId = statesBody.data.countryStates.edges[0].node.id;
-      } else {
-        console.log('⚠️ No states found for country, skipping test');
-        return;
-      }
-    }
-
-    console.log('🔑 Using State ID:', validStateId);
-
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATE_WITH_TRANSLATIONS, { 
-      id: validStateId 
-    });
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
+  test('get_country_state_with_translations should return state with translations', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATE_WITH_TRANSLATIONS, { id: ALABAMA.id });
     assertGetCountryStateWithTranslationsResponse(body);
-
-    const countryState = body.data.countryState;
-    console.log('\n📦 State Details:');
-    console.log(`  Name: ${countryState.defaultName}`);
-    console.log(`  Translations: ${countryState.translations.edges.length}`);
-    
-    countryState.translations.edges.forEach((edge: any) => {
-      const translation = edge.node;
-      console.log(`    ${translation.locale}: ${translation.defaultName}`);
-    });
-
-    console.log('\n✅ GET_COUNTRY_STATE_WITH_TRANSLATIONS Test Passed!\n');
+    expectAlabama(body.data.countryState);
   });
 
-  /* ---------------------------------------------------
-   * TEST 7: GET_COUNTRY_STATE_FOR_ADDRESS_VALIDATION - State for Address Validation
-   * Positive: Validates state for address validation purposes
-   * --------------------------------------------------- */
-  test('GET_COUNTRY_STATE_FOR_ADDRESS_VALIDATION should return state for address validation', async ({ request }) => {
-    console.log('\n📤 Sending getCountryState (For Address Validation) query...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    // First, get a valid state ID
-    if (!validStateId) {
-      const statesResponse = await sendGraphQLRequest(request, GET_COUNTRY_STATES_BASIC, { 
-        countryId: VALID_COUNTRY_ID 
-      });
-      const statesBody = await statesResponse.json();
-      if (statesBody.data.countryStates.edges.length > 0) {
-        validStateId = statesBody.data.countryStates.edges[0].node.id;
-      } else {
-        console.log('⚠️ No states found for country, skipping test');
-        return;
-      }
-    }
-
-    console.log('🔑 Using State ID:', validStateId);
-
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATE_FOR_ADDRESS_VALIDATION, { 
-      id: validStateId 
-    });
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
+  test('get_country_state_for_address_validation should return state for address validation', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATE_FOR_ADDRESS_VALIDATION, { id: String(ALABAMA._id) });
     assertGetCountryStateForAddressValidationResponse(body);
-
-    const countryState = body.data.countryState;
-    console.log('\n📦 State for Address Validation:');
-    console.log(`  ID: ${countryState.id}`);
-    console.log(`  Code: ${countryState.code}`);
-    console.log(`  Name: ${countryState.defaultName}`);
-
-    console.log('\n✅ GET_COUNTRY_STATE_FOR_ADDRESS_VALIDATION Test Passed!\n');
+    expectAlabama(body.data.countryState);
   });
 
-  /* ---------------------------------------------------
-   * TEST 8: GET_COUNTRY_STATE_COMPLETE - Complete State Details
-   * Positive: Validates complete state information
-   * --------------------------------------------------- */
-  test('GET_COUNTRY_STATE_COMPLETE should return complete state details', async ({ request }) => {
-    console.log('\n📤 Sending getCountryState (Complete Details) query...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    // First, get a valid state ID
-    if (!validStateId) {
-      const statesResponse = await sendGraphQLRequest(request, GET_COUNTRY_STATES_BASIC, { 
-        countryId: VALID_COUNTRY_ID 
-      });
-      const statesBody = await statesResponse.json();
-      if (statesBody.data.countryStates.edges.length > 0) {
-        validStateId = statesBody.data.countryStates.edges[0].node.id;
-      } else {
-        console.log('⚠️ No states found for country, skipping test');
-        return;
-      }
-    }
-
-    console.log('🔑 Using State ID:', validStateId);
-
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATE_COMPLETE, { 
-      id: validStateId 
-    });
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
+  test('get_country_state_complete should return complete state details', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATE_COMPLETE, { id: ALABAMA.id });
     assertGetCountryStateCompleteResponse(body);
-
-    const countryState = body.data.countryState;
-    console.log('\n📦 Complete State Details:');
-    console.log(`  ID: ${countryState.id}`);
-    console.log(`  Code: ${countryState.code}`);
-    console.log(`  Name: ${countryState.defaultName}`);
-    console.log(`  Country Code: ${countryState.countryCode}`);
-    console.log(`  Translations: ${countryState.translations.edges.length}`);
-
-    console.log('\n✅ GET_COUNTRY_STATE_COMPLETE Test Passed!\n');
+    expectAlabama(body.data.countryState);
   });
 
-  /* ===================================================
-   * NEGATIVE TEST CASES
-   * =================================================== */
+  test('should reject a non integer country id variable', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_BASIC, { countryId: 'invalid' });
 
-  /* ---------------------------------------------------
-   * TEST 9: Get States with Invalid Country ID
-   * Negative: Validates error handling for invalid country ID
-   * --------------------------------------------------- */
-  test('should handle invalid country ID format', async ({ request }) => {
-    console.log('\n📤 Testing getCountryStates with invalid country ID...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    expect(graphQLErrorMessages(body)).toEqual([
+      'Variable "$countryId" got invalid value "invalid"; Int cannot represent non-integer value: "invalid"',
+    ]);
+    expect(body.data).toBeUndefined();
+  });
 
-    const invalidCountryId = 'invalid';
-    
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_BASIC, { 
-      countryId: invalidCountryId 
+  test('should return empty states for non-existent country id', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_BASIC, { countryId: 99999 });
+    assertNoGraphQLErrors(body);
+
+    expect(body.data.countryStates.edges).toEqual([]);
+    expect(body.data.countryStates.totalCount).toBe(0);
+  });
+
+  test('should return the invalid id format message for a malformed state id', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATE_BASIC, { id: 'invalid-state-id' });
+
+    expect(graphQLErrorMessages(body)).toEqual([INVALID_STATE_ID_MESSAGE]);
+    expect(body.data.countryState).toBeNull();
+  });
+
+  test('should return not found for a state id that does not exist', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATE_BASIC, { id: '/api/shop/country-states/999999' });
+
+    expect(graphQLErrorMessages(body)).toEqual([STATE_NOT_FOUND_MESSAGE]);
+    expect(body.data.countryState).toBeNull();
+  });
+
+  test('get_country_states_with_last_pagination should return the last states', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_WITH_LAST_PAGINATION, {
+      countryId: UNITED_STATES_ID,
+      last: 5,
     });
-    expect(response.status()).toBe(200);
+    assertNoGraphQLErrors(body);
 
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
-    if (body.errors) {
-      console.log('⚠️ Expected GraphQL error:', body.errors[0]?.message);
-      assertGraphQLErrors(body);
-    } else {
-      console.log('⚠️ No error returned, but expecting one');
-    }
-
-    console.log('\n✅ Invalid Country ID Test Passed!\n');
+    const states = body.data.countryStates;
+    expect(states.totalCount).toBe(UNITED_STATES_STATE_TOTAL);
+    expect(stateIds(states)).toEqual([61, 62, 63, 64, 65]);
+    expect(states.edges.map((edge: any) => edge.cursor)).toEqual([60, 61, 62, 63, 64].map(cursorFor));
+    expect(states.pageInfo.hasPreviousPage).toBe(true);
   });
 
-  /* ---------------------------------------------------
-   * TEST 10: Get States with Non-Existent Country ID
-   * Negative: Validates handling of non-existent country
-   * --------------------------------------------------- */
-  test('should return empty states for non-existent country ID', async ({ request }) => {
-    console.log('\n📤 Testing getCountryStates with non-existent country ID...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    const nonExistentCountryId = 99999;
-    
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_BASIC, { 
-      countryId: nonExistentCountryId 
-    });
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
-    if (!body.errors) {
-      const states = body.data.countryStates;
-      console.log(`  States found: ${states.totalCount}`);
-      expect(states.edges.length).toBe(0);
-    } else {
-      console.log('⚠️ GraphQL Error:', body.errors[0]?.message);
-    }
-
-    console.log('\n✅ Non-Existent Country ID Test Passed!\n');
-  });
-
-  /* ---------------------------------------------------
-   * TEST 11: Get State with Invalid ID Format
-   * Negative: Validates error handling for invalid state ID format
-   * --------------------------------------------------- */
-  test('should handle invalid state ID format', async ({ request }) => {
-    console.log('\n📤 Testing getCountryState with invalid state ID...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    const invalidStateId = 'invalid-state-id';
-    
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATE_BASIC, { 
-      id: invalidStateId 
-    });
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
-    if (body.errors) {
-      console.log('⚠️ Expected GraphQL error:', body.errors[0]?.message);
-      assertGraphQLErrors(body);
-    } else if (body.data.countryState === null) {
-      console.log('⚠️ Country state is null (not found)');
-    } else {
-      console.log('⚠️ Unexpected country state found');
-      expect(body.data.countryState).toBeNull();
-    }
-
-    console.log('\n✅ Invalid State ID Format Test Passed!\n');
-  });
-
-  /* ---------------------------------------------------
-   * TEST 12: Get State with Non-Existent ID
-   * Negative: Validates error handling for non-existent state
-   * --------------------------------------------------- */
-  test('should handle non-existent state ID', async ({ request }) => {
-    console.log('\n📤 Testing getCountryState with non-existent state ID...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    const nonExistentStateId = 'state_non_existent_99999';
-    
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATE_BASIC, { 
-      id: nonExistentStateId 
-    });
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
-    if (body.errors) {
-      console.log('⚠️ GraphQL Error:', body.errors[0]?.message);
-      assertGraphQLErrors(body);
-    } else if (body.data.countryState === null) {
-      console.log('⚠️ Country state is null (not found)');
-    } else {
-      console.log('⚠️ Unexpected country state found');
-      expect(body.data.countryState).toBeNull();
-    }
-
-    console.log('\n✅ Non-Existent State ID Test Passed!\n');
-  });
-
-  /* ===================================================
-   * EDGE CASE TESTS - PAGINATION
-   * =================================================== */
-
-  /* ---------------------------------------------------
-   * TEST 13: Country States with last/before pagination
-   * Tests backward pagination for states
-   * --------------------------------------------------- */
-  test('GET_COUNTRY_STATES_WITH_LAST_PAGINATION should support backward pagination', async ({ request }) => {
-    console.log('\n📤 Testing country states with last/before pagination...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_WITH_LAST_PAGINATION, { 
-      countryId: VALID_COUNTRY_ID,
-      last: 5
-    });
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
-    if (!body.errors) {
-      const states = body.data.countryStates;
-      console.log(`📦 Returned States: ${states.edges.length}`);
-      console.log(`📊 Total Count: ${states.totalCount}`);
-      console.log(`📄 Has Previous Page: ${states.pageInfo.hasPreviousPage}`);
-    } else {
-      console.log('⚠️ GraphQL Error:', body.errors[0]?.message);
-    }
-
-    console.log('\n✅ GET_COUNTRY_STATES_WITH_LAST_PAGINATION Test Passed!\n');
-  });
-
-  /* ---------------------------------------------------
-   * TEST 14: Country States with first and last together
-   * Tests invalid combination for states
-   * --------------------------------------------------- */
-  test('GET_COUNTRY_STATES_FIRST_LAST should handle first and last together', async ({ request }) => {
-    console.log('\n📤 Testing country states with first and last together...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_FIRST_LAST, { 
-      countryId: VALID_COUNTRY_ID,
+  test('get_country_states_first_last should let last decide the page', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_FIRST_LAST, {
+      countryId: UNITED_STATES_ID,
       first: 3,
-      last: 3
+      last: 3,
     });
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
+    assertNoGraphQLErrors(body);
 
-    if (body.errors) {
-      console.log('⚠️ Expected GraphQL Error:', body.errors[0]?.message);
-    } else {
-      const states = body.data.countryStates;
-      console.log(`📦 Returned States: ${states.edges.length}`);
-    }
-
-    console.log('\n✅ GET_COUNTRY_STATES_FIRST_LAST Test Passed!\n');
+    const states = body.data.countryStates;
+    expect(stateIds(states)).toEqual([63, 64, 65]);
+    expect(states.edges.map((edge: any) => edge.cursor)).toEqual([62, 63, 64].map(cursorFor));
   });
 
-  /* ---------------------------------------------------
-   * TEST 15: Country States with zero first value
-   * Tests edge case of zero items
-   * --------------------------------------------------- */
-  test('should handle first=0 for country states', async ({ request }) => {
-    console.log('\n📤 Testing country states with first=0...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_WITH_PAGINATION, { 
-      countryId: VALID_COUNTRY_ID,
-      first: 0 
+  test('should answer first=0 for country states without an error', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_WITH_PAGINATION, {
+      countryId: UNITED_STATES_ID,
+      first: 0,
     });
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
+    assertNoGraphQLErrors(body);
 
-    if (!body.errors) {
-      const states = body.data.countryStates;
-      console.log(`📦 Returned States: ${states.edges.length}`);
-      console.log(`📊 Total Count: ${states.totalCount}`);
-      expect(Array.isArray(states.edges)).toBe(true);
-    } else {
-      console.log('⚠️ GraphQL Error (expected):', body.errors[0]?.message);
-    }
-
-    console.log('\n✅ first=0 for states Test Passed!\n');
+    expect(body.data.countryStates.totalCount).toBe(UNITED_STATES_STATE_TOTAL);
   });
 
-  /* ---------------------------------------------------
-   * TEST 16: Country States with negative first value
-   * Tests edge case of negative items
-   * --------------------------------------------------- */
-  test('should handle negative first value for country states', async ({ request }) => {
-    console.log('\n📤 Testing country states with negative first value...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_WITH_PAGINATION, { 
-      countryId: VALID_COUNTRY_ID,
-      first: -1 
+  test('should answer a negative first value for country states without an error', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_WITH_PAGINATION, {
+      countryId: UNITED_STATES_ID,
+      first: -1,
     });
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
+    assertNoGraphQLErrors(body);
 
-    if (body.errors) {
-      console.log('⚠️ Expected GraphQL Error:', body.errors[0]?.message);
-      assertGraphQLErrors(body);
-    } else {
-      console.log('⚠️ No error returned for negative value');
-    }
-
-    console.log('\n✅ Negative first value for states Test Passed!\n');
+    const states = body.data.countryStates;
+    expect(states.totalCount).toBe(UNITED_STATES_STATE_TOTAL);
+    expect(states.edges.every((edge: any) => edge.node.countryId === UNITED_STATES_ID)).toBe(true);
   });
 
-  /* ===================================================
-   * EDGE CASE TESTS - VALIDATION
-   * =================================================== */
-
-  /* ---------------------------------------------------
-   * TEST 17: Empty string cursor for states
-   * Tests edge case of empty cursor
-   * --------------------------------------------------- */
-  test('should handle empty cursor string for states', async ({ request }) => {
-    console.log('\n📤 Testing with empty cursor string for states...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_WITH_PAGINATION, { 
-      countryId: VALID_COUNTRY_ID,
+  test('should reject an empty cursor string for states', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_WITH_PAGINATION, {
+      countryId: UNITED_STATES_ID,
       first: 5,
-      after: ''
+      after: '',
     });
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
 
-    if (!body.errors) {
-      const states = body.data.countryStates;
-      console.log(`📦 Returned States: ${states.edges.length}`);
-    } else {
-      console.log('⚠️ GraphQL Error:', body.errors[0]?.message);
-    }
-
-    console.log('\n✅ Empty cursor for states Test Passed!\n');
+    expect(graphQLErrorMessages(body)).toEqual([EMPTY_CURSOR_MESSAGE]);
+    expect(body.data.countryStates).toBeNull();
   });
 
-  /* ---------------------------------------------------
-   * TEST 18: Very large integer country ID for states
-   * Tests handling of very large numbers
-   * --------------------------------------------------- */
-  test('should handle very large integer country ID for states', async ({ request }) => {
-    console.log('\n📤 Testing with very large integer country ID for states...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  test('should return no states for a very large integer country id', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_BASIC, { countryId: 999999999 });
+    assertNoGraphQLErrors(body);
 
-    const largeId = 999999999;
-    
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_BASIC, { 
-      countryId: largeId 
-    });
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
-    if (!body.errors) {
-      const states = body.data.countryStates;
-      console.log(`📦 Returned States: ${states.edges.length}`);
-      expect(states.edges.length).toBe(0); // Should return empty
-    } else {
-      console.log('⚠️ GraphQL Error:', body.errors[0]?.message);
-    }
-
-    console.log('\n✅ Large integer ID for states Test Passed!\n');
+    expect(body.data.countryStates.edges).toEqual([]);
+    expect(body.data.countryStates.totalCount).toBe(0);
   });
 
-  /* ---------------------------------------------------
-   * TEST 19: Boolean as integer parameter
-   * Tests type coercion handling
-   * --------------------------------------------------- */
-  test('should handle boolean as integer parameter for states', async ({ request }) => {
-    console.log('\n📤 Testing with boolean as integer parameter for states...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_WITH_PAGINATION, { 
-      countryId: VALID_COUNTRY_ID,
-      first: true as any 
+  test('should reject a boolean for the integer first parameter', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_WITH_PAGINATION, {
+      countryId: UNITED_STATES_ID,
+      first: true,
     });
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
 
-    if (body.errors) {
-      console.log('⚠️ Expected error for type mismatch:', body.errors[0]?.message);
-    } else {
-      const states = body.data.countryStates;
-      console.log(`📦 Returned States: ${states.edges.length}`);
-    }
-
-    console.log('\n✅ Boolean parameter for states Test Passed!\n');
+    expect(graphQLErrorMessages(body)).toEqual([
+      'Variable "$first" got invalid value true; Int cannot represent non-integer value: true',
+    ]);
+    expect(body.data).toBeUndefined();
   });
 
-  /* ---------------------------------------------------
-   * TEST 20: Country without states
-   * Tests handling of countries without states
-   * --------------------------------------------------- */
-  test('should handle country without states', async ({ request }) => {
-    console.log('\n📤 Testing country without states...');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  test('should return an empty connection for a country without states', async ({ request }) => {
+    const body = await statesBody(request, GET_COUNTRY_STATES_BASIC, { countryId: COUNTRY_WITHOUT_STATES_ID });
+    assertNoGraphQLErrors(body);
 
-    // Most countries don't have states defined
-    const response = await sendGraphQLRequest(request, GET_COUNTRY_STATES_BASIC, { 
-      countryId: VALID_COUNTRY_ID 
-    });
-    const body = await response.json();
-    console.log('📥 Response Status:', response.status());
-
-    if (!body.errors) {
-      const states = body.data.countryStates;
-      console.log(`📦 Returned States: ${states.edges.length}`);
-      console.log(`📊 Total Count: ${states.totalCount}`);
-      
-      // Should return valid structure even with 0 states
-      expect(states).toHaveProperty('edges');
-      expect(states).toHaveProperty('totalCount');
-      expect(Array.isArray(states.edges)).toBe(true);
-    } else {
-      console.log('⚠️ GraphQL Error:', body.errors[0]?.message);
-    }
-
-    console.log('\n✅ Country without states Test Passed!\n');
+    expect(body.data.countryStates.edges).toEqual([]);
+    expect(body.data.countryStates.totalCount).toBe(0);
   });
 });

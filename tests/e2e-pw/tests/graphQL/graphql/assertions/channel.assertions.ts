@@ -1,20 +1,10 @@
 import { expect } from '@playwright/test';
 
-/* ===================================================
- * ATOMIC ASSERTIONS (Reusable)
- * =================================================== */
-
-/**
- * Assert no GraphQL errors in response
- */
 export function assertNoGraphQLErrors(body: any) {
   expect(body.errors, 'GraphQL errors found').toBeUndefined();
   expect(body.data).toBeTruthy();
 }
 
-/**
- * Assert GraphQL errors exist (for negative tests)
- */
 export function assertGraphQLErrors(body: any, expectedErrorMessage?: string) {
   expect(body.errors).toBeTruthy();
   if (expectedErrorMessage) {
@@ -23,9 +13,6 @@ export function assertGraphQLErrors(body: any, expectedErrorMessage?: string) {
   }
 }
 
-/**
- * Assert basic channel structure
- */
 export function assertBasicChannel(channel: any) {
   expect(channel).toBeTruthy();
   expect(channel).toHaveProperty('id');
@@ -41,18 +28,12 @@ export function assertBasicChannel(channel: any) {
   expect(typeof channel.hostname).toBe('string');
 }
 
-/**
- * Assert channel with internal ID
- */
 export function assertChannelWithInternalId(channel: any) {
   assertBasicChannel(channel);
   expect(channel).toHaveProperty('_id');
   expect(typeof channel._id).toBe('number');
 }
 
-/**
- * Assert channel has timezone
- */
 export function assertChannelWithTimezone(channel: any) {
   assertBasicChannel(channel);
   expect(channel).toHaveProperty('timezone');
@@ -61,13 +42,9 @@ export function assertChannelWithTimezone(channel: any) {
   }
 }
 
-/**
- * Assert complete channel details
- */
 export function assertCompleteChannel(channel: any) {
   assertChannelWithInternalId(channel);
 
-  // Branding fields
   expect(channel).toHaveProperty('theme');
   expect(channel).toHaveProperty('hostname');
   expect(channel).toHaveProperty('logo');
@@ -75,15 +52,12 @@ export function assertCompleteChannel(channel: any) {
   expect(channel).toHaveProperty('logoUrl');
   expect(channel).toHaveProperty('faviconUrl');
 
-  // Maintenance mode
   expect(channel).toHaveProperty('isMaintenanceOn');
   expect(channel).not.toHaveProperty('allowedIps');
 
-  // Timestamps
   expect(channel).toHaveProperty('createdAt');
   expect(channel).toHaveProperty('updatedAt');
 
-  // Logo and favicon URLs should be valid if present
   if (channel.logoUrl !== null) {
     expect(typeof channel.logoUrl).toBe('string');
   }
@@ -91,7 +65,6 @@ export function assertCompleteChannel(channel: any) {
     expect(typeof channel.faviconUrl).toBe('string');
   }
 
-  // Timestamps should be valid date strings
   if (channel.createdAt) {
     expect(Date.parse(channel.createdAt)).not.toBeNaN();
   }
@@ -100,9 +73,6 @@ export function assertCompleteChannel(channel: any) {
   }
 }
 
-/**
- * Assert channel with branding assets
- */
 export function assertChannelWithBranding(channel: any) {
   assertBasicChannel(channel);
 
@@ -113,30 +83,18 @@ export function assertChannelWithBranding(channel: any) {
   expect(channel).toHaveProperty('faviconUrl');
 }
 
-/**
- * Assert channel with maintenance mode
- */
 export function assertChannelWithMaintenanceMode(channel: any) {
   assertBasicChannel(channel);
 
   expect(channel).toHaveProperty('isMaintenanceOn');
   expect(channel).not.toHaveProperty('allowedIps');
 
-  // isMaintenanceOn can be boolean or string ("true"/"false")
   const isMaintenanceOn = channel.isMaintenanceOn;
   expect(typeof isMaintenanceOn === 'boolean' || typeof isMaintenanceOn === 'string').toBe(true);
 
-  // allowedIps is never exposed
   expect(channel).not.toHaveProperty('allowedIps');
 }
 
-/* ===================================================
- * TRANSLATION ASSERTIONS
- * =================================================== */
-
-/**
- * Assert single translation object
- */
 export function assertTranslation(translation: any) {
   expect(translation).toBeTruthy();
   expect(translation).toHaveProperty('id');
@@ -145,10 +103,8 @@ export function assertTranslation(translation: any) {
 
   expect(typeof translation.id).toBe('string');
   expect(typeof translation.locale).toBe('string');
-  // name can be string or object (with locale-specific values)
   expect(typeof translation.name === 'string' || typeof translation.name === 'object').toBe(true);
 
-  // Optional fields - can be string or object
   if (translation.hasOwnProperty('description')) {
     expect(typeof translation.description === 'string' || typeof translation.description === 'object').toBe(true);
   }
@@ -156,13 +112,10 @@ export function assertTranslation(translation: any) {
     expect(typeof translation.maintenanceModeText === 'string' || typeof translation.maintenanceModeText === 'object').toBe(true);
   }
   if (translation.hasOwnProperty('channelId')) {
-    expect(typeof translation.channelId).toBe('string');
+    expect(typeof translation.channelId).toBe('number');
   }
 }
 
-/**
- * Assert translations connection
- */
 export function assertTranslationsConnection(translations: any) {
   expect(translations).toBeTruthy();
   expect(translations).toHaveProperty('edges');
@@ -175,19 +128,10 @@ export function assertTranslationsConnection(translations: any) {
   });
 }
 
-/* ===================================================
- * PAGINATION ASSERTIONS
- * =================================================== */
-
-/**
- * Assert pagination info
- */
 export function assertPageInfo(pageInfo: any) {
   expect(pageInfo).toBeTruthy();
   expect(pageInfo).toHaveProperty('hasNextPage');
-  // hasPreviousPage may not be present in all responses
   expect(pageInfo).toHaveProperty('endCursor');
-  // startCursor may not be present
   if (pageInfo.startCursor) {
     expect(typeof pageInfo.startCursor).toBe('string');
   }
@@ -195,31 +139,19 @@ export function assertPageInfo(pageInfo: any) {
   expect(typeof pageInfo.hasNextPage).toBe('boolean');
   expect(typeof pageInfo.endCursor).toBe('string');
 
-  // hasPreviousPage may not be returned by the API
   if (pageInfo.hasPreviousPage !== undefined) {
     expect(typeof pageInfo.hasPreviousPage).toBe('boolean');
   }
 }
 
-/**
- * Assert channels edge structure
- */
 export function assertChannelEdge(edge: any) {
   expect(edge).toBeTruthy();
   expect(edge).toHaveProperty('node');
-  // cursor may not be present in all responses
   if (edge.cursor) {
     expect(typeof edge.cursor).toBe('string');
   }
 }
 
-/* ===================================================
- * RESPONSE ASSERTIONS
- * =================================================== */
-
-/**
- * Assert getChannels basic response
- */
 export function assertGetChannelsBasicResponse(body: any) {
   assertNoGraphQLErrors(body);
   const channels = body.data.channels;
@@ -236,9 +168,6 @@ export function assertGetChannelsBasicResponse(body: any) {
   assertPageInfo(channels.pageInfo);
 }
 
-/**
- * Assert getChannels complete response
- */
 export function assertGetChannelsCompleteResponse(body: any) {
   assertNoGraphQLErrors(body);
   const channels = body.data.channels;
@@ -254,12 +183,10 @@ export function assertGetChannelsCompleteResponse(body: any) {
     assertChannelEdge(edge);
     assertCompleteChannel(edge.node);
 
-    // Assert translations if present
     if (edge.node.translations) {
       assertTranslationsConnection(edge.node.translations);
     }
 
-    // Assert translation if present
     if (edge.node.translation) {
       assertTranslation(edge.node.translation);
     }
@@ -268,9 +195,6 @@ export function assertGetChannelsCompleteResponse(body: any) {
   assertPageInfo(channels.pageInfo);
 }
 
-/**
- * Assert getChannels with pagination response
- */
 export function assertGetChannelsWithPaginationResponse(body: any, expectedCount?: number) {
   assertNoGraphQLErrors(body);
   const channels = body.data.channels;
@@ -291,9 +215,6 @@ export function assertGetChannelsWithPaginationResponse(body: any, expectedCount
   assertPageInfo(channels.pageInfo);
 }
 
-/**
- * Assert getChannelByID basic response
- */
 export function assertGetChannelByIDBasicResponse(body: any) {
   assertNoGraphQLErrors(body);
   const channel = body.data.channel;
@@ -302,9 +223,6 @@ export function assertGetChannelByIDBasicResponse(body: any) {
   expect(channel).toHaveProperty('timezone');
 }
 
-/**
- * Assert getChannelByID complete response
- */
 export function assertGetChannelByIDCompleteResponse(body: any) {
   assertNoGraphQLErrors(body);
   const channel = body.data.channel;
@@ -320,9 +238,6 @@ export function assertGetChannelByIDCompleteResponse(body: any) {
   }
 }
 
-/**
- * Assert getChannelByID with branding response
- */
 export function assertGetChannelByIDBrandingResponse(body: any) {
   assertNoGraphQLErrors(body);
   const channel = body.data.channel;
@@ -335,9 +250,6 @@ export function assertGetChannelByIDBrandingResponse(body: any) {
   }
 }
 
-/**
- * Assert getChannelByID with maintenance mode response
- */
 export function assertGetChannelByIDMaintenanceModeResponse(body: any) {
   assertNoGraphQLErrors(body);
   const channel = body.data.channel;
@@ -355,9 +267,6 @@ export function assertGetChannelByIDMaintenanceModeResponse(body: any) {
   }
 }
 
-/**
- * Assert getChannelByID with all translations response
- */
 export function assertGetChannelByIDAllTranslationsResponse(body: any) {
   assertNoGraphQLErrors(body);
   const channel = body.data.channel;
@@ -368,13 +277,8 @@ export function assertGetChannelByIDAllTranslationsResponse(body: any) {
   assertTranslationsConnection(channel.translations);
 }
 
-/**
- * Assert channel not found (null response)
- */
 export function assertChannelNotFound(body: any) {
-  // Handle GraphQL errors - the API may return errors for invalid IDs
   if (body.errors) {
-    // If there are errors, the channel should be null
     expect(body.data.channel).toBeNull();
   } else {
     assertNoGraphQLErrors(body);
@@ -383,21 +287,12 @@ export function assertChannelNotFound(body: any) {
   }
 }
 
-/**
- * Assert invalid ID format error
- */
 export function assertInvalidIDFormatError(body: any) {
   assertGraphQLErrors(body);
 }
 
-/**
- * Assert channel data is null for non-existent ID
- */
 export function assertNonExistentChannelResponse(body: any) {
-  // Handle GraphQL errors - the API may return errors for invalid IDs
-  // In that case, we check if the channel is null or if there are errors
   if (body.errors) {
-    // If there are errors, the channel should be null
     expect(body.data.channel).toBeNull();
   } else {
     assertNoGraphQLErrors(body);

@@ -1,259 +1,340 @@
-// tests/restAPI/api/automation/productMedia.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
+import { sendAdminMultipartRequest } from '../../rest/helpers/adminClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
-import { assertProductCard } from '../../rest/assertions/product.assertions';
+import { ADMIN_CATALOG } from '../../rest/endpoints/admin.catalog.endpoints';
+import { mp4Video, pngImage } from '../../rest/helpers/mediaFixtures';
+import {
+  REST_GAPS,
+  REST_GAPS_MESSAGES as MSG,
+  UNKNOWN_ID,
+  collectPages,
+  createAdminProduct,
+  deleteAdminProducts,
+  expectDetail,
+  numericIdOf,
+  safeJson,
+  shopBookingProductId,
+  uniqueStamp,
+  updateAdminProduct,
+} from '../../rest/helpers/coverage/restGaps.helpers';
 
-test.describe('Product Media & Type Resources REST API', () => {
+test.describe.configure({ timeout: 180_000 });
+
+const BOOKING_MESSAGES = {
+  ID_REQUIRED: 'The booking product id is required.',
+  DATE_REQUIRED: 'The date is required.',
+  PRODUCT_NOT_FOUND: 'Booking product not found.',
+};
+
+interface BookingSlotCase {
+  type: string;
+  collection: string;
+  item: (id: number) => string;
+  booking: () => Record<string, any>;
+}
+
+function dateOffset(days: number): string {
+  return new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+}
+
+const BOOKING_SLOT_CASES: BookingSlotCase[] = [
+  {
+    type: 'default',
+    collection: REST_GAPS.BOOKING_DEFAULT_SLOTS,
+    item: ENDPOINTS.BOOKING_DEFAULT_SLOTS,
+    booking: () => ({
+      type: 'default',
+      qty: '1',
+      location: 'E2E Studio',
+      available_every_week: '1',
+      booking_type: 'many',
+      duration: '60',
+      break_time: '10',
+      slots: [{ from: '09:00', to: '17:00' }],
+    }),
+  },
+  {
+    type: 'appointment',
+    collection: REST_GAPS.BOOKING_APPOINTMENT_SLOTS,
+    item: ENDPOINTS.BOOKING_APPOINTMENT_SLOTS,
+    booking: () => ({
+      type: 'appointment',
+      qty: '1',
+      location: 'E2E Clinic',
+      available_every_week: '1',
+      duration: '45',
+      break_time: '15',
+      same_slot_all_days: '1',
+      slots: [{ from: '10:00', to: '12:00' }],
+    }),
+  },
+  {
+    type: 'rental',
+    collection: REST_GAPS.BOOKING_RENTAL_SLOTS,
+    item: ENDPOINTS.BOOKING_RENTAL_SLOTS,
+    booking: () => ({
+      type: 'rental',
+      qty: '1',
+      location: 'E2E Garage',
+      available_every_week: '1',
+      renting_type: 'daily',
+      daily_price: '40',
+      same_slot_all_days: '1',
+    }),
+  },
+  {
+    type: 'table',
+    collection: REST_GAPS.BOOKING_TABLE_SLOTS,
+    item: ENDPOINTS.BOOKING_TABLE_SLOTS,
+    booking: () => ({
+      type: 'table',
+      qty: '1',
+      location: 'E2E Restaurant',
+      available_every_week: '1',
+      price_type: 'guest',
+      guest_limit: '4',
+      duration: '45',
+      break_time: '15',
+      prevent_scheduling_before: '0',
+      same_slot_all_days: '1',
+      slots: [{ from: '12:00', to: '14:00' }],
+    }),
+  },
+  {
+    type: 'event',
+    collection: REST_GAPS.BOOKING_EVENT_TICKETS,
+    item: ENDPOINTS.BOOKING_EVENT_TICKETS,
+    booking: () => ({
+      type: 'event',
+      qty: '100',
+      location: 'E2E Hall',
+      available_from: `${dateOffset(1)} 09:00:00`,
+      available_to: `${dateOffset(30)} 18:00:00`,
+      tickets: {
+        ticket_0: {
+          en: { name: `E2E Ticket ${uniqueStamp()}`, description: 'E2E ticket description' },
+          price: '25',
+          qty: '40',
+        },
+      },
+    }),
+  },
+];
+
+async function getJson(request: APIRequestContext, endpoint: string): Promise<any> {
+  const response = await sendRestRequest(request, endpoint);
+  const body = await safeJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(200);
+
+  return body;
+}
+
+async function uploadImage(request: APIRequestContext, productId: number): Promise<any> {
+  const response = await sendAdminMultipartRequest(request, ADMIN_CATALOG.PRODUCT_IMAGES(productId), {
+    image: { name: `e2e-${uniqueStamp()}.png`, mimeType: 'image/png', buffer: pngImage() },
+  });
+  const body = await safeJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(201);
+  expect(typeof body?.id, JSON.stringify(body)).toBe('number');
+
+  return body;
+}
+
+async function uploadVideo(request: APIRequestContext, productId: number): Promise<any> {
+  const response = await sendAdminMultipartRequest(request, ADMIN_CATALOG.PRODUCT_VIDEOS(productId), {
+    video: { name: `e2e-${uniqueStamp()}.mp4`, mimeType: 'video/mp4', buffer: mp4Video() },
+  });
+  const body = await safeJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(201);
+  expect(typeof body?.id, JSON.stringify(body)).toBe('number');
+
+  return body;
+}
+
+test.describe('product media rest api', () => {
+  let createdIds: number[];
   let productId: number;
-  let bookingProductId: number | null = null;
 
   test.beforeEach(async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '1' },
+    createdIds = [];
+    productId = (await createAdminProduct(request, 'simple')).id;
+    createdIds.push(productId);
+  });
+
+  test.afterEach(async ({ request }) => {
+    await deleteAdminProducts(request, createdIds);
+  });
+
+  test('should return all product images', async ({ request }) => {
+    const body = await getJson(request, ENDPOINTS.ALL_PRODUCT_IMAGES);
+
+    expect(Array.isArray(body)).toBe(true);
+  });
+
+  test('should return the uploaded images of a product', async ({ request }) => {
+    expect(await getJson(request, ENDPOINTS.PRODUCT_IMAGES(productId))).toEqual([]);
+
+    const image = await uploadImage(request, productId);
+    const body = await getJson(request, ENDPOINTS.PRODUCT_IMAGES(productId));
+
+    expect(body).toHaveLength(1);
+    expect(body[0].id).toBe(image.id);
+    expect(body[0].path).toBe(image.path);
+  });
+
+  test('should return single image by id', async ({ request }) => {
+    const image = await uploadImage(request, productId);
+    const body = await getJson(request, ENDPOINTS.PRODUCT_IMAGE(image.id));
+
+    expect(body.id).toBe(image.id);
+    expect(body.path).toBe(image.path);
+    expect(body.productId).toBe(productId);
+  });
+
+  test('should return all product videos', async ({ request }) => {
+    const body = await getJson(request, ENDPOINTS.ALL_PRODUCT_VIDEOS);
+
+    expect(Array.isArray(body)).toBe(true);
+  });
+
+  test('should return the uploaded videos of a product', async ({ request }) => {
+    expect(await getJson(request, ENDPOINTS.PRODUCT_VIDEOS(productId))).toEqual([]);
+
+    const video = await uploadVideo(request, productId);
+    const body = await getJson(request, ENDPOINTS.PRODUCT_VIDEOS(productId));
+
+    expect(body).toHaveLength(1);
+    expect(body[0].id).toBe(video.id);
+    expect(body[0].path).toBe(video.path);
+  });
+
+  test('should return single video by id', async ({ request }) => {
+    const video = await uploadVideo(request, productId);
+    const body = await getJson(request, ENDPOINTS.PRODUCT_VIDEO(video.id));
+
+    expect(body.id).toBe(video.id);
+    expect(body.path).toBe(video.path);
+  });
+
+  test('should return all bundle option products', async ({ request }) => {
+    const body = await getJson(request, ENDPOINTS.ALL_BUNDLE_OPTION_PRODUCTS);
+
+    expect(Array.isArray(body)).toBe(true);
+  });
+
+  test('should return all customizable option prices', async ({ request }) => {
+    const body = await getJson(request, ENDPOINTS.PRODUCT_CUSTOMIZABLE_OPTION_PRICES);
+
+    expect(Array.isArray(body)).toBe(true);
+  });
+
+  for (const [label, endpoint] of [
+    ['bundle options', ENDPOINTS.PRODUCT_BUNDLE_OPTIONS],
+    ['grouped products', ENDPOINTS.PRODUCT_GROUPED_PRODUCTS],
+    ['downloadable links', ENDPOINTS.PRODUCT_DOWNLOADABLE_LINKS],
+    ['downloadable samples', ENDPOINTS.PRODUCT_DOWNLOADABLE_SAMPLES],
+    ['customizable options', ENDPOINTS.PRODUCT_CUSTOMIZABLE_OPTIONS],
+    ['customer group prices', ENDPOINTS.PRODUCT_GROUP_PRICES],
+    ['booking products', ENDPOINTS.BOOKING_PRODUCTS],
+  ] as const) {
+    test(`should return no ${label} for a plain simple product`, async ({ request }) => {
+      expect(await getJson(request, endpoint(productId))).toEqual([]);
     });
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(body.length).toBeGreaterThan(0);
-    productId = body[0].id;
+  }
+});
 
-    const bookingResp = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '200', type: 'booking' },
+test.describe('product media of a missing product rest api', () => {
+  test('should return an empty image list for a product that does not exist', async ({ request }) => {
+    expect(await getJson(request, ENDPOINTS.PRODUCT_IMAGES(UNKNOWN_ID))).toEqual([]);
+  });
+
+  test('should return 404 for an image that does not exist', async ({ request }) => {
+    await expectDetail(await sendRestRequest(request, ENDPOINTS.PRODUCT_IMAGE(UNKNOWN_ID)), 404, MSG.GENERIC_NOT_FOUND);
+  });
+
+  test('should return 404 for a booking product that does not exist', async ({ request }) => {
+    await expectDetail(await sendRestRequest(request, ENDPOINTS.BOOKING_PRODUCT(UNKNOWN_ID)), 404, MSG.GENERIC_NOT_FOUND);
+  });
+});
+
+for (const bookingCase of BOOKING_SLOT_CASES) {
+  test.describe(`product booking ${bookingCase.type} configuration rest api`, () => {
+    let createdIds: number[];
+    let productId: number;
+    let bookingProductId: number;
+
+    test.beforeEach(async ({ request }) => {
+      createdIds = [];
+      productId = (await createAdminProduct(request, 'booking')).id;
+      createdIds.push(productId);
+
+      const updated = await updateAdminProduct(request, productId, { booking: bookingCase.booking() });
+
+      expect(updated.bookingProduct?.type).toBe(bookingCase.type);
+
+      bookingProductId = await shopBookingProductId(request, productId);
     });
-    const bookingBody = await bookingResp.json();
-    if (Array.isArray(bookingBody) && bookingBody.length > 0) {
-      const bpResp = await sendRestRequest(request, ENDPOINTS.BOOKING_PRODUCTS(productId));
-      if (bpResp.status() === 200) {
-        const bp = await bpResp.json();
-        expect(Array.isArray(bp)).toBeTruthy();
-        if (bp.length > 0) bookingProductId = bp[0].id;
-      }
-    }
-  });
 
-  // ── IMAGES ────────────────────────────────────────────────
-  test('Should return all product images', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.ALL_PRODUCT_IMAGES);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(Array.isArray(body)).toBeTruthy();
-    console.log('All product images catalog:', body.length);
+    test.afterEach(async ({ request }) => {
+      await deleteAdminProducts(request, createdIds);
+    });
 
-    if (body.length > 0) {
-      expect(body[0]).toHaveProperty('id');
-      console.log('First catalog image:', JSON.stringify({ id: body[0].id, path: body[0].path }));
-    }
-  });
+    test(`should return the ${bookingCase.type} booking product by id`, async ({ request }) => {
+      const body = await getJson(request, ENDPOINTS.BOOKING_PRODUCT(bookingProductId));
 
-  test('Should return images for a product', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_IMAGES(productId));
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(Array.isArray(body)).toBeTruthy();
-    console.log(`Images for product ${productId}:`, body.length);
+      expect(numericIdOf(body.id)).toBe(bookingProductId);
+      expect(body.type).toBe(bookingCase.type);
+    });
 
-    body.forEach((img: any) => {
-      expect(img).toHaveProperty('id');
-      expect(img).toHaveProperty('path');
+    test(`should return the ${bookingCase.type} slot configuration by id`, async ({ request }) => {
+      const [row] = await collectPages(
+        request,
+        bookingCase.collection,
+        (candidate: any) => Number(candidate.bookingProductId) === bookingProductId
+      );
+
+      expect(row, `the ${bookingCase.type} configuration is listed`).toBeTruthy();
+
+      const body = await getJson(request, bookingCase.item(numericIdOf(row.id)));
+
+      expect(numericIdOf(body.id)).toBe(numericIdOf(row.id));
+      expect(Number(body.bookingProductId)).toBe(bookingProductId);
     });
   });
 
-  test('Should return 404 for images of a non-existent product', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_IMAGES(999999));
-    expect([200, 404]).toContain(response.status());
+  test.describe(`product booking ${bookingCase.type} refusals rest api`, () => {
+    test(`should return 404 for a ${bookingCase.type} slot configuration that does not exist`, async ({ request }) => {
+      await expectDetail(await sendRestRequest(request, bookingCase.item(UNKNOWN_ID)), 404, MSG.GENERIC_NOT_FOUND);
+    });
   });
+}
 
-  test('Should return single image by ID', async ({ request }) => {
-    const imagesResp = await sendRestRequest(request, ENDPOINTS.PRODUCT_IMAGES(productId));
-    const images = await imagesResp.json();
-
-    if (Array.isArray(images) && images.length > 0) {
-      const imageId = images[0].id;
-      const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_IMAGE(imageId));
-      expect(response.status()).toBe(200);
-      const body = await response.json();
-      expect(body).toHaveProperty('id', imageId);
-      console.log('Single image:', body.path);
-    }
-  });
-
-  // ── VIDEOS ────────────────────────────────────────────────
-  test('Should return all product videos', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.ALL_PRODUCT_VIDEOS);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(Array.isArray(body)).toBeTruthy();
-    console.log('All product videos catalog:', body.length);
-  });
-
-  test('Should return videos for a product', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_VIDEOS(productId));
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(Array.isArray(body)).toBeTruthy();
-    console.log(`Videos for product ${productId}:`, body.length);
-  });
-
-  test('Should return single video by ID', async ({ request }) => {
-    const videosResp = await sendRestRequest(request, ENDPOINTS.ALL_PRODUCT_VIDEOS);
-    const allVideos = await videosResp.json();
-    if (Array.isArray(allVideos) && allVideos.length > 0) {
-      const vid = allVideos[0];
-      const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_VIDEO(vid.id));
-      expect(response.status()).toBe(200);
-      console.log('Single video ID:', vid.id);
-    } else {
-      console.log('No videos in catalog to test single endpoint');
-    }
-  });
-
-  // ── BUNDLE OPTIONS ────────────────────────────────────────
-  test('Should return bundle options for a product or 404 for non-bundle', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_BUNDLE_OPTIONS(productId));
-    expect([200, 404]).toContain(response.status());
-    console.log(`Bundle options for product ${productId}:`, response.status());
-  });
-
-  test('Should return all bundle option products', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.ALL_BUNDLE_OPTION_PRODUCTS);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(Array.isArray(body)).toBeTruthy();
-    console.log('All bundle option products:', body.length);
-  });
-
-  // ── GROUPED PRODUCTS ──────────────────────────────────────
-  test('Should return grouped products or 404 for non-grouped', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_GROUPED_PRODUCTS(productId));
-    expect([200, 404]).toContain(response.status());
-    console.log(`Grouped products for ${productId}:`, response.status());
-  });
-
-  // ── DOWNLOADABLE ──────────────────────────────────────────
-  test('Should return downloadable links or 404 for non-downloadable', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_DOWNLOADABLE_LINKS(productId));
-    expect([200, 404]).toContain(response.status());
-    console.log(`Downloadable links for ${productId}:`, response.status());
-  });
-
-  test('Should return downloadable samples or 404', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_DOWNLOADABLE_SAMPLES(productId));
-    expect([200, 404]).toContain(response.status());
-  });
-
-  // ── CUSTOMIZABLE OPTIONS ──────────────────────────────────
-  test('Should return customizable options or empty array', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_CUSTOMIZABLE_OPTIONS(productId));
-    expect([200, 404]).toContain(response.status());
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(Array.isArray(body)).toBeTruthy();
-      console.log(`Customizable options for ${productId}:`, body.length);
-    }
-  });
-
-  test('Should return all customizable option prices', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_CUSTOMIZABLE_OPTION_PRICES);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(Array.isArray(body)).toBeTruthy();
-    console.log('Customizable option prices:', body.length);
-  });
-
-  // ── GROUP PRICES ──────────────────────────────────────────
-  test('Should return customer group prices for a product', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_GROUP_PRICES(productId));
-    expect([200, 404]).toContain(response.status());
-    console.log(`Group prices for ${productId}:`, response.status());
-  });
-
-  // ── BOOKING PRODUCTS ──────────────────────────────────────
-  test('Should return booking configuration for a product', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_PRODUCTS(productId));
-    expect([200, 404]).toContain(response.status());
-    console.log(`Booking products for ${productId}:`, response.status());
-
-    if (response.status() === 200) {
-      const body = await response.json();
-      if (Array.isArray(body) && body.length > 0) {
-        bookingProductId = body[0].id;
-        expect(body[0]).toHaveProperty('id');
-        console.log('First booking config:', JSON.stringify({ id: body[0].id, type: body[0].type }));
-      }
-    }
-  });
-
-  test('Should return single booking product by ID', async ({ request }) => {
-    if (!bookingProductId) {
-      test.skip(true, 'No booking product available');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_PRODUCT(bookingProductId));
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(body.id).toBe(bookingProductId);
-    console.log('Single booking product:', body.type);
-  });
-
-  test('Should return booking default slots', async ({ request }) => {
-    if (!bookingProductId) {
-      test.skip(true, 'No booking product available');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_DEFAULT_SLOTS(bookingProductId));
-    expect([200, 404]).toContain(response.status());
-    console.log('Booking default slots:', response.status());
-  });
-
-  test('Should return booking appointment slots', async ({ request }) => {
-    if (!bookingProductId) {
-      test.skip(true, 'No booking product available');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_APPOINTMENT_SLOTS(bookingProductId));
-    expect([200, 404]).toContain(response.status());
-  });
-
-  test('Should return booking rental slots', async ({ request }) => {
-    if (!bookingProductId) {
-      test.skip(true, 'No booking product available');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_RENTAL_SLOTS(bookingProductId));
-    expect([200, 404]).toContain(response.status());
-  });
-
-  test('Should return booking table slots', async ({ request }) => {
-    if (!bookingProductId) {
-      test.skip(true, 'No booking product available');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_TABLE_SLOTS(bookingProductId));
-    expect([200, 404]).toContain(response.status());
-  });
-
-  test('Should return booking event tickets', async ({ request }) => {
-    if (!bookingProductId) {
-      test.skip(true, 'No booking product available');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_EVENT_TICKETS(bookingProductId));
-    expect([200, 404]).toContain(response.status());
-  });
-
-  // ── BOOKING SLOTS (runtime availability) ──────────────────
-  test('Should return runtime booking slot availability', async ({ request }) => {
-    const today = new Date().toISOString().split('T')[0];
+test.describe('booking slot availability rest api', () => {
+  test('should require the booking product id', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.BOOKING_SLOTS, {
-      params: { date: today },
+      params: { date: dateOffset(7) },
     });
-    expect([200, 400]).toContain(response.status());
-    console.log(`Booking slots for ${today}:`, response.status());
+
+    await expectDetail(response, 400, BOOKING_MESSAGES.ID_REQUIRED);
   });
 
-  test('Should return 400 when booking slots date param is missing', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_SLOTS);
-    expect([200, 400]).toContain(response.status());
-    console.log('Booking slots without date:', response.status());
+  test('should require the date', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_SLOTS, {
+      params: { id: String(UNKNOWN_ID) },
+    });
+
+    await expectDetail(response, 400, BOOKING_MESSAGES.DATE_REQUIRED);
+  });
+
+  test('should refuse a booking product that does not exist', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_SLOTS, {
+      params: { id: String(UNKNOWN_ID), date: dateOffset(7) },
+    });
+
+    await expectDetail(response, 400, BOOKING_MESSAGES.PRODUCT_NOT_FOUND);
   });
 });

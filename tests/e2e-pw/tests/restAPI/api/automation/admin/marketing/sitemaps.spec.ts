@@ -1,95 +1,102 @@
-// Admin Marketing — Sitemaps REST e2e.
-
 import { test, expect } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_MARKETING } from '../../../../rest/endpoints/admin.marketing.endpoints';
 
 test.describe.configure({ timeout: 60_000 });
 
-const OK_LIST = [200];
-const OK_CREATE = [200, 201, 400, 422, 429];
-const OK_UPDATE = [200, 201, 400, 404, 422, 429];
-const OK_DELETE = [200, 204, 400, 404, 422, 429];
-
-async function safeJson(resp: any): Promise<any> {
-  try { return await resp.json(); } catch { return null; }
+function uniqueStamp(): string {
+  return `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
 }
 
-test.describe('Admin Marketing — Sitemaps', () => {
-  test('listing returns 200 + envelope', async ({ request }) => {
+test.describe('admin marketing sitemaps', () => {
+  test('listing returns 200 and envelope', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_MARKETING.SITEMAPS);
-    expect(OK_LIST).toContain(resp.status());
-    const body = await safeJson(resp);
-    if (body) expect(Array.isArray(body.data) || Array.isArray(body)).toBe(true);
+    expect(resp.status()).toBe(200);
+    expect(Array.isArray((await resp.json()).data)).toBe(true);
   });
 
   test('listing with pagination', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_MARKETING.SITEMAPS, {
       params: { page: '1', per_page: '5' },
     });
-    expect(OK_LIST).toContain(resp.status());
+    expect(resp.status()).toBe(200);
+    expect((await resp.json()).meta.perPage).toBe(5);
   });
 
-  test('detail non-existent → 404', async ({ request }) => {
+  test('detail non-existent returns 404', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_MARKETING.SITEMAP(99999999));
-    expect([404, 400]).toContain(resp.status());
+    expect(resp.status()).toBe(404);
+    expect((await resp.json()).detail).toBe('Sitemap not found.');
   });
 
-  test('create with empty body → 422', async ({ request }) => {
+  test('create with empty body returns 422', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_MARKETING.SITEMAPS, {
       method: 'POST',
       data: {},
     });
-    expect([400, 422, 500]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('The file name field is required.');
   });
 
-  test('create + detail + update + delete round trip', async ({ request }) => {
-    const ts = Date.now();
+  test('create detail update and delete round trip', async ({ request }) => {
+    const ts = uniqueStamp();
     const createResp = await sendAdminRequest(request, ADMIN_MARKETING.SITEMAPS, {
       method: 'POST',
-      data: { file_name: `e2e-sitemap-${ts}.xml`, path: '/' },
+      data: { file_name: `e2e-sitemap-${ts}.xml`, path: '/', channels: [1] },
     });
-    const status = createResp.status();
-    console.log('sitemap create:', status);
-    expect(OK_CREATE).toContain(status);
-
-    if (status !== 200 && status !== 201) return;
-    const body = await safeJson(createResp);
-    const id = body?.id ?? body?.data?.id;
-    if (!id) return;
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json();
+    expect(created).toEqual(expect.objectContaining({ fileName: `e2e-sitemap-${ts}.xml`, path: '/', channels: [1] }));
+    const id = created.id;
 
     const detail = await sendAdminRequest(request, ADMIN_MARKETING.SITEMAP(id));
-    expect([200, 404]).toContain(detail.status());
+    expect(detail.status()).toBe(200);
+    expect((await detail.json()).fileName).toBe(`e2e-sitemap-${ts}.xml`);
 
     const updateResp = await sendAdminRequest(request, ADMIN_MARKETING.SITEMAP(id), {
       method: 'PUT' as any,
       data: { file_name: `e2e-sitemap-${ts}-upd.xml`, path: '/' },
     });
-    expect(OK_UPDATE).toContain(updateResp.status());
+    expect(updateResp.status()).toBe(200);
+    expect(await updateResp.json()).toEqual(expect.objectContaining({ id, fileName: `e2e-sitemap-${ts}-upd.xml`, channels: [1] }));
+
+    const reread = await sendAdminRequest(request, ADMIN_MARKETING.SITEMAP(id));
+    expect((await reread.json()).fileName).toBe(`e2e-sitemap-${ts}-upd.xml`);
 
     const delResp = await sendAdminRequest(request, ADMIN_MARKETING.SITEMAP(id), {
       method: 'DELETE',
     });
-    expect(OK_DELETE).toContain(delResp.status());
+    expect(delResp.status()).toBe(200);
+    expect((await delResp.json()).message).toBe('Sitemap deleted successfully.');
+
+    const gone = await sendAdminRequest(request, ADMIN_MARKETING.SITEMAP(id));
+    expect(gone.status()).toBe(404);
   });
 
-  test('create with invalid file_name (no .xml) → 422', async ({ request }) => {
-    const ts = Date.now();
+  test('create without channels returns 422', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_MARKETING.SITEMAPS, {
       method: 'POST',
-      data: { file_name: `e2e-${ts}.txt`, path: '/' },
+      data: { file_name: `e2e-sitemap-${uniqueStamp()}.xml`, path: '/' },
     });
-    expect([400, 422]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('The channels field is required.');
   });
 
-  test('create with invalid path (no leading /) → 422', async ({ request }) => {
-    const ts = Date.now();
+  test('create with invalid file_name without xml extension returns 422', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_MARKETING.SITEMAPS, {
       method: 'POST',
-      data: { file_name: `e2e-${ts}.xml`, path: 'invalid' },
+      data: { file_name: `e2e-${uniqueStamp()}.txt`, path: '/', channels: [1] },
     });
-    expect([400, 422]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('The file name field must end with one of the following: .xml.');
   });
 
-  test.skip('generate sitemap (skipped — slow, writes files to disk)', async () => {});
+  test('create with invalid path without leading slash returns 422', async ({ request }) => {
+    const resp = await sendAdminRequest(request, ADMIN_MARKETING.SITEMAPS, {
+      method: 'POST',
+      data: { file_name: `e2e-${uniqueStamp()}.xml`, path: 'invalid', channels: [1] },
+    });
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('The path field must start with one of the following: /.');
+  });
 });

@@ -1,7 +1,3 @@
-// tests/graphQL/api/automation/admin/catalog/products.spec.ts
-//
-// Admin Catalog Products GraphQL smoke. CRUD + copy + mass-actions.
-
 import { test, expect } from '@playwright/test';
 import { sendAdminGraphQLRequest } from '../../../../graphql/helpers/adminGraphqlClient';
 import {
@@ -13,7 +9,10 @@ import {
   ADMIN_PRODUCT_COPY_MUTATION,
   ADMIN_PRODUCT_MASS_DELETE_MUTATION,
   ADMIN_PRODUCT_MASS_UPDATE_STATUS_MUTATION,
+  ADMIN_PRODUCT_DESCRIPTION_QUERY,
+  ADMIN_PRODUCT_TRANSLATIONS_UPDATE_MUTATION,
 } from '../../../../graphql/Queries/admin/catalog/products.queries';
+import { UNSAFE_HTML, assertSanitisedHtml } from '../../../../graphql/assertions/adminSanitisedHtml.assertions';
 
 test.describe.configure({ timeout: 60_000 });
 
@@ -38,8 +37,6 @@ test.describe('Admin Catalog Products GraphQL', () => {
     expect(body.data?.adminCatalogProducts?.edges).toBeDefined();
   });
 
-  // Owns its product: reading back the newest listed row races with sibling
-  // specs that create and then delete products when the suite runs in parallel.
   test('detail by id', async ({ request }) => {
     const created = await createSimple(request);
     test.skip(!created?._id, 'create returned no product');
@@ -96,7 +93,6 @@ test.describe('Admin Catalog Products GraphQL', () => {
     if (cb.errors) console.log('copy errors:', cb.errors);
     const copy = cb.data?.createAdminCatalogProductCopy?.adminCatalogProductCopy;
 
-    // cleanup
     await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_DELETE_MUTATION, { id: src.id });
     if (copy?.id) {
       await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_DELETE_MUTATION, { id: copy.id });
@@ -136,5 +132,28 @@ test.describe('Admin Catalog Products GraphQL', () => {
     if (body.errors) console.log('mass-update-status errors (non-fatal):', body.errors);
 
     await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_DELETE_MUTATION, { id: created.id });
+  });
+
+  test('should strip scripts and template code from a wysiwyg description on update', async ({ request }) => {
+    const created = await createSimple(request);
+    expect(created?._id, 'product create').toBeTruthy();
+
+    try {
+      const upd = await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_TRANSLATIONS_UPDATE_MUTATION, {
+        id: created.id,
+        translations: { en: { description: UNSAFE_HTML } },
+      });
+      expect(upd.status()).toBe(200);
+      const updBody = await upd.json();
+      expect(updBody.errors, JSON.stringify(updBody.errors)).toBeUndefined();
+
+      const detail = await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_DESCRIPTION_QUERY, { id: created.id });
+      expect(detail.status()).toBe(200);
+      const detailBody = await detail.json();
+      expect(detailBody.errors, JSON.stringify(detailBody.errors)).toBeUndefined();
+      assertSanitisedHtml(detailBody.data?.adminCatalogProduct?.description);
+    } finally {
+      await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_DELETE_MUTATION, { id: created.id });
+    }
   });
 });

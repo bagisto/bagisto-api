@@ -1,5 +1,3 @@
-// Admin CMS Pages GraphQL operations.
-
 export const ADMIN_CMS_PAGES_LIST = `
   query adminCmsPages($first: Int, $after: String, $page_title: String) {
     adminCmsPages(first: $first, after: $after, page_title: $page_title) {
@@ -10,7 +8,7 @@ export const ADMIN_CMS_PAGES_LIST = `
 
 export const ADMIN_CMS_PAGE_DETAIL = `
   query adminCmsPage($id: ID!) {
-    adminCmsPage(id: $id) { id _id urlKey pageTitle }
+    adminCmsPage(id: $id) { id _id urlKey pageTitle htmlContent }
   }
 `;
 

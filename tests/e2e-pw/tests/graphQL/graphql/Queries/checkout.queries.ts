@@ -30,3 +30,24 @@ export const GET_CHECKOUT_ADDRESSES = `
     }
   }
 `;
+
+export const READ_CHECKOUT_ADDRESS = `
+  query readCheckoutAddress($id: ID!) {
+    readCheckoutAddress(id: $id) {
+      cartToken
+      customerId
+      billingFirstName
+      billingLastName
+      billingEmail
+      billingAddress
+      billingCity
+      billingState
+      billingCountry
+      billingPostcode
+      billingPhoneNumber
+      shippingFirstName
+      shippingCity
+      success
+    }
+  }
+`;

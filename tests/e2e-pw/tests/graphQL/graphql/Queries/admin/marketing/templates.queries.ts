@@ -1,5 +1,3 @@
-// Admin Marketing — Email Templates GraphQL operations.
-
 export const ADMIN_TEMPLATES_QUERY = `
   query adminMarketingTemplates($first: Int, $name: String, $status: String) {
     adminMarketingTemplates(first: $first, name: $name, status: $status) {

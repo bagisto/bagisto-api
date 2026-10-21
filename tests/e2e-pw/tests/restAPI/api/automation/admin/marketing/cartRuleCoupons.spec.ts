@@ -1,16 +1,16 @@
-// Admin Marketing — Cart Rule Coupons (sub-resource) REST e2e.
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_MARKETING } from '../../../../rest/endpoints/admin.marketing.endpoints';
 
 test.describe.configure({ timeout: 120_000 });
 
-async function safeJson(resp: any): Promise<any> {
-  try { return await resp.json(); } catch { return null; }
+const RULE_NOT_FOUND = 'Cart rule not found.';
+
+function uniqueStamp(): string {
+  return `${Date.now()}${Math.floor(Math.random() * 1_000_000)}`;
 }
 
-async function makeCartRule(request: any, ts: number): Promise<number | null> {
+async function makeCartRule(request: APIRequestContext, ts: string): Promise<number> {
   const r = await sendAdminRequest(request, ADMIN_MARKETING.CART_RULES, {
     method: 'POST',
     data: {
@@ -29,70 +29,81 @@ async function makeCartRule(request: any, ts: number): Promise<number | null> {
       uses_per_coupon: 0,
     },
   });
-  if (r.status() !== 200 && r.status() !== 201) return null;
-  const body = await safeJson(r);
-  return body?.id ?? body?.data?.id ?? null;
+  expect(r.status()).toBe(201);
+
+  return (await r.json()).id;
 }
 
-async function deleteCartRule(request: any, id: number) {
+async function deleteCartRule(request: APIRequestContext, id: number) {
   await sendAdminRequest(request, ADMIN_MARKETING.CART_RULE(id), { method: 'DELETE' });
 }
 
-test.describe('Admin Marketing — Cart Rule Coupons', () => {
-  test('listing for non-existent rule → 404', async ({ request }) => {
+async function listCouponIds(request: APIRequestContext, ruleId: number): Promise<number[]> {
+  const resp = await sendAdminRequest(request, ADMIN_MARKETING.CART_RULE_COUPONS(ruleId));
+  expect(resp.status()).toBe(200);
+
+  return (await resp.json()).data.map((coupon: any) => coupon.id);
+}
+
+test.describe('admin marketing cart rule coupons', () => {
+  test('listing for non-existent rule returns 404', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_MARKETING.CART_RULE_COUPONS(99999999));
-    expect([404, 400, 200]).toContain(resp.status());
+    expect(resp.status()).toBe(404);
+    expect((await resp.json()).detail).toBe(RULE_NOT_FOUND);
   });
 
-  test('listing returns 200 + envelope', async ({ request }) => {
-    const ts = Date.now();
-    const ruleId = await makeCartRule(request, ts);
-    if (!ruleId) return;
+  test('listing returns 200 and an empty envelope for an auto-generation rule', async ({ request }) => {
+    const ruleId = await makeCartRule(request, uniqueStamp());
     try {
       const resp = await sendAdminRequest(request, ADMIN_MARKETING.CART_RULE_COUPONS(ruleId));
-      expect([200, 404]).toContain(resp.status());
-      const body = await safeJson(resp);
-      if (body) expect(Array.isArray(body.data) || Array.isArray(body)).toBe(true);
+      expect(resp.status()).toBe(200);
+      const body = await resp.json();
+      expect(body.data).toEqual([]);
+      expect(body.meta.total).toBe(0);
     } finally {
       await deleteCartRule(request, ruleId);
     }
   });
 
-  test('create single coupon + delete round trip', async ({ request }) => {
-    const ts = Date.now();
+  test('create single coupon and delete round trip', async ({ request }) => {
+    const ts = uniqueStamp();
     const ruleId = await makeCartRule(request, ts);
-    if (!ruleId) return;
     try {
       const code = `E2ECODE${ts}`;
       const createResp = await sendAdminRequest(request, ADMIN_MARKETING.CART_RULE_COUPONS(ruleId), {
         method: 'POST',
         data: { code, usage_limit: 0, usage_per_customer: 0, expired_at: null },
       });
-      const status = createResp.status();
-      console.log('coupon create:', status);
-      expect([200, 201, 400, 422, 500]).toContain(status);
+      expect(createResp.status()).toBe(201);
+      const created = await createResp.json();
+      expect(created).toEqual(expect.objectContaining({
+        cartRuleId: ruleId,
+        code,
+        isPrimary: false,
+        success: true,
+        message: 'Coupon created successfully.',
+      }));
+      expect(await listCouponIds(request, ruleId)).toEqual([created.id]);
 
-      if (status === 200 || status === 201) {
-        const body = await safeJson(createResp);
-        const id = body?.id ?? body?.data?.id;
-        if (id) {
-          const delResp = await sendAdminRequest(
-            request,
-            ADMIN_MARKETING.CART_RULE_COUPON(ruleId, id),
-            { method: 'DELETE' }
-          );
-          expect([200, 204, 404]).toContain(delResp.status());
-        }
-      }
+      const delResp = await sendAdminRequest(
+        request,
+        ADMIN_MARKETING.CART_RULE_COUPON(ruleId, created.id),
+        { method: 'DELETE' }
+      );
+      expect(delResp.status()).toBe(200);
+      expect(await delResp.json()).toEqual(expect.objectContaining({
+        id: created.id,
+        success: true,
+        message: 'Coupon deleted successfully.',
+      }));
+      expect(await listCouponIds(request, ruleId)).toEqual([]);
     } finally {
       await deleteCartRule(request, ruleId);
     }
   });
 
   test('bulk-generate coupons', async ({ request }) => {
-    const ts = Date.now();
-    const ruleId = await makeCartRule(request, ts);
-    if (!ruleId) return;
+    const ruleId = await makeCartRule(request, uniqueStamp());
     try {
       const resp = await sendAdminRequest(
         request,
@@ -108,40 +119,50 @@ test.describe('Admin Marketing — Cart Rule Coupons', () => {
           },
         }
       );
-      const status = resp.status();
-      console.log('coupon generate:', status);
-      expect([200, 201, 400, 422, 500]).toContain(status);
+      expect(resp.status()).toBe(201);
+      const body = await resp.json();
+      expect(body).toEqual(expect.objectContaining({
+        cartRuleId: ruleId,
+        generated: 3,
+        success: true,
+        message: 'Generated 3 coupon(s) successfully.',
+      }));
+      expect(body.coupons).toHaveLength(3);
+      for (const coupon of body.coupons) {
+        expect(coupon.code.startsWith('E2E')).toBe(true);
+        expect(coupon.cartRuleId).toBe(ruleId);
+      }
+      expect((await listCouponIds(request, ruleId)).sort()).toEqual(body.coupons.map((coupon: any) => coupon.id).sort());
     } finally {
       await deleteCartRule(request, ruleId);
     }
   });
 
-  test('mass-delete coupons empty indices → 422', async ({ request }) => {
-    const ts = Date.now();
-    const ruleId = await makeCartRule(request, ts);
-    if (!ruleId) return;
+  test('mass-delete coupons empty indices returns 422', async ({ request }) => {
+    const ruleId = await makeCartRule(request, uniqueStamp());
     try {
       const resp = await sendAdminRequest(
         request,
         ADMIN_MARKETING.CART_RULE_COUPONS_MASS_DELETE(ruleId),
         { method: 'POST', data: { indices: [] } }
       );
-      expect([400, 422]).toContain(resp.status());
+      expect(resp.status()).toBe(422);
+      expect((await resp.json()).detail).toBe('The indices field is required and must be a non-empty array of coupon IDs.');
     } finally {
       await deleteCartRule(request, ruleId);
     }
   });
 
-  test('create coupon with empty body → 422', async ({ request }) => {
-    const ts = Date.now();
-    const ruleId = await makeCartRule(request, ts);
-    if (!ruleId) return;
+  test('create coupon with empty body returns 422', async ({ request }) => {
+    const ruleId = await makeCartRule(request, uniqueStamp());
     try {
       const resp = await sendAdminRequest(request, ADMIN_MARKETING.CART_RULE_COUPONS(ruleId), {
         method: 'POST',
         data: {},
       });
-      expect([400, 422, 500]).toContain(resp.status());
+      expect(resp.status()).toBe(422);
+      expect((await resp.json()).detail).toBe('The code field is required.');
+      expect(await listCouponIds(request, ruleId)).toEqual([]);
     } finally {
       await deleteCartRule(request, ruleId);
     }

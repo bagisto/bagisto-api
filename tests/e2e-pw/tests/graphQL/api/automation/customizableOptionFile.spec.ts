@@ -1,14 +1,13 @@
-// Shop — Customizable-option file upload e2e (GraphQL).
-// The binary upload itself is REST-only (GraphQL cannot carry a file), so
-// there is no upload mutation. What GraphQL owns is the token-resolution
-// path on add-to-cart: the mutation accepts customizableOptions and, when a
-// file option is present, rejects a bogus/absent upload token. With no seeded
-// file-option product in CI we assert the mutation is reachable and handled.
-
-import { test, expect, APIRequestContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { getGuestCartHeaders } from '../../config/auth';
-import { SHOP_DOCS_QUERIES } from '../../graphql/Queries/shopDocs.queries';
 import { sendGraphQLRequest } from '../../graphql/helpers/graphqlClient';
+import { graphQLErrorMessages } from '../../graphql/helpers/testSupport';
+import { sendAdminRequest } from '../../../restAPI/rest/helpers/adminClient';
+import { SHOP_CATALOG } from '../../../restAPI/rest/endpoints/coverage/shopCatalog.endpoints';
+
+test.describe.configure({ timeout: 120_000 });
+
+const FILE_TOKEN_INVALID_MESSAGE = 'The uploaded file reference is invalid or has expired. Upload the file again.';
 
 const ADD_WITH_FILE_OPTION = `
   mutation createAddProductInCart($input: createAddProductInCartInput!) {
@@ -21,26 +20,58 @@ const ADD_WITH_FILE_OPTION = `
   }
 `;
 
-async function getFirstProductId(request: APIRequestContext): Promise<number> {
-  const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getProducts, { first: 1 });
-  const body = await response.json();
-  const node = body.data?.products?.edges?.[0]?.node;
-  return Number(String(node?.id ?? '').split('/').pop());
-}
+test.describe('customizable option file upload graphql api', () => {
+  let productId = 0;
+  let optionId = 0;
 
-test.describe('Customizable Option File Upload GraphQL API', () => {
-  test('binary upload is REST-only — deferred', async () => {
-    test.skip(true, 'file upload has no GraphQL mutation (binary is REST-only); resolution flow is covered below + in Pest');
+  test.beforeEach(async ({ request }) => {
+    productId = 0;
+    optionId = 0;
+
+    const created = await sendAdminRequest(request, SHOP_CATALOG.ADMIN_PRODUCTS, {
+      method: 'POST',
+      data: {
+        sku: `e2e-gql-file-token-${Date.now()}-${Math.floor(Math.random() * 1e6)}`,
+        attribute_family_id: 1,
+        type: 'simple',
+      },
+    });
+    expect(created.status()).toBe(201);
+    productId = (await created.json()).id;
+
+    const updated = await sendAdminRequest(request, SHOP_CATALOG.ADMIN_PRODUCT(productId), {
+      method: 'PUT',
+      data: {
+        status: 1,
+        customizable_options: {
+          option_1: {
+            label: 'Upload your design',
+            type: 'file',
+            is_required: 1,
+            sort_order: 0,
+            supported_file_extensions: 'pdf,jpg,png',
+            prices: { price_1: { label: '', price: 0, sort_order: 0 } },
+          },
+        },
+      },
+    });
+    expect(updated.status()).toBe(200);
+
+    const detail = await sendAdminRequest(request, SHOP_CATALOG.ADMIN_PRODUCT(productId));
+    expect(detail.status()).toBe(200);
+    const fileOption = ((await detail.json())?.customizableOptions ?? []).find((option: any) => option.type === 'file');
+    expect(fileOption, 'file-type customizable option exists on the product').toBeTruthy();
+    optionId = Number(fileOption.id);
   });
 
-  test('add to cart with a bogus file token is handled', async ({ request }) => {
-    const guestHeaders = await getGuestCartHeaders(request);
-    const productId = await getFirstProductId(request);
-
-    if (!(productId > 0)) {
-      test.skip(true, 'test store has no product available');
-      return;
+  test.afterEach(async ({ request }) => {
+    if (productId) {
+      await sendAdminRequest(request, SHOP_CATALOG.ADMIN_PRODUCT(productId), { method: 'DELETE' });
     }
+  });
+
+  test('add to cart with a bogus file token is refused', async ({ request }) => {
+    const guestHeaders = await getGuestCartHeaders(request);
 
     const response = await sendGraphQLRequest(
       request,
@@ -49,7 +80,7 @@ test.describe('Customizable Option File Upload GraphQL API', () => {
         input: {
           productId,
           quantity: 1,
-          customizableOptions: { '1': ['not-a-real-upload-token'] },
+          customizableOptions: { [String(optionId)]: ['not-a-real-upload-token'] },
         },
       },
       guestHeaders
@@ -59,11 +90,7 @@ test.describe('Customizable Option File Upload GraphQL API', () => {
 
     const body = await response.json();
 
-    // Reachable + handled: either the product has a file option and the bogus
-    // token is rejected (errors present), or it has none and the token is
-    // ignored so the add succeeds (data present). Both are valid outcomes.
-    const hasData = body.data?.createAddProductInCart?.addProductInCart != null;
-    const hasErrors = Array.isArray(body.errors) && body.errors.length > 0;
-    expect(hasData || hasErrors).toBeTruthy();
+    expect(graphQLErrorMessages(body)).toEqual([FILE_TOKEN_INVALID_MESSAGE]);
+    expect(body.data?.createAddProductInCart ?? null).toBeNull();
   });
 });

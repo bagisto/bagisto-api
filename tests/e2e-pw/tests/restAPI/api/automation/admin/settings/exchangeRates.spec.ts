@@ -1,87 +1,167 @@
-// Admin Settings — Exchange Rates REST e2e.
-// Listing / detail / create / update / delete / mass-delete.
-// `(target_currency)` is unique — we mint a fresh currency per spec run so
-// the rate insert doesn't collide with default seeds.
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext, APIResponse } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_SETTINGS } from '../../../../rest/endpoints/admin.settings.endpoints';
 
 test.describe.configure({ timeout: 60_000 });
 
-const OK_LIST = [200];
-const OK_CREATE = [200, 201, 400, 422, 429];
-const OK_UPDATE = [200, 201, 400, 404, 422, 429];
-const OK_DELETE = [200, 204, 400, 404, 422, 429];
+const UNKNOWN_ID = 99999999;
 
-async function safeJson(resp: any): Promise<any> {
-  try { return await resp.json(); } catch { return null; }
+const MSG = {
+  NOT_FOUND: 'Exchange rate not found.',
+  DELETED: 'Exchange rate deleted successfully.',
+  DUPLICATE_PAIR: 'An exchange rate for this target currency already exists. Update the existing row or delete it first.',
+  TARGET_CURRENCY_REQUIRED: 'The target currency field is required.',
+  RATE_GT_ZERO: 'The rate field must be greater than 0.',
+  MASS_DELETE_SUCCESS: 'Exchange rates deleted successfully.',
+  MASS_DELETE_INDICES_REQUIRED: 'The indices field is required and must be a non-empty array.',
+  CURRENCY_CODE_UNIQUE: 'The code has already been taken.',
+};
+
+interface CreatedCurrency {
+  id: number;
+  code: string;
 }
 
-function uniqueCurrencyCode(): string {
-  const map = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const n = Date.now() ^ Math.floor(Math.random() * 1e6);
-  return [0, 1, 2].map(i => map[(n >> (i * 5)) % 26]).join('');
+interface CreatedRate {
+  id: number;
+  currency: CreatedCurrency;
 }
 
-async function createCurrency(request: any): Promise<{ id: number | null; code: string }> {
-  const code = uniqueCurrencyCode();
-  const resp = await sendAdminRequest(request, ADMIN_SETTINGS.CURRENCIES, {
-    method: 'POST',
-    data: { code, name: `E2E ${code}`, symbol: '¤' },
-  });
-  const body = await safeJson(resp);
-  return { id: body?.id ?? body?.data?.id ?? null, code };
+function randomCurrencyCode(): string {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  return Array.from({ length: 3 }, () => letters[Math.floor(Math.random() * letters.length)]).join('');
 }
 
-async function createExchangeRate(request: any): Promise<{ id: number | null; currencyId: number | null }> {
-  const { id: currencyId } = await createCurrency(request);
-  if (!currencyId) return { id: null, currencyId: null };
-  const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATES, {
-    method: 'POST',
-    data: { target_currency: currencyId, rate: 1.23 },
-  });
-  const body = await safeJson(resp);
-  return { id: body?.id ?? body?.data?.id ?? null, currencyId };
+async function jsonOf(response: APIResponse): Promise<any> {
+  return JSON.parse(await response.text());
 }
 
-async function cleanupCurrency(request: any, currencyId: number | null) {
-  if (currencyId) {
-    await sendAdminRequest(request, ADMIN_SETTINGS.CURRENCY(currencyId), { method: 'DELETE' });
+function problemDetail(body: any): string {
+  return String(body?.detail ?? body?.message ?? '');
+}
+
+async function createCurrency(request: APIRequestContext): Promise<CreatedCurrency> {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const code = randomCurrencyCode();
+
+    const response = await sendAdminRequest(request, ADMIN_SETTINGS.CURRENCIES, {
+      method: 'POST',
+      data: { code, name: `E2E ${code} ${Date.now()}`, symbol: '¤' },
+    });
+    const body = await jsonOf(response);
+
+    if (
+      response.status() === 422
+      && problemDetail(body) === MSG.CURRENCY_CODE_UNIQUE
+    ) {
+      continue;
+    }
+
+    expect(response.status(), JSON.stringify(body)).toBe(201);
+    expect(typeof body.id).toBe('number');
+
+    return { id: body.id, code };
   }
+
+  throw new Error('no free three-letter currency code found after 20 attempts');
 }
 
-test.describe('Admin Settings Exchange Rates REST API', () => {
+async function createExchangeRate(request: APIRequestContext, rate = 1.23): Promise<CreatedRate> {
+  const currency = await createCurrency(request);
+
+  const response = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATES, {
+    method: 'POST',
+    data: { target_currency: currency.id, rate },
+  });
+  const body = await jsonOf(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(201);
+  expect(typeof body.id).toBe('number');
+  expect(body.targetCurrency).toBe(currency.id);
+  expect(body.targetCurrencyCode).toBe(currency.code);
+  expect(body.rate).toBeCloseTo(rate, 4);
+
+  return { id: body.id, currency };
+}
+
+async function cleanupCurrency(request: APIRequestContext, currencyId: number): Promise<void> {
+  await sendAdminRequest(request, ADMIN_SETTINGS.CURRENCY(currencyId), { method: 'DELETE' });
+}
+
+async function expectNotFound(response: APIResponse): Promise<void> {
+  const body = await jsonOf(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(404);
+  expect(problemDetail(body)).toBe(MSG.NOT_FOUND);
+}
+
+async function expectRejected(response: APIResponse, detail: string): Promise<void> {
+  const body = await jsonOf(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(422);
+  expect(problemDetail(body)).toBe(detail);
+}
+
+test.describe('admin settings exchange rates rest api', () => {
   test('listing returns 200', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATES);
-    expect(OK_LIST).toContain(resp.status());
-    const body = await safeJson(resp);
-    if (body) expect(Array.isArray(body.data) || Array.isArray(body)).toBe(true);
+    const body = await jsonOf(resp);
+
+    expect(resp.status(), JSON.stringify(body)).toBe(200);
+    expect(Array.isArray(body.data)).toBe(true);
+    expect(body).toHaveProperty('meta');
   });
 
   test('listing with pagination', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATES, {
       params: { page: '1', per_page: '5' },
     });
-    expect(OK_LIST).toContain(resp.status());
+    const body = await jsonOf(resp);
+
+    expect(resp.status(), JSON.stringify(body)).toBe(200);
+    expect(body.data.length).toBeLessThanOrEqual(5);
   });
 
-  test('detail for id=1 returns 200 or 404', async ({ request }) => {
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(1));
-    expect([200, 404]).toContain(resp.status());
+  test('detail returns a created exchange rate', async ({ request }) => {
+    const created = await createExchangeRate(request);
+
+    try {
+      const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(created.id));
+      const body = await jsonOf(resp);
+
+      expect(resp.status(), JSON.stringify(body)).toBe(200);
+      expect(body.id).toBe(created.id);
+      expect(body.targetCurrency).toBe(created.currency.id);
+      expect(body.targetCurrencyCode).toBe(created.currency.code);
+      expect(body.rate).toBeCloseTo(1.23, 4);
+    } finally {
+      await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(created.id), { method: 'DELETE' });
+      await cleanupCurrency(request, created.currency.id);
+    }
   });
 
   test('detail for non-existent id returns 404', async ({ request }) => {
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(99999999));
-    expect([400, 404]).toContain(resp.status());
+    await expectNotFound(await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(UNKNOWN_ID)));
   });
 
-  test('create exchange rate happy path', async ({ request }) => {
-    const { id, currencyId } = await createExchangeRate(request);
-    if (id) {
-      await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(id), { method: 'DELETE' });
+  test('create exchange rate happy path refuses a second rate for the same currency', async ({ request }) => {
+    const created = await createExchangeRate(request);
+
+    try {
+      const duplicate = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATES, {
+        method: 'POST',
+        data: { target_currency: created.currency.id, rate: 4.56 },
+      });
+
+      await expectRejected(duplicate, MSG.DUPLICATE_PAIR);
+
+      const detail = await jsonOf(await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(created.id)));
+      expect(detail.rate).toBeCloseTo(1.23, 4);
+    } finally {
+      await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(created.id), { method: 'DELETE' });
+      await cleanupCurrency(request, created.currency.id);
     }
-    await cleanupCurrency(request, currencyId);
   });
 
   test('create exchange rate missing fields returns 422', async ({ request }) => {
@@ -89,51 +169,86 @@ test.describe('Admin Settings Exchange Rates REST API', () => {
       method: 'POST',
       data: {},
     });
-    expect([400, 422]).toContain(resp.status());
+
+    await expectRejected(resp, MSG.TARGET_CURRENCY_REQUIRED);
   });
 
   test('create with rate=0 returns 422', async ({ request }) => {
-    const { id: currencyId } = await createCurrency(request);
-    if (!currencyId) { test.skip(true, 'create currency failed'); return; }
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATES, {
-      method: 'POST',
-      data: { target_currency: currencyId, rate: 0 },
-    });
-    expect([400, 422]).toContain(resp.status());
-    await cleanupCurrency(request, currencyId);
+    const currency = await createCurrency(request);
+
+    try {
+      const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATES, {
+        method: 'POST',
+        data: { target_currency: currency.id, rate: 0 },
+      });
+
+      await expectRejected(resp, MSG.RATE_GT_ZERO);
+    } finally {
+      await cleanupCurrency(request, currency.id);
+    }
   });
 
   test('update rate partial', async ({ request }) => {
-    const { id, currencyId } = await createExchangeRate(request);
-    if (!id) { test.skip(true, 'create failed'); return; }
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(id), {
-      method: 'PUT',
-      data: { rate: 2.5 },
-    });
-    expect(OK_UPDATE).toContain(resp.status());
-    await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(id), { method: 'DELETE' });
-    await cleanupCurrency(request, currencyId);
+    const created = await createExchangeRate(request);
+
+    try {
+      const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(created.id), {
+        method: 'PUT',
+        data: { rate: 2.5 },
+      });
+      const body = await jsonOf(resp);
+
+      expect(resp.status(), JSON.stringify(body)).toBe(200);
+      expect(body.id).toBe(created.id);
+      expect(body.rate).toBeCloseTo(2.5, 4);
+      expect(body.targetCurrency).toBe(created.currency.id);
+
+      const detail = await jsonOf(await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(created.id)));
+      expect(detail.rate).toBeCloseTo(2.5, 4);
+    } finally {
+      await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(created.id), { method: 'DELETE' });
+      await cleanupCurrency(request, created.currency.id);
+    }
   });
 
-  test('delete fresh exchange rate returns 200/204', async ({ request }) => {
-    const { id, currencyId } = await createExchangeRate(request);
-    if (!id) { test.skip(true, 'create failed'); return; }
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(id), {
-      method: 'DELETE',
-    });
-    expect(OK_DELETE).toContain(resp.status());
-    await cleanupCurrency(request, currencyId);
+  test('delete fresh exchange rate returns 200', async ({ request }) => {
+    const created = await createExchangeRate(request);
+
+    try {
+      const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(created.id), {
+        method: 'DELETE',
+      });
+      const body = await jsonOf(resp);
+
+      expect(resp.status(), JSON.stringify(body)).toBe(200);
+      expect(body.message).toBe(MSG.DELETED);
+      await expectNotFound(await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(created.id)));
+    } finally {
+      await cleanupCurrency(request, created.currency.id);
+    }
+  });
+
+  test('delete non-existent exchange rate returns 404', async ({ request }) => {
+    await expectNotFound(await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(UNKNOWN_ID), { method: 'DELETE' }));
   });
 
   test('mass-delete with one fresh id', async ({ request }) => {
-    const { id, currencyId } = await createExchangeRate(request);
-    if (!id) { test.skip(true, 'create failed'); return; }
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATES_MASS_DELETE, {
-      method: 'POST',
-      data: { indices: [id] },
-    });
-    expect([200, 201, 400, 422]).toContain(resp.status());
-    await cleanupCurrency(request, currencyId);
+    const created = await createExchangeRate(request);
+
+    try {
+      const resp = await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATES_MASS_DELETE, {
+        method: 'POST',
+        data: { indices: [created.id, UNKNOWN_ID] },
+      });
+      const body = await jsonOf(resp);
+
+      expect(resp.status(), JSON.stringify(body)).toBe(200);
+      expect(body.deleted).toEqual([created.id]);
+      expect(body.message).toBe(MSG.MASS_DELETE_SUCCESS);
+      await expectNotFound(await sendAdminRequest(request, ADMIN_SETTINGS.EXCHANGE_RATE(created.id)));
+    } finally {
+      await cleanupCurrency(request, created.currency.id);
+    }
   });
 
   test('mass-delete empty indices returns 422', async ({ request }) => {
@@ -141,6 +256,7 @@ test.describe('Admin Settings Exchange Rates REST API', () => {
       method: 'POST',
       data: { indices: [] },
     });
-    expect([400, 422]).toContain(resp.status());
+
+    await expectRejected(resp, MSG.MASS_DELETE_INDICES_REQUIRED);
   });
 });

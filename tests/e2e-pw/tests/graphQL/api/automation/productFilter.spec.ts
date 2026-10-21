@@ -1,479 +1,292 @@
-// tests/api/automation/productFilter.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendGraphQLRequest } from '../../graphql/helpers/graphqlClient';
-import {
-  GET_PRODUCTS_BY_CATEGORY,
-  GET_PRODUCTS_BY_TYPE,
-  GET_PRODUCTS_BY_ATTRIBUTE,
-  GET_PRODUCTS_BY_MULTIPLE_ATTRIBUTES,
-  GET_PRODUCTS_FILTERED_AND_SORTED,
-} from '../../graphql/Queries/product.queries';
-import {
-  assertProductsByCategoryResponse,
-  assertProductsByTypeResponse,
-  assertProductsByAttributeResponse,
-  assertProductsByMultipleAttributesResponse,
-  assertEmptyProductsList,
-  assertGraphQLError,
-} from '../../graphql/assertions/product.assertions';
+import { graphQLErrorMessages } from '../../graphql/helpers/testSupport';
+import { findSaleableSimpleProducts } from '../../../restAPI/rest/helpers/coverage/shopCart.helpers';
 
-// ==================== SEARCH PRODUCTS BY CATEGORY ID WITH PAGINATION TESTS ====================
-test.describe('Search Products by Category ID with Pagination', () => {
-  // ==================== POSITIVE TEST CASES ====================
+test.describe.configure({ timeout: 120_000 });
 
-  test('Should fetch products by category ID with pagination', async ({ request }) => {
-    const filter = JSON.stringify({ category_id: '22' });
-    const variables = { filter, first: 2, after: 'Mg==' };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_CATEGORY, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    if (body.data?.products) {
-      assertProductsByCategoryResponse(body, '22', 2);
-    } else {
-      expect(body).toHaveProperty('data');
+const FILTERED_PRODUCTS = `
+  query filteredProducts($filter: String, $first: Int, $after: String, $sortKey: String, $reverse: Boolean) {
+    products(filter: $filter, first: $first, after: $after, sortKey: $sortKey, reverse: $reverse) {
+      edges {
+        node {
+          _id
+          sku
+          name
+          type
+          price
+          new
+          featured
+        }
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      totalCount
     }
-  });
+  }
+`;
 
-  test('Should return products with valid category filter structure', async ({ request }) => {
-    const filter = JSON.stringify({ category_id: '22' });
-    const variables = { filter, first: 2 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_CATEGORY, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    if (body.data?.products) {
-      const products = body.data.products;
-      
-      // Validate response structure
-      expect(products).toHaveProperty('edges');
-      expect(products).toHaveProperty('pageInfo');
-      expect(products).toHaveProperty('totalCount');
-      expect(Array.isArray(products.edges)).toBeTruthy();
-    }
-  });
-
-  test('Should return products with all required fields', async ({ request }) => {
-    const filter = JSON.stringify({ category_id: '22' });
-    const variables = { filter, first: 2 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_CATEGORY, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    if (body.data?.products?.edges?.length > 0) {
-      const product = body.data.products.edges[0].node;
-      
-      // Validate required fields exist
-      expect(product).toHaveProperty('id');
-      expect(product).toHaveProperty('sku');
-      expect(product).toHaveProperty('name');
-      
-      // Validate optional fields
-      if (product.price !== null && product.price !== undefined) {
-        expect(product.price).toBeDefined();
-      }
-      if (product.urlKey !== null && product.urlKey !== undefined) {
-        expect(typeof product.urlKey).toBe('string');
-      }
-      if (product.baseImageUrl !== null && product.baseImageUrl !== undefined) {
-        expect(typeof product.baseImageUrl).toBe('string');
-      }
-      if (product.description !== null && product.description !== undefined) {
-        expect(typeof product.description).toBe('string');
-      }
-      if (product.shortDescription !== null && product.shortDescription !== undefined) {
-        expect(typeof product.shortDescription).toBe('string');
-      }
-      if (product.specialPrice !== null && product.specialPrice !== undefined) {
-        expect(product.specialPrice).toBeDefined();
+const PRODUCT_SUBJECT = `
+  query productSubject($id: ID!) {
+    product(id: $id) {
+      _id
+      sku
+      name
+      type
+      categories(first: 50) {
+        edges {
+          node {
+            _id
+          }
+        }
       }
     }
+  }
+`;
+
+interface ProductSubject {
+  id: number;
+  sku: string;
+  name: string;
+  categoryIds: number[];
+}
+
+async function filterProducts(
+  request: APIRequestContext,
+  variables: Record<string, any>
+): Promise<any> {
+  const response = await sendGraphQLRequest(request, FILTERED_PRODUCTS, variables);
+
+  expect(response.status()).toBe(200);
+
+  const body = await response.json();
+
+  expect(body.errors, graphQLErrorMessages(body).join(' | ')).toBeUndefined();
+  expect(Array.isArray(body.data.products.edges)).toBe(true);
+  expect(typeof body.data.products.totalCount).toBe('number');
+
+  return body.data.products;
+}
+
+function productIds(connection: any): number[] {
+  return connection.edges.map((edge: any) => Number(edge.node._id));
+}
+
+function expectNoProducts(connection: any): void {
+  expect(connection.edges).toEqual([]);
+  expect(connection.totalCount).toBe(0);
+}
+
+async function productSubject(request: APIRequestContext): Promise<ProductSubject> {
+  const [productId] = await findSaleableSimpleProducts(request, 1);
+  const response = await sendGraphQLRequest(request, PRODUCT_SUBJECT, { id: String(productId) });
+
+  expect(response.status()).toBe(200);
+
+  const body = await response.json();
+
+  expect(body.errors, graphQLErrorMessages(body).join(' | ')).toBeUndefined();
+
+  const product = body.data.product;
+
+  expect(product._id).toBe(productId);
+  expect(product.type).toBe('simple');
+
+  return {
+    id: productId,
+    sku: product.sku,
+    name: product.name,
+    categoryIds: product.categories.edges.map((edge: any) => Number(edge.node._id)),
+  };
+}
+
+test.describe('search products by category id with pagination', () => {
+  test('should return only the products of the category', async ({ request }) => {
+    const subject = await productSubject(request);
+
+    test.skip(subject.categoryIds.length === 0, `product ${subject.id} is not assigned to a category`);
+
+    const filter = JSON.stringify({ category_id: String(subject.categoryIds[0]), sku: subject.sku });
+    const connection = await filterProducts(request, { filter, first: 10 });
+
+    expect(productIds(connection)).toEqual([subject.id]);
+    expect(connection.totalCount).toBe(1);
   });
 
-  test('Should validate pagination info', async ({ request }) => {
-    const filter = JSON.stringify({ category_id: '22' });
-    const variables = { filter, first: 2 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_CATEGORY, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
+  test('should page through a category with the first and after arguments', async ({ request }) => {
+    const subject = await productSubject(request);
 
-    if (body.data?.products) {
-      const products = body.data.products;
-      
-      // Validate pageInfo structure
-      expect(products.pageInfo).toHaveProperty('hasNextPage');
-      expect(products.pageInfo).toHaveProperty('hasPreviousPage');
-      expect(products.pageInfo).toHaveProperty('startCursor');
-      expect(products.pageInfo).toHaveProperty('endCursor');
-      
-      // Validate field types
-      expect(typeof products.pageInfo.hasNextPage).toBe('boolean');
-      expect(typeof products.pageInfo.hasPreviousPage).toBe('boolean');
-    }
+    test.skip(subject.categoryIds.length === 0, `product ${subject.id} is not assigned to a category`);
+
+    const filter = JSON.stringify({ category_id: String(subject.categoryIds[0]) });
+    const firstPage = await filterProducts(request, { filter, first: 1 });
+
+    expect(firstPage.edges.length).toBe(1);
+    expect(firstPage.totalCount).toBeGreaterThanOrEqual(1);
+    expect(firstPage.pageInfo.hasPreviousPage).toBe(false);
+    expect(firstPage.pageInfo.hasNextPage).toBe(firstPage.totalCount > 1);
+
+    test.skip(firstPage.totalCount < 2, `category ${subject.categoryIds[0]} holds a single product`);
+
+    const secondPage = await filterProducts(request, { filter, first: 1, after: firstPage.pageInfo.endCursor });
+
+    expect(secondPage.edges.length).toBe(1);
+    expect(secondPage.totalCount).toBe(firstPage.totalCount);
+    expect(productIds(secondPage)).not.toEqual(productIds(firstPage));
   });
 
-  test('Should limit results based on first parameter', async ({ request }) => {
-    const filter = JSON.stringify({ category_id: '22' });
-    const variables = { filter, first: 2 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_CATEGORY, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    if (body.data?.products?.edges) {
-      const products = body.data.products;
-      expect(products.edges.length).toBeLessThanOrEqual(2);
-    }
+  test('should return no products for a category that does not exist', async ({ request }) => {
+    expectNoProducts(await filterProducts(request, { filter: JSON.stringify({ category_id: '99999999' }), first: 10 }));
   });
 
-  // ==================== NEGATIVE TEST CASES ====================
-
-  test('Should handle non-existent category ID', async ({ request }) => {
-    const filter = JSON.stringify({ category_id: '99999' });
-    const variables = { filter, first: 10 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_CATEGORY, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    // Should return empty list
-    if (body.data?.products) {
-      expect(body.data.products.edges.length).toBe(0);
-    }
+  test('should return no products for a non numeric category id', async ({ request }) => {
+    expectNoProducts(await filterProducts(request, { filter: JSON.stringify({ category_id: 'invalid' }), first: 10 }));
   });
 
-  test('Should handle invalid category ID format', async ({ request }) => {
-    const filter = JSON.stringify({ category_id: 'invalid' });
-    const variables = { filter, first: 10 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_CATEGORY, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
+  test('should return the unfiltered catalog when the filter is missing', async ({ request }) => {
+    const subject = await productSubject(request);
+    const connection = await filterProducts(request, { first: 10 });
 
-    // Should handle gracefully
-    expect(body).toHaveProperty('data');
-  });
+    expect(connection.totalCount).toBeGreaterThan(0);
+    expect(connection.edges.length).toBe(Math.min(10, connection.totalCount));
 
-  test('Should handle missing filter parameter', async ({ request }) => {
-    const variables = { first: 10 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_CATEGORY, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    // May return error or empty results
-    if (body.errors) {
-      assertGraphQLError(body);
-    }
+    const bySku = await filterProducts(request, { filter: JSON.stringify({ sku: subject.sku }) });
+    expect(productIds(bySku)).toEqual([subject.id]);
   });
 });
 
-// ==================== FILTER BY PRODUCT TYPE TESTS ====================
-test.describe('Filter Products by Type', () => {
-  // ==================== POSITIVE TEST CASES ====================
+test.describe('filter products by type', () => {
+  test('should return a simple product under the simple type filter', async ({ request }) => {
+    const subject = await productSubject(request);
 
-  test('Should fetch products filtered by type - configurable', async ({ request }) => {
-    const filter = JSON.stringify({ type: 'configurable' });
-    const variables = { filter };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_TYPE, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
+    const connection = await filterProducts(request, { filter: JSON.stringify({ type: 'simple', sku: subject.sku }) });
 
-    if (body.data?.products) {
-      assertProductsByTypeResponse(body, 'configurable');
-    } else {
-      expect(body).toHaveProperty('data');
+    expect(productIds(connection)).toEqual([subject.id]);
+  });
+
+  test('should exclude a simple product from the configurable type filter', async ({ request }) => {
+    const subject = await productSubject(request);
+
+    expectNoProducts(await filterProducts(request, { filter: JSON.stringify({ type: 'configurable', sku: subject.sku }) }));
+  });
+
+  test('should only return products of the requested type', async ({ request }) => {
+    for (const type of ['simple', 'configurable']) {
+      const connection = await filterProducts(request, { filter: JSON.stringify({ type }), first: 50 });
+
+      for (const edge of connection.edges) {
+        expect(edge.node.type).toBe(type);
+      }
     }
   });
 
-  test('Should fetch products filtered by type - simple', async ({ request }) => {
-    const filter = JSON.stringify({ type: 'simple' });
-    const variables = { filter };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_TYPE, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    if (body.data?.products) {
-      assertProductsByTypeResponse(body, 'simple');
-    } else {
-      expect(body).toHaveProperty('data');
-    }
+  test('should return no products for an unknown product type', async ({ request }) => {
+    expectNoProducts(await filterProducts(request, { filter: JSON.stringify({ type: 'invalid_type' }) }));
   });
 
-  test('Should return products with type filter structure', async ({ request }) => {
-    const filter = JSON.stringify({ type: 'configurable' });
-    const variables = { filter };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_TYPE, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
+  test('should treat an empty filter object as no filter', async ({ request }) => {
+    const unfiltered = await filterProducts(request, { sortKey: 'ID', first: 5 });
+    const emptyFilter = await filterProducts(request, { filter: JSON.stringify({}), sortKey: 'ID', first: 5 });
 
-    if (body.data?.products) {
-      const products = body.data.products;
-      
-      // Validate response structure
-      expect(products).toHaveProperty('edges');
-      expect(products).toHaveProperty('totalCount');
-      expect(Array.isArray(products.edges)).toBeTruthy();
-      expect(typeof products.totalCount).toBe('number');
-    }
-  });
-
-  // ==================== NEGATIVE TEST CASES ====================
-
-  test('Should handle invalid product type', async ({ request }) => {
-    const filter = JSON.stringify({ type: 'invalid_type' });
-    const variables = { filter };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_TYPE, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    // Should return empty list
-    if (body.data?.products) {
-      expect(body.data.products.edges.length).toBe(0);
-    }
-  });
-
-  test('Should handle missing type parameter', async ({ request }) => {
-    const filter = JSON.stringify({});
-    const variables = { filter };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_TYPE, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    // Should handle gracefully
-    expect(body).toHaveProperty('data');
+    expect(unfiltered.totalCount).toBeGreaterThan(0);
+    expect(productIds(emptyFilter)).toEqual(productIds(unfiltered));
   });
 });
 
-// ==================== FILTER BY ATTRIBUTE (COLOR) TESTS ====================
-test.describe('Filter Products by Attribute (Color)', () => {
-  // ==================== POSITIVE TEST CASES ====================
+test.describe('filter products by attribute', () => {
+  test('should match a product by its exact name attribute', async ({ request }) => {
+    const subject = await productSubject(request);
 
-  test('Should fetch products filtered by color attribute', async ({ request }) => {
-    const filter = JSON.stringify({ color: '3' });
-    const variables = { filter };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_ATTRIBUTE, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
+    const connection = await filterProducts(request, { filter: JSON.stringify({ name: subject.name, sku: subject.sku }) });
 
-    if (body.data?.products) {
-      assertProductsByAttributeResponse(body, 'color', '3');
-    } else {
-      expect(body).toHaveProperty('data');
-    }
+    expect(productIds(connection)).toEqual([subject.id]);
   });
 
-  test('Should return products with color attribute filter structure', async ({ request }) => {
-    const filter = JSON.stringify({ color: '3' });
-    const variables = { filter };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_ATTRIBUTE, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
+  test('should not match a product by a name it does not carry', async ({ request }) => {
+    const subject = await productSubject(request);
 
-    if (body.data?.products) {
-      const products = body.data.products;
-      
-      // Validate response structure
-      expect(products).toHaveProperty('edges');
-      expect(products).toHaveProperty('totalCount');
-      expect(Array.isArray(products.edges)).toBeTruthy();
-    }
+    expectNoProducts(
+      await filterProducts(request, { filter: JSON.stringify({ name: `${subject.name} not-a-match`, sku: subject.sku }) })
+    );
   });
 
-  test('Should validate product fields in attribute filter results', async ({ request }) => {
-    const filter = JSON.stringify({ color: '3' });
-    const variables = { filter };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_ATTRIBUTE, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    if (body.data?.products?.edges?.length > 0) {
-      const product = body.data.products.edges[0].node;
-      
-      // Validate product fields
-      expect(product.id).toBeDefined();
-      expect(product.sku).toBeDefined();
-    }
+  test('should return no products for a color option that does not exist', async ({ request }) => {
+    expectNoProducts(await filterProducts(request, { filter: JSON.stringify({ color: '99999999' }) }));
   });
 
-  // ==================== NEGATIVE TEST CASES ====================
-
-  test('Should handle non-existent color attribute value', async ({ request }) => {
-    const filter = JSON.stringify({ color: '99999' });
-    const variables = { filter };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_ATTRIBUTE, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    // Should return empty list
-    if (body.data?.products) {
-      expect(body.data.products.edges.length).toBe(0);
-    }
-  });
-
-  test('Should handle invalid color attribute value', async ({ request }) => {
-    const filter = JSON.stringify({ color: 'invalid' });
-    const variables = { filter };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_ATTRIBUTE, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    // Should handle gracefully
-    expect(body).toHaveProperty('data');
+  test('should return no products for a non numeric color option', async ({ request }) => {
+    expectNoProducts(await filterProducts(request, { filter: JSON.stringify({ color: 'invalid' }) }));
   });
 });
 
-// ==================== FILTER BY MULTIPLE ATTRIBUTES TESTS ====================
-test.describe('Filter Products by Multiple Attributes', () => {
-  // ==================== POSITIVE TEST CASES ====================
+test.describe('filter products by multiple attributes', () => {
+  test('should require every attribute of the filter to match', async ({ request }) => {
+    const subject = await productSubject(request);
 
-  test('Should fetch products filtered by multiple attributes', async ({ request }) => {
-    const filter = JSON.stringify({ color: '5', size: '1', brand: '5' });
-    const variables = { filter, first: 10 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_MULTIPLE_ATTRIBUTES, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
+    const matching = await filterProducts(request, { filter: JSON.stringify({ name: subject.name, sku: subject.sku }), first: 10 });
+    expect(productIds(matching)).toEqual([subject.id]);
 
-    if (body.data?.products) {
-      const attributes = { color: '5', size: '1', brand: '5' };
-      assertProductsByMultipleAttributesResponse(body, attributes, 10);
-    } else {
-      expect(body).toHaveProperty('data');
+    expectNoProducts(
+      await filterProducts(request, { filter: JSON.stringify({ name: subject.name, sku: subject.sku, color: '99999999' }), first: 10 })
+    );
+  });
+
+  test('should limit the multi attribute results to the first argument', async ({ request }) => {
+    const connection = await filterProducts(request, { filter: JSON.stringify({ type: 'simple' }), first: 3 });
+
+    expect(connection.edges.length).toBe(Math.min(3, connection.totalCount));
+  });
+
+  test('should return no products for a combination that does not exist', async ({ request }) => {
+    expectNoProducts(
+      await filterProducts(request, { filter: JSON.stringify({ color: '99999999', size: '99999999', brand: '99999999' }), first: 10 })
+    );
+  });
+});
+
+test.describe('filter products by storefront flags', () => {
+  test('should return only new products for the new filter', async ({ request }) => {
+    const connection = await filterProducts(request, {
+      filter: JSON.stringify({ new: '1' }),
+      sortKey: 'CREATED_AT',
+      reverse: true,
+      first: 10,
+    });
+
+    expect(connection.edges.length).toBe(Math.min(10, connection.totalCount));
+
+    for (const edge of connection.edges) {
+      expect(['1', 'true']).toContain(String(edge.node.new));
     }
   });
 
-  test('Should return products with multiple attribute filter structure', async ({ request }) => {
-    const filter = JSON.stringify({ color: '5', size: '1', brand: '5' });
-    const variables = { filter, first: 10 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_MULTIPLE_ATTRIBUTES, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
+  test('should return only featured products for the featured filter', async ({ request }) => {
+    const connection = await filterProducts(request, {
+      filter: JSON.stringify({ featured: '1' }),
+      sortKey: 'CREATED_AT',
+      reverse: true,
+      first: 12,
+    });
 
-    if (body.data?.products) {
-      const products = body.data.products;
-      
-      // Validate response structure
-      expect(products).toHaveProperty('edges');
-      expect(products).toHaveProperty('totalCount');
-      expect(Array.isArray(products.edges)).toBeTruthy();
+    expect(connection.edges.length).toBe(Math.min(12, connection.totalCount));
+
+    for (const edge of connection.edges) {
+      expect(['1', 'true']).toContain(String(edge.node.featured));
     }
   });
 
-  test('Should validate all product fields in multiple attribute results', async ({ request }) => {
-    const filter = JSON.stringify({ color: '5', size: '1', brand: '5' });
-    const variables = { filter, first: 10 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_MULTIPLE_ATTRIBUTES, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
+  test('should run the docs brand filter query', async ({ request }) => {
+    const connection = await filterProducts(request, {
+      filter: JSON.stringify({ brand: '25' }),
+      sortKey: 'CREATED_AT',
+      reverse: true,
+      first: 12,
+    });
 
-    if (body.data?.products?.edges?.length > 0) {
-      const product = body.data.products.edges[0].node;
-      
-      // Validate all required fields
-      expect(product.id).toBeDefined();
-      expect(product.sku).toBeDefined();
-      expect(product.name).toBeDefined();
-      expect(product.price).toBeDefined();
-    }
-  });
-
-  test('Should limit results based on first parameter', async ({ request }) => {
-    const filter = JSON.stringify({ color: '5', size: '1', brand: '5' });
-    const variables = { filter, first: 3 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_MULTIPLE_ATTRIBUTES, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    if (body.data?.products?.edges) {
-      const products = body.data.products;
-      expect(products.edges.length).toBeLessThanOrEqual(3);
-    }
-  });
-
-  test('Should filter by two attributes', async ({ request }) => {
-    const filter = JSON.stringify({ color: '5', size: '1' });
-    const variables = { filter, first: 10 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_MULTIPLE_ATTRIBUTES, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    if (body.data?.products) {
-      const attributes = { color: '5', size: '1' };
-      assertProductsByMultipleAttributesResponse(body, attributes, 10);
-    }
-  });
-
-  // ==================== NEGATIVE TEST CASES ====================
-
-  test('Should handle non-existent attribute combination', async ({ request }) => {
-    const filter = JSON.stringify({ color: '99999', size: '99999', brand: '99999' });
-    const variables = { filter, first: 10 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_MULTIPLE_ATTRIBUTES, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    // Should return empty list
-    if (body.data?.products) {
-      expect(body.data.products.edges.length).toBe(0);
-    }
-  });
-
-  test('Should handle single attribute in multi-attribute filter', async ({ request }) => {
-    const filter = JSON.stringify({ color: '5' });
-    const variables = { filter, first: 10 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_MULTIPLE_ATTRIBUTES, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    // Should work with single attribute
-    if (body.data?.products) {
-      const attributes = { color: '5' };
-      assertProductsByMultipleAttributesResponse(body, attributes, 10);
-    }
-  });
-
-  test('Should handle empty filter', async ({ request }) => {
-    const filter = JSON.stringify({});
-    const variables = { filter, first: 10 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_MULTIPLE_ATTRIBUTES, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    // Should return products (unfiltered)
-    expect(body).toHaveProperty('data');
-  });
-
-  test('Should handle invalid attribute values', async ({ request }) => {
-    const filter = JSON.stringify({ color: 'invalid', size: 'invalid' });
-    const variables = { filter, first: 10 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_BY_MULTIPLE_ATTRIBUTES, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-
-    // Should handle gracefully
-    expect(body).toHaveProperty('data');
-  });
-
-  test('Should cover docs query for new products', async ({ request }) => {
-    const filter = JSON.stringify({ new: '1' });
-    const variables = { filter, sortKey: 'CREATED_AT', reverse: true, first: 10 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_FILTERED_AND_SORTED, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(body.data?.products || body.errors).toBeTruthy();
-  });
-
-  test('Should cover docs query for featured products', async ({ request }) => {
-    const filter = JSON.stringify({ featured: '1' });
-    const variables = { filter, sortKey: 'CREATED_AT', reverse: true, first: 12 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_FILTERED_AND_SORTED, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(body.data?.products || body.errors).toBeTruthy();
-  });
-
-  test('Should cover docs query for popular products by brand', async ({ request }) => {
-    const filter = JSON.stringify({ brand: '25' });
-    const variables = { filter, sortKey: 'CREATED_AT', reverse: true, first: 12 };
-    const response = await sendGraphQLRequest(request, GET_PRODUCTS_FILTERED_AND_SORTED, variables);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(body.data?.products || body.errors).toBeTruthy();
+    expect(connection.edges.length).toBe(Math.min(12, connection.totalCount));
   });
 });

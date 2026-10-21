@@ -4,54 +4,54 @@ import { GET_LOCALES_COMPLETE, GET_LOCALE_COMPLETE } from '../../graphql/Queries
 import { sendGraphQLRequest } from '../../graphql/helpers/graphqlClient';
 import { expectConnection, expectGraphQLSuccess, graphQLErrorMessages } from '../../graphql/helpers/testSupport';
 
-test.describe('Locale GraphQL API Tests', () => {
-  test('Should get all locales successfully', async ({ request }) => {
+const INVALID_LOCALE_ID_MESSAGE = 'Invalid ID format. Expected IRI format like "/api/shop/locales/1" or numeric ID';
+
+test.describe('locale graphql api tests', () => {
+  test('should get all locales successfully', async ({ request }) => {
     const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getLocales, { first: 10 });
     expect(response.status()).toBe(200);
     const body = await response.json();
     expectConnection(body, 'data.locales');
   });
 
-  test('Should return locales with required fields', async ({ request }) => {
+  test('should return locales with required fields', async ({ request }) => {
     const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getLocales, { first: 1 });
     expect(response.status()).toBe(200);
     const body = await response.json();
     const locales = expectConnection(body, 'data.locales');
+    expect(locales.edges.length).toBe(1);
 
-    if (locales.edges.length > 0) {
-      const locale = locales.edges[0].node;
-      expect(locale.id).toBeDefined();
-      expect(locale.code).toBeDefined();
-      expect(locale.name).toBeDefined();
-      expect(locale.direction).toBeDefined();
-    }
+    const locale = locales.edges[0].node;
+    expect(typeof locale.id).toBe('string');
+    expect(typeof locale.code).toBe('string');
+    expect(typeof locale.name).toBe('string');
+    expect(['ltr', 'rtl']).toContain(locale.direction);
   });
 
-  test('Should get locale by valid id', async ({ request }) => {
+  test('should get locale by valid id', async ({ request }) => {
     const listResponse = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getLocales, { first: 1 });
     const listBody = await listResponse.json();
     const locales = expectConnection(listBody, 'data.locales');
+    expect(locales.edges.length).toBe(1);
+    const listed = locales.edges[0].node;
 
-    if (locales.edges.length === 0) {
-      console.log('No locales available in this environment.');
-      return;
-    }
-
-    const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getLocale, { id: locales.edges[0].node.id });
+    const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getLocale, { id: listed.id });
     expect(response.status()).toBe(200);
     const body = await response.json();
     expectGraphQLSuccess(body, 'data.locale');
+    expect(body.data.locale._id).toBe(listed._id);
+    expect(body.data.locale.code).toBe(listed.code);
   });
 
-  test('Should handle invalid locale id gracefully', async ({ request }) => {
+  test('should return the invalid id format message for a non numeric locale id', async ({ request }) => {
     const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getLocale, { id: 'invalid-locale-code-xyz' });
     expect(response.status()).toBe(200);
     const body = await response.json();
-    console.log(`Locale invalid id response: ${graphQLErrorMessages(body).join(' | ')}`);
-    expect(body.data?.locale === null || graphQLErrorMessages(body).length > 0).toBeTruthy();
+    expect(graphQLErrorMessages(body)).toEqual([INVALID_LOCALE_ID_MESSAGE]);
+    expect(body.data.locale).toBeNull();
   });
 
-  test('Should handle missing id parameter gracefully', async ({ request }) => {
+  test('should handle missing id parameter gracefully', async ({ request }) => {
     const invalidQuery = `
       query GetLocale {
         locale {
@@ -65,7 +65,7 @@ test.describe('Locale GraphQL API Tests', () => {
     expect(graphQLErrorMessages(body).length).toBeGreaterThan(0);
   });
 
-  test('Should cover complete locales docs query', async ({ request }) => {
+  test('should cover complete locales docs query', async ({ request }) => {
     const response = await sendGraphQLRequest(request, GET_LOCALES_COMPLETE, { first: 5, after: null });
     expect(response.status()).toBe(200);
     const body = await response.json();
@@ -73,20 +73,18 @@ test.describe('Locale GraphQL API Tests', () => {
     expect(typeof locales.totalCount).toBe('number');
   });
 
-  test('Should cover complete single locale docs query', async ({ request }) => {
+  test('should cover complete single locale docs query', async ({ request }) => {
     const listResponse = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getLocales, { first: 1 });
     const listBody = await listResponse.json();
     const locales = expectConnection(listBody, 'data.locales');
+    expect(locales.edges.length).toBe(1);
+    const listed = locales.edges[0].node;
 
-    if (locales.edges.length === 0) {
-      console.log('No locales available for complete coverage.');
-      expect(true).toBeTruthy();
-      return;
-    }
-
-    const response = await sendGraphQLRequest(request, GET_LOCALE_COMPLETE, { id: locales.edges[0].node.id });
+    const response = await sendGraphQLRequest(request, GET_LOCALE_COMPLETE, { id: listed.id });
     expect(response.status()).toBe(200);
     const body = await response.json();
     expectGraphQLSuccess(body, 'data.locale');
+    expect(body.data.locale._id).toBe(listed._id);
+    expect(body.data.locale.code).toBe(listed.code);
   });
 });

@@ -1,78 +1,89 @@
-// tests/restAPI/api/automation/productCustomizableOptions.spec.ts
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import {
+  UNKNOWN_ID,
+  collectPages,
+  createAdminProduct,
+  deleteAdminProducts,
+  numericIdOf,
+  safeJson,
+  uniqueStamp,
+  updateAdminProduct,
+} from '../../rest/helpers/coverage/restGaps.helpers';
 
-function assertStatus(resp: any, debugLabel: string) {
-  expect([0, 200, 201, 400, 401, 404, 422, 500]).toContain(resp.status());
-  console.log(`${debugLabel}:`, resp.status());
-  return resp.status();
-}
+test.describe.configure({ timeout: 120_000 });
 
-test.describe('Product Customizable Options REST API', () => {
+test.describe('product customizable options rest api', () => {
+  let createdIds: number[];
   let productId: number;
+  let optionId: number;
+  let optionLabel: string;
+  let priceId: number;
 
   test.beforeEach(async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '5' },
+    createdIds = [];
+    optionLabel = `E2E Engraving ${uniqueStamp()}`;
+
+    productId = (await createAdminProduct(request, 'simple')).id;
+    createdIds.push(productId);
+
+    const updated = await updateAdminProduct(request, productId, {
+      customizable_options: {
+        option_0: {
+          en: { label: optionLabel },
+          type: 'checkbox',
+          is_required: '0',
+          sort_order: '1',
+          prices: {
+            price_0: { label: 'Gold', price: '4.00', sort_order: '1' },
+          },
+        },
+      },
     });
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    if (!Array.isArray(body) || body.length === 0) {
-      test.skip(true, 'No products found');
-      return;
-    }
-    productId = body[0].id;
+
+    expect(updated.customizableOptions).toHaveLength(1);
+    expect(updated.customizableOptions[0].prices).toHaveLength(1);
+
+    optionId = updated.customizableOptions[0].id;
+    priceId = updated.customizableOptions[0].prices[0].id;
   });
 
-  test('Should return customizable options for a product', async ({ request }) => {
+  test.afterEach(async ({ request }) => {
+    await deleteAdminProducts(request, createdIds);
+  });
+
+  test('should return the customizable options of a product', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_CUSTOMIZABLE_OPTIONS(productId));
-    assertStatus(response, `GET /api/shop/products/${productId}/customizable-options`);
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(body).toBeDefined();
-      if (Array.isArray(body) && body.length > 0) {
-        console.log(`Customizable options count for product ${productId}:`, body.length);
-        console.log('First option:', JSON.stringify({ id: body[0].id, title: body[0].title }));
-      } else {
-        console.log(`No customizable options for product ${productId}`);
-      }
-    }
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(Array.isArray(body), JSON.stringify(body)).toBe(true);
+    expect(body).toHaveLength(1);
+    expect(numericIdOf(body[0].id)).toBe(optionId);
+    expect(body[0].type).toBe('checkbox');
+    expect(body[0].label).toBe(optionLabel);
   });
 
-  test('Should return 404 for customizable options of a non-existent product', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_CUSTOMIZABLE_OPTIONS(999999));
-    expect([200, 404]).toContain(response.status());
-    console.log(`GET /api/shop/products/999999/customizable-options:`, response.status());
-  });
+  test('should list the price of a newly created customizable option', async ({ request }) => {
+    const rows = await collectPages(
+      request,
+      ENDPOINTS.PRODUCT_CUSTOMIZABLE_OPTION_PRICES,
+      (row: any) => numericIdOf(row.id) === priceId
+    );
 
-  test('Should return list of all customizable option prices', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_CUSTOMIZABLE_OPTION_PRICES);
-    assertStatus(response, 'GET /api/shop/product_customizable_option_prices');
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(body).toBeDefined();
-      if (Array.isArray(body) && body.length > 0) {
-        console.log('Customizable option prices count:', body.length);
-        console.log('First price entry:', JSON.stringify({ id: body[0].id, price: body[0].price }));
-      } else {
-        console.log('No customizable option prices found');
-      }
-    }
+    expect(rows).toHaveLength(1);
+    expect(rows[0].label).toBe('Gold');
+    expect(rows[0].price).toBe(4);
   });
+});
 
-  test('Should return list of all customizable option translations', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_CUSTOMIZABLE_OPTION_TRANSLATIONS);
-    assertStatus(response, 'GET /api/shop/product_customizable_option_translations');
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(body).toBeDefined();
-      if (Array.isArray(body) && body.length > 0) {
-        console.log('Customizable option translations count:', body.length);
-        console.log('First translation:', JSON.stringify({ id: body[0].id, title: body[0].title ?? body[0].name }));
-      } else {
-        console.log('No customizable option translations found');
-      }
-    }
+test.describe('product customizable options of a missing product rest api', () => {
+  test('should return an empty list for a product that does not exist', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_CUSTOMIZABLE_OPTIONS(UNKNOWN_ID));
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body).toEqual([]);
   });
 });

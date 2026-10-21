@@ -1,15 +1,5 @@
-// tests/graphQL/graphql/Queries/admin/sales/orderActions.queries.ts
-//
-// Per-order action mutations + comments query.
-// Quirk (per CLAUDE.md): createAdminReorder input field is `orderId`, NOT `id`
-// (`id` is reserved as IRI on mutation inputs in API Platform GraphQL).
-//
-// Cancel / Invoice / Shipment / Refund / RefundPreview use `orderId` similarly
-// — the underlying processor reads from URL in REST but from input arg in
-// GraphQL. We pass orderId scalar to avoid IRI-vs-int collisions.
-
 export const ADMIN_REORDER_MUTATION = `
-  mutation adminReorder($orderId: Int!) {
+  mutation adminReorder($orderId: String!) {
     createAdminReorder(input: { orderId: $orderId }) {
       adminReorder {
         success
@@ -69,7 +59,7 @@ export const ADMIN_ORDER_COMMENT_CREATE_MUTATION = `
 `;
 
 export const ADMIN_INVOICE_CREATE_MUTATION = `
-  mutation adminInvoiceCreate($orderId: Int!, $items: Iterable) {
+  mutation adminInvoiceCreate($orderId: Int!, $items: Iterable!) {
     createAdminInvoice(input: { orderId: $orderId, items: $items }) {
       adminInvoice {
         id
@@ -81,7 +71,7 @@ export const ADMIN_INVOICE_CREATE_MUTATION = `
 `;
 
 export const ADMIN_SHIPMENT_CREATE_MUTATION = `
-  mutation adminShipmentCreate($orderId: Int!, $source: Int, $items: Iterable) {
+  mutation adminShipmentCreate($orderId: Int!, $source: Int, $items: Iterable!) {
     createAdminShipment(input: { orderId: $orderId, source: $source, items: $items }) {
       adminShipment {
         id
@@ -94,7 +84,7 @@ export const ADMIN_SHIPMENT_CREATE_MUTATION = `
 export const ADMIN_REFUND_CREATE_MUTATION = `
   mutation adminRefundCreate(
     $orderId: Int!
-    $items: Iterable
+    $items: Iterable!
     $shipping: Float
     $adjustmentRefund: Float
     $adjustmentFee: Float
@@ -120,7 +110,7 @@ export const ADMIN_REFUND_CREATE_MUTATION = `
 export const ADMIN_REFUND_PREVIEW_MUTATION = `
   mutation adminRefundPreview(
     $orderId: Int!
-    $items: Iterable
+    $items: Iterable!
     $shipping: Float
     $adjustmentRefund: Float
     $adjustmentFee: Float

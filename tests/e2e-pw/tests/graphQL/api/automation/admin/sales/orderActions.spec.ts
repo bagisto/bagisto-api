@@ -1,261 +1,224 @@
-// tests/graphQL/api/automation/admin/sales/orderActions.spec.ts
-//
-// Per-order action mutations + comments. Action endpoints carry guards
-// (cancel 4-check, invoice 5-check, shipment+refund 4-check) and need a
-// freshly-seeded order in a specific state to actually succeed. We tolerate
-// guard failures (errors[] or success=false) — the contract under test is
-// "endpoint runs without 500".
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminGraphQLRequest } from '../../../../graphql/helpers/adminGraphqlClient';
-import { ADMIN_ORDERS_LIST_QUERY } from '../../../../graphql/Queries/admin/sales/orders.queries';
+import { graphQLErrorMessages } from '../../../../graphql/helpers/testSupport';
 import {
   ADMIN_REORDER_MUTATION,
-  ADMIN_CANCEL_ORDER_MUTATION,
-  ADMIN_ORDER_COMMENTS_QUERY,
-  ADMIN_ORDER_COMMENT_CREATE_MUTATION,
   ADMIN_INVOICE_CREATE_MUTATION,
   ADMIN_SHIPMENT_CREATE_MUTATION,
   ADMIN_REFUND_CREATE_MUTATION,
   ADMIN_REFUND_PREVIEW_MUTATION,
 } from '../../../../graphql/Queries/admin/sales/orderActions.queries';
+import {
+  UNKNOWN_ID,
+  invoiceOrder,
+  placeOrder,
+} from '../../../../../restAPI/rest/helpers/coverage/adminSales.helpers';
 
-test.describe.configure({ timeout: 60_000 });
+test.describe.configure({ timeout: 240_000 });
 
-async function firstOrderId(request: any): Promise<number | null> {
-  const resp = await sendAdminGraphQLRequest(request, ADMIN_ORDERS_LIST_QUERY, { first: 1 });
-  if (resp.status() !== 200) return null;
-  const body = await resp.json();
-  const edges = body?.data?.adminOrders?.edges ?? [];
-  return edges.length ? edges[0].node._id : null;
+const MESSAGES = {
+  ORDER_NOT_FOUND: 'Order not found.',
+  REORDER_SUCCESS: 'Reorder successful. A new draft cart has been created.',
+  REORDER_DISABLED: 'Reorder by admin is disabled in store settings.',
+  CANCEL_SUCCESS: 'Order canceled successfully.',
+  NOTHING_TO_CANCEL: 'There is nothing to cancel on this order.',
+  COMMENT_REQUIRED: 'Comment is required.',
+  INVOICE_ITEMS_REQUIRED: 'At least one item with a positive quantity is required.',
+  ALREADY_INVOICED: 'An invoice has already been generated for this order.',
+  SHIPMENT_ITEMS_REQUIRED: 'At least one item with a positive quantity is required.',
+  NOTHING_TO_REFUND: 'There is nothing left to refund on this order.',
+};
+
+const CANCEL_ORDER = `
+  mutation adminCancelOrder($orderId: Int!) {
+    createAdminCancelOrder(input: { orderId: $orderId }) {
+      adminCancelOrder {
+        _id
+        orderId
+        status
+        success
+        message
+      }
+    }
+  }
+`;
+
+const ORDER_COMMENTS = `
+  query adminOrderComments($first: Int, $orderId: Int!) {
+    adminOrderComments(first: $first, orderId: $orderId) {
+      edges {
+        node {
+          _id
+          orderId
+          comment
+          customerNotified
+        }
+      }
+    }
+  }
+`;
+
+const CREATE_ORDER_COMMENT = `
+  mutation adminOrderCommentCreate($orderId: Int!, $comment: String!, $customerNotified: Boolean) {
+    createAdminOrderComment(input: { orderId: $orderId, comment: $comment, customerNotified: $customerNotified }) {
+      adminOrderComment {
+        _id
+        orderId
+        comment
+        customerNotified
+      }
+    }
+  }
+`;
+
+const REFUND_INPUT = { items: {}, shipping: 0, adjustmentRefund: 0, adjustmentFee: 0 };
+
+async function runAdmin(request: APIRequestContext, query: string, variables: Record<string, any>): Promise<any> {
+  const response = await sendAdminGraphQLRequest(request, query, variables);
+
+  expect(response.status()).toBe(200);
+
+  return response.json();
 }
 
-async function orderIdWithStatus(request: any, status: string): Promise<number | null> {
-  const resp = await sendAdminGraphQLRequest(request, ADMIN_ORDERS_LIST_QUERY, {
-    first: 1,
-    status,
-  });
-  if (resp.status() !== 200) return null;
-  const body = await resp.json();
-  const edges = body?.data?.adminOrders?.edges ?? [];
-  return edges.length ? edges[0].node._id : null;
+function expectNoErrors(body: any): void {
+  expect(body.errors, graphQLErrorMessages(body).join(' | ')).toBeUndefined();
 }
 
-// Tolerant assertion: a mutation either returns the payload object (possibly
-// with success=false), OR errors[] from a guard. Status should always be 200.
-function expectMutationOrErrors(body: any, payloadPath: string): void {
-  const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-  const payload = payloadPath.split('.').reduce((acc, k) => acc?.[k], body);
-  expect(hasErrors || payload !== undefined).toBe(true);
+function expectRefused(body: any, message: string, root: string): void {
+  expect(graphQLErrorMessages(body)).toEqual([message]);
+  expect(body.data?.[root] ?? null).toBeNull();
 }
 
-test.describe('Admin Order Actions GraphQL API', () => {
-  // ── Reorder ──────────────────────────────────────────────────
-  test('reorder creates a draft cart or surfaces guard', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminGraphQLRequest(request, ADMIN_REORDER_MUTATION, {
-      orderId: id,
-    });
-    const status = response.status();
-    console.log(`gql reorder (${id}):`, status);
-    expect(status).toBe(200);
+async function orderComments(request: APIRequestContext, orderId: number): Promise<any[]> {
+  const body = await runAdmin(request, ORDER_COMMENTS, { first: 50, orderId });
+  expectNoErrors(body);
 
-    const body = await response.json();
-    expectMutationOrErrors(body, 'data.createAdminReorder.adminReorder');
-    const payload = body?.data?.createAdminReorder?.adminReorder;
-    if (payload && payload.success === true) {
-      expect(typeof payload.cartId).toBe('number');
-      expect(typeof payload.message).toBe('string');
-    }
+  return body.data.adminOrderComments.edges.map((edge: any) => edge.node);
+}
+
+test.describe('admin order actions graphql api', () => {
+  test('should build a draft cart when reordering an order', async ({ request }) => {
+    const order = await placeOrder(request);
+
+    const body = await runAdmin(request, ADMIN_REORDER_MUTATION, { orderId: String(order.orderId) });
+
+    test.skip(
+      graphQLErrorMessages(body).includes(MESSAGES.REORDER_DISABLED),
+      'reorder by admin is disabled in sales.order_settings.reorder'
+    );
+
+    expectNoErrors(body);
+
+    const reorder = body.data.createAdminReorder.adminReorder;
+
+    expect(reorder.success).toBe(true);
+    expect(reorder.message).toBe(MESSAGES.REORDER_SUCCESS);
+    expect(reorder.cartId).toBeGreaterThan(0);
+    expect(reorder.cartId).not.toBe(order.cartId);
   });
 
-  test('reorder on non-existent order surfaces error', async ({ request }) => {
-    const response = await sendAdminGraphQLRequest(request, ADMIN_REORDER_MUTATION, {
-      orderId: 99999999,
-    });
-    const status = response.status();
-    console.log('gql reorder bogus:', status);
-    expect(status).toBe(200);
-    const body = await response.json();
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const payload = body?.data?.createAdminReorder?.adminReorder;
-    expect(hasErrors || (payload && payload.success === false)).toBe(true);
+  test('should report an unknown order on reorder', async ({ request }) => {
+    expectRefused(await runAdmin(request, ADMIN_REORDER_MUTATION, { orderId: String(UNKNOWN_ID) }), MESSAGES.ORDER_NOT_FOUND, 'createAdminReorder');
   });
 
-  // ── Cancel ───────────────────────────────────────────────────
-  test('cancel returns payload or guard', async ({ request }) => {
-    const id = (await orderIdWithStatus(request, 'pending')) ?? (await firstOrderId(request));
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminGraphQLRequest(request, ADMIN_CANCEL_ORDER_MUTATION, {
-      orderId: id,
+  test('should cancel a pending order once', async ({ request }) => {
+    const order = await placeOrder(request);
+
+    const body = await runAdmin(request, CANCEL_ORDER, { orderId: order.orderId });
+    expectNoErrors(body);
+
+    expect(body.data.createAdminCancelOrder.adminCancelOrder).toEqual({
+      _id: order.orderId,
+      orderId: order.orderId,
+      status: 'canceled',
+      success: true,
+      message: MESSAGES.CANCEL_SUCCESS,
     });
-    const status = response.status();
-    console.log(`gql cancel (${id}):`, status);
-    // BUG NOTE (per REST W3): cancelling certain pending orders 500'd in REST.
-    // GraphQL inherits the same guard pipeline — tolerate.
-    expect([200, 500]).toContain(status);
-    if (status === 200) {
-      const body = await response.json();
-      expectMutationOrErrors(body, 'data.createAdminCancelOrder.adminCancelOrder');
-    }
+
+    expectRefused(await runAdmin(request, CANCEL_ORDER, { orderId: order.orderId }), MESSAGES.NOTHING_TO_CANCEL, 'createAdminCancelOrder');
   });
 
-  // ── Comments list + create ───────────────────────────────────
-  test('list comments returns cursor connection', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminGraphQLRequest(request, ADMIN_ORDER_COMMENTS_QUERY, {
-      first: 5,
-      orderId: id,
-    });
-    const status = response.status();
-    console.log(`gql list comments (${id}):`, status);
-    expect(status).toBe(200);
-
-    const body = await response.json();
-    // Tolerant — cursor-paginated sub-resources are subject to the project-wide
-    // "No identifier value found" quirk (CLAUDE.md, Phase 1.5 / C1 notes).
-    if (body.errors) {
-      console.log('  comments errors:', JSON.stringify(body.errors).slice(0, 200));
-      return;
-    }
-    const conn = body?.data?.adminOrderComments;
-    expect(conn).toBeTruthy();
-    expect(Array.isArray(conn.edges)).toBe(true);
+  test('should report an unknown order on cancel', async ({ request }) => {
+    expectRefused(await runAdmin(request, CANCEL_ORDER, { orderId: UNKNOWN_ID }), MESSAGES.ORDER_NOT_FOUND, 'createAdminCancelOrder');
   });
 
-  test('add comment creates a row', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminGraphQLRequest(request, ADMIN_ORDER_COMMENT_CREATE_MUTATION, {
-      orderId: id,
-      comment: `E2E gql comment ${Date.now()}`,
-      customerNotified: false,
-    });
-    const status = response.status();
-    console.log(`gql add comment (${id}):`, status);
-    expect(status).toBe(200);
+  test('should add a comment to the order and list it', async ({ request }) => {
+    const order = await placeOrder(request);
+    const comment = `E2E gql comment ${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
 
-    const body = await response.json();
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const payload = body?.data?.createAdminOrderComment?.adminOrderComment;
-    // Either the mutation worked, or surfaced via errors[] (project-wide
-    // IRI-generation quirk on mutation responses). Both acceptable; the row
-    // is verifiable in DB but not asserted here.
-    expect(hasErrors || payload !== undefined).toBe(true);
+    const body = await runAdmin(request, CREATE_ORDER_COMMENT, { orderId: order.orderId, comment, customerNotified: false });
+    expectNoErrors(body);
+
+    const created = body.data.createAdminOrderComment.adminOrderComment;
+
+    expect(created._id).toBeGreaterThan(0);
+    expect(created.orderId).toBe(order.orderId);
+    expect(created.comment).toBe(comment);
+    expect(created.customerNotified).toBe(false);
+
+    expect((await orderComments(request, order.orderId)).filter((node: any) => node.comment === comment)).toEqual([
+      { _id: created._id, orderId: order.orderId, comment, customerNotified: false },
+    ]);
   });
 
-  test('add empty comment is rejected', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminGraphQLRequest(request, ADMIN_ORDER_COMMENT_CREATE_MUTATION, {
-      orderId: id,
-      comment: '',
-      customerNotified: false,
-    });
-    const status = response.status();
-    console.log('gql add comment empty:', status);
-    expect(status).toBe(200);
-    const body = await response.json();
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const payload = body?.data?.createAdminOrderComment?.adminOrderComment ?? null;
-    expect(hasErrors || payload === null).toBe(true);
+  test('should reject an empty order comment', async ({ request }) => {
+    const order = await placeOrder(request);
+
+    const body = await runAdmin(request, CREATE_ORDER_COMMENT, { orderId: order.orderId, comment: '   ', customerNotified: false });
+
+    expectRefused(body, MESSAGES.COMMENT_REQUIRED, 'createAdminOrderComment');
+    expect(await orderComments(request, order.orderId)).toEqual([]);
   });
 
-  // ── Invoice / Shipment / Refund — smoke (almost always guard-blocked) ──
-  test('invoice create returns payload or guard', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminGraphQLRequest(request, ADMIN_INVOICE_CREATE_MUTATION, {
-      orderId: id,
-      items: {},
-    });
-    const status = response.status();
-    console.log(`gql invoice create (${id}):`, status);
-    expect(status).toBe(200);
-    const body = await response.json();
-    expectMutationOrErrors(body, 'data.createAdminInvoice.adminInvoice');
+  test('should require invoice items with a positive quantity', async ({ request }) => {
+    const order = await placeOrder(request);
+
+    expectRefused(
+      await runAdmin(request, ADMIN_INVOICE_CREATE_MUTATION, { orderId: order.orderId, items: {} }),
+      MESSAGES.INVOICE_ITEMS_REQUIRED,
+      'createAdminInvoice'
+    );
   });
 
-  test('shipment create returns payload or guard', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminGraphQLRequest(request, ADMIN_SHIPMENT_CREATE_MUTATION, {
-      orderId: id,
-      source: 1,
-      items: {},
-    });
-    const status = response.status();
-    console.log(`gql shipment create (${id}):`, status);
-    expect(status).toBe(200);
-    const body = await response.json();
-    expectMutationOrErrors(body, 'data.createAdminShipment.adminShipment');
+  test('should refuse a second invoice for a fully invoiced order', async ({ request }) => {
+    const order = await placeOrder(request);
+    await invoiceOrder(request, order.orderId);
+
+    expectRefused(
+      await runAdmin(request, ADMIN_INVOICE_CREATE_MUTATION, { orderId: order.orderId, items: {} }),
+      MESSAGES.ALREADY_INVOICED,
+      'createAdminInvoice'
+    );
   });
 
-  test('refund create returns payload or guard', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminGraphQLRequest(request, ADMIN_REFUND_CREATE_MUTATION, {
-      orderId: id,
-      items: {},
-      shipping: 0,
-      adjustmentRefund: 0,
-      adjustmentFee: 0,
-    });
-    const status = response.status();
-    console.log(`gql refund create (${id}):`, status);
-    expect(status).toBe(200);
-    const body = await response.json();
-    expectMutationOrErrors(body, 'data.createAdminRefund.adminRefund');
+  test('should require shipment items with a positive quantity', async ({ request }) => {
+    const order = await placeOrder(request);
+
+    expectRefused(
+      await runAdmin(request, ADMIN_SHIPMENT_CREATE_MUTATION, { orderId: order.orderId, source: 1, items: {} }),
+      MESSAGES.SHIPMENT_ITEMS_REQUIRED,
+      'createAdminShipment'
+    );
   });
 
-  test('refund preview returns totals or guard', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminGraphQLRequest(request, ADMIN_REFUND_PREVIEW_MUTATION, {
-      orderId: id,
-      items: {},
-      shipping: 0,
-      adjustmentRefund: 0,
-      adjustmentFee: 0,
-    });
-    const status = response.status();
-    console.log(`gql refund preview (${id}):`, status);
-    expect(status).toBe(200);
-    const body = await response.json();
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const payload = body?.data?.previewAdminRefund?.adminRefund;
-    expect(hasErrors || payload !== undefined).toBe(true);
-    if (payload && payload.grandTotal !== undefined && payload.grandTotal !== null) {
-      expect(typeof payload.grandTotal === 'number' || typeof payload.grandTotal === 'string').toBe(true);
-    }
+  test('should refuse a refund for an order that was never invoiced', async ({ request }) => {
+    const order = await placeOrder(request);
+
+    expectRefused(
+      await runAdmin(request, ADMIN_REFUND_CREATE_MUTATION, { orderId: order.orderId, ...REFUND_INPUT }),
+      MESSAGES.NOTHING_TO_REFUND,
+      'createAdminRefund'
+    );
+  });
+
+  test('should refuse a refund preview for an order that was never invoiced', async ({ request }) => {
+    const order = await placeOrder(request);
+
+    expectRefused(
+      await runAdmin(request, ADMIN_REFUND_PREVIEW_MUTATION, { orderId: order.orderId, ...REFUND_INPUT }),
+      MESSAGES.NOTHING_TO_REFUND,
+      'previewAdminRefund'
+    );
   });
 });

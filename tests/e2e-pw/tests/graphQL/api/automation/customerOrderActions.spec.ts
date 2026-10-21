@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { getCustomerAuthHeaders } from '../../config/auth';
 import {
   CREATE_CANCEL_ORDER,
@@ -6,135 +6,92 @@ import {
 } from '../../graphql/Queries/customer.queries';
 import { sendGraphQLRequest } from '../../graphql/helpers/graphqlClient';
 import { graphQLErrorMessages } from '../../graphql/helpers/testSupport';
+import { e2eFixtures, missingFixtureReason } from '../../../fixtures/e2eFixtures';
 
-test.describe('Customer Order Actions GraphQL API Tests', () => {
-  test('Should reject cancel-order without authentication', async ({ request }) => {
-    const response = await sendGraphQLRequest(request, CREATE_CANCEL_ORDER, {
-      input: { orderId: 999999 },
-    });
-    expect(response.status()).toBe(200);
+const UNAUTHENTICATED = 'Unauthenticated. Please login to perform this action';
+const CANCEL_ORDER_ID_REQUIRED = 'Order ID is required to cancel an order';
+const REORDER_ORDER_ID_REQUIRED = 'Order ID is required to reorder';
+const NOT_OWNED = (id: number) => `Order with ID "${id}" not found or does not belong to this customer`;
+const MISSING_ORDER_ID = 999999999;
 
-    const body = await response.json();
-    console.log(`Unauthenticated cancel response: ${JSON.stringify(body)}`);
-    expect(
-      graphQLErrorMessages(body).length > 0 ||
-      body.data?.createCancelOrder?.cancelOrder?.success === false ||
-      body.data?.createCancelOrder === null
-    ).toBeTruthy();
+async function gql(
+  request: APIRequestContext,
+  query: string,
+  variables: Record<string, any>,
+  headers: Record<string, string> = {}
+): Promise<any> {
+  const response = await sendGraphQLRequest(request, query, variables, headers);
+  expect(response.status()).toBe(200);
+
+  return response.json();
+}
+
+test.describe('customer order actions graphql api tests', () => {
+  test('should reject cancel order without authentication', async ({ request }) => {
+    const body = await gql(request, CREATE_CANCEL_ORDER, { input: { orderId: MISSING_ORDER_ID } });
+
+    expect(body.data?.createCancelOrder ?? null).toBeNull();
+    expect(graphQLErrorMessages(body)).toEqual([UNAUTHENTICATED]);
   });
 
-  test('Should reject reorder without authentication', async ({ request }) => {
-    const response = await sendGraphQLRequest(request, CREATE_REORDER_ORDER, {
-      input: { orderId: 999999 },
-    });
-    expect(response.status()).toBe(200);
+  test('should reject reorder without authentication', async ({ request }) => {
+    const body = await gql(request, CREATE_REORDER_ORDER, { input: { orderId: MISSING_ORDER_ID } });
 
-    const body = await response.json();
-    console.log(`Unauthenticated reorder response: ${JSON.stringify(body)}`);
-    expect(
-      graphQLErrorMessages(body).length > 0 ||
-      body.data?.createReorderOrder?.reorderOrder?.success === false ||
-      body.data?.createReorderOrder === null
-    ).toBeTruthy();
+    expect(body.data?.createReorderOrder ?? null).toBeNull();
+    expect(graphQLErrorMessages(body)).toEqual([UNAUTHENTICATED]);
   });
 
-  test('Should return failure or error when cancelling a non-existent order', async ({ request }) => {
-    const headers = (await getCustomerAuthHeaders(request)) ?? {};
+  test('should report a non existent order when cancelling it', async ({ request }) => {
+    const headers = await getCustomerAuthHeaders(request);
+    const body = await gql(request, CREATE_CANCEL_ORDER, { input: { orderId: MISSING_ORDER_ID } }, headers);
 
-    const response = await sendGraphQLRequest(
-      request,
-      CREATE_CANCEL_ORDER,
-      { input: { orderId: 999999 } },
-      headers
-    );
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log(`Cancel non-existent order response: ${JSON.stringify(body)}`);
-    const payload = body.data?.createCancelOrder?.cancelOrder;
-    expect(
-      graphQLErrorMessages(body).length > 0 ||
-      payload?.success === false ||
-      body.data?.createCancelOrder === null
-    ).toBeTruthy();
+    expect(body.data?.createCancelOrder ?? null).toBeNull();
+    expect(graphQLErrorMessages(body)).toEqual([NOT_OWNED(MISSING_ORDER_ID)]);
   });
 
-  test('Should return failure or error when reordering a non-existent order', async ({ request }) => {
-    const headers = (await getCustomerAuthHeaders(request)) ?? {};
+  test('should report a non existent order when reordering it', async ({ request }) => {
+    const headers = await getCustomerAuthHeaders(request);
+    const body = await gql(request, CREATE_REORDER_ORDER, { input: { orderId: MISSING_ORDER_ID } }, headers);
 
-    const response = await sendGraphQLRequest(
-      request,
-      CREATE_REORDER_ORDER,
-      { input: { orderId: 999999 } },
-      headers
-    );
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log(`Reorder non-existent order response: ${JSON.stringify(body)}`);
-    const payload = body.data?.createReorderOrder?.reorderOrder;
-    expect(
-      graphQLErrorMessages(body).length > 0 ||
-      payload?.success === false ||
-      body.data?.createReorderOrder === null
-    ).toBeTruthy();
+    expect(body.data?.createReorderOrder ?? null).toBeNull();
+    expect(graphQLErrorMessages(body)).toEqual([NOT_OWNED(MISSING_ORDER_ID)]);
   });
 
-  test('Should reject cancel with missing orderId via GraphQL schema validation', async ({ request }) => {
-    const headers = (await getCustomerAuthHeaders(request)) ?? {};
+  test('should require an order id to cancel an order', async ({ request }) => {
+    const headers = await getCustomerAuthHeaders(request);
+    const body = await gql(request, CREATE_CANCEL_ORDER, { input: {} }, headers);
 
-    const response = await sendGraphQLRequest(
-      request,
-      CREATE_CANCEL_ORDER,
-      { input: {} },
-      headers
-    );
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log(`Cancel missing orderId response: ${JSON.stringify(body)}`);
-    // GraphQL may either schema-reject or the processor may reject with success:false
-    expect(
-      graphQLErrorMessages(body).length > 0 ||
-      body.data?.createCancelOrder?.cancelOrder?.success === false
-    ).toBeTruthy();
+    expect(body.data?.createCancelOrder ?? null).toBeNull();
+    expect(graphQLErrorMessages(body)).toEqual([CANCEL_ORDER_ID_REQUIRED]);
   });
 
-  test('Should reject reorder with missing orderId via GraphQL schema validation', async ({ request }) => {
-    const headers = (await getCustomerAuthHeaders(request)) ?? {};
+  test('should require an order id to reorder', async ({ request }) => {
+    const headers = await getCustomerAuthHeaders(request);
+    const body = await gql(request, CREATE_REORDER_ORDER, { input: {} }, headers);
 
-    const response = await sendGraphQLRequest(
-      request,
-      CREATE_REORDER_ORDER,
-      { input: {} },
-      headers
-    );
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log(`Reorder missing orderId response: ${JSON.stringify(body)}`);
-    expect(
-      graphQLErrorMessages(body).length > 0 ||
-      body.data?.createReorderOrder?.reorderOrder?.success === false
-    ).toBeTruthy();
+    expect(body.data?.createReorderOrder ?? null).toBeNull();
+    expect(graphQLErrorMessages(body)).toEqual([REORDER_ORDER_ID_REQUIRED]);
   });
 
-  test('Should keep cancelling another customer\'s order behind an error or failure', async ({ request }) => {
-    // Authenticate as a fresh customer who definitely doesn't own order #1
-    const headers = (await getCustomerAuthHeaders(request)) ?? {};
+  test('should refuse to cancel an order another customer placed', async ({ request }) => {
+    const fx = e2eFixtures();
+    test.skip(!fx.order, missingFixtureReason('order'));
 
-    const response = await sendGraphQLRequest(
-      request,
-      CREATE_CANCEL_ORDER,
-      { input: { orderId: 1 } },
-      headers
-    );
-    expect(response.status()).toBe(200);
+    const headers = await getCustomerAuthHeaders(request);
+    const body = await gql(request, CREATE_CANCEL_ORDER, { input: { orderId: fx.order!.id } }, headers);
 
-    const body = await response.json();
-    console.log(`Cross-customer cancel response: ${JSON.stringify(body)}`);
-    const payload = body.data?.createCancelOrder?.cancelOrder;
-    // Either error, success:false, or null payload — must NOT silently succeed
-    expect(payload?.success === true).toBeFalsy();
+    expect(body.data?.createCancelOrder ?? null).toBeNull();
+    expect(graphQLErrorMessages(body)).toEqual([NOT_OWNED(fx.order!.id)]);
+  });
+
+  test('should refuse to reorder an order another customer placed', async ({ request }) => {
+    const fx = e2eFixtures();
+    test.skip(!fx.order, missingFixtureReason('order'));
+
+    const headers = await getCustomerAuthHeaders(request);
+    const body = await gql(request, CREATE_REORDER_ORDER, { input: { orderId: fx.order!.id } }, headers);
+
+    expect(body.data?.createReorderOrder ?? null).toBeNull();
+    expect(graphQLErrorMessages(body)).toEqual([NOT_OWNED(fx.order!.id)]);
   });
 });

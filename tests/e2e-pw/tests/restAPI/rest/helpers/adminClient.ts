@@ -1,18 +1,19 @@
-// rest/helpers/adminClient.ts
-//
-// Wraps sendRestRequest with admin Bearer injection (post 2026-05-27 refactor).
-// Since the token is pre-issued and immutable for the test run, there's no
-// login round-trip and no 401-retry — a 401 here means real auth failure.
-
-import { APIRequestContext } from '@playwright/test';
+import { APIRequestContext, APIResponse } from '@playwright/test';
 import { sendRestRequest } from './restClient';
 import { adminHeaders } from './adminAuth';
+import { env } from '../../config/env';
 
 export interface AdminRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   data?: Record<string, any>;
   headers?: Record<string, string>;
   params?: Record<string, string>;
+}
+
+export interface MultipartFile {
+  name: string;
+  mimeType: string;
+  buffer: Buffer;
 }
 
 export async function sendAdminRequest(
@@ -26,7 +27,23 @@ export async function sendAdminRequest(
     ...rest,
     headers: {
       ...adminHeaders(),
-      ...callerHeaders, // caller wins on conflict
+      ...callerHeaders,
     },
+  });
+}
+
+export async function sendAdminMultipartRequest(
+  request: APIRequestContext,
+  endpoint: string,
+  fields: Record<string, string | number | MultipartFile>
+): Promise<APIResponse> {
+  return request.fetch(`${env.baseUrl}${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'X-STOREFRONT-KEY': env.storefrontAccessKey,
+      ...adminHeaders(),
+    },
+    multipart: fields,
   });
 }

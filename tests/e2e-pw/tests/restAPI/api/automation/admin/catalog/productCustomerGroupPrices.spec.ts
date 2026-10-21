@@ -1,145 +1,125 @@
-// Admin Catalog — Product customer-group prices sub-resource e2e.
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_CATALOG } from '../../../../rest/endpoints/admin.catalog.endpoints';
 
 test.describe.configure({ timeout: 60_000 });
 
-async function safeJson(resp: any): Promise<any> {
-  try { return await resp.json(); } catch { return null; }
-}
+const PRODUCT_NOT_FOUND = 'Product not found.';
 
-async function createSimpleProduct(request: any): Promise<number | null> {
-  const ts = Date.now() + Math.floor(Math.random() * 1000);
-  const r = await sendAdminRequest(request, ADMIN_CATALOG.PRODUCTS, {
+async function createSimpleProduct(request: APIRequestContext): Promise<number> {
+  const sku = `e2e-cgp-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
+  const resp = await sendAdminRequest(request, ADMIN_CATALOG.PRODUCTS, {
     method: 'POST',
-    data: {
-      sku: `e2e-cgp-${ts}`,
-      type: 'simple',
-      attribute_family_id: 1,
-    },
+    data: { sku, type: 'simple', attribute_family_id: 1 },
   });
-  if (r.status() !== 200 && r.status() !== 201) return null;
-  const b = await safeJson(r);
-  return b?.id ?? b?.data?.id ?? null;
+  expect(resp.status()).toBe(201);
+  const body = await resp.json();
+  expect(body.sku).toBe(sku);
+
+  return body.id;
 }
 
-test.describe('Admin Catalog Product Customer-Group Prices REST API', () => {
-  test('list cgp on fresh product returns 200 (empty)', async ({ request }) => {
-    const id = await createSimpleProduct(request);
-    if (!id) test.skip(true, 'product create unavailable');
+async function listPrices(request: APIRequestContext, productId: number): Promise<any[]> {
+  const resp = await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICES(productId));
+  expect(resp.status()).toBe(200);
 
-    const resp = await sendAdminRequest(
-      request,
-      ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICES(id!)
-    );
-    expect([200, 404]).toContain(resp.status());
-    if (resp.status() === 200) {
-      const body = await safeJson(resp);
-      expect(body?.data ? Array.isArray(body.data) : Array.isArray(body)).toBe(true);
+  return (await resp.json()).data;
+}
+
+test.describe('admin catalog product customer-group prices rest api', () => {
+  let productId: number;
+
+  test.beforeEach(async ({ request }) => {
+    productId = 0;
+    productId = await createSimpleProduct(request);
+  });
+
+  test.afterEach(async ({ request }) => {
+    if (productId) {
+      await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT(productId), { method: 'DELETE' });
     }
+  });
 
-    await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT(id!), { method: 'DELETE' });
+  test('list cgp on fresh product returns 200 (empty)', async ({ request }) => {
+    const resp = await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICES(productId));
+    expect(resp.status()).toBe(200);
+    const body = await resp.json();
+    expect(body.data).toEqual([]);
+    expect(body.meta.total).toBe(0);
   });
 
   test('list cgp on non-existent product returns 404', async ({ request }) => {
-    const resp = await sendAdminRequest(
-      request,
-      ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICES(99999999)
-    );
-    expect([400, 404]).toContain(resp.status());
+    const resp = await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICES(99999999));
+    expect(resp.status()).toBe(404);
+    expect((await resp.json()).detail).toBe(PRODUCT_NOT_FOUND);
   });
 
   test('create cgp happy path + update + delete', async ({ request }) => {
-    const id = await createSimpleProduct(request);
-    if (!id) test.skip(true, 'product create unavailable');
+    const createResp = await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICES(productId), {
+      method: 'POST',
+      data: {
+        qty: 5,
+        value_type: 'fixed',
+        value: 9.99,
+        customer_group_id: null,
+      },
+    });
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json();
+    expect(typeof created.id).toBe('number');
+    expect(created.productId).toBe(productId);
+    expect(created.qty).toBe(5);
+    expect(created.valueType).toBe('fixed');
+    expect(created.value).toBe(9.99);
+    expect(created.customerGroupId).toBeNull();
 
-    const createResp = await sendAdminRequest(
-      request,
-      ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICES(id!),
-      {
-        method: 'POST',
-        data: {
-          qty: 5,
-          value_type: 'fixed',
-          value: 9.99,
-          customer_group_id: null,
-        },
-      }
-    );
-    const status = createResp.status();
-    console.log('cgp create:', status);
-    expect([200, 201, 400, 422, 500]).toContain(status);
+    expect((await listPrices(request, productId)).map((row) => row.id)).toEqual([created.id]);
 
-    let cgpId: number | null = null;
-    if (status === 200 || status === 201) {
-      const b = await safeJson(createResp);
-      cgpId = b?.id ?? b?.data?.id ?? null;
-    }
+    const upd = await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICE(productId, created.id), {
+      method: 'PUT',
+      data: { qty: 10, value: 7.5 },
+    });
+    expect(upd.status()).toBe(200);
+    const updated = await upd.json();
+    expect(updated.id).toBe(created.id);
+    expect(updated.qty).toBe(10);
+    expect(updated.value).toBe(7.5);
+    expect(updated.valueType).toBe('fixed');
 
-    if (cgpId) {
-      const upd = await sendAdminRequest(
-        request,
-        ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICE(id!, cgpId),
-        {
-          method: 'PUT' as any,
-          data: { qty: 10, value: 7.5 },
-        }
-      );
-      expect([200, 201, 400, 404, 422]).toContain(upd.status());
+    const del = await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICE(productId, created.id), {
+      method: 'DELETE',
+    });
+    expect(del.status()).toBe(200);
+    expect((await del.json()).message).toBe('Customer-group price deleted successfully.');
 
-      const del = await sendAdminRequest(
-        request,
-        ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICE(id!, cgpId),
-        { method: 'DELETE' }
-      );
-      expect([200, 204, 400, 404, 422]).toContain(del.status());
-    }
-
-    await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT(id!), { method: 'DELETE' });
+    expect(await listPrices(request, productId)).toEqual([]);
   });
 
   test('create cgp with invalid value_type is rejected', async ({ request }) => {
-    const id = await createSimpleProduct(request);
-    if (!id) test.skip(true, 'product create unavailable');
-
-    const resp = await sendAdminRequest(
-      request,
-      ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICES(id!),
-      {
-        method: 'POST',
-        data: { qty: 5, value_type: 'banana', value: 1, customer_group_id: null },
-      }
-    );
-    expect([400, 422]).toContain(resp.status());
-
-    await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT(id!), { method: 'DELETE' });
+    const resp = await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICES(productId), {
+      method: 'POST',
+      data: { qty: 5, value_type: 'banana', value: 1, customer_group_id: null },
+    });
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('The value_type field must be either "fixed" or "discount".');
+    expect(await listPrices(request, productId)).toEqual([]);
   });
 
   test('create cgp with qty=0 is rejected', async ({ request }) => {
-    const id = await createSimpleProduct(request);
-    if (!id) test.skip(true, 'product create unavailable');
-
-    const resp = await sendAdminRequest(
-      request,
-      ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICES(id!),
-      {
-        method: 'POST',
-        data: { qty: 0, value_type: 'fixed', value: 5, customer_group_id: null },
-      }
-    );
-    expect([400, 422]).toContain(resp.status());
-
-    await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT(id!), { method: 'DELETE' });
+    const resp = await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICES(productId), {
+      method: 'POST',
+      data: { qty: 0, value_type: 'fixed', value: 5, customer_group_id: null },
+    });
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('The qty field must be an integer greater than or equal to 1.');
+    expect(await listPrices(request, productId)).toEqual([]);
   });
 
   test('delete cgp across products returns 404', async ({ request }) => {
-    const resp = await sendAdminRequest(
-      request,
-      ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICE(99999999, 99999998),
-      { method: 'DELETE' }
-    );
-    expect([400, 404, 422]).toContain(resp.status());
+    const resp = await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT_CUSTOMER_GROUP_PRICE(99999999, 99999998), {
+      method: 'DELETE',
+    });
+    expect(resp.status()).toBe(404);
+    expect((await resp.json()).detail).toBe(PRODUCT_NOT_FOUND);
   });
 });

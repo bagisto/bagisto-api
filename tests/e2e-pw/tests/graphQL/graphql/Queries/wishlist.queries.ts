@@ -1,6 +1,3 @@
-// graphql/queries/wishlist.queries.ts
-
-// Get All Wishlists
 export const GET_ALL_WISHLISTS = `
   query GetAllWishlists($first: Int, $after: String) {
     wishlists(first: $first, after: $after) {
@@ -41,7 +38,6 @@ export const GET_ALL_WISHLISTS = `
   }
 `;
 
-// Get Single Wishlist
 export const GET_WISHLIST = `
   query GetWishlist($id: ID!) {
     wishlist(id: $id) {
@@ -132,6 +128,18 @@ export const MOVE_WISHLIST_TO_CART = `
         message
       }
       clientMutationId
+    }
+  }
+`;
+
+export const GET_WISHLIST_ITEM_IDS = `
+  query GetWishlistItemIds($first: Int) {
+    wishlists(first: $first) {
+      edges {
+        node {
+          _id
+        }
+      }
     }
   }
 `;

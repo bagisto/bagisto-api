@@ -1,59 +1,51 @@
-// tests/restAPI/api/automation/admin/sales/invoices.spec.ts
-//
-// W3 — Standalone invoices listing + detail + print (PDF).
-//
-// PRINT NOTE: per CLAUDE.md, one PHPUnit test for invoice print is
-// `markTestSkipped` because dompdf can't render in the test env. Same caveat
-// here — we tolerate 200 (real PDF), 500 (dompdf failure), or 404 (no
-// invoices). Bug surfaced 2026-05-26: print returns
-// `application/problem+json` HTTP 500 in the dev env.
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_SALES } from '../../../../rest/endpoints/admin.sales.endpoints';
+import {
+  UNKNOWN_ID,
+  expectProblem,
+  invoiceOrder,
+  placeOrder,
+  safeJson,
+} from '../../../../rest/helpers/coverage/adminSales.helpers';
 
-test.describe.configure({ timeout: 60_000 });
+test.describe.configure({ timeout: 240_000 });
 
-async function firstInvoiceId(request: any): Promise<number | null> {
-  const resp = await sendAdminRequest(request, ADMIN_SALES.INVOICES, {
-    params: { per_page: '1' },
-  });
-  if (resp.status() !== 200) return null;
-  const body = await resp.json();
-  const rows = body.data ?? body;
-  return rows.length ? rows[0].id : null;
+const INVOICE_NOT_FOUND = 'Invoice not found.';
+
+async function createInvoice(request: APIRequestContext): Promise<{ invoiceId: number; orderId: number; incrementId: string }> {
+  const order = await placeOrder(request);
+  const invoice = await invoiceOrder(request, order.orderId);
+
+  return { invoiceId: invoice.id, orderId: order.orderId, incrementId: order.incrementId };
 }
 
-test.describe('Admin Invoices REST API', () => {
+test.describe('admin invoices rest api', () => {
   test('listing returns paginated envelope', async ({ request }) => {
     const response = await sendAdminRequest(request, ADMIN_SALES.INVOICES, {
       params: { per_page: '5' },
     });
-    const status = response.status();
-    console.log('invoices listing:', status);
-    expect(status).toBe(200);
+    const body = await safeJson(response);
 
-    const body = await response.json();
-    expect(body).toHaveProperty('data');
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(Array.isArray(body.data)).toBe(true);
+    expect(body.data.length).toBeLessThanOrEqual(5);
     expect(body).toHaveProperty('meta');
-    console.log(`  total=${body.meta.total} returned=${body.data.length}`);
   });
 
   test('listing row shape carries slim fields', async ({ request }) => {
+    const { invoiceId, orderId, incrementId } = await createInvoice(request);
+
     const response = await sendAdminRequest(request, ADMIN_SALES.INVOICES, {
-      params: { per_page: '1' },
+      params: { order_id: incrementId, per_page: '50' },
     });
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    if (body.data.length === 0) {
-      test.skip(true, 'no invoices in DB');
-      return;
-    }
-    const row = body.data[0];
-    expect(row).toHaveProperty('id');
-    // The linked order is exposed as an object, not a flat orderId.
-    expect(row).toHaveProperty('order');
-    expect(row.order).toHaveProperty('id');
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+
+    const row = body.data.find((entry: any) => entry.id === invoiceId);
+    expect(row, JSON.stringify(body.data)).toBeDefined();
+    expect(row.order.id).toBe(orderId);
     expect(row).toHaveProperty('state');
     expect(row).toHaveProperty('baseGrandTotal');
     expect(row).toHaveProperty('formattedBaseGrandTotal');
@@ -63,7 +55,12 @@ test.describe('Admin Invoices REST API', () => {
     const response = await sendAdminRequest(request, ADMIN_SALES.INVOICES, {
       params: { state: 'paid', per_page: '3' },
     });
-    expect(response.status()).toBe(200);
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    for (const row of body.data) {
+      expect(row.state).toBe('paid');
+    }
   });
 
   test('filter order_id returns 200', async ({ request }) => {
@@ -99,53 +96,43 @@ test.describe('Admin Invoices REST API', () => {
   });
 
   test('detail returns the invoice with items', async ({ request }) => {
-    const id = await firstInvoiceId(request);
-    if (!id) {
-      test.skip(true, 'no invoices in DB');
-      return;
-    }
-    const response = await sendAdminRequest(request, ADMIN_SALES.INVOICE(id));
-    const status = response.status();
-    console.log(`invoice detail (${id}):`, status);
-    expect(status).toBe(200);
+    const { invoiceId } = await createInvoice(request);
 
-    const body = await response.json();
-    expect(body.id).toBe(id);
+    const response = await sendAdminRequest(request, ADMIN_SALES.INVOICE(invoiceId));
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body.id).toBe(invoiceId);
     expect(body).toHaveProperty('state');
-    expect(body).toHaveProperty('items');
+    expect(body.items).toHaveLength(1);
     expect(body).toHaveProperty('grandTotal');
   });
 
   test('detail bogus id returns 404', async ({ request }) => {
-    const response = await sendAdminRequest(request, ADMIN_SALES.INVOICE(99999999));
-    const status = response.status();
-    console.log('invoice detail bogus:', status);
-    expect([404, 400]).toContain(status);
+    const response = await sendAdminRequest(request, ADMIN_SALES.INVOICE(UNKNOWN_ID));
+
+    await expectProblem(response, 404, INVOICE_NOT_FOUND);
   });
 
-  test('print PDF returns binary or dompdf 500', async ({ request }) => {
-    const id = await firstInvoiceId(request);
-    if (!id) {
-      test.skip(true, 'no invoices in DB');
-      return;
-    }
-    const response = await sendAdminRequest(request, ADMIN_SALES.INVOICE_PRINT(id));
-    const status = response.status();
-    const ct = response.headers()['content-type'] ?? '';
-    console.log(`invoice print (${id}):`, status, ct);
-    // Documented dev-env behaviour:
-    //  - 200 + application/pdf when dompdf renders cleanly
-    //  - 500 if dompdf chokes on missing fonts/assets (PHPUnit equivalent
-    //    is markTestSkipped)
-    //  - 406 application/problem+json when the API Platform content
-    //    negotiation rejects the request — observed 2026-05-26 in this
-    //    dev env; the route is reachable but PDF content type isn't
-    //    being offered. Flagged for follow-up.
-    expect([200, 406, 500]).toContain(status);
-    if (status === 200) {
-      expect(ct.toLowerCase()).toContain('pdf');
-      const bytes = await response.body();
-      expect(bytes.byteLength).toBeGreaterThan(0);
-    }
+  test('print returns the invoice as a pdf download', async ({ request }) => {
+    const { invoiceId } = await createInvoice(request);
+
+    const response = await sendAdminRequest(request, ADMIN_SALES.INVOICE_PRINT(invoiceId), {
+      headers: { Accept: 'application/pdf' },
+    });
+    const headers = response.headers();
+
+    expect(response.status(), await response.text()).toBe(200);
+    expect(headers['content-type']).toContain('application/pdf');
+    expect(headers['content-disposition']).toContain(`invoice-${invoiceId}.pdf`);
+    expect((await response.body()).subarray(0, 4).toString()).toBe('%PDF');
+  });
+
+  test('print bogus id returns 404', async ({ request }) => {
+    const response = await sendAdminRequest(request, ADMIN_SALES.INVOICE_PRINT(UNKNOWN_ID), {
+      headers: { Accept: 'application/pdf' },
+    });
+
+    expect(response.status(), await response.text()).toBe(404);
   });
 });

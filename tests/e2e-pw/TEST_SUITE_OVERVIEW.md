@@ -169,3 +169,77 @@ Behavior:
 - **CI** (`process.env.CI` set): `reuseExistingServer: false` — a clean server is booted every run.
 - **Locally**: `reuseExistingServer: true` — if you already have `php artisan serve` running on `:8000`, Playwright reuses it. **If that existing server runs with `APP_ENV=local`, the test-key bypass will NOT fire.** Stop your local serve before running Playwright when you need the bypass.
 
+
+---
+
+## Storefront specs for the unreleased API changes
+
+| Spec | Covers |
+|---|---|
+| `tests/graphQL/api/automation/downloadableProductDownloadLink.spec.ts` | `createDownloadableProductDownloadLink` refuses an anonymous caller and reports a purchased link that does not exist. |
+| `tests/restAPI/api/automation/customerDownloads.spec.ts` | `GET /api/shop/customer-downloadable-products/{id}/download` answers 401 without a customer token and 404 for a link that is not the customer's purchase. |
+| `tests/graphQL/api/automation/checkoutAddress.spec.ts` | `readCheckoutAddress` returns the billing address saved on the bearer token's customer cart, returns a guest cart with no address before one is saved, and refuses a call without a token. |
+| `tests/graphQL/api/automation/wishlist.spec.ts`, `tests/restAPI/api/automation/wishlist.spec.ts` | Wishlist add and toggle refuse an anonymous caller before the product is looked up (even for a product id that does not exist); an authenticated customer still gets "Product not found" and can add a product. |
+| `tests/graphQL/api/automation/bookingSlots.spec.ts` | Every `bookingSlots` entry has the id `/api/shop/booking-slots/{bookingProductId}-{date}-{slotId}`, unique within the response. Needs `BAGISTO_BOOKING_PRODUCT_ID` and a `BAGISTO_BOOKING_DATE` that has slots. |
+
+Attribute flags, category `status`, section `status` and unsigned integer columns (`_lft`, `_rgt`, `categoryId`, `channelId`, `sectionId`, `countryId`) are asserted with the type the schema declares on every database: booleans for flags, numbers for integers.
+
+Not covered, because the suite has no way to create a purchased, invoiced or shipped order through the API: the successful `createDownloadableProductDownloadLink` and download (and that the download counts exactly once), the pending, limit-exceeded and not-owner refusals, and `customerOrderShipmentItems` nested under a shipment.
+
+---
+
+## Admin specs for the unreleased API changes
+
+| Spec | Covers |
+|---|---|
+| `tests/restAPI/api/automation/admin/catalog/productImages.spec.ts` | A real PNG and JPEG upload is stored re-encoded as `products/{id}/<40 random chars>.webp` and listed on the product; an SVG, a JPEG named `.php` or `.html`, an HTML file named `.png` and an undecodable PNG are refused with 422 and nothing is stored; a missing file is 422, an unknown product 404; delete, reorder and not-found paths run against a product the test creates. |
+| `tests/restAPI/api/automation/admin/catalog/productVideos.spec.ts` | An MP4 upload is stored under a generated `products/{id}/<40 random chars>.mp4` name and can be deleted; an MP4 named `.php` or `.html` and an HTML file named `.mp4` are refused with 422 and nothing is stored. |
+| `tests/graphQL/api/automation/admin/catalog/productImages.spec.ts` | `createAdminCatalogProductImage` still refuses the upload with the REST-only message; reorder and delete refuse ids the product does not have. |
+| `tests/restAPI/api/automation/admin/cms/cmsPages.spec.ts`, `tests/graphQL/api/automation/admin/cms/cmsPages.spec.ts` | Page `html_content` sent on create and update has its script tags, Blade echoes, `@php` and `<?php` stripped and keeps the safe markup. |
+| `tests/restAPI/api/automation/admin/marketing/templates.spec.ts`, `tests/graphQL/api/automation/admin/marketing/templates.spec.ts` | The same for email template `content`. |
+| `tests/restAPI/api/automation/admin/catalog/categories.spec.ts`, `tests/graphQL/api/automation/admin/catalog/categories.spec.ts` | The same for category `description`, on create and on the locale block of an update. |
+| `tests/restAPI/api/automation/admin/catalog/products.spec.ts`, `tests/graphQL/api/automation/admin/catalog/products.spec.ts` | The same for the WYSIWYG `description` attribute on product update. |
+| `tests/restAPI/api/automation/admin/settings/roles.spec.ts`, `tests/graphQL/api/automation/admin/settings/roles.spec.ts`, `tests/restAPI/api/automation/admin/settings/users.spec.ts` | A role or user update is validated (422) before the last all-access guard runs, and the record is left unchanged. |
+| `tests/restAPI/api/automation/admin/sales/returnFiles.spec.ts` | `GET /api/admin/rma/requests/images/{id}` and `GET /api/admin/rma/messages/{id}/attachment` answer 401 without a token and 404 with no file for an unknown id; where the database already holds returns with images or attachments, their `url`/`attachmentUrl` point at these endpoints and the file is served. |
+| `tests/restAPI/api/automation/admin/sales/returnableOrders.spec.ts`, `tests/graphQL/api/automation/admin/sales/returnableOrders.spec.ts` | The RMA order picker (`GET /api/admin/rma/requests/orders`, `adminReturnableOrders`) refuses a call without a token, returns its `{ data, meta }` envelope or cursor connection with only orders that still have a quantity to return, caps the page size at 50, and filters by increment id and order id. |
+| `tests/restAPI/api/automation/admin/apiDocs.spec.ts` | `/api/admin/graphiql` and `/api/docs` are served as HTML; `/api/admin/docs` stays JSON. |
+
+Shared admin helpers: `sendAdminMultipartRequest` in `tests/restAPI/rest/helpers/adminClient.ts`, image and video bytes in `tests/restAPI/rest/helpers/mediaFixtures.ts`, and `adminSanitisedHtml.assertions.ts` under both assertion directories.
+
+Not covered: the 403 a caller gets before the last all-access 400 when it may not grant a role (the suite has a single all-access token and no API to issue a restricted one), the last all-access 400 itself (it depends on how many all-access admins the shared database holds), the import images archive rules (the suite does not create imports), and an RMA image or attachment uploaded and downloaded end to end (the suite cannot create an order a return can be opened for).
+
+## Seeded fixtures (`tests/fixtures/`)
+
+`playwright.config.ts` runs `tests/fixtures/globalSetup.ts` once per run (once per shard in CI). It seeds the data that order-based specs need **through the API itself** and writes it to `.e2e-fixtures.json` (git-ignored). Specs read it through `e2eFixtures()` from `tests/fixtures/e2eFixtures.ts` and skip with `missingFixtureReason(...)` when a fixture is absent.
+
+| Fixture | What `globalSetup` creates |
+|---|---|
+| `customer`, `otherCustomer` | two registered customers (unique `@example.com` emails); `otherCustomer` is used to prove one customer cannot reach another's data |
+| `order` | the customer orders 10 units of a simple product (flat rate, cash on delivery or money transfer); the admin invoices and ships it. RMA is enabled for the product so returns are allowed |
+| `guestOrder` | a guest checkout order |
+| `downloadable` | a downloadable product ordered and invoiced, with its purchased link |
+| `rma` | a return on `order` with an image, and a message with an attachment |
+| `booking` | a booking product and the first date in the next 21 days (in `APP_TIMEZONE`) that has slots |
+
+`globalSetup` never throws: a failed step is logged as `[e2e fixtures] <step>: not seeded: <method path status body>` and only its fixture is left out. It also switches EU withdrawal on for the run if it is off.
+
+## Full API coverage (`coverage/` folders)
+
+Every REST operation in `schema/generated/openapi-{shop,admin}.json` and every GraphQL operation in `schema/generated/graphql-operations-{shop,admin}.json` is called by at least one spec. The coverage specs live in:
+
+- `tests/restAPI/api/automation/coverage/` and `tests/graphQL/api/automation/coverage/` — one spec per area (`shopCart*`, `shopCheckout*`, `shopAccount*`, `shopCatalog*`, `shopCms*`, `adminSales*`, `adminCart*`, `adminCustomer*`, `adminRma*`, `adminCatalog*`, `adminSettings*`, `adminReporting*`, `adminMenu*`, `adminWithdrawals`, `restGaps*`);
+- `tests/graphQL/graphql/Queries/coverage/` — their GraphQL documents;
+- `tests/restAPI/rest/endpoints/coverage/` — their path constants and expected messages;
+- `tests/restAPI/rest/helpers/coverage/` — data-building helpers (customers, carts, orders, invoices, imports, admin products).
+
+Each operation has a test that asserts the status and the body (for binary responses: content type, disposition and bytes), and refusal tests (no credentials, another customer's record, unknown id, invalid input with the exact message from the package lang file). Every test creates and cleans up its own records; writes never touch shared rows.
+
+Not coverable through the API, and therefore covered by refusal tests only: the Stripe payment confirmation success path, social login success, the emailed password-reset and verification tokens, Magic AI review translation, and file-type product attributes (no API stores one).
+
+## Type check
+
+```bash
+npx --yes -p typescript@5.6.3 tsc -p tsconfig.json
+```
+
+CI runs this before the suite; it must report no errors.

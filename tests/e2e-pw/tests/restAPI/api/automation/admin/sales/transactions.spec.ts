@@ -1,59 +1,68 @@
-// tests/restAPI/api/automation/admin/sales/transactions.spec.ts
-//
-// W3 — Transactions listing + detail.
-//
-// BUG SURFACED 2026-05-26: GET /api/admin/transactions/{id} returns HTTP 500
-// "Call to undefined relationship [order] on model
-// [Webkul\Sales\Models\OrderTransaction]." The provider tries to eager-load
-// `order` via the contract but the underlying model has no such relation.
-// repro:
-//   curl -H "X-Admin-Key: $K" -H "Authorization: Bearer $T" \
-//        http://localhost:8000/api/admin/transactions/1
-// Tolerated here pending fix to the OrderTransaction model or the provider.
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_SALES } from '../../../../rest/endpoints/admin.sales.endpoints';
+import {
+  CoverageOrder,
+  UNKNOWN_ID,
+  expectProblem,
+  invoiceOrder,
+  placeOrder,
+  safeJson,
+  setInvoiceState,
+} from '../../../../rest/helpers/coverage/adminSales.helpers';
 
-test.describe.configure({ timeout: 60_000 });
+test.describe.configure({ timeout: 240_000 });
 
-async function firstTransactionId(request: any): Promise<number | null> {
-  const resp = await sendAdminRequest(request, ADMIN_SALES.TRANSACTIONS, {
-    params: { per_page: '1' },
-  });
-  if (resp.status() !== 200) return null;
-  const body = await resp.json();
-  const rows = body.data ?? body;
-  return rows.length ? rows[0].id : null;
+const TRANSACTION_NOT_FOUND = 'Transaction not found.';
+
+interface RecordedPayment {
+  order: CoverageOrder;
+  invoiceId: number;
+  amount: number;
+  transaction: any;
 }
 
-test.describe('Admin Transactions REST API', () => {
+async function recordPayment(request: APIRequestContext): Promise<RecordedPayment> {
+  const order = await placeOrder(request);
+  const invoice = await invoiceOrder(request, order.orderId);
+
+  await setInvoiceState(request, [invoice.id], 'pending');
+
+  const response = await sendAdminRequest(request, ADMIN_SALES.TRANSACTIONS, {
+    method: 'POST',
+    data: { invoiceId: invoice.id, paymentMethod: 'cashondelivery', amount: invoice.baseGrandTotal },
+  });
+  const body = await safeJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(201);
+  expect(typeof body.id).toBe('number');
+
+  return { order, invoiceId: invoice.id, amount: invoice.baseGrandTotal, transaction: body };
+}
+
+test.describe('admin transactions rest api', () => {
   test('listing returns paginated envelope', async ({ request }) => {
     const response = await sendAdminRequest(request, ADMIN_SALES.TRANSACTIONS, {
       params: { per_page: '5' },
     });
-    const status = response.status();
-    console.log('transactions listing:', status);
-    expect(status).toBe(200);
+    const body = await safeJson(response);
 
-    const body = await response.json();
-    expect(body).toHaveProperty('data');
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(Array.isArray(body.data)).toBe(true);
     expect(body).toHaveProperty('meta');
-    console.log(`  total=${body.meta.total} returned=${body.data.length}`);
   });
 
   test('listing row shape', async ({ request }) => {
+    const payment = await recordPayment(request);
+
     const response = await sendAdminRequest(request, ADMIN_SALES.TRANSACTIONS, {
-      params: { per_page: '1' },
+      params: { order_id: payment.order.incrementId, per_page: '50' },
     });
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    if (body.data.length === 0) {
-      test.skip(true, 'no transactions in DB');
-      return;
-    }
-    const row = body.data[0];
-    expect(row).toHaveProperty('id');
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    const row = body.data.find((entry: any) => entry.id === payment.transaction.id);
+    expect(row, JSON.stringify(body.data)).toBeDefined();
     expect(row).toHaveProperty('transactionId');
     expect(row).toHaveProperty('status');
     expect(row).toHaveProperty('type');
@@ -87,30 +96,27 @@ test.describe('Admin Transactions REST API', () => {
     expect(response.status()).toBe(200);
   });
 
-  test('detail returns the transaction (or known 500 bug)', async ({ request }) => {
-    const id = await firstTransactionId(request);
-    if (!id) {
-      test.skip(true, 'no transactions in DB');
-      return;
-    }
-    const response = await sendAdminRequest(request, ADMIN_SALES.TRANSACTION(id));
-    const status = response.status();
-    console.log(`transaction detail (${id}):`, status);
-    // 500 = the documented OrderTransaction.order missing-relation bug.
-    expect([200, 500]).toContain(status);
+  test('detail returns a recorded transaction', async ({ request }) => {
+    const payment = await recordPayment(request);
 
-    if (status === 200) {
-      const body = await response.json();
-      expect(body.id).toBe(id);
-      expect(body).toHaveProperty('transactionId');
-    }
+    const response = await sendAdminRequest(request, ADMIN_SALES.TRANSACTION(payment.transaction.id));
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body.id).toBe(payment.transaction.id);
+    expect(body.transactionId).toBe(payment.transaction.transactionId);
+    expect(body.transactionId).toMatch(/^[0-9a-f]{40}$/);
+    expect(body.invoiceId).toBe(payment.invoiceId);
+    expect(body.orderId).toBe(payment.order.orderId);
+    expect(body.orderIncrementId).toBe(payment.order.incrementId);
+    expect(body.amount).toBeCloseTo(payment.amount, 2);
+    expect(body.status).toBe('paid');
+    expect(body.paymentMethod).toBe('cashondelivery');
   });
 
   test('detail bogus id returns 404', async ({ request }) => {
-    const response = await sendAdminRequest(request, ADMIN_SALES.TRANSACTION(99999999));
-    const status = response.status();
-    console.log('transaction detail bogus:', status);
-    // 500 also tolerated — the buggy eager-load crashes before the 404 path.
-    expect([404, 400, 500]).toContain(status);
+    const response = await sendAdminRequest(request, ADMIN_SALES.TRANSACTION(UNKNOWN_ID));
+
+    await expectProblem(response, 404, TRANSACTION_NOT_FOUND);
   });
 });

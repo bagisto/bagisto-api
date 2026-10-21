@@ -1,20 +1,27 @@
-// tests/restAPI/api/automation/attributeOptions.spec.ts
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import { numericIdOf } from '../../rest/helpers/coverage/restGaps.helpers';
 
-test.describe('Attribute Options REST API', () => {
-  test('Should return attribute options', async ({ request }) => {
+test.describe('attribute options rest api', () => {
+  test('should return attribute options', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.ATTRIBUTE_OPTIONS);
+    const body = await response.json();
 
-    // Handle case where endpoint may not exist
-    expect([200, 404]).toContain(response.status());
-    
-    if (response.status() === 200) {
-      const body = await response.json();
-      console.log('Attribute options count:', Array.isArray(body) ? body.length : 'N/A');
-    } else {
-      console.log('Attribute options endpoint not available');
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(Array.isArray(body)).toBe(true);
+    expect(body.length).toBeGreaterThan(0);
+    expect(body.length).toBeLessThanOrEqual(10);
+
+    for (const option of body) {
+      expect(numericIdOf(option.id)).toBeGreaterThan(0);
+      expect(option).toHaveProperty('adminName');
+      expect(Array.isArray(option.translations)).toBe(true);
     }
+
+    const single = await sendRestRequest(request, ENDPOINTS.ATTRIBUTE_OPTION(numericIdOf(body[0].id)));
+
+    expect(single.status()).toBe(200);
+    expect(await single.json()).toEqual(body[0]);
   });
 });

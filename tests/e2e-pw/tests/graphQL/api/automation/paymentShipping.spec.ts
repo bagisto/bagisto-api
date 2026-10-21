@@ -1,22 +1,117 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { getGuestCartHeaders } from '../../config/auth';
 import { GET_CHECKOUT_ADDRESSES } from '../../graphql/Queries/checkout.queries';
-import {
-  PLACE_ORDER,
-  SET_CHECKOUT_ADDRESS,
-  SET_PAYMENT_METHOD,
-  SET_SHIPPING_METHOD,
-} from '../../graphql/Queries/paymentShipping.queries';
-import { SHOP_DOCS_QUERIES } from '../../graphql/Queries/shopDocs.queries';
+import { SHOP_CART_QUERIES } from '../../graphql/Queries/coverage/shopCart.queries';
 import { sendGraphQLRequest } from '../../graphql/helpers/graphqlClient';
+import { expectConnection, graphQLErrorMessages } from '../../graphql/helpers/testSupport';
 import {
-  expectAuthAwareResult,
-  expectConnection,
-  graphQLErrorMessages,
-} from '../../graphql/helpers/testSupport';
+  SHOP_CART_OFFLINE_PAYMENT_METHODS,
+  addCartLine,
+  bearer,
+  buildBilling,
+  findSaleableSimpleProducts,
+  registerShopCustomer,
+  uniqueSuffix,
+} from '../../../restAPI/rest/helpers/coverage/shopCart.helpers';
 
-test.describe('Payment and Shipping Methods GraphQL API Tests', () => {
-  test('Should get checkout addresses collection for the guest cart', async ({ request }) => {
+test.describe.configure({ timeout: 120_000 });
+
+const MESSAGES = {
+  SHIPPING_METHOD_SAVED: 'Shipping method saved successfully',
+  INVALID_SHIPPING_METHOD: 'Invalid or unavailable shipping method',
+  PAYMENT_METHOD_SAVED: 'Payment method saved successfully',
+  INVALID_PAYMENT_METHOD: 'Invalid or unavailable payment method',
+  ORDER_PLACED: 'Order placed successfully',
+  CART_EMPTY: 'Cart is empty',
+};
+
+const SAVE_ADDRESS = `
+  mutation createCheckoutAddress($input: createCheckoutAddressInput!) {
+    createCheckoutAddress(input: $input) {
+      checkoutAddress {
+        success
+        billingFirstName
+        billingEmail
+        billingAddress
+        billingCity
+        billingCountry
+        billingState
+        billingPostcode
+        shippingFirstName
+      }
+    }
+  }
+`;
+
+const SAVE_SHIPPING_METHOD = `
+  mutation createCheckoutShippingMethod($shippingMethod: String!) {
+    createCheckoutShippingMethod(input: { shippingMethod: $shippingMethod }) {
+      checkoutShippingMethod {
+        success
+        message
+      }
+    }
+  }
+`;
+
+const SAVE_PAYMENT_METHOD = `
+  mutation createCheckoutPaymentMethod($paymentMethod: String!) {
+    createCheckoutPaymentMethod(input: { paymentMethod: $paymentMethod }) {
+      checkoutPaymentMethod {
+        success
+        message
+      }
+    }
+  }
+`;
+
+const PLACE_ORDER = `
+  mutation createCheckoutOrder {
+    createCheckoutOrder(input: {}) {
+      checkoutOrder {
+        success
+        message
+        orderId
+        redirect
+        redirectUrl
+      }
+    }
+  }
+`;
+
+async function runGraphQL(
+  request: APIRequestContext,
+  query: string,
+  variables: Record<string, any> = {},
+  headers: Record<string, string> = {}
+): Promise<any> {
+  const response = await sendGraphQLRequest(request, query, variables, headers);
+
+  expect(response.status()).toBe(200);
+
+  return response.json();
+}
+
+function expectNoErrors(body: any): void {
+  expect(body.errors, graphQLErrorMessages(body).join(' | ')).toBeUndefined();
+}
+
+async function customerCartWithAddress(request: APIRequestContext): Promise<Record<string, string>> {
+  const [productId] = await findSaleableSimpleProducts(request, 1);
+  const customer = await registerShopCustomer(request);
+  const headers = bearer(customer.token);
+
+  await addCartLine(request, customer.token, productId, 1);
+
+  const body = await runGraphQL(request, SAVE_ADDRESS, { input: buildBilling(uniqueSuffix()) }, headers);
+
+  expectNoErrors(body);
+
+  return headers;
+}
+
+test.describe('payment and shipping methods graphql api tests', () => {
+  test('should get checkout addresses collection for the guest cart', async ({ request }) => {
     const headers = await getGuestCartHeaders(request);
     const response = await sendGraphQLRequest(request, GET_CHECKOUT_ADDRESSES, {}, headers);
     expect(response.status()).toBe(200);
@@ -26,118 +121,96 @@ test.describe('Payment and Shipping Methods GraphQL API Tests', () => {
     expect(Array.isArray(connection.edges)).toBe(true);
   });
 
-  test('Should get payment methods successfully or show the real API message', async ({ request }) => {
-    const headers = await getGuestCartHeaders(request);
-    const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getPaymentMethods, {}, headers);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expectAuthAwareResult(body, 'data.paymentMethods');
+  test('should save the checkout address on the customer cart', async ({ request }) => {
+    const [productId] = await findSaleableSimpleProducts(request, 1);
+    const customer = await registerShopCustomer(request);
+    const billing = buildBilling(uniqueSuffix());
+
+    await addCartLine(request, customer.token, productId, 1);
+
+    const body = await runGraphQL(request, SAVE_ADDRESS, { input: billing }, bearer(customer.token));
+
+    expectNoErrors(body);
+
+    const address = body.data.createCheckoutAddress.checkoutAddress;
+
+    expect(address.success).toBe(true);
+    expect(address.billingFirstName).toBe(billing.billingFirstName);
+    expect(address.billingEmail).toBe(billing.billingEmail);
+    expect(address.billingAddress).toContain(billing.billingAddress);
+    expect(address.billingCity).toBe(billing.billingCity);
+    expect(address.billingCountry).toBe(billing.billingCountry);
+    expect(address.billingState).toBe(billing.billingState);
+    expect(address.billingPostcode).toBe(billing.billingPostcode);
+    expect(address.shippingFirstName).toBe(billing.billingFirstName);
   });
 
-  test('Should return payment methods with required fields when available', async ({ request }) => {
-    const headers = await getGuestCartHeaders(request);
-    const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getPaymentMethods, {}, headers);
-    const body = await response.json();
+  test('should place an order through the shipping and payment method mutations', async ({ request }) => {
+    const headers = await customerCartWithAddress(request);
 
-    if (body.data?.paymentMethods?.length > 0) {
-      const method = body.data.paymentMethods[0];
-      expect(method.method).toBeDefined();
-      expect(method.methodTitle).toBeDefined();
-    } else {
-      console.log(`Payment methods response: ${graphQLErrorMessages(body).join(' | ')}`);
-      expect(body.data?.paymentMethods || body.errors).toBeTruthy();
-    }
+    const rates = await runGraphQL(request, SHOP_CART_QUERIES.collectionShippingRates, {}, headers);
+    expectNoErrors(rates);
+
+    const shippingMethods: string[] = rates.data.collectionShippingRates.map((rate: any) => rate.method).filter(Boolean);
+    test.skip(shippingMethods.length === 0, 'no shipping carrier is available for a US address');
+
+    const shipping = await runGraphQL(request, SAVE_SHIPPING_METHOD, { shippingMethod: shippingMethods[0] }, headers);
+    expectNoErrors(shipping);
+    expect(shipping.data.createCheckoutShippingMethod.checkoutShippingMethod).toEqual({
+      success: true,
+      message: MESSAGES.SHIPPING_METHOD_SAVED,
+    });
+
+    const methods = await runGraphQL(request, SHOP_CART_QUERIES.collectionPaymentMethods, {}, headers);
+    expectNoErrors(methods);
+
+    const available: string[] = methods.data.collectionPaymentMethods.map((method: any) => method.method);
+    const offline = SHOP_CART_OFFLINE_PAYMENT_METHODS.find((code) => available.includes(code));
+    test.skip(!offline, `no offline payment method is enabled (available: ${available.join(', ')})`);
+
+    const payment = await runGraphQL(request, SAVE_PAYMENT_METHOD, { paymentMethod: offline }, headers);
+    expectNoErrors(payment);
+    expect(payment.data.createCheckoutPaymentMethod.checkoutPaymentMethod).toEqual({
+      success: true,
+      message: MESSAGES.PAYMENT_METHOD_SAVED,
+    });
+
+    const order = await runGraphQL(request, PLACE_ORDER, {}, headers);
+    expectNoErrors(order);
+
+    const placed = order.data.createCheckoutOrder.checkoutOrder;
+
+    expect(placed.success).toBe(true);
+    expect(placed.message).toBe(MESSAGES.ORDER_PLACED);
+    expect(placed.redirect).toBe(false);
+    expect(placed.redirectUrl).toBeNull();
+    expect(Number(placed.orderId)).toBeGreaterThan(0);
   });
 
-  test('Should get shipping methods successfully or show the real API message', async ({ request }) => {
-    const headers = await getGuestCartHeaders(request);
-    const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getShippingMethods, {}, headers);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expectAuthAwareResult(body, 'data.shippingMethods');
+  test('should reject a shipping method the cart does not offer', async ({ request }) => {
+    const headers = await customerCartWithAddress(request);
+
+    const body = await runGraphQL(request, SAVE_SHIPPING_METHOD, { shippingMethod: 'unknowncarrier_unknown' }, headers);
+
+    expect(graphQLErrorMessages(body)).toEqual([MESSAGES.INVALID_SHIPPING_METHOD]);
+    expect(body.data?.createCheckoutShippingMethod ?? null).toBeNull();
   });
 
-  test('Should return shipping methods with required fields when available', async ({ request }) => {
-    const headers = await getGuestCartHeaders(request);
-    const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getShippingMethods, {}, headers);
-    const body = await response.json();
+  test('should reject a payment method that is not configured', async ({ request }) => {
+    const headers = await customerCartWithAddress(request);
 
-    if (body.data?.shippingMethods?.length > 0) {
-      const method = body.data.shippingMethods[0];
-      expect(method.method).toBeDefined();
-      expect(method.methodTitle).toBeDefined();
-    } else {
-      console.log(`Shipping methods response: ${graphQLErrorMessages(body).join(' | ')}`);
-      expect(body.data?.shippingMethods || body.errors).toBeTruthy();
-    }
+    const body = await runGraphQL(request, SAVE_PAYMENT_METHOD, { paymentMethod: 'unknownpayment' }, headers);
+
+    expect(graphQLErrorMessages(body)).toEqual([MESSAGES.INVALID_PAYMENT_METHOD]);
+    expect(body.data?.createCheckoutPaymentMethod ?? null).toBeNull();
   });
 
-  test('Should try to set checkout addresses and show the real API response', async ({ request }) => {
-    const headers = await getGuestCartHeaders(request);
-    const input = {
-      billingFirstName: 'Guest',
-      billingLastName: 'User',
-      billingEmail: 'guest@example.com',
-      billingAddress: '123 Demo Street',
-      billingCity: 'New York',
-      billingCountry: 'US',
-      billingState: 'NY',
-      billingPostcode: '10001',
-      billingPhoneNumber: '9999999999',
-      useForShipping: true,
-    };
-
-    const response = await sendGraphQLRequest(request, SET_CHECKOUT_ADDRESS, { input }, headers);
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    console.log(`Checkout address response: ${JSON.stringify(body)}`);
-    expect(body.data?.createCheckoutAddress?.checkoutAddress || graphQLErrorMessages(body).length > 0).toBeTruthy();
-  });
-
-  test('Should try to set shipping method and payment method and show the real API response', async ({ request }) => {
+  test('should refuse to place an order for an empty guest cart', async ({ request }) => {
     const headers = await getGuestCartHeaders(request);
 
-    const shippingResponse = await sendGraphQLRequest(
-      request,
-      SET_SHIPPING_METHOD,
-      { shippingMethod: 'flatrate_flatrate' },
-      headers
-    );
-    expect(shippingResponse.status()).toBe(200);
-    const shippingBody = await shippingResponse.json();
-    console.log(`Set shipping method response: ${JSON.stringify(shippingBody)}`);
-    expect(
-      shippingBody.data?.createCheckoutShippingMethod?.checkoutShippingMethod ||
-      graphQLErrorMessages(shippingBody).length > 0
-    ).toBeTruthy();
+    const body = await runGraphQL(request, PLACE_ORDER, {}, headers);
 
-    const paymentResponse = await sendGraphQLRequest(
-      request,
-      SET_PAYMENT_METHOD,
-      {
-        paymentMethod: 'moneytransfer',
-        successUrl: 'https://example.com/success',
-        failureUrl: 'https://example.com/failure',
-        cancelUrl: 'https://example.com/cancel',
-      },
-      headers
-    );
-    expect(paymentResponse.status()).toBe(200);
-    const paymentBody = await paymentResponse.json();
-    console.log(`Set payment method response: ${JSON.stringify(paymentBody)}`);
-    expect(
-      paymentBody.data?.createCheckoutPaymentMethod?.checkoutPaymentMethod ||
-      graphQLErrorMessages(paymentBody).length > 0
-    ).toBeTruthy();
-  });
-
-  test('Should try to place an order and show the real API response', async ({ request }) => {
-    const headers = await getGuestCartHeaders(request);
-    const response = await sendGraphQLRequest(request, PLACE_ORDER, {}, headers);
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    console.log(`Place order response: ${JSON.stringify(body)}`);
-    expect(body.data?.createCheckoutOrder?.checkoutOrder || graphQLErrorMessages(body).length > 0).toBeTruthy();
+    expect(graphQLErrorMessages(body)).toEqual([MESSAGES.CART_EMPTY]);
+    expect(body.data?.createCheckoutOrder ?? null).toBeNull();
   });
 });

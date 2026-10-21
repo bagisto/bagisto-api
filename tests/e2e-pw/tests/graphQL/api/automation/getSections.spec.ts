@@ -12,8 +12,8 @@ import {
   assertGraphQLError
 } from '../../graphql/assertions/sections.assertions';
 
-test.describe('Section GraphQL Tests', () => {
-  test('Should fetch sections (basic)', async ({ request }) => {
+test.describe('section graphql tests', () => {
+  test('should fetch sections (basic)', async ({ request }) => {
 
   console.log('\n📤 Sending sections query...');
   console.log('Variables:', { first: 5 });
@@ -55,8 +55,7 @@ test.describe('Section GraphQL Tests', () => {
   assertGetSectionsBasicResponse(body);
 });
 
-
-test('Should fetch sections filtered by type', async ({ request }) => {
+test('should fetch sections filtered by type', async ({ request }) => {
     const variables = { type: 'footer_links'};
     const response = await sendGraphQLRequest( request, GET_SECTIONS_FILTERED, variables );
     expect(response.status()).toBe(200);
@@ -64,11 +63,7 @@ test('Should fetch sections filtered by type', async ({ request }) => {
     assertGetSectionsFilteredResponse( body, variables.type );
   });
 
-  /* ---------------------------------------------------
-   * INVALID TYPE (Edge Case)
-   * --------------------------------------------------- */
-
-  test('Should return empty list for invalid type filter', async ({ request }) => {
+  test('should return empty list for invalid type filter', async ({ request }) => {
     const variables = { type: 'invalid_type_xyz'};
     const response = await sendGraphQLRequest( request, GET_SECTIONS_FILTERED, variables );
     expect(response.status()).toBe(200);
@@ -80,12 +75,7 @@ test('Should fetch sections filtered by type', async ({ request }) => {
     expect(typeof connection.totalCount).toBe('number');
   });
 
-
-  /* ---------------------------------------------------
-   * WITHOUT FILTER (type = null)
-   * --------------------------------------------------- */
-
-  test('Should fetch sections without type filter', async ({ request }) => {
+  test('should fetch sections without type filter', async ({ request }) => {
     const response = await sendGraphQLRequest( request, GET_SECTIONS_FILTERED,
     { type: null });
     expect(response.status()).toBe(200);
@@ -93,14 +83,14 @@ test('Should fetch sections filtered by type', async ({ request }) => {
     assertGetSectionsBasicResponse(body);
   });
 
-  test('Should fetch complete section details', async ({ request }) => {
+  test('should fetch complete section details', async ({ request }) => {
   const response = await sendGraphQLRequest( request, GET_SECTIONS_COMPLETE, { first: 3 });
   expect(response.status()).toBe(200);
   const body = await response.json();
   assertGetSectionsCompleteResponse(body);
 });
 
-test('Should fetch section by ID (basic)', async ({ request }) => {
+test('should fetch section by id (basic)', async ({ request }) => {
   const response = await sendGraphQLRequest( request, GET_SECTION_BY_ID,
   { id: "/api/theme_customizations/1" });
   expect(response.status()).toBe(200);
@@ -108,7 +98,7 @@ test('Should fetch section by ID (basic)', async ({ request }) => {
   assertGetSectionByIdBasicResponse(body);
 });
 
-test('Should fetch section by Numeric ID', async ({ request }) => {
+test('should fetch section by numeric id', async ({ request }) => {
   const response = await sendGraphQLRequest( request, GET_SECTION_BY_NUMERIC_ID,
   { id: "/api/theme_customizations/1" });
   expect(response.status()).toBe(200);
@@ -116,7 +106,7 @@ test('Should fetch section by Numeric ID', async ({ request }) => {
   assertGetSectionByNumericIdResponse(body);
 });
 
-test('Should fetch section by ID (complete details)', async ({ request }) => {
+test('should fetch section by id (complete details)', async ({ request }) => {
   const response = await sendGraphQLRequest( request, GET_SECTION_BY_ID_COMPLETE_DETAILS,
   { id: "1" });
   expect(response.status()).toBe(200);
@@ -125,7 +115,7 @@ test('Should fetch section by ID (complete details)', async ({ request }) => {
   const node = body.data.section;
   expect(node).toBeDefined();
   assertExtendedSection(node);
-  expect(typeof node.channelId).toBe('string');
+  expect(typeof node.channelId).toBe('number');
   expect(typeof node.createdAt).toBe('string');
   expect(typeof node.updatedAt).toBe('string');
   expect(new Date(node.createdAt).toString()).not.toBe('Invalid Date');
@@ -133,17 +123,14 @@ test('Should fetch section by ID (complete details)', async ({ request }) => {
   assertTranslationsConnection(node.translations);
 });
 
-
-
-
-test('Should return error when ID variable is missing', async ({ request }) => {
+test('should return error when id variable is missing', async ({ request }) => {
   const response = await sendGraphQLRequest( request, GET_SECTION_BY_NUMERIC_ID, {});
   expect(response.status()).toBe(200);
   const body = await response.json();
   assertGraphQLError(body, 'Variable "$id"');
 });
 
-test('Should return error when ID is null', async ({ request }) => {
+test('should return error when id is null', async ({ request }) => {
   const response = await sendGraphQLRequest(
     request,
     GET_SECTION_BY_NUMERIC_ID,
@@ -153,14 +140,14 @@ test('Should return error when ID is null', async ({ request }) => {
   assertGraphQLError(body, 'must not be null');
 });
 
-test('Should return error when ID is "null"', async ({ request }) => {
+test('should return error when id is "null"', async ({ request }) => {
   const response = await sendGraphQLRequest( request, GET_SECTION_BY_NUMERIC_ID,
   { id: "null" });
   const body = await response.json();
   assertGraphQLError(body, 'Invalid ID format');
 });
 
-test('Should return error for invalid GraphQL syntax', async ({ request }) => {
+test('should return error for invalid graphql syntax', async ({ request }) => {
   const invalidQuery = `
     query {
       section(id: "1") {
@@ -172,7 +159,7 @@ test('Should return error for invalid GraphQL syntax', async ({ request }) => {
   assertGraphQLError(body, 'Syntax Error');
 });
 
-test('Should return error when querying non-existing field', async ({ request }) => {
+test('should return error when querying non-existing field', async ({ request }) => {
   const invalidFieldQuery = `
 query getThemeCustomisation($id: ID!) {
   section(id: $id) {
@@ -187,18 +174,17 @@ query getThemeCustomisation($id: ID!) {
   assertGraphQLError(body, 'Cannot query field');
 });
 
-test('Should return error for wrong variable type', async ({ request }) => {
+test('should return error for wrong variable type', async ({ request }) => {
   const response = await sendGraphQLRequest( request, GET_SECTION_BY_NUMERIC_ID,
   { id: { value: "1" } });
   const body = await response.json();
   assertGraphQLError(body, 'ID');
 });
 
-test('Should return error for empty ID string', async ({ request }) => {
+test('should return error for empty id string', async ({ request }) => {
   const response = await sendGraphQLRequest( request, GET_SECTION_BY_NUMERIC_ID,
   { id: "" });
   const body = await response.json();
-  // depending on backend: null or error
   if (body.errors) {
     assertGraphQLError(body);
   } else {
@@ -206,7 +192,7 @@ test('Should return error for empty ID string', async ({ request }) => {
   }
 });
 
-test('Should not allow injection-like ID values', async ({ request }) => {
+test('should not allow injection-like id values', async ({ request }) => {
   const response = await sendGraphQLRequest( request, GET_SECTION_BY_NUMERIC_ID,
   { id: "1 OR 1=1" });
   const body = await response.json();

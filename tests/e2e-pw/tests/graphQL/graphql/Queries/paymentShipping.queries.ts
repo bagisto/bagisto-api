@@ -1,6 +1,3 @@
-// graphql/queries/paymentShipping.queries.ts
-
-// Get All Payment Methods
 export const GET_PAYMENT_METHODS = `
   query GetPaymentMethods {
     paymentMethods {
@@ -13,7 +10,6 @@ export const GET_PAYMENT_METHODS = `
   }
 `;
 
-// Get All Shipping Methods
 export const GET_SHIPPING_METHODS = `
   query GetShippingMethods {
     shippingMethods {
@@ -40,7 +36,6 @@ export const SET_CHECKOUT_ADDRESS = `
         billingCountry
         billingState
         billingPostcode
-        useForShipping
       }
     }
   }

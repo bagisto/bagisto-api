@@ -1,17 +1,3 @@
-// tests/graphQL/graphql/Queries/admin/catalog/categories.queries.ts
-//
-// Admin Catalog Categories GraphQL operations. Field shapes verified via
-// introspection on 2026-05-26.
-//
-// Discovered field names (NOT what CLAUDE.md's coverage table says):
-//   - List/detail are `adminCategories` / `adminCategory` (NOT
-//     `adminCatalogCategories`).
-//   - Mutations match CLAUDE.md: createAdminCategory / updateAdminCategory /
-//     deleteAdminCategory + createAdminCategoryMassDelete /
-//     createAdminCategoryMassUpdateStatus.
-//   - AdminCategory has no `code` field — schema fields are id/_id/name/
-//     position/status/parentId/displayMode/logoUrl/bannerUrl/etc.
-
 export const ADMIN_CATEGORIES_LIST_QUERY = `
   query adminCategories($first: Int, $after: String) {
     adminCategories(first: $first, after: $after) {
@@ -44,6 +30,7 @@ export const ADMIN_CATEGORY_DETAIL_QUERY = `
       status
       parentId
       displayMode
+      description
     }
   }
 `;

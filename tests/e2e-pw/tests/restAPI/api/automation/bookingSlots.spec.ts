@@ -1,127 +1,190 @@
-// tests/restAPI/api/automation/bookingSlots.spec.ts
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import {
+  REST_GAPS,
+  REST_GAPS_MESSAGES,
+  UNKNOWN_ID,
+  collectPages,
+  createAdminProduct,
+  deleteAdminProducts,
+  expectDetail,
+  numericIdOf,
+  safeJson,
+  shopBookingProductId,
+  uniqueStamp,
+  updateAdminProduct,
+} from '../../rest/helpers/coverage/restGaps.helpers';
 
-function assertSlotStatus(resp: any, debugLabel: string) {
-  expect([0, 200, 201, 400, 401, 404, 422, 500]).toContain(resp.status());
-  console.log(`${debugLabel}:`, resp.status());
-  return resp.status();
+test.describe.configure({ timeout: 180_000 });
+
+function dateOffset(days: number): string {
+  return new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
 }
 
-// Discovery beforeEach has to hit the product collection, which is slow on
-// this dev DB. Extend the per-test budget so parallel runs don't timeout.
-test.describe.configure({ timeout: 60_000 });
+interface SlotCase {
+  type: string;
+  label: string;
+  collection: string;
+  item: (id: number) => string;
+  booking: () => Record<string, any>;
+  expectRow: (row: any) => void;
+}
 
-test.describe('Booking Product Slots REST API', () => {
-  let bookingProductId: number | null = null;
-  const today = new Date().toISOString().split('T')[0];
+const SLOT_CASES: SlotCase[] = [
+  {
+    type: 'default',
+    label: 'default booking slots',
+    collection: REST_GAPS.BOOKING_DEFAULT_SLOTS,
+    item: ENDPOINTS.BOOKING_DEFAULT_SLOTS,
+    booking: () => ({
+      type: 'default',
+      qty: '1',
+      location: 'E2E Studio',
+      available_every_week: '1',
+      booking_type: 'many',
+      duration: '60',
+      break_time: '10',
+      slots: [{ from: '09:00', to: '17:00' }],
+    }),
+    expectRow: (row: any) => {
+      expect(row.bookingType).toBe('many');
+      expect(Number(row.duration)).toBe(60);
+      expect(Number(row.breakTime)).toBe(10);
+    },
+  },
+  {
+    type: 'appointment',
+    label: 'appointment slots',
+    collection: REST_GAPS.BOOKING_APPOINTMENT_SLOTS,
+    item: ENDPOINTS.BOOKING_APPOINTMENT_SLOTS,
+    booking: () => ({
+      type: 'appointment',
+      qty: '1',
+      location: 'E2E Clinic',
+      available_every_week: '1',
+      duration: '45',
+      break_time: '15',
+      same_slot_all_days: '1',
+      slots: [{ from: '10:00', to: '12:00' }],
+    }),
+    expectRow: (row: any) => {
+      expect(Number(row.duration)).toBe(45);
+      expect(Number(row.breakTime)).toBe(15);
+    },
+  },
+  {
+    type: 'rental',
+    label: 'rental slots',
+    collection: REST_GAPS.BOOKING_RENTAL_SLOTS,
+    item: ENDPOINTS.BOOKING_RENTAL_SLOTS,
+    booking: () => ({
+      type: 'rental',
+      qty: '1',
+      location: 'E2E Garage',
+      available_every_week: '1',
+      renting_type: 'daily',
+      daily_price: '40',
+      same_slot_all_days: '1',
+    }),
+    expectRow: (row: any) => {
+      expect(row.rentingType).toBe('daily');
+      expect(Number(row.dailyPrice)).toBe(40);
+    },
+  },
+  {
+    type: 'table',
+    label: 'table slots',
+    collection: REST_GAPS.BOOKING_TABLE_SLOTS,
+    item: ENDPOINTS.BOOKING_TABLE_SLOTS,
+    booking: () => ({
+      type: 'table',
+      qty: '1',
+      location: 'E2E Restaurant',
+      available_every_week: '1',
+      price_type: 'guest',
+      guest_limit: '4',
+      duration: '45',
+      break_time: '15',
+      prevent_scheduling_before: '0',
+      same_slot_all_days: '1',
+      slots: [{ from: '12:00', to: '14:00' }],
+    }),
+    expectRow: (row: any) => {
+      expect(row.priceType).toBe('guest');
+      expect(Number(row.guestLimit)).toBe(4);
+    },
+  },
+  {
+    type: 'event',
+    label: 'event tickets',
+    collection: REST_GAPS.BOOKING_EVENT_TICKETS,
+    item: ENDPOINTS.BOOKING_EVENT_TICKETS,
+    booking: () => ({
+      type: 'event',
+      qty: '100',
+      location: 'E2E Hall',
+      available_from: `${dateOffset(1)} 09:00:00`,
+      available_to: `${dateOffset(30)} 18:00:00`,
+      tickets: {
+        ticket_0: {
+          en: { name: `E2E Ticket ${uniqueStamp()}`, description: 'E2E ticket description' },
+          price: '25',
+          qty: '40',
+        },
+      },
+    }),
+    expectRow: (row: any) => {
+      expect(Number(row.price)).toBe(25);
+      expect(Number(row.qty)).toBe(40);
+    },
+  },
+];
 
-  test.beforeEach(async ({ request }) => {
-    // Use server-side type filter + smaller page size to keep the discovery
-    // call fast (a per_page=100 fetch can take ~12s under parallel load and
-    // blow the per-test timeout).
-    const productsResp = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '25', type: 'booking' },
+for (const slotCase of SLOT_CASES) {
+  test.describe(`booking product ${slotCase.type} slot rest api`, () => {
+    let createdIds: number[];
+    let bookingProductId: number;
+
+    test.beforeEach(async ({ request }) => {
+      createdIds = [];
+
+      const productId = (await createAdminProduct(request, 'booking')).id;
+      createdIds.push(productId);
+
+      const updated = await updateAdminProduct(request, productId, { booking: slotCase.booking() });
+      expect(updated.bookingProduct?.type).toBe(slotCase.type);
+
+      bookingProductId = await shopBookingProductId(request, productId);
     });
-    if (productsResp.status() !== 200) {
-      test.skip(true, `Products listing returned ${productsResp.status()} — cannot discover booking product`);
-      return;
-    }
-    const products = await productsResp.json();
-    const bookingList = Array.isArray(products) ? products.filter((p: any) => p.type === 'booking') : [];
-    if (bookingList.length === 0) {
-      test.skip(true, 'No booking product seeded — set E2E_BOOKING_PRODUCT_ID');
-      return;
-    }
-    // Verify the booking product exists from the booking products sub-route
-    const bpResp = await sendRestRequest(request, ENDPOINTS.BOOKING_PRODUCTS(bookingList[0].id));
-    if (bpResp.status() === 200) {
-      const bp = await bpResp.json();
-      if (Array.isArray(bp) && bp.length > 0) {
-        bookingProductId = bp[0].id;
-      }
-    }
-  });
 
-  test('Should return default booking slots for a booking product', async ({ request }) => {
-    if (!bookingProductId) {
-      test.skip(true, 'No booking product found');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_DEFAULT_SLOTS(bookingProductId));
-    assertSlotStatus(response, `GET /api/shop/booking_product_default_slots/${bookingProductId}`);
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(body).toBeDefined();
-      console.log('Default booking slots response length:', JSON.stringify(body).length, 'bytes');
-    }
-  });
-
-  test('Should return appointment slots for a booking product', async ({ request }) => {
-    if (!bookingProductId) {
-      test.skip(true, 'No booking product found');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_APPOINTMENT_SLOTS(bookingProductId));
-    assertSlotStatus(response, `GET /api/shop/booking_product_appointment_slots/${bookingProductId}`);
-    if (response.status() === 200) {
-      const body = await response.json();
-      console.log('Appointment slots response length:', JSON.stringify(body).length, 'bytes');
-    }
-  });
-
-  test('Should return rental slots for a booking product', async ({ request }) => {
-    if (!bookingProductId) {
-      test.skip(true, 'No booking product found');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_RENTAL_SLOTS(bookingProductId));
-    assertSlotStatus(response, `GET /api/shop/booking_product_rental_slots/${bookingProductId}`);
-    if (response.status() === 200) {
-      const body = await response.json();
-      console.log('Rental slots response length:', JSON.stringify(body).length, 'bytes');
-    }
-  });
-
-  test('Should return table slots for a booking product', async ({ request }) => {
-    if (!bookingProductId) {
-      test.skip(true, 'No booking product found');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_TABLE_SLOTS(bookingProductId));
-    assertSlotStatus(response, `GET /api/shop/booking_product_table_slots/${bookingProductId}`);
-    if (response.status() === 200) {
-      const body = await response.json();
-      console.log('Table slots response length:', JSON.stringify(body).length, 'bytes');
-    }
-  });
-
-  test('Should return event tickets for a booking product', async ({ request }) => {
-    if (!bookingProductId) {
-      test.skip(true, 'No booking product found');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_EVENT_TICKETS(bookingProductId));
-    assertSlotStatus(response, `GET /api/shop/booking_product_event_tickets/${bookingProductId}`);
-    if (response.status() === 200) {
-      const body = await response.json();
-      console.log('Event tickets response length:', JSON.stringify(body).length, 'bytes');
-    }
-  });
-
-  test('Should return 404 for booking slots of a non-booking product', async ({ request }) => {
-    const simpleResp = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '10', type: 'simple' },
+    test.afterEach(async ({ request }) => {
+      await deleteAdminProducts(request, createdIds);
     });
-    const allProducts = await simpleResp.json();
-    if (!Array.isArray(allProducts) || allProducts.length === 0) {
-      test.skip(true, 'No simple product found');
-      return;
-    }
-    const simpleId = allProducts[0].id;
-    const response = await sendRestRequest(request, ENDPOINTS.BOOKING_DEFAULT_SLOTS(simpleId));
-    expect([200, 404]).toContain(response.status());
-    console.log(`Booking slots for non-booking product ${simpleId}:`, response.status());
+
+    test(`should return ${slotCase.label} for a booking product`, async ({ request }) => {
+      const rows = await collectPages(
+        request,
+        slotCase.collection,
+        (row: any) => Number(row.bookingProductId) === bookingProductId
+      );
+
+      expect(rows).toHaveLength(1);
+
+      const response = await sendRestRequest(request, slotCase.item(numericIdOf(rows[0].id)));
+      const body = await safeJson(response);
+
+      expect(response.status(), JSON.stringify(body)).toBe(200);
+      expect(body).toEqual(rows[0]);
+      slotCase.expectRow(body);
+    });
   });
+}
+
+test.describe('booking product slot refusals rest api', () => {
+  for (const slotCase of SLOT_CASES) {
+    test(`should return 404 for ${slotCase.label} that do not exist`, async ({ request }) => {
+      await expectDetail(await sendRestRequest(request, slotCase.item(UNKNOWN_ID)), 404, REST_GAPS_MESSAGES.GENERIC_NOT_FOUND);
+    });
+  }
 });

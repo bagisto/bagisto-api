@@ -1,8 +1,3 @@
-// tests/graphQL/api/automation/admin/catalog/categories.spec.ts
-//
-// Admin Catalog Categories GraphQL smoke. Reads are loose smoke; writes
-// are create-then-clean with unique names.
-
 import { test, expect } from '@playwright/test';
 import { sendAdminGraphQLRequest } from '../../../../graphql/helpers/adminGraphqlClient';
 import {
@@ -15,6 +10,7 @@ import {
   ADMIN_CATEGORY_MASS_DELETE_MUTATION,
   ADMIN_CATEGORY_MASS_UPDATE_STATUS_MUTATION,
 } from '../../../../graphql/Queries/admin/catalog/categories.queries';
+import { UNSAFE_HTML, assertSanitisedHtml } from '../../../../graphql/assertions/adminSanitisedHtml.assertions';
 
 test.describe.configure({ timeout: 60_000 });
 
@@ -97,7 +93,6 @@ test.describe('Admin Catalog Categories GraphQL', () => {
     });
     expect(resp.status()).toBe(200);
     const body = await resp.json();
-    // Either errors or null payload is acceptable for missing-required.
     const ok = !!body.errors || body.data?.createAdminCategory?.adminCategory == null;
     expect(ok).toBeTruthy();
   });
@@ -118,7 +113,6 @@ test.describe('Admin Catalog Categories GraphQL', () => {
     });
     expect(resp.status()).toBe(200);
     const body = await resp.json();
-    // Empty indices typically rejected.
     const ok = !!body.errors || body.data?.createAdminCategoryMassDelete?.adminCategoryMassDelete != null;
     expect(ok).toBeTruthy();
   });
@@ -132,5 +126,48 @@ test.describe('Admin Catalog Categories GraphQL', () => {
     const body = await resp.json();
     const ok = !!body.errors || body.data?.createAdminCategoryMassUpdateStatus != null;
     expect(ok).toBeTruthy();
+  });
+
+  test('should strip scripts and template code from a category description on create and update', async ({ request }) => {
+    const slug = `e2e-gql-cat-xss-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+    const createResp = await sendAdminGraphQLRequest(request, ADMIN_CATEGORY_CREATE_MUTATION, {
+      slug,
+      name: 'E2E GQL Sanitised Category',
+      description: UNSAFE_HTML,
+      position: 1,
+      attributes: [1],
+      displayMode: 'products_and_description',
+      locale: 'en',
+      status: 1,
+    });
+    expect(createResp.status()).toBe(200);
+    const createBody = await createResp.json();
+    expect(createBody.errors, JSON.stringify(createBody.errors)).toBeUndefined();
+    const id = createBody.data.createAdminCategory.adminCategory.id;
+
+    try {
+      const created = await sendAdminGraphQLRequest(request, ADMIN_CATEGORY_DETAIL_QUERY, { id });
+      const createdBody = await created.json();
+      expect(createdBody.errors, JSON.stringify(createdBody.errors)).toBeUndefined();
+      assertSanitisedHtml(createdBody.data?.adminCategory?.description);
+
+      const upd = await sendAdminGraphQLRequest(request, ADMIN_CATEGORY_UPDATE_MUTATION, {
+        id,
+        position: 1,
+        status: 1,
+        attributes: [1],
+        locale: 'en',
+        en: { slug, name: 'E2E GQL Sanitised Category Updated', description: `${UNSAFE_HTML}<p>Updated</p>` },
+      });
+      const updBody = await upd.json();
+      expect(updBody.errors, JSON.stringify(updBody.errors)).toBeUndefined();
+
+      const updated = await sendAdminGraphQLRequest(request, ADMIN_CATEGORY_DETAIL_QUERY, { id });
+      const updatedBody = await updated.json();
+      assertSanitisedHtml(updatedBody.data?.adminCategory?.description);
+      expect(updatedBody.data?.adminCategory?.description).toContain('<p>Updated</p>');
+    } finally {
+      await sendAdminGraphQLRequest(request, ADMIN_CATEGORY_DELETE_MUTATION, { id });
+    }
   });
 });

@@ -1,19 +1,7 @@
-// tests/restAPI/api/automation/admin/customers/customerAddresses.spec.ts
-//
-// Admin Customer Addresses (W2) — CRUD under /customers/{customerId}/addresses.
-// Ownership guard: addresses with a customer_id != path customerId → 403.
-//
-// Probed 2026-05-26: address create accepts {company_name,first_name,last_name,
-// address (single string), city, state, country, postcode, phone}. Response
-// surfaces companyName camelCase.
-
 import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_CUSTOMERS } from '../../../../rest/endpoints/admin.customers.endpoints';
 
-// Per-test timeout bumped — under parallel load (worker contention against
-// the dev server) the customer-create + address-create + cleanup-delete chain
-// occasionally exceeds the 60s default.
 test.describe.configure({ timeout: 120_000 });
 
 function uniqueEmail(): string {
@@ -33,16 +21,12 @@ async function createCustomer(request: APIRequestContext) {
       password: 'e2epass123',
     },
   });
+  expect(resp.status()).toBe(201);
   return await resp.json();
 }
 
 async function dropCustomer(request: APIRequestContext, id: number) {
-  // Best-effort cleanup — never fail on slow / failed delete cascade.
-  try {
-    await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(id), { method: 'DELETE' });
-  } catch {
-    // ignore
-  }
+  await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(id), { method: 'DELETE' });
 }
 
 const addrPayload = (overrides: Record<string, any> = {}) => ({
@@ -58,8 +42,8 @@ const addrPayload = (overrides: Record<string, any> = {}) => ({
   ...overrides,
 });
 
-test.describe('Admin Customer Addresses REST API', () => {
-  test('list returns envelope (even when empty)', async ({ request }) => {
+test.describe('admin customer addresses rest api', () => {
+  test('list returns envelope even when empty', async ({ request }) => {
     const customer = await createCustomer(request);
     const resp = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER_ADDRESSES(customer.id));
     expect(resp.status()).toBe(200);
@@ -77,7 +61,7 @@ test.describe('Admin Customer Addresses REST API', () => {
       ADMIN_CUSTOMERS.CUSTOMER_ADDRESSES(customer.id),
       { method: 'POST', data: addrPayload() },
     );
-    expect([200, 201]).toContain(createResp.status());
+    expect(createResp.status()).toBe(201);
     const created = await createResp.json();
     expect(created.id).toBeGreaterThan(0);
     expect(created.customerId).toBe(customer.id);
@@ -96,7 +80,14 @@ test.describe('Admin Customer Addresses REST API', () => {
       ADMIN_CUSTOMERS.CUSTOMER_ADDRESS(customer.id, created.id),
       { method: 'DELETE' },
     );
-    expect([200, 204]).toContain(del.status());
+    expect(del.status()).toBe(200);
+    expect((await del.json()).message).toBe('Address deleted successfully.');
+
+    const gone = await sendAdminRequest(
+      request,
+      ADMIN_CUSTOMERS.CUSTOMER_ADDRESS(customer.id, created.id),
+    );
+    expect(gone.status()).toBe(404);
 
     await dropCustomer(request, customer.id);
   });
@@ -109,6 +100,7 @@ test.describe('Admin Customer Addresses REST API', () => {
       ADMIN_CUSTOMERS.CUSTOMER_ADDRESSES(customer.id),
       { method: 'POST', data: addrPayload() },
     );
+    expect(createResp.status()).toBe(201);
     const created = await createResp.json();
 
     const newCity = `City${Date.now()}`;
@@ -120,9 +112,15 @@ test.describe('Admin Customer Addresses REST API', () => {
         data: addrPayload({ city: newCity }),
       },
     );
-    expect([200, 201]).toContain(updResp.status());
+    expect(updResp.status()).toBe(200);
     const updated = await updResp.json();
     expect(updated.city).toBe(newCity);
+
+    const detail = await sendAdminRequest(
+      request,
+      ADMIN_CUSTOMERS.CUSTOMER_ADDRESS(customer.id, created.id),
+    );
+    expect((await detail.json()).city).toBe(newCity);
 
     await dropCustomer(request, customer.id);
   });
@@ -134,12 +132,15 @@ test.describe('Admin Customer Addresses REST API', () => {
       ADMIN_CUSTOMERS.CUSTOMER_ADDRESSES(customer.id),
       { method: 'POST', data: {} },
     );
-    // Empty body → 400/422; some empty-body paths surface 500 syntax-error.
-    expect([400, 422, 500]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('The first name field is required.');
+
+    const list = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER_ADDRESSES(customer.id));
+    expect((await list.json()).data).toEqual([]);
     await dropCustomer(request, customer.id);
   });
 
-  test('cross-customer detail fetch is forbidden or 404', async ({ request }) => {
+  test('cross-customer detail fetch returns 404', async ({ request }) => {
     const a = await createCustomer(request);
     const b = await createCustomer(request);
 
@@ -148,20 +149,21 @@ test.describe('Admin Customer Addresses REST API', () => {
       ADMIN_CUSTOMERS.CUSTOMER_ADDRESSES(a.id),
       { method: 'POST', data: addrPayload() },
     );
+    expect(createResp.status()).toBe(201);
     const addr = await createResp.json();
 
-    // Try to fetch a's address via b's URL — ownership guard should kick in.
     const probe = await sendAdminRequest(
       request,
       ADMIN_CUSTOMERS.CUSTOMER_ADDRESS(b.id, addr.id),
     );
-    expect([403, 404]).toContain(probe.status());
+    expect(probe.status()).toBe(404);
+    expect((await probe.json()).detail).toBe('Address not found.');
 
     await dropCustomer(request, a.id);
     await dropCustomer(request, b.id);
   });
 
-  test('cross-customer delete is forbidden or 404', async ({ request }) => {
+  test('cross-customer delete returns 403', async ({ request }) => {
     const a = await createCustomer(request);
     const b = await createCustomer(request);
 
@@ -170,6 +172,7 @@ test.describe('Admin Customer Addresses REST API', () => {
       ADMIN_CUSTOMERS.CUSTOMER_ADDRESSES(a.id),
       { method: 'POST', data: addrPayload() },
     );
+    expect(createResp.status()).toBe(201);
     const addr = await createResp.json();
 
     const probe = await sendAdminRequest(
@@ -177,7 +180,11 @@ test.describe('Admin Customer Addresses REST API', () => {
       ADMIN_CUSTOMERS.CUSTOMER_ADDRESS(b.id, addr.id),
       { method: 'DELETE' },
     );
-    expect([403, 404]).toContain(probe.status());
+    expect(probe.status()).toBe(403);
+    expect((await probe.json()).detail).toBe('This address does not belong to the specified customer.');
+
+    const stillThere = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER_ADDRESS(a.id, addr.id));
+    expect(stillThere.status()).toBe(200);
 
     await dropCustomer(request, a.id);
     await dropCustomer(request, b.id);

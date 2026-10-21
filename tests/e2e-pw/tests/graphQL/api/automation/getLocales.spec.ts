@@ -3,8 +3,10 @@ import { SHOP_DOCS_QUERIES } from '../../graphql/Queries/shopDocs.queries';
 import { sendGraphQLRequest } from '../../graphql/helpers/graphqlClient';
 import { expectConnection, expectGraphQLSuccess, graphQLErrorMessages } from '../../graphql/helpers/testSupport';
 
-test.describe('Locales GraphQL API - Docs aligned', () => {
-  test('Should return locales as a connection', async ({ request }) => {
+const LOCALE_ID_REQUIRED_MESSAGE = 'Locale ID is required';
+
+test.describe('locales graphql api - docs aligned', () => {
+  test('should return locales as a connection', async ({ request }) => {
     const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getLocales, { first: 10 });
     expect(response.status()).toBe(200);
 
@@ -13,32 +15,30 @@ test.describe('Locales GraphQL API - Docs aligned', () => {
     expect(typeof locales.pageInfo.hasNextPage).toBe('boolean');
   });
 
-  test('Should return a single locale by ID', async ({ request }) => {
+  test('should return a single locale by the id the listing gives', async ({ request }) => {
     const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getLocales, { first: 1 });
     const body = await response.json();
     const locales = expectConnection(body, 'data.locales');
-
-    if (locales.edges.length === 0) {
-      console.log('No locales found in this environment.');
-      return;
-    }
+    expect(locales.edges.length).toBe(1);
+    const listed = locales.edges[0].node;
 
     const singleResponse = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getLocale, {
-      id: locales.edges[0].node.id,
+      id: listed.id,
     });
     expect(singleResponse.status()).toBe(200);
 
     const singleBody = await singleResponse.json();
     expectGraphQLSuccess(singleBody, 'data.locale');
+    expect(singleBody.data.locale._id).toBe(listed._id);
+    expect(singleBody.data.locale.code).toBe(listed.code);
   });
 
-  test('Should return the actual validation message for an invalid locale ID', async ({ request }) => {
+  test('should return the id required message for an empty locale id', async ({ request }) => {
     const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getLocale, { id: '' });
     expect(response.status()).toBe(200);
 
     const body = await response.json();
-    const messages = graphQLErrorMessages(body);
-    console.log(`Locale invalid ID response: ${messages.join(' | ')}`);
-    expect(messages.length > 0 || body.data?.locale === null).toBeTruthy();
+    expect(graphQLErrorMessages(body)).toEqual([LOCALE_ID_REQUIRED_MESSAGE]);
+    expect(body.data.locale).toBeNull();
   });
 });

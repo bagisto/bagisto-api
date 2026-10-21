@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The generated OpenAPI documents, GraphQL schemas and Postman collections are regenerated from the current resources.
 - The API works with `symfony/property-info` 8, which removed the legacy `Symfony\Component\PropertyInfo\Type` class: the package's property metadata factories read only the native `symfony/type-info` type, so a fresh install that resolves Symfony 8 no longer fails with `Class "Symfony\Component\PropertyInfo\Type" not found`.
 - Adding or toggling a wishlist item checks the customer token before it looks up the product, so an anonymous caller gets 401/403 instead of a product-not-found or product-disabled error.
+- GraphQL `bookingSlots` failed with `Cannot return null for non-nullable field "BookingSlot.id"` whenever a client selected `id`. Each slot now has an `id` unique per booking product, date and slot, so clients that cache by `id` keep slots of different products apart.
 - The exported schema (`php artisan bagisto-api-platform:export-schema`) is identical on MySQL, MariaDB and PostgreSQL, so the committed `schema/generated/` files and the Postman collections no longer go stale when they are regenerated on another database. The GraphQL SDL prints the fields of every type in alphabetical order; field order carries no meaning in GraphQL.
 
 ### Security

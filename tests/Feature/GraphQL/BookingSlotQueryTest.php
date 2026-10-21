@@ -71,6 +71,45 @@ class BookingSlotQueryTest extends GraphQLTestCase
         }
     }
 
+    /**
+     * Every flat and rental booking slot returns a non-null id, unique across booking products.
+     */
+    public function test_booking_slots_return_an_id_for_every_slot(): void
+    {
+        $this->seedRequiredData();
+
+        $ids = [];
+
+        foreach (['default', 'rental'] as $type) {
+            $fixture = $type === 'rental'
+                ? $this->createMultiGroupRentalFixture()
+                : $this->createBookingFixture($type);
+
+            $response = $this->graphQL(sprintf(
+                '{ bookingSlots(id: %d, date: "%s") { id slotId } }',
+                (int) $fixture['booking']->id,
+                $fixture['tomorrowDate'],
+            ));
+
+            $response->assertSuccessful();
+
+            $this->assertArrayNotHasKey('errors', $response->json(), "{$type}: ".json_encode($response->json('errors')));
+
+            $slots = $response->json('data.bookingSlots');
+
+            $this->assertNotEmpty($slots, "{$type} booking should return at least one slot");
+
+            foreach ($slots as $slot) {
+                $this->assertNotEmpty($slot['id']);
+                $this->assertNotEmpty($slot['slotId']);
+
+                $ids[] = $slot['id'];
+            }
+        }
+
+        $this->assertSame($ids, array_values(array_unique($ids)));
+    }
+
     // ─── Appointment Booking (flat) ─────────────────────────────────────
 
     /**

@@ -91,67 +91,57 @@ use Webkul\BagistoApi\State\BookingSlotProvider;
 class BookingSlot
 {
     /**
-     * @var int|string|null Internal identifier (hidden from API)
+     * The identifier, unique per booking product, date and slot.
+     *
+     * @var int|string|null
      */
     #[ApiProperty(identifier: true, writable: false, readable: false)]
     public $_id = null;
 
     /**
-     * @var string|null Slot identifier (timestamp for flat slots, sequential index for groups).
-     *
-     * Property name is snake_case so the project's name converter
-     * (`OutputOnlySnakeToCamelNameConverter`) reads it consistently across
-     * REST and GraphQL. The converter camelCases on output, so the response
-     * field is `slotId` either way.
+     * The slot id: the timestamp range of a flat slot, or the position of a rental group.
      */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $slot_id = null;
 
     /**
-     * @var string|null Time range group label for rental hourly slots (e.g., "10:00 AM - 12:00 PM").
-     *                  Null for non-rental booking types.
+     * The time range label of a rental hourly group, or null for other booking types.
      */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $time = null;
 
     /**
-     * @var string|null Start time of the slot (e.g., "12:00 PM"). Used by non-rental types.
-     *                  Null for rental hourly (data is in `slots` array instead).
+     * The start time of a flat slot, or null for a rental hourly group.
      */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $from = null;
 
     /**
-     * @var string|null End time of the slot (e.g., "12:45 PM"). Used by non-rental types.
-     *                  Null for rental hourly (data is in `slots` array instead).
+     * The end time of a flat slot, or null for a rental hourly group.
      */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $to = null;
 
     /**
-     * @var string|null Timestamp range (e.g., "1774247400-1774250100"). Used by non-rental types.
-     *                  Null for rental hourly (data is in `slots` array instead).
+     * The timestamp range of a flat slot, or null for a rental hourly group.
      */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $timestamp = null;
 
     /**
-     * @var string|null Indicates if the slot is available or qty remaining. Used by non-rental types.
-     *                  Null for rental hourly (data is in `slots` array instead).
+     * The quantity still available in a flat slot, or null for a rental hourly group.
      */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $qty = null;
 
     /**
-     * @var iterable|null Nested hourly sub-slots for rental hourly type.
-     *                    Each element: { from, to, timestamp, qty }
-     *                    Null for non-rental booking types.
+     * The hourly sub-slots of a rental group, each with from, to, timestamp and qty.
      */
     #[ApiProperty(writable: false, readable: true)]
     public ?iterable $slots = null;
 
     /**
-     * Create a new BookingSlot instance.
+     * Create a new booking slot, identified by the given identifier or else its slot id.
      */
     public function __construct(
         ?string $slotId = null,
@@ -160,9 +150,10 @@ class BookingSlot
         ?string $to = null,
         ?string $timestamp = null,
         ?string $qty = null,
-        ?array $slots = null
+        ?array $slots = null,
+        ?string $identifier = null,
     ) {
-        $this->_id = $slotId ?? uniqid('slot_');
+        $this->_id = $identifier ?? $slotId ?? uniqid('slot_');
         $this->slot_id = $slotId;
         $this->time = $time;
         $this->from = $from;

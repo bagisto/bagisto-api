@@ -81,18 +81,20 @@ class BookingSlotProvider implements ProviderInterface
 
         $slots = $this->bookingHelpers[$bookingProduct->type]->getSlotsByDate($bookingProduct, $date);
 
+        $identifierPrefix = $bookingProduct->id.'-'.$date.'-';
+
         if ($bookingProduct->type === 'rental') {
-            return $this->buildRentalSlots($slots);
+            return $this->buildRentalSlots($slots, $identifierPrefix);
         }
 
-        return $this->buildFlatSlots($slots);
+        return $this->buildFlatSlots($slots, $identifierPrefix);
     }
 
     /**
      * Build grouped slot response for rental hourly booking type.
      * Each BookingSlot represents an admin-configured time range group.
      */
-    private function buildRentalSlots(array $rawSlots): array
+    private function buildRentalSlots(array $rawSlots, string $identifierPrefix): array
     {
         $result = [];
         $index = 1;
@@ -116,10 +118,13 @@ class BookingSlotProvider implements ProviderInterface
                 ];
             }
 
+            $slotId = (string) $index++;
+
             $result[] = new BookingSlot(
-                slotId: (string) $index++,
+                slotId: $slotId,
                 time: $group['time'] ?? null,
                 slots: $subSlots,
+                identifier: $identifierPrefix.$slotId,
             );
         }
 
@@ -130,14 +135,17 @@ class BookingSlotProvider implements ProviderInterface
      * Build flat slot response for default, appointment, table, and event types.
      * Each BookingSlot is a single time slot with from/to/timestamp/qty.
      */
-    private function buildFlatSlots(array $rawSlots): array
+    private function buildFlatSlots(array $rawSlots, string $identifierPrefix): array
     {
         $result = [];
         $index = 1;
 
         foreach ($rawSlots as $slot) {
+            $slotId = $slot['timestamp'] ?? (string) $index++;
+
             $result[] = new BookingSlot(
-                slotId: $slot['timestamp'] ?? (string) $index++,
+                slotId: $slotId,
+                identifier: $identifierPrefix.$slotId,
                 from: $slot['from'] ?? null,
                 to: $slot['to'] ?? null,
                 timestamp: $slot['timestamp'] ?? null,

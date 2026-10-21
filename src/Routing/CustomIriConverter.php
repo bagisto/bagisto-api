@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Exception\MissingMandatoryParametersException;
 class CustomIriConverter implements IriConverterInterface
 {
     /**
-     * Resources that never expose an IRI.
+     * Resources that are never resolved from an IRI, and that expose none apart from a booking slot's id.
      */
     private const HIDDEN_RESOURCES = ['BookingSlot', 'CartToken', 'AddProductInCart', 'OrderDetailItem', 'OrderDetailInvoice', 'OrderDetailShipment'];
 
@@ -144,6 +144,10 @@ class CustomIriConverter implements IriConverterInterface
      */
     private function computeIriFromResource(object|string $resource, int $referenceType = UrlGeneratorInterface::ABS_PATH, ?Operation $operation = null, array $context = []): ?string
     {
+        if (class_basename(is_object($resource) ? $resource::class : $resource) === 'BookingSlot') {
+            return $this->bookingSlotIri($resource, $context);
+        }
+
         if ($this->isHiddenResource($resource)) {
             return null;
         }
@@ -189,6 +193,25 @@ class CustomIriConverter implements IriConverterInterface
         }
 
         return class_exists($resource) && in_array(class_basename($resource), self::HIDDEN_RESOURCES, true);
+    }
+
+    /**
+     * IRI that identifies a booking slot, from the slot itself or from the identifier GraphQL resolves `id` with.
+     */
+    private function bookingSlotIri(object|string $resource, array $context): ?string
+    {
+        $identifier = is_object($resource)
+            ? $resource->_id
+            : ($context['uri_variables']['_id'] ?? null);
+
+        if (
+            $identifier === null
+            || $identifier === ''
+        ) {
+            return null;
+        }
+
+        return '/api/shop/booking-slots/'.rawurlencode((string) $identifier);
     }
 
     /**

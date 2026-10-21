@@ -12,20 +12,104 @@ jobs:
       fail-fast: false
       matrix:
         shard: [1/4, 2/4, 3/4, 4/4]
+        db:
+          - connection: mysql
+            label: MySQL 8.0
+            image: mysql:8.0
+            port: 3306
+            user: root
+            password: root
+            health: mysqladmin ping
+            php-ext: pdo_mysql
+
+          - connection: mysql
+            label: MySQL 8.4
+            image: mysql:8.4
+            port: 3306
+            user: root
+            password: root
+            health: mysqladmin ping
+            php-ext: pdo_mysql
+
+          - connection: mysql
+            label: MySQL 9.7
+            image: mysql:9.7
+            port: 3306
+            user: root
+            password: root
+            health: mysqladmin ping
+            php-ext: pdo_mysql
+
+          - connection: mariadb
+            label: MariaDB 10.11
+            image: mariadb:10.11
+            port: 3306
+            user: root
+            password: root
+            health: healthcheck.sh --connect --innodb_initialized
+            php-ext: pdo_mysql
+
+          - connection: mariadb
+            label: MariaDB 11.8
+            image: mariadb:11.8
+            port: 3306
+            user: root
+            password: root
+            health: healthcheck.sh --connect --innodb_initialized
+            php-ext: pdo_mysql
+
+          - connection: mariadb
+            label: MariaDB 12.3
+            image: mariadb:12.3
+            port: 3306
+            user: root
+            password: root
+            health: healthcheck.sh --connect --innodb_initialized
+            php-ext: pdo_mysql
+
+          - connection: pgsql
+            label: PostgreSQL 10
+            image: postgres:10
+            port: 5432
+            user: postgres
+            password: postgres
+            health: pg_isready
+            php-ext: pdo_pgsql
+
+          - connection: pgsql
+            label: PostgreSQL 14
+            image: postgres:14
+            port: 5432
+            user: postgres
+            password: postgres
+            health: pg_isready
+            php-ext: pdo_pgsql
+
+          - connection: pgsql
+            label: PostgreSQL 18
+            image: postgres:18
+            port: 5432
+            user: postgres
+            password: postgres
+            health: pg_isready
+            php-ext: pdo_pgsql
+
+    name: Playwright · ${{ matrix.db.label }} · Shard ${{ matrix.shard }}
 
     services:
-      mysql:
-        image: mysql:8.0
+      database:
+        image: ${{ matrix.db.image }}
         env:
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_PASSWORD: ${{ matrix.db.password }}
           MYSQL_DATABASE: bagisto
+          MARIADB_ROOT_PASSWORD: ${{ matrix.db.password }}
+          MARIADB_DATABASE: bagisto
+          POSTGRES_USER: ${{ matrix.db.user }}
+          POSTGRES_PASSWORD: ${{ matrix.db.password }}
+          POSTGRES_DB: bagisto
         ports:
-          - 3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+          - ${{ matrix.db.port }}
+        options: --health-cmd="${{ matrix.db.health }}" --health-interval=10s --health-timeout=5s --health-retries=5
 
     steps:
       - name: Checkout Bagisto API
@@ -37,7 +121,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip, opcache
+          extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, ${{ matrix.db.php-ext }}, tokenizer, zip, opcache
           ini-values: opcache.enable=1, opcache.enable_cli=1, opcache.validate_timestamps=0, opcache.max_accelerated_files=20000, opcache.memory_consumption=256
           coverage: none
           tools: composer:v2
@@ -48,11 +132,12 @@ jobs:
           cd bagisto
           cp .env.example .env
           sed -i "s|^APP_DEBUG=.*|APP_DEBUG=false|" .env
-          sed -i "s|DB_HOST=.*|DB_HOST=127.0.0.1|" .env
-          sed -i "s|DB_PORT=.*|DB_PORT=${{ job.services.mysql.ports['3306'] }}|" .env
-          sed -i "s|DB_DATABASE=.*|DB_DATABASE=bagisto|" .env
-          sed -i "s|DB_USERNAME=.*|DB_USERNAME=root|" .env
-          sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=root|" .env
+          sed -i "s|^DB_CONNECTION=.*|DB_CONNECTION=${{ matrix.db.connection }}|" .env
+          sed -i "s|^DB_HOST=.*|DB_HOST=127.0.0.1|" .env
+          sed -i "s|^DB_PORT=.*|DB_PORT=${{ job.services.database.ports[matrix.db.port] }}|" .env
+          sed -i "s|^DB_DATABASE=.*|DB_DATABASE=bagisto|" .env
+          sed -i "s|^DB_USERNAME=.*|DB_USERNAME=${{ matrix.db.user }}|" .env
+          sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=${{ matrix.db.password }}|" .env
           grep -q '^CACHE_STORE=' .env && sed -i "s|^CACHE_STORE=.*|CACHE_STORE=file|" .env || echo "CACHE_STORE=file" >> .env
           php artisan bagisto:install --no-interaction --demo-samples
           php artisan indexer:index --mode=full
@@ -102,7 +187,7 @@ jobs:
             $key = \Webkul\BagistoApi\Models\StorefrontKey::generateKey();
             \Illuminate\Support\Facades\DB::table("storefront_keys")->insert([
               "name" => "e2e", "key_type" => "shop", "key" => $key,
-              "is_active" => 1, "rate_limit" => 0,
+              "is_active" => true, "rate_limit" => 0,
               "created_at" => now(), "updated_at" => now(),
             ]);
             echo "E2E_SHOP_KEY=".$key;
@@ -174,5 +259,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ strategy.job-index }}
+          name: playwright-report-${{ matrix.db.connection }}-${{ strategy.job-index }}
           path: bagisto/packages/Webkul/BagistoApi/tests/e2e-pw/playwright-report

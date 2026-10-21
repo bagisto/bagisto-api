@@ -14,23 +14,110 @@ jobs:
     runs-on: ubuntu-22.04
 
     strategy:
+      fail-fast: false
       matrix:
         php-versions: ['8.4']
+        db:
+          - connection: mysql
+            label: MySQL 8.0
+            image: mysql:8.0
+            port: 3306
+            user: root
+            password: root
+            health: mysqladmin ping
+            php-ext: pdo_mysql
 
-    name: PHP ${{ matrix.php-versions }} | pest against Bagisto v2.5.0
+          - connection: mysql
+            label: MySQL 8.4
+            image: mysql:8.4
+            port: 3306
+            user: root
+            password: root
+            health: mysqladmin ping
+            php-ext: pdo_mysql
+
+          - connection: mysql
+            label: MySQL 9.7
+            image: mysql:9.7
+            port: 3306
+            user: root
+            password: root
+            health: mysqladmin ping
+            php-ext: pdo_mysql
+
+          - connection: mariadb
+            label: MariaDB 10.11
+            image: mariadb:10.11
+            port: 3306
+            user: root
+            password: root
+            health: healthcheck.sh --connect --innodb_initialized
+            php-ext: pdo_mysql
+
+          - connection: mariadb
+            label: MariaDB 11.8
+            image: mariadb:11.8
+            port: 3306
+            user: root
+            password: root
+            health: healthcheck.sh --connect --innodb_initialized
+            php-ext: pdo_mysql
+
+          - connection: mariadb
+            label: MariaDB 12.3
+            image: mariadb:12.3
+            port: 3306
+            user: root
+            password: root
+            health: healthcheck.sh --connect --innodb_initialized
+            php-ext: pdo_mysql
+
+          - connection: pgsql
+            label: PostgreSQL 10
+            image: postgres:10
+            port: 5432
+            user: postgres
+            password: postgres
+            health: pg_isready
+            php-ext: pdo_pgsql
+
+          - connection: pgsql
+            label: PostgreSQL 14
+            image: postgres:14
+            port: 5432
+            user: postgres
+            password: postgres
+            health: pg_isready
+            php-ext: pdo_pgsql
+
+          - connection: pgsql
+            label: PostgreSQL 18
+            image: postgres:18
+            port: 5432
+            user: postgres
+            password: postgres
+            health: pg_isready
+            php-ext: pdo_pgsql
+
+    name: PHP ${{ matrix.php-versions }} - ${{ matrix.db.label }}
 
     env:
       BAGISTO_VERSION: v2.5.0
 
     services:
-      mysql:
-        image: mysql:8.0
+      database:
+        image: ${{ matrix.db.image }}
         env:
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_PASSWORD: ${{ matrix.db.password }}
           MYSQL_DATABASE: bagisto
+          MARIADB_ROOT_PASSWORD: ${{ matrix.db.password }}
+          MARIADB_DATABASE: bagisto
+          POSTGRES_USER: ${{ matrix.db.user }}
+          POSTGRES_PASSWORD: ${{ matrix.db.password }}
+          POSTGRES_DB: bagisto
         ports:
-          - 3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+          - ${{ matrix.db.port }}
+        options: --health-cmd="${{ matrix.db.health }}" --health-interval=10s --health-timeout=5s --health-retries=5
 
     steps:
       - name: Checkout bagisto-api plugin
@@ -49,7 +136,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip
+          extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, ${{ matrix.db.php-ext }}, tokenizer, zip
           ini-values: error_reporting=E_ALL, memory_limit=-1
           coverage: none
           tools: composer:v2
@@ -73,11 +160,12 @@ jobs:
           cp .env.example .env
           sed -i "s|^\(APP_ENV=\s*\).*$|\1testing|" .env
           sed -i "s|^\(APP_DEBUG=\s*\).*$|\1true|" .env
+          sed -i "s|^\(DB_CONNECTION=\s*\).*$|\1${{ matrix.db.connection }}|" .env
           sed -i "s|^\(DB_HOST=\s*\).*$|\1127.0.0.1|" .env
-          sed -i "s|^\(DB_PORT=\s*\).*$|\1${{ job.services.mysql.ports['3306'] }}|" .env
+          sed -i "s|^\(DB_PORT=\s*\).*$|\1${{ job.services.database.ports[matrix.db.port] }}|" .env
           sed -i "s|^\(DB_DATABASE=\s*\).*$|\1bagisto|" .env
-          sed -i "s|^\(DB_USERNAME=\s*\).*$|\1root|" .env
-          sed -i "s|^\(DB_PASSWORD=\s*\).*$|\1root|" .env
+          sed -i "s|^\(DB_USERNAME=\s*\).*$|\1${{ matrix.db.user }}|" .env
+          sed -i "s|^\(DB_PASSWORD=\s*\).*$|\1${{ matrix.db.password }}|" .env
           # Laravel 13 reads CACHE_STORE; CACHE_DRIVER alone leaves the app cache on `file`,
           # which is where API_PLATFORM_CACHE keeps the metadata pool — one flush of the app
           # cache would then take the metadata of every parallel worker with it.
@@ -144,6 +232,31 @@ jobs:
         continue-on-error: true
         run: vendor/bin/pest --parallel --processes=4 --colors=always vendor/bagisto/bagisto-api/tests/Feature/Admin/RestApi
 
+      - name: Run Admin audit and admin panel Pest (plugin suite)
+        id: admin_web_tests
+        if: always()
+        working-directory: bagisto
+        continue-on-error: true
+        run: |
+          status=0
+          for dir in vendor/bagisto/bagisto-api/tests/Feature/Admin/Audit vendor/bagisto/bagisto-api/tests/Feature/Admin/Web; do
+            vendor/bin/pest --parallel --processes=4 --colors=always "$dir" || status=1
+          done
+          exit $status
+
+      - name: Run package-level Pest (plugin suite)
+        id: package_tests
+        if: always()
+        working-directory: bagisto
+        continue-on-error: true
+        run: |
+          status=0
+          for file in vendor/bagisto/bagisto-api/tests/Feature/*Test.php; do
+            [ "$(basename "$file")" = "SchemaExportTest.php" ] && continue
+            vendor/bin/pest --colors=always "$file" || status=1
+          done
+          exit $status
+
       - name: Run schema export drift Pest (plugin suite)
         id: schema_tests
         if: always()
@@ -158,12 +271,16 @@ jobs:
           echo "REST:           ${{ steps.rest_tests.outcome }}"
           echo "Admin GraphQL:  ${{ steps.admin_graphql_tests.outcome }}"
           echo "Admin REST:     ${{ steps.admin_rest_tests.outcome }}"
+          echo "Admin Audit/Web: ${{ steps.admin_web_tests.outcome }}"
+          echo "Package-level:  ${{ steps.package_tests.outcome }}"
           echo "Schema drift:   ${{ steps.schema_tests.outcome }}"
 
           if [ "${{ steps.graphql_tests.outcome }}" != "success" ] \
             || [ "${{ steps.rest_tests.outcome }}" != "success" ] \
             || [ "${{ steps.admin_graphql_tests.outcome }}" != "success" ] \
             || [ "${{ steps.admin_rest_tests.outcome }}" != "success" ] \
+            || [ "${{ steps.admin_web_tests.outcome }}" != "success" ] \
+            || [ "${{ steps.package_tests.outcome }}" != "success" ] \
             || [ "${{ steps.schema_tests.outcome }}" != "success" ]; then
             echo "::error::One or more Pest suites failed."
             exit 1

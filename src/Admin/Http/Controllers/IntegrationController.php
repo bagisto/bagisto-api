@@ -248,7 +248,7 @@ class IntegrationController extends Controller
             'token' => $token,
             'alreadyInactive' => false,
             'confirmUrl' => URL::temporarySignedRoute(
-                'admin.integration.revoke-via-email.perform',
+                'admin.integration.revoke_via_email.perform',
                 now()->addHour(),
                 ['id' => $token->id]
             ),

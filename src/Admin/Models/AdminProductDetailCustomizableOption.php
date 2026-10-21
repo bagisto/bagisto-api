@@ -19,10 +19,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 )]
 class AdminProductDetailCustomizableOption extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the customizable options.
+     *
+     * @var string
+     */
     protected $table = 'product_customizable_options';
 
-    /** @var array */
+    /**
+     * The native types the customizable option attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'is_required' => 'boolean',

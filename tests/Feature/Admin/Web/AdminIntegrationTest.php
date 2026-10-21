@@ -279,7 +279,7 @@ class AdminIntegrationTest extends TestCase
         app('auth')->guard('admin')->logout();
 
         $url = URL::temporarySignedRoute(
-            'admin.integration.revoke-via-email',
+            'admin.integration.revoke_via_email',
             now()->addDays(7),
             ['id' => $token->id]
         );
@@ -289,7 +289,7 @@ class AdminIntegrationTest extends TestCase
         $this->assertSame(AdminPersonalAccessToken::STATUS_ACTIVE, $token->refresh()->status);
 
         $confirmUrl = URL::temporarySignedRoute(
-            'admin.integration.revoke-via-email.perform',
+            'admin.integration.revoke_via_email.perform',
             now()->addHour(),
             ['id' => $token->id]
         );
@@ -310,7 +310,7 @@ class AdminIntegrationTest extends TestCase
         $token = $this->activeToken($admin);
 
         $url = URL::temporarySignedRoute(
-            'admin.integration.revoke-via-email',
+            'admin.integration.revoke_via_email',
             now()->addDays(7),
             ['id' => $token->id]
         );
@@ -328,7 +328,7 @@ class AdminIntegrationTest extends TestCase
         $admin = $this->actingAdmin();
         $token = $this->activeToken($admin);
 
-        $this->post(route('admin.integration.revoke-via-email.perform', ['id' => $token->id]))->assertStatus(403);
+        $this->post(route('admin.integration.revoke_via_email.perform', ['id' => $token->id]))->assertStatus(403);
 
         $this->assertSame(AdminPersonalAccessToken::STATUS_ACTIVE, $token->refresh()->status);
     }
@@ -341,7 +341,7 @@ class AdminIntegrationTest extends TestCase
         $admin = $this->actingAdmin();
         $token = $this->activeToken($admin);
 
-        $this->get(route('admin.integration.revoke-via-email', ['id' => $token->id]))
+        $this->get(route('admin.integration.revoke_via_email', ['id' => $token->id]))
             ->assertStatus(403);
 
         $this->assertSame(AdminPersonalAccessToken::STATUS_ACTIVE, $token->refresh()->status);
@@ -357,7 +357,7 @@ class AdminIntegrationTest extends TestCase
         $this->service->revoke($token, $admin->id);
 
         $url = URL::temporarySignedRoute(
-            'admin.integration.revoke-via-email',
+            'admin.integration.revoke_via_email',
             now()->addDays(7),
             ['id' => $token->id]
         );
@@ -433,7 +433,7 @@ class AdminIntegrationTest extends TestCase
         $this->setModuleEnabled(false);
 
         $url = URL::temporarySignedRoute(
-            'admin.integration.revoke-via-email',
+            'admin.integration.revoke_via_email',
             now()->addDays(7),
             ['id' => $token->id]
         );
@@ -441,7 +441,7 @@ class AdminIntegrationTest extends TestCase
         $this->get($url)->assertOk();
 
         $confirmUrl = URL::temporarySignedRoute(
-            'admin.integration.revoke-via-email.perform',
+            'admin.integration.revoke_via_email.perform',
             now()->addHour(),
             ['id' => $token->id]
         );

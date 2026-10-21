@@ -49,7 +49,11 @@ class AdminSettingsChannelCreateInput
     #[Groups(['mutation'])]
     public ?string $timezone = null;
 
-    /** @var array<int>|null */
+    /**
+     * The ids of the locales attached to the channel.
+     *
+     * @var array<int>|null
+     */
     #[ApiProperty(description: 'Locale ids attached to this channel.')]
     #[Groups(['mutation'])]
     public ?array $locales = null;
@@ -61,7 +65,11 @@ class AdminSettingsChannelCreateInput
     #[Groups(['mutation'])]
     public ?int $default_locale_id = null;
 
-    /** @var array<int>|null */
+    /**
+     * The ids of the currencies attached to the channel.
+     *
+     * @var array<int>|null
+     */
     #[ApiProperty(description: 'Currency ids attached to this channel.')]
     #[Groups(['mutation'])]
     public ?array $currencies = null;
@@ -73,7 +81,11 @@ class AdminSettingsChannelCreateInput
     #[Groups(['mutation'])]
     public ?int $base_currency_id = null;
 
-    /** @var array<int>|null */
+    /**
+     * The ids of the inventory sources attached to the channel.
+     *
+     * @var array<int>|null
+     */
     #[ApiProperty(description: 'Inventory source ids attached to this channel.')]
     #[Groups(['mutation'])]
     public ?array $inventory_sources = null;
@@ -141,7 +153,11 @@ class AdminSettingsChannelCreateInput
     #[Groups(['mutation'])]
     public ?string $favicon = null;
 
-    /** @var array<string,array<string,mixed>>|null */
+    /**
+     * The per-locale overrides of the channel content, keyed by locale code.
+     *
+     * @var array<string,array<string,mixed>>|null
+     */
     #[ApiProperty(description: 'Optional locale-nested overrides: { "<locale>": { name, description, home_page_content, footer_content, seo_title, seo_description, seo_keywords, maintenance_mode_text } }. Top-level fields are broadcast to every locale unless overridden here.')]
     #[Groups(['mutation'])]
     public ?array $translations = null;

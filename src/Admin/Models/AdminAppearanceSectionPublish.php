@@ -94,6 +94,8 @@ class AdminAppearanceSectionPublish
     public ?int $channel_id = null;
 
     /**
+     * The ids of the sections that were published.
+     *
      * @var array<int, int>
      */
     public array $section_ids = [];

@@ -28,7 +28,11 @@ class AdminCmsPageCreateInput
     #[Groups(['mutation'])]
     public ?string $html_content = null;
 
-    /** @var array<int, int>|null */
+    /**
+     * The ids of the channels to attach the CMS page to.
+     *
+     * @var array<int, int>|null
+     */
     #[ApiProperty(description: 'Channel IDs to attach the page to.')]
     #[Groups(['mutation'])]
     public ?array $channels = null;

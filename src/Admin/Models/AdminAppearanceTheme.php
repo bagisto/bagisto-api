@@ -158,6 +158,8 @@ class AdminAppearanceTheme
     public ?string $rating = null;
 
     /**
+     * The tags that describe the theme in the gallery.
+     *
      * @var array<int, string>
      */
     public array $tags = [];

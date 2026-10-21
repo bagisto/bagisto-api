@@ -19,10 +19,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminOrderDetailInvoice extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the invoices.
+     *
+     * @var string
+     */
     protected $table = 'invoices';
 
-    /** @var array */
+    /**
+     * The native types the order invoice attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'email_sent' => 'boolean',

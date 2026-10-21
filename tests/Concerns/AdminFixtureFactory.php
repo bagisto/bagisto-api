@@ -250,13 +250,6 @@ trait AdminFixtureFactory
         return $this->bootstrapAdminOrder('pending', true);
     }
 
-    /* ---------------------------------------------------------------------
-     | Sales action fixtures — P2 additions
-     | ---------------------------------------------------------------------
-     | Helpers for bootstrapping orders + addresses + invoices / shipments /
-     | refunds / transactions / comments. Used by the Sales test cluster.
-     */
-
     /**
      * Build a draft cart ready to be placed as an order: items, billing +
      * shipping address, shipping method (`flatrate_flatrate`) and a payment.
@@ -472,10 +465,6 @@ trait AdminFixtureFactory
             'updated_at' => now(),
         ], $overrides));
     }
-
-    /* ---------------------------------------------------------------------
-     | P3 additions — Customer sidebar / settings / catalog
-     | --------------------------------------------------------------------- */
 
     /**
      * Find or create a system customer group (`is_user_defined = 0`). Always

@@ -28,7 +28,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
     use ChecksAdminPermission;
     use SanitisesHtmlContent;
 
-    /** Slug regex used in place of \Webkul\Core\Rules\Slug (which is fatal in API context). */
+    /**
+     * Slug regex used in place of \Webkul\Core\Rules\Slug (which is fatal in API context).
+     */
     protected const SLUG_REGEX = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
 
     /**

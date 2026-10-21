@@ -242,10 +242,18 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
 )]
 class AdminSettingsTheme extends EloquentModel
 {
-    /** @var string */
+    /**
+     * The table that stores the theme customizations.
+     *
+     * @var string
+     */
     protected $table = 'theme_customizations';
 
-    /** @var array */
+    /**
+     * The native types the theme customization attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'sort_order' => 'int',
@@ -255,7 +263,11 @@ class AdminSettingsTheme extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the theme customization is serialized.
+     *
+     * @var array
+     */
     protected $appends = [
         'message',
     ];

@@ -7,11 +7,17 @@ use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
 class OutputOnlySnakeToCamelNameConverter implements NameConverterInterface
 {
     /**
+     * Camel-case names already converted from snake-case property names.
+     *
      * @var array<string, string>
      */
     private static array $normalized = [];
 
-    /** @var array<string, string> */
+    /**
+     * Snake-case property names already converted from camel-case names.
+     *
+     * @var array<string, string>
+     */
     private static array $denormalized = [];
 
     /**

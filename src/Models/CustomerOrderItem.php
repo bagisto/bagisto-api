@@ -14,13 +14,25 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class CustomerOrderItem extends Model
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'order_items';
 
-    /** @var array */
+    /**
+     * The quantity accessors appended to the item's array form.
+     *
+     * @var array
+     */
     protected $appends = ['qtyOrdered', 'qtyShipped', 'qtyInvoiced', 'qtyCanceled', 'qtyRefunded'];
 
-    /** @var array */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'sku' => 'string',

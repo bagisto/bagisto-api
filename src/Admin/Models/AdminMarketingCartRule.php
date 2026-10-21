@@ -784,13 +784,25 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
 )]
 class AdminMarketingCartRule extends EloquentModel
 {
-    /** @var string */
+    /**
+     * The table that stores the cart rules.
+     *
+     * @var string
+     */
     protected $table = 'cart_rules';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the cart rule is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['coupon_code'];
 
-    /** @var array */
+    /**
+     * The native types the cart rule attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'status' => 'int',

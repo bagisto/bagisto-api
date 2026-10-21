@@ -14,13 +14,25 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminMarketingEventRef extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the marketing events.
+     *
+     * @var string
+     */
     protected $table = 'marketing_events';
 
-    /** @var bool */
+    /**
+     * Indicates the marketing event reference does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The native types the marketing event reference attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
     ];

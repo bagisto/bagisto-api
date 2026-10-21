@@ -113,52 +113,92 @@ class AdminCatalogProductUpdateInput
     #[Groups(['mutation'])]
     public ?int $taxCategoryId = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the categories the product is assigned to.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $categories = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the channels the product is available in.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $channels = null;
 
-    /** @var array<string, mixed>|null  Locale-keyed translation map */
+    /**
+     * The per-locale attribute values of the product.
+     *
+     * @var array<string, mixed>|null Locale-keyed translation map
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $translations = null;
 
-    /** @var array<string, int[]>|null */
+    /**
+     * The configurable attribute codes mapped to their selected option ids.
+     *
+     * @var array<string, int[]>|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $superAttributes = null;
 
-    /** @var array<int, mixed>|null */
+    /**
+     * The variants of a configurable product.
+     *
+     * @var array<int, mixed>|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $variants = null;
 
-    /** @var array<int, mixed>|null */
+    /**
+     * The options of a bundle product and their products.
+     *
+     * @var array<int, mixed>|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $bundleOptions = null;
 
-    /** @var array<int, mixed>|null  Grouped product links */
+    /**
+     * The products linked to a grouped product.
+     *
+     * @var array<int, mixed>|null Grouped product links
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $links = null;
 
-    /** @var array<int, mixed>|null */
+    /**
+     * The links of a downloadable product.
+     *
+     * @var array<int, mixed>|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $downloadableLinks = null;
 
-    /** @var array<int, mixed>|null */
+    /**
+     * The samples of a downloadable product.
+     *
+     * @var array<int, mixed>|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $downloadableSamples = null;
 
-    /** @var array<string, mixed>|null  Booking sub-type payload */
+    /**
+     * The booking settings of a booking product.
+     *
+     * @var array<string, mixed>|null Booking sub-type payload
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $booking = null;

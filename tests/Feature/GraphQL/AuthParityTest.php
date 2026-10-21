@@ -10,9 +10,9 @@ use Webkul\BookingProduct\Models\BookingProductDefaultSlot;
 
 class AuthParityTest extends GraphQLTestCase
 {
-    // ====
-    // Guarded queries refuse an anonymous caller
-    // ====
+    // ============================================================================
+    // Guarded Queries Refuse An Anonymous Caller
+    // ============================================================================
 
     /**
      * Test every customer guarded query refuses an anonymous caller.
@@ -180,9 +180,9 @@ class AuthParityTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
-    // ====
-    // Public queries answer an anonymous caller
-    // ====
+    // ============================================================================
+    // Public Queries Answer An Anonymous Caller
+    // ============================================================================
 
     /**
      * Test public queries answer an anonymous caller.

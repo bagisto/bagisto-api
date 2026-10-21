@@ -553,11 +553,19 @@ class AdminCategory
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 
-    /** @var array<int, mixed>|null */
+    /**
+     * The per-locale translations of the category.
+     *
+     * @var array<int, mixed>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $translations = null;
 
-    /** @var array<int, int>|null */
+    /**
+     * The ids of the attributes the category can be filtered by.
+     *
+     * @var array<int, int>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $filterable_attribute_ids = null;
 }

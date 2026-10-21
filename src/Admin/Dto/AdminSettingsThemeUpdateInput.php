@@ -63,7 +63,11 @@ class AdminSettingsThemeUpdateInput
     #[Groups(['mutation'])]
     public ?string $locale = null;
 
-    /** @var array<string,mixed>|null */
+    /**
+     * The per-locale options of the theme customization, shaped by its type.
+     *
+     * @var array<string,mixed>|null
+     */
     #[ApiProperty(description: 'Per-locale options blob (associative array). Shape depends on `type`. Image uploads deferred — use path strings.')]
     #[Groups(['mutation'])]
     public ?array $options = null;

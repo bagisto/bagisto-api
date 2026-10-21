@@ -36,7 +36,11 @@ class AdminProductSuperAttributeDto
     #[ApiProperty(writable: false)]
     public ?string $adminName = null;
 
-    /** @var array<int, mixed>|null */
+    /**
+     * The options of the configurable attribute.
+     *
+     * @var array<int, mixed>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $options = null;
 }

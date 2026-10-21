@@ -39,7 +39,9 @@ class AdminCartAddressDto
      */
     public ?string $email = null;
 
-    /** Stored as a newline-joined string in Bagisto core; exposed as the raw value. */
+    /**
+     * Stored as a newline-joined string in Bagisto core; exposed as the raw value.
+     */
     public ?string $address = null;
 
     /**

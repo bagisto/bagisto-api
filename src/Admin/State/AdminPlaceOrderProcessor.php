@@ -16,7 +16,9 @@ use Webkul\Sales\Transformers\OrderResource;
 
 class AdminPlaceOrderProcessor implements ProcessorInterface
 {
-    /** Monolith restriction — only these two payments may be admin-placed. */
+    /**
+     * Monolith restriction — only these two payments may be admin-placed.
+     */
     protected const SUPPORTED_PAYMENT_METHODS = ['cashondelivery', 'moneytransfer'];
 
     /**

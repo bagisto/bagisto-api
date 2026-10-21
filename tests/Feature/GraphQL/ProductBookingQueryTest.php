@@ -14,7 +14,9 @@ use Webkul\BookingProduct\Models\BookingProductTableSlot;
 
 class ProductBookingQueryTest extends GraphQLTestCase
 {
-    // ─── Appointment ────────────────────────────────────────────────────
+    // ============================================================================
+    // Appointment
+    // ============================================================================
 
     /**
      * Test querying appointment booking product with full slot details.
@@ -81,7 +83,9 @@ class ProductBookingQueryTest extends GraphQLTestCase
         $this->assertNotNull($slot['slots']);
     }
 
-    // ─── Rental ─────────────────────────────────────────────────────────
+    // ============================================================================
+    // Rental
+    // ============================================================================
 
     /**
      * Test querying rental booking product with full slot details.
@@ -154,7 +158,9 @@ class ProductBookingQueryTest extends GraphQLTestCase
         $this->assertArrayHasKey('slots', $slot);
     }
 
-    // ─── Default ────────────────────────────────────────────────────────
+    // ============================================================================
+    // Default
+    // ============================================================================
 
     /**
      * Test querying default booking product with full slot details.
@@ -219,7 +225,9 @@ class ProductBookingQueryTest extends GraphQLTestCase
         $this->assertNotNull($slot['slots']);
     }
 
-    // ─── Table ──────────────────────────────────────────────────────────
+    // ============================================================================
+    // Table
+    // ============================================================================
 
     /**
      * Test querying table booking product with full slot details.
@@ -299,7 +307,9 @@ class ProductBookingQueryTest extends GraphQLTestCase
         $this->assertNotNull($slot['slots']);
     }
 
-    // ─── Event ──────────────────────────────────────────────────────────
+    // ============================================================================
+    // Event
+    // ============================================================================
 
     /**
      * Test querying event booking product with full ticket details,

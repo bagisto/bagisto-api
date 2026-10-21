@@ -470,7 +470,9 @@ class AdminCmsPage extends EloquentModel
         'message',
     ];
 
-    /** Transient action message (e.g. delete confirmation); not a DB column. */
+    /**
+     * Transient action message (e.g. delete confirmation); not a DB column.
+     */
     public ?string $actionMessage = null;
 
     /**

@@ -94,6 +94,8 @@ class AdminAppearanceSectionDiscard
     public ?int $channel_id = null;
 
     /**
+     * The ids of the sections whose drafts were discarded.
+     *
      * @var array<int, int>
      */
     public array $section_ids = [];

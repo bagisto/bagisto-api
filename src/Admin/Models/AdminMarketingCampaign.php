@@ -411,10 +411,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
 )]
 class AdminMarketingCampaign extends EloquentModel
 {
-    /** @var string */
+    /**
+     * The table that stores the marketing campaigns.
+     *
+     * @var string
+     */
     protected $table = 'marketing_campaigns';
 
-    /** @var array */
+    /**
+     * The native types the campaign attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'status' => 'int',

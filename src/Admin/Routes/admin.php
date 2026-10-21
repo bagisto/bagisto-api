@@ -45,8 +45,8 @@ Route::prefix(config('app.admin_url'))
     ->middleware(['signed'])
     ->group(function () {
         Route::get('integration/revoke-via-email/{id}', [IntegrationController::class, 'confirmRevokeViaEmail'])
-            ->name('admin.integration.revoke-via-email');
+            ->name('admin.integration.revoke_via_email');
 
         Route::post('integration/revoke-via-email/{id}', [IntegrationController::class, 'revokeViaEmail'])
-            ->name('admin.integration.revoke-via-email.perform');
+            ->name('admin.integration.revoke_via_email.perform');
     });

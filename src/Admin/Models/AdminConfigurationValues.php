@@ -94,6 +94,8 @@ class AdminConfigurationValues
     public ?string $locale = null;
 
     /**
+     * The stored configuration values, keyed by configuration code.
+     *
      * @var array<string, string|null>|null
      */
     #[ApiProperty(readable: true, writable: false)]

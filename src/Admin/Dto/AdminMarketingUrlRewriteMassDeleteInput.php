@@ -7,7 +7,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminMarketingUrlRewriteMassDeleteInput
 {
-    /** @var int[]|null */
+    /**
+     * The ids of the URL rewrites to delete.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(description: 'Array of URL rewrite IDs to delete.')]
     #[Groups(['mutation'])]
     public ?array $indices = null;

@@ -74,6 +74,9 @@ class AdminReportingOverview
     #[Groups(['query'])]
     public ?string $type = null;
 
+    /**
+     * The current and previous date ranges the figures cover.
+     */
     #[ApiProperty(readable: true, writable: false, example: [
         'previous' => '10 Apr 2026 - 10 May 2026',
         'current' => '10 May 2026 - 09 Jun 2026',
@@ -81,7 +84,11 @@ class AdminReportingOverview
     #[Groups(['query'])]
     public ?array $date_range = null;
 
-    /** @var array<string,mixed>|null */
+    /**
+     * The overview report figures for the current and previous date ranges.
+     *
+     * @var array<string,mixed>|null
+     */
     #[ApiProperty(readable: true, writable: false, example: [
         'sales' => [
             'previous' => 27178.38,

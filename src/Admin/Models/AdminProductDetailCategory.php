@@ -15,13 +15,25 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminProductDetailCategory extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the categories.
+     *
+     * @var string
+     */
     protected $table = 'categories';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the product category is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['name', 'slug'];
 
-    /** @var array */
+    /**
+     * The native types the product category attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = ['id' => 'int'];
 
     /**

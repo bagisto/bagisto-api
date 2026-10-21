@@ -15,7 +15,9 @@ use Webkul\DataTransfer\Models\Import;
 
 class AdminSettingsDataTransferImportCancelProcessor implements ProcessorInterface
 {
-    /** States that may be cancelled. */
+    /**
+     * States that may be cancelled.
+     */
     protected const CANCELLABLE_STATES = ['pending', 'processing'];
 
     /**

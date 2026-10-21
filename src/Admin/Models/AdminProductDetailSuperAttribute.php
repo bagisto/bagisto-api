@@ -15,10 +15,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 )]
 class AdminProductDetailSuperAttribute extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the attributes.
+     *
+     * @var string
+     */
     protected $table = 'attributes';
 
-    /** @var array */
+    /**
+     * The native types the configurable (super) attribute attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = ['id' => 'int'];
 
     /**

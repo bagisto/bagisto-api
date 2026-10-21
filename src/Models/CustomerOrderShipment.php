@@ -99,10 +99,18 @@ use Webkul\Sales\Models\Order;
 )]
 class CustomerOrderShipment extends Model
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'shipments';
 
-    /** @var array */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'order_id' => 'int',
@@ -116,7 +124,11 @@ class CustomerOrderShipment extends Model
         'updated_at' => 'datetime',
     ];
 
-    /** @var array */
+    /**
+     * The accessors appended to the shipment's array form.
+     *
+     * @var array
+     */
     protected $appends = ['shippingNumber'];
 
     /**

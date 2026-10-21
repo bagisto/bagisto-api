@@ -7,7 +7,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminCategoryMassUpdateStatusInput
 {
-    /** @var int[]|null */
+    /**
+     * The ids of the categories whose status is updated.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(description: 'Array of category IDs to update.')]
     #[Groups(['mutation'])]
     public ?array $indices = null;

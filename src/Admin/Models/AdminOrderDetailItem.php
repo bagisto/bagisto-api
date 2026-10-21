@@ -22,13 +22,25 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminOrderDetailItem extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the order items.
+     *
+     * @var string
+     */
     protected $table = 'order_items';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the order item is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['child', 'downloadable_links'];
 
-    /** @var array */
+    /**
+     * The native types the order item attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'product_id' => 'int',

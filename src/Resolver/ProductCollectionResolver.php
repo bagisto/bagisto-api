@@ -8,6 +8,8 @@ use Webkul\BagistoApi\Models\Product;
 class ProductCollectionResolver implements QueryCollectionResolverInterface
 {
     /**
+     * Search, sort and limit the product collection from the query arguments.
+     *
      * @param  iterable<Product>|null  $collection
      * @param  array<string, mixed>  $context
      * @return iterable<Product>

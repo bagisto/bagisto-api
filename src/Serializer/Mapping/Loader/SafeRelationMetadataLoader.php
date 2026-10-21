@@ -14,9 +14,6 @@ use Symfony\Component\Serializer\Mapping\AttributeMetadata;
 use Symfony\Component\Serializer\Mapping\ClassMetadataInterface;
 use Symfony\Component\Serializer\Mapping\Loader\LoaderInterface;
 
-/**
- * Safe relation metadata loader that skips abstract models.
- */
 final class SafeRelationMetadataLoader implements LoaderInterface
 {
     /**

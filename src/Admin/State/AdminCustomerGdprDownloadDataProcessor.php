@@ -71,6 +71,8 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
     }
 
     /**
+     * Collect the customer's orders with their items, addresses and payment.
+     *
      * @return array<int,array<string,mixed>>
      */
     protected function collectOrders(Customer $customer): array

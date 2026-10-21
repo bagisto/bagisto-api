@@ -13,7 +13,9 @@ class WishlistTest extends RestApiTestCase
      */
     private string $baseUrl = '/api/shop/wishlists';
 
-    // ── GET Collection ────────────────────────────────────────
+    // ============================================================================
+    // GET Collection
+    // ============================================================================
 
     /**
      * Test get wishlist collection.
@@ -113,7 +115,9 @@ class WishlistTest extends RestApiTestCase
         expect($ids[0])->toBe($testData['wishlistItem2']->id);
     }
 
-    // ── GET Single ────────────────────────────────────────────
+    // ============================================================================
+    // GET Single
+    // ============================================================================
 
     /**
      * Test get single wishlist item.
@@ -203,7 +207,9 @@ class WishlistTest extends RestApiTestCase
         expect($response->json('updatedAt'))->toMatch('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
     }
 
-    // ── POST Create ───────────────────────────────────────────
+    // ============================================================================
+    // POST Create
+    // ============================================================================
 
     /**
      * Test create wishlist item.
@@ -289,7 +295,9 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 409, 422]);
     }
 
-    // ── DELETE Single ─────────────────────────────────────────
+    // ============================================================================
+    // DELETE Single
+    // ============================================================================
 
     /**
      * Test delete wishlist item.
@@ -349,7 +357,9 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([403, 404, 500]);
     }
 
-    // ── POST Toggle ───────────────────────────────────────────
+    // ============================================================================
+    // POST Toggle
+    // ============================================================================
 
     /**
      * Test toggle adds product when not in wishlist.
@@ -453,7 +463,9 @@ class WishlistTest extends RestApiTestCase
         )->toBeFalse();
     }
 
-    // ── Move to Cart ──────────────────────────────────────────
+    // ============================================================================
+    // Move To Cart
+    // ============================================================================
 
     /**
      * Test move wishlist to cart.
@@ -515,7 +527,9 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 403, 404, 500]);
     }
 
-    // ── Delete All ────────────────────────────────────────────
+    // ============================================================================
+    // Delete All
+    // ============================================================================
 
     /**
      * Test delete all wishlists.

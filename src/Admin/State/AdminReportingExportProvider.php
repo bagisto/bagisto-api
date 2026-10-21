@@ -8,10 +8,6 @@ use Illuminate\Http\Response;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminExportFile;
 
-/**
- * File export for a reporting sub-page (the admin Export button). REST only.
- * Mirrors `Reporting/Controller::export()` — runs the same `?type=` stat in its.
- */
 abstract class AdminReportingExportProvider implements ProviderInterface
 {
     use BuildsAdminExportFile;
@@ -21,7 +17,9 @@ abstract class AdminReportingExportProvider implements ProviderInterface
      */
     protected const EXPORT_MAX_ROWS = 50000;
 
-    /** Sub-page: sales | customers | products. */
+    /**
+     * Sub-page: sales | customers | products.
+     */
     protected string $entity;
 
     /**

@@ -78,11 +78,19 @@ class AdminMarketingCatalogRuleMassDelete
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the catalog rules that were deleted.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
-    /** @var int[]|null IDs that did not exist and were skipped. */
+    /**
+     * The ids of the catalog rules that were not found.
+     *
+     * @var int[]|null IDs that did not exist and were skipped.
+     */
     #[ApiProperty(writable: false)]
     public ?array $skipped = null;
 

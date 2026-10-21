@@ -13,10 +13,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class CustomerInvoiceAddress extends Model
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'addresses';
 
-    /** @var array */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'country_id' => 'string',
@@ -42,7 +50,11 @@ class CustomerInvoiceAddress extends Model
         'updated_at' => 'datetime',
     ];
 
-    /** @var array */
+    /**
+     * The accessors appended to the address's array form.
+     *
+     * @var array
+     */
     protected $appends = ['name'];
 
     /**

@@ -75,6 +75,8 @@ class AdminAppearanceThemeActivateProcessor implements ProcessorInterface
     }
 
     /**
+     * Resolve the ids of the channels to activate the theme on.
+     *
      * @return array<int, int>
      */
     protected function resolveChannelIds(mixed $data, array $args): array

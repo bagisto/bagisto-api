@@ -8,10 +8,6 @@ use ApiPlatform\Laravel\GraphQl\Controller\EntrypointController;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Admin GraphQL entrypoint (`POST /api/admin/graphql`).
- * Delegates to an ADMIN-scoped API Platform EntrypointController instance bound in.
- */
 final class AdminGraphQLEntrypointController
 {
     /**

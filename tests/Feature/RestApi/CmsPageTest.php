@@ -9,7 +9,9 @@ use Webkul\Core\Models\Channel;
 
 class CmsPageTest extends RestApiTestCase
 {
-    // ── Collection ────────────────────────────────────────────
+    // ============================================================================
+    // Collection
+    // ============================================================================
 
     /**
      * Test: GET /api/shop/pages returns collection.
@@ -105,7 +107,9 @@ class CmsPageTest extends RestApiTestCase
         expect($page['translation'])->toHaveKey('locale');
     }
 
-    // ── Single Item ───────────────────────────────────────────
+    // ============================================================================
+    // Single Item
+    // ============================================================================
 
     /**
      * Test: GET /api/shop/pages/{id} returns single page.
@@ -162,7 +166,9 @@ class CmsPageTest extends RestApiTestCase
         $response->assertNotFound();
     }
 
-    // ── Timestamps ───────────────────────────────────────────
+    // ============================================================================
+    // Timestamps
+    // ============================================================================
 
     /**
      * Test: Timestamps are returned in ISO8601 format.
@@ -182,7 +188,9 @@ class CmsPageTest extends RestApiTestCase
         expect($page['updatedAt'])->toMatch('/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
     }
 
-    // ── Multiple Pages ───────────────────────────────────────
+    // ============================================================================
+    // Multiple Pages
+    // ============================================================================
 
     /**
      * Test: Multiple CMS pages can be retrieved.
@@ -205,7 +213,9 @@ class CmsPageTest extends RestApiTestCase
         }
     }
 
-    // ── ID Format ───────────────────────────────────────────
+    // ============================================================================
+    // ID Format
+    // ============================================================================
 
     /**
      * Test: Page IDs are in correct IRI format.

@@ -441,7 +441,11 @@ class AdminRmaCustomField
      */
     public ?int $status = null;
 
-    /** @var array<int,array{id:int,name:string,value:string}>|null */
+    /**
+     * The options offered by a select, multiselect, checkbox or radio field.
+     *
+     * @var array<int,array{id:int,name:string,value:string}>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $options = null;
 

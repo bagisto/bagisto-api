@@ -112,7 +112,11 @@ class ReturnCustomField
      */
     public ?string $input_validation = null;
 
-    /** @var array<int,array<string,mixed>>|null */
+    /**
+     * The selectable options of the custom field.
+     *
+     * @var array<int,array<string,mixed>>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $options = null;
 }

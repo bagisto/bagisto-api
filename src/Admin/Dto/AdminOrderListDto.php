@@ -134,7 +134,11 @@ class AdminOrderListDto
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 
-    /** @var array<int, array<string, mixed>> */
+    /**
+     * The items of the order.
+     *
+     * @var array<int, array<string, mixed>>
+     */
     #[ApiProperty(writable: false)]
     public array $items = [];
 }

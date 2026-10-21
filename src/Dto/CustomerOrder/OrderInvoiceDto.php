@@ -94,6 +94,10 @@ class OrderInvoiceDto
      */
     public ?float $base_shipping_amount_incl_tax = null;
 
-    /** @var array<int, array<string, mixed>> */
+    /**
+     * The order items included in the invoice.
+     *
+     * @var array<int, array<string, mixed>>
+     */
     public array $items = [];
 }

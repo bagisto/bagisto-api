@@ -12,7 +12,9 @@ class AdminCartUpdateItemsInput
     #[Groups(['mutation'])]
     public ?string $cartId = null;
 
-    /** Map of cart_item_id => new qty. */
+    /**
+     * Map of cart_item_id => new qty.
+     */
     #[Groups(['mutation'])]
     public ?array $qty = null;
 }

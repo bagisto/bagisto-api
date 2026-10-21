@@ -137,7 +137,11 @@ class AdminMarketingCartRuleCouponGenerate
     #[ApiProperty(writable: false)]
     public ?int $generated = null;
 
-    /** @var array<int, array<string, mixed>>|null */
+    /**
+     * The coupons generated for the cart rule.
+     *
+     * @var array<int, array<string, mixed>>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $coupons = null;
 

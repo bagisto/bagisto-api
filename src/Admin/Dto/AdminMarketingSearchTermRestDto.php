@@ -47,7 +47,11 @@ class AdminMarketingSearchTermRestDto
     #[ApiProperty(writable: false)]
     public ?string $locale = null;
 
-    /** @var array{id:int, code:string|null, name:string|null}|null */
+    /**
+     * The channel the search term was recorded on.
+     *
+     * @var array{id:int, code:string|null, name:string|null}|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $channel = null;
 

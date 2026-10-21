@@ -23,7 +23,9 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
         'value_per_channel',
     ];
 
-    /** Locale resolved during buildQuery; used by mapRow. */
+    /**
+     * Locale resolved during buildQuery; used by mapRow.
+     */
     private string $locale = '';
 
     /**

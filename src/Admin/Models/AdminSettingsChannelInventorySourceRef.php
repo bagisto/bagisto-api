@@ -14,13 +14,25 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminSettingsChannelInventorySourceRef extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the inventory sources.
+     *
+     * @var string
+     */
     protected $table = 'inventory_sources';
 
-    /** @var bool */
+    /**
+     * Indicates the channel inventory source reference does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The native types the channel inventory source reference attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'status' => 'int',

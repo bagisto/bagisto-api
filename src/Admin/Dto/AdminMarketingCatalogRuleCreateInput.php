@@ -57,6 +57,8 @@ class AdminMarketingCatalogRuleCreateInput
     public ?int $condition_type = null;
 
     /**
+     * The conditions a product must meet for the catalog rule to apply.
+     *
      * @var array<int,array<string,mixed>>|null
      */
     #[ApiProperty(description: 'Conditions JSON — array of {attribute, operator, value, ...} rows.')]
@@ -85,6 +87,8 @@ class AdminMarketingCatalogRuleCreateInput
     public ?float $discount_amount = null;
 
     /**
+     * The ids of the channels the catalog rule applies in.
+     *
      * @var int[]|null
      */
     #[ApiProperty(description: 'Channel ids to attach via catalog_rule_channels pivot.')]
@@ -92,6 +96,8 @@ class AdminMarketingCatalogRuleCreateInput
     public ?array $channels = null;
 
     /**
+     * The ids of the customer groups the catalog rule applies to.
+     *
      * @var int[]|null
      */
     #[ApiProperty(description: 'Customer group ids to attach via catalog_rule_customer_groups pivot.')]

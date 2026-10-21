@@ -12,7 +12,9 @@ class CompareItemTest extends RestApiTestCase
      */
     private string $baseUrl = '/api/shop/compare_items';
 
-    // ── GET Collection ────────────────────────────────────────
+    // ============================================================================
+    // GET Collection
+    // ============================================================================
 
     /**
      * Test get compare items collection.
@@ -66,7 +68,9 @@ class CompareItemTest extends RestApiTestCase
         }
     }
 
-    // ── GET Single ────────────────────────────────────────────
+    // ============================================================================
+    // GET Single
+    // ============================================================================
 
     /**
      * Test get single compare item.
@@ -165,7 +169,9 @@ class CompareItemTest extends RestApiTestCase
         expect($response->json('updatedAt'))->toMatch('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
     }
 
-    // ── POST Create ───────────────────────────────────────────
+    // ============================================================================
+    // POST Create
+    // ============================================================================
 
     /**
      * Test create compare item.
@@ -264,7 +270,9 @@ class CompareItemTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 409, 422]);
     }
 
-    // ── DELETE Single ─────────────────────────────────────────
+    // ============================================================================
+    // DELETE Single
+    // ============================================================================
 
     /**
      * Test delete compare item.
@@ -324,7 +332,9 @@ class CompareItemTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([403, 404, 500]);
     }
 
-    // ── POST Delete All ───────────────────────────────────────
+    // ============================================================================
+    // POST Delete All
+    // ============================================================================
 
     /**
      * Test delete all compare items.

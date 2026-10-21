@@ -219,6 +219,8 @@ class StoreConfig
     public ?bool $newsletter_enabled = null;
 
     /**
+     * The social login providers enabled for the storefront.
+     *
      * @var array<int, string>
      */
     #[ApiProperty(

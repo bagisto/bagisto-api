@@ -42,7 +42,9 @@ class BookingSlotQueryTest extends GraphQLTestCase
         }
     GQL;
 
-    // ─── Default Booking (flat) ─────────────────────────────────────────
+    // ============================================================================
+    // Default Booking (Flat)
+    // ============================================================================
 
     /**
      * Test booking slots for default type.
@@ -110,7 +112,9 @@ class BookingSlotQueryTest extends GraphQLTestCase
         $this->assertSame($ids, array_values(array_unique($ids)));
     }
 
-    // ─── Appointment Booking (flat) ─────────────────────────────────────
+    // ============================================================================
+    // Appointment Booking (Flat)
+    // ============================================================================
 
     /**
      * Test booking slots for appointment type.
@@ -139,7 +143,9 @@ class BookingSlotQueryTest extends GraphQLTestCase
         }
     }
 
-    // ─── Table Booking (flat) ───────────────────────────────────────────
+    // ============================================================================
+    // Table Booking (Flat)
+    // ============================================================================
 
     /**
      * Test booking slots for table type.
@@ -168,7 +174,9 @@ class BookingSlotQueryTest extends GraphQLTestCase
         }
     }
 
-    // ─── Rental Booking (grouped) — single group ────────────────────────
+    // ============================================================================
+    // Rental Booking (Grouped) — Single Group
+    // ============================================================================
 
     /**
      * Test booking slots for rental hourly type.
@@ -197,7 +205,9 @@ class BookingSlotQueryTest extends GraphQLTestCase
         $this->assertGreaterThan(1, count($group['slots']), 'Group should have multiple hourly sub-slots');
     }
 
-    // ─── Rental Booking (grouped) — multiple groups ─────────────────────
+    // ============================================================================
+    // Rental Booking (Grouped) — Multiple Groups
+    // ============================================================================
 
     /**
      * Test booking slots for rental hourly with multiple groups.
@@ -246,7 +256,9 @@ class BookingSlotQueryTest extends GraphQLTestCase
         }
     }
 
-    // ─── Event Booking (flat) ───────────────────────────────────────────
+    // ============================================================================
+    // Event Booking (Flat)
+    // ============================================================================
 
     /**
      * Test booking slots for event type.
@@ -268,7 +280,9 @@ class BookingSlotQueryTest extends GraphQLTestCase
         $this->assertIsArray($slots);
     }
 
-    // ─── Edge cases ─────────────────────────────────────────────────────
+    // ============================================================================
+    // Edge Cases
+    // ============================================================================
 
     /**
      * Test booking slots with past date returns empty.

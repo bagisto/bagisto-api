@@ -21,6 +21,8 @@ class SocialLoginService
     ) {}
 
     /**
+     * Find or create the customer for a verified social profile.
+     *
      * @param  array{id: string, email: ?string, name: ?string, email_verified: bool}  $profile
      * @return array{customer: Customer, isNew: bool}
      *
@@ -90,6 +92,8 @@ class SocialLoginService
     }
 
     /**
+     * Split a full name into first and last name, falling back to the email.
+     *
      * @return array{0: string, 1: string}
      */
     protected function splitName(string $name, string $email): array

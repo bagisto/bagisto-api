@@ -8,7 +8,9 @@ use Webkul\Product\Models\ProductReview;
 
 class CustomerReviewTest extends RestApiTestCase
 {
-    // ── Collection ────────────────────────────────────────────
+    // ============================================================================
+    // Collection
+    // ============================================================================
 
     /**
      * Test: GET /api/shop/customer-reviews returns collection.
@@ -79,7 +81,9 @@ class CustomerReviewTest extends RestApiTestCase
         expect(count($json))->toBe(0);
     }
 
-    // ── Single Item ───────────────────────────────────────────
+    // ============================================================================
+    // Single Item
+    // ============================================================================
 
     /**
      * Test: GET /api/shop/customer-reviews/{id} returns single review.
@@ -153,7 +157,9 @@ class CustomerReviewTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403, 500]))->toBeTrue();
     }
 
-    // ── Filtering (via query params) ──────────────────────────
+    // ============================================================================
+    // Filtering (Via Query Params)
+    // ============================================================================
 
     /**
      * Test: Filter reviews by status via query parameter.
@@ -195,7 +201,9 @@ class CustomerReviewTest extends RestApiTestCase
         }
     }
 
-    // ── Response format assertions ────────────────────────────
+    // ============================================================================
+    // Response Format Assertions
+    // ============================================================================
 
     /**
      * Test: Review includes product relationship data.

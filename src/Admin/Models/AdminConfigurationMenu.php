@@ -114,6 +114,8 @@ class AdminConfigurationMenu
     public ?string $slug = null;
 
     /**
+     * The configuration menu tree of sections and their fields.
+     *
      * @var AdminConfigurationTreeItem[]|null
      */
     #[ApiProperty(readable: true, writable: false)]

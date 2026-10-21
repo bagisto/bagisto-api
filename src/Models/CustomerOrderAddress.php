@@ -13,10 +13,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class CustomerOrderAddress extends Model
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'addresses';
 
-    /** @var array */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'address_type' => 'string',

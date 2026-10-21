@@ -215,7 +215,9 @@ class Category extends BaseCategory
         return $this->id;
     }
 
-    /** IDs only — a nested object tree here makes the serializer recurse the whole catalogue; use /category-trees instead. */
+    /**
+     * IDs only — a nested object tree here makes the serializer recurse the whole catalogue; use /category-trees instead.
+     */
     #[ApiProperty(readableLink: false, description: 'Direct child category IDs (use /category-trees for the full nested tree)')]
     public function getChildren(): array
     {
@@ -240,7 +242,9 @@ class Category extends BaseCategory
             ]);
     }
 
-    /** Overrides the core relation of the same name so the API's Attribute resource is the related class. */
+    /**
+     * Overrides the core relation of the same name so the API's Attribute resource is the related class.
+     */
     public function filterableAttributes(): BelongsToMany
     {
         return $this->filterable_attributes();

@@ -278,23 +278,43 @@ class OrderDetailRestDto
     #[ApiProperty(writable: false)]
     public array $addresses = [];
 
-    /** @var array<int, array<string, mixed>> */
+    /**
+     * The items of the order.
+     *
+     * @var array<int, array<string, mixed>>
+     */
     #[ApiProperty(writable: false)]
     public array $items = [];
 
-    /** @var array<int, array<string, mixed>> */
+    /**
+     * The invoices raised against the order.
+     *
+     * @var array<int, array<string, mixed>>
+     */
     #[ApiProperty(writable: false)]
     public array $invoices = [];
 
-    /** @var array<int, array<string, mixed>> */
+    /**
+     * The shipments created for the order.
+     *
+     * @var array<int, array<string, mixed>>
+     */
     #[ApiProperty(writable: false)]
     public array $shipments = [];
 
-    /** @var array<int, array<string, mixed>> */
+    /**
+     * The refunds issued against the order.
+     *
+     * @var array<int, array<string, mixed>>
+     */
     #[ApiProperty(writable: false)]
     public array $refunds = [];
 
-    /** @var array<int, array<string, mixed>> */
+    /**
+     * The comments added to the order.
+     *
+     * @var array<int, array<string, mixed>>
+     */
     #[ApiProperty(writable: false)]
     public array $comments = [];
 }

@@ -61,7 +61,9 @@ class AdminApiAuditContext
      */
     public ?string $tags = null;
 
-    /** Number of audit rows written during this request (envelope fallback). */
+    /**
+     * Number of audit rows written during this request (envelope fallback).
+     */
     protected int $rowCount = 0;
 
     /**

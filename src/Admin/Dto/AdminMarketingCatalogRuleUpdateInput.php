@@ -64,6 +64,8 @@ class AdminMarketingCatalogRuleUpdateInput
     public ?int $condition_type = null;
 
     /**
+     * The conditions a product must meet for the catalog rule to apply.
+     *
      * @var array<int,array<string,mixed>>|null
      */
     #[ApiProperty]
@@ -92,6 +94,8 @@ class AdminMarketingCatalogRuleUpdateInput
     public ?float $discount_amount = null;
 
     /**
+     * The ids of the channels the catalog rule applies in.
+     *
      * @var int[]|null
      */
     #[ApiProperty]
@@ -99,6 +103,8 @@ class AdminMarketingCatalogRuleUpdateInput
     public ?array $channels = null;
 
     /**
+     * The ids of the customer groups the catalog rule applies to.
+     *
      * @var int[]|null
      */
     #[ApiProperty]

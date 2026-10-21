@@ -195,7 +195,7 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
 
         if (! $info) {
             throw new BadRequestHttpException(
-                'GraphQL ResolveInfo not available in context. Cannot determine model class.'
+                __('bagistoapi::app.graphql.resolver.no-resolve-info')
             );
         }
 
@@ -203,7 +203,7 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
 
         if (! $resourceClass) {
             throw new BadRequestHttpException(
-                'Unable to determine resource class from GraphQL return type'
+                __('bagistoapi::app.graphql.resolver.unknown-resource-class')
             );
         }
 

@@ -13,7 +13,9 @@ class CategoryTest extends RestApiTestCase
      */
     private string $collectionUrl = '/api/shop/categories';
 
-    // ── GET Collection ────────────────────────────────────────
+    // ============================================================================
+    // GET Collection
+    // ============================================================================
 
     /**
      * Test get categories returns ok.
@@ -125,7 +127,9 @@ class CategoryTest extends RestApiTestCase
         expect($first)->toHaveKey('children');
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
     /**
      * Test items per page limits collection size.
@@ -179,7 +183,9 @@ class CategoryTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
-    // ── GET /categories/{id} ──────────────────────────────────
+    // ============================================================================
+    // GET /categories/{id}
+    // ============================================================================
 
     /**
      * Test get single category returns ok.
@@ -276,7 +282,9 @@ class CategoryTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
     }
 
-    // ── Filters: parent_id / parentId / status ────────────────
+    // ============================================================================
+    // Filters: parent_id / ParentId / Status
+    // ============================================================================
 
     /**
      * Test parent id filter returns only direct children.

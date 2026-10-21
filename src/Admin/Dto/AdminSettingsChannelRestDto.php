@@ -83,7 +83,11 @@ class AdminSettingsChannelRestDto
     #[ApiProperty(writable: false)]
     public ?string $maintenance_mode_text = null;
 
-    /** @var array<int,string>|null */
+    /**
+     * The IP addresses still allowed to browse the channel during maintenance mode.
+     *
+     * @var array<int,string>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $allowed_ips = null;
 
@@ -111,23 +115,43 @@ class AdminSettingsChannelRestDto
     #[ApiProperty(writable: false)]
     public ?string $favicon_url = null;
 
-    /** @var array<int,array{id:int, code:string|null, name:string|null, direction:string|null}>|null */
+    /**
+     * The locales attached to the channel.
+     *
+     * @var array<int,array{id:int, code:string|null, name:string|null, direction:string|null}>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $locales = null;
 
-    /** @var array<int,array{id:int, code:string|null, name:string|null, symbol:string|null}>|null */
+    /**
+     * The currencies attached to the channel.
+     *
+     * @var array<int,array{id:int, code:string|null, name:string|null, symbol:string|null}>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $currencies = null;
 
-    /** @var array<int,array{id:int, code:string|null, name:string|null, status:int|null}>|null */
+    /**
+     * The inventory sources attached to the channel.
+     *
+     * @var array<int,array{id:int, code:string|null, name:string|null, status:int|null}>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $inventory_sources = null;
 
-    /** @var array<string,mixed>|null */
+    /**
+     * The SEO title, description and keywords of the channel home page.
+     *
+     * @var array<string,mixed>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $home_seo = null;
 
-    /** @var array<int,array<string,mixed>>|null */
+    /**
+     * The per-locale translations of the channel content.
+     *
+     * @var array<int,array<string,mixed>>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $translations = null;
 

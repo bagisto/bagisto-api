@@ -13,7 +13,9 @@ class ContactUsTest extends RestApiTestCase
      */
     private string $url = '/api/shop/contact-us';
 
-    // ── Success ───────────────────────────────────────────────
+    // ============================================================================
+    // Success
+    // ============================================================================
 
     /**
      * Test submit returns created.
@@ -86,7 +88,9 @@ class ContactUsTest extends RestApiTestCase
         expect($response->json('success'))->toBeTrue();
     }
 
-    // ── Validation ────────────────────────────────────────────
+    // ============================================================================
+    // Validation
+    // ============================================================================
 
     /**
      * Test missing name returns 400.
@@ -165,7 +169,9 @@ class ContactUsTest extends RestApiTestCase
         $response->assertStatus(400);
     }
 
-    // ── GraphQL-style wrapper is rejected ─────────────────────
+    // ============================================================================
+    // GraphQL-style Wrapper Is Rejected
+    // ============================================================================
 
     /**
      * Test graphql input wrapper returns 400.

@@ -98,13 +98,17 @@ class OrderCancelTest extends AdminApiTestCase
         expect($response->json('status'))->toBeIn(['canceled', 'closed']);
     }
 
-    /** Find or create a cancellable order. Never returns null. */
+    /**
+     * Find or create a cancellable order. Never returns null.
+     */
     protected function aCancellableOrderId(): int
     {
         return $this->findOrCreateCancellableOrder()->id;
     }
 
-    /** Find or create any order. Used by tests that will flip status. */
+    /**
+     * Find or create any order. Used by tests that will flip status.
+     */
     protected function anyOrderId(): int
     {
         $id = Order::query()->value('id');

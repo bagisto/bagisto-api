@@ -14,13 +14,25 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminMarketingTemplateRef extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the marketing templates.
+     *
+     * @var string
+     */
     protected $table = 'marketing_templates';
 
-    /** @var bool */
+    /**
+     * Indicates the marketing template reference does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The native types the marketing template reference attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
     ];

@@ -14,10 +14,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminProductDetailCgp extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the product customer group prices.
+     *
+     * @var string
+     */
     protected $table = 'product_customer_group_prices';
 
-    /** @var array */
+    /**
+     * The native types the customer group price attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'customer_group_id' => 'int',

@@ -1,9 +1,13 @@
 <?php
 
 return [
+
     'graphql' => [
         'headers' => [
             'unknown-channel' => 'הערוץ ":code" בכותרת X-Channel אינו קיים.',
+            'storefront-key-required' => 'כותרת X-STOREFRONT-KEY נדרשת',
+            'storefront-key-invalid' => 'מפתח חלון הראווה אינו תקף',
+            'storefront-key-rate-limited' => 'חריגה ממגבלת הקצב. אנא נסה שוב בעוד :seconds שניות',
         ],
 
         'cart' => [
@@ -20,20 +24,37 @@ return [
 
             'product-id-quantity-required' => 'מזהה המוצר והכמות נדרשים',
             'cart-item-id-quantity-required' => 'מזהה פריט העגלה והכמות נדרשים',
+
+            'file-token-invalid' => 'הפניית הקובץ שהועלה אינה תקפה או שפג תוקפה. העלה את הקובץ שוב.',
+            'file-token-forbidden' => 'הקובץ שהועלה אינו שייך לעגלה שלך.',
+            'customizable-option-required' => 'האפשרות הניתנת להתאמה ":label" נדרשת.',
+            'customizable-file-option-invalid' => 'האפשרות שנבחרה אינה אפשרות קובץ עבור מוצר זה.',
+            'customizable-file-invalid' => 'הקובץ חסר, בעל סיומת שאינה נתמכת, או גדול מדי.',
             'cart-item-id-required' => 'מזהה פריט העגלה נדרש',
             'item-ids-required' => 'נדרש מערך של מזהי פריטים',
+
+            'event-booking-quantity-not-changeable' => 'לא ניתן לשנות את הכמות של מוצר הזמנת אירוע. הכמות נקבעת לפי בחירת הכרטיסים.',
+            'appointment-booking-quantity-not-changeable' => 'לא ניתן לשנות את הכמות של מוצר הזמנת תור.',
             'coupon-code-required' => 'קוד הקופון נדרש',
             'address-data-required' => 'מדינה, מחוז ומיקוד נדרשים',
+            'grouped-qty-required' => 'מוצר מקובץ דורש כמויות נבחרות. העבר את groupedQty כמחרוזת JSON, לדוגמה {"101":2,"102":1}.',
+            'grouped-qty-must-include-all' => 'מוצר מקובץ דורש כמויות עבור כל המוצרים המשויכים. מזהים חסרים: :ids.',
+            'grouped-qty-invalid-associated' => 'כמויות המוצר המקובץ מכילות מזהי מוצרים משויכים לא תקפים: :ids.',
+            'grouped-qty-invalid-quantity' => 'סופקה כמות לא תקפה עבור מזהה המוצר המשויך :id. הכמות חייבת להיות מספר שלם אי-שלילי.',
+            'bundle-qty-not-changeable' => 'לא ניתן לשנות את הכמות עבור אפשרות החבילה ":option". הכמות המותרת היא :qty.',
 
             'add-product-failed' => 'הוספת המוצר לעגלה נכשלה',
             'update-item-failed' => 'עדכון פריט העגלה נכשל',
             'remove-item-failed' => 'הסרת פריט העגלה נכשלה',
             'apply-coupon-failed' => 'החלת הקופון נכשלה',
             'remove-coupon-failed' => 'הסרת הקופון נכשלה',
+            'coupon-applied' => 'הקופון הוחל בהצלחה',
+            'coupon-removed' => 'הקופון הוסר בהצלחה',
             'move-to-wishlist-failed' => 'העברת הפריט לרשימת המשאלות נכשלה',
             'estimate-shipping-failed' => 'הערכת המשלוח נכשלה',
 
             'product-added-successfully' => 'המוצר נוסף לעגלה בהצלחה',
+            'cart-item-updated-successfully' => 'פריט העגלה עודכן בהצלחה',
             'guest-cart-merged' => 'עגלת האורח מוזגה בהצלחה',
             'using-authenticated-cart' => 'שימוש בעגלת הלקוח המאומת',
             'cart-item-not-found' => 'פריט העגלה לא נמצא',
@@ -42,6 +63,12 @@ return [
             'select-items-to-move-wishlist' => 'אנא בחר פריטים להעברה לרשימת המשאלות',
             'invalid-or-expired-token' => 'אסימון העגלה אינו תקף או שפג תוקפו. אנא צור עגלה חדשה.',
             'invalid-token-of-login-user' => 'אסימון המשתמש המחובר אינו תקף.',
+            'booking-note-required' => 'booking.note נדרש עבור הזמנת שולחן.',
+            'booking-date-required' => 'booking.date נדרש כאשר booking.slot הוא טווח זמן מעוצב.',
+            'booking-qty-required' => 'booking.qty נדרש עבור הזמנת אירוע.',
+            'booking-ticket-qty-invalid' => 'כמות כרטיסי האירוע חייבת להיות מספר אי-שלילי.',
+            'booking-ticket-required' => 'בחר כמות של כרטיס אחד לפחות עבור הזמנת האירוע.',
+            'booking-slot-unavailable' => 'המשבצת שנבחרה אינה זמינה בתאריך הנתון.',
         ],
 
         'token-verification' => [
@@ -54,6 +81,7 @@ return [
             'customer-account-suspended' => 'חשבון הלקוח מושעה',
             'error-verifying-token' => 'שגיאה באימות האסימון',
             'token-is-valid' => 'האסימון תקף',
+            'unauthenticated' => 'לא מאומת. אנא התחבר כדי לבצע פעולה זו',
         ],
 
         'forgot-password' => [
@@ -62,6 +90,7 @@ return [
             'email-required' => 'כתובת אימייל נדרשת',
             'reset-link-sent' => 'קישור לאיפוס נשלח בהצלחה לאימייל שלך',
             'email-not-found' => 'כתובת האימייל לא נמצאה',
+            'throttled' => 'יותר מדי ניסיונות איפוס. אנא המתן לפני שתנסה שוב.',
             'error-sending-reset-link' => 'אירעה שגיאה בעת שליחת קישור האיפוס',
         ],
 
@@ -81,6 +110,7 @@ return [
             'logged-out-successfully' => 'התנתקת בהצלחה',
             'token-not-found-or-expired' => 'האסימון לא נמצא או שכבר פג תוקפו',
             'error-during-logout' => 'שגיאה במהלך ההתנתקות',
+            'unauthenticated' => 'לא מאומת. אנא התחבר כדי לבצע פעולה זו',
         ],
 
         'address' => [
@@ -92,32 +122,133 @@ return [
             'address-not-found' => 'הכתובת לא נמצאה או אינה שייכת ללקוח זה',
             'retrieved' => 'הכתובות אוחזרו בהצלחה',
             'fetch-failed' => 'אחזור הכתובות נכשל:',
+            'field-required' => 'השדה :field נדרש',
         ],
 
         'customer-profile' => [
             'authentication-required' => 'נדרש אסימון אימות. אנא ספק את האסימון בקלט השאילתה',
             'invalid-token' => 'אסימון לא תקף או שפג תוקפו',
+            'profile-updated' => 'פרופיל הלקוח עודכן בהצלחה',
         ],
 
         'customer' => [
             'password-mismatch' => 'הסיסמה ואישור הסיסמה אינם תואמים',
             'confirm-password-required' => 'אישור סיסמה נדרש בעת שינוי הסיסמה',
+            'current-password-required' => 'הסיסמה הנוכחית נדרשת כדי לשנות את הסיסמה',
+            'current-password-incorrect' => 'הסיסמה הנוכחית שהזנת שגויה',
+            'verify-email-to-login' => 'החשבון שלך נוצר. אנא אמת את כתובת האימייל שלך כדי להתחבר.',
+            'delete-password-required' => 'הסיסמה שלך נדרשת כדי למחוק את החשבון',
+            'delete-password-incorrect' => 'הסיסמה שהזנת שגויה',
+            'delete-has-active-orders' => 'לא ניתן למחוק את החשבון שלך כל עוד יש לך הזמנות ממתינות או בעיבוד',
             'unauthenticated' => 'לא מאומת. אנא התחבר כדי לבצע פעולה זו',
+            'id-required' => 'מזהה הלקוח נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/admin/customers/1" או מזהה מספרי',
+            'not-found' => 'הלקוח לא נמצא',
+            'phone-special-chars-not-allowed' => 'מספר הנייד יכול להכיל ספרות בלבד. תווים מיוחדים אינם מותרים',
+            'email-already-taken' => 'כתובת אימייל זו כבר רשומה לחשבון אחר',
+            'invalid-gender' => 'ערך מגדר לא תקף ":gender". הערכים המותרים הם: :valid',
         ],
 
         'product-review' => [
+            'id-required' => 'מזהה ביקורת המוצר נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/reviews/1" או מזהה מספרי',
+            'not-found' => 'ביקורת המוצר עם המזהה ":id" לא נמצאה',
             'product-id-required' => 'מזהה המוצר נדרש',
             'product-not-found' => 'המוצר לא נמצא',
             'rating-invalid' => 'הדירוג חייב להיות בין 1 ל-5',
             'title-required' => 'כותרת הביקורת נדרשת',
             'comment-required' => 'תגובת הביקורת נדרשת',
+            'review-disabled' => 'ביקורות מוצרים מושבתות כעת',
+            'guest-review-disabled' => 'ביקורות אורחים אינן מותרות. אנא התחבר כדי לשלוח ביקורת',
+            'owner-required' => 'אנא התחבר כדי לנהל את הביקורת שלך',
+            'not-owned' => 'ביקורת זו לא נכתבה על ידך ולא ניתן לשנות או למחוק אותה',
+            'invalid-attachments' => 'פורמט הקבצים המצורפים אינו תקף.',
         ],
 
-        'product' => [
-            'not-found' => 'המוצר לא נמצא',
-            'not-found-with-sku' => 'No product found with SKU',
-            'not-found-with-url-key' => 'No product found with URL key',
-            'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
+        'customer-review' => [
+            'id-required' => 'מזהה ביקורת הלקוח נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/customer-reviews/1" או מזהה מספרי',
+            'not-found' => 'ביקורת הלקוח עם המזהה ":id" לא נמצאה',
+        ],
+
+        'newsletter' => [
+            'error-during-subscription' => 'לא ניתן להשלים את ההרשמה כעת. אנא נסה שוב מאוחר יותר',
+        ],
+
+        'contact-us' => [
+            'success' => 'הפנייה שלך נשלחה בהצלחה. נחזור אליך בקרוב',
+            'failed' => 'לא ניתן לשלוח את הפנייה שלך כעת. אנא נסה שוב מאוחר יותר',
+            'invalid-input' => 'נתוני טופס יצירת הקשר אינם תקפים',
+        ],
+
+        'customer-order' => [
+            'id-required' => 'מזהה הזמנת הלקוח נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/customer-orders/1" או מזהה מספרי',
+            'not-found' => 'הזמנת הלקוח עם המזהה ":id" לא נמצאה',
+        ],
+
+        'return' => [
+            'not-found' => 'בקשת ההחזרה לא נמצאה.',
+            'disabled' => 'החזרות אינן מופעלות עבור חנות זו.',
+            'invalid-input' => 'פרטי ההחזרה חסרים או אינם תקפים.',
+            'invalid-resolution-type' => 'סוג הפתרון חייב להיות "return" או "cancel_items".',
+            'agreement-required' => 'עליך לקבל את מדיניות ההחזרות.',
+            'invalid-order' => 'ההזמנה שנבחרה אינה תקפה.',
+            'invalid-item' => 'הפריט שנבחר אינו זכאי להחזרה.',
+            'qty-exceeds' => 'הכמות המבוקשת חורגת מהכמות הניתנת להחזרה.',
+            'invalid-package-condition' => 'מצב האריזה חייב להיות "open" או "packed".',
+            'invalid-image' => 'לאחד או יותר מהקבצים שהועלו יש סוג קובץ שאינו נתמך.',
+            'invalid-custom-field' => 'שדה מותאם אישית לא ידוע ":id".',
+            'custom-field-required' => 'השדה ":field" נדרש.',
+            'invalid-custom-field-value' => 'הערך עבור ":field" אינו אחת מהאפשרויות המותרות.',
+            'created' => 'בקשת ההחזרה נוצרה בהצלחה.',
+            'canceled' => 'בקשת ההחזרה בוטלה בהצלחה.',
+            'already-canceled' => 'בקשת ההחזרה כבר בוטלה.',
+            'cancel-not-allowed' => 'לא ניתן לבטל בקשת החזרה זו.',
+            'close-not-allowed' => 'לא ניתן לסגור בקשת החזרה זו.',
+            'reopened' => 'בקשת ההחזרה נפתחה מחדש בהצלחה.',
+            'reopen-not-allowed' => 'לא ניתן לפתוח מחדש בקשת החזרה זו.',
+            'closed' => 'בקשת ההחזרה נסגרה בהצלחה.',
+            'message-sent' => 'ההודעה נשלחה בהצלחה.',
+        ],
+
+        'eu-withdrawal' => [
+            'not-found' => 'הצהרת הביטול לא נמצאה.',
+            'order-not-found' => 'ההזמנה לא נמצאה או שאינה זכאית לביטול עסקה.',
+            'too-many-attempts' => 'יותר מדי ניסיונות. אנא נסה שוב בעוד :seconds שניות.',
+            'created' => 'הצהרת הביטול הוגשה בהצלחה.',
+        ],
+
+        'customer-order-shipment' => [
+            'id-required' => 'מזהה המשלוח נדרש',
+            'not-found' => 'המשלוח עם המזהה ":id" לא נמצא או שאינו שייך ללקוח זה',
+            'item-not-found' => 'פריט המשלוח עם המזהה ":id" לא נמצא או שאינו שייך ללקוח זה',
+        ],
+
+        'cancel-order' => [
+            'order-id-required' => 'מזהה ההזמנה נדרש כדי לבטל הזמנה',
+            'not-found' => 'ההזמנה עם המזהה ":id" לא נמצאה או שאינה שייכת ללקוח זה',
+            'cancel-success' => 'ההזמנה בוטלה בהצלחה',
+            'cancel-failed' => 'לא ניתן לבטל את ההזמנה. ייתכן שהיא כבר עובדה, נשלחה או בוטלה',
+        ],
+
+        'reorder' => [
+            'order-id-required' => 'מזהה ההזמנה נדרש כדי להזמין מחדש',
+            'not-found' => 'ההזמנה עם המזהה ":id" לא נמצאה או שאינה שייכת ללקוח זה',
+            'reorder-success' => ':count פריט(ים) מההזמנה הקודמת שלך נוספו לעגלה',
+            'no-items-added' => 'לא ניתן היה להוסיף פריטים לעגלה. ייתכן שהמוצרים אזלו מהמלאי או אינם זמינים',
+        ],
+
+        'customer-downloadable-product' => [
+            'id-required' => 'מזהה המוצר הניתן להורדה של הלקוח נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/customer-downloadable-products/1" או מזהה מספרי',
+            'not-found' => 'המוצר הניתן להורדה של הלקוח עם המזהה ":id" לא נמצא',
+        ],
+
+        'customer-invoice' => [
+            'id-required' => 'מזהה חשבונית הלקוח נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/customer-invoices/1" או מזהה מספרי',
+            'not-found' => 'חשבונית הלקוח עם המזהה ":id" לא נמצאה',
         ],
 
         'auth' => [
@@ -138,6 +269,35 @@ return [
 
         'attribute' => [
             'code-already-exists' => 'קוד המאפיין כבר קיים',
+            'option-id-required' => 'הפרמטר "attributeId" נדרש בעת שאילתה ישירה של אפשרויות מאפיין',
+            'id-required' => 'מזהה המאפיין נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/attributes/1" או מזהה מספרי',
+            'not-found' => 'המאפיין לא נמצא',
+        ],
+
+        'attribute-option' => [
+            'id-required' => 'מזהה אפשרות המאפיין נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/attribute-options/1" או מזהה מספרי',
+            'not-found' => 'אפשרות המאפיין לא נמצאה',
+        ],
+
+        'channel' => [
+            'id-required' => 'מזהה הערוץ נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/channels/1" או מזהה מספרי',
+            'not-found' => 'הערוץ לא נמצא',
+        ],
+
+        'country-state' => [
+            'id-required' => 'מזהה מחוז המדינה נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/country-states/1" או מזהה מספרי',
+            'not-found' => 'מחוז המדינה לא נמצא',
+            'country-id-required' => 'מזהה המדינה נדרש',
+        ],
+
+        'country' => [
+            'id-required' => 'מזהה המדינה נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/countries/1" או מזהה מספרי',
+            'not-found' => 'המדינה לא נמצאה',
         ],
 
         'login' => [
@@ -153,6 +313,7 @@ return [
             'signed-in' => 'ההתחברות בוצעה בהצלחה.',
             'token-required' => 'נדרש אסימון התחברות חברתית.',
             'invalid-token' => 'אסימון ההתחברות החברתית אינו תקין או שפג תוקפו. אנא נסה שוב.',
+            'google-not-configured' => 'התחברות באמצעות Google אינה מוגדרת עבור חנות זו.',
             'wrong-audience' => 'אסימון זה הונפק עבור אפליקציה אחרת.',
             'email-required' => 'הספק לא שיתף כתובת דוא״ל. אנא הירשם באמצעות דוא״ל.',
             'account-inactive' => 'הפעלת החשבון שלך מחכה לאישור מנהל',
@@ -176,6 +337,8 @@ return [
             'payment-method-save-failed' => 'שמירת שיטת התשלום נכשלה',
             'payment-method-saved' => 'שיטת התשלום נשמרה בהצלחה',
             'payment-method-error' => 'שגיאה בשמירת שיטת התשלום',
+            'order-placed' => 'ההזמנה בוצעה בהצלחה',
+            'order-redirect-required' => 'אמצעי תשלום זה מחייב את הקונה להשלים את התשלום בשער התשלום. הפנה אותו אל redirectUrl; ההזמנה נוצרת לאחר שהשער מאשר את התשלום.',
             'order-creation-failed' => 'יצירת ההזמנה נכשלה: מזהה ההזמנה ריק או שההזמנה לא נשמרה',
             'order-retrieval-failed' => 'אחזור ההזמנה שנוצרה נכשל',
             'order-creation-error' => 'יצירת ההזמנה נכשלה',
@@ -195,6 +358,10 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'המוצר לא נמצא',
+            'not-found-with-sku' => 'לא נמצא מוצר עם SKU זה',
+            'not-found-with-url-key' => 'לא נמצא מוצר עם מפתח URL זה',
+            'parameters-required' => 'יש לספק לפחות אחד מהפרמטרים הבאים: "sku", "id", "urlKey"',
             'type' => 'סוג מוצר',
             'attribute-family' => 'משפחת מאפיינים',
             'sku' => 'מק"ט',
@@ -217,17 +384,6 @@ return [
             'super-attributes' => 'מאפייני-על',
         ],
 
-        'compare-item' => [
-            'id-required' => 'מזהה פריט השוואה נדרש',
-            'invalid-id-format' => 'פורמט מזהה לא תקין. פורמט IRI צפוי כמו "/api/shop/compare-items/1" או מזהה מספרי',
-            'not-found' => 'פריט השוואה לא נמצא',
-            'product-id-required' => 'מזהה המוצר נדרש',
-            'customer-id-required' => 'מזהה הלקוח נדרש',
-            'product-not-found' => 'המוצר לא נמצא',
-            'customer-not-found' => 'הלקוח לא נמצא',
-            'already-exists' => 'מוצר זה כבר ברשימת ההשוואה שלך',
-        ],
-
         'downloadable-product' => [
             'download-link-not-found' => 'קישור הורדה לא נמצא או פג תוקף',
             'purchased-link-not-found' => 'קישור שנרכש לא נמצא',
@@ -240,30 +396,1123 @@ return [
             'redirect-external-url' => 'ניתוב מחדש לכתובת URL הורדה חיצונית',
             'file-error' => 'אירעה שגיאה בעת עיבוד בקשת ההורדה שלך',
             'unauthorized-access' => 'גישה לא מורשה למשאב הורדה',
+            'unauthenticated' => 'לא מורשה: נדרש אימות לקוח',
+            'link-id-required' => 'downloadableLinkPurchasedId נדרש',
+            'link-not-found' => 'קישור ההורדה לא נמצא',
+            'not-owner' => 'לא מורשה: קישור הורדה זה אינו שייך לך',
+            'pending' => 'ההורדה ממתינה. אנא המתן עד להפקת חשבונית עבור ההזמנה.',
+            'limit-exceeded' => 'חריגה ממגבלת ההורדות',
+            'no-downloads-left' => 'אין הורדות נוספות זמינות',
+        ],
+
+        'booking-slot' => [
+            'id-required' => 'מזהה מוצר ההזמנה נדרש.',
+            'date-required' => 'התאריך נדרש.',
+            'product-not-found' => 'מוצר ההזמנה לא נמצא.',
+            'invalid-type' => 'סוג הזמנה זה אינו נתמך.',
+            'invalid-time-range' => 'טווח זמן לא תקף.',
+            'invalid-time-format' => 'פורמט זמן לא תקף.',
+        ],
+
+        'resolver' => [
+            'no-resolve-info' => 'ResolveInfo של GraphQL אינו זמין בהקשר. לא ניתן לקבוע את מחלקת המודל.',
+            'unknown-resource-class' => 'לא ניתן לקבוע את מחלקת המשאב מסוג ההחזרה של GraphQL',
+        ],
+
+        'docs' => [
+            'openapi-unavailable' => 'לא ניתן היה ליצור מופע של OpenAPI Factory',
+        ],
+
+        'locale' => [
+            'id-required' => 'מזהה השפה נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/locales/1" או מזהה מספרי',
+            'not-found' => 'השפה לא נמצאה',
+        ],
+
+        'category' => [
+            'id-required' => 'מזהה הקטגוריה נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/categories/1" או מזהה מספרי',
+            'not-found' => 'הקטגוריה לא נמצאה',
+        ],
+
+        'compare-item' => [
+            'id-required' => 'מזהה פריט השוואה נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא תקין. פורמט IRI צפוי כמו "/api/shop/compare-items/1" או מזהה מספרי',
+            'not-found' => 'פריט השוואה לא נמצא',
+            'product-id-required' => 'מזהה המוצר נדרש',
+            'customer-id-required' => 'מזהה הלקוח נדרש',
+            'product-not-found' => 'המוצר לא נמצא',
+            'customer-not-found' => 'הלקוח לא נמצא',
+            'already-exists' => 'מוצר זה כבר ברשימת ההשוואה שלך',
+            'delete-all-success' => 'כל פריטי ההשוואה הוסרו בהצלחה',
+        ],
+
+        'wishlist' => [
+            'id-required' => 'מזהה פריט רשימת המשאלות נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/wishlists/1" או מזהה מספרי',
+            'not-found' => 'פריט רשימת המשאלות לא נמצא',
+            'product-id-required' => 'מזהה המוצר נדרש',
+            'customer-id-required' => 'מזהה הלקוח נדרש',
+            'product-not-found' => 'המוצר לא נמצא',
+            'product-disabled' => 'מוצר זה מושבת כעת',
+            'customer-not-found' => 'הלקוח לא נמצא',
+            'already-exists' => 'מוצר זה כבר נמצא ברשימת המשאלות שלך',
+            'added' => 'הפריט נוסף לרשימת המשאלות בהצלחה',
+            'removed' => 'הפריט הוסר מרשימת המשאלות בהצלחה',
+            'product-removed' => 'המוצר הוסר',
+            'wishlist-item-id-required' => 'מזהה פריט רשימת המשאלות נדרש',
+            'invalid-quantity' => 'הכמות חייבת להיות גדולה מ-0',
+            'move-to-cart-missing-options' => 'למוצר חסרות אפשרויות נדרשות. אנא הגדר אותו ידנית',
+            'moved-to-cart-success' => 'הפריט הועבר לעגלה בהצלחה',
+            'delete-all-success' => 'כל פריטי רשימת המשאלות הוסרו בהצלחה',
+        ],
+
+        'gdpr' => [
+            'disabled' => 'בקשות נתוני GDPR מושבתות. אנא הפעל את GDPR מהגדרות הניהול.',
+            'unauthenticated' => 'עליך להתחבר כדי לנהל בקשות נתוני GDPR.',
+            'not-found' => 'בקשת נתוני GDPR לא נמצאה',
+            'type-required' => 'סוג הבקשה נדרש',
+            'type-invalid' => 'סוג הבקשה חייב להיות "delete" או "update"',
+            'message-required' => 'ההודעה נדרשת',
+            'raised' => 'בקשת נתוני ה-GDPR שלך הוגשה בהצלחה.',
+            'revoked' => 'בקשת נתוני ה-GDPR שלך בוטלה בהצלחה.',
+            'revoke-not-allowed' => 'לא ניתן עוד לבטל בקשת נתוני GDPR זו.',
+            'deleted' => 'בקשת נתוני ה-GDPR שלך נמחקה בהצלחה.',
+        ],
+
+        'section' => [
+            'id-required' => 'מזהה המקטע נדרש',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/sections/1" או מזהה מספרי',
+            'not-found' => 'המקטע לא נמצא',
         ],
 
         'install' => [
+            'starting' => 'מתחיל את התקנת API Platform...',
+            'completed-success' => '✓ התקנת API Platform הושלמה בהצלחה!',
+            'failed' => '✗ ההתקנה נכשלה: ',
+
             'provider-already-registered' => 'ℹ ה-Service Provider כבר רשום',
+            'provider-not-registered' => '⚠ לא ניתן היה לרשום את ה-Service Provider באופן אוטומטי. הוסף את :provider ל-bootstrap/providers.php ידנית.',
+            'provider-registered' => '✓ ה-Service Provider נרשם ב-bootstrap/providers.php',
+            'provider-file-not-found' => 'הקובץ לא נמצא: :file',
+            'provider-permission-denied' => 'ההרשאה נדחתה: לא ניתן לכתוב אל :file. אנא בדוק את הרשאות הקובץ.',
+
+            'config-already-exists' => 'ℹ קובץ התצורה כבר קיים',
+            'config-published' => '✓ תצורת API Platform פורסמה אל config/',
+            'config-source-not-found' => 'קובץ תצורת המקור לא נמצא: :file',
+            'config-permission-denied' => 'ההרשאה נדחתה: לא ניתן לכתוב אל :directory. אנא בדוק את הרשאות התיקייה.',
+
+            'translatable-not-found' => 'ℹ TranslatableModel לא נמצא - מדלג',
+            'translatable-already-abstract' => 'ℹ TranslatableModel כבר מוגדר כ-abstract',
+            'translatable-made-abstract' => '✓ TranslatableModel הוגדר כ-abstract',
+            'translatable-permission-denied' => 'ההרשאה נדחתה: לא ניתן לכתוב אל :file. אנא בדוק את הרשאות הקובץ.',
+
+            'providers-already-registered' => 'ℹ ספקי API Platform כבר רשומים',
+            'providers-registered' => '✓ ספקי API Platform נרשמו ב-bootstrap/app.php',
+            'providers-file-not-found' => 'הקובץ לא נמצא: :file',
+            'providers-permission-denied' => 'ההרשאה נדחתה: לא ניתן לכתוב אל :file. אנא בדוק את הרשאות הקובץ.',
+            'providers-not-found' => 'לא ניתן היה למצוא את יצירת ה-Application ב-bootstrap/app.php',
+
+            'assets-published' => '✓ נכסי החבילה פורסמו',
+            'running-migrations' => 'מריץ העברות מסד נתונים...',
+            'migrations-completed' => '✓ העברות מסד הנתונים הושלמו',
             'clearing-caches' => 'מנקה וממטב מטמונים...',
             'caches-optimized' => '✓ המטמונים נוקו ומוטבו',
+            'generating-api-key' => 'יוצר מפתח API...',
+            'api-key-generated' => '✓ מפתח ה-API נוצר בהצלחה',
+            'api-key-already-exists' => 'ℹ מפתח ה-API של החנות המוגדר כברירת מחדל כבר קיים - מדלג על היצירה',
+
+            'migrations-error' => 'העברות מסד הנתונים נכשלו.',
+            'migrations-error-running' => 'שגיאה בהרצת העברות מסד הנתונים: :error',
             'cache-clear-error' => 'ניקוי המטמון נכשל.',
             'cache-optimize-error' => 'המיטוב נכשל.',
             'cache-error' => 'שגיאה בניקוי ומיטוב המטמונים: :error',
+            'api-key-generation-error' => 'יצירת מפתח ה-API נכשלה.',
+            'api-key-error' => 'שגיאה ביצירת מפתח ה-API: :error',
+
+            'key-management-required' => '--key נדרש עבור הפעולה :action',
+            'key-rotation-error' => 'שגיאה בהחלפת המפתח: :error',
+            'key-deactivation-error' => 'שגיאה בהשבתת המפתח: :error',
+            'key-not-found' => 'מפתח ה-API לא נמצא: :identifier',
+
+            'maintenance-starting' => '🔄 מתחיל תחזוקת מפתחות API...',
+            'maintenance-complete' => '✅ תחזוקת מפתחות ה-API הושלמה',
+            'cleanup-expired-keys' => '🧹 מנקה מפתחות שפג תוקפם...',
+            'cleanup-expired-none' => '   ℹ️ אין מפתחות שפג תוקפם לניקוי',
+            'invalidate-deprecated' => '⚠️ מבטל תוקף של מפתחות שהוצאו משימוש...',
+            'invalidate-deprecated-none' => '   ℹ️ אין מפתחות שהוצאו משימוש לביטול תוקף',
+            'notify-expiring' => '📧 שולח התראות על פקיעת תוקף...',
+            'notify-expiring-none' => '   ℹ️ אין מפתחות הדורשים התראות',
+
+            'key-rotated-success' => '✅ המפתח הוחלף בהצלחה!',
+            'key-deactivated-success' => '✅ המפתח הושבת בהצלחה!',
+            'deactivation-cancelled' => 'ההשבתה בוטלה.',
+            'cleanup-cancelled' => 'הניקוי בוטל.',
+
+            'key-status-title' => 'סטטוס המפתח: :name',
+            'key-status-active' => 'פעיל: :status',
+            'key-status-usable' => 'שמיש: :status',
+            'key-status-expired' => 'פג תוקף: :status',
+            'key-status-deprecated' => 'הוצא משימוש: :status',
+            'key-status-expires-at' => 'תוקף עד: :expires',
+            'key-status-days-until-expiry' => 'ימים עד לפקיעת התוקף: :days',
+            'key-status-last-used' => 'שימוש אחרון: :date',
+            'key-status-rotated-from' => 'הוחלף מ: :key',
+            'key-status-rotated-keys' => 'מפתחות שהוחלפו ממפתח זה: :count',
+
+            'policy-compliance-summary' => 'סיכום עמידה במדיניות החלפת מפתחות API',
+            'available-actions' => 'פעולות זמינות: rotate, deactivate, cleanup, status, expiring, unused, summary',
+
+            'asset-linked-success' => '✓ נכסי API Platform קושרו בהצלחה',
+            'symlink-create-failed' => 'לא ניתן היה ליצור קישור סמלי, מעתיק את הנכסים במקום זאת...',
+            'asset-copy-warning' => 'אזהרה: לא ניתן היה לקשר או להעתיק את נכסי API Platform. ייתכן שיידרש הגדרה ידנית.',
+            'asset-copied-success' => '✓ נכסי API Platform הועתקו בהצלחה',
+
+            'key-name-required' => 'שם מפתח חלון הראווה אינו יכול להיות ריק.',
+            'key-generated-success' => 'מפתח חלון הראווה נוצר בהצלחה!',
+            'key-details' => 'פרטי המפתח:',
+            'key-secure-warning' => 'שמור על מפתח זה בצורה מאובטחת! הוא ישמש בכותרת X-STOREFRONT-KEY.',
+            'key-share-warning' => 'אל תשתף מפתח זה בפומבי ואל תבצע לו commit למערכת בקרת גרסאות.',
+
+            'key-already-exists' => 'מפתח חלון ראווה בשם \':name\' כבר קיים.',
+            'cleanup-success' => '✅ נוקו :count מפתחות שפג תוקפם',
+            'confirm-cleanup' => 'פעולה זו תבצע מחיקה רכה של כל המפתחות שפג תוקפם. להמשיך?',
+            'confirm-deactivate' => 'האם אתה בטוח שברצונך להשבית את המפתח: :name?',
+
+            'old-key' => 'מפתח ישן: :name',
+            'old-key-id' => 'מזהה המפתח הישן: :id',
+            'deprecation-date' => 'תאריך הוצאה משימוש: :date',
+            'new-key' => 'מפתח חדש: :name',
+            'new-key-id' => 'מזהה המפתח החדש: :id',
+            'new-key-value' => 'ערך המפתח החדש: :key',
+            'expires-at' => 'תוקף עד: :date',
+            'invalid-action' => 'פעולה לא תקפה: :action',
+            'key-active' => 'פעיל: :status',
+            'key-usable' => 'שמיש: :status',
+            'key-expired' => 'פג תוקף: :status',
+            'key-deprecated' => 'הוצא משימוש: :status',
+            'key-field-id' => 'מזהה',
+            'key-field-name' => 'שם',
+            'key-field-key' => 'מפתח',
+            'key-field-rate-limit' => 'מגבלת קצב',
+            'key-field-status' => 'סטטוס',
+            'key-days' => ' ימים',
+            'key-never' => 'אף פעם',
+            'key-requests-minute' => ' בקשות/דקה',
+            'key-unlimited' => 'ללא הגבלה',
+            'rate-limit-exceeded' => 'מגבלת הקצב המבוקשת חורגת מהמקסימום המותר :max. מגדיר ל-:max בקשות/דקה.',
+
+            'vendor-path-not-found' => 'נתיב ה-vendor של API Platform לא נמצא ב: :path',
+            'assets-already-linked' => 'נכסי API Platform כבר מקושרים ב: :path',
+            'no-keys-expiring' => 'אין מפתחות שתוקפם פג ב-:days הימים הקרובים',
+            'keys-expiring-title' => 'מפתחות שתוקפם פג ב-:days הימים הקרובים:',
+            'key-display-format' => '• :name (מזהה: :id)',
+            'key-expires-display' => '  תוקף עד: :date (נותרו :days ימים)',
+            'no-unused-keys' => 'לא נמצאו מפתחות שאינם בשימוש (> :days ימים)',
+            'unused-keys-title' => 'מפתחות שאינם בשימוש (> :days ימים):',
+            'key-last-used-display' => '  שימוש אחרון: :date',
+            'total-keys' => 'סך המפתחות: :count',
+            'valid-keys' => 'מפתחות תקפים: :count',
+            'expired-keys' => 'מפתחות שפג תוקפם: :count',
+            'deprecated-keys' => 'מפתחות שהוצאו משימוש: :count',
+            'keys-expiring-soon' => 'מפתחות שתוקפם יפוג בקרוב (7 ימים): :count',
+            'unused-keys-summary' => 'מפתחות שאינם בשימוש (90 ימים): :count',
+            'recently-rotated' => 'הוחלפו לאחרונה (30 ימים): :count',
+            'cleanup-success-message' => '   ✅ נוקו :count מפתחות שפג תוקפם',
+            'invalidate-success-message' => '   ✅ בוטל התוקף של :count מפתחות שהוצאו משימוש',
+            'notify-success-message' => '   ✅ נשלחו :count התראות על פקיעת תוקף',
+            'notify-failed-message' => '   ⚠️ שליחת התראה עבור :key נכשלה: :error',
+            'publish-assets-warning' => 'אזהרה: לא ניתן היה לפרסם את נכסי החבילה. :error',
+            'env-config-saved' => '✓ תצורת הסביבה של API Platform נשמרה בהצלחה',
+            'api-endpoints' => 'נקודות קצה של API:',
+            'api-documentation' => 'תיעוד API: :url',
+            'api-landing-page' => 'דף הנחיתה של API: :url',
+            'graphql-playground' => 'GraphQL Playground: :url',
+            'rest-api-storefront' => 'Swagger של REST API לחנות: :url',
+            'rest-api-admin' => 'Swagger של REST API לניהול: :url',
+            'key-rotation-invalid-key' => 'לא ניתן להחליף מפתח לא תקף או שפג תוקפו',
         ],
     ],
 
     'admin' => [
+        // login / logout / forgot-password / profile-update keys removed in the
+        // 2026-05-27 auth refactor — admin clients now authenticate via
+        // pre-issued integration tokens (Bearer header, AdminApiGuard).
+        'profile' => [
+            'unauthenticated' => 'אינך מאומת.',
+        ],
+
         'dashboard' => [
             'invalid-type' => 'סוג נתון סטטיסטי של לוח הבקרה אינו ידוע. סוגים חוקיים: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
         ],
 
+        'rma' => [
+            'not-found' => 'בקשת ההחזרה לא נמצאה.',
+            'invalid-input' => 'פרטי ההחזרה חסרים או אינם תקפים.',
+            'invalid-order' => 'ההזמנה שנבחרה אינה תקפה.',
+            'invalid-item' => 'הפריט שנבחר אינו זכאי להחזרה.',
+            'invalid-resolution-type' => 'סוג הפתרון חייב להיות "return" או "cancel_items".',
+            'qty-exceeds' => 'הכמות המבוקשת חורגת מהכמות הניתנת להחזרה.',
+            'created' => 'בקשת ההחזרה נוצרה בהצלחה.',
+            'status-updated' => 'סטטוס ההחזרה עודכן בהצלחה.',
+            'invalid-status' => 'סטטוס החזרה לא תקף.',
+            'reopened' => 'בקשת ההחזרה נפתחה מחדש בהצלחה.',
+            'reopen-not-allowed' => 'לא ניתן לפתוח מחדש בקשת החזרה זו.',
+            'refund-failed' => 'לא ניתן היה ליצור את ההחזר הכספי עבור החזרה זו.',
+            'message-sent' => 'ההודעה נשלחה בהצלחה.',
+            'no-permission' => 'אין לך הרשאה לבצע פעולה זו.',
+            'reason-not-found' => 'סיבת ההחזרה לא נמצאה.',
+            'reason-deleted' => 'סיבת ההחזרה נמחקה בהצלחה.',
+            'status-not-found' => 'סטטוס ההחזרה לא נמצא.',
+            'status-deleted' => 'סטטוס ההחזרה נמחק בהצלחה.',
+            'status-default-undeletable' => 'לא ניתן למחוק סטטוס החזרה המוגדר כברירת מחדל.',
+            'rule-not-found' => 'כלל ההחזרה לא נמצא.',
+            'rule-deleted' => 'כלל ההחזרה נמחק בהצלחה.',
+            'custom-field-not-found' => 'השדה המותאם אישית של ההחזרה לא נמצא.',
+            'custom-field-deleted' => 'השדה המותאם אישית של ההחזרה נמחק בהצלחה.',
+            'custom-field-options-required' => 'נדרשת לפחות אפשרות אחת עבור סוג שדה זה.',
+            'mass-indices-required' => 'נדרש לפחות מזהה אחד.',
+            'mass-delete-success' => 'הפריטים שנבחרו נמחקו.',
+            'mass-update-success' => 'הפריטים שנבחרו עודכנו.',
+            'mass-value-invalid' => 'ערך הסטטוס חייב להיות 0 או 1.',
+            'image-not-found' => 'תמונת ההחזרה לא נמצאה.',
+            'attachment-not-found' => 'הקובץ המצורף להודעה לא נמצא.',
+        ],
+
+        'eu-withdrawal' => [
+            'not-found' => 'הצהרת הביטול לא נמצאה.',
+            'no-permission' => 'אין לך הרשאה לנהל ביטולי עסקה של האיחוד האירופי.',
+            'declined' => 'הביטול סומן כנדחה.',
+            'refunded' => 'הביטול סומן כהוחזר כספית.',
+            'confirmation-resent' => 'אימייל האישור נשלח מחדש בהצלחה.',
+            'confirmation-failed' => 'לא ניתן היה לשלוח את אימייל האישור.',
+        ],
+
+        'reporting' => [
+            'invalid-entity' => 'ישות דיווח לא ידועה.',
+            'invalid-type' => 'סוג נתון דיווח לא ידוע עבור ישות זו.',
+            'export-format-unsupported' => 'רק פורמטי הייצוא csv, xls ו-xlsx נתמכים.',
+        ],
+
+        'configuration' => [
+            'unauthenticated' => 'אינך מאומת.',
+            'no-permission' => 'אין לך הרשאה לעדכן את התצורה.',
+            'slug-required' => 'פרמטר השאילתה `slug` נדרש.',
+            'slug-not-found' => 'לא רשום מקטע תצורה עבור ה-slug שסופק.',
+            'values-required' => 'נדרש לפחות ערך אחד תחת `values`.',
+            'scope-escape' => 'המפתח `:key` נמצא מחוץ לתת-העץ של ה-slug המבוקש.',
+            'unknown-field' => 'המפתח `:key` אינו שדה תצורה רשום.',
+            'validation-failed' => 'אימות של ערך תצורה אחד או יותר נכשל.',
+            'file-upload-rest-only' => 'העלאת קבצים בינאריים עבור השדה `:field` נתמכת רק דרך נקודת הקצה multipart של REST, לא דרך GraphQL.',
+            'custom-view-readonly' => 'השדה `:field` הוא שדה מותאם אישית המוצג באמצעות blade ולא ניתן לעדכן אותו דרך ה-API.',
+            'update-success' => 'התצורה עודכנה בהצלחה.',
+        ],
+
+        'customer' => [
+            'not-found' => 'הלקוח לא נמצא.',
+            'no-permission' => 'אין לך הרשאה לבצע פעולה זו.',
+            'has-active-orders' => 'ללקוח יש הזמנות ממתינות או בעיבוד ולא ניתן למחוק אותו.',
+            'deleted' => 'הלקוח נמחק בהצלחה.',
+            'mass-delete-indices-required' => 'נדרש לפחות מזהה לקוח אחד.',
+            'mass-delete-success' => 'הלקוחות נמחקו.',
+            'mass-update-indices-required' => 'נדרש לפחות מזהה לקוח אחד.',
+            'mass-update-value-invalid' => 'ערך הסטטוס חייב להיות 0 או 1.',
+            'mass-update-success' => 'סטטוס הלקוח עודכן.',
+
+            'address' => [
+                'not-found' => 'הכתובת לא נמצאה.',
+                'not-owned' => 'כתובת זו אינה שייכת ללקוח שצוין.',
+                'customer-id-required' => 'customerId נדרש כדי לזהות את בעל הכתובת.',
+                'deleted' => 'הכתובת נמחקה בהצלחה.',
+            ],
+
+            'note' => [
+                'empty' => 'טקסט ההערה נדרש.',
+                'created' => 'ההערה נוספה בהצלחה.',
+            ],
+
+            'impersonate' => [
+                'success' => 'הונפק אסימון התחזות.',
+            ],
+
+            'review' => [
+                'not-found' => 'הביקורת לא נמצאה.',
+                'no-permission' => 'אין לך הרשאה לבצע פעולה זו.',
+                'invalid-status' => 'הסטטוס חייב להיות אחד מהבאים: pending, approved, disapproved.',
+                'updated' => 'הביקורת עודכנה בהצלחה.',
+                'deleted' => 'הביקורת נמחקה בהצלחה.',
+                'mass-delete-indices-required' => 'נדרש לפחות מזהה ביקורת אחד.',
+                'mass-delete-success' => 'הביקורות נמחקו.',
+                'mass-update-indices-required' => 'נדרש לפחות מזהה ביקורת אחד.',
+                'mass-update-value-invalid' => 'ערך הסטטוס חייב להיות אחד מהבאים: pending, approved, disapproved.',
+                'mass-update-success' => 'סטטוס הביקורת עודכן.',
+            ],
+
+            'group' => [
+                'not-found' => 'קבוצת הלקוחות לא נמצאה.',
+                'deleted' => 'קבוצת הלקוחות נמחקה בהצלחה.',
+                'is-system' => 'לא ניתן למחוק קבוצות לקוחות של המערכת.',
+                'has-customers' => 'לקבוצת הלקוחות משויכים לקוחות ולא ניתן למחוק אותה.',
+                'system-code-immutable' => 'לא ניתן לשנות את הקוד של קבוצת לקוחות של המערכת.',
+                'system-flag-immutable' => 'לא ניתן לשנות את הדגל is_user_defined של קבוצת לקוחות של המערכת.',
+                'mass-delete-indices-required' => 'נדרש לפחות מזהה קבוצת לקוחות אחד.',
+                'mass-delete-success' => 'קבוצות הלקוחות נמחקו.',
+            ],
+
+            'gdpr' => [
+                'not-found' => 'בקשת ה-GDPR לא נמצאה.',
+                'no-permission' => 'אין לך הרשאה לבצע פעולה זו.',
+                'deleted' => 'בקשת ה-GDPR נמחקה בהצלחה.',
+                'invalid-status' => 'הסטטוס חייב להיות אחד מהבאים: pending, processing, declined, approved, revoked.',
+                'no-changes' => 'נדרש לפחות סטטוס או הודעה.',
+                'already-processed' => 'בקשת GDPR זו כבר עובדה ולא ניתן להריץ אותה שוב.',
+
+                'process' => [
+                    'approved' => 'בקשת ה-GDPR אושרה.',
+                    'deleted' => 'בקשת ה-GDPR אושרה והלקוח נמחק.',
+                ],
+            ],
+        ],
+
+        'order' => [
+            'not-found' => 'ההזמנה לא נמצאה.',
+
+            'reorder' => [
+                'success' => 'ההזמנה החוזרת בוצעה בהצלחה. נוצרה עגלת טיוטה חדשה.',
+                'cannot-reorder' => 'לא ניתן להזמין מחדש הזמנה זו (הזמנת אורח או שפריט אחד או יותר אינם זמינים עוד למכירה).',
+                'failed' => 'ההזמנה החוזרת נכשלה. אנא נסה שוב.',
+                'guest-not-supported' => 'הזמנה חוזרת אינה נתמכת עבור הזמנות אורח.',
+                'items-not-saleable' => 'פריט אחד או יותר בהזמנה זו אינם זמינים עוד לרכישה.',
+                'no-permission' => 'אין לך הרשאה ליצור הזמנות.',
+                'disabled-in-settings' => 'הזמנה חוזרת על ידי מנהל מושבתת בהגדרות החנות.',
+            ],
+
+            'actions' => [
+                'cancel' => [
+                    'closed' => 'לא ניתן לבטל הזמנות סגורות.',
+                    'fraud' => 'לא ניתן לבטל הזמנות שסומנו כהונאה.',
+                    'nothing-to-cancel' => 'אין מה לבטל בהזמנה זו.',
+                    'already-processed' => 'עבור הזמנה זו כבר הופקה חשבונית או שהיא כבר נשלחה, ולא ניתן עוד לבטל אותה. ניתן לבצע החזר כספי במקום זאת.',
+                    'no-permission' => 'אין לך הרשאה לבטל הזמנות.',
+                    'success' => 'ההזמנה בוטלה בהצלחה.',
+                    'failed' => 'לא ניתן היה לבטל את ההזמנה.',
+                ],
+
+                'comment' => [
+                    'empty' => 'התגובה נדרשת.',
+                    'success' => 'התגובה נוספה להזמנה.',
+                    'failed' => 'לא ניתן היה להוסיף את התגובה.',
+                ],
+
+                'invoice' => [
+                    'closed' => 'לא ניתן להפיק חשבונית עבור הזמנות סגורות.',
+                    'fraud' => 'לא ניתן להפיק חשבונית עבור הזמנות שסומנו כהונאה.',
+                    'nothing-to-invoice' => 'אין מה להפיק עליו חשבונית בהזמנה זו.',
+                    'already-invoiced' => 'כבר הופקה חשבונית עבור הזמנה זו.',
+                    'paypal-standard-blocked' => 'לא ניתן ליצור חשבוניות עבור הזמנות ששולמו באמצעות PayPal Standard.',
+                    'no-permission' => 'אין לך הרשאה ליצור חשבוניות.',
+                    'items-required' => 'נדרש לפחות פריט אחד עם כמות חיובית.',
+                    'qty-exceeds' => 'הכמות המבוקשת (:requested) חורגת מהכמות הזמינה (:available) עבור SKU :sku.',
+                    'not-found' => 'החשבונית לא נמצאה.',
+                    'success' => 'החשבונית נוצרה בהצלחה.',
+                    'failed' => 'לא ניתן היה ליצור את החשבונית.',
+                    'pdf-failed' => 'לא ניתן היה להפיק את קובץ ה-PDF של החשבונית.',
+                    'email-invalid' => 'נדרשת כתובת אימייל תקפה של הנמען.',
+                    'duplicate-sent' => 'אימייל החשבונית נשלח אל :email.',
+                    'mass-status-indices-required' => 'נדרש לפחות מזהה חשבונית אחד.',
+                    'mass-status-value-invalid' => 'הסטטוס חייב להיות אחד מהבאים: pending, paid, overdue.',
+                    'mass-status-success' => 'סטטוס החשבונית עודכן בהצלחה.',
+                ],
+
+                'shipment' => [
+                    'closed' => 'לא ניתן לשלוח הזמנות סגורות.',
+                    'fraud' => 'לא ניתן לשלוח הזמנות שסומנו כהונאה.',
+                    'nothing-to-ship' => 'אין מה לשלוח בהזמנה זו.',
+                    'no-permission' => 'אין לך הרשאה לשלוח הזמנות.',
+                    'source-required' => 'מקור המלאי נדרש.',
+                    'items-required' => 'נדרש לפחות פריט אחד עם כמות חיובית.',
+                    'qty-exceeds' => 'הכמות המבוקשת (:requested) חורגת מהכמות הזמינה (:available) עבור SKU :sku.',
+                    'inventory-insufficient' => 'המלאי במקור שנבחר אינו מספיק עבור SKU :sku.',
+                    'not-found' => 'המשלוח לא נמצא.',
+                    'success' => 'המשלוח נוצר בהצלחה.',
+                    'failed' => 'לא ניתן היה ליצור את המשלוח.',
+                ],
+
+                'refund' => [
+                    'closed' => 'לא ניתן לבצע החזר כספי עבור הזמנות סגורות.',
+                    'fraud' => 'לא ניתן לבצע החזר כספי עבור הזמנות שסומנו כהונאה.',
+                    'nothing-to-refund' => 'לא נותר דבר להחזר כספי בהזמנה זו.',
+                    'no-permission' => 'אין לך הרשאה ליצור החזרים כספיים.',
+                    'qty-exceeds' => 'הכמות המבוקשת (:requested) חורגת מהכמות הזמינה (:available) עבור SKU :sku.',
+                    'amount-zero' => 'סכום ההחזר המחושב הוא אפס. התאם את הכמות, המשלוח או ערכי ההתאמה.',
+                    'amount-exceeds-max' => 'סכום ההחזר (:amount) חורג מהסכום המקסימלי הניתן להחזר (:max).',
+                    'not-found' => 'ההחזר הכספי לא נמצא.',
+                    'success' => 'ההחזר הכספי נוצר בהצלחה.',
+                    'failed' => 'לא ניתן היה ליצור את ההחזר הכספי.',
+                ],
+            ],
+        ],
+
+        'appearance' => [
+            'no-permission' => 'אין לך הרשאה לנהל את המראה.',
+
+            'theme' => [
+                'not-found' => 'ערכת הנושא לא נמצאה.',
+                'not-installed' => 'ערכת נושא זו אינה מותקנת.',
+                'channel-ids-required' => 'נדרש לפחות ערוץ אחד.',
+                'unknown-channel' => 'ערוץ אחד או יותר אינם קיימים.',
+                'activated' => 'ערכת הנושא הופעלה בהצלחה.',
+            ],
+
+            'section' => [
+                'not-found' => 'המקטע לא נמצא.',
+                'invalid-payload' => 'מטען מקטע שאינו נתמך.',
+                'footer-links-exists' => 'לערוץ זה כבר יש מקטע קישורי כותרת תחתונה.',
+                'options-required' => 'האפשרויות נדרשות.',
+                'status-required' => 'הסטטוס נדרש.',
+                'section-ids-required' => 'נדרש לפחות מקטע אחד.',
+                'reorder-single-scope' => 'ניתן לסדר מחדש מקטעים רק בתוך ערכת נושא וערוץ אחד בכל פעם.',
+                'reorder-incomplete' => 'סידור מחדש דורש את כל המקטעים של ערכת הנושא והערוץ, בסדר שבו הם אמורים להיות מוצגים.',
+                'unknown-section' => 'מקטע אחד או יותר אינם קיימים.',
+                'file-required' => 'נדרש קובץ.',
+                'created' => 'המקטע נוצר בהצלחה.',
+                'updated' => 'המקטע עודכן בהצלחה.',
+                'deleted' => 'המקטע נמחק בהצלחה.',
+                'draft-saved' => 'שינויי המקטע הוכנו לפרסום בהצלחה.',
+                'status-staged' => 'סטטוס המקטע הוכן לפרסום בהצלחה.',
+                'order-staged' => 'סדר המקטעים הוכן לפרסום בהצלחה.',
+                'duplicated' => 'המקטע הועתק בהצלחה.',
+                'published' => 'שינויי המקטע פורסמו בהצלחה.',
+                'discarded' => 'שינויי המקטע נמחקו בהצלחה.',
+                'media-uploaded' => 'המדיה הועלתה בהצלחה.',
+            ],
+        ],
+
+        'sales' => [
+            'no-permission' => 'אין לך הרשאה לצפות במשאב מכירות זה.',
+
+            'invoice' => [
+                'not-found' => 'החשבונית לא נמצאה.',
+                'no-permission' => 'אין לך הרשאה לצפות בחשבוניות.',
+            ],
+
+            'shipment' => [
+                'not-found' => 'המשלוח לא נמצא.',
+                'no-permission' => 'אין לך הרשאה לצפות במשלוחים.',
+            ],
+
+            'refund' => [
+                'not-found' => 'ההחזר הכספי לא נמצא.',
+                'no-permission' => 'אין לך הרשאה לצפות בהחזרים כספיים.',
+                'export-format-unsupported' => 'רק ייצוא בפורמטים csv, xls ו-xlsx נתמך.',
+            ],
+
+            'transaction' => [
+                'not-found' => 'העסקה לא נמצאה.',
+                'no-permission' => 'אין לך הרשאה לצפות בעסקאות.',
+
+                'create' => [
+                    'invoice-required' => 'השדה invoiceId נדרש.',
+                    'payment-method-required' => 'השדה paymentMethod נדרש.',
+                    'amount-invalid' => 'השדה amount נדרש וחייב להיות מספרי.',
+                    'invoice-missing' => 'לא ניתן היה למצוא את החשבונית שצוינה.',
+                    'already-paid' => 'חשבונית זו כבר שולמה במלואה.',
+                    'amount-exceeds' => 'סכום התשלום חורג מהסכום הכולל של החשבונית.',
+                    'amount-zero' => 'סכום התשלום חייב להיות גדול מאפס.',
+                ],
+            ],
+
+            'booking' => [
+                'not-found' => 'ההזמנה (Booking) לא נמצאה.',
+                'no-permission' => 'אין לך הרשאה לצפות בהזמנות מקום.',
+            ],
+
+            'export' => [
+                'format-unsupported' => 'רק ייצוא בפורמטים csv, xls ו-xlsx נתמך.',
+            ],
+        ],
+
+        'cart' => [
+            'not-found' => 'העגלה לא נמצאה.',
+            'not-draft' => 'לא ניתן לשנות עגלה זו דרך ה-API של הניהול.',
+            'product-required' => 'productId נדרש.',
+            'product-not-found' => 'המוצר לא נמצא.',
+            'booking-unsupported' => 'לא ניתן להוסיף מוצרי הזמנת מקום להזמנת טיוטה של מנהל. רכישות של הזמנת מקום חייבות להתבצע דרך חלון הראווה של הלקוח.',
+            'product-not-saleable' => 'מוצר זה אינו זמין למכירה (אזל מהמלאי או מושבת) ולא ניתן להוסיף אותו להזמנה.',
+            'qty-required' => 'qty נדרש וחייב להיות אובייקט לא ריק של itemId => quantity.',
+            'cart-item-required' => 'cartItemId נדרש.',
+            'item-added' => 'הפריט נוסף לעגלה.',
+            'item-add-failed' => 'לא ניתן היה להוסיף את הפריט לעגלה.',
+            'item-updated' => 'פריטי העגלה עודכנו.',
+            'item-update-failed' => 'לא ניתן היה לעדכן את פריטי העגלה.',
+            'item-removed' => 'הפריט הוסר מהעגלה.',
+            'item-remove-failed' => 'לא ניתן היה להסיר את פריט העגלה.',
+            'address-saved' => 'הכתובת נשמרה.',
+            'address-required' => 'נדרשת כתובת לחיוב.',
+            'address-incomplete' => 'השדה :field נדרש כדי לשמור את הכתובת.',
+            'coupon-code-required' => 'נדרש קוד קופון.',
+            'coupon-applied' => 'הקופון הוחל.',
+            'coupon-already-applied' => 'הקופון כבר הוחל על עגלה זו.',
+            'coupon-not-found' => 'הקופון לא נמצא או שאינו פעיל.',
+            'coupon-removed' => 'הקופון הוסר.',
+            'coupon-error' => 'משהו השתבש בעת החלת הקופון.',
+            'unknown-error' => 'משהו השתבש.',
+            'draft-created' => 'עגלת הטיוטה נוצרה.',
+            'draft-failed' => 'לא ניתן היה ליצור את עגלת הטיוטה.',
+            'addresses-required-for-shipping' => 'יש לשמור את הכתובות לפני בחירת שיטת משלוח.',
+            'shipping-required-for-payment' => 'יש לבחור שיטת משלוח לפני אמצעי התשלום.',
+            'shipping-method-required' => 'שיטת המשלוח נדרשת.',
+            'shipping-method-saved' => 'שיטת המשלוח נשמרה.',
+            'shipping-method-failed' => 'לא ניתן היה לשמור את שיטת המשלוח.',
+            'payment-method-required' => 'אמצעי התשלום נדרש.',
+            'payment-method-saved' => 'אמצעי התשלום נשמר.',
+            'payment-method-failed' => 'לא ניתן היה לשמור את אמצעי התשלום.',
+
+            'place-order' => [
+                'success' => 'ההזמנה בוצעה בהצלחה.',
+                'failed' => 'לא ניתן היה לבצע את ההזמנה.',
+                'error' => 'לא ניתן היה לבצע את ההזמנה: בעגלה יש שגיאות.',
+                'minimum-order-error' => 'סכום ההזמנה המינימלי הוא :amount. הוסף פריטים נוספים לפני ביצוע ההזמנה.',
+                'empty-cart' => 'העגלה ריקה — הוסף פריטים לפני ביצוע הזמנה.',
+                'addresses-required' => 'יש לשמור את כתובות החיוב והמשלוח לפני ביצוע ההזמנה.',
+                'shipping-required' => 'יש לבחור שיטת משלוח לפני ביצוע ההזמנה.',
+                'payment-required' => 'יש לבחור אמצעי תשלום לפני ביצוע ההזמנה.',
+                'payment-method-unsupported' => 'רק cashondelivery ו-moneytransfer נתמכים עבור הזמנות שבוצעו על ידי מנהל.',
+            ],
+        ],
+
+        'product' => [
+            'not-found' => 'המוצר לא נמצא.',
+
+            'mass-delete-success' => 'המוצרים נמחקו בהצלחה.',
+            'mass-update-status-success' => 'סטטוס המוצרים עודכן בהצלחה.',
+            'indices-required' => 'השדה indices נדרש וחייב להיות מערך לא ריק.',
+            'indices-invalid' => 'השדה indices חייב להיות מערך של מזהי מוצרים מספריים שלמים.',
+            'value-invalid' => 'השדה value נדרש וחייב להיות 0 או 1.',
+            'mass-delete-failed' => 'לא ניתן היה למחוק מוצר אחד או יותר.',
+            'no-permission' => 'אין לך הרשאה לנהל מוצרים.',
+
+            'copy-success' => 'המוצר הועתק בהצלחה.',
+            'copy-failed' => 'העתקת המוצר נכשלה.',
+            'copy-variant-not-supported' => 'לא ניתן להעתיק וריאנטים של מוצרים הניתנים להגדרה. העתק את מוצר האב הניתן להגדרה במקום זאת.',
+
+            'create' => [
+                'created' => 'המוצר נוצר בהצלחה.',
+                'create-failed' => 'יצירת המוצר נכשלה.',
+                'sku-required' => 'השדה sku נדרש.',
+                'sku-unique' => 'ה-sku כבר תפוס.',
+                'sku-invalid' => 'ה-sku יכול להכיל אותיות, ספרות ומקפים בלבד (לדוגמה "sp-001").',
+                'attribute-family-required' => 'השדה attribute_family_id נדרש.',
+                'attribute-family-not-found' => 'משפחת המאפיינים שנבחרה אינה קיימת.',
+                'type-required' => 'השדה type נדרש.',
+                'type-not-yet-supported' => 'סוג המוצר ":type" אינו נתמך על ידי API זה. סוגים מותרים: simple, virtual, downloadable, grouped, bundle, configurable, booking.',
+                'super-attributes-required' => 'השדה super_attributes נדרש כאשר type=configurable. ספק מיפוי של קוד מאפיין (או מזהה) אל option_ids, לדוגמה { "color": [1,2], "size": [4,5] }.',
+                'super-attributes-invalid' => 'השדה super_attributes חייב להיות מיפוי לא ריק של קוד מאפיין (או מזהה) אל רשימה לא ריקה של option_ids.',
+                'no-permission' => 'אין לך הרשאה ליצור מוצרים.',
+            ],
+
+            'update' => [
+                'updated' => 'המוצר עודכן בהצלחה.',
+                'update-failed' => 'עדכון המוצר נכשל.',
+                'id-required' => 'נדרש מזהה מוצר.',
+                'url-key-required' => 'השדה url_key אינו יכול להיות ריק.',
+                'url-key-unique' => 'ה-url_key כבר תפוס על ידי מוצר אחר.',
+                'special-price-invalid' => 'special_price חייב להיות מספר קטן מ-price.',
+                'special-price-date-range-invalid' => 'special_price_to חייב להיות באותו תאריך או אחרי special_price_from.',
+                'boolean-field-invalid' => 'השדה :field חייב להיות 0 או 1.',
+                'categories-invalid' => 'השדה categories חייב להיות מערך של מזהי קטגוריות.',
+                'channels-invalid' => 'השדה channels חייב להיות מערך של מזהי ערוצים.',
+                'super-attributes-cannot-change' => 'לא ניתן לשנות את super_attributes לאחר יצירת המוצר.',
+                'sub-resource-stripped-images' => 'יש לנהל תמונות דרך POST /api/admin/catalog/products/{id}/images. השדה images לא נלקח בחשבון.',
+                'sub-resource-stripped-inventories' => 'יש לנהל מלאי דרך PUT /api/admin/catalog/products/{id}/inventories. השדה inventories לא נלקח בחשבון.',
+                'sub-resource-stripped-customer-group-prices' => 'יש לנהל מחירי קבוצות לקוחות דרך /api/admin/catalog/products/{id}/customer-group-prices. השדה customer_group_prices לא נלקח בחשבון.',
+                'translations-single-locale' => 'רק השפה המבוקשת עודכנה. כדי לעדכן את השפה/ות :locales, שלח בקשה נפרדת עם ?locale=<code> עבור כל אחת.',
+            ],
+
+            'delete' => [
+                'deleted' => 'המוצר נמחק בהצלחה.',
+                'delete-failed' => 'מחיקת המוצר נכשלה.',
+            ],
+
+            'image' => [
+                'uploaded' => 'תמונת המוצר הועלתה בהצלחה.',
+                'updated' => 'תמונת המוצר עודכנה בהצלחה.',
+                'update-empty' => 'שלח טקסט חלופי או מיקום לעדכון.',
+                'reordered' => 'תמונות המוצר סודרו מחדש בהצלחה.',
+                'deleted' => 'תמונת המוצר נמחקה בהצלחה.',
+                'image-required' => 'נדרש קובץ תמונה (שדה multipart "image").',
+                'image-invalid-type' => 'סוג התמונה חייב להיות אחד מהבאים: bmp, jpeg, jpg, png, webp.',
+                'image-too-large' => 'התמונה גדולה מדי. הגודל המרבי המותר הוא 4 MB.',
+                'not-found' => 'תמונת המוצר לא נמצאה.',
+                'no-permission' => 'אין לך הרשאה לנהל תמונות מוצרים.',
+                'upload-failed' => 'העלאת תמונת המוצר נכשלה.',
+                'reorder-failed' => 'סידור מחדש של תמונות המוצר נכשל.',
+                'delete-failed' => 'מחיקת תמונת המוצר נכשלה.',
+                'order-required' => 'המערך "order" נדרש ואינו יכול להיות ריק.',
+                'order-invalid' => 'כל רשומה ב-"order" חייבת להיות אובייקט עם id ו-position.',
+                'id-not-on-product' => 'התמונה :id אינה שייכת למוצר זה.',
+                'graphql-upload-unsupported' => 'העלאת תמונות דרך GraphQL אינה נתמכת. השתמש ב-POST /api/admin/catalog/products/{productId}/images עם multipart/form-data.',
+            ],
+
+            'downloadable' => [
+                'file-required' => 'נדרש קובץ (שדה multipart "file").',
+                'file-too-large' => 'הקובץ גדול מדי. הגודל המרבי המותר הוא 128 MB.',
+                'upload-failed' => 'העלאת הקובץ הניתן להורדה נכשלה.',
+                'file-not-found' => 'לא נמצא קובץ שמור עבור מוצר ומאפיין אלה.',
+                'no-permission' => 'אין לך הרשאה לנהל קבצים של מוצרים הניתנים להורדה.',
+            ],
+
+            'video' => [
+                'uploaded' => 'סרטון המוצר הועלה בהצלחה.',
+                'deleted' => 'סרטון המוצר נמחק בהצלחה.',
+                'video-required' => 'נדרש קובץ וידאו (שדה multipart "video").',
+                'video-invalid-type' => 'סוג הווידאו חייב להיות אחד מהבאים: mp4, webm, ogg, mov.',
+                'video-too-large' => 'הסרטון גדול מדי. הגודל המרבי המותר הוא 100 MB.',
+                'not-found' => 'סרטון המוצר לא נמצא.',
+                'no-permission' => 'אין לך הרשאה לנהל סרטוני מוצרים.',
+                'upload-failed' => 'העלאת סרטון המוצר נכשלה.',
+                'delete-failed' => 'מחיקת סרטון המוצר נכשלה.',
+                'graphql-upload-unsupported' => 'העלאת סרטונים דרך GraphQL אינה נתמכת. השתמש ב-POST /api/admin/catalog/products/{productId}/videos עם multipart/form-data.',
+            ],
+
+            'inventory' => [
+                'updated' => 'מלאי המוצר נשמר בהצלחה.',
+                'inventories-required' => 'השדה inventories נדרש וחייב להיות מיפוי לא ריק של inventory_source_id לכמות.',
+                'inventories-invalid' => 'השדה inventories חייב להיות מיפוי של inventory_source_id (מספר שלם חיובי) לכמות (מספר שלם אי-שלילי).',
+                'source-not-found' => 'מקור המלאי :id אינו קיים.',
+                'qty-invalid' => 'כל כמות חייבת להיות מספר שלם אי-שלילי.',
+                'no-permission' => 'אין לך הרשאה לנהל את מלאי המוצרים.',
+                'not-found' => 'המוצר לא נמצא.',
+            ],
+
+            'customer-group-price' => [
+                'created' => 'מחיר קבוצת הלקוחות נוסף בהצלחה.',
+                'updated' => 'מחיר קבוצת הלקוחות עודכן בהצלחה.',
+                'deleted' => 'מחיר קבוצת הלקוחות נמחק בהצלחה.',
+                'qty-required' => 'השדה qty נדרש.',
+                'qty-invalid' => 'השדה qty חייב להיות מספר שלם גדול מ-1 או שווה לו.',
+                'value-type-required' => 'השדה value_type נדרש.',
+                'value-type-invalid' => 'השדה value_type חייב להיות "fixed" או "discount".',
+                'value-required' => 'השדה value נדרש.',
+                'value-invalid' => 'השדה value חייב להיות מספר אי-שלילי.',
+                'customer-group-not-found' => 'קבוצת הלקוחות שנבחרה אינה קיימת.',
+                'duplicate-qty-group' => 'כבר קיים מחיר קבוצת לקוחות עבור צירוף זה (qty, customer_group_id) עבור המוצר.',
+                'not-found' => 'מחיר קבוצת הלקוחות לא נמצא.',
+                'no-permission' => 'אין לך הרשאה לנהל מחירי קבוצות לקוחות של מוצרים.',
+            ],
+        ],
+
+        'category' => [
+            'not-found' => 'הקטגוריה לא נמצאה.',
+
+            'created' => 'הקטגוריה נוצרה בהצלחה.',
+            'updated' => 'הקטגוריה עודכנה בהצלחה.',
+            'deleted' => 'הקטגוריה נמחקה בהצלחה.',
+            'slug-required' => 'השדה slug נדרש.',
+            'slug-unique' => 'ה-slug כבר תפוס.',
+            'name-required' => 'השדה name נדרש.',
+            'position-required' => 'השדה position נדרש.',
+            'attributes-required' => 'נדרש לפחות מאפיין אחד הניתן לסינון.',
+            'description-required-for-mode' => 'נדרש תיאור עבור מצב התצוגה שנבחר.',
+            'cannot-delete-root' => 'לא ניתן למחוק את קטגוריית השורש ואת קטגוריות השורש של הערוצים.',
+            'cannot-delete-channel-root' => 'קטגוריה זו היא שורש של ערוץ ולא ניתן למחוק אותה.',
+            'delete-failed' => 'לא ניתן היה למחוק את הקטגוריה.',
+            'no-permission' => 'אין לך הרשאה לנהל קטגוריות.',
+            'mass-delete-success' => 'הקטגוריות נמחקו בהצלחה.',
+            'mass-update-status-success' => 'סטטוס הקטגוריות עודכן בהצלחה.',
+            'mass-delete-indices-required' => 'השדה indices נדרש וחייב להיות מערך לא ריק.',
+            'mass-update-status-value-required' => 'השדה value נדרש וחייב להיות 0 או 1.',
+        ],
+
+        'attribute' => [
+            'not-found' => 'המאפיין לא נמצא.',
+
+            'create-success' => 'המאפיין נוצר בהצלחה.',
+            'update-success' => 'המאפיין עודכן בהצלחה.',
+            'delete-success' => 'המאפיין נמחק בהצלחה.',
+            'delete-failed' => 'לא ניתן היה למחוק את המאפיין.',
+            'mass-delete-success' => 'המאפיינים נמחקו בהצלחה.',
+            'mass-delete-indices-required' => 'השדה indices נדרש וחייב להיות מערך לא ריק.',
+
+            'code-immutable' => 'לא ניתן לשנות את קוד המאפיין לאחר יצירתו.',
+            'type-immutable' => 'לא ניתן לשנות את סוג המאפיין כל עוד יש לו ערכים במוצרים.',
+            'locale-scope-immutable' => 'לא ניתן לשנות את היקף השפה כל עוד למאפיין יש ערכים במוצרים.',
+            'system-attribute' => 'לא ניתן למחוק מאפייני מערכת.',
+            'in-use-family' => 'המאפיין הוא חלק ממשפחת מאפיינים אחת או יותר (מזהי קבוצות: :ids). הסר אותו ממשפחות אלה תחילה.',
+
+            'option-not-found' => 'אפשרות המאפיין לא נמצאה.',
+            'option-not-supported' => 'סוג המאפיין ":type" אינו תומך באפשרויות. רק מאפיינים מסוג select, multiselect ו-checkbox יכולים לכלול אפשרויות.',
+            'option-in-use' => 'אפשרות זו נמצאת בשימוש על ידי :count מוצר(ים) ולא ניתן למחוק אותה.',
+            'option-delete-success' => 'אפשרות המאפיין נמחקה בהצלחה.',
+        ],
+
+        'family' => [
+            'not-found' => 'משפחת המאפיינים לא נמצאה.',
+
+            'created' => 'משפחת המאפיינים נוצרה בהצלחה.',
+            'updated' => 'משפחת המאפיינים עודכנה בהצלחה.',
+            'deleted' => 'משפחת המאפיינים נמחקה בהצלחה.',
+            'code-required' => 'קוד המשפחה נדרש.',
+            'code-unique' => 'קוד המשפחה חייב להיות ייחודי.',
+            'name-required' => 'שם המשפחה נדרש.',
+            'group-code-required' => 'לכל קבוצת מאפיינים חייב להיות קוד.',
+            'group-name-required' => 'לכל קבוצת מאפיינים חייב להיות שם.',
+            'group-column-invalid' => 'העמודה של כל קבוצת מאפיינים חייבת להיות 1 או 2.',
+            'group-name-duplicate' => 'שם קבוצת מאפיינים חייב להיות ייחודי בתוך משפחת המאפיינים.',
+            'update-failed' => 'לא ניתן היה לעדכן את משפחת המאפיינים.',
+            'create-failed' => 'לא ניתן היה ליצור את משפחת המאפיינים.',
+            'default-delete-error' => 'לא ניתן למחוק את משפחת המאפיינים המוגדרת כברירת מחדל.',
+            'last-delete-error' => 'נדרשת לפחות משפחת מאפיינים אחת.',
+            'attribute-product-error' => 'משפחת מאפיינים זו נמצאת בשימוש על ידי מוצר אחד או יותר. שייך מחדש את המוצרים האלה לפני מחיקתה.',
+            'delete-failed' => 'לא ניתן היה למחוק את משפחת המאפיינים.',
+            'no-permission' => 'אין לך הרשאה לנהל משפחות מאפיינים.',
+        ],
+
         'settings' => [
+            'locale' => [
+                'not-found' => 'השפה לא נמצאה.',
+                'created' => 'השפה נוצרה בהצלחה.',
+                'updated' => 'השפה עודכנה בהצלחה.',
+                'deleted' => 'השפה נמחקה בהצלחה.',
+                'cannot-delete-last' => 'נדרשת לפחות שפה אחת — לא ניתן למחוק את השפה האחרונה שנותרה.',
+                'cannot-delete-channel-default' => 'שפה זו היא שפת ברירת המחדל של ערוץ אחד או יותר ולא ניתן למחוק אותה.',
+                'delete-failed' => 'לא ניתן היה למחוק את השפה.',
+                'no-permission' => 'אין לך הרשאה לנהל שפות.',
+                'mass-delete-success' => 'השפות נמחקו בהצלחה.',
+                'mass-delete-indices-required' => 'השדה indices נדרש וחייב להיות מערך לא ריק.',
+            ],
+
+            'theme' => [
+                'not-found' => 'התאמת ערכת הנושא לא נמצאה.',
+                'created' => 'התאמת ערכת הנושא נוצרה בהצלחה.',
+                'updated' => 'התאמת ערכת הנושא עודכנה בהצלחה.',
+                'deleted' => 'התאמת ערכת הנושא נמחקה בהצלחה.',
+                'delete-failed' => 'לא ניתן היה למחוק את התאמת ערכת הנושא.',
+                'no-permission' => 'אין לך הרשאה לנהל התאמות של ערכת הנושא.',
+                'mass-delete-success' => 'התאמות ערכת הנושא נמחקו בהצלחה.',
+                'mass-delete-indices-required' => 'השדה indices נדרש וחייב להיות מערך לא ריק.',
+                'mass-update-success' => 'התאמות ערכת הנושא עודכנו בהצלחה.',
+                'mass-update-indices-required' => 'השדה indices נדרש וחייב להיות מערך לא ריק.',
+                'mass-update-value-invalid' => 'השדה value חייב להיות 0 או 1.',
+            ],
+
+            'inventory-source' => [
+                'not-found' => 'מקור המלאי לא נמצא.',
+                'created' => 'מקור המלאי נוצר בהצלחה.',
+                'updated' => 'מקור המלאי עודכן בהצלחה.',
+                'deleted' => 'מקור המלאי נמחק בהצלחה.',
+                'code-unique' => 'מקור מלאי עם קוד זה כבר קיים.',
+                'last-delete-error' => 'נדרש לפחות מקור מלאי אחד — לא ניתן למחוק את המקור האחרון שנותר.',
+                'in-use' => 'מקור מלאי זה מוזכר במלאי של מוצרים ולא ניתן למחוק אותו.',
+                'delete-failed' => 'לא ניתן היה למחוק את מקור המלאי.',
+                'no-permission' => 'אין לך הרשאה לנהל מקורות מלאי.',
+                'mass-delete-success' => 'מקורות המלאי נמחקו בהצלחה.',
+                'mass-delete-indices-required' => 'השדה indices נדרש וחייב להיות מערך לא ריק.',
+            ],
+
+            'exchange-rate' => [
+                'not-found' => 'שער החליפין לא נמצא.',
+                'created' => 'שער החליפין נוצר בהצלחה.',
+                'updated' => 'שער החליפין עודכן בהצלחה.',
+                'deleted' => 'שער החליפין נמחק בהצלחה.',
+                'duplicate-pair' => 'כבר קיים שער חליפין עבור מטבע יעד זה. עדכן את השורה הקיימת או מחק אותה תחילה.',
+                'delete-failed' => 'לא ניתן היה למחוק את שער החליפין.',
+                'no-permission' => 'אין לך הרשאה לנהל שערי חליפין.',
+                'mass-delete-success' => 'שערי החליפין נמחקו בהצלחה.',
+                'mass-delete-indices-required' => 'השדה indices נדרש וחייב להיות מערך לא ריק.',
+                'update-rates-success' => 'שערי החליפין עודכנו בהצלחה.',
+                'update-rates-failed' => 'לא ניתן היה לעדכן את שערי החליפין מהספק החיצוני.',
+                'provider-not-configured' => 'לא הוגדר ספק חיצוני לשערי חליפין.',
+            ],
+
+            'tax-rate' => [
+                'not-found' => 'שיעור המס לא נמצא.',
+                'created' => 'שיעור המס נוצר בהצלחה.',
+                'updated' => 'שיעור המס עודכן בהצלחה.',
+                'deleted' => 'שיעור המס נמחק בהצלחה.',
+                'delete-failed' => 'לא ניתן היה למחוק את שיעור המס.',
+                'no-permission' => 'אין לך הרשאה לנהל שיעורי מס.',
+                'zip-code-required' => 'השדה zip_code נדרש כאשר is_zip הוא false.',
+                'zip-range-required' => 'גם zip_from וגם zip_to נדרשים כאשר is_zip הוא true.',
+            ],
+
+            'tax-category' => [
+                'not-found' => 'קטגוריית המס לא נמצאה.',
+                'created' => 'קטגוריית המס נוצרה בהצלחה.',
+                'updated' => 'קטגוריית המס עודכנה בהצלחה.',
+                'deleted' => 'קטגוריית המס נמחקה בהצלחה.',
+                'code-unique' => 'הקוד כבר תפוס.',
+                'cannot-delete-in-use' => 'לקטגוריית מס זו עדיין משויכים שיעורי מס ולא ניתן למחוק אותה.',
+                'delete-failed' => 'לא ניתן היה למחוק את קטגוריית המס.',
+                'no-permission' => 'אין לך הרשאה לנהל קטגוריות מס.',
+            ],
+
             'role' => [
+                'not-found' => 'התפקיד לא נמצא.',
+                'created' => 'התפקיד נוצר בהצלחה.',
+                'updated' => 'התפקיד עודכן בהצלחה.',
+                'deleted' => 'התפקיד נמחק בהצלחה.',
+                'permissions-required' => 'השדה permissions נדרש כאשר permission_type הוא custom.',
+                'cannot-delete-in-use' => 'תפקיד זה משויך למנהל אחד או יותר ולא ניתן למחוק אותו.',
+                'cannot-delete-last-role' => 'נדרש לפחות תפקיד אחד — לא ניתן למחוק את התפקיד האחרון שנותר.',
+                'cannot-change-last-all-access' => 'לא ניתן לשנות את התפקיד היחיד בעל גישה מלאה לתפקיד מותאם אישית.',
+                'delete-failed' => 'לא ניתן היה למחוק את התפקיד.',
                 'no-permission' => 'אין לך הרשאה לנהל תפקידים.',
             ],
 
+            'currency' => [
+                // Read
+                'not-found' => 'המטבע לא נמצא.',
+
+                // Create / Update / Delete
+                'created' => 'המטבע נוצר בהצלחה.',
+                'updated' => 'המטבע עודכן בהצלחה.',
+                'deleted' => 'המטבע נמחק בהצלחה.',
+                'code-required' => 'השדה code נדרש.',
+                'code-size' => 'הקוד חייב להכיל בדיוק 3 אותיות אלפביתיות.',
+                'code-unique' => 'הקוד כבר תפוס.',
+                'name-required' => 'השדה name נדרש.',
+                'cannot-delete-last' => 'נדרש לפחות מטבע אחד — לא ניתן למחוק את המטבע האחרון שנותר.',
+                'cannot-delete-channel-base' => 'מטבע זה הוא מטבע הבסיס של ערוץ אחד או יותר ולא ניתן למחוק אותו.',
+                'delete-failed' => 'לא ניתן היה למחוק את המטבע.',
+                'no-permission' => 'אין לך הרשאה לנהל מטבעות.',
+
+                'mass-delete-success' => 'המטבעות נמחקו בהצלחה.',
+                'mass-delete-indices-required' => 'השדה indices נדרש וחייב להיות מערך לא ריק.',
+            ],
+
+            'channel' => [
+                'not-found' => 'הערוץ לא נמצא.',
+
+                'created' => 'הערוץ נוצר בהצלחה.',
+                'updated' => 'הערוץ עודכן בהצלחה.',
+                'deleted' => 'הערוץ נמחק בהצלחה.',
+                'code-unique' => 'הקוד כבר תפוס.',
+                'hostname-unique' => 'שם המארח כבר תפוס.',
+                'default-locale-mismatch' => 'default_locale_id חייב להופיע ברשימת השפות.',
+                'base-currency-mismatch' => 'base_currency_id חייב להופיע ברשימת המטבעות.',
+                'unknown-locale' => 'מזהה שפה אחד או יותר אינם קיימים.',
+                'unknown-currency' => 'מזהה מטבע אחד או יותר אינם קיימים.',
+                'unknown-inventory-source' => 'מזהה inventory_source אחד או יותר אינם קיימים.',
+                'unknown-root-category' => 'root_category_id אינו קיים.',
+                'cannot-delete-last' => 'נדרש לפחות ערוץ אחד — לא ניתן למחוק את הערוץ האחרון שנותר.',
+                'cannot-delete-default' => 'לא ניתן למחוק את ערוץ ברירת המחדל של היישום.',
+                'delete-failed' => 'לא ניתן היה למחוק את הערוץ.',
+                'no-permission' => 'אין לך הרשאה לנהל ערוצים.',
+            ],
+
             'user' => [
+                'not-found' => 'משתמש המנהל לא נמצא.',
+                'created' => 'משתמש המנהל נוצר בהצלחה.',
+                'updated' => 'משתמש המנהל עודכן בהצלחה.',
+                'deleted' => 'משתמש המנהל נמחק בהצלחה.',
+                'name-required' => 'השדה name נדרש.',
+                'email-required' => 'השדה email נדרש.',
+                'email-invalid' => 'האימייל חייב להיות כתובת אימייל תקפה.',
+                'email-unique' => 'האימייל כבר תפוס.',
+                'password-required' => 'השדה password נדרש.',
+                'password-min' => 'הסיסמה חייבת להכיל לפחות 6 תווים.',
+                'role-required' => 'השדה role_id נדרש.',
+                'role-not-found' => 'התפקיד שנבחר אינו קיים.',
+                'status-invalid' => 'הסטטוס חייב להיות 0 או 1.',
+                'cannot-delete-self' => 'אינך יכול למחוק את חשבון המנהל שלך.',
+                'cannot-delete-last-admin' => 'נדרש לפחות משתמש מנהל אחד — לא ניתן למחוק את המנהל האחרון שנותר.',
+                'cannot-change' => 'לא ניתן לשנות את ה-:name של המנהל האחרון בעל גישה מלאה.',
+                'delete-failed' => 'לא ניתן היה למחוק את משתמש המנהל.',
                 'no-permission' => 'אין לך הרשאה לנהל משתמשי מנהל.',
+                'self-delete-password-required' => 'השדה password נדרש כדי למחוק את החשבון שלך.',
+                'self-delete-incorrect-password' => 'הסיסמה שגויה.',
+                'self-deleted' => 'חשבון המנהל שלך נמחק.',
+            ],
+
+            'data-transfer' => [
+                'import' => [
+                    'not-found' => 'הייבוא לא נמצא.',
+                    'deleted' => 'הייבוא נמחק בהצלחה.',
+                    'cancelled' => 'הייבוא בוטל בהצלחה.',
+                    'cannot-cancel' => 'ניתן לבטל רק ייבואים ממתינים או בעיבוד. המצב הנוכחי: :state.',
+                    'no-permission' => 'אין לך הרשאה לנהל ייבואי העברת נתונים.',
+                    'delete-failed' => 'לא ניתן היה למחוק את הייבוא.',
+                    'created' => 'הייבוא נוצר בהצלחה.',
+                    'updated' => 'הייבוא עודכן בהצלחה.',
+                    'type-invalid' => 'הסוג שנבחר אינו תקף.',
+                    'action-invalid' => 'הפעולה חייבת להיות אחת מהבאות: append, delete.',
+                    'validation-strategy-invalid' => 'אסטרטגיית האימות חייבת להיות אחת מהבאות: stop-on-errors, skip-errors.',
+                    'allowed-errors-invalid' => 'מספר השגיאות המותרות חייב להיות מספר שלם 0 ומעלה.',
+                    'field-separator-required' => 'מפריד השדות נדרש.',
+                    'file-required' => 'נדרש קובץ.',
+                    'file-invalid-type' => 'הקובץ חייב להיות אחד מהבאים: csv, xls, xlsx, xml.',
+                    'nothing-to-import' => 'אין מה לייבא.',
+                    'not-valid' => 'הייבוא אינו תקף.',
+                    'setup-queue-error' => 'חיבור התור מוגדר ל-sync; הגדר תור אמיתי כדי לעבד ייבואים ברקע.',
+                    'file-not-found' => 'אין קובץ זמין להורדה.',
+                    'error-report-not-found' => 'אין דוח שגיאות זמין להורדה.',
+                    'sample-not-found' => 'אין קובץ דוגמה זמין עבור הסוג והפורמט המבוקשים.',
+                    'sample-format-invalid' => 'פורמט הדוגמה חייב להיות אחד מהבאים: csv, xls, xlsx, xml.',
+                    'images-archive-too-large' => 'ארכיון התמונות יכול להכיל לכל היותר :entries קבצים ולהיפרס לגודל של :size MB לכל היותר.',
+                ],
+            ],
+        ],
+
+        'cms' => [
+            'page' => [
+                'not-found' => 'דף ה-CMS לא נמצא.',
+
+                'created' => 'דף ה-CMS נוצר בהצלחה.',
+                'url-key-required' => 'השדה url_key נדרש.',
+                'url-key-unique' => 'ה-url_key כבר תפוס.',
+                'url-key-invalid' => 'פורמט ה-url_key אינו תקף. השתמש באותיות קטנות, ספרות ומקפים בלבד.',
+                'page-title-required' => 'השדה page_title נדרש.',
+                'html-content-required' => 'השדה html_content נדרש.',
+                'channels-required' => 'יש לבחור לפחות ערוץ אחד.',
+                'channels-invalid' => 'ערוץ אחד או יותר אינם תקפים.',
+
+                'updated' => 'דף ה-CMS עודכן בהצלחה.',
+
+                'deleted' => 'דף ה-CMS נמחק בהצלחה.',
+                'delete-failed' => 'לא ניתן היה למחוק את דף ה-CMS.',
+
+                'mass-deleted' => 'דפי ה-CMS נמחקו בהצלחה.',
+                'indices-required' => 'השדה indices נדרש וחייב להיות מערך לא ריק.',
+                'indices-invalid' => 'השדה indices חייב להיות מערך של מזהי דפי CMS.',
+
+                'no-permission' => 'אין לך הרשאה לנהל דפי CMS.',
+            ],
+        ],
+
+        'marketing' => [
+            'catalog-rule' => [
+                'not-found' => 'כלל הקטלוג לא נמצא.',
+                'created' => 'כלל הקטלוג נוצר בהצלחה.',
+                'updated' => 'כלל הקטלוג עודכן בהצלחה.',
+                'deleted' => 'כלל הקטלוג נמחק בהצלחה.',
+                'delete-failed' => 'לא ניתן היה למחוק את כלל הקטלוג.',
+                'mass-delete-indices-required' => 'לא סופקו מזהי כללי קטלוג למחיקה המונית.',
+                'mass-delete-success' => 'כללי הקטלוג שנבחרו נמחקו בהצלחה.',
+                'no-permission' => 'אין לך הרשאה לנהל כללי קטלוג.',
+            ],
+
+            'campaign' => [
+                'not-found' => 'הקמפיין לא נמצא.',
+                'created' => 'הקמפיין נוצר בהצלחה.',
+                'updated' => 'הקמפיין עודכן בהצלחה.',
+                'deleted' => 'הקמפיין נמחק בהצלחה.',
+                'delete-failed' => 'לא ניתן היה למחוק את הקמפיין.',
+                'no-permission' => 'אין לך הרשאה לנהל קמפיינים.',
+
+                'send' => [
+                    'id-required' => 'מזהה הקמפיין נדרש.',
+                    'inactive' => 'לא ניתן לשלוח קמפיין לא פעיל. הפעל אותו תחילה.',
+                    'queued' => 'הקמפיין נכנס לתור עבור :count נמען/ים.',
+                ],
+            ],
+
+            'sitemap' => [
+                'not-found' => 'מפת האתר לא נמצאה.',
+                'created' => 'מפת האתר נוצרה בהצלחה.',
+                'updated' => 'מפת האתר עודכנה בהצלחה.',
+                'deleted' => 'מפת האתר נמחקה בהצלחה.',
+                'delete-failed' => 'לא ניתן היה למחוק את מפת האתר.',
+                'no-permission' => 'אין לך הרשאה לנהל מפות אתר.',
+
+                'generate' => [
+                    'id-required' => 'מזהה מפת האתר נדרש.',
+                    'no-channels' => 'מפת אתר זו אינה מכסה אף ערוץ, ולכן אין מה ליצור. שייך אליה לפחות ערוץ אחד תחילה.',
+                    'success' => 'מפת האתר נוצרה מחדש בהצלחה.',
+                    'failed' => 'יצירת מפת האתר נכשלה: :message',
+                ],
+            ],
+
+            'cart-rule' => [
+                'not-found' => 'כלל העגלה לא נמצא.',
+                'id-required' => 'נדרש מזהה כלל עגלה.',
+                'copy-of' => 'עותק של :value',
+                'copied' => 'כלל העגלה הועתק בהצלחה.',
+                'created' => 'כלל העגלה נוצר בהצלחה.',
+                'updated' => 'כלל העגלה עודכן בהצלחה.',
+                'deleted' => 'כלל העגלה נמחק בהצלחה.',
+                'delete-failed' => 'לא ניתן היה למחוק את כלל העגלה.',
+                'no-permission' => 'אין לך הרשאה לנהל כללי עגלה.',
+                'mass-delete-success' => 'כללי העגלה נמחקו בהצלחה.',
+                'mass-delete-indices-required' => 'השדה indices נדרש וחייב להיות מערך לא ריק.',
+                'action-type-invalid' => 'action_type חייב להיות אחד מהבאים: by_percent, by_fixed, cart_fixed, buy_x_get_y.',
+                'coupon-code-required' => 'coupon_code נדרש כאשר coupon_type=1 ו-use_auto_generation=0.',
+                'coupon-code-unique' => 'קוד קופון זה כבר בשימוש.',
+            ],
+
+            'template' => [
+                'campaign-associated' => 'תבנית אימייל זו נמצאת בשימוש על ידי קמפיין, ולכן לא ניתן למחוק אותה. הסר אותה מהקמפיין תחילה.',
+                'not-found' => 'תבנית האימייל לא נמצאה.',
+                'created' => 'תבנית האימייל נוצרה בהצלחה.',
+                'updated' => 'תבנית האימייל עודכנה בהצלחה.',
+                'deleted' => 'תבנית האימייל נמחקה בהצלחה.',
+                'delete-failed' => 'לא ניתן היה למחוק את תבנית האימייל.',
+                'status-invalid' => 'הסטטוס חייב להיות אחד מהבאים: active, inactive, draft.',
+                'no-permission' => 'אין לך הרשאה לנהל תבניות אימייל.',
+            ],
+
+            'event' => [
+                'campaign-associated' => 'אירוע זה נמצא בשימוש על ידי קמפיין, ולכן לא ניתן למחוק אותו. הסר אותו מהקמפיין תחילה.',
+                'not-found' => 'אירוע השיווק לא נמצא.',
+                'created' => 'אירוע השיווק נוצר בהצלחה.',
+                'updated' => 'אירוע השיווק עודכן בהצלחה.',
+                'deleted' => 'אירוע השיווק נמחק בהצלחה.',
+                'delete-failed' => 'לא ניתן היה למחוק את אירוע השיווק.',
+                'no-permission' => 'אין לך הרשאה לנהל אירועי שיווק.',
+            ],
+
+            'search-synonym' => [
+                'not-found' => 'מילה נרדפת לחיפוש לא נמצאה.',
+                'created' => 'המילה הנרדפת לחיפוש נוצרה בהצלחה.',
+                'updated' => 'המילה הנרדפת לחיפוש עודכנה בהצלחה.',
+                'deleted' => 'המילה הנרדפת לחיפוש נמחקה בהצלחה.',
+                'mass-deleted' => 'המילים הנרדפות לחיפוש נמחקו בהצלחה.',
+                'delete-failed' => 'לא ניתן היה למחוק את המילה הנרדפת לחיפוש.',
+                'indices-required' => 'השדה indices נדרש וחייב להיות מערך לא ריק של מזהי מילים נרדפות לחיפוש.',
+                'no-permission' => 'אין לך הרשאה לנהל מילים נרדפות לחיפוש.',
+            ],
+
+            'url-rewrite' => [
+                'not-found' => 'שכתוב ה-URL לא נמצא.',
+                'created' => 'שכתוב ה-URL נוצר בהצלחה.',
+                'updated' => 'שכתוב ה-URL עודכן בהצלחה.',
+                'deleted' => 'שכתוב ה-URL נמחק בהצלחה.',
+                'delete-failed' => 'לא ניתן היה למחוק את שכתוב ה-URL.',
+                'mass-deleted' => 'שכתובי ה-URL נמחקו בהצלחה.',
+                'indices-required' => 'נדרש לפחות מזהה שכתוב URL אחד.',
+                'no-permission' => 'אין לך הרשאה לנהל שכתובי URL.',
+            ],
+
+            'cart-rule-coupon' => [
+                'cart-rule-not-found' => 'כלל העגלה לא נמצא.',
+                'not-found' => 'הקופון לא נמצא.',
+                'code-taken' => 'קופון עם קוד זה כבר קיים.',
+                'format-invalid' => 'הפורמט חייב להיות אחד מהבאים: alphabetic, alphanumeric, numeric.',
+                'indices-required' => 'השדה indices נדרש וחייב להיות מערך לא ריק של מזהי קופונים.',
+                'created' => 'הקופון נוצר בהצלחה.',
+                'generated' => 'נוצרו :count קופון/ים בהצלחה.',
+                'deleted' => 'הקופון נמחק בהצלחה.',
+                'mass-deleted' => 'נמחקו :count קופון/ים בהצלחה.',
+                'no-permission' => 'אין לך הרשאה לנהל קופונים של כללי עגלה.',
+            ],
+
+            'subscriber' => [
+                'not-found' => 'מנוי הניוזלטר לא נמצא.',
+                'updated' => 'המנוי עודכן בהצלחה.',
+                'deleted' => 'המנוי נמחק בהצלחה.',
+                'is-subscribed-required' => 'השדה is_subscribed נדרש.',
+                'no-permission' => 'אין לך הרשאה לנהל מנויי ניוזלטר.',
+            ],
+
+            'search-term' => [
+                'not-found' => 'מונח החיפוש לא נמצא.',
+                'updated' => 'מונח החיפוש עודכן בהצלחה.',
+                'deleted' => 'מונח החיפוש נמחק בהצלחה.',
+                'mass-deleted' => 'מונחי החיפוש נמחקו בהצלחה.',
+                'term-required' => 'השדה term נדרש.',
+                'redirect-url-invalid' => 'redirect_url חייב להיות URL תקף.',
+                'indices-required' => 'יש לספק לפחות מזהה אחד ב-indices.',
+                'no-permission' => 'אין לך הרשאה לנהל מונחי חיפוש.',
             ],
         ],
     ],
@@ -402,10 +1651,10 @@ return [
             'ip-list-hint' => 'ערך אחד בכל שורה. תומך ב-IPv4, IPv6 ו-CIDR (למשל 10.0.0.0/24 או 2001:db8::/32). השאר ריק כדי לאפשר את כל כתובות ה-IP.',
         ],
 
-        'permission_type' => [
+        'permission-type' => [
             'all' => 'הכל',
             'custom' => 'מותאם אישית',
-            'same_as_web' => 'זהה להרשאת אינטרנט',
+            'same-as-web' => 'זהה להרשאת אינטרנט',
         ],
 
         'status' => [
@@ -443,6 +1692,7 @@ return [
 
         'errors' => [
             'admin-has-token' => 'למנהל המערכת שנבחר כבר יש אסימון אינטגרציה פעיל.',
+            'only-draft-generate' => 'ניתן ליצור רק אסימוני טיוטה.',
         ],
 
         'validation' => [
@@ -498,6 +1748,9 @@ return [
 
         'revoke-confirmation' => [
             'title' => 'בטל אסימון API',
+            'confirm-title' => 'לבטל אסימון זה?',
+            'confirm-message' => 'האסימון ":name" יפסיק לפעול מיד עבור כל לקוח שמשתמש בו.',
+            'confirm-button' => 'בטל אסימון',
             'success-title' => 'אסימון בוטל',
             'success-message' => 'האסימון ":name" בוטל. כל לקוח שמשתמש בו איבד גישה מיד.',
             'already-inactive-title' => 'אסימון כבר לא פעיל',

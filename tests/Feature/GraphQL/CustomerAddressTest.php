@@ -7,7 +7,9 @@ use Webkul\Customer\Models\Customer;
 
 class CustomerAddressTest extends GraphQLTestCase
 {
-    // ─── Create address ─────────────────────────────────────────────────
+    // ============================================================================
+    // Create Address
+    // ============================================================================
 
     /**
      * Test create customer address successfully.
@@ -96,7 +98,9 @@ class CustomerAddressTest extends GraphQLTestCase
         $this->assertNotEmpty($errors, 'Unauthenticated address creation should fail');
     }
 
-    // ─── Update address ─────────────────────────────────────────────────
+    // ============================================================================
+    // Update Address
+    // ============================================================================
 
     /**
      * Test update existing customer address.
@@ -150,7 +154,9 @@ class CustomerAddressTest extends GraphQLTestCase
         ]);
     }
 
-    // ─── Get addresses ──────────────────────────────────────────────────
+    // ============================================================================
+    // Get Addresses
+    // ============================================================================
 
     /**
      * Test get customer addresses returns empty list for new customer.
@@ -310,7 +316,9 @@ class CustomerAddressTest extends GraphQLTestCase
         $this->assertSame('Alpha', $edges[0]['node']['firstName']);
     }
 
-    // ─── Delete address ─────────────────────────────────────────────────
+    // ============================================================================
+    // Delete Address
+    // ============================================================================
 
     /**
      * Test delete customer address successfully.
@@ -402,7 +410,9 @@ class CustomerAddressTest extends GraphQLTestCase
         $this->assertDatabaseHas('addresses', ['id' => $addressId]);
     }
 
-    // ─── Single address query ───────────────────────────────────────────
+    // ============================================================================
+    // Single Address Query
+    // ============================================================================
 
     /**
      * The customerAddress query returns the customer's own address.
@@ -480,7 +490,9 @@ class CustomerAddressTest extends GraphQLTestCase
             ->and($response->json('data.customerAddress'))->toBeNull();
     }
 
-    // ─── Token address queries ──────────────────────────────────────────
+    // ============================================================================
+    // Token Address Queries
+    // ============================================================================
 
     /**
      * The readGetCustomerAddress query returns the customer's own address.
@@ -586,7 +598,9 @@ class CustomerAddressTest extends GraphQLTestCase
             ->and($response->json('data'))->toBeNull();
     }
 
-    // ─── Token address mutations ────────────────────────────────────────
+    // ============================================================================
+    // Token Address Mutations
+    // ============================================================================
 
     /**
      * The createCustomerAddressToken mutation stores a new address for the customer.
@@ -784,8 +798,6 @@ class CustomerAddressTest extends GraphQLTestCase
 
         $this->assertDatabaseHas('addresses', ['id' => $addressId]);
     }
-
-    // ─── Helper methods ─────────────────────────────────────────────────
 
     /**
      * Create a customer and return [customer, bearer token].

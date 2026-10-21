@@ -29,7 +29,9 @@ class AdminProductProvider implements ProviderInterface
      */
     protected const SORTABLE = ['id', 'sku', 'created_at', 'updated_at'];
 
-    /** Attribute IDs in Bagisto core (constant across installs). */
+    /**
+     * Attribute IDs in Bagisto core (constant across installs).
+     */
     protected const ATTR_NAME = 2;
 
     /**
@@ -69,6 +71,8 @@ class AdminProductProvider implements ProviderInterface
     }
 
     /**
+     * Resolve the page number and page size from the query arguments.
+     *
      * @return array{0: int, 1: int}
      */
     protected function resolvePaging(array $args): array

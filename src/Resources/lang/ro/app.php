@@ -1,9 +1,13 @@
 <?php
 
 return [
+
     'graphql' => [
         'headers' => [
             'unknown-channel' => 'Canalul „:code” din antetul X-Channel nu există.',
+            'storefront-key-required' => 'Antetul X-STOREFRONT-KEY este obligatoriu',
+            'storefront-key-invalid' => 'Cheie storefront invalidă',
+            'storefront-key-rate-limited' => 'Limita de cereri a fost depășită. Vă rugăm să încercați din nou după :seconds secunde',
         ],
 
         'cart' => [
@@ -59,6 +63,12 @@ return [
             'select-items-to-move-wishlist' => 'Vă rugăm să selectați articolele de mutat în lista de dorințe',
             'invalid-or-expired-token' => 'Tokenul coșului este invalid sau a expirat. Vă rugăm să creați un coș nou.',
             'invalid-token-of-login-user' => 'Tokenul utilizatorului autentificat este invalid.',
+            'booking-note-required' => 'booking.note este obligatoriu pentru rezervarea de mese.',
+            'booking-date-required' => 'booking.date este obligatoriu atunci când booking.slot este un interval orar formatat.',
+            'booking-qty-required' => 'booking.qty este obligatoriu pentru rezervarea la eveniment.',
+            'booking-ticket-qty-invalid' => 'Cantitatea de bilete pentru eveniment trebuie să fie un număr nenegativ.',
+            'booking-ticket-required' => 'Selectați cantitatea pentru cel puțin un bilet pentru rezervarea la eveniment.',
+            'booking-slot-unavailable' => 'Intervalul selectat nu este disponibil pentru data specificată.',
         ],
 
         'token-verification' => [
@@ -152,6 +162,7 @@ return [
             'guest-review-disabled' => 'Recenziile vizitatorilor nu sunt permise. Vă rugăm să vă autentificați pentru a trimite o recenzie',
             'owner-required' => 'Vă rugăm să vă autentificați pentru a vă gestiona recenzia',
             'not-owned' => 'Această recenzie nu a fost scrisă de dumneavoastră și nu poate fi modificată sau ștearsă',
+            'invalid-attachments' => 'Format invalid al atașamentelor.',
         ],
 
         'customer-review' => [
@@ -385,6 +396,31 @@ return [
             'redirect-external-url' => 'Redirecționare către URL-ul extern de descărcare',
             'file-error' => 'A apărut o eroare la procesarea cererii de descărcare',
             'unauthorized-access' => 'Acces neautorizat la resursa de descărcare',
+            'unauthenticated' => 'Neautorizat: este necesară autentificarea clientului',
+            'link-id-required' => 'downloadableLinkPurchasedId este obligatoriu',
+            'link-not-found' => 'Linkul descărcabil nu a fost găsit',
+            'not-owner' => 'Neautorizat: acest link de descărcare nu vă aparține',
+            'pending' => 'Descărcarea este în așteptare. Vă rugăm să așteptați facturarea comenzii.',
+            'limit-exceeded' => 'Limita de descărcări a fost depășită',
+            'no-downloads-left' => 'Nu mai sunt descărcări disponibile',
+        ],
+
+        'booking-slot' => [
+            'id-required' => 'ID-ul produsului de rezervare este obligatoriu.',
+            'date-required' => 'Data este obligatorie.',
+            'product-not-found' => 'Produsul de rezervare nu a fost găsit.',
+            'invalid-type' => 'Acest tip de rezervare nu este acceptat.',
+            'invalid-time-range' => 'Interval orar invalid.',
+            'invalid-time-format' => 'Format de oră invalid.',
+        ],
+
+        'resolver' => [
+            'no-resolve-info' => 'GraphQL ResolveInfo nu este disponibil în context. Nu se poate determina clasa modelului.',
+            'unknown-resource-class' => 'Nu se poate determina clasa resursei din tipul returnat GraphQL',
+        ],
+
+        'docs' => [
+            'openapi-unavailable' => 'OpenAPI Factory nu a putut fi instanțiat',
         ],
 
         'locale' => [
@@ -594,11 +630,14 @@ return [
             'graphql-playground' => 'GraphQL Playground: :url',
             'rest-api-storefront' => 'Swagger REST API Storefront: :url',
             'rest-api-admin' => 'Swagger REST API Admin: :url',
+            'key-rotation-invalid-key' => 'Nu se poate roti o cheie invalidă sau expirată',
         ],
     ],
 
     'admin' => [
-
+        // login / logout / forgot-password / profile-update keys removed in the
+        // 2026-05-27 auth refactor — admin clients now authenticate via
+        // pre-issued integration tokens (Bearer header, AdminApiGuard).
         'profile' => [
             'unauthenticated' => 'Nu sunteți autentificat.',
         ],
@@ -1222,8 +1261,10 @@ return [
             ],
 
             'currency' => [
+                // Read
                 'not-found' => 'Moneda nu a fost găsită.',
 
+                // Create / Update / Delete
                 'created' => 'Moneda a fost creată cu succes.',
                 'updated' => 'Moneda a fost actualizată cu succes.',
                 'deleted' => 'Moneda a fost ștearsă cu succes.',
@@ -1610,10 +1651,10 @@ return [
             'ip-list-hint' => 'O intrare pe linie. Acceptă IPv4, IPv6 și CIDR (de ex. 10.0.0.0/24 sau 2001:db8::/32). Lăsați gol pentru a permite toate IP-urile.',
         ],
 
-        'permission_type' => [
+        'permission-type' => [
             'all' => 'Toate',
             'custom' => 'Personalizat',
-            'same_as_web' => 'La fel ca permisiunea web',
+            'same-as-web' => 'La fel ca permisiunea web',
         ],
 
         'status' => [
@@ -1651,6 +1692,7 @@ return [
 
         'errors' => [
             'admin-has-token' => 'Administratorul selectat are deja un token de integrare activ.',
+            'only-draft-generate' => 'Doar tokenurile ciornă pot fi generate.',
         ],
 
         'validation' => [

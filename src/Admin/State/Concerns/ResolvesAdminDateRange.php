@@ -8,6 +8,8 @@ use Webkul\DataGrid\Enums\DateRangeOptionEnum;
 trait ResolvesAdminDateRange
 {
     /**
+     * Resolve the start and end dates of the requested date range.
+     *
      * @return array{0: ?Carbon, 1: ?Carbon}
      */
     protected function resolveAdminDateRange(array $args): array

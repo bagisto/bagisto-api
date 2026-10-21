@@ -217,7 +217,9 @@ class SalesTransactionsTest extends AdminApiTestCase
         ))->assertStatus(403);
     }
 
-    /** Bootstrap a transaction and return its id. */
+    /**
+     * Bootstrap a transaction and return its id.
+     */
     protected function aTransactionId(): int
     {
         $existing = OrderTransaction::query()->value('id');

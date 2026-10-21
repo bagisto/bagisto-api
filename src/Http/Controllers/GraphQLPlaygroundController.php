@@ -138,7 +138,9 @@ class GraphQLPlaygroundController extends Controller
    ═══════════════════════════════════════════════════════════ */
 var CRYPTO_KEY = null;
 
-/** Derive a stable encryption key from the storefront API key using PBKDF2 → AES-GCM */
+/**
+ * Derive a stable encryption key from the storefront API key using PBKDF2 → AES-GCM
+ */
 async function initCryptoKey(passphrase) {
     /* crypto.subtle only exists in a secure context; fall back to plaintext otherwise */
     if (!window.isSecureContext || !window.crypto || !crypto.subtle) {
@@ -158,7 +160,9 @@ async function initCryptoKey(passphrase) {
     );
 }
 
-/** Encrypt a plaintext token → base64 string stored in sessionStorage */
+/**
+ * Encrypt a plaintext token → base64 string stored in sessionStorage
+ */
 async function encryptToken(plaintext) {
     if (!CRYPTO_KEY || !plaintext) return plaintext;
     try {
@@ -179,7 +183,9 @@ async function encryptToken(plaintext) {
     }
 }
 
-/** Decrypt a stored value back to plaintext */
+/**
+ * Decrypt a stored value back to plaintext
+ */
 async function decryptToken(stored) {
     if (!stored) return null;
     if (!CRYPTO_KEY || !stored.startsWith('enc:')) return stored;
@@ -241,7 +247,9 @@ function clearCartToken() {
     refreshUI();
 }
 
-/** Restore cached tokens from encrypted localStorage on page load */
+/**
+ * Restore cached tokens from encrypted localStorage on page load
+ */
 async function restoreTokens() {
     _cachedAuthToken = await decryptToken(localStorage.getItem(AUTH_TOKEN_KEY));
     _cachedCartToken = await decryptToken(localStorage.getItem(CART_TOKEN_KEY));

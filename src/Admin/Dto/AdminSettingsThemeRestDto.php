@@ -54,6 +54,8 @@ class AdminSettingsThemeRestDto
     public ?string $theme_code = null;
 
     /**
+     * The per-locale options of the theme customization.
+     *
      * @var array<int, array{locale:string, options:array|null}>|null
      */
     #[ApiProperty(writable: false)]

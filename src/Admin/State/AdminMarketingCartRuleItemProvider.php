@@ -55,7 +55,9 @@ class AdminMarketingCartRuleItemProvider implements ProviderInterface
         return $this->buildRestDto($rule);
     }
 
-    /** Public alias of the Eloquent lookup for the copy processor. */
+    /**
+     * Public alias of the Eloquent lookup for the copy processor.
+     */
     public function findEntityPublic(int $id): ?object
     {
         return CartRule::with(['cart_rule_channels', 'cart_rule_customer_groups', 'coupon_code'])->find($id);

@@ -8,7 +8,9 @@ use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
 class CustomerAuthTest extends GraphQLTestCase
 {
-    // ─── Registration ───────────────────────────────────────────────────
+    // ============================================================================
+    // Registration
+    // ============================================================================
 
     /**
      * Test register new customer successfully.
@@ -132,7 +134,9 @@ class CustomerAuthTest extends GraphQLTestCase
         $this->assertNotEmpty($errors, 'Mismatched password should return an error');
     }
 
-    // ─── Login ──────────────────────────────────────────────────────────
+    // ============================================================================
+    // Login
+    // ============================================================================
 
     /**
      * Test login with valid credentials.
@@ -243,7 +247,9 @@ class CustomerAuthTest extends GraphQLTestCase
         $this->assertTrue($data['success'], 'Suspended customer should be able to log in (blocked only at checkout)');
     }
 
-    // ─── Logout ─────────────────────────────────────────────────────────
+    // ============================================================================
+    // Logout
+    // ============================================================================
 
     /**
      * Test logout authenticated customer.
@@ -304,7 +310,9 @@ class CustomerAuthTest extends GraphQLTestCase
         );
     }
 
-    // ─── Forgot Password ────────────────────────────────────────────────
+    // ============================================================================
+    // Forgot Password
+    // ============================================================================
 
     /**
      * Test forgot password for existing email.
@@ -364,7 +372,9 @@ class CustomerAuthTest extends GraphQLTestCase
         );
     }
 
-    // ─── Verify Token ───────────────────────────────────────────────────
+    // ============================================================================
+    // Verify Token
+    // ============================================================================
 
     /**
      * Test verify token with valid token.

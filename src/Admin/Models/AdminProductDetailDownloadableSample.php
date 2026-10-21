@@ -16,13 +16,25 @@ use Illuminate\Support\Facades\Storage;
 )]
 class AdminProductDetailDownloadableSample extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the downloadable samples.
+     *
+     * @var string
+     */
     protected $table = 'product_downloadable_samples';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the downloadable sample is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['file_url'];
 
-    /** @var array */
+    /**
+     * The native types the downloadable sample attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'sort_order' => 'int',

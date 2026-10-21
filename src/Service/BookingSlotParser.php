@@ -20,7 +20,7 @@ class BookingSlotParser
         $parts = preg_split('/\s*[-–—]\s*/u', $range) ?: [];
 
         if (count($parts) !== 2) {
-            throw new \InvalidArgumentException('Invalid time range.');
+            throw new \InvalidArgumentException(__('bagistoapi::app.graphql.booking-slot.invalid-time-range'));
         }
 
         [$fromTime, $toTime] = [trim($parts[0]), trim($parts[1])];
@@ -67,6 +67,6 @@ class BookingSlotParser
             }
         }
 
-        throw new \InvalidArgumentException('Invalid time format.');
+        throw new \InvalidArgumentException(__('bagistoapi::app.graphql.booking-slot.invalid-time-format'));
     }
 }

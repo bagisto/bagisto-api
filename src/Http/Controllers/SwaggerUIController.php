@@ -98,7 +98,7 @@ class SwaggerUIController extends Controller
             $factory = app(OpenApiFactoryInterface::class);
 
             if (! $factory) {
-                throw new \Exception('OpenAPI Factory could not be instantiated');
+                throw new \Exception(__('bagistoapi::app.graphql.docs.openapi-unavailable'));
             }
 
             $context = [

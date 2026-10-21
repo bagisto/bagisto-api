@@ -43,6 +43,8 @@ class AdminConfigurationTreeItem
     public ?int $sort = null;
 
     /**
+     * The configuration fields shown in this section.
+     *
      * @var AdminConfigurationTreeField[]|null
      */
     #[ApiProperty(readable: true, writable: false)]
@@ -50,6 +52,8 @@ class AdminConfigurationTreeItem
     public ?array $fields = null;
 
     /**
+     * The child sections nested under this configuration item.
+     *
      * @var AdminConfigurationTreeItem[]|null
      */
     #[ApiProperty(readable: true, writable: false)]

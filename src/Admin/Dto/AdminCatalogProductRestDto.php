@@ -335,7 +335,11 @@ class AdminCatalogProductRestDto
     #[ApiProperty(writable: false)]
     public ?array $cross_sells = null;
 
-    /** @var string[]|null */
+    /**
+     * The warnings raised for input the update could not fully apply.
+     *
+     * @var string[]|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $warnings = null;
 }

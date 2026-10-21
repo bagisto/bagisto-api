@@ -12,7 +12,9 @@ trait BuildsAdminInvoice
     use MapsOrderActionItems;
     use MapsOrderAddress;
 
-    /** Load the Eloquent AdminInvoice with its connection relations (GraphQL). */
+    /**
+     * Load the Eloquent AdminInvoice with its connection relations (GraphQL).
+     */
     protected function loadInvoiceForGraphQL(int $id): ?AdminInvoice
     {
         return AdminInvoice::with(['items', 'order.addresses'])->find($id);

@@ -262,13 +262,17 @@ class CheckoutTest extends AdminApiTestCase
         expect($payResp->json())->toHaveKey('paymentMethod');
     }
 
-    /** Build a draft cart with one simple product item. Returns cart id. */
+    /**
+     * Build a draft cart with one simple product item. Returns cart id.
+     */
     protected function bootstrapDraftCart(): int
     {
         return $this->bootstrapAdminDraftCart();
     }
 
-    /** Save a generic address on the cart so shipping rates can be collected. */
+    /**
+     * Save a generic address on the cart so shipping rates can be collected.
+     */
     protected function saveAddresses(int $cartId, Admin $admin): TestResponse
     {
         return $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [

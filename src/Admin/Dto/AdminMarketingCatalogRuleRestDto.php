@@ -59,7 +59,11 @@ class AdminMarketingCatalogRuleRestDto
     #[ApiProperty(writable: false)]
     public ?int $condition_type = null;
 
-    /** @var array<int,mixed>|null */
+    /**
+     * The conditions a product must meet for the catalog rule to apply.
+     *
+     * @var array<int,mixed>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $conditions = null;
 
@@ -81,11 +85,19 @@ class AdminMarketingCatalogRuleRestDto
     #[ApiProperty(writable: false)]
     public ?float $discount_amount = null;
 
-    /** @var array<int,array{id:int, code:string|null, name:string|null}>|null */
+    /**
+     * The channels the catalog rule applies in.
+     *
+     * @var array<int,array{id:int, code:string|null, name:string|null}>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $channels = null;
 
-    /** @var array<int,array{id:int, code:string|null, name:string|null}>|null */
+    /**
+     * The customer groups the catalog rule applies to.
+     *
+     * @var array<int,array{id:int, code:string|null, name:string|null}>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $customer_groups = null;
 

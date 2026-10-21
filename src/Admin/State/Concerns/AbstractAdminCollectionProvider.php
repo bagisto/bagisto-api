@@ -11,10 +11,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 
-/**
- * Centralised scaffolding for admin collection providers.
- * Handles: auth check, args extraction (REST query + GraphQL $context['args']),.
- */
 abstract class AbstractAdminCollectionProvider implements ProviderInterface
 {
     /**

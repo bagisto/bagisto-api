@@ -12,7 +12,9 @@ class LocaleTest extends RestApiTestCase
      */
     private string $collectionUrl = '/api/shop/locales';
 
-    // ── GET /locales (collection) ─────────────────────────────
+    // ============================================================================
+    // GET /locales (Collection)
+    // ============================================================================
 
     /**
      * Test get locales returns ok.
@@ -79,7 +81,9 @@ class LocaleTest extends RestApiTestCase
         }
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
     /**
      * Test items per page limits collection size.
@@ -128,7 +132,9 @@ class LocaleTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
-    // ── GET /locales/{id} (single) ────────────────────────────
+    // ============================================================================
+    // GET /locales/{id} (Single)
+    // ============================================================================
 
     /**
      * Test get single locale returns ok.

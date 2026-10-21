@@ -75,10 +75,18 @@ use Webkul\Sales\Models\RefundProxy;
 )]
 class CustomerOrder extends Model
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'orders';
 
-    /** @var array */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'increment_id' => 'string',

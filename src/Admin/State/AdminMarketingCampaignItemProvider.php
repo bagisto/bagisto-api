@@ -79,6 +79,8 @@ class AdminMarketingCampaignItemProvider implements ProviderInterface
     }
 
     /**
+     * Build the channel summary of a campaign, or null when it has none.
+     *
      * @return array{id:int, code:string|null, name:string|null}|null
      */
     protected function channelObject(?object $channel): ?array
@@ -95,6 +97,8 @@ class AdminMarketingCampaignItemProvider implements ProviderInterface
     }
 
     /**
+     * Build the customer group summary of a campaign, or null when it has none.
+     *
      * @return array{id:int, code:string|null, name:string|null}|null
      */
     protected function customerGroupObject(?object $group): ?array
@@ -111,6 +115,8 @@ class AdminMarketingCampaignItemProvider implements ProviderInterface
     }
 
     /**
+     * Build the email template summary of a campaign, or null when it has none.
+     *
      * @return array{id:int, name:string|null, status:string|null}|null
      */
     protected function templateObject(?object $template): ?array
@@ -127,6 +133,8 @@ class AdminMarketingCampaignItemProvider implements ProviderInterface
     }
 
     /**
+     * Build the event summary of a campaign, or null when it has none.
+     *
      * @return array{id:int, name:string|null, date:string|null}|null
      */
     protected function eventObject(?object $event): ?array

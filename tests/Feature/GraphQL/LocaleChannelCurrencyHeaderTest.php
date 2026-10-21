@@ -10,7 +10,9 @@ use Webkul\Core\Models\Channel;
 
 class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
 {
-    // ─── No headers (defaults) ──────────────────────────────────────────
+    // ============================================================================
+    // No Headers (Defaults)
+    // ============================================================================
 
     /**
      * Test no headers returns default locale data.
@@ -36,7 +38,9 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
         }
     }
 
-    // ─── X-LOCALE header ────────────────────────────────────────────────
+    // ============================================================================
+    // X-LOCALE Header
+    // ============================================================================
 
     /**
      * Test valid locale header switches locale.
@@ -87,7 +91,9 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
         }
     }
 
-    // ─── X-CURRENCY header ──────────────────────────────────────────────
+    // ============================================================================
+    // X-CURRENCY Header
+    // ============================================================================
 
     /**
      * Test valid currency header is accepted.
@@ -122,7 +128,9 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
         $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
     }
 
-    // ─── X-CHANNEL header ───────────────────────────────────────────────
+    // ============================================================================
+    // X-CHANNEL Header
+    // ============================================================================
 
     /**
      * Test valid channel header is accepted.
@@ -169,7 +177,9 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
         $this->assertNotNull($node['code']);
     }
 
-    // ─── All three headers together ─────────────────────────────────────
+    // ============================================================================
+    // All Three Headers Together
+    // ============================================================================
 
     /**
      * Test all three headers together.
@@ -222,7 +232,9 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
         }
     }
 
-    // ─── Formatted price respects currency ──────────────────────────────
+    // ============================================================================
+    // Formatted Price Respects Currency
+    // ============================================================================
 
     /**
      * Test product price respects currency header.
@@ -267,7 +279,9 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
         $this->assertArrayHasKey('price', $data2);
     }
 
-    // ─── Price values and formatted prices respect currency ────────────
+    // ============================================================================
+    // Price Values And Formatted Prices Respect Currency
+    // ============================================================================
 
     /**
      * Test product prices are converted when currency header changes.

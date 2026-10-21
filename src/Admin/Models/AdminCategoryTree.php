@@ -153,7 +153,11 @@ class AdminCategoryTree
     #[ApiProperty(writable: false)]
     public ?string $display_mode = null;
 
-    /** @var array<int, array<string, mixed>>|null Plain associative arrays — never nested DTOs, to avoid IRI serialization by API Platform. */
+    /**
+     * The child categories nested under this category.
+     *
+     * @var array<int, array<string, mixed>>|null Plain associative arrays — never nested DTOs, to avoid IRI serialization by API Platform.
+     */
     #[ApiProperty(writable: false)]
     public ?array $children = null;
 }

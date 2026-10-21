@@ -12,7 +12,9 @@ class SectionTest extends RestApiTestCase
      */
     private string $collectionUrl = '/api/shop/sections';
 
-    // ── GET /sections (collection) ────────────────
+    // ============================================================================
+    // GET /sections (Collection)
+    // ============================================================================
 
     /**
      * Test get collection returns ok.
@@ -68,7 +70,9 @@ class SectionTest extends RestApiTestCase
         expect($first['id'])->toBeInt();
     }
 
-    // ── GET /sections?type=X (filter) ────────────
+    // ============================================================================
+    // GET /sections?type=X (Filter)
+    // ============================================================================
 
     /**
      * Test type filter returns only matching type.
@@ -146,7 +150,9 @@ class SectionTest extends RestApiTestCase
         expect(array_intersect($type1Ids, $type2Ids))->toBe([]);
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
     /**
      * Test default page holds every section of the channel.
@@ -210,7 +216,9 @@ class SectionTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
-    // ── GET /sections/{id} (single) ──────────────
+    // ============================================================================
+    // GET /sections/{id} (Single)
+    // ============================================================================
 
     /**
      * Test get single returns ok.

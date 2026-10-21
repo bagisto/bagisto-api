@@ -40,7 +40,9 @@ use Webkul\BagistoApi\Admin\State\OrderDetailProvider;
 )]
 class OrderDetail extends EloquentModel
 {
-    /** Status code → label (mirrors core Order::$statusLabel). */
+    /**
+     * Status code → label (mirrors core Order::$statusLabel).
+     */
     private const STATUS_LABELS = [
         'pending' => 'Pending',
         'pending_payment' => 'Pending Payment',
@@ -51,10 +53,18 @@ class OrderDetail extends EloquentModel
         'fraud' => 'Fraud',
     ];
 
-    /** @var string */
+    /**
+     * The table that stores the orders.
+     *
+     * @var string
+     */
     protected $table = 'orders';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the order is serialized.
+     *
+     * @var array
+     */
     protected $appends = [
         'status_label', 'payment_method', 'payment_title', 'total_due', 'base_total_due',
         'formatted_grand_total', 'formatted_sub_total', 'formatted_tax_amount',
@@ -62,7 +72,11 @@ class OrderDetail extends EloquentModel
         'formatted_grand_total_invoiced', 'formatted_grand_total_refunded',
     ];
 
-    /** @var array */
+    /**
+     * The native types the order attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'is_guest' => 'boolean',
@@ -291,7 +305,9 @@ class OrderDetail extends EloquentModel
         return core()->formatPrice((float) $amount, $this->order_currency_code);
     }
 
-    /** Resolve the order's payment method. */
+    /**
+     * Resolve the order's payment method.
+     */
     private function paymentMethodValue(): ?string
     {
         return DB::table('order_payment')->where('order_id', $this->id)->value('method');

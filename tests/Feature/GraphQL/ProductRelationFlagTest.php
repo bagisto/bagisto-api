@@ -39,7 +39,9 @@ class ProductRelationFlagTest extends GraphQLTestCase
         }
     GQL;
 
-    // ── Listing — wishlist ──────────────────────────────────────
+    // ============================================================================
+    // Listing — Wishlist
+    // ============================================================================
 
     /**
      * Test listing marks wishlisted product true for owner.
@@ -92,7 +94,9 @@ class ProductRelationFlagTest extends GraphQLTestCase
         expect($this->flag($node['isInWishlist']))->toBeFalse();
     }
 
-    // ── Listing — compare ───────────────────────────────────────
+    // ============================================================================
+    // Listing — Compare
+    // ============================================================================
 
     /**
      * Test listing marks compared product true for owner.
@@ -141,7 +145,9 @@ class ProductRelationFlagTest extends GraphQLTestCase
         expect($this->flag($node['isInCompare']))->toBeFalse();
     }
 
-    // ── Detail ──────────────────────────────────────────────────
+    // ============================================================================
+    // Detail
+    // ============================================================================
 
     /**
      * Test detail carries both flags for owner.
@@ -197,7 +203,9 @@ class ProductRelationFlagTest extends GraphQLTestCase
         expect($this->flag($response->json('data.product.isInCompare')))->toBeFalse();
     }
 
-    /** Pull the node for a given product id out of a products() edges response. */
+    /**
+     * Pull the node for a given product id out of a products() edges response.
+     */
     private function nodeFor(array $edges, int $productId): ?array
     {
         foreach ($edges as $edge) {

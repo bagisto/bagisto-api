@@ -21,7 +21,11 @@ class AdminCmsPageUpdateInput
     #[Groups(['mutation'])]
     public ?string $locale = null;
 
-    /** @var array<int, int>|null */
+    /**
+     * The ids of the channels synced onto the CMS page.
+     *
+     * @var array<int, int>|null
+     */
     #[ApiProperty(description: 'Channel IDs to sync onto the page.')]
     #[Groups(['mutation'])]
     public ?array $channels = null;

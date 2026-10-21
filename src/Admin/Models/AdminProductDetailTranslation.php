@@ -18,10 +18,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminProductDetailTranslation extends Model
 {
-    /** @var string */
+    /**
+     * The flat product table that holds each locale and channel copy of the product.
+     *
+     * @var string
+     */
     protected $table = 'product_flat';
 
-    /** @var array */
+    /**
+     * The native types the product translation attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = ['id' => 'int'];
 
     /**

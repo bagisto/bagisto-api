@@ -14,10 +14,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminOrderDetailComment extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the order comments.
+     *
+     * @var string
+     */
     protected $table = 'order_comments';
 
-    /** @var array */
+    /**
+     * The native types the order comment attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'customer_notified' => 'boolean',

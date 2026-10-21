@@ -507,10 +507,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
 )]
 class AdminMarketingCatalogRule extends EloquentModel
 {
-    /** @var string */
+    /**
+     * The table that stores the catalog rules.
+     *
+     * @var string
+     */
     protected $table = 'catalog_rules';
 
-    /** @var array */
+    /**
+     * The native types the catalog rule attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'status' => 'int',
@@ -525,10 +533,16 @@ class AdminMarketingCatalogRule extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the catalog rule is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['message'];
 
-    /** Success signal — populated only on the delete mutation result. */
+    /**
+     * Success signal — populated only on the delete mutation result.
+     */
     public ?string $actionMessage = null;
 
     /**

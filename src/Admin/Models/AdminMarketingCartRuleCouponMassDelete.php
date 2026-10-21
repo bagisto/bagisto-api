@@ -94,7 +94,11 @@ class AdminMarketingCartRuleCouponMassDelete
     #[ApiProperty(writable: false)]
     public ?int $deleted = null;
 
-    /** @var array<int, int>|null */
+    /**
+     * The requested coupon ids that do not belong to the cart rule and were skipped.
+     *
+     * @var array<int, int>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $skipped = null;
 

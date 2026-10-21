@@ -98,10 +98,18 @@ use Webkul\Sales\Models\Order;
 )]
 class CustomerInvoice extends Model
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'invoices';
 
-    /** @var array */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'order_id' => 'int',
@@ -126,7 +134,11 @@ class CustomerInvoice extends Model
         'reminders' => 'int',
     ];
 
-    /** @var array */
+    /**
+     * The accessors appended to the invoice's array form.
+     *
+     * @var array
+     */
     protected $appends = ['downloadUrl'];
 
     /**
@@ -135,7 +147,7 @@ class CustomerInvoice extends Model
      */
     public function getDownloadUrlAttribute(): string
     {
-        return route('bagistoapi.customer-invoice-pdf', ['id' => $this->id]);
+        return route('bagistoapi.customer_invoice_pdf', ['id' => $this->id]);
     }
 
     /**

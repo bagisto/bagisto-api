@@ -8,6 +8,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class AdminAppearanceSectionReorderInput
 {
     /**
+     * The section ids in the order they should be drawn.
+     *
      * @var array<int, int>|null
      */
     #[ApiProperty(description: 'Section IDs in the order they should be drawn')]

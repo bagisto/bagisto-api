@@ -124,16 +124,24 @@ class OrderDetailItem
      */
     public ?float $discountPercent = null;
 
-    /** Type-specific cart data: super_attribute, bundle_options, selected options, etc. */
+    /**
+     * Type-specific cart data: super_attribute, bundle_options, selected options, etc.
+     */
     public ?array $additional = null;
 
-    /** Configurable: the chosen variant. Null for other types. */
+    /**
+     * Configurable: the chosen variant. Null for other types.
+     */
     public ?OrderDetailItem $child = null;
 
-    /** Bundle / grouped / configurable child line-items. */
+    /**
+     * Bundle / grouped / configurable child line-items.
+     */
     public array $children = [];
 
-    /** Downloadable: purchased link rows. Empty for other types. */
+    /**
+     * Downloadable: purchased link rows. Empty for other types.
+     */
     public array $downloadableLinks = [];
 
     /**

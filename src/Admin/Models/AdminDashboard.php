@@ -122,6 +122,8 @@ class AdminDashboard
     public ?string $date_range = null;
 
     /**
+     * The dashboard figures for the requested statistic type and date range.
+     *
      * @var array<string,mixed>|null
      */
     #[ApiProperty(readable: true, writable: false)]

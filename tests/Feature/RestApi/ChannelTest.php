@@ -12,7 +12,9 @@ class ChannelTest extends RestApiTestCase
      */
     private string $collectionUrl = '/api/shop/channels';
 
-    // ── GET Collection ────────────────────────────────────────
+    // ============================================================================
+    // GET Collection
+    // ============================================================================
 
     /**
      * Test get channels collection returns ok.
@@ -100,7 +102,9 @@ class ChannelTest extends RestApiTestCase
         expect($first['currencies'])->toBeArray();
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
     /**
      * Test items per page limits collection size.
@@ -157,7 +161,9 @@ class ChannelTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
-    // ── GET item ──────────────────────────────────────────────
+    // ============================================================================
+    // GET Item
+    // ============================================================================
 
     /**
      * Test get channel by id returns ok.

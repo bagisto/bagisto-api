@@ -80,6 +80,8 @@ class AdminAppearanceThemeImpact
     public ?string $code = null;
 
     /**
+     * The channels whose existing section customizations activating the theme would replace.
+     *
      * @var array<int, array<string, mixed>>
      */
     public array $impact = [];

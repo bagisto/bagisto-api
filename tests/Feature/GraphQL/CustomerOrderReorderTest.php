@@ -10,7 +10,9 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerOrderReorderTest extends GraphQLTestCase
 {
-    // ── Reorder Mutation Tests ────────────────────────────────────
+    // ============================================================================
+    // Reorder Mutation Tests
+    // ============================================================================
 
     /**
      * Test: Reorder a completed order with available products.

@@ -75,10 +75,6 @@ class AdminCatalogProductInventoryProvider implements ProviderInterface
     }
 }
 
-/**
- * @internal Lightweight paginator wrapper that adds getExtraMeta() for the
- * AdminCollectionEnvelopeNormalizer (which merges extra keys into `meta`).
- */
 final class AdminCatalogProductInventoryPaginator implements \IteratorAggregate, HasNextPagePaginatorInterface, PaginatorInterface
 {
     /**

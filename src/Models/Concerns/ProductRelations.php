@@ -117,6 +117,9 @@ trait ProductRelations
             ->orderBy('position');
     }
 
+    /**
+     * The images of the product.
+     */
     #[ApiProperty(
         writable: false,
         readable: true,
@@ -146,6 +149,9 @@ trait ProductRelations
             ->orderBy('position');
     }
 
+    /**
+     * The videos of the product.
+     */
     #[ApiProperty(
         writable: false,
         readable: true,
@@ -175,6 +181,9 @@ trait ProductRelations
             ->orderBy('position');
     }
 
+    /**
+     * The base image of the product.
+     */
     #[ApiProperty(
         writable: false,
         readable: true,

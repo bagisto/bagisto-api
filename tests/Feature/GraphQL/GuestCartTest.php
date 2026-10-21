@@ -649,7 +649,9 @@ class GuestCartTest extends GraphQLTestCase
         ];
     }
 
-    // ── Bug fixes: couponCode populated, success/message on apply/remove ──
+    // ============================================================================
+    // Bug Fixes: CouponCode Populated, Success/Message On Apply/Remove
+    // ============================================================================
 
     /**
      * Seed active coupon.

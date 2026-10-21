@@ -13,7 +13,9 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerInvoiceTest extends RestApiTestCase
 {
-    // ── Collection ────────────────────────────────────────────
+    // ============================================================================
+    // Collection
+    // ============================================================================
 
     /**
      * Test: GET /api/shop/customer-invoices returns collection.
@@ -94,7 +96,9 @@ class CustomerInvoiceTest extends RestApiTestCase
         expect(count($json))->toBe(0);
     }
 
-    // ── Single Item ───────────────────────────────────────────
+    // ============================================================================
+    // Single Item
+    // ============================================================================
 
     /**
      * Test: GET /api/shop/customer-invoices/{id} returns single invoice.
@@ -170,7 +174,9 @@ class CustomerInvoiceTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403, 500]))->toBeTrue();
     }
 
-    // ── Response Shape ────────────────────────────────────────
+    // ============================================================================
+    // Response Shape
+    // ============================================================================
 
     /**
      * Test: Invoice response includes financial fields.
@@ -214,7 +220,9 @@ class CustomerInvoiceTest extends RestApiTestCase
         expect($states)->toContain('pending');
     }
 
-    // ── PDF Download ──────────────────────────────────────────
+    // ============================================================================
+    // PDF Download
+    // ============================================================================
 
     /**
      * Test: PDF download endpoint returns PDF response.

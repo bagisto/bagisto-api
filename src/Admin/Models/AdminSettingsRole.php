@@ -278,7 +278,11 @@ class AdminSettingsRole
     #[ApiProperty(writable: false, example: 'all')]
     public ?string $permission_type = null;
 
-    /** @var array<int, string>|null */
+    /**
+     * The permission keys granted to the role.
+     *
+     * @var array<int, string>|null
+     */
     #[ApiProperty(writable: false, example: ['catalog.products.create', 'sales.orders.view'])]
     public ?array $permissions = null;
 

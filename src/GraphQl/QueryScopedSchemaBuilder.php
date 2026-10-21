@@ -20,10 +20,6 @@ use GraphQL\Language\Parser;
 use GraphQL\Type\Schema;
 use Illuminate\Support\Facades\Cache;
 
-/**
- * Per-query scoped schema builder (storefront).
- * Reads the incoming GraphQL query and builds a schema scoped to ONLY the.
- */
 final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
 {
     /**
@@ -36,7 +32,11 @@ final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
      */
     private ScopedSchemaBuilder $fullShop;
 
-    /** @var list<class-string>|null */
+    /**
+     * The API Platform framework resources, cached after the first lookup.
+     *
+     * @var list<class-string>|null
+     */
     private ?array $frameworkResources = null;
 
     /**
@@ -177,6 +177,8 @@ final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
     }
 
     /**
+     * Map every shop root query field name to the resource class that exposes it.
+     *
      * @return array<string, class-string>
      */
     private function buildFieldMap(): array
@@ -219,6 +221,8 @@ final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
     }
 
     /**
+     * Root field names one query operation adds to the schema, excluding the relay node field.
+     *
      * @return list<string>
      */
     private function operationFieldNames(string $resourceClass, Query $operation): array
@@ -240,6 +244,8 @@ final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
     }
 
     /**
+     * The shop resource classes, leaving out framework and admin resources.
+     *
      * @return list<class-string>
      */
     private function shopResourceNames(): array
@@ -262,6 +268,8 @@ final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
     }
 
     /**
+     * The API Platform framework resource classes every scoped schema must include.
+     *
      * @return list<class-string>
      */
     private function frameworkResources(): array
@@ -280,6 +288,8 @@ final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
     }
 
     /**
+     * Build a resource name factory that returns only the given classes.
+     *
      * @param  list<class-string>  $classes
      */
     private function fixedNameFactory(array $classes): ResourceNameCollectionFactoryInterface

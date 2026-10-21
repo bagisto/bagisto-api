@@ -7,7 +7,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminSettingsThemeMassDeleteInput
 {
-    /** @var int[]|null */
+    /**
+     * The ids of the theme customizations to delete.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(description: 'Array of theme customization IDs to delete.')]
     #[Groups(['mutation'])]
     public ?array $indices = null;

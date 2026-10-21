@@ -333,15 +333,21 @@ class AdminSettingsDataTransferImport
     #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
-    /** Entity type (product / customer / category / etc). Sourced from the `type` column. */
+    /**
+     * Entity type (product / customer / category / etc). Sourced from the `type` column.
+     */
     #[ApiProperty(writable: false, example: 'products')]
     public ?string $code = null;
 
-    /** Action — append / update / delete. */
+    /**
+     * Action — append / update / delete.
+     */
     #[ApiProperty(writable: false, example: 'append')]
     public ?string $action = null;
 
-    /** Current state — pending / validated / processing / processed / completed / etc. */
+    /**
+     * Current state — pending / validated / processing / processed / completed / etc.
+     */
     #[ApiProperty(writable: false, example: 'pending')]
     public ?string $state = null;
 
@@ -381,7 +387,11 @@ class AdminSettingsDataTransferImport
     #[ApiProperty(writable: false, example: 0)]
     public ?int $errors_count = null;
 
-    /** @var array<int,mixed>|null */
+    /**
+     * The validation errors found in the import file.
+     *
+     * @var array<int,mixed>|null
+     */
     #[ApiProperty(writable: false, example: [])]
     public ?array $errors = null;
 
@@ -421,7 +431,11 @@ class AdminSettingsDataTransferImport
     #[ApiProperty(writable: false, example: null)]
     public ?string $error_file_path = null;
 
-    /** @var array<string,mixed>|null */
+    /**
+     * The number of records the import created, updated and deleted.
+     *
+     * @var array<string,mixed>|null
+     */
     #[ApiProperty(writable: false, example: [
         'created' => 0,
         'updated' => 0,
@@ -453,11 +467,15 @@ class AdminSettingsDataTransferImport
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
 
-    /** Populated on cancel-action responses. */
+    /**
+     * Populated on cancel-action responses.
+     */
     #[ApiProperty(writable: false, example: true)]
     public ?bool $success = null;
 
-    /** Populated on validate-action responses. */
+    /**
+     * Populated on validate-action responses.
+     */
     #[ApiProperty(writable: false, example: true)]
     public ?bool $is_valid = null;
 

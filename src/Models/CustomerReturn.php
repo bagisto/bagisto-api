@@ -535,15 +535,27 @@ class CustomerReturn implements SnakeCaseFieldsResource
      */
     public ?bool $is_expired = null;
 
-    /** @var array<string,mixed>|null */
+    /**
+     * The order item being returned.
+     *
+     * @var array<string,mixed>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'object'])]
     public ?array $item = null;
 
-    /** @var array<int,array<string,mixed>>|null */
+    /**
+     * The images attached to the return.
+     *
+     * @var array<int,array<string,mixed>>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $images = null;
 
-    /** @var array<int,array<string,mixed>>|null */
+    /**
+     * The answers to the return custom fields.
+     *
+     * @var array<int,array<string,mixed>>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $custom_attributes = null;
 

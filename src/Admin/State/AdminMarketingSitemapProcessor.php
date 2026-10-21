@@ -269,7 +269,9 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
-    /** Map camelCase → snake_case and strip extraneous keys. */
+    /**
+     * Map camelCase → snake_case and strip extraneous keys.
+     */
     protected function normaliseArgs(array $input): array
     {
         $camelToSnake = [

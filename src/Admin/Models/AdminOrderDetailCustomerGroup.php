@@ -14,10 +14,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminOrderDetailCustomerGroup extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the customer groups.
+     *
+     * @var string
+     */
     protected $table = 'customer_groups';
 
-    /** @var array */
+    /**
+     * The native types the order customer group attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
     ];

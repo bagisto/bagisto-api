@@ -15,18 +15,34 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminMarketingChannelRef extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the channels.
+     *
+     * @var string
+     */
     protected $table = 'channels';
 
-    /** @var bool */
+    /**
+     * Indicates the channel reference does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The native types the channel reference attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
     ];
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the channel reference is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['name'];
 
     /**

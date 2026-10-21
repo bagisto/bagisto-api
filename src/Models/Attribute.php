@@ -150,6 +150,8 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
     ];
 
     /**
+     * The relations always eager loaded with the attribute.
+     *
      * @var list<string>
      */
     protected $with = ['translations'];

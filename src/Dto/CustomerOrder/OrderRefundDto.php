@@ -94,6 +94,10 @@ class OrderRefundDto
      */
     public ?float $base_adjustment_refund = null;
 
-    /** @var array<int, array<string, mixed>> */
+    /**
+     * The order items included in the refund.
+     *
+     * @var array<int, array<string, mixed>>
+     */
     public array $items = [];
 }

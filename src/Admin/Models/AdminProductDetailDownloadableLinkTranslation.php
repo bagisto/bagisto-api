@@ -14,10 +14,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminProductDetailDownloadableLinkTranslation extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the downloadable link translations.
+     *
+     * @var string
+     */
     protected $table = 'product_downloadable_link_translations';
 
-    /** @var array */
+    /**
+     * The native types the downloadable link translation attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = ['id' => 'int'];
 
     /**

@@ -68,10 +68,18 @@ use Webkul\Sales\Models\DownloadableLinkPurchased;
 )]
 class CustomerDownloadableProduct extends DownloadableLinkPurchased
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'downloadable_link_purchased';
 
-    /** @var array */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'download_bought' => 'int',

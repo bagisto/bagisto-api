@@ -240,8 +240,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
                 ],
             ),
         ),
-        // Export MUST stay the LAST Get op so the GraphQL node-id IRI keeps
-        // resolving from the detail Get (/settings/tax-rates/{id}), not /export.
         new Get(
             uriTemplate: '/settings/tax-rates/export',
             provider: AdminSettingsTaxRateExportProvider::class,

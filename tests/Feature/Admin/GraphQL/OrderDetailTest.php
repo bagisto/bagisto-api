@@ -212,7 +212,9 @@ class OrderDetailTest extends AdminApiTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
-    /** Resolve an existing order id from the listing, or bootstrap one. */
+    /**
+     * Resolve an existing order id from the listing, or bootstrap one.
+     */
     protected function anOrderId(): int
     {
         $admin = $this->createAdmin();

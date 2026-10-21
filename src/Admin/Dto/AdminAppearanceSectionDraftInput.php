@@ -22,6 +22,8 @@ class AdminAppearanceSectionDraftInput
     public ?string $locale = null;
 
     /**
+     * The options staged as a draft for the locale.
+     *
      * @var array<string, mixed>|null
      */
     #[ApiProperty(description: 'Staged options for the locale')]

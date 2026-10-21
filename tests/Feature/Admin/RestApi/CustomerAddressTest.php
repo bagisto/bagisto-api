@@ -116,7 +116,9 @@ class CustomerAddressTest extends AdminApiTestCase
         expect((int) CustomerAddress::find($first->id)->default_address)->toBe(1);
     }
 
-    /** Pick a customer that has at least one address; create one if missing. */
+    /**
+     * Pick a customer that has at least one address; create one if missing.
+     */
     protected function aCustomerWithAddresses(): int
     {
         return $this->bootstrapCustomerWithAddress();

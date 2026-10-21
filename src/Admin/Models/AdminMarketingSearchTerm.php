@@ -338,10 +338,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
 )]
 class AdminMarketingSearchTerm extends EloquentModel
 {
-    /** @var string */
+    /**
+     * The table that stores the search terms.
+     *
+     * @var string
+     */
     protected $table = 'search_terms';
 
-    /** @var array */
+    /**
+     * The native types the search term attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'results' => 'int',

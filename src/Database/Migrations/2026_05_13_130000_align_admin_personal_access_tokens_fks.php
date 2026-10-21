@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         if (
@@ -77,6 +80,9 @@ return new class extends Migration
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         if (! Schema::hasTable('admin_personal_access_tokens')) {
@@ -96,6 +102,9 @@ return new class extends Migration
         });
     }
 
+    /**
+     * The foreign keys of the token table, each with the table it references and its on-delete action.
+     */
     private function foreignKeys(): array
     {
         return [

@@ -58,7 +58,11 @@ class OrderShipmentDto
      */
     public ?string $updated_at = null;
 
-    /** @var OrderShipmentItemDto[] */
+    /**
+     * The order items included in the shipment.
+     *
+     * @var OrderShipmentItemDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $items = [];
 }

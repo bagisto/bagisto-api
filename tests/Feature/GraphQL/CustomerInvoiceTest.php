@@ -14,7 +14,9 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerInvoiceTest extends GraphQLTestCase
 {
-    // ── Collection Queries ────────────────────────────────────
+    // ============================================================================
+    // Collection Queries
+    // ============================================================================
 
     /**
      * Test: Query all customer invoices collection.
@@ -235,7 +237,9 @@ class CustomerInvoiceTest extends GraphQLTestCase
         expect($node['state'])->toBe('pending');
     }
 
-    // ── Single Item Query ─────────────────────────────────────
+    // ============================================================================
+    // Single Item Query
+    // ============================================================================
 
     /**
      * Test: Query single customer invoice by ID.
@@ -394,7 +398,9 @@ class CustomerInvoiceTest extends GraphQLTestCase
         expect($errors)->not()->toBeEmpty();
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
     /**
      * Test: Pagination with first parameter.
@@ -482,7 +488,9 @@ class CustomerInvoiceTest extends GraphQLTestCase
         expect($secondInvoiceId)->not()->toBe($firstInvoiceId);
     }
 
-    // ── Schema Introspection ──────────────────────────────────
+    // ============================================================================
+    // Schema Introspection
+    // ============================================================================
 
     /**
      * Test: CustomerInvoice type has expected fields in schema.

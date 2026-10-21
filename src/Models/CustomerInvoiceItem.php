@@ -12,10 +12,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class CustomerInvoiceItem extends Model
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'invoice_items';
 
-    /** @var array */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'invoice_id' => 'int',

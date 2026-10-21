@@ -23,7 +23,9 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
 class AdminAttributeOptionProcessor implements ProcessorInterface
 {
-    /** Types that support options. */
+    /**
+     * Types that support options.
+     */
     private const OPTION_TYPES = [
         AttributeTypeEnum::SELECT->value,
         AttributeTypeEnum::MULTISELECT->value,

@@ -82,6 +82,8 @@ class AdminAppearanceSectionRestDto
     public ?string $updated_at = null;
 
     /**
+     * The per-locale options of the section.
+     *
      * @var array<int, array<string, mixed>>
      */
     public array $translations = [];

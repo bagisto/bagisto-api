@@ -9,7 +9,9 @@ use Webkul\Customer\Models\Wishlist;
 
 class ProductRelationFlagTest extends RestApiTestCase
 {
-    // ── Listing ─────────────────────────────────────────────────
+    // ============================================================================
+    // Listing
+    // ============================================================================
 
     /**
      * Test listing marks flags true for owner.
@@ -76,7 +78,9 @@ class ProductRelationFlagTest extends RestApiTestCase
         expect($row['isInCompare'])->toBe(0);
     }
 
-    // ── Detail ──────────────────────────────────────────────────
+    // ============================================================================
+    // Detail
+    // ============================================================================
 
     /**
      * Test detail carries both flags for owner.
@@ -128,7 +132,9 @@ class ProductRelationFlagTest extends RestApiTestCase
         expect($response->json('isInCompare'))->toBe(0);
     }
 
-    /** Find a product row (by id) in the REST listing array. */
+    /**
+     * Find a product row (by id) in the REST listing array.
+     */
     private function rowFor(array $rows, int $productId): ?array
     {
         foreach ($rows as $row) {

@@ -7,7 +7,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminCategoryMassDeleteInput
 {
-    /** @var int[]|null */
+    /**
+     * The ids of the categories to delete.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(description: 'Array of category IDs to delete.')]
     #[Groups(['mutation'])]
     public ?array $indices = null;

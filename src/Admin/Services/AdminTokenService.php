@@ -88,7 +88,7 @@ class AdminTokenService
     public function generate(AdminPersonalAccessToken $token, array $overrides = []): array
     {
         if ($token->status !== AdminPersonalAccessToken::STATUS_DRAFT) {
-            throw new \DomainException('Only draft tokens can be generated.');
+            throw new \DomainException(__('bagistoapi::app.integration.errors.only-draft-generate'));
         }
 
         $plain = $this->makePlainText();

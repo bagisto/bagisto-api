@@ -506,7 +506,9 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         $this->assertCustomerCartSuccess($response->json());
     }
 
-    // ─── Full response tests ────────────────────────────────────────────
+    // ============================================================================
+    // Full Response Tests
+    // ============================================================================
 
     /**
      * Default booking product — full response as guest.

@@ -14,13 +14,25 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminSettingsChannelCurrencyRef extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the currencies.
+     *
+     * @var string
+     */
     protected $table = 'currencies';
 
-    /** @var bool */
+    /**
+     * Indicates the channel currency reference does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The native types the channel currency reference attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
     ];

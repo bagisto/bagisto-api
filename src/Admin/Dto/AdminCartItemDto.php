@@ -89,12 +89,18 @@ class AdminCartItemDto
      */
     public ?string $formattedDiscountAmount = null;
 
-    /** Type-specific add-to-cart payload (super_attribute, bundle_options, etc). */
+    /**
+     * Type-specific add-to-cart payload (super_attribute, bundle_options, etc).
+     */
     public ?array $additional = null;
 
-    /** Configurable child variant — null for non-configurable items. */
+    /**
+     * Configurable child variant — null for non-configurable items.
+     */
     public ?AdminCartItemDto $child = null;
 
-    /** Bundle / grouped / configurable child rows. */
+    /**
+     * Bundle / grouped / configurable child rows.
+     */
     public array $children = [];
 }

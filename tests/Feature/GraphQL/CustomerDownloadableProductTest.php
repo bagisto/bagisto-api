@@ -15,7 +15,9 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerDownloadableProductTest extends GraphQLTestCase
 {
-    // ── Collection Queries ────────────────────────────────────
+    // ============================================================================
+    // Collection Queries
+    // ============================================================================
 
     /**
      * Test: Query all customer downloadable products collection.

@@ -368,11 +368,19 @@ class CustomerOrderDetailDto
      */
     public ?bool $have_stockable_items = null;
 
-    /** @var OrderItemDto[] */
+    /**
+     * The items in the order.
+     *
+     * @var OrderItemDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $items = [];
 
-    /** @var OrderAddressDto[] */
+    /**
+     * The billing and shipping addresses of the order.
+     *
+     * @var OrderAddressDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $addresses = [];
 
@@ -382,15 +390,27 @@ class CustomerOrderDetailDto
     #[ApiProperty(readableLink: true)]
     public ?OrderPaymentDto $payment = null;
 
-    /** @var OrderShipmentDto[] */
+    /**
+     * The shipments created for the order.
+     *
+     * @var OrderShipmentDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $shipments = [];
 
-    /** @var OrderInvoiceDto[] */
+    /**
+     * The invoices created for the order.
+     *
+     * @var OrderInvoiceDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $invoices = [];
 
-    /** @var OrderRefundDto[] */
+    /**
+     * The refunds issued for the order.
+     *
+     * @var OrderRefundDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $refunds = [];
 }

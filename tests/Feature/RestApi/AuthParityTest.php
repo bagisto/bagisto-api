@@ -76,9 +76,9 @@ class AuthParityTest extends RestApiTestCase
         ],
     ];
 
-    // ====
-    // Guarded endpoints refuse an anonymous caller
-    // ====
+    // ============================================================================
+    // Guarded Endpoints Refuse An Anonymous Caller
+    // ============================================================================
 
     /**
      * Test every customer guarded collection refuses an anonymous caller.
@@ -213,9 +213,9 @@ class AuthParityTest extends RestApiTestCase
             ->toBeTrue('payment-methods answered '.$response->getStatusCode().' to a caller with no cart token');
     }
 
-    // ====
-    // Public endpoints answer an anonymous caller
-    // ====
+    // ============================================================================
+    // Public Endpoints Answer An Anonymous Caller
+    // ============================================================================
 
     /**
      * Test every public collection answers an anonymous caller.

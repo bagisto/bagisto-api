@@ -246,32 +246,32 @@ class BagistoApiServiceProvider extends ServiceProvider
     protected function registerApiDocumentationRoutes(): void
     {
         Route::get('/api', ApiEntrypointController::class)
-            ->name('bagistoapi.docs-index');
+            ->name('bagistoapi.docs_index');
 
         Route::get('/api/shop', [
             SwaggerUIController::class, 'shopApi',
-        ])->name('bagistoapi.shop-docs')->where('_format', '^(?!json|xml|csv)');
+        ])->name('bagistoapi.shop_docs')->where('_format', '^(?!json|xml|csv)');
 
         Route::get('/api/admin', [
             SwaggerUIController::class, 'adminApi',
-        ])->name('bagistoapi.admin-docs')->where('_format', '^(?!json|xml|csv)');
+        ])->name('bagistoapi.admin_docs')->where('_format', '^(?!json|xml|csv)');
 
         Route::get('/api/shop/docs', [
             SwaggerUIController::class, 'shopApiDocs',
-        ])->name('bagistoapi.shop-api-spec');
+        ])->name('bagistoapi.shop_api_spec');
 
         Route::get('/api/admin/docs', [
             SwaggerUIController::class, 'adminApiDocs',
-        ])->name('bagistoapi.admin-api-spec');
+        ])->name('bagistoapi.admin_api_spec');
 
         Route::get('/api/graphiql', GraphQLPlaygroundController::class)
-            ->name('bagistoapi.graphql-playground');
+            ->name('bagistoapi.graphql_playground');
 
         Route::get('/api/graphql', GraphQLPlaygroundController::class)
-            ->name('bagistoapi.api-graphql-playground');
+            ->name('bagistoapi.api_graphql_playground');
 
         Route::get('/api/admin/graphiql', AdminGraphQLPlaygroundController::class)
-            ->name('bagistoapi.admin-graphql-playground');
+            ->name('bagistoapi.admin_graphql_playground');
 
         Route::post(
             '/api/admin/graphql',
@@ -283,26 +283,26 @@ class BagistoApiServiceProvider extends ServiceProvider
                 SetAdminApiAuditContext::class,
                 SetLocaleChannel::class,
             ])
-            ->name('bagistoapi.admin-api-graphql');
+            ->name('bagistoapi.admin_api_graphql');
 
         Route::get('/api/shop/customer-invoices/{id}/pdf', InvoicePdfController::class)
             ->where('id', '[0-9]+')
             ->middleware(['Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey'])
-            ->name('bagistoapi.customer-invoice-pdf');
+            ->name('bagistoapi.customer_invoice_pdf');
 
         Route::get('/api/shop/gdpr-data/pdf', GdprDataPdfController::class)
             ->middleware(['Webkul\\BagistoApi\\Http\\Middleware\\VerifyStorefrontKey'])
-            ->name('bagistoapi.customer-gdpr-data-pdf');
+            ->name('bagistoapi.customer_gdpr_data_pdf');
 
         Route::get('/api/downloadable/download-sample/{type}/{id}', DownloadSampleController::class)
             ->where('type', 'link|sample')
             ->where('id', '[0-9]+')
-            ->name('bagistoapi.download-sample');
+            ->name('bagistoapi.download_sample');
 
         Route::get('/api/shop/customer-downloadable-products/{id}/download', DownloadablePurchasedController::class)
             ->where('id', '[0-9]+')
             ->middleware(['Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey'])
-            ->name('bagistoapi.customer-downloadable-product-download');
+            ->name('bagistoapi.customer_downloadable_product_download');
     }
 
     /**

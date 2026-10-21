@@ -18,20 +18,19 @@ class CountryTest extends RestApiTestCase
      */
     private string $countryStatesUrl = '/api/shop/country-states';
 
-    // Country IDs that are stable across Bagisto seeder runs
     /**
-     * The country with states.
+     * The seeded id of the United States, a country with states.
      */
     private int $countryWithStates = 244;
 
-    // United States
-
     /**
-     * The country without states.
+     * The seeded id of Afghanistan, a country without states.
      */
     private int $countryWithoutStates = 1;
 
-    // ── GET /countries (collection) ───────────────────────────
+    // ============================================================================
+    // GET /countries (Collection)
+    // ============================================================================
 
     /**
      * Test get countries returns ok.
@@ -87,7 +86,9 @@ class CountryTest extends RestApiTestCase
         expect($first['id'])->toBeInt();
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
     /**
      * Test items per page limits collection size.
@@ -129,7 +130,9 @@ class CountryTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
-    // ── GET /countries/{id} (single) ──────────────────────────
+    // ============================================================================
+    // GET /countries/{id} (Single)
+    // ============================================================================
 
     /**
      * Test get single country returns ok.
@@ -208,7 +211,9 @@ class CountryTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
     }
 
-    // ── GET /countries/{country_id}/states (nested collection) ─
+    // ============================================================================
+    // GET /countries/{country_id}/states (Nested Collection)
+    // ============================================================================
 
     /**
      * Test get nested states returns ok.
@@ -268,7 +273,9 @@ class CountryTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
-    // ── GET /countries/{country_id}/states/{id} (nested single) ─
+    // ============================================================================
+    // GET /countries/{country_id}/states/{id} (Nested Single)
+    // ============================================================================
 
     /**
      * Test get nested single state returns ok.
@@ -297,7 +304,9 @@ class CountryTest extends RestApiTestCase
         expect($body['countryId'])->toBe($this->countryWithStates);
     }
 
-    // ── GET /country-states/{id} (root single) ────────────────
+    // ============================================================================
+    // GET /country-states/{id} (Root Single)
+    // ============================================================================
 
     /**
      * Test get root country state returns ok.
@@ -357,8 +366,6 @@ class CountryTest extends RestApiTestCase
 
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
     }
-
-    // Afghanistan
 
     /**
      * Country url.

@@ -16,7 +16,9 @@ class CustomerOrderShipmentTest extends RestApiTestCase
      */
     private string $shipmentItemsUrl = '/api/shop/customer-order-shipment-items';
 
-    // ── /customer-order-shipments ─────────────────────────────
+    // ============================================================================
+    // /customer-order-shipments
+    // ============================================================================
 
     /**
      * Test get shipments collection requires auth.
@@ -59,7 +61,9 @@ class CustomerOrderShipmentTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([403, 404, 500]);
     }
 
-    // ── /customer-order-shipment-items ────────────────────────
+    // ============================================================================
+    // /customer-order-shipment-items
+    // ============================================================================
 
     /**
      * Test get shipment items collection requires auth.

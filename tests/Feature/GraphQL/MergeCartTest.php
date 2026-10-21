@@ -8,7 +8,9 @@ use Webkul\Product\Models\Product;
 
 class MergeCartTest extends GraphQLTestCase
 {
-    // ─── Tests ──────────────────────────────────────────────────────────
+    // ============================================================================
+    // Tests
+    // ============================================================================
 
     /**
      * Merge guest cart with simple product into customer cart (customer has no existing cart).
@@ -291,8 +293,6 @@ class MergeCartTest extends GraphQLTestCase
         $this->assertLessThanOrEqual($firstMergeCount, $itemsCount,
             'Items should not increase when merging same cart again');
     }
-
-    // ─── Helper Methods ─────────────────────────────────────────────────
 
     /**
      * Create guest cart token.

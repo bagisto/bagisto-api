@@ -73,7 +73,11 @@ class AdminRmaStatusMassDelete
     #[ApiProperty(identifier: true)]
     public ?int $id = 0;
 
-    /** @var array<int,int>|null */
+    /**
+     * The ids of the RMA statuses that were deleted.
+     *
+     * @var array<int,int>|null
+     */
     public ?array $deleted = null;
 
     /**

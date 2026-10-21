@@ -52,7 +52,9 @@ class OrderActionItemDto
      */
     public ?float $base_price = null;
 
-    /** Per-unit price including tax (base currency) — shown on the admin invoice/refund view. */
+    /**
+     * Per-unit price including tax (base currency) — shown on the admin invoice/refund view.
+     */
     public ?float $base_price_incl_tax = null;
 
     /**
@@ -70,10 +72,14 @@ class OrderActionItemDto
      */
     public ?float $base_total = null;
 
-    /** Row total including tax (base currency) — shown on the admin invoice/refund view. */
+    /**
+     * Row total including tax (base currency) — shown on the admin invoice/refund view.
+     */
     public ?float $base_total_incl_tax = null;
 
-    /** Product base image URL — shown beside each line item on the admin view. */
+    /**
+     * Product base image URL — shown beside each line item on the admin view.
+     */
     public ?string $base_image_url = null;
 
     /**

@@ -78,7 +78,11 @@ class AdminProductDownloadableLinkDto
     #[ApiProperty(writable: false)]
     public ?string $sampleType = null;
 
-    /** @var array<int, mixed>|null  [{locale, title}] */
+    /**
+     * The per-locale titles of the downloadable link.
+     *
+     * @var array<int, mixed>|null [{locale, title}]
+     */
     #[ApiProperty(writable: false)]
     public ?array $translations = null;
 }

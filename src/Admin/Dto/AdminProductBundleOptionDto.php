@@ -42,7 +42,11 @@ class AdminProductBundleOptionDto
     #[ApiProperty(writable: false)]
     public ?bool $isRequired = null;
 
-    /** @var array<int, mixed>|null */
+    /**
+     * The products offered by the bundle option.
+     *
+     * @var array<int, mixed>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $products = null;
 }

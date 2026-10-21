@@ -15,16 +15,32 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminSettingsTaxRateRef extends Model
 {
-    /** @var string */
+    /**
+     * The pivot table that links tax categories to their tax rates.
+     *
+     * @var string
+     */
     protected $table = 'tax_categories_tax_rates';
 
-    /** @var bool */
+    /**
+     * Indicates the tax rate reference does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the tax rate reference is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['identifier', 'tax_rate'];
 
-    /** @var array */
+    /**
+     * The native types the tax rate reference attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'tax_rate_id' => 'int',

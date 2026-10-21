@@ -35,7 +35,11 @@ class AdminRmaReasonUpdateInput
     #[Groups(['mutation'])]
     public ?int $position = null;
 
-    /** @var array<int,string>|null */
+    /**
+     * The resolutions the RMA reason allows: return, cancel_items or both.
+     *
+     * @var array<int,string>|null
+     */
     #[ApiProperty(description: 'One or more of: return, cancel_items')]
     #[Groups(['mutation'])]
     public ?array $resolution_type = null;

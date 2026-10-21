@@ -43,6 +43,8 @@ class AdminMenuProvider implements ProviderInterface
     ];
 
     /**
+     * API resources indexed by their admin URI template, cached per process.
+     *
      * @var array<string, array<string, string|null>>|null
      */
     private static ?array $resourceIndex = null;
@@ -70,6 +72,8 @@ class AdminMenuProvider implements ProviderInterface
     }
 
     /**
+     * Build the menu payload for the given admin.
+     *
      * @return array<string, mixed>
      */
     public static function buildPayload(object $admin, self $instance): array
@@ -93,6 +97,8 @@ class AdminMenuProvider implements ProviderInterface
     }
 
     /**
+     * Build the admin menu tree, linked to its API resources.
+     *
      * @return array<int, array<string, mixed>>
      */
     private function buildTree(object $admin): array
@@ -240,6 +246,8 @@ class AdminMenuProvider implements ProviderInterface
     }
 
     /**
+     * Find the API resource that backs the menu item with the given key.
+     *
      * @param  array<string, array<string, string|null>>  $index
      * @return array<string, string|null>|null
      */
@@ -255,6 +263,8 @@ class AdminMenuProvider implements ProviderInterface
     }
 
     /**
+     * The admin API paths that may back the menu item with the given key.
+     *
      * @return array<int, string>
      */
     private function candidatePaths(string $key): array
@@ -280,6 +290,8 @@ class AdminMenuProvider implements ProviderInterface
     }
 
     /**
+     * Nest the menu items under the given parent key.
+     *
      * @param  array<string, array<string, mixed>>  $byKey
      * @return array<int, array<string, mixed>>
      */
@@ -302,6 +314,8 @@ class AdminMenuProvider implements ProviderInterface
     }
 
     /**
+     * Remove the menu nodes the admin has no permission to see.
+     *
      * @param  array<int, array<string, mixed>>  $nodes
      * @return array<int, array<string, mixed>>
      */

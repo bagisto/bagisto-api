@@ -22,16 +22,28 @@ use Webkul\Sales\Models\OrderItem;
 )]
 class AdminInvoiceItem extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the invoice items.
+     *
+     * @var string
+     */
     protected $table = 'invoice_items';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the invoice item is serialized.
+     *
+     * @var array
+     */
     protected $appends = [
         'formatted_price', 'formatted_total', 'formatted_tax_amount',
         'formatted_discount_amount', 'product_type', 'base_image_url',
     ];
 
-    /** @var array */
+    /**
+     * The native types the invoice item attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'order_item_id' => 'int',

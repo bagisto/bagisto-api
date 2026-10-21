@@ -83,11 +83,15 @@ class AdminAppearanceSectionFields
     public ?string $locale = null;
 
     /**
+     * The field schema the section editor renders for the section.
+     *
      * @var array<string, mixed>
      */
     public array $schema = [];
 
     /**
+     * The draft or published option values of the section fields.
+     *
      * @var array<string, mixed>
      */
     public array $options = [];

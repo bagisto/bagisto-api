@@ -127,10 +127,18 @@ use Webkul\Product\Models\ProductReview;
 )]
 class CustomerReview extends ProductReview
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'product_reviews';
 
-    /** @var list<string> */
+    /**
+     * The attributes a customer can fill on a review.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'comment',
         'title',
@@ -141,7 +149,11 @@ class CustomerReview extends ProductReview
         'name',
     ];
 
-    /** @var array<string, string> */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
         'id' => 'int',
         'product_id' => 'int',

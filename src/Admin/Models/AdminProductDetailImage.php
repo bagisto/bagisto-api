@@ -17,13 +17,25 @@ use Webkul\BagistoApi\Support\CoreCapabilities;
 )]
 class AdminProductDetailImage extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the product images.
+     *
+     * @var string
+     */
     protected $table = 'product_images';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the product image is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['url', 'alt_text'];
 
-    /** @var array */
+    /**
+     * The native types the product image attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'position' => 'int',

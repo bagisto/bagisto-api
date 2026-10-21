@@ -40,7 +40,11 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
         Customer::class => ['status', 'is_verified', 'is_suspended'],
     ];
 
-    /** @var array<class-string, string[]> */
+    /**
+     * The table columns already read for each model class.
+     *
+     * @var array<class-string, string[]>
+     */
     private static array $columnsCache = [];
 
     /**
@@ -92,6 +96,8 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
     }
 
     /**
+     * Return the column names of the resource model's table, reading each table once.
+     *
      * @return string[]
      */
     private function columnsOf(string $resourceClass): array

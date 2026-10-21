@@ -64,7 +64,9 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
         }
     }
 
-    /** Representative saleable product id per type in the dev DB. */
+    /**
+     * Representative saleable product id per type in the dev DB.
+     */
     protected function samples(): array
     {
         return [
@@ -78,7 +80,9 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
         ];
     }
 
-    /** Types that carry no stockable items, so no shipping step is needed. */
+    /**
+     * Types that carry no stockable items, so no shipping step is needed.
+     */
     protected function isVirtualType(string $type): bool
     {
         return in_array($type, ['virtual', 'downloadable'], true);
@@ -255,6 +259,8 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
     }
 
     /**
+     * Add the product to an admin cart and place the order over REST, returning the outcome of each step.
+     *
      * @return array{add: string, place: string}
      */
     protected function runRest(Admin $admin, string $type, Product $product): array
@@ -297,6 +303,8 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
     }
 
     /**
+     * Add the product to an admin cart and place the order over GraphQL, returning the outcome of each step.
+     *
      * @return array{add: string, place: string}
      */
     protected function runGraphQL(Admin $admin, string $type, Product $product): array

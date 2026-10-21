@@ -492,9 +492,9 @@
                     v-model="permission_type"
                     :label="trans('bagistoapi::app.integration.fields.permission-type')"
                 >
-                    <option value="all">@lang('bagistoapi::app.integration.permission_type.all')</option>
-                    <option value="custom">@lang('bagistoapi::app.integration.permission_type.custom')</option>
-                    <option value="same_as_web">@lang('bagistoapi::app.integration.permission_type.same_as_web')</option>
+                    <option value="all">@lang('bagistoapi::app.integration.permission-type.all')</option>
+                    <option value="custom">@lang('bagistoapi::app.integration.permission-type.custom')</option>
+                    <option value="same_as_web">@lang('bagistoapi::app.integration.permission-type.same-as-web')</option>
                 </x-admin::form.control-group.control>
 
                 <x-admin::form.control-group.error control-name="permission_type" />

@@ -12,7 +12,9 @@ class CurrencyTest extends RestApiTestCase
      */
     private string $collectionUrl = '/api/shop/currencies';
 
-    // ── GET /currencies (collection) ──────────────────────────
+    // ============================================================================
+    // GET /currencies (Collection)
+    // ============================================================================
 
     /**
      * Test get currencies returns ok.
@@ -80,7 +82,9 @@ class CurrencyTest extends RestApiTestCase
         expect($first['decimal'])->toBeInt();
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
     /**
      * Test items per page limits collection size.
@@ -129,7 +133,9 @@ class CurrencyTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
-    // ── GET /currencies/{id} (single) ─────────────────────────
+    // ============================================================================
+    // GET /currencies/{id} (Single)
+    // ============================================================================
 
     /**
      * Test get single currency returns ok.

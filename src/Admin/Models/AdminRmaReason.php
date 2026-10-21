@@ -310,7 +310,11 @@ class AdminRmaReason
      */
     public ?int $is_admin = null;
 
-    /** @var array<int,string>|null */
+    /**
+     * The resolutions the RMA reason allows: return, cancel_items or both.
+     *
+     * @var array<int,string>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $resolution_type = null;
 

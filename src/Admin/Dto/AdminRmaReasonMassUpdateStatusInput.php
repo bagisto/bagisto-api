@@ -7,7 +7,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminRmaReasonMassUpdateStatusInput
 {
-    /** @var array<int,int>|null */
+    /**
+     * The ids of the RMA reasons whose status is updated.
+     *
+     * @var array<int,int>|null
+     */
     #[ApiProperty(description: 'RMA reason ids to update')]
     #[Groups(['mutation'])]
     public ?array $indices = null;

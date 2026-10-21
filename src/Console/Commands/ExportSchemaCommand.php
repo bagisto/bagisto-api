@@ -282,6 +282,8 @@ class ExportSchemaCommand extends Command
     }
 
     /**
+     * Collect the names of the component schemas a node references.
+     *
      * @return list<string>
      */
     private function collectRefs(mixed $node, array &$found = []): array
@@ -410,6 +412,8 @@ class ExportSchemaCommand extends Command
     }
 
     /**
+     * Root field names one operation adds to the schema, excluding the relay node field.
+     *
      * @return list<string>
      */
     private function operationFieldNames(FieldsBuilderEnumInterface $fieldsBuilder, string $resourceClass, object $operation): array
@@ -427,6 +431,8 @@ class ExportSchemaCommand extends Command
     }
 
     /**
+     * The GraphQL fields one query or mutation operation adds to the schema.
+     *
      * @return array<string, mixed>
      */
     private function operationFields(FieldsBuilderEnumInterface $fieldsBuilder, string $resourceClass, object $operation): array

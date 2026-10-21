@@ -25,7 +25,9 @@ class MergeCartTest extends RestApiTestCase
      */
     private string $mergeCartUrl = '/api/shop/merge-carts';
 
-    // ── Tests ─────────────────────────────────────────────────
+    // ============================================================================
+    // Tests
+    // ============================================================================
 
     /**
      * Test merge guest cart into empty customer cart.

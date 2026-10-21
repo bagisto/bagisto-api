@@ -16,7 +16,11 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
      */
     private const NAMESPACE_PREFIX = 'Webkul\\BagistoApi\\';
 
-    /** @var array<class-string, array{ns:string, uses:array<string,string>, docs:array<string,string>}> */
+    /**
+     * Parsed namespace, use imports and property docblocks of each class source file.
+     *
+     * @var array<class-string, array{ns:string, uses:array<string,string>, docs:array<string,string>}>
+     */
     private static array $fileCache = [];
 
     /**
@@ -77,6 +81,8 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
     }
 
     /**
+     * Resolve the native array type for a property, or false when it needs no rewrite.
+     *
      * @return Type|false false = leave metadata alone
      */
     private function resolveNativeType(string $resourceClass, string $property, ApiProperty $metadata): mixed
@@ -166,7 +172,9 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         return $fqcn !== null && (class_exists($fqcn) || interface_exists($fqcn)) ? $fqcn : null;
     }
 
-    /** Extract the element type from an `@var` expression: array<X>, array<int,X>, X[], X[]|null. */
+    /**
+     * Extract the element type from an `@var` expression: array<X>, array<int,X>, X[], X[]|null.
+     */
     private function elementFromVar(string $var): ?string
     {
         $var = trim($var);
@@ -245,6 +253,8 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
     }
 
     /**
+     * Parse the namespace, use imports and property docblocks of a class source file.
+     *
      * @return array{ns:string, uses:array<string,string>, docs:array<string,string>}|null
      */
     private function parseFile(string $class): ?array

@@ -14,7 +14,9 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerDownloadableProductTest extends RestApiTestCase
 {
-    // ── Collection ────────────────────────────────────────────
+    // ============================================================================
+    // Collection
+    // ============================================================================
 
     /**
      * Test: GET /api/shop/customer-downloadable-products returns collection.
@@ -113,7 +115,9 @@ class CustomerDownloadableProductTest extends RestApiTestCase
         expect(count($json))->toBe(0);
     }
 
-    // ── Single Item ───────────────────────────────────────────
+    // ============================================================================
+    // Single Item
+    // ============================================================================
 
     /**
      * Test: GET /api/shop/customer-downloadable-products/{id} returns single item.
@@ -175,7 +179,9 @@ class CustomerDownloadableProductTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
     }
 
-    // ── Download ──────────────────────────────────────────────
+    // ============================================================================
+    // Download
+    // ============================================================================
 
     /**
      * Downloading a purchased file streams it from the private disk and counts the download.

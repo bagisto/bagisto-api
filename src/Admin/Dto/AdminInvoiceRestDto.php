@@ -336,7 +336,11 @@ class AdminInvoiceRestDto
     #[ApiProperty(writable: false)]
     public ?array $order = null;
 
-    /** @var array<int, array<string, mixed>> */
+    /**
+     * The items of the invoice.
+     *
+     * @var array<int, array<string, mixed>>
+     */
     #[ApiProperty(writable: false)]
     public array $items = [];
 }

@@ -27,7 +27,7 @@ trait HandlesBookingCartItems
                 ! is_string($note)
                 || trim($note) === ''
             ) {
-                throw new InvalidInputException('booking.note is required for table booking.');
+                throw new InvalidInputException(__('bagistoapi::app.graphql.cart.booking-note-required'));
             }
         }
 
@@ -48,7 +48,7 @@ trait HandlesBookingCartItems
             ! is_string($date)
             || $date === ''
         ) {
-            throw new InvalidInputException('booking.date is required when booking.slot is a formatted time range.');
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.booking-date-required'));
         }
 
         $timestamps = (new BookingSlotParser)->parse($date, $booking['slot'], $this->getChannelTimezone());
@@ -86,7 +86,7 @@ trait HandlesBookingCartItems
             ! is_array($qty)
             || empty($qty)
         ) {
-            throw new InvalidInputException('booking.qty is required for event booking.');
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.booking-qty-required'));
         }
 
         $hasAtLeastOne = false;
@@ -103,7 +103,7 @@ trait HandlesBookingCartItems
                 ! is_numeric($count)
                 || (int) $count < 0
             ) {
-                throw new InvalidInputException('Event ticket quantity must be a non-negative number.');
+                throw new InvalidInputException(__('bagistoapi::app.graphql.cart.booking-ticket-qty-invalid'));
             }
 
             if ((int) $count > 0) {
@@ -112,7 +112,7 @@ trait HandlesBookingCartItems
         }
 
         if (! $hasAtLeastOne) {
-            throw new InvalidInputException('Select at least one ticket quantity for event booking.');
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.booking-ticket-required'));
         }
     }
 
@@ -181,7 +181,7 @@ trait HandlesBookingCartItems
         });
 
         if (! $exists) {
-            throw new InvalidInputException('Selected slot is not available for the given date.');
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.booking-slot-unavailable'));
         }
     }
 

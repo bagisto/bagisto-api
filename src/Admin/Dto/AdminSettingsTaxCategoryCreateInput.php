@@ -29,6 +29,8 @@ class AdminSettingsTaxCategoryCreateInput
     public ?string $description = null;
 
     /**
+     * The ids of the tax rates attached to the tax category.
+     *
      * @var int[]|null
      */
     #[ApiProperty(description: 'Array of tax_rate ids to attach via the tax_categories_tax_rates pivot.')]

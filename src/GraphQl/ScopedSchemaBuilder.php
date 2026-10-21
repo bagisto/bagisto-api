@@ -14,10 +14,6 @@ use ApiPlatform\Metadata\Resource\Factory\ResourceNameCollectionFactoryInterface
 use ApiPlatform\Metadata\Resource\ResourceNameCollection;
 use GraphQL\Type\Schema;
 
-/**
- * Builds a GraphQL schema scoped to ONE API surface (shop OR admin).
- * The default API Platform SchemaBuilder iterates every registered #[ApiResource].
- */
 final class ScopedSchemaBuilder implements SchemaBuilderInterface
 {
     /**

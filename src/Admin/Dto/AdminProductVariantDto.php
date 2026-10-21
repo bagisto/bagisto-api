@@ -48,7 +48,11 @@ class AdminProductVariantDto
     #[ApiProperty(writable: false)]
     public ?string $formattedPrice = null;
 
-    /** @var array<string, mixed>|null key = attribute code, value = option label */
+    /**
+     * The option labels of the variant, keyed by configurable attribute code.
+     *
+     * @var array<string, mixed>|null key = attribute code, value = option label
+     */
     #[ApiProperty(writable: false)]
     public ?array $attributeValues = null;
 

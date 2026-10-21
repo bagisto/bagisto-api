@@ -405,7 +405,7 @@ class ProductReviewProcessor implements ProcessorInterface
             $attachments = json_decode($attachmentsJson, true);
 
             if (! is_array($attachments)) {
-                throw new InvalidInputException('Invalid attachments format.');
+                throw new InvalidInputException(__('bagistoapi::app.graphql.product-review.invalid-attachments'));
             }
 
             foreach ($attachments as $item) {

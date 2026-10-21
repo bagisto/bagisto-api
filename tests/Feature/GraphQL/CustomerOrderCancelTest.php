@@ -12,7 +12,9 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerOrderCancelTest extends GraphQLTestCase
 {
-    // ── Cancel Order Mutation Tests ────────────────────────────────────
+    // ============================================================================
+    // Cancel Order Mutation Tests
+    // ============================================================================
 
     /**
      * Test: Cancel a pending order successfully.

@@ -93,6 +93,8 @@ class AdminAppearanceSectionPreview
     public ?string $locale = null;
 
     /**
+     * The sections, with their drafts applied, rendered in the storefront preview.
+     *
      * @var array<int, array<string, mixed>>
      */
     public array $sections = [];

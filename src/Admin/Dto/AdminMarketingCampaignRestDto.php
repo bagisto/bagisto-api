@@ -35,19 +35,35 @@ class AdminMarketingCampaignRestDto
     #[ApiProperty(writable: false)]
     public ?int $status = null;
 
-    /** @var array{id:int, code:string|null, name:string|null}|null */
+    /**
+     * The channel the campaign is sent for.
+     *
+     * @var array{id:int, code:string|null, name:string|null}|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $channel = null;
 
-    /** @var array{id:int, code:string|null, name:string|null}|null */
+    /**
+     * The customer group the campaign targets.
+     *
+     * @var array{id:int, code:string|null, name:string|null}|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $customer_group = null;
 
-    /** @var array{id:int, name:string|null, status:string|null}|null */
+    /**
+     * The email template the campaign sends.
+     *
+     * @var array{id:int, name:string|null, status:string|null}|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $marketing_template = null;
 
-    /** @var array{id:int, name:string|null, date:string|null}|null */
+    /**
+     * The marketing event that schedules the campaign.
+     *
+     * @var array{id:int, name:string|null, date:string|null}|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $marketing_event = null;
 

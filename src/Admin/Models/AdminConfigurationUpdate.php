@@ -155,6 +155,8 @@ class AdminConfigurationUpdate
     public ?string $locale = null;
 
     /**
+     * The configuration values that were saved, keyed by configuration code.
+     *
      * @var array<string, string|null>|null
      */
     #[ApiProperty(writable: false)]

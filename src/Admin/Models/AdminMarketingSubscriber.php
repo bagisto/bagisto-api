@@ -246,10 +246,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
 )]
 class AdminMarketingSubscriber extends EloquentModel
 {
-    /** @var string */
+    /**
+     * The table that stores the newsletter subscribers.
+     *
+     * @var string
+     */
     protected $table = 'subscribers_list';
 
-    /** @var array */
+    /**
+     * The native types the newsletter subscriber attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'is_subscribed' => 'boolean',
@@ -258,7 +266,11 @@ class AdminMarketingSubscriber extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the newsletter subscriber is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['customer_name'];
 
     /**

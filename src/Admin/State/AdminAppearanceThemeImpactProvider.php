@@ -63,6 +63,8 @@ class AdminAppearanceThemeImpactProvider implements ProviderInterface
     }
 
     /**
+     * Resolve the ids of the channels to check the theme impact for.
+     *
      * @return array<int, int>
      */
     protected function resolveChannelIds(array $args): array

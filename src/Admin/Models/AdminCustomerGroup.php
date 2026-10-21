@@ -296,7 +296,9 @@ class AdminCustomerGroup
     #[ApiProperty(writable: false)]
     public ?int $is_user_defined = null;
 
-    /** Detail-only — null on listing rows. */
+    /**
+     * Detail-only — null on listing rows.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customers_count = null;
 
@@ -312,7 +314,9 @@ class AdminCustomerGroup
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 
-    /** Success signal — populated only on the delete mutation result. */
+    /**
+     * Success signal — populated only on the delete mutation result.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

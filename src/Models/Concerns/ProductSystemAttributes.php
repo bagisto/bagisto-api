@@ -144,6 +144,9 @@ trait ProductSystemAttributes
         return $this->getSystemAttributeValue('short_description');
     }
 
+    /**
+     * The short description of the product.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -284,6 +287,9 @@ trait ProductSystemAttributes
         return $this->getSystemAttributeValue('new');
     }
 
+    /**
+     * Whether the product is marked as new.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,

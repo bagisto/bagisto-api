@@ -13,7 +13,9 @@ class CategoryTreeTest extends RestApiTestCase
      */
     private string $url = '/api/shop/category-trees';
 
-    // ── GET /category-trees (no parentId) ─────────────────────
+    // ============================================================================
+    // GET /category-trees (No ParentId)
+    // ============================================================================
 
     /**
      * Test get tree returns ok.
@@ -163,7 +165,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect(in_array($child->id, $childIds))->toBeTrue();
     }
 
-    // ── GET /category-trees?parentId={id} ─────────────────────
+    // ============================================================================
+    // GET /category-trees?parentId={id}
+    // ============================================================================
 
     /**
      * Test get tree with parent id returns ok.
@@ -272,7 +276,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect($inTree['translation'])->toHaveKey('slug');
     }
 
-    // ── depth parameter ───────────────────────────────────────
+    // ============================================================================
+    // Depth Parameter
+    // ============================================================================
 
     /**
      * Test depth one produces empty children.

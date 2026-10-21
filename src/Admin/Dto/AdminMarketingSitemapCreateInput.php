@@ -22,6 +22,8 @@ class AdminMarketingSitemapCreateInput
     public ?string $path = null;
 
     /**
+     * The ids of the channels the sitemap covers.
+     *
      * @var array<int, int>|null
      */
     #[ApiProperty(description: 'Channel ids the sitemap covers. At least one is required — a sitemap with no channel generates nothing.')]

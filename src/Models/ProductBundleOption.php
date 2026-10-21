@@ -120,6 +120,8 @@ class ProductBundleOption extends BaseProductBundleOption
     ];
 
     /**
+     * The relations always eager loaded with the bundle option.
+     *
      * @var list<string>
      */
     protected $with = ['translations'];

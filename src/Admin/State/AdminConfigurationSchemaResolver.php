@@ -247,6 +247,8 @@ class AdminConfigurationSchemaResolver
     }
 
     /**
+     * Serialise the fields of a configuration item for the schema response.
+     *
      * @return array<int, array<string, mixed>>
      */
     protected function serialiseFields(Item $item): array

@@ -8,6 +8,8 @@ use Webkul\Product\Models\Product;
 class BookingStartingPriceCalculator
 {
     /**
+     * Compute the starting price of a booking product, or null when it has none.
+     *
      * @return array{regular:float,final:float,formattedRegular:string,formattedFinal:string}|null
      */
     public static function compute($bookingProduct): ?array

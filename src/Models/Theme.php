@@ -73,6 +73,8 @@ class Theme
     public ?string $name = null;
 
     /**
+     * The section types the theme supports.
+     *
      * @var array<int, string>
      */
     #[ApiProperty(

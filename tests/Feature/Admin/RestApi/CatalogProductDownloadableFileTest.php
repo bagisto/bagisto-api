@@ -11,7 +11,9 @@ use Webkul\User\Models\Role;
 
 class CatalogProductDownloadableFileTest extends AdminApiTestCase
 {
-    // ---- CAT1: upload ----
+    // ============================================================================
+    // CAT1: Upload
+    // ============================================================================
 
     /**
      * Test upload link file returns stored path.
@@ -185,7 +187,9 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
         return $this->createAdmin(['role_id' => $role->id]);
     }
 
-    // ---- CAT3: download ----
+    // ============================================================================
+    // CAT3: Download
+    // ============================================================================
 
     /**
      * Insert file attribute.

@@ -25,11 +25,10 @@ class ProductProcessor implements ProcessorInterface
     public $familyAttributes;
 
     /**
-     * The system attributes.
+     * The system attributes, followed by the user-defined attributes the core seeder adds.
      */
     public $systemAttributes = [
         'sku', 'name', 'url_key', 'tax_category_id', 'new', 'featured', 'visible_individually', 'status', 'short_description', 'description', 'price', 'special_price', 'special_price_from', 'special_price_to', 'meta_title', 'meta_keywords', 'weight', 'guest_checkout', 'product_number', 'manage_stock',
-        // User-defined attributes from seeder
         'cost', 'meta_description', 'length', 'width', 'height', 'color', 'size', 'brand',
     ];
 

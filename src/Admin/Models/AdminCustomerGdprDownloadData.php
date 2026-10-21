@@ -122,7 +122,11 @@ class AdminCustomerGdprDownloadData
     #[ApiProperty(writable: false)]
     public ?string $generated_at = null;
 
-    /** @var array<string,mixed>|null */
+    /**
+     * The personal data held for the customer.
+     *
+     * @var array<string,mixed>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $data = null;
 }

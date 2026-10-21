@@ -16,13 +16,25 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminProductDetailBundleOption extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the bundle options.
+     *
+     * @var string
+     */
     protected $table = 'product_bundle_options';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the bundle option is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['label', 'position'];
 
-    /** @var array */
+    /**
+     * The native types the bundle option attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'is_required' => 'boolean',

@@ -18,10 +18,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminOrderDetailShipment extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the shipments.
+     *
+     * @var string
+     */
     protected $table = 'shipments';
 
-    /** @var array */
+    /**
+     * The native types the order shipment attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'total_qty' => 'int',

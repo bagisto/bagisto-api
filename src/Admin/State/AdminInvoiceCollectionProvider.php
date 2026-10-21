@@ -24,7 +24,9 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
      */
     protected const PERMISSION = 'sales.invoices.view';
 
-    /** Per-page address caches, keyed by order_id (batch-loaded in mapRows). */
+    /**
+     * Per-page address caches, keyed by order_id (batch-loaded in mapRows).
+     */
     private array $billingByOrder = [];
 
     /**
@@ -32,7 +34,9 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
      */
     private array $shippingByOrder = [];
 
-    /** Set per request so mapRow can return the Eloquent model (GraphQL) or the DTO (REST). */
+    /**
+     * Set per request so mapRow can return the Eloquent model (GraphQL) or the DTO (REST).
+     */
     protected bool $listingIsGraphQL = false;
 
     /**

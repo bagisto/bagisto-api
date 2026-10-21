@@ -255,10 +255,18 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
 )]
 class AdminSettingsChannel extends EloquentModel
 {
-    /** @var string */
+    /**
+     * The table that stores the channels.
+     *
+     * @var string
+     */
     protected $table = 'channels';
 
-    /** @var array */
+    /**
+     * The native types the channel attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'default_locale_id' => 'int',
@@ -271,15 +279,23 @@ class AdminSettingsChannel extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the channel is serialized.
+     *
+     * @var array
+     */
     protected $appends = [
         'message',
     ];
 
-    /** Transient action message (e.g. delete confirmation); not a DB column. */
+    /**
+     * Transient action message (e.g. delete confirmation); not a DB column.
+     */
     public ?string $actionMessage = null;
 
-    /** Default-locale code memo for the translatable string accessors. */
+    /**
+     * Default-locale code memo for the translatable string accessors.
+     */
     private ?string $defaultLocaleCodeMemo = null;
 
     /**

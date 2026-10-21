@@ -14,7 +14,11 @@ class AdminMarketingCartRuleCouponMassDeleteInput
     #[Groups(['mutation'])]
     public ?int $cartRuleId = null;
 
-    /** @var array<int, int>|null */
+    /**
+     * The ids of the cart rule coupons to delete.
+     *
+     * @var array<int, int>|null
+     */
     #[ApiProperty(description: 'Coupon IDs to delete.')]
     #[Groups(['mutation'])]
     public ?array $indices = null;

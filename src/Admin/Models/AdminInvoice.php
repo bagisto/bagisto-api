@@ -370,7 +370,9 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
 )]
 class AdminInvoice extends EloquentModel
 {
-    /** Status code -> label (mirrors core Order::$statusLabel). */
+    /**
+     * Status code -> label (mirrors core Order::$statusLabel).
+     */
     private const STATUS_LABELS = [
         'pending' => 'Pending',
         'pending_payment' => 'Pending Payment',
@@ -381,10 +383,18 @@ class AdminInvoice extends EloquentModel
         'fraud' => 'Fraud',
     ];
 
-    /** @var string */
+    /**
+     * The table that stores the invoices.
+     *
+     * @var string
+     */
     protected $table = 'invoices';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the invoice is serialized.
+     *
+     * @var array
+     */
     protected $appends = [
         'order_increment_id', 'order_status', 'order_status_label', 'order_date',
         'channel_name', 'customer_name', 'customer_email', 'transaction_id',
@@ -394,7 +404,11 @@ class AdminInvoice extends EloquentModel
         'formatted_shipping_amount_incl_tax', 'formatted_base_shipping_amount_incl_tax', 'formatted_shipping_tax_amount', 'formatted_base_shipping_tax_amount',
     ];
 
-    /** @var array */
+    /**
+     * The native types the invoice attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'order_id' => 'int',
@@ -710,7 +724,9 @@ class AdminInvoice extends EloquentModel
         return core()->formatPrice((float) $amount, $this->order_currency_code);
     }
 
-    /** Memoised lookup of the invoice's order row (order-context fields). */
+    /**
+     * Memoised lookup of the invoice's order row (order-context fields).
+     */
     private function orderRow(): ?object
     {
         if (! $this->orderRowLoaded) {

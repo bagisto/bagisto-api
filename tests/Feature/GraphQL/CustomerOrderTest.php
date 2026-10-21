@@ -12,7 +12,9 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerOrderTest extends GraphQLTestCase
 {
-    // ── Collection Queries ────────────────────────────────────
+    // ============================================================================
+    // Collection Queries
+    // ============================================================================
 
     /**
      * Test: Query all customer orders collection.
@@ -197,7 +199,9 @@ class CustomerOrderTest extends GraphQLTestCase
         expect($node['status'])->toBe('completed');
     }
 
-    // ── Single Item Query ─────────────────────────────────────
+    // ============================================================================
+    // Single Item Query
+    // ============================================================================
 
     /**
      * Test: Query single customer order by ID.
@@ -359,7 +363,9 @@ class CustomerOrderTest extends GraphQLTestCase
         expect($errors)->not()->toBeEmpty();
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
     /**
      * Test: Pagination with first parameter.
@@ -447,7 +453,9 @@ class CustomerOrderTest extends GraphQLTestCase
         expect($secondOrderId)->not()->toBe($firstOrderId);
     }
 
-    // ── Schema Introspection ──────────────────────────────────
+    // ============================================================================
+    // Schema Introspection
+    // ============================================================================
 
     /**
      * Test: CustomerOrder type has expected fields in schema.

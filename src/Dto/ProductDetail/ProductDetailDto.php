@@ -134,10 +134,14 @@ class ProductDetailDto
      */
     public ?bool $is_saleable = null;
 
-    /** Whether this product is in the authenticated customer's wishlist (current channel): 1 = yes, 0 = no (0 for guests). */
+    /**
+     * Whether this product is in the authenticated customer's wishlist (current channel): 1 = yes, 0 = no (0 for guests).
+     */
     public ?int $is_in_wishlist = null;
 
-    /** Whether this product is in the authenticated customer's compare list: 1 = yes, 0 = no (0 for guests). */
+    /**
+     * Whether this product is in the authenticated customer's compare list: 1 = yes, 0 = no (0 for guests).
+     */
     public ?int $is_in_compare = null;
 
     /**
@@ -163,11 +167,19 @@ class ProductDetailDto
      */
     public ?int $brand = null;
 
-    /** @var CategorySummaryDto[] */
+    /**
+     * The categories the product is assigned to.
+     *
+     * @var CategorySummaryDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $categories = [];
 
-    /** @var ChannelSummaryDto[] */
+    /**
+     * The channels the product is available in.
+     *
+     * @var ChannelSummaryDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $channels = [];
 
@@ -177,55 +189,107 @@ class ProductDetailDto
     #[ApiProperty(readableLink: true)]
     public ?AttributeFamilySummaryDto $attribute_family = null;
 
-    /** @var ProductImageDto[] */
+    /**
+     * The product images.
+     *
+     * @var ProductImageDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $images = [];
 
-    /** @var ProductVideoDto[] */
+    /**
+     * The product videos.
+     *
+     * @var ProductVideoDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $videos = [];
 
-    /** @var SuperAttributeDto[] */
+    /**
+     * The configurable attributes a variant is chosen by, with their options.
+     *
+     * @var SuperAttributeDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $super_attributes = [];
 
-    /** @var VariantSummaryDto[] */
+    /**
+     * The variants of a configurable product.
+     *
+     * @var VariantSummaryDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $variants = [];
 
-    /** @var BookingProductDto[] */
+    /**
+     * The booking settings of a booking product.
+     *
+     * @var BookingProductDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $booking_products = [];
 
-    /** @var BundleOptionDto[] */
+    /**
+     * The options of a bundle product.
+     *
+     * @var BundleOptionDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $bundle_options = [];
 
-    /** @var GroupedProductDto[] */
+    /**
+     * The products contained in a grouped product.
+     *
+     * @var GroupedProductDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $grouped_products = [];
 
-    /** @var DownloadableLinkDto[] */
+    /**
+     * The purchasable links of a downloadable product.
+     *
+     * @var DownloadableLinkDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $downloadable_links = [];
 
-    /** @var DownloadableSampleDto[] */
+    /**
+     * The free samples of a downloadable product.
+     *
+     * @var DownloadableSampleDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $downloadable_samples = [];
 
-    /** @var CustomizableOptionDto[] */
+    /**
+     * The customizable options the customer can fill in or choose.
+     *
+     * @var CustomizableOptionDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $customizable_options = [];
 
-    /** @var ProductSummaryDto[] */
+    /**
+     * The products related to this product.
+     *
+     * @var ProductSummaryDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $related_products = [];
 
-    /** @var ProductSummaryDto[] */
+    /**
+     * The up-sell products suggested in place of this product.
+     *
+     * @var ProductSummaryDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $up_sells = [];
 
-    /** @var ProductSummaryDto[] */
+    /**
+     * The cross-sell products suggested alongside this product.
+     *
+     * @var ProductSummaryDto[]
+     */
     #[ApiProperty(readableLink: true)]
     public array $cross_sells = [];
 }

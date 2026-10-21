@@ -121,6 +121,8 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
     }
 
     /**
+     * Validation rules for the billing or shipping address of the given type.
+     *
      * @return array<string, array<int, string>>
      */
     protected function addressRules(string $type): array

@@ -19,7 +19,9 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
     use ChecksAdminPermission;
     use SanitisesHtmlContent;
 
-    /** Sub-resource keys silently stripped from the payload (with a warning). */
+    /**
+     * Sub-resource keys silently stripped from the payload (with a warning).
+     */
     protected const STRIPPED_SUBRESOURCES = [
         'images' => 'sub-resource-stripped-images',
         'videos' => 'sub-resource-stripped-images',
@@ -41,7 +43,9 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         'customizable_options',
     ];
 
-    /** Relations replaced wholesale by the core full-form update. */
+    /**
+     * Relations replaced wholesale by the core full-form update.
+     */
     protected const RELATION_KEYS = [
         'channels',
         'categories',

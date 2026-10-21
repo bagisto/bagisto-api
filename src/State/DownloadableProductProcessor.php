@@ -35,19 +35,19 @@ class DownloadableProductProcessor implements ProcessorInterface
         $customer = $this->getAuthenticatedCustomer();
 
         if (! $customer) {
-            throw new AuthenticationException('Unauthorized: Customer authentication required', 401);
+            throw new AuthenticationException(__('bagistoapi::app.graphql.downloadable-product.unauthenticated'), 401);
         }
 
         $downloadableLinkPurchasedId = $this->extractDownloadLinkId($data);
 
         if (! $downloadableLinkPurchasedId) {
-            throw new InvalidInputException('downloadableLinkPurchasedId is required', 400);
+            throw new InvalidInputException(__('bagistoapi::app.graphql.downloadable-product.link-id-required'), 400);
         }
 
         $downloadableLinkPurchased = $this->downloadableLinkPurchasedRepository->find($downloadableLinkPurchasedId);
 
         if (! $downloadableLinkPurchased) {
-            throw new ResourceNotFoundException('Downloadable link not found', 404);
+            throw new ResourceNotFoundException(__('bagistoapi::app.graphql.downloadable-product.link-not-found'), 404);
         }
 
         $this->validateCustomerOwnership($downloadableLinkPurchased, $customer);
@@ -56,7 +56,7 @@ class DownloadableProductProcessor implements ProcessorInterface
 
         $output = new DownloadableProductDownloadLinkOutput;
         $output->id = (int) $downloadableLinkPurchased->id;
-        $output->url = route('bagistoapi.customer-downloadable-product-download', ['id' => $downloadableLinkPurchased->id]);
+        $output->url = route('bagistoapi.customer_downloadable_product_download', ['id' => $downloadableLinkPurchased->id]);
 
         return $output;
     }
@@ -96,7 +96,7 @@ class DownloadableProductProcessor implements ProcessorInterface
     private function validateCustomerOwnership(object $downloadableLinkPurchased, Customer $customer): void
     {
         if ($downloadableLinkPurchased->order->customer_id !== $customer->id) {
-            throw new AuthorizationException('Unauthorized: This download link does not belong to you', 403);
+            throw new AuthorizationException(__('bagistoapi::app.graphql.downloadable-product.not-owner'), 403);
         }
     }
 
@@ -110,7 +110,7 @@ class DownloadableProductProcessor implements ProcessorInterface
     private function validateDownloadStatus(object $downloadableLinkPurchased): void
     {
         if ($downloadableLinkPurchased->status == 'pending') {
-            throw new InvalidInputException('Download is pending. Please wait for the order to be invoiced.', 403);
+            throw new InvalidInputException(__('bagistoapi::app.graphql.downloadable-product.pending'), 403);
         }
     }
 
@@ -135,7 +135,7 @@ class DownloadableProductProcessor implements ProcessorInterface
         $totalInvoiceQty *= ($downloadableLinkPurchased->download_bought / $orderedQty);
 
         if ($downloadableLinkPurchased->download_used >= $totalInvoiceQty) {
-            throw new InvalidInputException('Download limit exceeded', 403);
+            throw new InvalidInputException(__('bagistoapi::app.graphql.downloadable-product.limit-exceeded'), 403);
         }
 
         $remainingDownloads = $downloadableLinkPurchased->download_bought
@@ -145,7 +145,7 @@ class DownloadableProductProcessor implements ProcessorInterface
             $downloadableLinkPurchased->download_bought
             && $remainingDownloads <= 0
         ) {
-            throw new InvalidInputException('No more downloads available', 403);
+            throw new InvalidInputException(__('bagistoapi::app.graphql.downloadable-product.no-downloads-left'), 403);
         }
     }
 

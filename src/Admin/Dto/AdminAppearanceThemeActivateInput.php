@@ -15,6 +15,8 @@ class AdminAppearanceThemeActivateInput
     public ?string $code = null;
 
     /**
+     * The ids of the channels the theme is applied to.
+     *
      * @var array<int, int>|null
      */
     #[ApiProperty(description: 'Channels the theme is applied to')]

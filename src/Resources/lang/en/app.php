@@ -5,6 +5,9 @@ return [
     'graphql' => [
         'headers' => [
             'unknown-channel' => 'The channel ":code" in the X-Channel header does not exist.',
+            'storefront-key-required' => 'X-STOREFRONT-KEY header is required',
+            'storefront-key-invalid' => 'Invalid storefront key',
+            'storefront-key-rate-limited' => 'Rate limit exceeded. Please retry after :seconds seconds',
         ],
 
         'cart' => [
@@ -60,6 +63,12 @@ return [
             'select-items-to-move-wishlist' => 'Please select items to move to wishlist',
             'invalid-or-expired-token' => 'Cart token is invalid or expired. Please create a new cart.',
             'invalid-token-of-login-user' => 'Login user token is invalid.',
+            'booking-note-required' => 'booking.note is required for table booking.',
+            'booking-date-required' => 'booking.date is required when booking.slot is a formatted time range.',
+            'booking-qty-required' => 'booking.qty is required for event booking.',
+            'booking-ticket-qty-invalid' => 'Event ticket quantity must be a non-negative number.',
+            'booking-ticket-required' => 'Select at least one ticket quantity for event booking.',
+            'booking-slot-unavailable' => 'Selected slot is not available for the given date.',
         ],
 
         'token-verification' => [
@@ -153,6 +162,7 @@ return [
             'guest-review-disabled' => 'Guest reviews are not allowed. Please login to submit a review',
             'owner-required' => 'Please login to manage your review',
             'not-owned' => 'This review was not written by you and cannot be modified or deleted',
+            'invalid-attachments' => 'Invalid attachments format.',
         ],
 
         'customer-review' => [
@@ -386,6 +396,31 @@ return [
             'redirect-external-url' => 'Redirecting to external download URL',
             'file-error' => 'An error occurred while processing your download request',
             'unauthorized-access' => 'Unauthorized access to download resource',
+            'unauthenticated' => 'Unauthorized: Customer authentication required',
+            'link-id-required' => 'downloadableLinkPurchasedId is required',
+            'link-not-found' => 'Downloadable link not found',
+            'not-owner' => 'Unauthorized: This download link does not belong to you',
+            'pending' => 'Download is pending. Please wait for the order to be invoiced.',
+            'limit-exceeded' => 'Download limit exceeded',
+            'no-downloads-left' => 'No more downloads available',
+        ],
+
+        'booking-slot' => [
+            'id-required' => 'The booking product id is required.',
+            'date-required' => 'The date is required.',
+            'product-not-found' => 'Booking product not found.',
+            'invalid-type' => 'This booking type is not supported.',
+            'invalid-time-range' => 'Invalid time range.',
+            'invalid-time-format' => 'Invalid time format.',
+        ],
+
+        'resolver' => [
+            'no-resolve-info' => 'GraphQL ResolveInfo not available in context. Cannot determine model class.',
+            'unknown-resource-class' => 'Unable to determine resource class from GraphQL return type',
+        ],
+
+        'docs' => [
+            'openapi-unavailable' => 'OpenAPI Factory could not be instantiated',
         ],
 
         'locale' => [
@@ -595,6 +630,7 @@ return [
             'graphql-playground' => 'GraphQL Playground: :url',
             'rest-api-storefront' => 'Rest API Storefront Swagger: :url',
             'rest-api-admin' => 'Rest API Admin Swagger: :url',
+            'key-rotation-invalid-key' => 'Cannot rotate an invalid or expired key',
         ],
     ],
 
@@ -1615,10 +1651,10 @@ return [
             'ip-list-hint' => 'One entry per line. Supports IPv4, IPv6 and CIDR (e.g. 10.0.0.0/24 or 2001:db8::/32). Leave blank to allow all IPs.',
         ],
 
-        'permission_type' => [
+        'permission-type' => [
             'all' => 'All',
             'custom' => 'Custom',
-            'same_as_web' => 'Same as Web Permission',
+            'same-as-web' => 'Same as Web Permission',
         ],
 
         'status' => [
@@ -1656,6 +1692,7 @@ return [
 
         'errors' => [
             'admin-has-token' => 'Selected admin already has an active integration token.',
+            'only-draft-generate' => 'Only draft tokens can be generated.',
         ],
 
         'validation' => [

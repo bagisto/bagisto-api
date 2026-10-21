@@ -64,6 +64,8 @@ class AdminAppearanceSectionUpdateInput
     public ?string $locale = null;
 
     /**
+     * The options published for the locale.
+     *
      * @var array<string, mixed>|null
      */
     #[ApiProperty(description: 'Published options for the locale')]

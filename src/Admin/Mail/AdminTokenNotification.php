@@ -41,7 +41,7 @@ class AdminTokenNotification extends Mailable
     ) {
         if (in_array($event, [self::EVENT_GENERATED, self::EVENT_REGENERATED], true)) {
             $this->revokeUrl = URL::temporarySignedRoute(
-                'admin.integration.revoke-via-email',
+                'admin.integration.revoke_via_email',
                 now()->addDays(7),
                 ['id' => $token->id]
             );

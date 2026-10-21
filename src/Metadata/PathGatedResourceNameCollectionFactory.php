@@ -5,10 +5,6 @@ namespace Webkul\BagistoApi\Metadata;
 use ApiPlatform\Metadata\Resource\Factory\ResourceNameCollectionFactoryInterface;
 use ApiPlatform\Metadata\Resource\ResourceNameCollection;
 
-/**
- * Skips the API resource enumeration for non-API HTTP requests.
- * When Laravel's route cache is off, API Platform's route file iterates every.
- */
 final class PathGatedResourceNameCollectionFactory implements ResourceNameCollectionFactoryInterface
 {
     /**

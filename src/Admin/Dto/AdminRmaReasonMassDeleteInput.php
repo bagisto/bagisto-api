@@ -7,7 +7,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminRmaReasonMassDeleteInput
 {
-    /** @var array<int,int>|null */
+    /**
+     * The ids of the RMA reasons to delete.
+     *
+     * @var array<int,int>|null
+     */
     #[ApiProperty(description: 'RMA reason ids to delete')]
     #[Groups(['mutation'])]
     public ?array $indices = null;

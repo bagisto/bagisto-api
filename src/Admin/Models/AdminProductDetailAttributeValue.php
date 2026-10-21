@@ -19,13 +19,25 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminProductDetailAttributeValue extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the product attribute values.
+     *
+     * @var string
+     */
     protected $table = 'product_attribute_values';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the product attribute value is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['code', 'admin_name', 'type', 'is_required', 'group_code', 'value'];
 
-    /** @var array */
+    /**
+     * The native types the product attribute value attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'attribute_id' => 'int',
@@ -92,7 +104,9 @@ class AdminProductDetailAttributeValue extends Model
         return $groupId ? DB::table('attribute_groups')->where('id', $groupId)->value('code') : null;
     }
 
-    /** Polymorphic stored value coerced to a string scalar (per the attribute type). */
+    /**
+     * Polymorphic stored value coerced to a string scalar (per the attribute type).
+     */
     #[ApiProperty(writable: false)]
     public function getValueAttribute(): ?string
     {

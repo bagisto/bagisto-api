@@ -157,6 +157,8 @@ class Section extends \Webkul\Theme\Models\Section
     ];
 
     /**
+     * The relations always eager loaded with the section.
+     *
      * @var list<string>
      */
     protected $with = ['translations'];

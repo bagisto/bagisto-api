@@ -7,7 +7,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminCustomerReviewMassUpdateStatusInput
 {
-    /** @var int[]|null */
+    /**
+     * The ids of the product reviews whose status is updated.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $indices = null;

@@ -53,6 +53,8 @@ class SocialLoginProcessor implements ProcessorInterface
     }
 
     /**
+     * Resolve the provider, id token, access token and device token from the request.
+     *
      * @return array{0: ?string, 1: ?string, 2: ?string, 3: ?string}
      */
     protected function resolveInput(mixed $data, array $context): array

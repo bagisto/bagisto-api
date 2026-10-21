@@ -9,7 +9,9 @@ use Webkul\Product\Models\ProductReview;
 
 class CustomerReviewTest extends GraphQLTestCase
 {
-    // ── Collection Queries ────────────────────────────────────
+    // ============================================================================
+    // Collection Queries
+    // ============================================================================
 
     /**
      * Test: Query all customer reviews collection.
@@ -123,7 +125,9 @@ class CustomerReviewTest extends GraphQLTestCase
         expect($data['totalCount'])->toBe(2);
     }
 
-    // ── Single Item Query ─────────────────────────────────────
+    // ============================================================================
+    // Single Item Query
+    // ============================================================================
 
     /**
      * Test: Query single customer review by ID.
@@ -186,7 +190,9 @@ class CustomerReviewTest extends GraphQLTestCase
         expect($response->json('data.customerReview'))->toBeNull();
     }
 
-    // ── Filtering ─────────────────────────────────────────────
+    // ============================================================================
+    // Filtering
+    // ============================================================================
 
     /**
      * Test: Filter reviews by status.
@@ -281,7 +287,9 @@ class CustomerReviewTest extends GraphQLTestCase
         expect($data['edges'])->toBeEmpty();
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
     /**
      * Test: Pagination with first parameter.
@@ -353,7 +361,9 @@ class CustomerReviewTest extends GraphQLTestCase
         $secondResponse->assertOk();
     }
 
-    // ── Field & Format Assertions ─────────────────────────────
+    // ============================================================================
+    // Field & Format Assertions
+    // ============================================================================
 
     /**
      * Test: All expected fields are present on the review node.
@@ -457,7 +467,9 @@ class CustomerReviewTest extends GraphQLTestCase
         expect($node['_id'])->toBeInt();
     }
 
-    // ── Schema Introspection ──────────────────────────────────
+    // ============================================================================
+    // Schema Introspection
+    // ============================================================================
 
     /**
      * Test: CustomerReview type exists in GraphQL schema.
@@ -488,7 +500,9 @@ class CustomerReviewTest extends GraphQLTestCase
         expect($fieldNames)->toContain('id', '_id', 'title', 'comment', 'rating', 'status', 'name');
     }
 
-    // ── Edge Cases ────────────────────────────────────────────
+    // ============================================================================
+    // Edge Cases
+    // ============================================================================
 
     /**
      * Test: Customer with no reviews returns empty collection.

@@ -18,10 +18,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminOrderDetailAddress extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the addresses.
+     *
+     * @var string
+     */
     protected $table = 'addresses';
 
-    /** @var array */
+    /**
+     * The native types the order address attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
     ];

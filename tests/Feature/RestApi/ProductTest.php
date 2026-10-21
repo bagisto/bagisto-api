@@ -16,7 +16,9 @@ class ProductTest extends RestApiTestCase
      */
     private string $collectionUrl = '/api/shop/products';
 
-    // ── Basic collection ─────────────────────────────────────────────
+    // ============================================================================
+    // Basic Collection
+    // ============================================================================
 
     /**
      * Test get products returns ok.
@@ -42,7 +44,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Search ──────────────────────────────────────────────────────
+    // ============================================================================
+    // Search
+    // ============================================================================
 
     /**
      * Test search by sku.
@@ -70,7 +74,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray()->toBeEmpty();
     }
 
-    // ── Filter by type ──────────────────────────────────────────────
+    // ============================================================================
+    // Filter By Type
+    // ============================================================================
 
     /**
      * Test filter by type.
@@ -85,7 +91,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Filter by category ──────────────────────────────────────────
+    // ============================================================================
+    // Filter By Category
+    // ============================================================================
 
     /**
      * Test filter by category id.
@@ -113,7 +121,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray()->toBeEmpty();
     }
 
-    // ── Filter by attribute(s) ───────────────────────────────────────
+    // ============================================================================
+    // Filter By Attribute(s)
+    // ============================================================================
 
     /**
      * Test filter by single attribute.
@@ -150,7 +160,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Filter by price range ───────────────────────────────────────
+    // ============================================================================
+    // Filter By Price Range
+    // ============================================================================
 
     /**
      * Test filter by price range compound.
@@ -178,7 +190,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Sort ────────────────────────────────────────────────────────
+    // ============================================================================
+    // Sort
+    // ============================================================================
 
     /**
      * Test sort name asc.
@@ -295,7 +309,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Pagination ──────────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
     /**
      * Test pagination per page.
@@ -345,7 +361,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── new / featured flags ─────────────────────────────────────────
+    // ============================================================================
+    // New / Featured Flags
+    // ============================================================================
 
     /**
      * Test filter new products.
@@ -386,7 +404,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Brand ───────────────────────────────────────────────────────
+    // ============================================================================
+    // Brand
+    // ============================================================================
 
     /**
      * Test filter by brand.
@@ -415,7 +435,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── deepObject filter[key]=value shape (Swagger UI) ─────────────
+    // ============================================================================
+    // DeepObject Filter[key]=value Shape (Swagger UI)
+    // ============================================================================
 
     /**
      * Test filter deep object shape.
@@ -432,7 +454,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── JSON filter param (GraphQL parity) ──────────────────────────
+    // ============================================================================
+    // JSON Filter Param (GraphQL Parity)
+    // ============================================================================
 
     /**
      * Test json filter param.
@@ -449,7 +473,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Combined filter + sort ──────────────────────────────────────
+    // ============================================================================
+    // Combined Filter + Sort
+    // ============================================================================
 
     /**
      * Test combined search filter and sort.
@@ -466,7 +492,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── List response is slim (Groups filter) ───────────────────────
+    // ============================================================================
+    // List Response Is Slim (Groups Filter)
+    // ============================================================================
 
     /**
      * Test list response excludes heavy relations.
@@ -501,7 +529,9 @@ class ProductTest extends RestApiTestCase
         }
     }
 
-    // ── Sub-resources (under "Product" tag in Swagger) ──────────────
+    // ============================================================================
+    // Sub-Resources (Under "Product" Tag In Swagger)
+    // ============================================================================
 
     /**
      * Test subresource images.
@@ -581,7 +611,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Type-specific sub-resources (Product Types tag) ─────────────
+    // ============================================================================
+    // Type-Specific Sub-Resources (Product Types Tag)
+    // ============================================================================
 
     /**
      * Test subresource bundle options.
@@ -648,7 +680,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Single product GET ──────────────────────────────────────────
+    // ============================================================================
+    // Single Product GET
+    // ============================================================================
 
     /**
      * Test get single product.

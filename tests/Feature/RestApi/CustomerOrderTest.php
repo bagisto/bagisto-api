@@ -11,7 +11,9 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerOrderTest extends RestApiTestCase
 {
-    // ── Collection ────────────────────────────────────────────
+    // ============================================================================
+    // Collection
+    // ============================================================================
 
     /**
      * Test: GET /api/shop/customer-orders returns collection.
@@ -85,7 +87,9 @@ class CustomerOrderTest extends RestApiTestCase
         expect(count($json))->toBe(0);
     }
 
-    // ── Single Item ───────────────────────────────────────────
+    // ============================================================================
+    // Single Item
+    // ============================================================================
 
     /**
      * Test: GET /api/shop/customer-orders/{id} returns single order.
@@ -165,7 +169,9 @@ class CustomerOrderTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403, 500]))->toBeTrue();
     }
 
-    // ── Response Shape ────────────────────────────────────────
+    // ============================================================================
+    // Response Shape
+    // ============================================================================
 
     /**
      * Test: Order response includes financial fields.
@@ -209,7 +215,9 @@ class CustomerOrderTest extends RestApiTestCase
         expect($statuses)->toContain('completed');
     }
 
-    // ── List trim — `CustomerOrderListDto` ────────────────────
+    // ============================================================================
+    // List Trim — `CustomerOrderListDto`
+    // ============================================================================
 
     /**
      * Test: list response excludes relation IRIs (items / addresses / payment / shipments)
@@ -274,7 +282,9 @@ class CustomerOrderTest extends RestApiTestCase
         expect(count($first))->toBe(count($expectedKeys));
     }
 
-    // ── Detail embed — `CustomerOrderDetailDto` ───────────────
+    // ============================================================================
+    // Detail Embed — `CustomerOrderDetailDto`
+    // ============================================================================
 
     /**
      * Test: detail response embeds items as objects (not IRI strings).

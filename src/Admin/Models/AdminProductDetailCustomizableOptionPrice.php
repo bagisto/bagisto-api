@@ -14,10 +14,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminProductDetailCustomizableOptionPrice extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the customizable option prices.
+     *
+     * @var string
+     */
     protected $table = 'product_customizable_option_prices';
 
-    /** @var array */
+    /**
+     * The native types the customizable option price attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'sort_order' => 'int',

@@ -20,7 +20,9 @@ use Webkul\CartRule\Repositories\CartRuleCouponRepository;
 
 class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterface
 {
-    /** API-accepted format values mapped to the repository charset key. */
+    /**
+     * API-accepted format values mapped to the repository charset key.
+     */
     protected const FORMAT_MAP = [
         'alphabetic' => 'alphabetical',
         'alphabetical' => 'alphabetical',

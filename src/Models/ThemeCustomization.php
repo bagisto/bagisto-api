@@ -146,6 +146,8 @@ class ThemeCustomization extends \Webkul\Theme\Models\ThemeCustomization
     use ServesLoadedTranslation;
 
     /**
+     * The relations always eager loaded with the theme customization.
+     *
      * @var list<string>
      */
     protected $with = ['translations'];

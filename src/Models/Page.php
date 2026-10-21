@@ -138,6 +138,8 @@ class Page extends BasePage
     use ServesLoadedTranslation;
 
     /**
+     * The relations always eager loaded with the page.
+     *
      * @var list<string>
      */
     protected $with = ['translations'];

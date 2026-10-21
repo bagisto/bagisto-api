@@ -12,7 +12,9 @@ class AttributeOptionTest extends RestApiTestCase
      */
     private string $collectionUrl = '/api/shop/attribute-options';
 
-    // ── GET Collection ────────────────────────────────────────
+    // ============================================================================
+    // GET Collection
+    // ============================================================================
 
     /**
      * Test get attribute options collection returns ok.
@@ -73,7 +75,9 @@ class AttributeOptionTest extends RestApiTestCase
         expect($first['id'])->toBeInt();
     }
 
-    // ── GET Single ────────────────────────────────────────────
+    // ============================================================================
+    // GET Single
+    // ============================================================================
 
     /**
      * Test get single attribute option returns ok.

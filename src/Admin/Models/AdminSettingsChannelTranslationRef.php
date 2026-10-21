@@ -14,13 +14,25 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminSettingsChannelTranslationRef extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the channel translations.
+     *
+     * @var string
+     */
     protected $table = 'channel_translations';
 
-    /** @var bool */
+    /**
+     * Indicates the channel translation does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The native types the channel translation attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'home_seo' => 'array',

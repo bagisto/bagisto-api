@@ -7,7 +7,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminInvoiceMassUpdateStatusInput
 {
-    /** @var int[]|null */
+    /**
+     * The ids of the invoices whose status is updated.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(description: 'Array of invoice ids to update.')]
     #[Groups(['mutation'])]
     public ?array $indices = null;

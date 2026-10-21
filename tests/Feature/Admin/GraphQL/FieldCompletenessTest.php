@@ -6,15 +6,16 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class FieldCompletenessTest extends AdminApiTestCase
 {
-    /** Queries whose required args this generic harness cannot supply. */
+    /**
+     * Queries whose required args this harness cannot supply: parent-scoped sub-resources, then
+     * single payloads that need a type, entity or slug, or have no _id.
+     */
     private const SKIP_FIELDS = [
-        // parent-scoped sub-resources (need productId / cartRuleId / orderId / customerId / cartId)
         'adminCatalogProductInventories', 'adminCatalogProductCustomerGroupPrices',
         'adminMarketingCartRuleCoupons', 'adminOrderComments',
         'adminCustomerAddresses', 'adminCustomerNotes', 'adminCustomerCartItems',
         'adminCustomerWishlistItems', 'adminCustomerCompareItems', 'adminCustomerRecentOrderItems',
         'adminCartShippingRates', 'adminCartPaymentMethods',
-        // custom single-payload (need type / entity / slug, or have no _id)
         'statsAdminDashboard', 'statsAdminReportingOverview', 'statsAdminReportingSales',
         'statsAdminReportingCustomers', 'statsAdminReportingProducts',
         'viewStatsAdminReportingSales', 'viewStatsAdminReportingCustomers', 'viewStatsAdminReportingProducts',
@@ -157,8 +158,6 @@ class FieldCompletenessTest extends AdminApiTestCase
         $this->assertSame([], $failures, "Admin GraphQL field-resolution failures:\n".implode("\n", $failures));
     }
 
-    // ---------- helpers ----------
-
     /**
      * Introspect query fields.
      */
@@ -182,7 +181,9 @@ class FieldCompletenessTest extends AdminApiTestCase
         return $this->typeFieldsCache[$name] = $this->adminGraphQL($q, ['n' => $name], $admin)->json('data.__type.fields') ?? [];
     }
 
-    /** Re-harvest the current first-row IRI for a collection field (race recovery). */
+    /**
+     * Re-harvest the current first-row IRI for a collection field (race recovery).
+     */
     private function freshId(object $admin, string $collectionField): ?string
     {
         $resp = $this->adminGraphQL("query { {$collectionField}(first: 1) { edges { node { id } } } }", [], $admin);
@@ -216,7 +217,9 @@ class FieldCompletenessTest extends AdminApiTestCase
         return str_starts_with((string) $typeName, 'Admin') || str_contains(strtolower($field), 'admin');
     }
 
-    /** True if the field has a required (NON_NULL) arg not in the allowed set. */
+    /**
+     * True if the field has a required (NON_NULL) arg not in the allowed set.
+     */
     private function hasUnsatisfiableArgs(array $f, array $allowed): bool
     {
         foreach ($f['args'] ?? [] as $a) {

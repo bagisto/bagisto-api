@@ -107,13 +107,13 @@ class IntegrationDataGrid extends DataGrid
 
             'filterable_options' => [
                 [
-                    'label' => trans('bagistoapi::app.integration.permission_type.all'),
+                    'label' => trans('bagistoapi::app.integration.permission-type.all'),
                     'value' => 'all',
                 ], [
-                    'label' => trans('bagistoapi::app.integration.permission_type.custom'),
+                    'label' => trans('bagistoapi::app.integration.permission-type.custom'),
                     'value' => 'custom',
                 ], [
-                    'label' => trans('bagistoapi::app.integration.permission_type.same_as_web'),
+                    'label' => trans('bagistoapi::app.integration.permission-type.same-as-web'),
                     'value' => 'same_as_web',
                 ],
             ],

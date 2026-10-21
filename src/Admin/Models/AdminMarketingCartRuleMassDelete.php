@@ -78,11 +78,19 @@ class AdminMarketingCartRuleMassDelete
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the cart rules that were deleted.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
-    /** @var array<int, array{id:int,reason:string}>|null */
+    /**
+     * The cart rules that were not deleted, each with the reason.
+     *
+     * @var array<int, array{id:int,reason:string}>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $skipped = null;
 

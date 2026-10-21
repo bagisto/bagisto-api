@@ -8,7 +8,9 @@ use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
 class ProductSearchFilterTest extends GraphQLTestCase
 {
-    // ─── Search with Query Variables ─────────────────────────────────────
+    // ============================================================================
+    // Search With Query Variables
+    // ============================================================================
 
     /**
      * Search with query string and all sort variables bound.
@@ -116,7 +118,9 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertEmpty($edges, 'Non-matching search should return empty edges');
     }
 
-    // ─── Category Filter with Pagination ─────────────────────────────────
+    // ============================================================================
+    // Category Filter With Pagination
+    // ============================================================================
 
     /**
      * Category ID filter with full spec fields, pageInfo, and totalCount.
@@ -218,7 +222,9 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertEmpty($data['edges'] ?? []);
     }
 
-    // ─── Type Filter ─────────────────────────────────────────────────────
+    // ============================================================================
+    // Type Filter
+    // ============================================================================
 
     /**
      * Filter by product type includes totalCount.
@@ -253,7 +259,9 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertIsInt($data['totalCount']);
     }
 
-    // ─── Attribute Filters ────────────────────────────────────────────────
+    // ============================================================================
+    // Attribute Filters
+    // ============================================================================
 
     /**
      * Filter by color attribute returns valid response structure.
@@ -339,7 +347,9 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertIsInt($data['totalCount']);
     }
 
-    // ─── Sort with totalCount ─────────────────────────────────────────────
+    // ============================================================================
+    // Sort With TotalCount
+    // ============================================================================
 
     /**
      * Sort A-Z by title returns edges and totalCount.
@@ -581,7 +591,9 @@ class ProductSearchFilterTest extends GraphQLTestCase
         }
     }
 
-    // ─── New / Featured / Brand Filters ──────────────────────────────────
+    // ============================================================================
+    // New / Featured / Brand Filters
+    // ============================================================================
 
     /**
      * New products filter (new=1) returns products marked as new.
@@ -747,7 +759,9 @@ class ProductSearchFilterTest extends GraphQLTestCase
         }
     }
 
-    // ─── Edge Cases ───────────────────────────────────────────────────────
+    // ============================================================================
+    // Edge Cases
+    // ============================================================================
 
     /**
      * Cursor-based pagination: second page uses endCursor from first page.

@@ -36,6 +36,8 @@ class AdminSettingsTaxCategoryRestDto
     public ?string $description = null;
 
     /**
+     * The tax rates assigned to the tax category.
+     *
      * @var array<int, array{id:int, identifier:string|null, taxRate:float|null}>|null
      */
     #[ApiProperty(writable: false)]

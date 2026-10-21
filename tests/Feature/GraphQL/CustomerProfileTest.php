@@ -9,7 +9,9 @@ use Webkul\Customer\Models\Customer;
 
 class CustomerProfileTest extends GraphQLTestCase
 {
-    // ── Read Profile (Query) ──────────────────────────────────
+    // ============================================================================
+    // Read Profile (Query)
+    // ============================================================================
 
     /**
      * Test: Read authenticated customer profile returns all fields.
@@ -155,7 +157,9 @@ class CustomerProfileTest extends GraphQLTestCase
             ->and($data)->not->toHaveKey('phone');
     }
 
-    // ── Update Profile (Mutation) ─────────────────────────────
+    // ============================================================================
+    // Update Profile (Mutation)
+    // ============================================================================
 
     /**
      * Test: Update customer first name.
@@ -405,7 +409,9 @@ class CustomerProfileTest extends GraphQLTestCase
             ->and($data['lastName'])->toBe('Change');
     }
 
-    // ── Delete Profile (Mutation) ─────────────────────────────
+    // ============================================================================
+    // Delete Profile (Mutation)
+    // ============================================================================
 
     /**
      * Test: Delete customer profile removes the customer.
@@ -573,7 +579,9 @@ class CustomerProfileTest extends GraphQLTestCase
             ->and($json['errors'])->not->toBeEmpty();
     }
 
-    // ── Schema Introspection ──────────────────────────────────
+    // ============================================================================
+    // Schema Introspection
+    // ============================================================================
 
     /**
      * Test: CustomerProfile type has expected fields in schema.

@@ -14,10 +14,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminProductDetailDownloadableSampleTranslation extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the downloadable sample translations.
+     *
+     * @var string
+     */
     protected $table = 'product_downloadable_sample_translations';
 
-    /** @var array */
+    /**
+     * The native types the downloadable sample translation attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = ['id' => 'int'];
 
     /**

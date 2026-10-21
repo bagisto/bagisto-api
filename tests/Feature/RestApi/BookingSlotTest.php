@@ -19,7 +19,9 @@ class BookingSlotTest extends RestApiTestCase
      */
     private string $endpoint = '/api/shop/booking-slots';
 
-    // ── Flat types (default / appointment / table / event) ─────────────
+    // ============================================================================
+    // Flat Types (Default / Appointment / Table / Event)
+    // ============================================================================
 
     /**
      * Test booking slots default.
@@ -89,7 +91,9 @@ class BookingSlotTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Rental (nested) ────────────────────────────────────────────────
+    // ============================================================================
+    // Rental (Nested)
+    // ============================================================================
 
     /**
      * Test booking slots rental.
@@ -109,7 +113,9 @@ class BookingSlotTest extends RestApiTestCase
         }
     }
 
-    // ── Validation ─────────────────────────────────────────────────────
+    // ============================================================================
+    // Validation
+    // ============================================================================
 
     /**
      * Test missing id returns 400.

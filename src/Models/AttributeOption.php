@@ -122,6 +122,8 @@ class AttributeOption extends \Webkul\Attribute\Models\AttributeOption
     use ServesLoadedTranslation;
 
     /**
+     * The relations always eager loaded with the attribute option.
+     *
      * @var list<string>
      */
     protected $with = ['translations'];

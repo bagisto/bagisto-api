@@ -28,7 +28,11 @@ class AdminCategoryUpdateInput
     #[Groups(['mutation'])]
     public ?int $position = null;
 
-    /** @var array<int, int>|null */
+    /**
+     * The ids of the filterable attributes synced onto the category.
+     *
+     * @var array<int, int>|null
+     */
     #[ApiProperty(description: 'Filterable attribute IDs to sync onto the category.')]
     #[Groups(['mutation'])]
     public ?array $attributes = null;
@@ -54,12 +58,20 @@ class AdminCategoryUpdateInput
     #[Groups(['mutation'])]
     public ?int $status = null;
 
-    /** @var array<int, string>|null */
+    /**
+     * The pre-uploaded storage paths of the category logo.
+     *
+     * @var array<int, string>|null
+     */
     #[ApiProperty(description: 'Optional logo path(s). File-upload is not supported in v1.')]
     #[Groups(['mutation'])]
     public ?array $logo_path = null;
 
-    /** @var array<int, string>|null */
+    /**
+     * The pre-uploaded storage paths of the category banner.
+     *
+     * @var array<int, string>|null
+     */
     #[ApiProperty(description: 'Optional banner path(s). File-upload is not supported in v1.')]
     #[Groups(['mutation'])]
     public ?array $banner_path = null;

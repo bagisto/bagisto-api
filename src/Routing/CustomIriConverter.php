@@ -251,6 +251,8 @@ class CustomIriConverter implements IriConverterInterface
     }
 
     /**
+     * Every operation declared on the resource class.
+     *
      * @return iterable<Operation>
      */
     private function operationsOf(string $class): iterable

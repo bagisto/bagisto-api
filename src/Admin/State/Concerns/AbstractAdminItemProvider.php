@@ -7,10 +7,6 @@ use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
-/**
- * Centralised scaffolding for admin single-item providers.
- * Handles: auth check, id resolution from uriVariables / GraphQL args,.
- */
 abstract class AbstractAdminItemProvider implements ProviderInterface
 {
     /**

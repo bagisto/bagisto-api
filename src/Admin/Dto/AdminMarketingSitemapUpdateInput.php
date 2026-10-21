@@ -29,6 +29,8 @@ class AdminMarketingSitemapUpdateInput
     public ?string $path = null;
 
     /**
+     * The ids of the channels the sitemap covers, replacing the current list.
+     *
      * @var array<int, int>|null
      */
     #[ApiProperty(description: 'Channel ids the sitemap covers. The supplied list replaces the current one.')]

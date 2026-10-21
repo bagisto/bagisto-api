@@ -17,7 +17,7 @@ class KeyRotationService
     public function rotateKey(StorefrontKey $key): StorefrontKey
     {
         if (! $key->isValid()) {
-            throw new \Exception('Cannot rotate an invalid or expired key');
+            throw new \Exception(__('bagistoapi::app.graphql.install.key-rotation-invalid-key'));
         }
 
         return $key->rotate();

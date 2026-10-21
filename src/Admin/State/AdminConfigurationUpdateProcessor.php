@@ -19,10 +19,14 @@ use Webkul\Core\Repositories\CoreConfigRepository;
 
 class AdminConfigurationUpdateProcessor implements ProcessorInterface
 {
-    /** Permission required for write. */
+    /**
+     * Permission required for write.
+     */
     protected const PERMISSION_KEY = 'configuration.edit';
 
-    /** File-type fields the server treats as binary uploads. */
+    /**
+     * File-type fields the server treats as binary uploads.
+     */
     protected const FILE_TYPES = ['image', 'file'];
 
     /**

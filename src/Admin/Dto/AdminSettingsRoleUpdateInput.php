@@ -35,7 +35,11 @@ class AdminSettingsRoleUpdateInput
     #[Groups(['mutation'])]
     public ?string $permission_type = null;
 
-    /** @var array<int, string>|null */
+    /**
+     * The permission keys granted to the role when its type is custom.
+     *
+     * @var array<int, string>|null
+     */
     #[ApiProperty(description: 'Permission keys (required when permission_type=custom).')]
     #[Groups(['mutation'])]
     public ?array $permissions = null;

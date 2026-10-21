@@ -14,10 +14,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminProductDetailCustomizableOptionTranslation extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the customizable option translations.
+     *
+     * @var string
+     */
     protected $table = 'product_customizable_option_translations';
 
-    /** @var array */
+    /**
+     * The native types the customizable option translation attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = ['id' => 'int'];
 
     /**

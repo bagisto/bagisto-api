@@ -56,7 +56,11 @@ class AdminSettingsChannelUpdateInput
     #[Groups(['mutation'])]
     public ?string $timezone = null;
 
-    /** @var array<int>|null */
+    /**
+     * The ids of the locales attached to the channel.
+     *
+     * @var array<int>|null
+     */
     #[ApiProperty(description: 'Locale ids attached to this channel.')]
     #[Groups(['mutation'])]
     public ?array $locales = null;
@@ -68,7 +72,11 @@ class AdminSettingsChannelUpdateInput
     #[Groups(['mutation'])]
     public ?int $default_locale_id = null;
 
-    /** @var array<int>|null */
+    /**
+     * The ids of the currencies attached to the channel.
+     *
+     * @var array<int>|null
+     */
     #[ApiProperty(description: 'Currency ids attached to this channel.')]
     #[Groups(['mutation'])]
     public ?array $currencies = null;
@@ -80,7 +88,11 @@ class AdminSettingsChannelUpdateInput
     #[Groups(['mutation'])]
     public ?int $base_currency_id = null;
 
-    /** @var array<int>|null */
+    /**
+     * The ids of the inventory sources attached to the channel.
+     *
+     * @var array<int>|null
+     */
     #[ApiProperty(description: 'Inventory source ids attached to this channel.')]
     #[Groups(['mutation'])]
     public ?array $inventory_sources = null;
@@ -148,7 +160,11 @@ class AdminSettingsChannelUpdateInput
     #[Groups(['mutation'])]
     public ?string $favicon = null;
 
-    /** @var array<string,array<string,mixed>>|null */
+    /**
+     * The per-locale overrides of the channel content, keyed by locale code.
+     *
+     * @var array<string,array<string,mixed>>|null
+     */
     #[ApiProperty(description: 'Locale-nested overrides — see Create DTO.')]
     #[Groups(['mutation'])]
     public ?array $translations = null;

@@ -8,7 +8,9 @@ use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
 
 class AdminApiAuditRecorder
 {
-    /** Pre-save diffs keyed by spl_object_id, captured on `updating`. */
+    /**
+     * Pre-save diffs keyed by spl_object_id, captured on `updating`.
+     */
     protected array $pending = [];
 
     /**

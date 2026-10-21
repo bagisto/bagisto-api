@@ -7,7 +7,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminRmaRuleMassDeleteInput
 {
-    /** @var array<int,int>|null */
+    /**
+     * The ids of the RMA rules to delete.
+     *
+     * @var array<int,int>|null
+     */
     #[ApiProperty(description: 'RMA rule ids')]
     #[Groups(['mutation'])]
     public ?array $indices = null;

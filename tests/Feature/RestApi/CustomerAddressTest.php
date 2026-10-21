@@ -12,7 +12,9 @@ class CustomerAddressTest extends RestApiTestCase
      */
     private string $baseUrl = '/api/shop/customer-addresses';
 
-    // ── GET Collection ────────────────────────────────────────
+    // ============================================================================
+    // GET Collection
+    // ============================================================================
 
     /**
      * Test get collection returns only own addresses.
@@ -76,7 +78,9 @@ class CustomerAddressTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
-    // ── GET single ────────────────────────────────────────────
+    // ============================================================================
+    // GET Single
+    // ============================================================================
 
     /**
      * Test get single address.
@@ -106,7 +110,9 @@ class CustomerAddressTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([403, 404, 500]);
     }
 
-    // ── POST create ───────────────────────────────────────────
+    // ============================================================================
+    // POST Create
+    // ============================================================================
 
     /**
      * Test create address successfully.
@@ -230,7 +236,9 @@ class CustomerAddressTest extends RestApiTestCase
         ]);
     }
 
-    // ── PUT update ────────────────────────────────────────────
+    // ============================================================================
+    // PUT Update
+    // ============================================================================
 
     /**
      * Test update address successfully.
@@ -298,7 +306,9 @@ class CustomerAddressTest extends RestApiTestCase
         ]);
     }
 
-    // ── DELETE ────────────────────────────────────────────────
+    // ============================================================================
+    // DELETE
+    // ============================================================================
 
     /**
      * Test delete address successfully.

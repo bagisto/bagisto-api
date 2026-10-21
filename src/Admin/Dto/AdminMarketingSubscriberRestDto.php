@@ -41,7 +41,11 @@ class AdminMarketingSubscriberRestDto
     #[ApiProperty(writable: false)]
     public ?string $customer_name = null;
 
-    /** @var array{id:int, code:string|null, name:string|null}|null */
+    /**
+     * The channel the subscriber signed up on.
+     *
+     * @var array{id:int, code:string|null, name:string|null}|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $channel = null;
 

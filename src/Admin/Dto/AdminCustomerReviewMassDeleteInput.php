@@ -7,7 +7,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminCustomerReviewMassDeleteInput
 {
-    /** @var int[]|null */
+    /**
+     * The ids of the product reviews to delete.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $indices = null;

@@ -380,7 +380,11 @@ class AdminCart
      */
     public ?bool $have_stockable_items = null;
 
-    /** @var array<int, array> */
+    /**
+     * The items in the cart.
+     *
+     * @var array<int, array>
+     */
     public array $items = [];
 
     /**

@@ -32,6 +32,8 @@ trait ResolvesReturnCustomFields
     }
 
     /**
+     * Validate the custom field answers against the active return custom fields.
+     *
      * @param  array<int|string,mixed>  $customAttributes
      * @return array<int,mixed>
      */

@@ -398,6 +398,8 @@ class SchemaExportTest extends BagistoApiTest
     }
 
     /**
+     * Collect every request of a collection item and its nested items into the given list.
+     *
      * @param  array<string, mixed>  $item
      * @param  list<array<string, mixed>>  $requests
      */
@@ -415,6 +417,8 @@ class SchemaExportTest extends BagistoApiTest
     }
 
     /**
+     * The exported OpenAPI spec of the given surface.
+     *
      * @return array<string, mixed>
      */
     private function spec(string $surface): array
@@ -453,6 +457,8 @@ class SchemaExportTest extends BagistoApiTest
     }
 
     /**
+     * Collect every schema reference found anywhere in the given spec node.
+     *
      * @return list<string>
      */
     private function refs(mixed $node, array &$found = []): array
@@ -479,6 +485,8 @@ class SchemaExportTest extends BagistoApiTest
     }
 
     /**
+     * The field names declared on the given root type of a GraphQL SDL.
+     *
      * @return list<string>
      */
     private function rootFields(string $sdl, string $type): array
@@ -493,6 +501,8 @@ class SchemaExportTest extends BagistoApiTest
     }
 
     /**
+     * The GraphQL requests of the given Postman collection, with their names and queries.
+     *
      * @return list<array{name: string, query: string}>
      */
     private function graphQlRequests(string $collection): array
@@ -511,6 +521,8 @@ class SchemaExportTest extends BagistoApiTest
     }
 
     /**
+     * Collect the requests of a collection item and its nested items into the given list.
+     *
      * @param  array<string, mixed>  $item
      * @param  list<array{name: string, query: string}>  $requests
      */

@@ -79,6 +79,30 @@ class SettingsTaxRateTest extends AdminApiTestCase
     }
 
     /**
+     * The node id of a tax rate is its detail IRI, not the export route declared after it.
+     */
+    public function test_query_detail_returns_the_detail_iri_as_its_id(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertTaxRate([
+            'identifier' => 'GQL-IRI-'.uniqid(),
+            'tax_rate' => 6.7,
+        ]);
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminSettingsTaxRate(id: $id) {
+                id
+              }
+            }
+        GQL;
+
+        $r = $this->adminGraphQL($query, ['id' => '/api/admin/settings/tax-rates/'.$id], $admin);
+        $r->assertOk();
+        expect($r->json('data.adminSettingsTaxRate.id'))->toBe('/api/admin/settings/tax-rates/'.$id);
+    }
+
+    /**
      * Test query detail multiword fields resolve over graphql.
      */
     public function test_query_detail_multiword_fields_resolve_over_graphql(): void

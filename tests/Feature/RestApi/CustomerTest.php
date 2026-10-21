@@ -478,7 +478,9 @@ class CustomerTest extends RestApiTestCase
         expect(Customer::find($customerId))->toBeNull();
     }
 
-    // ── Registration ──────────────────────────────────────────
+    // ============================================================================
+    // Registration
+    // ============================================================================
 
     /**
      * Test register new customer.

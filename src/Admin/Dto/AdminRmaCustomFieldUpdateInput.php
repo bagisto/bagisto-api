@@ -63,7 +63,11 @@ class AdminRmaCustomFieldUpdateInput
     #[Groups(['mutation'])]
     public ?int $status = null;
 
-    /** @var array<int,array{name:string,value:string}>|null */
+    /**
+     * The name and value pairs offered by a select, multiselect, checkbox or radio field.
+     *
+     * @var array<int,array{name:string,value:string}>|null
+     */
     #[ApiProperty(description: 'Required for select/multiselect/checkbox/radio: [{ name, value }]')]
     #[Groups(['mutation'])]
     public ?array $options = null;

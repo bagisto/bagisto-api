@@ -15,6 +15,8 @@ class AdminCatalogProductInventoryUpdateInput
     public ?int $productId = null;
 
     /**
+     * The quantity to set for each inventory source, keyed by inventory source id.
+     *
      * @var array<int|string,int>|null
      */
     #[ApiProperty(description: 'Map of inventory_source_id → quantity. Use 0 to zero-out a source.')]

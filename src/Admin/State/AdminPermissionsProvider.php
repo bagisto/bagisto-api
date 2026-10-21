@@ -25,6 +25,8 @@ class AdminPermissionsProvider implements ProviderInterface
     }
 
     /**
+     * Build the permissions payload for the given admin's role.
+     *
      * @return array<string, mixed>
      */
     public static function buildPayload(object $admin): array

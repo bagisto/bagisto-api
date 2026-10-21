@@ -7,7 +7,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminSettingsExchangeRateMassDeleteInput
 {
-    /** @var int[]|null */
+    /**
+     * The ids of the exchange rates to delete.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(description: 'Array of exchange-rate IDs to delete.')]
     #[Groups(['mutation'])]
     public ?array $indices = null;

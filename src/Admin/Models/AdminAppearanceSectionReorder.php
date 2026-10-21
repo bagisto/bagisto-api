@@ -88,11 +88,15 @@ class AdminAppearanceSectionReorder
     public ?string $id = 'reorder';
 
     /**
+     * The section ids in the order that was staged.
+     *
      * @var array<int, int>
      */
     public array $section_ids = [];
 
     /**
+     * Whether each reordered section now has a draft, keyed by section id.
+     *
      * @var array<string, bool>
      */
     public array $has_draft = [];

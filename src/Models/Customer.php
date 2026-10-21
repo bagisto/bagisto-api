@@ -614,6 +614,9 @@ class Customer extends \Webkul\Customer\Models\Customer
         $this->channel_id = $value;
     }
 
+    /**
+     * The URL of the customer's profile image.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,

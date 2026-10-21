@@ -5,13 +5,11 @@ namespace Webkul\BagistoApi\Tests;
 use Illuminate\Testing\TestResponse;
 use Webkul\Customer\Models\Customer;
 
-/**
- * Base test case for GraphQL API tests.
- * Provides convenience methods for public and authenticated.
- */
 abstract class GraphQLTestCase extends BagistoApiTestCase
 {
-    /** GraphQL endpoint URL. */
+    /**
+     * GraphQL endpoint URL.
+     */
     protected string $graphqlUrl = '/api/graphql';
 
     /**

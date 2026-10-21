@@ -14,13 +14,25 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminSettingsChannelLocaleRef extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the locales.
+     *
+     * @var string
+     */
     protected $table = 'locales';
 
-    /** @var bool */
+    /**
+     * Indicates the channel locale reference does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The native types the channel locale reference attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
     ];

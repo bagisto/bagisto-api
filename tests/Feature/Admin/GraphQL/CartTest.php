@@ -336,7 +336,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
-    /** Bootstrap a draft cart with one item. Always returns a cart id. */
+    /**
+     * Bootstrap a draft cart with one item. Always returns a cart id.
+     */
     protected function bootstrapDraftCart(): int
     {
         return $this->bootstrapAdminDraftCart();

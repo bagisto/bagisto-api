@@ -15,13 +15,25 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminProductDetailInventory extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the per-source product inventories.
+     *
+     * @var string
+     */
     protected $table = 'product_inventories';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the product inventory is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['source_id', 'source_code'];
 
-    /** @var array */
+    /**
+     * The native types the product inventory attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'qty' => 'int',

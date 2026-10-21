@@ -20,13 +20,25 @@ use Illuminate\Support\Facades\Storage;
 )]
 class AdminProductDetailDownloadableLink extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the downloadable links.
+     *
+     * @var string
+     */
     protected $table = 'product_downloadable_links';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the downloadable link is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['formatted_price', 'file_url', 'sample_file_url'];
 
-    /** @var array */
+    /**
+     * The native types the downloadable link attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'sort_order' => 'int',

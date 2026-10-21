@@ -8,19 +8,21 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\AdminReportingProvider;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 
-/**
- * Base GraphQL resolver for reporting queries. One concrete subclass per
- * sub-page wires the `$entity` and the output resource class.
- */
 abstract class AdminReportingQueryResolver implements QueryItemResolverInterface
 {
-    /** Sub-page: overview | sales | customers | products. */
+    /**
+     * Sub-page: overview | sales | customers | products.
+     */
     protected string $entity;
 
-    /** FQCN of the output resource class. */
+    /**
+     * FQCN of the output resource class.
+     */
     protected string $resourceClass;
 
-    /** 'graph' (panel summary) | 'table' (View Details). */
+    /**
+     * 'graph' (panel summary) | 'table' (View Details).
+     */
     protected string $mode = 'graph';
 
     /**

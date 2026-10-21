@@ -55,7 +55,9 @@ class OrderActionTest extends AdminApiTestCase
         }
     }
 
-    /** Edge case A1: guest orders cannot be reordered (HTTP 422). */
+    /**
+     * Edge case A1: guest orders cannot be reordered (HTTP 422).
+     */
     public function test_reorder_rejects_guest_orders_with_422(): void
     {
         $admin = $this->createAdmin();
@@ -83,7 +85,9 @@ class OrderActionTest extends AdminApiTestCase
             ->toBe(trans('bagistoapi::app.admin.order.reorder.guest-not-supported'));
     }
 
-    /** Edge case A2: at least one item not saleable -> HTTP 422. */
+    /**
+     * Edge case A2: at least one item not saleable -> HTTP 422.
+     */
     public function test_reorder_rejects_when_items_not_saleable(): void
     {
         $admin = $this->createAdmin();
@@ -114,7 +118,9 @@ class OrderActionTest extends AdminApiTestCase
             ->toBe(trans('bagistoapi::app.admin.order.reorder.items-not-saleable'));
     }
 
-    /** Edge case B: admin lacks `sales.orders.create` permission -> HTTP 422. */
+    /**
+     * Edge case B: admin lacks `sales.orders.create` permission -> HTTP 422.
+     */
     public function test_reorder_rejects_when_admin_lacks_permission(): void
     {
         $id = $this->aReorderableOrderId() ?? Order::where('is_guest', 0)->value('id');
@@ -139,7 +145,9 @@ class OrderActionTest extends AdminApiTestCase
             ->toBe(trans('bagistoapi::app.admin.order.reorder.no-permission'));
     }
 
-    /** Edge case C: admin reorder disabled in store settings -> HTTP 422. */
+    /**
+     * Edge case C: admin reorder disabled in store settings -> HTTP 422.
+     */
     public function test_reorder_rejects_when_disabled_in_settings(): void
     {
         $admin = $this->createAdmin();
@@ -160,7 +168,9 @@ class OrderActionTest extends AdminApiTestCase
             ->toBe(trans('bagistoapi::app.admin.order.reorder.disabled-in-settings'));
     }
 
-    /** Resolve or create a reorderable (non-guest) order id. Never returns null. */
+    /**
+     * Resolve or create a reorderable (non-guest) order id. Never returns null.
+     */
     protected function aReorderableOrderId(): int
     {
         $admin = $this->createAdmin();

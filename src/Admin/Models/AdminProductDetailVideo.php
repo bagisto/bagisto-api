@@ -15,13 +15,25 @@ use Illuminate\Support\Facades\Storage;
 )]
 class AdminProductDetailVideo extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the product videos.
+     *
+     * @var string
+     */
     protected $table = 'product_videos';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the product video is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['url'];
 
-    /** @var array */
+    /**
+     * The native types the product video attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'position' => 'int',

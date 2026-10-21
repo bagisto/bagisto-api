@@ -6,10 +6,6 @@ use ApiPlatform\Metadata\Resource\Factory\ResourceNameCollectionFactoryInterface
 use ApiPlatform\Metadata\Resource\ResourceNameCollection;
 use Webkul\BagistoApi\Support\CoreCapabilities;
 
-/**
- * Keeps only the theme resources the installed core can serve.
- * Discovery drops a resource whose parent class is missing, but the admin resources.
- */
 final class VersionGatedResourceNameCollectionFactory implements ResourceNameCollectionFactoryInterface
 {
     /**
@@ -76,6 +72,8 @@ final class VersionGatedResourceNameCollectionFactory implements ResourceNameCol
     }
 
     /**
+     * Whether the resource class starts with any of the given namespace prefixes.
+     *
      * @param  list<string>  $prefixes
      */
     private function matches(string $resourceClass, array $prefixes): bool

@@ -14,13 +14,25 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminSettingsThemeTranslationRef extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the theme customization translations.
+     *
+     * @var string
+     */
     protected $table = 'theme_customization_translations';
 
-    /** @var bool */
+    /**
+     * Indicates the theme customization translation does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The native types the theme customization translation attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'options' => 'array',

@@ -69,6 +69,8 @@ class AdminPermissions
     public ?string $permission_type = null;
 
     /**
+     * The permission keys granted to the current admin user.
+     *
      * @var array<int, string>|null
      */
     #[ApiProperty(writable: false)]

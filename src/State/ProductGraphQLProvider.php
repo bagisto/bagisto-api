@@ -244,6 +244,8 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
+     * Sort by a product column, with the product id as a tie-breaker.
+     *
      * @return string[]
      */
     private function sortByColumn($query, string $column, string $direction): array
@@ -255,6 +257,8 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
+     * Sort by product id.
+     *
      * @return string[]
      */
     private function sortById($query, string $direction): array
@@ -433,6 +437,8 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
+     * Collect the filters that target filterable attributes, keyed by attribute code.
+     *
      * @return array<string, array{term: mixed, matchType: string}>
      */
     private function collectAttributeFilters(array $filters): array

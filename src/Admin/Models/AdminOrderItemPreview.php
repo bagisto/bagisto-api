@@ -16,13 +16,25 @@ use Illuminate\Support\Facades\Storage;
 )]
 class AdminOrderItemPreview extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the order items.
+     *
+     * @var string
+     */
     protected $table = 'order_items';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the order item preview is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['product_image'];
 
-    /** @var array */
+    /**
+     * The native types the order item preview attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'qty_ordered' => 'int',

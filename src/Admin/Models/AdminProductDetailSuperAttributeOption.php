@@ -14,10 +14,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminProductDetailSuperAttributeOption extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the attribute options.
+     *
+     * @var string
+     */
     protected $table = 'attribute_options';
 
-    /** @var array */
+    /**
+     * The native types the configurable attribute option attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'sort_order' => 'int',

@@ -85,6 +85,8 @@ class AdminMenu
     public ?string $id = 'menu';
 
     /**
+     * The admin menu tree, as nested menu items filtered to what the admin may see.
+     *
      * @var array<int, array<string, mixed>>|null
      */
     #[ApiProperty(writable: false)]

@@ -74,6 +74,8 @@ class AdminMarketingSearchTermItemProvider implements ProviderInterface
     }
 
     /**
+     * Build the channel summary of a search term, or null when it has none.
+     *
      * @return array{id:int, code:string|null, name:string|null}|null
      */
     protected function channelObject(?int $channelId): ?array

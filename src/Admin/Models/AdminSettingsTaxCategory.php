@@ -255,17 +255,29 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
 )]
 class AdminSettingsTaxCategory extends EloquentModel
 {
-    /** @var string */
+    /**
+     * The table that stores the tax categories.
+     *
+     * @var string
+     */
     protected $table = 'tax_categories';
 
-    /** @var array */
+    /**
+     * The native types the tax category attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the tax category is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['message'];
 
     /**

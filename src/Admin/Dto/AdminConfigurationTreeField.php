@@ -92,6 +92,8 @@ class AdminConfigurationTreeField
     public mixed $value = null;
 
     /**
+     * The selectable options of a select or multiselect configuration field.
+     *
      * @var AdminConfigurationTreeOption[]|null
      */
     #[ApiProperty(readable: true, writable: false)]

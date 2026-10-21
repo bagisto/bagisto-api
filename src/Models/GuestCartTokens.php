@@ -35,9 +35,7 @@ class GuestCartTokens extends Model implements GuestCartTokensContract
      *
      * @var array
      */
-    protected $casts = [
-        // Add your attribute casts here
-    ];
+    protected $casts = [];
 
     /**
      * Get the cart associated with this token.

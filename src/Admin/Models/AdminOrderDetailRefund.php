@@ -17,10 +17,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminOrderDetailRefund extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the refunds.
+     *
+     * @var string
+     */
     protected $table = 'refunds';
 
-    /** @var array */
+    /**
+     * The native types the order refund attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'total_qty' => 'int',

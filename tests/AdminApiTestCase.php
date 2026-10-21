@@ -8,16 +8,16 @@ use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\User\Models\Admin;
 
-/**
- * Base test case for the Admin API (REST + GraphQL).
- * As of the 2026-05-27 auth refactor, admin endpoints authenticate via.
- */
 abstract class AdminApiTestCase extends BagistoApiTestCase
 {
-    /** GraphQL endpoint URL. */
+    /**
+     * GraphQL endpoint URL.
+     */
     protected string $graphqlUrl = '/api/graphql';
 
-    /** Known plaintext password for admins created in tests. */
+    /**
+     * Known plaintext password for admins created in tests.
+     */
     protected string $adminPassword = 'admin123';
 
     /**

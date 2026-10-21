@@ -19,13 +19,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 )]
 class AdminOrderDetailCustomer extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the customers.
+     *
+     * @var string
+     */
     protected $table = 'customers';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the order customer is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['name'];
 
-    /** @var array */
+    /**
+     * The native types the order customer attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'status' => 'int',

@@ -55,13 +55,13 @@ class BookingSlotProvider implements ProviderInterface
 
         if ($id === null) {
             throw new BadRequestHttpException(
-                'bagistoapi::app.graphql.booking-slot.id-required'
+                __('bagistoapi::app.graphql.booking-slot.id-required')
             );
         }
 
         if ($date === null) {
             throw new BadRequestHttpException(
-                'bagistoapi::app.graphql.booking-slot.date-required'
+                __('bagistoapi::app.graphql.booking-slot.date-required')
             );
         }
 
@@ -69,13 +69,13 @@ class BookingSlotProvider implements ProviderInterface
 
         if (! $bookingProduct) {
             throw new BadRequestHttpException(
-                'bagistoapi::app.graphql.booking-slot.product-not-found'
+                __('bagistoapi::app.graphql.booking-slot.product-not-found')
             );
         }
 
         if (! isset($this->bookingHelpers[$bookingProduct->type])) {
             throw new BadRequestHttpException(
-                'bagistoapi::app.graphql.booking-slot.invalid-type'
+                __('bagistoapi::app.graphql.booking-slot.invalid-type')
             );
         }
 

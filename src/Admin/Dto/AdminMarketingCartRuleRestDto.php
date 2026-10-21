@@ -83,7 +83,11 @@ class AdminMarketingCartRuleRestDto
     #[ApiProperty(writable: false)]
     public ?int $condition_type = null;
 
-    /** @var array<int,mixed>|null */
+    /**
+     * The conditions a cart must meet for the cart rule to apply.
+     *
+     * @var array<int,mixed>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $conditions = null;
 
@@ -147,11 +151,19 @@ class AdminMarketingCartRuleRestDto
     #[ApiProperty(writable: false)]
     public ?string $coupon_code = null;
 
-    /** @var array<int,array{id:int, code:string|null, name:string|null}>|null */
+    /**
+     * The channels the cart rule applies in.
+     *
+     * @var array<int,array{id:int, code:string|null, name:string|null}>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $channels = null;
 
-    /** @var array<int,array{id:int, code:string|null, name:string|null}>|null */
+    /**
+     * The customer groups the cart rule applies to.
+     *
+     * @var array<int,array{id:int, code:string|null, name:string|null}>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $customer_groups = null;
 

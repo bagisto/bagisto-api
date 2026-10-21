@@ -57,6 +57,8 @@ class CreateCustomerReturnInput
     public ?string $package_condition = null;
 
     /**
+     * The answers to the return custom fields, keyed by field id.
+     *
      * @var array<int|string,mixed>|null
      */
     #[ApiProperty(description: 'Custom field answers keyed by field id (see /return-custom-fields)')]

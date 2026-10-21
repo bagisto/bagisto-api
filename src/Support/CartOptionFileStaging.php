@@ -9,7 +9,9 @@ use Illuminate\Support\Str;
 
 class CartOptionFileStaging
 {
-    /** Disk and directory the staged uploads live on. */
+    /**
+     * Disk and directory the staged uploads live on.
+     */
     public const DISK = 'private';
 
     /**
@@ -17,13 +19,17 @@ class CartOptionFileStaging
      */
     public const STAGE_DIR = 'cart-uploads';
 
-    /** How long a staged upload stays resolvable — follows the store's session lifetime. */
+    /**
+     * How long a staged upload stays resolvable — follows the store's session lifetime.
+     */
     public function ttlMinutes(): int
     {
         return (int) config('session.lifetime', 120);
     }
 
-    /** Upload ceiling, taken from php.ini (`upload_max_filesize`) like the rest of Bagisto. */
+    /**
+     * Upload ceiling, taken from php.ini (`upload_max_filesize`) like the rest of Bagisto.
+     */
     public function maxUploadBytes(): int
     {
         $limit = trim((string) core()->getMaxUploadSize());

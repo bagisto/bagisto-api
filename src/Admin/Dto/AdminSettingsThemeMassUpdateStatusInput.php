@@ -7,7 +7,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminSettingsThemeMassUpdateStatusInput
 {
-    /** @var int[]|null */
+    /**
+     * The ids of the theme customizations whose status is updated.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(description: 'Array of theme customization IDs.')]
     #[Groups(['mutation'])]
     public ?array $indices = null;

@@ -566,7 +566,9 @@ class Product extends BaseProduct
         return $this->id;
     }
 
-    /** Parent. */
+    /**
+     * Parent.
+     */
     #[ApiProperty(writable: true, readable: true, required: false)]
     public function getParent(): mixed
     {
@@ -578,7 +580,9 @@ class Product extends BaseProduct
      */
     public function setParent(mixed $value): void {}
 
-    /** Is Saleable. */
+    /**
+     * Is Saleable.
+     */
     #[ApiProperty(
         writable: false,
         readable: true
@@ -605,7 +609,9 @@ class Product extends BaseProduct
         return $this->status && $this->isSaleable();
     }
 
-    /** Available for Sale. */
+    /**
+     * Available for Sale.
+     */
     #[ApiProperty(
         writable: false,
         readable: true

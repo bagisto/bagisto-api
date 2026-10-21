@@ -80,9 +80,17 @@ class AdminCmsPageListDto
      */
     public ?string $updated_at = null;
 
-    /** @var array<int, mixed>|null */
+    /**
+     * The per-locale translations of the CMS page.
+     *
+     * @var array<int, mixed>|null
+     */
     public ?array $translations = null;
 
-    /** @var array<int, mixed>|null */
+    /**
+     * The channels the CMS page is published on.
+     *
+     * @var array<int, mixed>|null
+     */
     public ?array $channels = null;
 }

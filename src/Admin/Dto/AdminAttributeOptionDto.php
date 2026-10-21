@@ -37,6 +37,8 @@ class AdminAttributeOptionDto
     public ?string $swatchValueUrl = null;
 
     /**
+     * The per-locale labels of the attribute option.
+     *
      * @var array<int, AdminAttributeOptionTranslationDto>|null
      */
     public ?array $translations = null;

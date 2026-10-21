@@ -90,6 +90,8 @@ class AdminAppearanceThemeActivate
     public ?string $code = null;
 
     /**
+     * The channels the theme was activated on, each with its id and name.
+     *
      * @var array<int, array<string, mixed>>
      */
     public array $activated_on = [];

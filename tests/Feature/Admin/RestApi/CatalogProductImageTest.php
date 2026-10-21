@@ -497,7 +497,9 @@ class CatalogProductImageTest extends AdminApiTestCase
      */
     protected function jpegBytes(): string
     {
-        return (string) file_get_contents(UploadedFile::fake()->image('seed.jpg', 10, 10)->getRealPath());
+        $image = UploadedFile::fake()->image('seed.jpg', 10, 10);
+
+        return (string) file_get_contents($image->getRealPath());
     }
 
     /**

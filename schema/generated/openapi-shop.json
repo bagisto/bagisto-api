@@ -23097,12 +23097,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "type": {
                         "type": [
@@ -23270,12 +23265,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "type": {
                         "type": [
@@ -26006,12 +25996,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "sessionToken": {
                         "description": "Unique session token for guest cart",
@@ -26121,12 +26106,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "description": "Shipping address",
@@ -26134,12 +26114,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "appliedTaxes": {
                         "description": "Applied taxes",
@@ -26147,12 +26122,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "haveStockableItems": {
                         "description": "Has stockable items",
@@ -26414,12 +26384,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "sessionToken": {
                         "description": "Unique session token for guest cart",
@@ -26529,12 +26494,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "description": "Shipping address",
@@ -26542,12 +26502,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "appliedTaxes": {
                         "description": "Applied taxes",
@@ -26555,12 +26510,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "haveStockableItems": {
                         "description": "Has stockable items",
@@ -26649,32 +26599,17 @@
                     "customer": {
                         "readOnly": true,
                         "type": "array",
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "addresses": {
                         "readOnly": true,
                         "type": "array",
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "orders": {
                         "readOnly": true,
                         "type": "array",
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     }
                 }
             },
@@ -26684,32 +26619,17 @@
                     "customer": {
                         "readOnly": true,
                         "type": "array",
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "addresses": {
                         "readOnly": true,
                         "type": "array",
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "orders": {
                         "readOnly": true,
                         "type": "array",
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     }
                 }
             },
@@ -26992,12 +26912,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "sessionToken": {
                         "description": "Unique session token for guest cart",
@@ -27107,12 +27022,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "description": "Shipping address",
@@ -27120,12 +27030,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "appliedTaxes": {
                         "description": "Applied taxes",
@@ -27133,12 +27038,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "haveStockableItems": {
                         "description": "Has stockable items",
@@ -27400,12 +27300,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "sessionToken": {
                         "description": "Unique session token for guest cart",
@@ -27515,12 +27410,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "description": "Shipping address",
@@ -27528,12 +27418,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "appliedTaxes": {
                         "description": "Applied taxes",
@@ -27541,12 +27426,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "haveStockableItems": {
                         "description": "Has stockable items",
@@ -27944,12 +27824,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     }
                 }
@@ -28063,12 +27938,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     }
                 }
@@ -28490,12 +28360,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     }
                 }
@@ -28609,12 +28474,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     }
                 }

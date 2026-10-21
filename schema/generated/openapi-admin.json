@@ -30674,12 +30674,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "message": {
@@ -30704,12 +30699,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "message": {
@@ -31023,24 +31013,14 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "addresses": {
                         "readOnly": true,
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "items": {
@@ -31048,12 +31028,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "invoices": {
@@ -31061,12 +31036,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "shipments": {
@@ -31074,12 +31044,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "refunds": {
@@ -31087,12 +31052,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "comments": {
@@ -31100,12 +31060,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     }
                 }
@@ -31413,24 +31368,14 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "addresses": {
                         "readOnly": true,
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "items": {
@@ -31438,12 +31383,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "invoices": {
@@ -31451,12 +31391,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "shipments": {
@@ -31464,12 +31399,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "refunds": {
@@ -31477,12 +31407,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "comments": {
@@ -31490,12 +31415,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     }
                 }
@@ -31634,12 +31554,7 @@
                         "type": "array",
                         "items": {
                             "type": "array",
-                            "items": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "items": []
                         }
                     },
                     "billingAddress": {
@@ -31647,24 +31562,14 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "type": [
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "success": {
                         "type": [
@@ -31814,12 +31719,7 @@
                         "type": "array",
                         "items": {
                             "type": "array",
-                            "items": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "items": []
                         }
                     },
                     "billingAddress": {
@@ -31827,24 +31727,14 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "type": [
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "success": {
                         "type": [
@@ -32054,24 +31944,14 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "channels": {
                         "type": [
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     }
                 }
             },
@@ -32161,24 +32041,14 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "channels": {
                         "type": [
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     }
                 }
             },
@@ -32908,24 +32778,14 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "items": {
                         "readOnly": true,
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     }
                 }
@@ -33310,24 +33170,14 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "items": {
                         "readOnly": true,
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     }
                 }
@@ -33729,24 +33579,14 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "addresses": {
                         "readOnly": true,
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "items": {
@@ -33754,12 +33594,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "invoices": {
@@ -33767,12 +33602,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "shipments": {
@@ -33780,12 +33610,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "refunds": {
@@ -33793,12 +33618,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "comments": {
@@ -33806,12 +33626,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     }
                 }
@@ -34119,24 +33934,14 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "addresses": {
                         "readOnly": true,
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "items": {
@@ -34144,12 +33949,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "invoices": {
@@ -34157,12 +33957,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "shipments": {
@@ -34170,12 +33965,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "refunds": {
@@ -34183,12 +33973,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "comments": {
@@ -34196,12 +33981,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     }
                 }
@@ -34587,33 +34367,18 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "type": [
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "items": {
                         "type": "array",
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     }
                 }
             },
@@ -35164,33 +34929,18 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "type": [
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "items": {
                         "type": "array",
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     }
                 }
             },
@@ -35221,12 +34971,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -35255,12 +35000,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -35291,12 +35031,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -35325,12 +35060,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -35361,12 +35091,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -35395,12 +35120,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -35431,12 +35151,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -35465,12 +35180,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -35501,12 +35211,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -35535,12 +35240,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -35571,12 +35271,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -35608,12 +35303,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -35644,12 +35334,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -35681,12 +35366,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -35717,12 +35397,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -35751,12 +35426,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -35787,12 +35457,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -35821,12 +35486,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -35857,12 +35517,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -35891,12 +35546,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -35927,12 +35577,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -35961,12 +35606,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -35997,12 +35637,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -36031,12 +35666,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -36067,12 +35697,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -36104,12 +35729,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -36140,12 +35760,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -36177,12 +35792,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -36213,12 +35823,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -36250,12 +35855,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -36286,12 +35886,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -36323,12 +35918,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -36359,12 +35949,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "statistics": {
                         "readOnly": true,
@@ -36396,12 +35981,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     }
                 }
             },
@@ -37241,12 +36821,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "translations": {
                         "readOnly": true,
@@ -37256,12 +36831,7 @@
                         ],
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "createdAt": {
@@ -37480,12 +37050,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "translations": {
                         "readOnly": true,
@@ -37495,12 +37060,7 @@
                         ],
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
-                            }
+                            "additionalProperties": []
                         }
                     },
                     "createdAt": {
@@ -37794,12 +37354,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "fieldSeparator": {
                         "readOnly": true,
@@ -37859,12 +37414,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "startedAt": {
                         "readOnly": true,
@@ -37923,12 +37473,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "message": {
                         "readOnly": true,
@@ -38029,12 +37574,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "fieldSeparator": {
                         "readOnly": true,
@@ -38094,12 +37634,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "startedAt": {
                         "readOnly": true,
@@ -38158,12 +37693,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "message": {
                         "readOnly": true,
@@ -38276,12 +37806,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "fieldSeparator": {
                         "readOnly": true,
@@ -38341,12 +37866,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "startedAt": {
                         "readOnly": true,
@@ -38405,12 +37925,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "message": {
                         "readOnly": true,
@@ -38511,12 +38026,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "fieldSeparator": {
                         "readOnly": true,
@@ -38576,12 +38086,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "startedAt": {
                         "readOnly": true,
@@ -38640,12 +38145,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "message": {
                         "readOnly": true,
@@ -38746,12 +38246,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "fieldSeparator": {
                         "readOnly": true,
@@ -38811,12 +38306,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "startedAt": {
                         "readOnly": true,
@@ -38875,12 +38365,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "message": {
                         "readOnly": true,
@@ -38981,12 +38466,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "fieldSeparator": {
                         "readOnly": true,
@@ -39046,12 +38526,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "startedAt": {
                         "readOnly": true,
@@ -39110,12 +38585,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "message": {
                         "readOnly": true,
@@ -39216,12 +38686,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "fieldSeparator": {
                         "readOnly": true,
@@ -39281,12 +38746,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "startedAt": {
                         "readOnly": true,
@@ -39345,12 +38805,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "message": {
                         "readOnly": true,
@@ -39451,12 +38906,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "fieldSeparator": {
                         "readOnly": true,
@@ -39516,12 +38966,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "startedAt": {
                         "readOnly": true,
@@ -39580,12 +39025,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "message": {
                         "readOnly": true,
@@ -39686,12 +39126,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "fieldSeparator": {
                         "readOnly": true,
@@ -39751,12 +39186,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "startedAt": {
                         "readOnly": true,
@@ -39815,12 +39245,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "message": {
                         "readOnly": true,
@@ -39921,12 +39346,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "fieldSeparator": {
                         "readOnly": true,
@@ -39986,12 +39406,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "startedAt": {
                         "readOnly": true,
@@ -40050,12 +39465,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "message": {
                         "readOnly": true,
@@ -40156,12 +39566,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "fieldSeparator": {
                         "readOnly": true,
@@ -40221,12 +39626,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "startedAt": {
                         "readOnly": true,
@@ -40285,12 +39685,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "message": {
                         "readOnly": true,
@@ -40391,12 +39786,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "fieldSeparator": {
                         "readOnly": true,
@@ -40456,12 +39846,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "startedAt": {
                         "readOnly": true,
@@ -40520,12 +39905,7 @@
                             "object",
                             "null"
                         ],
-                        "additionalProperties": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "additionalProperties": []
                     },
                     "message": {
                         "readOnly": true,
@@ -42295,24 +41675,14 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "type": [
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "createdAt": {
                         "type": [
@@ -42328,12 +41698,7 @@
                     },
                     "items": {
                         "type": "array",
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     }
                 }
             },
@@ -42502,24 +41867,14 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "type": [
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "createdAt": {
                         "type": [
@@ -42535,12 +41890,7 @@
                     },
                     "items": {
                         "type": "array",
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     }
                 }
             }

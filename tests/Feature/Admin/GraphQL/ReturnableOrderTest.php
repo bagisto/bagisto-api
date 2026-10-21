@@ -22,7 +22,7 @@ class ReturnableOrderTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $order = $this->seedOrder();
 
-        $response = $this->adminGraphQL($this->query($order->id), [], $admin);
+        $response = $this->adminGraphQL($this->returnableOrderQuery($order->id), [], $admin);
 
         $response->assertOk();
         expect($response->json('errors'))->toBeNull();
@@ -54,7 +54,7 @@ class ReturnableOrderTest extends AdminApiTestCase
         $admin = $this->customRoleAdmin(['sales', 'sales.rma', 'sales.rma.requests', 'sales.rma.requests.create']);
         $order = $this->seedOrder();
 
-        $response = $this->adminGraphQL($this->query($order->id), [], $admin);
+        $response = $this->adminGraphQL($this->returnableOrderQuery($order->id), [], $admin);
 
         $response->assertOk();
         expect($response->json('errors'))->toBeNull();
@@ -69,7 +69,7 @@ class ReturnableOrderTest extends AdminApiTestCase
         $admin = $this->customRoleAdmin(['sales', 'sales.rma', 'sales.rma.requests']);
         $order = $this->seedOrder();
 
-        $response = $this->adminGraphQL($this->query($order->id), [], $admin);
+        $response = $this->adminGraphQL($this->returnableOrderQuery($order->id), [], $admin);
 
         expect($response->json('errors'))->not->toBeNull();
         expect($response->json('data.adminReturnableOrders'))->toBeNull();
@@ -78,7 +78,7 @@ class ReturnableOrderTest extends AdminApiTestCase
     /**
      * Build the order picker query for one order.
      */
-    protected function query(int $orderId): string
+    protected function returnableOrderQuery(int $orderId): string
     {
         return <<<GQL
             query {

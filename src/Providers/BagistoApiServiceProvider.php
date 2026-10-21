@@ -32,10 +32,12 @@ use Webkul\Attribute\Contracts\Attribute as AttributeContract;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
 use Webkul\BagistoApi\Admin\Auth\AdminApiAuthenticator;
 use Webkul\BagistoApi\Admin\Auth\AdminApiGuard;
+use Webkul\BagistoApi\Admin\Contracts\AdminApiAudit as AdminApiAuditContract;
 use Webkul\BagistoApi\Admin\Contracts\AdminApiRefreshToken as AdminApiRefreshTokenContract;
 use Webkul\BagistoApi\Admin\Contracts\AdminApiSession as AdminApiSessionContract;
 use Webkul\BagistoApi\Admin\Contracts\AdminApiToken as AdminApiTokenContract;
 use Webkul\BagistoApi\Admin\Contracts\AdminApiTwoFactorChallenge as AdminApiTwoFactorChallengeContract;
+use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
 use Webkul\BagistoApi\Admin\Models\AdminApiRefreshToken;
 use Webkul\BagistoApi\Admin\Models\AdminApiSession;
 use Webkul\BagistoApi\Admin\Models\AdminApiToken;
@@ -127,7 +129,7 @@ class BagistoApiServiceProvider extends ServiceProvider
 
         $this->registerModelSubstitutions();
 
-        $this->bootAdminIntegration();
+        $this->bootAdminPanel();
 
         if (config('bagistoapi.audit.enabled', true)) {
             $this->app->make(AdminApiAuditRecorder::class)->register();
@@ -171,20 +173,6 @@ class BagistoApiServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->registerCommands();
         }
-    }
-
-    /**
-     * Determine whether the API integration module is enabled, defaulting to enabled when unset.
-     */
-    public function isIntegrationModuleEnabled(): bool
-    {
-        try {
-            $value = core()->getConfigData('api.integration.settings.enabled');
-        } catch (\Throwable $exception) {
-            return true;
-        }
-
-        return $value === null ? true : (bool) $value;
     }
 
     /**
@@ -253,6 +241,7 @@ class BagistoApiServiceProvider extends ServiceProvider
             AdminApiRefreshTokenContract::class => AdminApiRefreshToken::class,
             AdminApiTokenContract::class => AdminApiToken::class,
             AdminApiTwoFactorChallengeContract::class => AdminApiTwoFactorChallenge::class,
+            AdminApiAuditContract::class => AdminApiAudit::class,
         ];
 
         foreach ($models as $contract => $model) {
@@ -505,18 +494,11 @@ class BagistoApiServiceProvider extends ServiceProvider
     }
 
     /**
-     * Merge the package menu into the admin menu, leaving out the Integration entries while that module is off.
+     * Merge the package menu into the admin menu.
      */
     protected function registerAdminMenu(): void
     {
         $menuConfig = require __DIR__.'/../Admin/Config/menu.php';
-
-        if (! $this->isIntegrationModuleEnabled()) {
-            $menuConfig = array_values(array_filter(
-                $menuConfig,
-                fn (array $item) => ! str_starts_with($item['key'], 'integration')
-            ));
-        }
 
         $existingMenu = (array) config('menu.admin', []);
         config(['menu.admin' => array_merge($existingMenu, $menuConfig)]);
@@ -525,7 +507,7 @@ class BagistoApiServiceProvider extends ServiceProvider
     /**
      * Load the admin panel routes, views and menu, and register the admin API guard and rate limiter.
      */
-    protected function bootAdminIntegration(): void
+    protected function bootAdminPanel(): void
     {
         Route::middleware([
             'web',

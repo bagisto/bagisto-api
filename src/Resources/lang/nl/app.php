@@ -642,6 +642,8 @@ return [
             'notify-success-message' => '   ✅ :count meldingen over verloop verzonden',
             'notify-failed-message' => '   ⚠️ Melding over :key mislukt: :error',
             'publish-assets-warning' => 'Waarschuwing: kan pakketassets niet publiceren. :error',
+            'env-file-not-found' => 'Het .env-bestand is niet gevonden. Maak het aan vóór de installatie.',
+            'env-permission-denied' => 'Het .env-bestand is niet beschrijfbaar. Controleer de rechten.',
             'env-config-saved' => '✓ Omgevingsconfiguratie van API Platform succesvol opgeslagen',
             'api-endpoints' => 'API-endpoints:',
             'api-documentation' => 'API-documentatie: :url',
@@ -649,6 +651,11 @@ return [
             'graphql-playground' => 'GraphQL Playground: :url',
             'rest-api-storefront' => 'REST API Storefront Swagger: :url',
             'rest-api-admin' => 'REST API Admin Swagger: :url',
+            'generating-jwt-keys' => 'JWT-ondertekeningssleutels voor admin-API-tokens worden aangemaakt...',
+            'jwt-keys-generated' => '✓ JWT-ondertekeningssleutels zijn gereed',
+            'jwt-keys-warning' => 'Waarschuwing: de JWT-ondertekeningssleutels konden niet worden aangemaakt. Voer php artisan bagisto-api:jwt-keys handmatig uit. :error',
+            'admin-login' => 'Admin-API-aanmelding: :url',
+            'admin-api-tokens' => 'Admin-API-tokens (serverintegraties): :url',
             'key-rotation-invalid-key' => 'Een ongeldige of verlopen sleutel kan niet worden geroteerd',
             'env-file-not-found' => 'Het .env-bestand is niet gevonden',
             'env-permission-denied' => 'Toegang geweigerd: kan niet naar het .env-bestand schrijven. Controleer de bestandsrechten.',
@@ -744,9 +751,6 @@ return [
     ],
 
     'admin' => [
-        // login / logout / forgot-password / profile-update keys removed in the
-        // 2026-05-27 auth refactor — admin clients now authenticate via
-        // pre-issued integration tokens (Bearer header, AdminApiGuard).
         'profile' => [
             'unauthenticated' => 'U bent niet geverifieerd.',
         ],
@@ -1370,10 +1374,7 @@ return [
             ],
 
             'currency' => [
-                // Read
                 'not-found' => 'Valuta niet gevonden.',
-
-                // Create / Update / Delete
                 'created' => 'Valuta succesvol aangemaakt.',
                 'updated' => 'Valuta succesvol bijgewerkt.',
                 'deleted' => 'Valuta succesvol verwijderd.',
@@ -1850,22 +1851,14 @@ return [
                 'not-active' => 'Deze sessie is al ingetrokken of verlopen.',
             ],
         ],
-    ],
 
-    'integration' => [
-        'menu' => [
-            'title' => 'Integratie',
-            'tokens' => 'Tokens',
-        ],
-
-        'history' => [
+        'api-audit' => [
             'menu' => [
-                'title' => 'Geschiedenis',
+                'title' => 'API-audit',
             ],
 
             'acl' => [
                 'title' => 'Geschiedenis van API-wijzigingen',
-                'view' => 'Bekijken',
                 'delete' => 'Geschiedenis verwijderen',
             ],
 
@@ -1904,10 +1897,10 @@ return [
                 'date' => 'Datum',
                 'admin' => 'Beheerder',
                 'token' => 'Token',
-                'action' => 'Actie',
+                'token-kind' => 'Tokensoort',
+                'channel' => 'Kanaal',
                 'operation' => 'Operatie',
                 'resource' => 'Bron',
-                'version' => 'Versie',
                 'method' => 'Methode',
                 'ip' => 'IP',
                 'view' => 'Bekijk',
@@ -1920,193 +1913,26 @@ return [
                 'deleted' => 'Verwijderd',
             ],
 
+            'token-kinds' => [
+                'session' => 'Inlogsessie',
+                'api-token' => 'API-token',
+                'integration' => 'Integratietoken (verwijderd)',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => 'Beheerpaneel',
+                'cli' => 'Consoleopdracht',
+            ],
+
             'deleted' => ':count geschiedenisrecord(s) verwijderd.',
             'cleanup-input-required' => 'Geef een aantal dagen of een datum op voor de opruiming.',
         ],
 
-        'acl' => [
-            'title' => 'Integratie',
-            'view' => 'Bekijken',
-            'create' => 'Integratie creëren',
-            'edit' => 'Integratie bewerken',
-            'delete' => 'Integratietoken intrekken',
-            'generate' => 'Integratietoken genereren',
-            'regenerate' => 'Integratietoken opnieuw genereren',
-        ],
-
-        'index' => [
-            'title' => 'Integraties',
-            'create-btn' => 'Integratie creëren',
-        ],
-
-        'create' => [
-            'title' => 'Integratie creëren',
-            'save-btn' => 'Opslaan',
-            'back-btn' => 'Terug',
-        ],
-
-        'edit' => [
-            'title' => 'Integratie bewerken',
-            'save-btn' => 'Opslaan',
-            'back-btn' => 'Terug',
-            'generate-btn' => 'Token genereren',
-            'regenerate-btn' => 'Token opnieuw genereren',
-            'revoke-btn' => 'Token intrekken',
-            'copy-btn' => 'Kopieer',
-            'token-warning' => 'Bewaar dit token nu. Het wordt niet meer getoond.',
-            'token-label' => 'Token',
-            'not-generated' => 'Nog niet gegenereerd',
-            'masked' => '(Opgeslagen — slechts één keer getoond bij generatie)',
-            'history-banner' => 'Dit token is niet langer actief.',
-        ],
-
-        'fields' => [
-            'name' => 'Naam',
-            'description' => 'Beschrijving',
-            'assign-user' => 'Gebruiker toewijzen',
-            'permission-type' => 'Toestemmingstype',
-            'access-control' => 'Toegangscontrole',
-            'general' => 'Algemeen',
-            'token-settings' => 'Token-instellingen',
-            'valid-till' => 'Geldig tot',
-            'rate-limit-per-minute' => 'Tarieflimiet (per minuut)',
-            'rate-limit-per-day' => 'Tarieflimiet (per dag)',
-            'never-expires' => 'Verloopt nooit',
-            'expires-on' => 'Verloopt op',
-            'unlimited' => 'Onbeperkt',
-            'limit-to' => 'Beperk tot',
-            'requests-per-minute' => 'verzoeken / minuut',
-            'requests-per-day' => 'aanvragen/dag',
-            'select-admin' => 'Selecteer een beheerder',
-            'no-available-admins' => 'Geen beheerders beschikbaar: elke beheerder heeft al een actief token.',
-            'same-as-web-hint' => 'Token weerspiegelt live de huidige rolrechten van de toegewezen beheerder.',
-            'ip-allowlist' => 'Toegestane IP-lijst',
-            'ip-any' => 'Elk IP-adres (standaard)',
-            'ip-restricted' => 'Beperkt tot specifieke IP\'s',
-            'ip-list-hint' => 'Eén invoer per regel. Ondersteunt IPv4, IPv6 en CIDR (bijvoorbeeld 10.0.0.0/24 of 2001:db8::/32). Laat dit leeg om alle IP\'s toe te staan.',
-        ],
-
-        'permission-type' => [
-            'all' => 'Allemaal',
-            'custom' => 'Aangepast',
-            'same-as-web' => 'Hetzelfde als Webtoestemming',
-        ],
-
-        'status' => [
-            'draft' => 'Diepgang',
-            'active' => 'Actief',
-            'revoked' => 'Ingetrokken',
-            'regenerated' => 'Geregenereerd',
-        ],
-
-        'datagrid' => [
-            'id' => 'Identiteitskaart',
-            'name' => 'Naam',
-            'admin' => 'Beheerder',
-            'token' => 'Token',
-            'status' => 'Status',
-            'permission-type' => 'Toestemmingstype',
-            'expires-at' => 'Geldig tot',
-            'last-used-at' => 'Laatst gebruikt',
-            'created-at' => 'Gemaakt op',
-            'edit' => 'Bewerken',
-            'revoke' => 'Intrekken',
-        ],
-
-        'messages' => [
-            'draft-created' => 'Integratie gecreëerd. Genereer het token om het te gaan gebruiken.',
-            'updated' => 'Integratie is succesvol bijgewerkt.',
-            'generated' => 'Token gegenereerd. Kopieer het nu. Het wordt niet meer weergegeven.',
-            'regenerated' => 'Token opnieuw gegenereerd. Kopieer nu het nieuwe token. Het wordt niet meer getoond.',
-            'revoked' => 'Token is succesvol ingetrokken.',
-            'generate-only-draft' => 'Alleen conceptintegraties kunnen hun token laten genereren.',
-            'regenerate-only-active' => 'Alleen actieve tokens kunnen opnieuw worden gegenereerd.',
-            'cannot-edit-historic' => 'Ingetrokken of opnieuw gegenereerde tokens kunnen niet worden bewerkt.',
-            'already-inactive' => 'Dit token is al inactief.',
-        ],
-
-        'errors' => [
-            'admin-has-token' => 'De geselecteerde beheerder heeft al een actief integratietoken.',
-            'only-draft-generate' => 'Alleen concepttokens kunnen worden gegenereerd.',
-        ],
-
-        'validation' => [
-            'ip-invalid' => 'Elk toegestaan ​​IP-adres moet een geldig IPv4- of IPv6-adres zijn (CIDR-notatie ondersteund).',
-            'cidr-prefix-invalid' => 'Het CIDR-voorvoegsel is ongeldig voor de opgegeven IP-versie.',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => 'API',
-                'info' => 'Instellingen voor de Bagisto API en zijn beheerdersmodules.',
-            ],
-
-            'integration' => [
-                'title' => 'Integratie',
-                'info' => 'Beheer de API-integratieplug-in die wordt gebruikt om beheerders-API-tokens uit te geven.',
-            ],
-
-            'settings' => [
-                'title' => 'Module-instellingen',
-                'info' => 'Schakel de API-integratieplug-in in of uit. Indien uitgeschakeld, is het zijbalkmenu verborgen en retourneren de pagina\'s 404.',
-                'enable' => 'Schakel API-integratiemodule in',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => 'Er is een nieuw API-token gegenereerd: :name',
-                'greeting' => 'Er is zojuist een API-integratietoken met de naam \':name\' gegenereerd voor uw account.',
-            ],
-
-            'regenerated' => [
-                'subject' => 'Uw API-token is opnieuw gegenereerd: :name',
-                'greeting' => 'Het API-integratietoken met de naam \':name\' is zojuist opnieuw gegenereerd. Het vorige token werkt niet meer; alleen het nieuwe is geldig.',
-            ],
-
-            'revoked' => [
-                'subject' => 'Uw API-token is ingetrokken: :name',
-                'greeting' => 'Het API-integratietoken met de naam \':name\' is ingetrokken. Elke client die er gebruik van maakt, heeft geen toegang meer.',
-            ],
-
-            'details' => [
-                'name' => 'Tokennaam',
-                'date' => 'Datum',
-                'ip' => 'Vanaf IP',
-            ],
-
-            'revoke-hint' => 'Als u dit niet had verwacht, trekt u het token onmiddellijk in via onderstaande knop.',
-            'revoke-btn' => 'Trek dit token in',
-            'revoke-expiry' => 'Deze intrekkingslink is 7 dagen geldig. Meld u daarna aan bij het beheerdersdashboard om het token te beheren.',
-            'no-action' => 'Er is geen actie nodig; deze e-mail is slechts een bevestiging.',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => 'API-token intrekken',
-            'confirm-title' => 'Dit token intrekken?',
-            'confirm-message' => 'Het token ":name" werkt onmiddellijk niet meer voor alle clients die het gebruiken.',
-            'confirm-button' => 'Token intrekken',
-            'success-title' => 'Token ingetrokken',
-            'success-message' => 'Het token ":name" is ingetrokken. Elke client die er gebruik van maakt, heeft onmiddellijk geen toegang meer.',
-            'already-inactive-title' => 'Token is al inactief',
-            'already-inactive-message' => 'Het token \':name\' is al ingetrokken of opnieuw gegenereerd. Er is geen verdere actie nodig.',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => 'Token genereren',
-                'message' => 'Nu het token genereren? De leesbare tekst wordt slechts één keer weergegeven: kopieer deze voordat u de pagina verlaat.',
-            ],
-
-            'regenerate' => [
-                'title' => 'Token opnieuw genereren',
-                'message' => 'Het token opnieuw genereren? Het oude token werkt onmiddellijk niet meer en de nieuwe leesbare tekst wordt slechts één keer weergegeven.',
-            ],
-
-            'revoke' => [
-                'title' => 'Token intrekken',
-                'message' => 'Dit token intrekken? Elke client die hiervan gebruik maakt, verliest onmiddellijk de toegang. Deze actie kan niet ongedaan worden gemaakt.',
-            ],
+        'api-configuration' => [
+            'title' => 'API',
+            'info' => 'Instellingen voor de Bagisto API en zijn beheerdersmodules.',
         ],
     ],
 ];

@@ -368,7 +368,7 @@ function AuthStatusBar() {
         msgParts.push('🔑 Admin authenticated');
         msgParts.push(React.createElement('span', { key: 't', className: 'bar-token' }, '— Bearer ' + maskToken(adminToken)));
     } else {
-        msgParts.push('🔓 No admin token — paste an integration token (Settings → Integration in the admin panel)');
+        msgParts.push('🔓 No admin token — paste the access token from the createAdminLogin mutation, or an API token (Settings → API Tokens in the admin panel)');
     }
 
     function handleManualApply() {
@@ -395,7 +395,7 @@ function AuthStatusBar() {
                 id: 'manual-token-input',
                 className: 'bar-manual-input',
                 type: 'text',
-                placeholder: 'Paste admin integration token (<id>|<random>)...',
+                placeholder: 'Paste an admin access token or API token...',
                 onKeyDown: function(e) { if (e.key === 'Enter') handleManualApply(); if (e.key === 'Escape') toggleManual(); }
             }),
             React.createElement('button', { key: 'ap', className: 'bar-btn-apply', onClick: handleManualApply }, 'Apply'),

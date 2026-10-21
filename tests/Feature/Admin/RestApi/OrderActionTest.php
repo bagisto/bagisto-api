@@ -119,7 +119,7 @@ class OrderActionTest extends AdminApiTestCase
     }
 
     /**
-     * Edge case B: admin lacks `sales.orders.create` permission -> HTTP 422.
+     * Edge case B: admin lacks `sales.orders.create` permission -> HTTP 403.
      */
     public function test_reorder_rejects_when_admin_lacks_permission(): void
     {
@@ -140,7 +140,7 @@ class OrderActionTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/orders/'.$id.'/reorder', [], $token);
 
-        $response->assertStatus(422);
+        $response->assertStatus(403);
         expect($response->json('detail') ?? $response->json('message'))
             ->toBe(trans('bagistoapi::app.admin.order.reorder.no-permission'));
     }

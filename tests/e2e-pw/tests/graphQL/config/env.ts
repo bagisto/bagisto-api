@@ -8,15 +8,9 @@ function readEnv(name: string, required = false): string | undefined {
   return value;
 }
 
-// Admin API auth model (post 2026-05-27 refactor):
-//   - Single pre-issued AdminPersonalAccessToken in ADMIN_INTEGRATION_TOKEN.
-//   - No X-Admin-Key, no login round-trip, no token regeneration mid-run.
-//   - ADMIN_EMAIL is kept only so the profile-read test can assert on it.
 export const env = {
   baseUrl: readEnv('BAGISTO_URL', true)!,
   graphqlEndpoint: '/api/graphql',
-  // Admin GraphQL lives on its own admin-scoped endpoint (the shared
-  // /api/graphql is storefront-scoped and does not expose admin operations).
   adminGraphqlEndpoint: '/api/admin/graphql',
   storefrontAccessKey: readEnv('STOREFRONT_ACCESS_KEY', true)!,
   adminIntegrationToken: readEnv('ADMIN_INTEGRATION_TOKEN', true)!,

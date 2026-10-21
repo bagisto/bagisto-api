@@ -6,13 +6,13 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Admin\Dto\AdminRmaCustomFieldCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminRmaCustomFieldUpdateInput;
 use Webkul\BagistoApi\Admin\Models\AdminRmaCustomField;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\RMA\Repositories\RMACustomFieldOptionRepository;
@@ -36,7 +36,6 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
      * Create a new instance.
      */
     public function __construct(
-        private readonly ProcessorInterface $persistProcessor,
         private readonly RMACustomFieldRepository $rmaCustomFieldRepository,
         private readonly RMACustomFieldOptionRepository $rmaCustomFieldOptionRepository,
     ) {}
@@ -70,7 +69,7 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
             return $this->handleDelete((int) ($uriVariables['id'] ?? $data->id));
         }
 
-        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        throw new AuthorizationException(__('bagistoapi::app.admin.rma.no-permission'));
     }
 
     /**
@@ -217,6 +216,6 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
      */
     private function map(int $id): AdminRmaCustomField
     {
-        return AdminRmaCustomFieldItemProvider::toDto(DB::table('rma_custom_fields')->where('id', $id)->first(), true);
+        return AdminRmaCustomFieldItemProvider::toDto($this->rmaCustomFieldRepository->find($id), true);
     }
 }

@@ -15,6 +15,7 @@ use Webkul\BagistoApi\Admin\Dto\AdminReturnUpdateStatusInput;
 use Webkul\BagistoApi\Admin\Models\AdminReturn;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminReturn;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\State\Concerns\ReadsReturnImages;
@@ -43,7 +44,6 @@ class AdminReturnProcessor implements ProcessorInterface
      * Create a new instance.
      */
     public function __construct(
-        private readonly ProcessorInterface $persistProcessor,
         private readonly RMARepository $rmaRepository,
         private readonly RMAItemRepository $rmaItemRepository,
         private readonly RMAImageRepository $rmaImageRepository,
@@ -101,7 +101,7 @@ class AdminReturnProcessor implements ProcessorInterface
             return $this->handleCreate($input, $this->returnImagesFromRequest());
         }
 
-        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        throw new AuthorizationException(__('bagistoapi::app.admin.rma.no-permission'));
     }
 
     /**

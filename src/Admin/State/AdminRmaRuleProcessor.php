@@ -6,13 +6,13 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Admin\Dto\AdminRmaRuleCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminRmaRuleUpdateInput;
 use Webkul\BagistoApi\Admin\Models\AdminRmaRule;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\RMA\Repositories\RMARuleRepository;
@@ -25,7 +25,6 @@ class AdminRmaRuleProcessor implements ProcessorInterface
      * Create a new instance.
      */
     public function __construct(
-        private readonly ProcessorInterface $persistProcessor,
         private readonly RMARuleRepository $rmaRuleRepository,
     ) {}
 
@@ -58,7 +57,7 @@ class AdminRmaRuleProcessor implements ProcessorInterface
             return $this->handleDelete((int) ($uriVariables['id'] ?? $data->id));
         }
 
-        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        throw new AuthorizationException(__('bagistoapi::app.admin.rma.no-permission'));
     }
 
     /**
@@ -164,6 +163,6 @@ class AdminRmaRuleProcessor implements ProcessorInterface
      */
     private function map(int $id): AdminRmaRule
     {
-        return AdminRmaRuleItemProvider::toDto(DB::table('rma_rules')->where('id', $id)->first());
+        return AdminRmaRuleItemProvider::toDto($this->rmaRuleRepository->find($id));
     }
 }

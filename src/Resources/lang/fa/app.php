@@ -642,6 +642,8 @@ return [
             'notify-success-message' => '   ✅ :count اعلان انقضا ارسال شد',
             'notify-failed-message' => '   ⚠️ ارسال اعلان درباره :key ناموفق بود: :error',
             'publish-assets-warning' => 'هشدار: انتشار دارایی‌های بسته ممکن نبود. :error',
+            'env-file-not-found' => 'فایل .env پیدا نشد. پیش از نصب آن را بسازید.',
+            'env-permission-denied' => 'فایل .env قابل نوشتن نیست. مجوزهای آن را بررسی کنید.',
             'env-config-saved' => '✓ پیکربندی محیط API Platform با موفقیت ذخیره شد',
             'api-endpoints' => 'نقاط پایانی API:',
             'api-documentation' => 'مستندات API: :url',
@@ -649,6 +651,11 @@ return [
             'graphql-playground' => 'GraphQL Playground: :url',
             'rest-api-storefront' => 'Swagger رابط REST API فروشگاه: :url',
             'rest-api-admin' => 'Swagger رابط REST API مدیریت: :url',
+            'generating-jwt-keys' => 'در حال ساخت کلیدهای امضای JWT برای توکن‌های API مدیریت...',
+            'jwt-keys-generated' => '✓ کلیدهای امضای JWT آماده است',
+            'jwt-keys-warning' => 'هشدار: ساخت کلیدهای امضای JWT ممکن نشد. php artisan bagisto-api:jwt-keys را دستی اجرا کنید. :error',
+            'admin-login' => 'ورود به API مدیریت: :url',
+            'admin-api-tokens' => 'توکن‌های API مدیریت (یکپارچه‌سازی سرورها): :url',
             'key-rotation-invalid-key' => 'چرخش کلید نامعتبر یا منقضی‌شده ممکن نیست',
             'env-file-not-found' => 'فایل .env یافت نشد',
             'env-permission-denied' => 'دسترسی رد شد: امکان نوشتن در فایل .env وجود ندارد. لطفاً مجوزهای فایل را بررسی کنید.',
@@ -744,9 +751,6 @@ return [
     ],
 
     'admin' => [
-        // login / logout / forgot-password / profile-update keys removed in the
-        // 2026-05-27 auth refactor — admin clients now authenticate via
-        // pre-issued integration tokens (Bearer header, AdminApiGuard).
         'profile' => [
             'unauthenticated' => 'احراز هویت نشده‌اید.',
         ],
@@ -1370,10 +1374,7 @@ return [
             ],
 
             'currency' => [
-                // Read
                 'not-found' => 'ارز یافت نشد.',
-
-                // Create / Update / Delete
                 'created' => 'ارز با موفقیت ایجاد شد.',
                 'updated' => 'ارز با موفقیت به‌روزرسانی شد.',
                 'deleted' => 'ارز با موفقیت حذف شد.',
@@ -1850,22 +1851,14 @@ return [
                 'not-active' => 'این نشست قبلاً ابطال شده یا منقضی شده است.',
             ],
         ],
-    ],
 
-    'integration' => [
-        'menu' => [
-            'title' => 'یکپارچه سازی',
-            'tokens' => 'توکن ها',
-        ],
-
-        'history' => [
+        'api-audit' => [
             'menu' => [
-                'title' => 'تاریخچه',
+                'title' => 'ممیزی API',
             ],
 
             'acl' => [
                 'title' => 'تاریخچه تغییرات API',
-                'view' => 'مشاهده',
                 'delete' => 'حذف تاریخچه',
             ],
 
@@ -1904,10 +1897,10 @@ return [
                 'date' => 'تاریخ',
                 'admin' => 'مدیر',
                 'token' => 'رمز',
-                'action' => 'اقدام',
+                'token-kind' => 'نوع توکن',
+                'channel' => 'کانال',
                 'operation' => 'عملیات',
                 'resource' => 'منبع',
-                'version' => 'نسخه',
                 'method' => 'روش',
                 'ip' => 'IP',
                 'view' => 'مشاهده کنید',
@@ -1920,193 +1913,26 @@ return [
                 'deleted' => 'حذف شد',
             ],
 
+            'token-kinds' => [
+                'session' => 'نشست ورود',
+                'api-token' => 'توکن API',
+                'integration' => 'توکن یکپارچه‌سازی (حذف‌شده)',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => 'پنل مدیریت',
+                'cli' => 'فرمان کنسول',
+            ],
+
             'deleted' => ':count سابقه(های) سابقه حذف شد.',
             'cleanup-input-required' => 'تعدادی روز یا تاریخی برای پاکسازی ارائه دهید.',
         ],
 
-        'acl' => [
-            'title' => 'یکپارچه سازی',
-            'view' => 'مشاهده',
-            'create' => 'ایجاد یکپارچگی',
-            'edit' => 'ویرایش یکپارچه سازی',
-            'delete' => 'لغو رمز ادغام',
-            'generate' => 'توکن ادغام ایجاد کنید',
-            'regenerate' => 'Regenerate Token ادغام',
-        ],
-
-        'index' => [
-            'title' => 'ادغام ها',
-            'create-btn' => 'ایجاد یکپارچگی',
-        ],
-
-        'create' => [
-            'title' => 'ایجاد یکپارچگی',
-            'save-btn' => 'ذخیره کنید',
-            'back-btn' => 'برگشت',
-        ],
-
-        'edit' => [
-            'title' => 'ویرایش یکپارچه سازی',
-            'save-btn' => 'ذخیره کنید',
-            'back-btn' => 'برگشت',
-            'generate-btn' => 'توکن تولید کنید',
-            'regenerate-btn' => 'بازسازی توکن',
-            'revoke-btn' => 'لغو توکن',
-            'copy-btn' => 'کپی کنید',
-            'token-warning' => 'اکنون این نشانه را ذخیره کنید - دیگر نشان داده نخواهد شد.',
-            'token-label' => 'رمز',
-            'not-generated' => 'هنوز تولید نشده است',
-            'masked' => '(ذخیره شده - فقط یک بار در هر نسل نشان داده می شود)',
-            'history-banner' => 'این نشانه دیگر فعال نیست.',
-        ],
-
-        'fields' => [
-            'name' => 'نام',
-            'description' => 'توضیحات',
-            'assign-user' => 'اختصاص کاربر',
-            'permission-type' => 'نوع مجوز',
-            'access-control' => 'کنترل دسترسی',
-            'general' => 'ژنرال',
-            'token-settings' => 'تنظیمات توکن',
-            'valid-till' => 'معتبر تا',
-            'rate-limit-per-minute' => 'محدودیت نرخ (در دقیقه)',
-            'rate-limit-per-day' => 'محدودیت نرخ (در روز)',
-            'never-expires' => 'هرگز منقضی نمی شود',
-            'expires-on' => 'منقضی می شود',
-            'unlimited' => 'نامحدود',
-            'limit-to' => 'محدود به',
-            'requests-per-minute' => 'درخواست ها / دقیقه',
-            'requests-per-day' => 'درخواست ها / روز',
-            'select-admin' => 'یک مدیر انتخاب کنید',
-            'no-available-admins' => 'هیچ مدیری در دسترس نیست - هر سرپرست قبلاً یک توکن فعال دارد.',
-            'same-as-web-hint' => 'Token مجوزهای نقش فعلی سرپرست اختصاص داده شده را به صورت زنده منعکس می کند.',
-            'ip-allowlist' => 'لیست مجاز IP',
-            'ip-any' => 'هر IP (پیش‌فرض)',
-            'ip-restricted' => 'محدود به IP های خاص',
-            'ip-list-hint' => 'یک ورودی در هر خط پشتیبانی از IPv4، IPv6 و CIDR (به عنوان مثال 10.0.0.0/24 یا 2001:db8::/32). برای اجازه دادن به همه IP ها خالی بگذارید.',
-        ],
-
-        'permission-type' => [
-            'all' => 'همه',
-            'custom' => 'سفارشی',
-            'same-as-web' => 'همان Web Permission',
-        ],
-
-        'status' => [
-            'draft' => 'پیش نویس',
-            'active' => 'فعال',
-            'revoked' => 'لغو شد',
-            'regenerated' => 'بازسازی شد',
-        ],
-
-        'datagrid' => [
-            'id' => 'شناسه',
-            'name' => 'نام',
-            'admin' => 'مدیر',
-            'token' => 'رمز',
-            'status' => 'وضعیت',
-            'permission-type' => 'نوع مجوز',
-            'expires-at' => 'معتبر تا',
-            'last-used-at' => 'آخرین استفاده',
-            'created-at' => 'ایجاد شده در',
-            'edit' => 'ویرایش کنید',
-            'revoke' => 'لغو',
-        ],
-
-        'messages' => [
-            'draft-created' => 'یکپارچه سازی ایجاد شد. توکن را برای شروع استفاده از آن تولید کنید.',
-            'updated' => 'ادغام با موفقیت به روز شد.',
-            'generated' => 'توکن تولید شد. اکنون آن را کپی کنید - دیگر نشان داده نخواهد شد.',
-            'regenerated' => 'توکن بازسازی شد. اکنون توکن جدید را کپی کنید - دیگر نشان داده نخواهد شد.',
-            'revoked' => 'توکن با موفقیت لغو شد.',
-            'generate-only-draft' => 'فقط پیش نویس های یکپارچه می توانند توکن خود را تولید کنند.',
-            'regenerate-only-active' => 'فقط توکن های فعال قابل بازسازی هستند.',
-            'cannot-edit-historic' => 'توکن های باطل شده یا بازسازی شده قابل ویرایش نیستند.',
-            'already-inactive' => 'این نشانه در حال حاضر غیرفعال است.',
-        ],
-
-        'errors' => [
-            'admin-has-token' => 'سرپرست انتخاب شده از قبل یک نشانه ادغام فعال دارد.',
-            'only-draft-generate' => 'فقط توکن‌های پیش‌نویس قابل تولید هستند.',
-        ],
-
-        'validation' => [
-            'ip-invalid' => 'هر IP مجاز باید یک آدرس IPv4 یا IPv6 معتبر باشد (نماد CIDR پشتیبانی می شود).',
-            'cidr-prefix-invalid' => 'پیشوند CIDR برای نسخه IP داده شده نامعتبر است.',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => 'API',
-                'info' => 'تنظیمات API Bagisto و ماژول‌های مدیریت آن.',
-            ],
-
-            'integration' => [
-                'title' => 'یکپارچه سازی',
-                'info' => 'افزونه یکپارچه سازی API را که برای صدور توکن های API مدیریت استفاده می شود، مدیریت کنید.',
-            ],
-
-            'settings' => [
-                'title' => 'تنظیمات ماژول',
-                'info' => 'افزونه API Integration را فعال یا غیرفعال کنید. در صورت غیرفعال شدن، منوی نوار کناری آن پنهان می شود و صفحات آن 404 را برمی گرداند.',
-                'enable' => 'ماژول یکپارچه سازی API را فعال کنید',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => 'یک نشانه API جدید ایجاد شد: :name',
-                'greeting' => 'یک کد ادغام API به نام ":name" به تازگی در حساب شما ایجاد شده است.',
-            ],
-
-            'regenerated' => [
-                'subject' => 'کد API شما بازسازی شد: :name',
-                'greeting' => 'رمز ادغام API با نام ":name" به تازگی بازسازی شد. توکن قبلی از کار افتاده است - فقط نشانه جدید معتبر است.',
-            ],
-
-            'revoked' => [
-                'subject' => 'کد API شما باطل شد: :name',
-                'greeting' => 'رمز ادغام API با نام ":name" لغو شد. هر سرویس گیرنده ای که از آن استفاده می کند، دسترسی خود را از دست داده است.',
-            ],
-
-            'details' => [
-                'name' => 'نام رمز',
-                'date' => 'تاریخ',
-                'ip' => 'از IP',
-            ],
-
-            'revoke-hint' => 'اگر انتظار این را نداشتید، با استفاده از دکمه زیر فورا توکن را باطل کنید.',
-            'revoke-btn' => 'این توکن را لغو کنید',
-            'revoke-expiry' => 'این پیوند لغو به مدت 7 روز معتبر است. پس از آن، برای مدیریت توکن، وارد پنل مدیریت شوید.',
-            'no-action' => 'هیچ اقدامی لازم نیست - این ایمیل فقط یک تایید است.',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => 'لغو توکن API',
-            'confirm-title' => 'این توکن لغو شود؟',
-            'confirm-message' => 'توکن ":name" بلافاصله برای همه کلاینت‌هایی که از آن استفاده می‌کنند از کار می‌افتد.',
-            'confirm-button' => 'لغو توکن',
-            'success-title' => 'توکن باطل شد',
-            'success-message' => 'نشانه ":name" باطل شده است. هر سرویس گیرنده ای که از آن استفاده می کند بلافاصله دسترسی خود را از دست داده است.',
-            'already-inactive-title' => 'توکن قبلاً غیرفعال است',
-            'already-inactive-message' => 'رمز ":name" قبلاً لغو یا ایجاد شده بود. هیچ اقدام دیگری لازم نیست.',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => 'توکن تولید کنید',
-                'message' => 'اکنون توکن تولید شود؟ متن ساده فقط یک بار نشان داده می شود - قبل از ترک صفحه آن را کپی کنید.',
-            ],
-
-            'regenerate' => [
-                'title' => 'بازسازی توکن',
-                'message' => 'توکن را بازسازی کنیم؟ توکن قدیمی فوراً کار نمی کند و متن ساده جدید فقط یک بار نشان داده می شود.',
-            ],
-
-            'revoke' => [
-                'title' => 'لغو توکن',
-                'message' => 'این نشانه لغو شود؟ هر سرویس گیرنده ای که از آن استفاده کند بلافاصله دسترسی خود را از دست می دهد. این عمل قابل لغو نیست.',
-            ],
+        'api-configuration' => [
+            'title' => 'API',
+            'info' => 'تنظیمات API Bagisto و ماژول‌های مدیریت آن.',
         ],
     ],
 ];

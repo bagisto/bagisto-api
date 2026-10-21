@@ -30,9 +30,7 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->delete();
+        $this->revokeAdminSessions($admin);
 
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product);
@@ -50,9 +48,7 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->update(['expires_at' => now()->subDay()]);
+        $this->expireAdminSessions($admin);
 
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product);

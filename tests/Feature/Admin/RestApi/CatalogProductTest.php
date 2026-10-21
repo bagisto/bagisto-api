@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\BagistoApi\Tests\Concerns\AssertsSanitisedHtml;
@@ -54,8 +53,7 @@ class CatalogProductTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        [$tokenId] = explode('|', $token, 2);
-        AdminPersonalAccessToken::find($tokenId)->delete();
+        $this->revokeAdminSessions($admin);
 
         $response = $this->withHeaders(['Authorization' => 'Bearer '.$token])
             ->getJson('/api/admin/catalog/products');
@@ -880,10 +878,7 @@ class CatalogProductTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        [$tokenId] = explode('|', $token, 2);
-        $row = AdminPersonalAccessToken::find($tokenId);
-        $row->expires_at = now()->subDay();
-        $row->save();
+        $this->expireAdminSessions($admin);
 
         $response = $this->withHeaders(['Authorization' => 'Bearer '.$token])
             ->getJson('/api/admin/catalog/products');

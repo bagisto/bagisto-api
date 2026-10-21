@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
-use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Core\Models\CoreConfig;
@@ -243,12 +242,12 @@ class ReturnFileTest extends AdminApiTestCase
     }
 
     /**
-     * Test a token scoped below the role is forbidden.
+     * Test an admin whose role is narrowed to fewer permissions is forbidden on the next request.
      */
-    public function test_token_scoped_below_the_role_is_forbidden(): void
+    public function test_role_narrowed_to_fewer_permissions_is_forbidden(): void
     {
         $admin = $this->customRoleAdmin(array_merge(self::REQUESTS_PERMISSIONS, ['sales.orders']));
-        $token = $this->customToken($admin, ['sales', 'sales.orders']);
+        $token = $this->tokenForNarrowedRole($admin, ['sales', 'sales.orders']);
         $data = $this->createReturn();
         $image = $this->createImage($data['rma']);
         $message = $this->createMessageWithStoredAttachment($data['rma']);
@@ -381,27 +380,20 @@ class ReturnFileTest extends AdminApiTestCase
     }
 
     /**
-     * Issue a token limited to the given abilities.
+     * Give the admin a new role with exactly the given permissions and return a fresh access token.
      */
-    protected function customToken(Admin $admin, array $abilities): string
+    protected function tokenForNarrowedRole(Admin $admin, array $permissions): string
     {
-        $plain = Str::random(40);
-
-        $row = AdminPersonalAccessToken::create([
-            'admin_id' => $admin->id,
-            'name' => 'rma-file-scope-'.Str::random(6),
-            'token' => hash('sha256', $plain),
-            'token_preview' => substr($plain, 0, 8),
-            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_CUSTOM,
-            'abilities' => $abilities,
-            'rate_limit_per_minute' => null,
-            'rate_limit_per_day' => null,
-            'expires_at' => now()->addDay(),
-            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
-            'created_by_admin_id' => $admin->id,
+        $role = Role::create([
+            'name' => 'narrowed-'.Str::random(6),
+            'description' => 'narrowed',
+            'permission_type' => 'custom',
+            'permissions' => $permissions,
         ]);
 
-        return $row->id.'|'.$plain;
+        $admin->forceFill(['role_id' => $role->id])->save();
+
+        return $this->adminToken($admin->fresh());
     }
 
     /**

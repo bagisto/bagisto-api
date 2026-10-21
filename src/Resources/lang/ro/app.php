@@ -642,6 +642,8 @@ return [
             'notify-success-message' => '   ✅ Au fost trimise :count notificări de expirare',
             'notify-failed-message' => '   ⚠️ Notificarea despre :key a eșuat: :error',
             'publish-assets-warning' => 'Avertisment: resursele pachetului nu au putut fi publicate. :error',
+            'env-file-not-found' => 'Fișierul .env nu a fost găsit. Creați-l înainte de instalare.',
+            'env-permission-denied' => 'Fișierul .env nu poate fi scris. Verificați-i permisiunile.',
             'env-config-saved' => '✓ Configurația de mediu API Platform a fost salvată cu succes',
             'api-endpoints' => 'Endpoint-uri API:',
             'api-documentation' => 'Documentație API: :url',
@@ -649,6 +651,11 @@ return [
             'graphql-playground' => 'GraphQL Playground: :url',
             'rest-api-storefront' => 'Swagger REST API Storefront: :url',
             'rest-api-admin' => 'Swagger REST API Admin: :url',
+            'generating-jwt-keys' => 'Se generează cheile de semnare JWT pentru tokenurile API de administrare...',
+            'jwt-keys-generated' => '✓ Cheile de semnare JWT sunt gata',
+            'jwt-keys-warning' => 'Avertisment: cheile de semnare JWT nu au putut fi generate. Rulați manual php artisan bagisto-api:jwt-keys. :error',
+            'admin-login' => 'Autentificare API de administrare: :url',
+            'admin-api-tokens' => 'Tokenuri API de administrare (integrări de server): :url',
             'key-rotation-invalid-key' => 'Nu se poate roti o cheie invalidă sau expirată',
             'env-file-not-found' => 'Fișierul .env nu a fost găsit',
             'env-permission-denied' => 'Permisiune refuzată: nu se poate scrie în fișierul .env. Verificați permisiunile fișierului.',
@@ -744,9 +751,6 @@ return [
     ],
 
     'admin' => [
-        // login / logout / forgot-password / profile-update keys removed in the
-        // 2026-05-27 auth refactor — admin clients now authenticate via
-        // pre-issued integration tokens (Bearer header, AdminApiGuard).
         'profile' => [
             'unauthenticated' => 'Nu sunteți autentificat.',
         ],
@@ -1370,10 +1374,7 @@ return [
             ],
 
             'currency' => [
-                // Read
                 'not-found' => 'Moneda nu a fost găsită.',
-
-                // Create / Update / Delete
                 'created' => 'Moneda a fost creată cu succes.',
                 'updated' => 'Moneda a fost actualizată cu succes.',
                 'deleted' => 'Moneda a fost ștearsă cu succes.',
@@ -1850,22 +1851,14 @@ return [
                 'not-active' => 'Această sesiune este deja revocată sau expirată.',
             ],
         ],
-    ],
 
-    'integration' => [
-        'menu' => [
-            'title' => 'Integrare',
-            'tokens' => 'Tokenuri',
-        ],
-
-        'history' => [
+        'api-audit' => [
             'menu' => [
-                'title' => 'Istoric',
+                'title' => 'Audit API',
             ],
 
             'acl' => [
                 'title' => 'Istoricul modificărilor API',
-                'view' => 'Vizualizare',
                 'delete' => 'Ștergere istoric',
             ],
 
@@ -1904,10 +1897,10 @@ return [
                 'date' => 'Dată',
                 'admin' => 'Administrator',
                 'token' => 'Token',
-                'action' => 'Acțiune',
+                'token-kind' => 'Tipul tokenului',
+                'channel' => 'Canal',
                 'operation' => 'Operațiune',
                 'resource' => 'Resursă',
-                'version' => 'Versiune',
                 'method' => 'Metodă',
                 'ip' => 'IP',
                 'view' => 'Vizualizare',
@@ -1920,193 +1913,26 @@ return [
                 'deleted' => 'Șters',
             ],
 
+            'token-kinds' => [
+                'session' => 'Sesiune de autentificare',
+                'api-token' => 'Token API',
+                'integration' => 'Token de integrare (eliminat)',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => 'Panou de administrare',
+                'cli' => 'Comandă din consolă',
+            ],
+
             'deleted' => ':count înregistrare(ări) de istoric ștearsă(e).',
             'cleanup-input-required' => 'Furnizați un număr de zile sau o dată pentru curățare.',
         ],
 
-        'acl' => [
-            'title' => 'Integrare',
-            'view' => 'Vizualizare',
-            'create' => 'Creare integrare',
-            'edit' => 'Editare integrare',
-            'delete' => 'Revocare token de integrare',
-            'generate' => 'Generare token de integrare',
-            'regenerate' => 'Regenerare token de integrare',
-        ],
-
-        'index' => [
-            'title' => 'Integrări',
-            'create-btn' => 'Creează integrare',
-        ],
-
-        'create' => [
-            'title' => 'Creare integrare',
-            'save-btn' => 'Salvează',
-            'back-btn' => 'Înapoi',
-        ],
-
-        'edit' => [
-            'title' => 'Editare integrare',
-            'save-btn' => 'Salvează',
-            'back-btn' => 'Înapoi',
-            'generate-btn' => 'Generează token',
-            'regenerate-btn' => 'Regenerează token',
-            'revoke-btn' => 'Revocă token',
-            'copy-btn' => 'Copiază',
-            'token-warning' => 'Salvați acest token acum — nu va mai fi afișat din nou.',
-            'token-label' => 'Token',
-            'not-generated' => 'Încă negenerat',
-            'masked' => '(Stocat — afișat o singură dată, la generare)',
-            'history-banner' => 'Acest token nu mai este activ.',
-        ],
-
-        'fields' => [
-            'name' => 'Nume',
-            'description' => 'Descriere',
-            'assign-user' => 'Atribuie utilizator',
-            'permission-type' => 'Tip de permisiune',
-            'access-control' => 'Control acces',
-            'general' => 'General',
-            'token-settings' => 'Setări token',
-            'valid-till' => 'Valabil până la',
-            'rate-limit-per-minute' => 'Limită de cereri (pe minut)',
-            'rate-limit-per-day' => 'Limită de cereri (pe zi)',
-            'never-expires' => 'Nu expiră niciodată',
-            'expires-on' => 'Expiră la',
-            'unlimited' => 'Nelimitat',
-            'limit-to' => 'Limitează la',
-            'requests-per-minute' => 'cereri / minut',
-            'requests-per-day' => 'cereri / zi',
-            'select-admin' => 'Selectați un administrator',
-            'no-available-admins' => 'Nu există administratori disponibili — fiecare administrator are deja un token activ.',
-            'same-as-web-hint' => 'Tokenul va reflecta în timp real permisiunile curente ale rolului administratorului atribuit.',
-            'ip-allowlist' => 'Listă de IP-uri permise',
-            'ip-any' => 'Orice IP (implicit)',
-            'ip-restricted' => 'Restricționat la anumite IP-uri',
-            'ip-list-hint' => 'O intrare pe linie. Acceptă IPv4, IPv6 și CIDR (de ex. 10.0.0.0/24 sau 2001:db8::/32). Lăsați gol pentru a permite toate IP-urile.',
-        ],
-
-        'permission-type' => [
-            'all' => 'Toate',
-            'custom' => 'Personalizat',
-            'same-as-web' => 'La fel ca permisiunea web',
-        ],
-
-        'status' => [
-            'draft' => 'Ciornă',
-            'active' => 'Activ',
-            'revoked' => 'Revocat',
-            'regenerated' => 'Regenerat',
-        ],
-
-        'datagrid' => [
-            'id' => 'ID',
-            'name' => 'Nume',
-            'admin' => 'Administrator',
-            'token' => 'Token',
-            'status' => 'Stare',
-            'permission-type' => 'Tip de permisiune',
-            'expires-at' => 'Valabil până la',
-            'last-used-at' => 'Ultima utilizare',
-            'created-at' => 'Creat la',
-            'edit' => 'Editare',
-            'revoke' => 'Revocare',
-        ],
-
-        'messages' => [
-            'draft-created' => 'Integrarea a fost creată. Generați tokenul pentru a începe să o folosiți.',
-            'updated' => 'Integrarea a fost actualizată cu succes.',
-            'generated' => 'Tokenul a fost generat. Copiați-l acum — nu va mai fi afișat din nou.',
-            'regenerated' => 'Tokenul a fost regenerat. Copiați noul token acum — nu va mai fi afișat din nou.',
-            'revoked' => 'Tokenul a fost revocat cu succes.',
-            'generate-only-draft' => 'Tokenul poate fi generat doar pentru integrările ciornă.',
-            'regenerate-only-active' => 'Doar tokenurile active pot fi regenerate.',
-            'cannot-edit-historic' => 'Tokenurile revocate sau regenerate nu pot fi editate.',
-            'already-inactive' => 'Acest token este deja inactiv.',
-        ],
-
-        'errors' => [
-            'admin-has-token' => 'Administratorul selectat are deja un token de integrare activ.',
-            'only-draft-generate' => 'Doar tokenurile ciornă pot fi generate.',
-        ],
-
-        'validation' => [
-            'ip-invalid' => 'Fiecare IP permis trebuie să fie o adresă IPv4 sau IPv6 validă (notația CIDR este acceptată).',
-            'cidr-prefix-invalid' => 'Prefixul CIDR nu este valid pentru versiunea de IP indicată.',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => 'API',
-                'info' => 'Setări pentru API-ul Bagisto și modulele sale de administrare.',
-            ],
-
-            'integration' => [
-                'title' => 'Integrare',
-                'info' => 'Gestionați pluginul API Integration folosit pentru emiterea tokenurilor API de administrare.',
-            ],
-
-            'settings' => [
-                'title' => 'Setări modul',
-                'info' => 'Activați sau dezactivați pluginul API Integration. Când este dezactivat, meniul său din bara laterală este ascuns, iar paginile sale returnează 404.',
-                'enable' => 'Activează modulul API Integration',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => 'A fost generat un nou token API: :name',
-                'greeting' => 'Un token de integrare API numit ":name" tocmai a fost generat în contul dumneavoastră.',
-            ],
-
-            'regenerated' => [
-                'subject' => 'Tokenul dumneavoastră API a fost regenerat: :name',
-                'greeting' => 'Tokenul de integrare API numit ":name" tocmai a fost regenerat. Tokenul anterior nu mai funcționează — doar cel nou este valid.',
-            ],
-
-            'revoked' => [
-                'subject' => 'Tokenul dumneavoastră API a fost revocat: :name',
-                'greeting' => 'Tokenul de integrare API numit ":name" a fost revocat. Orice client care îl folosea și-a pierdut accesul.',
-            ],
-
-            'details' => [
-                'name' => 'Nume token',
-                'date' => 'Dată',
-                'ip' => 'De la IP',
-            ],
-
-            'revoke-hint' => 'Dacă nu vă așteptați la acest lucru, revocați imediat tokenul folosind butonul de mai jos.',
-            'revoke-btn' => 'Revocă acest token',
-            'revoke-expiry' => 'Acest link de revocare este valabil 7 zile. După aceea, autentificați-vă în panoul de administrare pentru a gestiona tokenul.',
-            'no-action' => 'Nu este necesară nicio acțiune — acest email este doar o confirmare.',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => 'Revocare token API',
-            'confirm-title' => 'Revocați acest token?',
-            'confirm-message' => 'Tokenul ":name" va înceta imediat să funcționeze pentru toți clienții care îl folosesc.',
-            'confirm-button' => 'Revocă tokenul',
-            'success-title' => 'Token revocat',
-            'success-message' => 'Tokenul ":name" a fost revocat. Orice client care îl folosea și-a pierdut imediat accesul.',
-            'already-inactive-title' => 'Token deja inactiv',
-            'already-inactive-message' => 'Tokenul ":name" a fost deja revocat sau regenerat. Nu este necesară nicio altă acțiune.',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => 'Generare token',
-                'message' => 'Generați tokenul acum? Textul în clar va fi afișat o singură dată — copiați-l înainte de a părăsi pagina.',
-            ],
-
-            'regenerate' => [
-                'title' => 'Regenerare token',
-                'message' => 'Regenerați tokenul? Vechiul token va înceta imediat să funcționeze, iar noul text în clar va fi afișat o singură dată.',
-            ],
-
-            'revoke' => [
-                'title' => 'Revocare token',
-                'message' => 'Revocați acest token? Orice client care îl folosește își va pierde imediat accesul. Această acțiune nu poate fi anulată.',
-            ],
+        'api-configuration' => [
+            'title' => 'API',
+            'info' => 'Setări pentru API-ul Bagisto și modulele sale de administrare.',
         ],
     ],
 ];

@@ -28,9 +28,7 @@ class AttributeFamilyTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        \DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->delete();
+        $this->revokeAdminSessions($admin);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/families', $token);
 
@@ -45,9 +43,7 @@ class AttributeFamilyTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        \DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->update(['expires_at' => now()->subDay()]);
+        $this->expireAdminSessions($admin);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/families', $token);
 
@@ -369,9 +365,7 @@ class AttributeFamilyTest extends AdminApiTestCase
         $token = $this->adminToken($admin);
         $familyId = $this->insertFamily(['code' => 'detail_rev_'.uniqid()]);
 
-        \DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->delete();
+        $this->revokeAdminSessions($admin);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/families/'.$familyId, $token);
 

@@ -642,6 +642,8 @@ return [
             'notify-success-message' => '   ✅ 已发送 :count 条到期通知',
             'notify-failed-message' => '   ⚠️ 未能发送关于 :key 的通知：:error',
             'publish-assets-warning' => '警告：无法发布扩展包资源。:error',
+            'env-file-not-found' => '未找到 .env 文件。请在安装前创建它。',
+            'env-permission-denied' => '.env 文件不可写。请检查其权限。',
             'env-config-saved' => '✓ API Platform 环境配置已成功保存',
             'api-endpoints' => 'API 端点：',
             'api-documentation' => 'API 文档：:url',
@@ -649,6 +651,11 @@ return [
             'graphql-playground' => 'GraphQL Playground：:url',
             'rest-api-storefront' => 'REST API 店面 Swagger：:url',
             'rest-api-admin' => 'REST API 后台 Swagger：:url',
+            'generating-jwt-keys' => '正在为管理 API 令牌生成 JWT 签名密钥...',
+            'jwt-keys-generated' => '✓ JWT 签名密钥已就绪',
+            'jwt-keys-warning' => '警告：无法生成 JWT 签名密钥。请手动运行 php artisan bagisto-api:jwt-keys。:error',
+            'admin-login' => '管理 API 登录：:url',
+            'admin-api-tokens' => '管理 API 令牌（服务器集成）：:url',
             'key-rotation-invalid-key' => '无法轮换无效或已过期的密钥',
             'env-file-not-found' => '未找到.env文件',
             'env-permission-denied' => '权限被拒绝：无法写入.env文件。请检查文件权限。',
@@ -744,9 +751,6 @@ return [
     ],
 
     'admin' => [
-        // login / logout / forgot-password / profile-update keys removed in the
-        // 2026-05-27 auth refactor — admin clients now authenticate via
-        // pre-issued integration tokens (Bearer header, AdminApiGuard).
         'profile' => [
             'unauthenticated' => '您尚未通过身份验证。',
         ],
@@ -1370,10 +1374,7 @@ return [
             ],
 
             'currency' => [
-                // Read
                 'not-found' => '未找到货币。',
-
-                // Create / Update / Delete
                 'created' => '货币已成功创建。',
                 'updated' => '货币已成功更新。',
                 'deleted' => '货币已成功删除。',
@@ -1850,22 +1851,14 @@ return [
                 'not-active' => '该会话已被撤销或已过期。',
             ],
         ],
-    ],
 
-    'integration' => [
-        'menu' => [
-            'title' => '整合',
-            'tokens' => '代币',
-        ],
-
-        'history' => [
+        'api-audit' => [
             'menu' => [
-                'title' => '历史',
+                'title' => 'API 审计',
             ],
 
             'acl' => [
                 'title' => 'API变更历史',
-                'view' => '查看',
                 'delete' => '删除历史记录',
             ],
 
@@ -1904,10 +1897,10 @@ return [
                 'date' => '日期',
                 'admin' => '管理员',
                 'token' => '代币',
-                'action' => '行动',
+                'token-kind' => '令牌类型',
+                'channel' => '渠道',
                 'operation' => '操作',
                 'resource' => '资源',
-                'version' => '版本',
                 'method' => '方法',
                 'ip' => '知识产权',
                 'view' => '查看',
@@ -1920,193 +1913,26 @@ return [
                 'deleted' => '已删除',
             ],
 
+            'token-kinds' => [
+                'session' => '登录会话',
+                'api-token' => 'API 令牌',
+                'integration' => '集成令牌(已移除)',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => '管理面板',
+                'cli' => '控制台命令',
+            ],
+
             'deleted' => ':count 条历史记录已删除。',
             'cleanup-input-required' => '提供清理的天数或日期。',
         ],
 
-        'acl' => [
-            'title' => '整合',
-            'view' => '查看',
-            'create' => '创建集成',
-            'edit' => '编辑集成',
-            'delete' => '撤销集成令牌',
-            'generate' => '生成集成令牌',
-            'regenerate' => '重新生成集成令牌',
-        ],
-
-        'index' => [
-            'title' => '集成',
-            'create-btn' => '创建集成',
-        ],
-
-        'create' => [
-            'title' => '创建集成',
-            'save-btn' => '保存',
-            'back-btn' => '返回',
-        ],
-
-        'edit' => [
-            'title' => '编辑集成',
-            'save-btn' => '保存',
-            'back-btn' => '返回',
-            'generate-btn' => '生成令牌',
-            'regenerate-btn' => '重新生成令牌',
-            'revoke-btn' => '撤销令牌',
-            'copy-btn' => '复制',
-            'token-warning' => '立即保存此令牌 - 它不会再次显示。',
-            'token-label' => '代币',
-            'not-generated' => '尚未生成',
-            'masked' => '（已存储 - 仅在生成时显示一次）',
-            'history-banner' => '该令牌不再有效。',
-        ],
-
-        'fields' => [
-            'name' => '名称',
-            'description' => '描述',
-            'assign-user' => '分配用户',
-            'permission-type' => '权限类型',
-            'access-control' => '访问控制',
-            'general' => '一般',
-            'token-settings' => '令牌设置',
-            'valid-till' => '有效期至',
-            'rate-limit-per-minute' => '速率限制（每分钟）',
-            'rate-limit-per-day' => '速率限制（每天）',
-            'never-expires' => '永不过期',
-            'expires-on' => '到期日',
-            'unlimited' => '无限',
-            'limit-to' => '限制为',
-            'requests-per-minute' => '请求/分钟',
-            'requests-per-day' => '请求/天',
-            'select-admin' => '选择管理员',
-            'no-available-admins' => '没有可用的管理员 - 每个管理员都已经拥有一个活动令牌。',
-            'same-as-web-hint' => '令牌将实时反映分配的管理员的当前角色权限。',
-            'ip-allowlist' => 'IP白名单',
-            'ip-any' => '任意IP（默认）',
-            'ip-restricted' => '限制特定IP',
-            'ip-list-hint' => '每行一个条目。支持 IPv4、IPv6 和 CIDR（例如 10.0.0.0/24 或 2001:db8::/32）。留空以允许所有 IP。',
-        ],
-
-        'permission-type' => [
-            'all' => '全部',
-            'custom' => '定制',
-            'same-as-web' => '与 Web 权限相同',
-        ],
-
-        'status' => [
-            'draft' => '吃水',
-            'active' => '活跃',
-            'revoked' => '已撤销',
-            'regenerated' => '再生',
-        ],
-
-        'datagrid' => [
-            'id' => '身份证号',
-            'name' => '名称',
-            'admin' => '管理员',
-            'token' => '代币',
-            'status' => '状态',
-            'permission-type' => '权限类型',
-            'expires-at' => '有效期至',
-            'last-used-at' => '最后使用',
-            'created-at' => '创建于',
-            'edit' => '编辑',
-            'revoke' => '撤销',
-        ],
-
-        'messages' => [
-            'draft-created' => '创建集成。生成令牌以开始使用它。',
-            'updated' => '集成更新成功。',
-            'generated' => '生成令牌。立即复制它 - 它不会再次显示。',
-            'regenerated' => '令牌已重新生成。立即复制新令牌 - 它不会再次显示。',
-            'revoked' => '令牌已成功撤销。',
-            'generate-only-draft' => '只有草稿集成才能生成其令牌。',
-            'regenerate-only-active' => '只有活跃的代币才能重新生成。',
-            'cannot-edit-historic' => '无法编辑已撤销或重新生成的令牌。',
-            'already-inactive' => '该令牌已处于非活动状态。',
-        ],
-
-        'errors' => [
-            'admin-has-token' => '所选管理员已拥有有效的集成令牌。',
-            'only-draft-generate' => '只能生成草稿令牌。',
-        ],
-
-        'validation' => [
-            'ip-invalid' => '每个允许的 IP 必须是有效的 IPv4 或 IPv6 地址（支持 CIDR 表示法）。',
-            'cidr-prefix-invalid' => 'CIDR 前缀对于给定的 IP 版本无效。',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => '应用程序编程接口',
-                'info' => 'Bagisto API 及其管理模块的设置。',
-            ],
-
-            'integration' => [
-                'title' => '整合',
-                'info' => '管理用于颁发管理 API 令牌的 API 集成插件。',
-            ],
-
-            'settings' => [
-                'title' => '模块设置',
-                'info' => '启用或禁用 API 集成插件。禁用后，其侧边栏菜单将被隐藏，其页面将返回 404。',
-                'enable' => '启用API集成模块',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => '生成了新的 API 令牌：:name',
-                'greeting' => '刚刚在您的帐户上生成了名为“:name”的 API 集成令牌。',
-            ],
-
-            'regenerated' => [
-                'subject' => '您的 API 令牌已重新生成：:name',
-                'greeting' => '名为“:name”的 API 集成令牌刚刚重新生成。之前的令牌已停止工作 - 只有新的令牌才有效。',
-            ],
-
-            'revoked' => [
-                'subject' => '您的 API 令牌已撤销：:name',
-                'greeting' => '名为“:name”的 API 集成令牌已被撤销。任何使用它的客户端都将失去访问权限。',
-            ],
-
-            'details' => [
-                'name' => '代币名称',
-                'date' => '日期',
-                'ip' => '来自IP',
-            ],
-
-            'revoke-hint' => '如果您没有预料到这一点，请立即使用下面的按钮撤销令牌。',
-            'revoke-btn' => '撤销此令牌',
-            'revoke-expiry' => '该撤销链接的有效期为 7 天。之后，登录管理面板来管理令牌。',
-            'no-action' => '无需采取任何行动——这封电子邮件只是一个确认。',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => '撤销 API 令牌',
-            'confirm-title' => '撤销此令牌？',
-            'confirm-message' => '令牌":name"将立即对所有使用它的客户端失效。',
-            'confirm-button' => '撤销令牌',
-            'success-title' => '令牌已撤销',
-            'success-message' => '令牌“:name”已被撤销。任何使用它的客户端都会立即失去访问权限。',
-            'already-inactive-title' => '令牌已处于非活动状态',
-            'already-inactive-message' => '令牌“:name”已被撤销或重新生成。无需采取进一步行动。',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => '生成令牌',
-                'message' => '现在生成令牌吗？明文只会显示一次 - 在离开页面之前复制它。',
-            ],
-
-            'regenerate' => [
-                'title' => '重新生成令牌',
-                'message' => '重新生成令牌？旧的令牌将立即停止工作，新的明文将仅显示一次。',
-            ],
-
-            'revoke' => [
-                'title' => '撤销令牌',
-                'message' => '撤销这个令牌？任何使用它的客户端都将立即失去访问权限。此操作无法撤消。',
-            ],
+        'api-configuration' => [
+            'title' => '应用程序编程接口',
+            'info' => 'Bagisto API 及其管理模块的设置。',
         ],
     ],
 ];

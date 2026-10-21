@@ -216,21 +216,21 @@ jobs:
           echo "::add-mask::$KEY"
           echo "STOREFRONT_ACCESS_KEY=$KEY" >> $GITHUB_ENV
 
-      - name: Issue admin integration token
+      - name: Issue admin API token
         working-directory: bagisto
         run: |
           RESULT=$(php artisan tinker --execute '
             $role = \Webkul\User\Models\Role::where("permission_type","all")->value("id");
             $admin = \Webkul\User\Models\Admin::first() ?? \Webkul\User\Models\Admin::create(["name"=>"E2E Admin","email"=>"api-e2e@example.com","password"=>bcrypt(\Illuminate\Support\Str::random(16)),"role_id"=>$role,"status"=>1]);
-            $p = \Illuminate\Support\Str::random(40);
-            $t = \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::create(["admin_id"=>$admin->id,"name"=>"e2e","token"=>hash("sha256",$p),"token_preview"=>substr($p,0,8),"permission_type"=>"all","abilities"=>[],"expires_at"=>now()->addDay(),"status"=>"active","created_by_admin_id"=>$admin->id]);
-            echo "E2E_CREDS=".$admin->email."::".$t->id."|".$p;
+            echo "E2E_ADMIN=".$admin->id."::".$admin->email;
           ')
-          LINE=$(echo "$RESULT" | grep "E2E_CREDS=" | head -1 | sed "s/E2E_CREDS=//")
-          if [ -z "$LINE" ]; then echo "::error::Failed to issue an admin integration token."; echo "$RESULT"; exit 1; fi
-          TOKEN=${LINE##*::}
+          LINE=$(echo "$RESULT" | grep "E2E_ADMIN=" | head -1 | sed "s/E2E_ADMIN=//")
+          if [ -z "$LINE" ]; then echo "::error::Failed to find or create the e2e admin."; echo "$RESULT"; exit 1; fi
+          php artisan bagisto-api:jwt-keys --no-interaction
+          TOKEN=$(php artisan bagisto-api:api-token:create --admin="${LINE%%::*}" --name=e2e --domain=localhost --expires="$(date -u -d tomorrow +%F)" --only-token --no-interaction | tail -n 1 | tr -d '[:space:]')
+          if [ -z "$TOKEN" ]; then echo "::error::Failed to issue an admin API token."; exit 1; fi
           echo "::add-mask::$TOKEN"
-          echo "ADMIN_EMAIL=${LINE%%::*}" >> $GITHUB_ENV
+          echo "ADMIN_EMAIL=${LINE##*::}" >> $GITHUB_ENV
           echo "ADMIN_INTEGRATION_TOKEN=$TOKEN" >> $GITHUB_ENV
           echo "BAGISTO_URL=http://127.0.0.1:8000" >> $GITHUB_ENV
 

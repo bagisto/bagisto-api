@@ -642,6 +642,8 @@ return [
             'notify-success-message' => '   ✅ נשלחו :count התראות על פקיעת תוקף',
             'notify-failed-message' => '   ⚠️ שליחת התראה עבור :key נכשלה: :error',
             'publish-assets-warning' => 'אזהרה: לא ניתן היה לפרסם את נכסי החבילה. :error',
+            'env-file-not-found' => 'קובץ ה-.env לא נמצא. צרו אותו לפני ההתקנה.',
+            'env-permission-denied' => 'לא ניתן לכתוב לקובץ ה-.env. בדקו את ההרשאות שלו.',
             'env-config-saved' => '✓ תצורת הסביבה של API Platform נשמרה בהצלחה',
             'api-endpoints' => 'נקודות קצה של API:',
             'api-documentation' => 'תיעוד API: :url',
@@ -649,6 +651,11 @@ return [
             'graphql-playground' => 'GraphQL Playground: :url',
             'rest-api-storefront' => 'Swagger של REST API לחנות: :url',
             'rest-api-admin' => 'Swagger של REST API לניהול: :url',
+            'generating-jwt-keys' => 'יוצר מפתחות חתימת JWT עבור אסימוני ה-API של הניהול...',
+            'jwt-keys-generated' => '✓ מפתחות חתימת JWT מוכנים',
+            'jwt-keys-warning' => 'אזהרה: לא ניתן היה ליצור את מפתחות חתימת JWT. הריצו php artisan bagisto-api:jwt-keys ידנית. :error',
+            'admin-login' => 'התחברות ל-API של הניהול: :url',
+            'admin-api-tokens' => 'אסימוני API של הניהול (אינטגרציות שרת): :url',
             'key-rotation-invalid-key' => 'לא ניתן להחליף מפתח לא תקף או שפג תוקפו',
             'env-file-not-found' => 'קובץ ה-.env לא נמצא',
             'env-permission-denied' => 'ההרשאה נדחתה: לא ניתן לכתוב לקובץ ה-.env. אנא בדוק את הרשאות הקובץ.',
@@ -744,9 +751,6 @@ return [
     ],
 
     'admin' => [
-        // login / logout / forgot-password / profile-update keys removed in the
-        // 2026-05-27 auth refactor — admin clients now authenticate via
-        // pre-issued integration tokens (Bearer header, AdminApiGuard).
         'profile' => [
             'unauthenticated' => 'אינך מאומת.',
         ],
@@ -1370,10 +1374,7 @@ return [
             ],
 
             'currency' => [
-                // Read
                 'not-found' => 'המטבע לא נמצא.',
-
-                // Create / Update / Delete
                 'created' => 'המטבע נוצר בהצלחה.',
                 'updated' => 'המטבע עודכן בהצלחה.',
                 'deleted' => 'המטבע נמחק בהצלחה.',
@@ -1850,22 +1851,14 @@ return [
                 'not-active' => 'הפעלה זו כבר בוטלה או פג תוקפה.',
             ],
         ],
-    ],
 
-    'integration' => [
-        'menu' => [
-            'title' => 'אינטגרציה',
-            'tokens' => 'אסימונים',
-        ],
-
-        'history' => [
+        'api-audit' => [
             'menu' => [
-                'title' => 'היסטוריה',
+                'title' => 'ביקורת API',
             ],
 
             'acl' => [
                 'title' => 'היסטוריית שינויים ב-API',
-                'view' => 'הצג',
                 'delete' => 'מחק היסטוריה',
             ],
 
@@ -1904,10 +1897,10 @@ return [
                 'date' => 'תאריך',
                 'admin' => 'מנהל מערכת',
                 'token' => 'אסימון',
-                'action' => 'פעולה',
+                'token-kind' => 'סוג אסימון',
+                'channel' => 'ערוץ',
                 'operation' => 'מבצע',
                 'resource' => 'משאב',
-                'version' => 'גרסה',
                 'method' => 'שיטה',
                 'ip' => 'IP',
                 'view' => 'הצג',
@@ -1920,193 +1913,26 @@ return [
                 'deleted' => 'נמחק',
             ],
 
+            'token-kinds' => [
+                'session' => 'הפעלת התחברות',
+                'api-token' => 'אסימון API',
+                'integration' => 'אסימון אינטגרציה (הוסר)',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => 'לוח הניהול',
+                'cli' => 'פקודת מסוף',
+            ],
+
             'deleted' => ':count רשומות היסטוריה נמחקו.',
             'cleanup-input-required' => 'ציין מספר ימים או תאריך לניקוי.',
         ],
 
-        'acl' => [
-            'title' => 'אינטגרציה',
-            'view' => 'הצג',
-            'create' => 'צור אינטגרציה',
-            'edit' => 'ערוך אינטגרציה',
-            'delete' => 'בטל אסימון אינטגרציה',
-            'generate' => 'צור אסימון אינטגרציה',
-            'regenerate' => 'אסימון אינטגרציה מחדש',
-        ],
-
-        'index' => [
-            'title' => 'אינטגרציות',
-            'create-btn' => 'צור אינטגרציה',
-        ],
-
-        'create' => [
-            'title' => 'צור אינטגרציה',
-            'save-btn' => 'שמור',
-            'back-btn' => 'חזרה',
-        ],
-
-        'edit' => [
-            'title' => 'ערוך אינטגרציה',
-            'save-btn' => 'שמור',
-            'back-btn' => 'חזרה',
-            'generate-btn' => 'צור אסימון',
-            'regenerate-btn' => 'צור מחדש את האסימון',
-            'revoke-btn' => 'בטל אסימון',
-            'copy-btn' => 'העתק',
-            'token-warning' => 'שמור את האסימון הזה עכשיו - הוא לא יוצג שוב.',
-            'token-label' => 'אסימון',
-            'not-generated' => 'עדיין לא נוצר',
-            'masked' => '(מאוחסן - מוצג רק פעם אחת בדור)',
-            'history-banner' => 'אסימון זה אינו פעיל יותר.',
-        ],
-
-        'fields' => [
-            'name' => 'שם',
-            'description' => 'תיאור',
-            'assign-user' => 'הקצה משתמש',
-            'permission-type' => 'סוג הרשאה',
-            'access-control' => 'בקרת גישה',
-            'general' => 'כללי',
-            'token-settings' => 'הגדרות אסימון',
-            'valid-till' => 'תקף עד',
-            'rate-limit-per-minute' => 'מגבלת קצב (לדקה)',
-            'rate-limit-per-day' => 'מגבלת תעריף (ליום)',
-            'never-expires' => 'לעולם לא יפוג',
-            'expires-on' => 'יפוג בתאריך',
-            'unlimited' => 'ללא הגבלה',
-            'limit-to' => 'הגבל ל',
-            'requests-per-minute' => 'בקשות / דקה',
-            'requests-per-day' => 'בקשות / יום',
-            'select-admin' => 'בחר מנהל מערכת',
-            'no-available-admins' => 'אין מנהלי מערכת זמינים - לכל מנהל כבר יש אסימון פעיל.',
-            'same-as-web-hint' => 'האסימון ישקף את הרשאות התפקיד הנוכחיות של המנהל שהוקצה בזמן אמת.',
-            'ip-allowlist' => 'רשימת הרשאות IP',
-            'ip-any' => 'כל IP (ברירת מחדל)',
-            'ip-restricted' => 'מוגבל לכתובות IP ספציפיות',
-            'ip-list-hint' => 'ערך אחד בכל שורה. תומך ב-IPv4, IPv6 ו-CIDR (למשל 10.0.0.0/24 או 2001:db8::/32). השאר ריק כדי לאפשר את כל כתובות ה-IP.',
-        ],
-
-        'permission-type' => [
-            'all' => 'הכל',
-            'custom' => 'מותאם אישית',
-            'same-as-web' => 'זהה להרשאת אינטרנט',
-        ],
-
-        'status' => [
-            'draft' => 'טיוטה',
-            'active' => 'פעיל',
-            'revoked' => 'בוטל',
-            'regenerated' => 'התחדש',
-        ],
-
-        'datagrid' => [
-            'id' => 'תעודה מזהה',
-            'name' => 'שם',
-            'admin' => 'מנהל מערכת',
-            'token' => 'אסימון',
-            'status' => 'סטטוס',
-            'permission-type' => 'סוג הרשאה',
-            'expires-at' => 'תקף עד',
-            'last-used-at' => 'בשימוש אחרון',
-            'created-at' => 'נוצר ב-At',
-            'edit' => 'ערוך',
-            'revoke' => 'בטל',
-        ],
-
-        'messages' => [
-            'draft-created' => 'נוצרה אינטגרציה. צור את האסימון כדי להתחיל להשתמש בו.',
-            'updated' => 'האינטגרציה עודכנה בהצלחה.',
-            'generated' => 'נוצר אסימון. העתק אותו עכשיו - הוא לא יוצג שוב.',
-            'regenerated' => 'אסימון התחדש. העתק את האסימון החדש כעת - הוא לא יוצג שוב.',
-            'revoked' => 'האסימון בוטל בהצלחה.',
-            'generate-only-draft' => 'רק טיוטות אינטגרציות יכולות להפיק את האסימון שלהן.',
-            'regenerate-only-active' => 'ניתן ליצור מחדש רק אסימונים פעילים.',
-            'cannot-edit-historic' => 'לא ניתן לערוך אסימונים שבוטלו או שנוצרו מחדש.',
-            'already-inactive' => 'האסימון הזה כבר לא פעיל.',
-        ],
-
-        'errors' => [
-            'admin-has-token' => 'למנהל המערכת שנבחר כבר יש אסימון אינטגרציה פעיל.',
-            'only-draft-generate' => 'ניתן ליצור רק אסימוני טיוטה.',
-        ],
-
-        'validation' => [
-            'ip-invalid' => 'כל כתובת IP מותרת חייבת להיות כתובת IPv4 או IPv6 חוקית (תמיכת CIDR נתמכת).',
-            'cidr-prefix-invalid' => 'קידומת CIDR אינה חוקית עבור גרסת ה-IP הנתונה.',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => 'ממשק API',
-                'info' => 'הגדרות עבור Bagisto API ומודול הניהול שלו.',
-            ],
-
-            'integration' => [
-                'title' => 'אינטגרציה',
-                'info' => 'נהל את הפלאגין של שילוב API המשמש להנפקת אסימוני ממשק API של מנהל מערכת.',
-            ],
-
-            'settings' => [
-                'title' => 'הגדרות מודול',
-                'info' => 'הפעל או השבת את הפלאגין של שילוב API. כשהוא מושבת, תפריט סרגל הצד שלו מוסתר והעמודים שלו מחזירים 404.',
-                'enable' => 'אפשר את מודול שילוב API',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => 'נוצר אסימון API חדש: :name',
-                'greeting' => 'אסימון שילוב API בשם ":name" נוצר זה עתה בחשבון שלך.',
-            ],
-
-            'regenerated' => [
-                'subject' => 'אסימון ה-API שלך נוצר מחדש: :name',
-                'greeting' => 'אסימון שילוב ה-API בשם ":name" נוצר מחדש. האסימון הקודם הפסיק לעבוד - רק החדש תקף.',
-            ],
-
-            'revoked' => [
-                'subject' => 'אסימון ה-API שלך בוטל: :name',
-                'greeting' => 'אסימון שילוב ה-API בשם ":name" בוטל. כל לקוח שמשתמש בו איבד גישה.',
-            ],
-
-            'details' => [
-                'name' => 'שם אסימון',
-                'date' => 'תאריך',
-                'ip' => 'מ-IP',
-            ],
-
-            'revoke-hint' => 'אם לא ציפיתם לכך, שללו את האסימון מיד באמצעות הכפתור למטה.',
-            'revoke-btn' => 'בטל את האסימון הזה',
-            'revoke-expiry' => 'קישור ביטול זה תקף ל-7 ימים. לאחר מכן, היכנס ללוח הניהול כדי לנהל את האסימון.',
-            'no-action' => 'אין צורך בפעולה - אימייל זה הוא רק אישור.',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => 'בטל אסימון API',
-            'confirm-title' => 'לבטל אסימון זה?',
-            'confirm-message' => 'האסימון ":name" יפסיק לפעול מיד עבור כל לקוח שמשתמש בו.',
-            'confirm-button' => 'בטל אסימון',
-            'success-title' => 'אסימון בוטל',
-            'success-message' => 'האסימון ":name" בוטל. כל לקוח שמשתמש בו איבד גישה מיד.',
-            'already-inactive-title' => 'אסימון כבר לא פעיל',
-            'already-inactive-message' => 'האסימון ":name" כבר בוטל או נוצר מחדש. אין צורך בפעולה נוספת.',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => 'צור אסימון',
-                'message' => 'ליצור את האסימון עכשיו? הטקסט הפשוט יוצג פעם אחת בלבד - העתק אותו לפני היציאה מהעמוד.',
-            ],
-
-            'regenerate' => [
-                'title' => 'צור מחדש את האסימון',
-                'message' => 'ליצור מחדש את האסימון? האסימון הישן יפסיק לפעול מיד והטקסט הפשוט החדש יוצג פעם אחת בלבד.',
-            ],
-
-            'revoke' => [
-                'title' => 'בטל אסימון',
-                'message' => 'לבטל את האסימון הזה? כל לקוח שישתמש בו יאבד גישה מיידית. לא ניתן לבטל פעולה זו.',
-            ],
+        'api-configuration' => [
+            'title' => 'ממשק API',
+            'info' => 'הגדרות עבור Bagisto API ומודול הניהול שלו.',
         ],
     ],
 ];

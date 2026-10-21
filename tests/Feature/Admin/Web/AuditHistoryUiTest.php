@@ -17,7 +17,7 @@ class AuditHistoryUiTest extends TestCase
      */
     public function test_index_requires_authentication(): void
     {
-        $this->get(route('admin.integration.history.index'))
+        $this->get(route('admin.settings.api_audit.index'))
             ->assertRedirect(route('admin.session.create'));
     }
 
@@ -29,7 +29,7 @@ class AuditHistoryUiTest extends TestCase
         $this->actingAdmin();
         $this->seedAudit();
 
-        $this->get(route('admin.integration.history.index'))->assertOk();
+        $this->get(route('admin.settings.api_audit.index'))->assertOk();
     }
 
     /**
@@ -40,7 +40,7 @@ class AuditHistoryUiTest extends TestCase
         $this->actingAdmin();
         AdminApiAudit::query()->delete();
 
-        $this->get(route('admin.integration.history.index'))->assertOk();
+        $this->get(route('admin.settings.api_audit.index'))->assertOk();
     }
 
     /**
@@ -51,7 +51,7 @@ class AuditHistoryUiTest extends TestCase
         $this->actingAdmin();
         $this->seedAudit();
 
-        $this->get(route('admin.integration.history.index'), ['X-Requested-With' => 'XMLHttpRequest'])
+        $this->get(route('admin.settings.api_audit.index'), ['X-Requested-With' => 'XMLHttpRequest'])
             ->assertOk();
     }
 
@@ -63,10 +63,61 @@ class AuditHistoryUiTest extends TestCase
         $this->actingAdmin();
         $audit = $this->seedAudit();
 
-        $this->get(route('admin.integration.history.view', $audit->id))
+        $this->get(route('admin.settings.api_audit.view', $audit->id))
             ->assertOk()
             ->assertSee('Old')
             ->assertSee('New');
+    }
+
+    /**
+     * Test detail view shows the token kind and channel.
+     */
+    public function test_detail_view_shows_token_kind_and_channel(): void
+    {
+        $this->actingAdmin();
+        $audit = $this->seedAudit();
+
+        $this->get(route('admin.settings.api_audit.view', $audit->id))
+            ->assertOk()
+            ->assertSee(trans('bagistoapi::app.admin.api-audit.token-kinds.api-token'))
+            ->assertSee(trans('bagistoapi::app.admin.api-audit.channels.rest'));
+    }
+
+    /**
+     * Test datagrid filters by token kind.
+     */
+    public function test_datagrid_filters_by_token_kind(): void
+    {
+        $this->actingAdmin();
+        $apiToken = $this->seedAudit();
+        $session = $this->seedAudit(['token_kind' => AdminApiAudit::TOKEN_KIND_SESSION]);
+
+        $response = $this->getJson(route('admin.settings.api_audit.index', [
+            'filters' => ['token_kind' => [AdminApiAudit::TOKEN_KIND_SESSION]],
+        ]), ['X-Requested-With' => 'XMLHttpRequest'])->assertOk();
+
+        $ids = collect($response->json('records'))->pluck('id')->all();
+
+        expect($ids)->toContain($session->id);
+        expect($ids)->not->toContain($apiToken->id);
+    }
+
+    /**
+     * Test index denied without the audit permission.
+     */
+    public function test_index_denied_without_permission(): void
+    {
+        $role = Role::create([
+            'name' => 'No audit '.uniqid(),
+            'permission_type' => 'custom',
+            'permissions' => ['settings'],
+        ]);
+        $admin = Admin::factory()->create(['role_id' => $role->id]);
+        $this->actingAs($admin, 'admin');
+
+        $response = $this->get(route('admin.settings.api_audit.index'));
+
+        expect(in_array($response->getStatusCode(), [401, 403, 302], true))->toBeTrue();
     }
 
     /**
@@ -85,7 +136,7 @@ class AuditHistoryUiTest extends TestCase
             'token_name' => null,
         ]);
 
-        $this->get(route('admin.integration.history.view', $audit->id))->assertOk();
+        $this->get(route('admin.settings.api_audit.view', $audit->id))->assertOk();
     }
 
     /**
@@ -94,7 +145,7 @@ class AuditHistoryUiTest extends TestCase
     public function test_detail_view_404_on_missing(): void
     {
         $this->actingAdmin();
-        $this->get(route('admin.integration.history.view', 99999999))->assertNotFound();
+        $this->get(route('admin.settings.api_audit.view', 99999999))->assertNotFound();
     }
 
     /**
@@ -106,7 +157,7 @@ class AuditHistoryUiTest extends TestCase
         $a = $this->seedAudit();
         $b = $this->seedAudit();
 
-        $this->post(route('admin.integration.history.mass_delete'), ['indices' => [$a->id]])
+        $this->post(route('admin.settings.api_audit.mass_delete'), ['indices' => [$a->id]])
             ->assertOk();
 
         expect(AdminApiAudit::find($a->id))->toBeNull();
@@ -119,15 +170,16 @@ class AuditHistoryUiTest extends TestCase
     public function test_mass_delete_denied_without_permission(): void
     {
         $role = Role::create([
-            'name' => 'Limited '.uniqid(), 'permission_type' => 'custom',
-            'permissions' => ['integration', 'integration.history'],
+            'name' => 'Limited '.uniqid(),
+            'permission_type' => 'custom',
+            'permissions' => ['settings', 'settings.api_audit'],
         ]);
         $admin = Admin::factory()->create(['role_id' => $role->id]);
         $this->actingAs($admin, 'admin');
 
         $row = $this->seedAudit();
 
-        $response = $this->post(route('admin.integration.history.mass_delete'), ['indices' => [$row->id]]);
+        $response = $this->post(route('admin.settings.api_audit.mass_delete'), ['indices' => [$row->id]]);
 
         expect(in_array($response->getStatusCode(), [401, 403, 302], true))->toBeTrue();
         expect(AdminApiAudit::find($row->id))->not->toBeNull();
@@ -142,8 +194,8 @@ class AuditHistoryUiTest extends TestCase
         $old = $this->seedAudit(['created_at' => Carbon::now()->subDays(120)]);
         $recent = $this->seedAudit(['created_at' => Carbon::now()->subDays(2)]);
 
-        $this->post(route('admin.integration.history.cleanup'), ['days' => 30])
-            ->assertRedirect(route('admin.integration.history.index'));
+        $this->post(route('admin.settings.api_audit.cleanup'), ['days' => 30])
+            ->assertRedirect(route('admin.settings.api_audit.index'));
 
         expect(AdminApiAudit::find($old->id))->toBeNull();
         expect(AdminApiAudit::find($recent->id))->not->toBeNull();
@@ -157,8 +209,8 @@ class AuditHistoryUiTest extends TestCase
         $this->actingAdmin();
         $row = $this->seedAudit();
 
-        $this->post(route('admin.integration.history.cleanup'), [])
-            ->assertRedirect(route('admin.integration.history.index'));
+        $this->post(route('admin.settings.api_audit.cleanup'), [])
+            ->assertRedirect(route('admin.settings.api_audit.index'));
 
         expect(AdminApiAudit::find($row->id))->not->toBeNull();
     }
@@ -192,6 +244,8 @@ class AuditHistoryUiTest extends TestCase
             'admin_name' => 'Jane Admin',
             'token_id' => 3,
             'token_name' => 'CI Token',
+            'token_kind' => AdminApiAudit::TOKEN_KIND_API_TOKEN,
+            'channel' => AdminApiAudit::CHANNEL_REST,
             'method' => 'PUT',
             'url' => 'https://store.test/api/admin/settings/currencies/5',
             'ip_address' => '203.0.113.4',

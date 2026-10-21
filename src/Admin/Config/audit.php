@@ -5,12 +5,8 @@ use Webkul\BagistoApi\Admin\Models\AdminApiRefreshToken;
 use Webkul\BagistoApi\Admin\Models\AdminApiSession;
 use Webkul\BagistoApi\Admin\Models\AdminApiToken;
 use Webkul\BagistoApi\Admin\Models\AdminApiTwoFactorChallenge;
-use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\Core\Models\CoreConfig;
 
-/**
- * Admin-API audit trail config (merged under `bagistoapi.audit`).
- */
 return [
     /**
      * Master switch. When false, no admin-API change is recorded.
@@ -18,8 +14,7 @@ return [
     'enabled' => env('BAGISTO_API_AUDIT_ENABLED', true),
 
     /**
-     * Field names whose values are never stored. Matching keys in
-     * old_values / new_values / payload are replaced with "[redacted]".
+     * Field names whose values are never stored; matching keys are replaced with "[redacted]".
      */
     'redact' => [
         'password',
@@ -34,8 +29,7 @@ return [
     ],
 
     /**
-     * Substrings that mark an attribute key, or a row's `code`, as secret.
-     * Matching attributes are redacted whatever the model.
+     * Substrings that mark an attribute key, or a row's `code`, as secret, whatever the model.
      */
     'redact_contains' => [
         'secret',
@@ -52,11 +46,10 @@ return [
     ],
 
     /**
-     * Models that are never audited (avoids self-auditing + noise).
+     * Models that are never audited, to avoid self-auditing and noise.
      */
     'exclude_models' => [
         AdminApiAudit::class,
-        AdminPersonalAccessToken::class,
         AdminApiSession::class,
         AdminApiRefreshToken::class,
         AdminApiToken::class,
@@ -64,7 +57,7 @@ return [
     ],
 
     /**
-     * Auto-prune cutoff for `bagisto-api:prune-audits`. null = keep forever.
+     * Days `bagisto-api:prune-audits` keeps audit rows for, or null to keep them forever.
      */
     'retention_days' => env('BAGISTO_API_AUDIT_RETENTION_DAYS', null),
 ];

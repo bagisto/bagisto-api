@@ -7,12 +7,12 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Admin\Dto\AdminRmaReasonCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminRmaReasonUpdateInput;
 use Webkul\BagistoApi\Admin\Models\AdminRmaReason;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\RMA\Repositories\RMAReasonRepository;
@@ -31,7 +31,6 @@ class AdminRmaReasonProcessor implements ProcessorInterface
      * Create a new instance.
      */
     public function __construct(
-        private readonly ProcessorInterface $persistProcessor,
         private readonly RMAReasonRepository $rmaReasonRepository,
         private readonly RMAReasonResolutionRepository $rmaReasonResolutionRepository,
     ) {}
@@ -67,7 +66,7 @@ class AdminRmaReasonProcessor implements ProcessorInterface
             return $this->handleDelete((int) ($uriVariables['id'] ?? $data->id));
         }
 
-        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        throw new AuthorizationException(__('bagistoapi::app.admin.rma.no-permission'));
     }
 
     /**
@@ -185,7 +184,7 @@ class AdminRmaReasonProcessor implements ProcessorInterface
      */
     private function mapReason(int $id): AdminRmaReason
     {
-        $row = DB::table('rma_reasons')->where('id', $id)->first();
+        $row = $this->rmaReasonRepository->find($id);
 
         $dto = new AdminRmaReason;
         $dto->id = (int) $row->id;
@@ -193,7 +192,7 @@ class AdminRmaReasonProcessor implements ProcessorInterface
         $dto->status = $row->status !== null ? (int) $row->status : null;
         $dto->position = $row->position !== null ? (int) $row->position : null;
         $dto->isAdmin = $row->is_admin !== null ? (int) $row->is_admin : null;
-        $dto->resolutionType = DB::table('rma_reason_resolutions')->where('rma_reason_id', $id)->pluck('resolution_type')->all();
+        $dto->resolutionType = $this->rmaReasonResolutionRepository->findWhere(['rma_reason_id' => $id])->pluck('resolution_type')->all();
         $dto->createdAt = $row->created_at ? Carbon::parse($row->created_at)->toIso8601String() : null;
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
 

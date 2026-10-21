@@ -2,7 +2,6 @@
 
 namespace Webkul\BagistoApi\Providers\Concerns;
 
-use ApiPlatform\Laravel\Eloquent\State\PersistProcessor;
 use Webkul\BagistoApi\Admin\State\AdminReturnMessageProcessor;
 use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
 use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldProcessor;
@@ -33,7 +32,6 @@ trait RegistersAdminProcessors
     {
         $this->app->singleton(AdminReturnMessageProcessor::class, function ($app) {
             return new AdminReturnMessageProcessor(
-                $app->make(PersistProcessor::class),
                 $app->make(RMARepository::class),
                 $app->make(RMAMessageRepository::class),
             );
@@ -41,7 +39,6 @@ trait RegistersAdminProcessors
 
         $this->app->singleton(AdminRmaReasonProcessor::class, function ($app) {
             return new AdminRmaReasonProcessor(
-                $app->make(PersistProcessor::class),
                 $app->make(RMAReasonRepository::class),
                 $app->make(RMAReasonResolutionRepository::class),
             );
@@ -49,21 +46,18 @@ trait RegistersAdminProcessors
 
         $this->app->singleton(AdminRmaStatusProcessor::class, function ($app) {
             return new AdminRmaStatusProcessor(
-                $app->make(PersistProcessor::class),
                 $app->make(RMAStatusRepository::class),
             );
         });
 
         $this->app->singleton(AdminRmaRuleProcessor::class, function ($app) {
             return new AdminRmaRuleProcessor(
-                $app->make(PersistProcessor::class),
                 $app->make(RMARuleRepository::class),
             );
         });
 
         $this->app->singleton(AdminRmaCustomFieldProcessor::class, function ($app) {
             return new AdminRmaCustomFieldProcessor(
-                $app->make(PersistProcessor::class),
                 $app->make(RMACustomFieldRepository::class),
                 $app->make(RMACustomFieldOptionRepository::class),
             );
@@ -71,7 +65,6 @@ trait RegistersAdminProcessors
 
         $this->app->singleton(AdminReturnProcessor::class, function ($app) {
             return new AdminReturnProcessor(
-                $app->make(PersistProcessor::class),
                 $app->make(RMARepository::class),
                 $app->make(RMAItemRepository::class),
                 $app->make(RMAImageRepository::class),

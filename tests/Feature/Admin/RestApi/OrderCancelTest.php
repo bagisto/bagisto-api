@@ -79,7 +79,7 @@ class OrderCancelTest extends AdminApiTestCase
         $token = $this->adminTokenSameAsWeb($admin);
 
         $response = $this->adminPost($admin, '/api/admin/orders/'.$id.'/cancel', [], $token);
-        $response->assertStatus(422);
+        $response->assertStatus(403);
         expect($response->json('detail') ?? $response->json('message'))
             ->toBe(trans('bagistoapi::app.admin.order.actions.cancel.no-permission'));
     }

@@ -28,9 +28,7 @@ class AttributeTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        \DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->delete();
+        $this->revokeAdminSessions($admin);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes', $token);
 
@@ -45,9 +43,7 @@ class AttributeTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        \DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->update(['expires_at' => now()->subDay()]);
+        $this->expireAdminSessions($admin);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes', $token);
 
@@ -571,9 +567,7 @@ class AttributeTest extends AdminApiTestCase
         $token = $this->adminToken($admin);
         $id = $this->insertAttribute(['code' => 'detail_revoked_'.uniqid()]);
 
-        \DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->delete();
+        $this->revokeAdminSessions($admin);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes/'.$id, $token);
 
@@ -1526,9 +1520,7 @@ class AttributeTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        \DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->delete();
+        $this->revokeAdminSessions($admin);
 
         $response = $this->adminPost($admin, '/api/admin/catalog/attributes', [
             'code' => 'rev_tok_'.uniqid(),

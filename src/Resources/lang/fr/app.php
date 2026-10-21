@@ -642,6 +642,8 @@ return [
             'notify-success-message' => '   ✅ :count notifications d\'expiration envoyées',
             'notify-failed-message' => '   ⚠️ Échec de la notification pour :key : :error',
             'publish-assets-warning' => 'Avertissement : impossible de publier les ressources du package. :error',
+            'env-file-not-found' => 'Le fichier .env est introuvable. Créez-le avant l\'installation.',
+            'env-permission-denied' => 'Le fichier .env n\'est pas accessible en écriture. Vérifiez ses permissions.',
             'env-config-saved' => '✓ Configuration d\'environnement d\'API Platform enregistrée avec succès',
             'api-endpoints' => 'Points de terminaison de l\'API :',
             'api-documentation' => 'Documentation de l\'API : :url',
@@ -649,6 +651,11 @@ return [
             'graphql-playground' => 'GraphQL Playground : :url',
             'rest-api-storefront' => 'Swagger de l\'API REST de la boutique : :url',
             'rest-api-admin' => 'Swagger de l\'API REST d\'administration : :url',
+            'generating-jwt-keys' => 'Génération des clés de signature JWT pour les jetons de l\'API d\'administration...',
+            'jwt-keys-generated' => '✓ Les clés de signature JWT sont prêtes',
+            'jwt-keys-warning' => 'Avertissement : impossible de générer les clés de signature JWT. Exécutez php artisan bagisto-api:jwt-keys manuellement. :error',
+            'admin-login' => 'Connexion à l\'API d\'administration : :url',
+            'admin-api-tokens' => 'Jetons de l\'API d\'administration (intégrations serveur) : :url',
             'key-rotation-invalid-key' => 'Impossible d\'effectuer la rotation d\'une clé invalide ou expirée',
             'env-file-not-found' => 'Le fichier .env est introuvable',
             'env-permission-denied' => 'Permission refusée : impossible d\'écrire dans le fichier .env. Veuillez vérifier les permissions du fichier.',
@@ -744,9 +751,6 @@ return [
     ],
 
     'admin' => [
-        // login / logout / forgot-password / profile-update keys removed in the
-        // 2026-05-27 auth refactor — admin clients now authenticate via
-        // pre-issued integration tokens (Bearer header, AdminApiGuard).
         'profile' => [
             'unauthenticated' => 'Vous n\'êtes pas authentifié.',
         ],
@@ -1370,10 +1374,7 @@ return [
             ],
 
             'currency' => [
-                // Read
                 'not-found' => 'Devise introuvable.',
-
-                // Create / Update / Delete
                 'created' => 'Devise créée avec succès.',
                 'updated' => 'Devise mise à jour avec succès.',
                 'deleted' => 'Devise supprimée avec succès.',
@@ -1850,22 +1851,14 @@ return [
                 'not-active' => 'Cette session est déjà révoquée ou expirée.',
             ],
         ],
-    ],
 
-    'integration' => [
-        'menu' => [
-            'title' => 'Intégration',
-            'tokens' => 'Jetons',
-        ],
-
-        'history' => [
+        'api-audit' => [
             'menu' => [
-                'title' => 'Histoire',
+                'title' => 'Audit de l\'API',
             ],
 
             'acl' => [
                 'title' => 'Historique des modifications de l\'API',
-                'view' => 'Voir',
                 'delete' => 'Supprimer l\'historique',
             ],
 
@@ -1904,10 +1897,10 @@ return [
                 'date' => 'Date',
                 'admin' => 'Administrateur',
                 'token' => 'Jeton',
-                'action' => 'Action',
+                'token-kind' => 'Type de jeton',
+                'channel' => 'Canal',
                 'operation' => 'Fonctionnement',
                 'resource' => 'Ressource',
-                'version' => 'Version',
                 'method' => 'Méthode',
                 'ip' => 'PI',
                 'view' => 'Voir',
@@ -1920,193 +1913,26 @@ return [
                 'deleted' => 'Supprimé',
             ],
 
+            'token-kinds' => [
+                'session' => 'Session de connexion',
+                'api-token' => 'Jeton d\'API',
+                'integration' => 'Jeton d\'intégration (supprimé)',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => 'Panneau d\'administration',
+                'cli' => 'Commande console',
+            ],
+
             'deleted' => ':count enregistrement(s) d\'historique supprimé(s).',
             'cleanup-input-required' => 'Fournissez un certain nombre de jours ou une date pour nettoyer.',
         ],
 
-        'acl' => [
-            'title' => 'Intégration',
-            'view' => 'Voir',
-            'create' => 'Créer une intégration',
-            'edit' => 'Modifier l\'intégration',
-            'delete' => 'Révoquer le jeton d\'intégration',
-            'generate' => 'Générer un jeton d\'intégration',
-            'regenerate' => 'Régénérer le jeton d\'intégration',
-        ],
-
-        'index' => [
-            'title' => 'Intégrations',
-            'create-btn' => 'Créer une intégration',
-        ],
-
-        'create' => [
-            'title' => 'Créer une intégration',
-            'save-btn' => 'Enregistrer',
-            'back-btn' => 'Retour',
-        ],
-
-        'edit' => [
-            'title' => 'Modifier l\'intégration',
-            'save-btn' => 'Enregistrer',
-            'back-btn' => 'Retour',
-            'generate-btn' => 'Générer un jeton',
-            'regenerate-btn' => 'Régénérer le jeton',
-            'revoke-btn' => 'Révoquer le jeton',
-            'copy-btn' => 'Copier',
-            'token-warning' => 'Enregistrez ce jeton maintenant – il ne sera plus affiché.',
-            'token-label' => 'Jeton',
-            'not-generated' => 'Pas encore généré',
-            'masked' => '(Stocké - affiché une seule fois à la génération)',
-            'history-banner' => 'Ce jeton n\'est plus actif.',
-        ],
-
-        'fields' => [
-            'name' => 'Nom',
-            'description' => 'Descriptif',
-            'assign-user' => 'Attribuer un utilisateur',
-            'permission-type' => 'Type d\'autorisation',
-            'access-control' => 'Contrôle d\'accès',
-            'general' => 'Général',
-            'token-settings' => 'Paramètres des jetons',
-            'valid-till' => 'Valable jusqu\'à',
-            'rate-limit-per-minute' => 'Limite de débit (par minute)',
-            'rate-limit-per-day' => 'Limite de tarif (par jour)',
-            'never-expires' => 'N\'expire jamais',
-            'expires-on' => 'Expire le',
-            'unlimited' => 'Illimité',
-            'limit-to' => 'Limiter à',
-            'requests-per-minute' => 'requêtes / minute',
-            'requests-per-day' => 'demandes / jour',
-            'select-admin' => 'Sélectionnez un administrateur',
-            'no-available-admins' => 'Aucun administrateur disponible : chaque administrateur dispose déjà d\'un jeton actif.',
-            'same-as-web-hint' => 'Le jeton reflétera en direct les autorisations de rôle actuelles de l\'administrateur attribué.',
-            'ip-allowlist' => 'Liste d\'adresses IP autorisées',
-            'ip-any' => 'N\'importe quelle adresse IP (par défaut)',
-            'ip-restricted' => 'Limité à des adresses IP spécifiques',
-            'ip-list-hint' => 'Une entrée par ligne. Prend en charge IPv4, IPv6 et CIDR (par exemple 10.0.0.0/24 ou 2001:db8::/32). Laissez vide pour autoriser toutes les adresses IP.',
-        ],
-
-        'permission-type' => [
-            'all' => 'Tout',
-            'custom' => 'Personnalisé',
-            'same-as-web' => 'Identique à l\'autorisation Web',
-        ],
-
-        'status' => [
-            'draft' => 'Brouillon',
-            'active' => 'Actif',
-            'revoked' => 'Révoqué',
-            'regenerated' => 'Régénéré',
-        ],
-
-        'datagrid' => [
-            'id' => 'pièce d\'identité',
-            'name' => 'Nom',
-            'admin' => 'Administrateur',
-            'token' => 'Jeton',
-            'status' => 'Statut',
-            'permission-type' => 'Type d\'autorisation',
-            'expires-at' => 'Valable jusqu\'à',
-            'last-used-at' => 'Dernière utilisation',
-            'created-at' => 'Créé à',
-            'edit' => 'Modifier',
-            'revoke' => 'Révoquer',
-        ],
-
-        'messages' => [
-            'draft-created' => 'Intégration créée. Générez le jeton pour commencer à l\'utiliser.',
-            'updated' => 'Intégration mise à jour avec succès.',
-            'generated' => 'Jeton généré. Copiez-le maintenant – il ne sera plus affiché.',
-            'regenerated' => 'Jeton régénéré. Copiez le nouveau jeton maintenant : il ne sera plus affiché.',
-            'revoked' => 'Jeton révoqué avec succès.',
-            'generate-only-draft' => 'Seuls les brouillons d\'intégrations peuvent voir leur jeton généré.',
-            'regenerate-only-active' => 'Seuls les jetons actifs peuvent être régénérés.',
-            'cannot-edit-historic' => 'Les jetons révoqués ou régénérés ne peuvent pas être modifiés.',
-            'already-inactive' => 'Ce jeton est déjà inactif.',
-        ],
-
-        'errors' => [
-            'admin-has-token' => 'L\'administrateur sélectionné dispose déjà d\'un jeton d\'intégration actif.',
-            'only-draft-generate' => 'Seuls les jetons à l\'état de brouillon peuvent être générés.',
-        ],
-
-        'validation' => [
-            'ip-invalid' => 'Chaque adresse IP autorisée doit être une adresse IPv4 ou IPv6 valide (notation CIDR prise en charge).',
-            'cidr-prefix-invalid' => 'Le préfixe CIDR n\'est pas valide pour la version IP donnée.',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => 'API',
-                'info' => 'Paramètres de l\'API Bagisto et de ses modules d\'administration.',
-            ],
-
-            'integration' => [
-                'title' => 'Intégration',
-                'info' => 'Gérez le plug-in d\'intégration d\'API utilisé pour émettre des jetons d\'API d\'administrateur.',
-            ],
-
-            'settings' => [
-                'title' => 'Paramètres des modules',
-                'info' => 'Activez ou désactivez le plug-in d\'intégration API. Lorsqu\'il est désactivé, son menu de barre latérale est masqué et ses pages renvoient 404.',
-                'enable' => 'Activer le module d\'intégration API',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => 'Un nouveau jeton API a été généré : :name',
-                'greeting' => 'Un jeton d\'intégration API nommé ":name" vient d\'être généré sur votre compte.',
-            ],
-
-            'regenerated' => [
-                'subject' => 'Votre jeton API a été régénéré : :name',
-                'greeting' => 'Le jeton d\'intégration d\'API nommé ":name" vient d\'être régénéré. Le jeton précédent a cessé de fonctionner : seul le nouveau est valide.',
-            ],
-
-            'revoked' => [
-                'subject' => 'Votre jeton API a été révoqué : :name',
-                'greeting' => 'Le jeton d\'intégration d\'API nommé ":name" a été révoqué. Tout client qui l\'utilise a perdu l\'accès.',
-            ],
-
-            'details' => [
-                'name' => 'Nom du jeton',
-                'date' => 'Date',
-                'ip' => 'Depuis la propriété intellectuelle',
-            ],
-
-            'revoke-hint' => 'Si vous ne vous y attendiez pas, révoquez immédiatement le token en utilisant le bouton ci-dessous.',
-            'revoke-btn' => 'Révoquer ce jeton',
-            'revoke-expiry' => 'Ce lien de révocation est valable 7 jours. Après cela, connectez-vous au panneau d\'administration pour gérer le jeton.',
-            'no-action' => 'Aucune action n\'est nécessaire : cet e-mail n\'est qu\'une confirmation.',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => 'Révoquer le jeton API',
-            'confirm-title' => 'Révoquer ce jeton ?',
-            'confirm-message' => 'Le jeton ":name" cessera immédiatement de fonctionner pour tous les clients qui l\'utilisent.',
-            'confirm-button' => 'Révoquer le jeton',
-            'success-title' => 'Jeton révoqué',
-            'success-message' => 'Le jeton ":name" a été révoqué. Tout client qui l\'utilise perd immédiatement l\'accès.',
-            'already-inactive-title' => 'Jeton déjà inactif',
-            'already-inactive-message' => 'Le jeton « :name » a déjà été révoqué ou régénéré. Aucune autre action n’est nécessaire.',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => 'Générer un jeton',
-                'message' => 'Générer le jeton maintenant ? Le texte brut ne sera affiché qu\'une seule fois : copiez-le avant de quitter la page.',
-            ],
-
-            'regenerate' => [
-                'title' => 'Régénérer le jeton',
-                'message' => 'Régénérer le jeton ? L\'ancien jeton cessera de fonctionner immédiatement et le nouveau texte brut ne sera affiché qu\'une seule fois.',
-            ],
-
-            'revoke' => [
-                'title' => 'Révoquer le jeton',
-                'message' => 'Révoquer ce jeton ? Tout client l’utilisant perdra immédiatement l’accès. Cette action ne peut pas être annulée.',
-            ],
+        'api-configuration' => [
+            'title' => 'API',
+            'info' => 'Paramètres de l\'API Bagisto et de ses modules d\'administration.',
         ],
     ],
 ];

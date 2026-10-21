@@ -1,20 +1,48 @@
 @php
-    $old  = is_array($audit->old_values) ? $audit->old_values : [];
-    $new  = is_array($audit->new_values) ? $audit->new_values : [];
+    $old = is_array($audit->old_values) ? $audit->old_values : [];
+
+    $new = is_array($audit->new_values) ? $audit->new_values : [];
+
     $keys = array_values(array_unique(array_merge(array_keys($old), array_keys($new))));
 
+    /**
+     * The printable form of a stored attribute value.
+     */
     $fmt = function ($value) {
         if ($value === null) {
             return '—';
         }
+
         if (is_bool($value)) {
             return $value ? 'true' : 'false';
         }
+
         if (is_array($value)) {
             return json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         }
+
         return (string) $value;
     };
+
+    /**
+     * The translated label of a token kind or channel, or a dash when the row has none.
+     */
+    $optionLabel = function (string $group, ?string $value) {
+        if ($value === null) {
+            return '—';
+        }
+
+        $key = 'bagistoapi::app.admin.api-audit.'.$group.'.'.str_replace('_', '-', $value);
+
+        return trans()->has($key) ? trans($key) : $value;
+    };
+
+    /**
+     * The translated label of an audit event.
+     */
+    $eventLabel = fn (?string $event) => in_array($event, ['created', 'updated', 'deleted'], true)
+        ? trans('bagistoapi::app.admin.api-audit.events.'.$event)
+        : (string) $event;
 
     $eventClass = [
         'created' => 'label-active',
@@ -28,37 +56,33 @@
 
 <x-admin::layouts>
     <x-slot:title>
-        @lang('bagistoapi::app.integration.history.view.title') #{{ $audit->id }}
+        @lang('bagistoapi::app.admin.api-audit.view.title') #{{ $audit->id }}
     </x-slot>
 
-    {{-- Header --}}
     <div class="flex items-center justify-between gap-4 max-sm:flex-wrap">
         <div class="flex items-center gap-2.5">
             <p class="text-xl font-bold leading-6 text-gray-800 dark:text-white">
-                @lang('bagistoapi::app.integration.history.view.title') #{{ $audit->id }}
+                @lang('bagistoapi::app.admin.api-audit.view.title') #{{ $audit->id }}
             </p>
 
             <span class="{{ $eventClass }} text-sm mx-1.5">
-                {{ ucfirst((string) $audit->event) }}
+                {{ $eventLabel($audit->event) }}
             </span>
         </div>
 
-        {{-- Back Button --}}
         <a
-            href="{{ route('admin.integration.history.index') }}"
+            href="{{ route('admin.settings.api_audit.index') }}"
             class="transparent-button hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
         >
-            @lang('bagistoapi::app.integration.history.view.back-btn')
+            @lang('bagistoapi::app.admin.api-audit.view.back-btn')
         </a>
     </div>
 
     <div class="mt-3.5 flex gap-2.5 max-xl:flex-wrap">
-        {{-- Left Component --}}
         <div class="flex flex-1 flex-col gap-2 max-xl:flex-auto">
-            {{-- Changes --}}
             <div class="box-shadow rounded bg-white dark:bg-gray-900">
                 <p class="p-4 text-base font-semibold text-gray-800 dark:text-white">
-                    @lang('bagistoapi::app.integration.history.view.changes')
+                    @lang('bagistoapi::app.admin.api-audit.view.changes')
                 </p>
 
                 @if (count($keys))
@@ -66,15 +90,15 @@
                         <x-admin::table.thead>
                             <x-admin::table.thead.tr>
                                 <x-admin::table.th>
-                                    @lang('bagistoapi::app.integration.history.view.field')
+                                    @lang('bagistoapi::app.admin.api-audit.view.field')
                                 </x-admin::table.th>
 
                                 <x-admin::table.th>
-                                    @lang('bagistoapi::app.integration.history.view.old')
+                                    @lang('bagistoapi::app.admin.api-audit.view.old')
                                 </x-admin::table.th>
 
                                 <x-admin::table.th>
-                                    @lang('bagistoapi::app.integration.history.view.new')
+                                    @lang('bagistoapi::app.admin.api-audit.view.new')
                                 </x-admin::table.th>
                             </x-admin::table.thead.tr>
                         </x-admin::table.thead>
@@ -99,27 +123,26 @@
                     </x-admin::table>
                 @else
                     <p class="px-4 pb-4 text-gray-600 dark:text-gray-300">
-                        @lang('bagistoapi::app.integration.history.view.no-field-changes')
+                        @lang('bagistoapi::app.admin.api-audit.view.no-field-changes')
                     </p>
                 @endif
             </div>
 
-            {{-- Other changes in the same request --}}
             @if ($siblings->count())
                 <div class="box-shadow rounded bg-white dark:bg-gray-900">
                     <p class="p-4 text-base font-semibold text-gray-800 dark:text-white">
-                        @lang('bagistoapi::app.integration.history.view.same-request')
+                        @lang('bagistoapi::app.admin.api-audit.view.same-request')
                     </p>
 
                     <x-admin::table>
                         <x-admin::table.thead>
                             <x-admin::table.thead.tr>
                                 <x-admin::table.th>
-                                    @lang('bagistoapi::app.integration.history.view.action')
+                                    @lang('bagistoapi::app.admin.api-audit.view.action')
                                 </x-admin::table.th>
 
                                 <x-admin::table.th>
-                                    @lang('bagistoapi::app.integration.history.view.resource')
+                                    @lang('bagistoapi::app.admin.api-audit.view.resource')
                                 </x-admin::table.th>
 
                                 <x-admin::table.th></x-admin::table.th>
@@ -130,7 +153,7 @@
                             @foreach ($siblings as $sibling)
                                 <x-admin::table.tbody.tr class="border-b dark:border-gray-800">
                                     <x-admin::table.td>
-                                        {{ ucfirst((string) $sibling->event) }}
+                                        {{ $eventLabel($sibling->event) }}
                                     </x-admin::table.td>
 
                                     <x-admin::table.td>
@@ -141,9 +164,9 @@
                                     <x-admin::table.td>
                                         <a
                                             class="text-blue-600 hover:underline dark:text-blue-400"
-                                            href="{{ route('admin.integration.history.view', $sibling->id) }}"
+                                            href="{{ route('admin.settings.api_audit.view', $sibling->id) }}"
                                         >
-                                            @lang('bagistoapi::app.integration.history.datagrid.view')
+                                            @lang('bagistoapi::app.admin.api-audit.datagrid.view')
                                         </a>
                                     </x-admin::table.td>
                                 </x-admin::table.tbody.tr>
@@ -153,26 +176,25 @@
                 </div>
             @endif
 
-            {{-- Version history of this record --}}
             @if ($versions->count() > 1)
                 <div class="box-shadow rounded bg-white dark:bg-gray-900">
                     <p class="p-4 text-base font-semibold text-gray-800 dark:text-white">
-                        @lang('bagistoapi::app.integration.history.view.version-chain')
+                        @lang('bagistoapi::app.admin.api-audit.view.version-chain')
                     </p>
 
                     <x-admin::table>
                         <x-admin::table.thead>
                             <x-admin::table.thead.tr>
                                 <x-admin::table.th>
-                                    @lang('bagistoapi::app.integration.history.view.version')
+                                    @lang('bagistoapi::app.admin.api-audit.view.version')
                                 </x-admin::table.th>
 
                                 <x-admin::table.th>
-                                    @lang('bagistoapi::app.integration.history.view.action')
+                                    @lang('bagistoapi::app.admin.api-audit.view.action')
                                 </x-admin::table.th>
 
                                 <x-admin::table.th>
-                                    @lang('bagistoapi::app.integration.history.view.date')
+                                    @lang('bagistoapi::app.admin.api-audit.view.date')
                                 </x-admin::table.th>
 
                                 <x-admin::table.th></x-admin::table.th>
@@ -187,7 +209,7 @@
                                     </x-admin::table.td>
 
                                     <x-admin::table.td>
-                                        {{ ucfirst((string) $version->event) }}
+                                        {{ $eventLabel($version->event) }}
                                     </x-admin::table.td>
 
                                     <x-admin::table.td>
@@ -198,12 +220,12 @@
                                         @if ($version->id !== $audit->id)
                                             <a
                                                 class="text-blue-600 hover:underline dark:text-blue-400"
-                                                href="{{ route('admin.integration.history.view', $version->id) }}"
+                                                href="{{ route('admin.settings.api_audit.view', $version->id) }}"
                                             >
-                                                @lang('bagistoapi::app.integration.history.datagrid.view')
+                                                @lang('bagistoapi::app.admin.api-audit.datagrid.view')
                                             </a>
                                         @else
-                                            <span class="text-gray-400">@lang('bagistoapi::app.integration.history.view.title')</span>
+                                            <span class="text-gray-400">@lang('bagistoapi::app.admin.api-audit.view.title')</span>
                                         @endif
                                     </x-admin::table.td>
                                 </x-admin::table.tbody.tr>
@@ -214,17 +236,16 @@
             @endif
         </div>
 
-        {{-- Right Component --}}
         <div class="flex w-full max-w-sm flex-col gap-2 max-xl:max-w-full">
             <div class="box-shadow rounded bg-white p-4 dark:bg-gray-900">
                 <p class="mb-4 text-base font-semibold text-gray-800 dark:text-white">
-                    @lang('bagistoapi::app.integration.history.view.request-details')
+                    @lang('bagistoapi::app.admin.api-audit.view.request-details')
                 </p>
 
                 <div class="grid gap-y-4">
                     <div class="grid gap-1">
                         <p class="text-xs text-gray-500 dark:text-gray-400">
-                            @lang('bagistoapi::app.integration.history.view.resource')
+                            @lang('bagistoapi::app.admin.api-audit.view.resource')
                         </p>
 
                         <p class="break-all font-medium text-gray-800 dark:text-white">
@@ -234,7 +255,7 @@
 
                     <div class="grid gap-1">
                         <p class="text-xs text-gray-500 dark:text-gray-400">
-                            @lang('bagistoapi::app.integration.history.view.admin')
+                            @lang('bagistoapi::app.admin.api-audit.view.admin')
                         </p>
 
                         <p class="font-medium text-gray-800 dark:text-white">
@@ -244,7 +265,7 @@
 
                     <div class="grid gap-1">
                         <p class="text-xs text-gray-500 dark:text-gray-400">
-                            @lang('bagistoapi::app.integration.history.view.token')
+                            @lang('bagistoapi::app.admin.api-audit.view.token')
                         </p>
 
                         <p class="font-medium text-gray-800 dark:text-white">
@@ -258,7 +279,27 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div class="grid gap-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">
-                                @lang('bagistoapi::app.integration.history.view.version')
+                                @lang('bagistoapi::app.admin.api-audit.datagrid.token-kind')
+                            </p>
+
+                            <p class="font-medium text-gray-800 dark:text-white">
+                                {{ $optionLabel('token-kinds', $audit->token_kind) }}
+                            </p>
+                        </div>
+
+                        <div class="grid gap-1">
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                @lang('bagistoapi::app.admin.api-audit.datagrid.channel')
+                            </p>
+
+                            <p class="font-medium text-gray-800 dark:text-white">
+                                {{ $optionLabel('channels', $audit->channel) }}
+                            </p>
+                        </div>
+
+                        <div class="grid gap-1">
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                @lang('bagistoapi::app.admin.api-audit.view.version')
                             </p>
 
                             <p class="font-medium text-gray-800 dark:text-white">
@@ -268,7 +309,7 @@
 
                         <div class="grid gap-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">
-                                @lang('bagistoapi::app.integration.history.view.method')
+                                @lang('bagistoapi::app.admin.api-audit.view.method')
                             </p>
 
                             <p class="font-medium text-gray-800 dark:text-white">
@@ -278,7 +319,7 @@
 
                         <div class="grid gap-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">
-                                @lang('bagistoapi::app.integration.history.view.ip')
+                                @lang('bagistoapi::app.admin.api-audit.view.ip')
                             </p>
 
                             <p class="font-medium text-gray-800 dark:text-white">
@@ -288,7 +329,7 @@
 
                         <div class="grid gap-1">
                             <p class="text-xs text-gray-500 dark:text-gray-400">
-                                @lang('bagistoapi::app.integration.history.view.date')
+                                @lang('bagistoapi::app.admin.api-audit.view.date')
                             </p>
 
                             <p class="font-medium text-gray-800 dark:text-white">
@@ -299,7 +340,7 @@
 
                     <div class="grid gap-1">
                         <p class="text-xs text-gray-500 dark:text-gray-400">
-                            @lang('bagistoapi::app.integration.history.view.url')
+                            @lang('bagistoapi::app.admin.api-audit.view.url')
                         </p>
 
                         <p class="break-all font-medium text-gray-800 dark:text-white">

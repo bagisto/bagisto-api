@@ -58,6 +58,8 @@ class InstallApiPlatformCommand extends Command
 
             $this->generateApiKey();
 
+            $this->generateJwtKeys();
+
             $this->clearCaches();
 
             $this->optimizeCaches();
@@ -74,6 +76,8 @@ class InstallApiPlatformCommand extends Command
             $this->line(__('bagistoapi::app.graphql.install.graphql-playground', ['url' => "{$appUrl}/api/graphiql"]));
             $this->line(__('bagistoapi::app.graphql.install.rest-api-storefront', ['url' => "{$appUrl}/api/shop"]));
             $this->line(__('bagistoapi::app.graphql.install.rest-api-admin', ['url' => "{$appUrl}/api/admin"]));
+            $this->line(__('bagistoapi::app.graphql.install.admin-login', ['url' => "{$appUrl}/api/admin/auth/login"]));
+            $this->line(__('bagistoapi::app.graphql.install.admin-api-tokens', ['url' => $appUrl.'/'.config('app.admin_url').'/settings/api-tokens']));
 
             return self::SUCCESS;
         } catch (\Exception $exception) {
@@ -435,6 +439,28 @@ class InstallApiPlatformCommand extends Command
         } catch (\Exception $exception) {
             throw new \Exception(__('bagistoapi::app.graphql.install.api-key-error', ['error' => $exception->getMessage()]));
         }
+    }
+
+    /**
+     * Create the ES256 key pair that signs admin API access tokens and API tokens, unless it already exists.
+     */
+    protected function generateJwtKeys(): void
+    {
+        $this->info(__('bagistoapi::app.graphql.install.generating-jwt-keys'));
+
+        $process = $this->artisanProcess(['bagisto-api:jwt-keys', '--no-interaction']);
+
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            $this->warn(__('bagistoapi::app.graphql.install.jwt-keys-warning', [
+                'error' => trim($process->getErrorOutput().' '.$process->getOutput()),
+            ]));
+
+            return;
+        }
+
+        $this->line(__('bagistoapi::app.graphql.install.jwt-keys-generated'));
     }
 
     /**

@@ -4,32 +4,39 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Sales\Models\Order;
+use Webkul\Sales\Repositories\OrderRepository;
 use Webkul\User\Models\Admin;
 
 class AdminOrderActionGuard
 {
     /**
-     * The perm cancel constant.
+     * The permission needed to cancel an order.
      */
     public const PERM_CANCEL = 'sales.orders.cancel';
 
     /**
-     * The perm invoice constant.
+     * The permission needed to invoice an order.
      */
     public const PERM_INVOICE = 'sales.invoices.create';
 
     /**
-     * The perm shipment constant.
+     * The permission needed to ship an order.
      */
     public const PERM_SHIPMENT = 'sales.shipments.create';
 
     /**
-     * The perm refund constant.
+     * The permission needed to refund an order.
      */
     public const PERM_REFUND = 'sales.refunds.create';
+
+    /**
+     * Create a new instance.
+     */
+    public function __construct(protected OrderRepository $orderRepository) {}
 
     /**
      * Resolve the admin from the current request's Bearer token.
@@ -48,9 +55,9 @@ class AdminOrderActionGuard
     }
 
     /**
-     * Resolve the order id from uriVariables / GraphQL args / route fallback.
+     * Resolve the order from the URI variables, the GraphQL arguments or the route.
      *
-     * @param  string  $routeKey  The placeholder name (e.g. `id`, `orderId`).
+     * @param  string  $routeKey  The placeholder name, such as `id` or `orderId`.
      */
     public function resolveOrder(array $uriVariables, array $context, string $routeKey = 'id'): Order
     {
@@ -78,7 +85,9 @@ class AdminOrderActionGuard
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.not-found'));
         }
 
-        $order = Order::with(['items.product', 'items.children', 'payment', 'channel', 'addresses', 'refunds'])->find($id);
+        $order = $this->orderRepository
+            ->with(['items.product', 'items.children', 'payment', 'channel', 'addresses', 'refunds'])
+            ->find($id);
 
         if (! $order) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.not-found'));
@@ -88,30 +97,30 @@ class AdminOrderActionGuard
     }
 
     /**
-     * Cancel: closed / fraud / nothing-to-cancel / no-permission.
+     * Assert the admin may cancel the order, checking the permission before any order state.
      */
     public function assertCanCancel(Order $order, Admin $admin): void
     {
+        $this->assertPermission($admin, self::PERM_CANCEL, 'bagistoapi::app.admin.order.actions.cancel.no-permission');
+
         $this->assertStatusOpen($order, 'cancel');
 
         if (! $this->hasAnyQty($order, 'qty_to_cancel')) {
-            $key = ($this->hasAnyQty($order, 'qty_invoiced') || $this->hasAnyQty($order, 'qty_shipped'))
+            $key = $this->hasBeenProcessed($order)
                 ? 'cancel.already-processed'
                 : 'cancel.nothing-to-cancel';
 
             throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.'.$key), 422);
         }
-
-        if (! $this->adminHasPermission($admin, self::PERM_CANCEL)) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.cancel.no-permission'), 422);
-        }
     }
 
     /**
-     * Invoice: closed / fraud / paypal_standard / nothing-to-invoice / no-permission.
+     * Assert the admin may invoice the order, checking the permission before any order state.
      */
     public function assertCanInvoice(Order $order, Admin $admin): void
     {
+        $this->assertPermission($admin, self::PERM_INVOICE, 'bagistoapi::app.admin.order.actions.invoice.no-permission');
+
         $this->assertStatusOpen($order, 'invoice');
 
         if (
@@ -128,20 +137,19 @@ class AdminOrderActionGuard
 
             throw new InvalidInputException(__($key), 422);
         }
-
-        if (! $this->adminHasPermission($admin, self::PERM_INVOICE)) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.invoice.no-permission'), 422);
-        }
     }
 
     /**
-     * Shipment: closed / fraud / nothing-to-ship / no-permission.
+     * Assert the admin may ship the order, checking the permission before any order state.
      */
     public function assertCanShip(Order $order, Admin $admin): void
     {
+        $this->assertPermission($admin, self::PERM_SHIPMENT, 'bagistoapi::app.admin.order.actions.shipment.no-permission');
+
         $this->assertStatusOpen($order, 'shipment');
 
         $shippable = false;
+
         foreach ($order->items as $item) {
             if (
                 (int) $item->qty_to_ship > 0
@@ -155,18 +163,15 @@ class AdminOrderActionGuard
         if (! $shippable) {
             throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.shipment.nothing-to-ship'), 422);
         }
-
-        if (! $this->adminHasPermission($admin, self::PERM_SHIPMENT)) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.shipment.no-permission'), 422);
-        }
     }
 
     /**
-     * Refund: closed / fraud / nothing-to-refund / no-permission.
-     * "Nothing to refund" mirrors Order::canRefund() — at least one item with.
+     * Assert the admin may refund the order, checking the permission before any order state.
      */
     public function assertCanRefund(Order $order, Admin $admin): void
     {
+        $this->assertPermission($admin, self::PERM_REFUND, 'bagistoapi::app.admin.order.actions.refund.no-permission');
+
         $this->assertStatusOpen($order, 'refund');
 
         $hasRefundableQty = $this->hasAnyQty($order, 'qty_to_refund');
@@ -181,14 +186,10 @@ class AdminOrderActionGuard
         ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.refund.nothing-to-refund'), 422);
         }
-
-        if (! $this->adminHasPermission($admin, self::PERM_REFUND)) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.refund.no-permission'), 422);
-        }
     }
 
     /**
-     * Permission check for the API-token-resolved admin (no session).
+     * Whether the admin's role grants the permission.
      */
     public function adminHasPermission(Admin $admin, string $permission): bool
     {
@@ -196,7 +197,19 @@ class AdminOrderActionGuard
     }
 
     /**
-     * Block closed/fraud orders, surfacing distinct reasons per action.
+     * Refuse with 403 when the admin's role lacks the permission.
+     *
+     * @throws AuthorizationException
+     */
+    public function assertPermission(Admin $admin, string $permission, string $messageKey): void
+    {
+        if (! $this->adminHasPermission($admin, $permission)) {
+            throw new AuthorizationException(__($messageKey));
+        }
+    }
+
+    /**
+     * Refuse closed and fraud orders, with a reason for each action.
      */
     protected function assertStatusOpen(Order $order, string $action): void
     {
@@ -216,7 +229,7 @@ class AdminOrderActionGuard
     }
 
     /**
-     * True when at least one item has a positive value for the qty-tracking attr.
+     * Whether at least one item has a positive value for the quantity attribute.
      */
     protected function hasAnyQty(Order $order, string $attribute): bool
     {
@@ -227,5 +240,14 @@ class AdminOrderActionGuard
         }
 
         return false;
+    }
+
+    /**
+     * Whether any item of the order has been invoiced or shipped.
+     */
+    protected function hasBeenProcessed(Order $order): bool
+    {
+        return $this->hasAnyQty($order, 'qty_invoiced')
+            || $this->hasAnyQty($order, 'qty_shipped');
     }
 }

@@ -184,23 +184,23 @@ Administrative endpoints for the [Bagisto](https://bagisto.com) e-commerce platf
 ## Setup
 
 1. Select the **Bagisto** environment (top right). Import it first if it is not in your workspace. One environment serves both the admin and the storefront collection.
-2. In the admin panel, enable the module under **Configuration → API → Integration → Module Settings**, then go to **Settings → Integration**, create an integration and press **Generate**. The token is shown once — copy it immediately.
+2. Get an admin token in one of two ways. Either log in with `POST /api/admin/auth/login` (email and password) and copy `accessToken`, which lasts 15 minutes and is renewed with `POST /api/admin/auth/refresh`; or, for a server integration, create an API token under **Settings → API Tokens** in the admin panel. An API token is shown once, so copy it immediately.
 3. Set these values:
 
 | Variable | Where it comes from |
 | --- | --- |
 | `url` | Your store, e.g. `http://localhost:8000` |
-| `adminToken` | The generated token, copied whole — it includes the numeric id prefix |
+| `adminToken` | The access token or API token, copied whole |
 
-There is no login request. Admin access is a pre-issued integration token, sent as the bearer on every request:
+The token is sent as the bearer on every request:
 
 ```
-Authorization: Bearer 5|1dYWpciAn2Ro8dfsabA89ohhduVWWXqicyPyQeIH
+Authorization: Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6Ii4uLiIsInR5cCI6IkpXVCJ9...
 ```
 
 ## Permissions
 
-A token inherits the permissions of the admin user it belongs to, so a valid token can still return **403** on an endpoint that user cannot reach. Tokens can be revoked at any time from the same screen, or from the link in the notification email.
+A token has exactly the permissions of the admin user's role, so a valid token can still return **403** on an endpoint that user cannot reach. Login sessions are listed and revoked under **Settings → API Sessions**, and API tokens under **Settings → API Tokens**.
 
 ## Layout
 

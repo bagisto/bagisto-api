@@ -99,7 +99,7 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 class AdminReadPermissions
 {
     /**
-     * Resource class => ACL key from packages/Webkul/Admin/src/Config/acl.php.
+     * The core ACL key of each admin resource class, or null for the classes any signed-in admin may read.
      *
      * @var array<class-string, string|null>
      */
@@ -209,7 +209,7 @@ class AdminReadPermissions
      * Resolve the calling admin and enforce the read permission of the resource.
      *
      * @throws AuthenticationException When no admin is resolved (401).
-     * @throws AuthorizationException When the admin's role lacks the key (403).
+     * @throws AuthorizationException When the admin's role lacks the key, or the resource has no mapped key (403).
      */
     public static function authorize(?Operation $operation = null, ?string $fallbackClass = null, ?string $override = null): object
     {
@@ -232,14 +232,19 @@ class AdminReadPermissions
     }
 
     /**
-     * The ACL key for a resource class, or null when only authentication is needed.
+     * The ACL key for a resource class, or null when the class is explicitly mapped to authentication only.
+     *
+     * @throws AuthorizationException When the class has no entry in the map, so a new resource is closed by default.
      */
     public static function permissionFor(?string $resourceClass): ?string
     {
-        if ($resourceClass === null) {
-            return null;
+        if (
+            $resourceClass === null
+            || ! array_key_exists($resourceClass, self::MAP)
+        ) {
+            throw new AuthorizationException(__('bagistoapi::app.admin.customer.no-permission'));
         }
 
-        return self::MAP[$resourceClass] ?? null;
+        return self::MAP[$resourceClass];
     }
 }

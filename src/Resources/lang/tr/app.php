@@ -642,6 +642,8 @@ return [
             'notify-success-message' => '   ✅ :count süre dolumu bildirimi gönderildi',
             'notify-failed-message' => '   ⚠️ :key hakkında bildirim gönderilemedi: :error',
             'publish-assets-warning' => 'Uyarı: Paket varlıkları yayımlanamadı. :error',
+            'env-file-not-found' => '.env dosyası bulunamadı. Kurulumdan önce oluşturun.',
+            'env-permission-denied' => '.env dosyasına yazılamıyor. İzinlerini kontrol edin.',
             'env-config-saved' => '✓ API Platform ortam yapılandırması başarıyla kaydedildi',
             'api-endpoints' => 'API Uç Noktaları:',
             'api-documentation' => 'API Belgeleri: :url',
@@ -649,6 +651,11 @@ return [
             'graphql-playground' => 'GraphQL Playground: :url',
             'rest-api-storefront' => 'Rest API Mağaza Swagger: :url',
             'rest-api-admin' => 'Rest API Yönetici Swagger: :url',
+            'generating-jwt-keys' => 'Yönetici API belirteçleri için JWT imzalama anahtarları oluşturuluyor...',
+            'jwt-keys-generated' => '✓ JWT imzalama anahtarları hazır',
+            'jwt-keys-warning' => 'Uyarı: JWT imzalama anahtarları oluşturulamadı. php artisan bagisto-api:jwt-keys komutunu elle çalıştırın. :error',
+            'admin-login' => 'Yönetici API Girişi: :url',
+            'admin-api-tokens' => 'Yönetici API Belirteçleri (sunucu entegrasyonları): :url',
             'key-rotation-invalid-key' => 'Geçersiz veya süresi dolmuş bir anahtar yenilenemez',
             'env-file-not-found' => '.env dosyası bulunamadı',
             'env-permission-denied' => 'İzin reddedildi: .env dosyasına yazılamıyor. Lütfen dosya izinlerini kontrol edin.',
@@ -744,9 +751,6 @@ return [
     ],
 
     'admin' => [
-        // login / logout / forgot-password / profile-update keys removed in the
-        // 2026-05-27 auth refactor — admin clients now authenticate via
-        // pre-issued integration tokens (Bearer header, AdminApiGuard).
         'profile' => [
             'unauthenticated' => 'Kimliğiniz doğrulanmadı.',
         ],
@@ -1370,10 +1374,7 @@ return [
             ],
 
             'currency' => [
-                // Read
                 'not-found' => 'Para birimi bulunamadı.',
-
-                // Create / Update / Delete
                 'created' => 'Para birimi başarıyla oluşturuldu.',
                 'updated' => 'Para birimi başarıyla güncellendi.',
                 'deleted' => 'Para birimi başarıyla silindi.',
@@ -1850,22 +1851,14 @@ return [
                 'not-active' => 'Bu oturum zaten iptal edilmiş veya süresi dolmuş.',
             ],
         ],
-    ],
 
-    'integration' => [
-        'menu' => [
-            'title' => 'Entegrasyon',
-            'tokens' => 'Jetonlar',
-        ],
-
-        'history' => [
+        'api-audit' => [
             'menu' => [
-                'title' => 'Tarih',
+                'title' => 'API Denetimi',
             ],
 
             'acl' => [
                 'title' => 'API Değişiklik Geçmişi',
-                'view' => 'Görüntüle',
                 'delete' => 'Geçmişi Sil',
             ],
 
@@ -1904,10 +1897,10 @@ return [
                 'date' => 'Tarih',
                 'admin' => 'Yönetici',
                 'token' => 'Jeton',
-                'action' => 'Eylem',
+                'token-kind' => 'Belirteç Türü',
+                'channel' => 'Kanal',
                 'operation' => 'Operasyon',
                 'resource' => 'Kaynak',
-                'version' => 'Sürüm',
                 'method' => 'Yöntem',
                 'ip' => 'IP',
                 'view' => 'Görüntüle',
@@ -1920,193 +1913,26 @@ return [
                 'deleted' => 'Silindi',
             ],
 
+            'token-kinds' => [
+                'session' => 'Oturum Açma Oturumu',
+                'api-token' => 'API Belirteci',
+                'integration' => 'Entegrasyon Belirteci (kaldırıldı)',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => 'Yönetim Paneli',
+                'cli' => 'Konsol Komutu',
+            ],
+
             'deleted' => ':count geçmiş kaydı silindi.',
             'cleanup-input-required' => 'Temizlemek için birkaç gün veya tarih belirtin.',
         ],
 
-        'acl' => [
-            'title' => 'Entegrasyon',
-            'view' => 'Görüntüle',
-            'create' => 'Entegrasyon Oluştur',
-            'edit' => 'Entegrasyonu Düzenle',
-            'delete' => 'Entegrasyon Simgesini İptal Et',
-            'generate' => 'Entegrasyon Jetonu Oluştur',
-            'regenerate' => 'Entegrasyon Simgesini Yeniden Oluştur',
-        ],
-
-        'index' => [
-            'title' => 'Entegrasyonlar',
-            'create-btn' => 'Entegrasyon Oluştur',
-        ],
-
-        'create' => [
-            'title' => 'Entegrasyon Oluştur',
-            'save-btn' => 'Kaydet',
-            'back-btn' => 'Geri',
-        ],
-
-        'edit' => [
-            'title' => 'Entegrasyonu Düzenle',
-            'save-btn' => 'Kaydet',
-            'back-btn' => 'Geri',
-            'generate-btn' => 'Jeton Oluştur',
-            'regenerate-btn' => 'Jetonu Yeniden Oluştur',
-            'revoke-btn' => 'Jetonu İptal Et',
-            'copy-btn' => 'Kopyala',
-            'token-warning' => 'Bu jetonu şimdi kaydedin; bir daha gösterilmeyecek.',
-            'token-label' => 'Jeton',
-            'not-generated' => 'Henüz oluşturulmadı',
-            'masked' => '(Saklanır — oluşturma sırasında yalnızca bir kez gösterilir)',
-            'history-banner' => 'Bu jeton artık aktif değil.',
-        ],
-
-        'fields' => [
-            'name' => 'İsim',
-            'description' => 'Açıklama',
-            'assign-user' => 'Kullanıcı Ata',
-            'permission-type' => 'İzin Türü',
-            'access-control' => 'Erişim Kontrolü',
-            'general' => 'Genel',
-            'token-settings' => 'Jeton Ayarları',
-            'valid-till' => 'Geçerlilik Tarihi:',
-            'rate-limit-per-minute' => 'Hız Sınırı (dakika başına)',
-            'rate-limit-per-day' => 'Fiyat Sınırı (günlük)',
-            'never-expires' => 'Hiçbir zaman süresi dolmaz',
-            'expires-on' => 'Süresi doluyor',
-            'unlimited' => 'Sınırsız',
-            'limit-to' => 'Sınırla',
-            'requests-per-minute' => 'istek / dakika',
-            'requests-per-day' => 'istekler / gün',
-            'select-admin' => 'Bir yönetici seçin',
-            'no-available-admins' => 'Yönetici yok; her yöneticinin zaten etkin bir jetonu vardır.',
-            'same-as-web-hint' => 'Token, atanan yöneticinin mevcut rol izinlerini canlı olarak yansıtacaktır.',
-            'ip-allowlist' => 'IP İzin Verilenler Listesi',
-            'ip-any' => 'Herhangi bir IP (varsayılan)',
-            'ip-restricted' => 'Belirli IP\'lerle sınırlıdır',
-            'ip-list-hint' => 'Her satıra bir giriş. IPv4, IPv6 ve CIDR\'yi destekler (örn. 10.0.0.0/24 veya 2001:db8::/32). Tüm IP\'lere izin vermek için boş bırakın.',
-        ],
-
-        'permission-type' => [
-            'all' => 'Hepsi',
-            'custom' => 'Özel',
-            'same-as-web' => 'Web İzni ile aynı',
-        ],
-
-        'status' => [
-            'draft' => 'Taslak',
-            'active' => 'Aktif',
-            'revoked' => 'İptal edildi',
-            'regenerated' => 'Yenilendi',
-        ],
-
-        'datagrid' => [
-            'id' => 'kimlik',
-            'name' => 'İsim',
-            'admin' => 'Yönetici',
-            'token' => 'Jeton',
-            'status' => 'Durum',
-            'permission-type' => 'İzin Türü',
-            'expires-at' => 'Geçerlilik Tarihi:',
-            'last-used-at' => 'Son Kullanılan',
-            'created-at' => 'Oluşturulma Tarihi',
-            'edit' => 'Düzenle',
-            'revoke' => 'İptal et',
-        ],
-
-        'messages' => [
-            'draft-created' => 'Entegrasyon oluşturuldu. Kullanmaya başlamak için jetonu oluşturun.',
-            'updated' => 'Entegrasyon başarıyla güncellendi.',
-            'generated' => 'Belirteç oluşturuldu. Şimdi kopyalayın; bir daha gösterilmeyecek.',
-            'regenerated' => 'Jeton yeniden oluşturuldu. Yeni jetonu şimdi kopyalayın; bir daha gösterilmeyecek.',
-            'revoked' => 'Jeton başarıyla iptal edildi.',
-            'generate-only-draft' => 'Yalnızca taslak entegrasyonların jetonları oluşturulabilir.',
-            'regenerate-only-active' => 'Yalnızca aktif jetonlar yeniden oluşturulabilir.',
-            'cannot-edit-historic' => 'İptal edilen veya yeniden oluşturulan jetonlar düzenlenemez.',
-            'already-inactive' => 'Bu jeton zaten etkin değil.',
-        ],
-
-        'errors' => [
-            'admin-has-token' => 'Seçilen yöneticinin zaten etkin bir entegrasyon jetonu var.',
-            'only-draft-generate' => 'Yalnızca taslak jetonlar oluşturulabilir.',
-        ],
-
-        'validation' => [
-            'ip-invalid' => 'İzin verilen her IP, geçerli bir IPv4 veya IPv6 adresi olmalıdır (CIDR gösterimi desteklenir).',
-            'cidr-prefix-invalid' => 'Belirtilen IP sürümü için CIDR öneki geçersiz.',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => 'API\'si',
-                'info' => 'Bagisto API ve yönetici modüllerine ilişkin ayarlar.',
-            ],
-
-            'integration' => [
-                'title' => 'Entegrasyon',
-                'info' => 'Yönetici API belirteçlerini vermek için kullanılan API Entegrasyonu eklentisini yönetin.',
-            ],
-
-            'settings' => [
-                'title' => 'Modül Ayarları',
-                'info' => 'API Entegrasyonu eklentisini etkinleştirin veya devre dışı bırakın. Devre dışı bırakıldığında kenar çubuğu menüsü gizlenir ve sayfaları 404 değerini döndürür.',
-                'enable' => 'API Entegrasyon Modülünü Etkinleştir',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => 'Yeni bir API jetonu oluşturuldu: :name',
-                'greeting' => 'Hesabınızda az önce ":name" adlı bir API entegrasyon jetonu oluşturuldu.',
-            ],
-
-            'regenerated' => [
-                'subject' => 'API jetonunuz yeniden oluşturuldu: :name',
-                'greeting' => '":name" adlı API entegrasyon jetonu az önce yeniden oluşturuldu. Önceki jeton çalışmayı durdurdu; yalnızca yenisi geçerli.',
-            ],
-
-            'revoked' => [
-                'subject' => 'API jetonunuz iptal edildi: :name',
-                'greeting' => '":name" adlı API entegrasyon jetonu iptal edildi. Bunu kullanan herhangi bir istemci erişimi kaybetti.',
-            ],
-
-            'details' => [
-                'name' => 'Jeton Adı',
-                'date' => 'Tarih',
-                'ip' => 'IP\'den',
-            ],
-
-            'revoke-hint' => 'Bunu beklemiyorsanız aşağıdaki düğmeyi kullanarak jetonu hemen iptal edin.',
-            'revoke-btn' => 'Bu Jetonu İptal Et',
-            'revoke-expiry' => 'Bu iptal bağlantısı 7 gün boyunca geçerlidir. Bundan sonra belirteci yönetmek için yönetici panelinde oturum açın.',
-            'no-action' => 'Herhangi bir işlem yapılmasına gerek yoktur; bu e-posta yalnızca bir onay niteliğindedir.',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => 'API Simgesini İptal Et',
-            'confirm-title' => 'Bu jeton iptal edilsin mi?',
-            'confirm-message' => '":name" jetonu, onu kullanan tüm istemciler için hemen çalışmayı durduracak.',
-            'confirm-button' => 'Jetonu iptal et',
-            'success-title' => 'Jeton İptal Edildi',
-            'success-message' => '":name" jetonu iptal edildi. Bunu kullanan herhangi bir istemci erişimi anında kaybetti.',
-            'already-inactive-title' => 'Jeton Zaten Aktif Değil',
-            'already-inactive-message' => '":name" jetonu zaten iptal edildi veya yeniden oluşturuldu. Başka bir işleme gerek yoktur.',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => 'Jeton Oluştur',
-                'message' => 'Belirteç şimdi oluşturulsun mu? Düz metin yalnızca bir kez gösterilecektir; sayfadan ayrılmadan önce kopyalayın.',
-            ],
-
-            'regenerate' => [
-                'title' => 'Jetonu Yeniden Oluştur',
-                'message' => 'Jeton yeniden oluşturulsun mu? Eski jeton hemen çalışmayı durduracak ve yeni düz metin yalnızca bir kez gösterilecek.',
-            ],
-
-            'revoke' => [
-                'title' => 'Jetonu İptal Et',
-                'message' => 'Bu jeton iptal edilsin mi? Bunu kullanan herhangi bir istemci erişimi anında kaybedecektir. Bu eylem geri alınamaz.',
-            ],
+        'api-configuration' => [
+            'title' => 'API\'si',
+            'info' => 'Bagisto API ve yönetici modüllerine ilişkin ayarlar.',
         ],
     ],
 ];

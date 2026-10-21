@@ -11,6 +11,7 @@ use Symfony\Component\Mime\MimeTypes;
 use Webkul\BagistoApi\Admin\Dto\SendAdminReturnMessageInput;
 use Webkul\BagistoApi\Admin\Models\AdminReturnMessage;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\RMA\Repositories\RMAMessageRepository;
@@ -25,7 +26,6 @@ class AdminReturnMessageProcessor implements ProcessorInterface
      * Create a new instance.
      */
     public function __construct(
-        private readonly ProcessorInterface $persistProcessor,
         private readonly RMARepository $rmaRepository,
         private readonly RMAMessageRepository $rmaMessageRepository,
     ) {}
@@ -46,7 +46,7 @@ class AdminReturnMessageProcessor implements ProcessorInterface
             return $this->handleSend($returnId !== null ? (int) $returnId : null, request()->input('message'), $file);
         }
 
-        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        throw new AuthorizationException(__('bagistoapi::app.admin.rma.no-permission'));
     }
 
     /**

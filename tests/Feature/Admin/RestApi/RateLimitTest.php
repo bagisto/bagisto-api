@@ -2,18 +2,19 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
-use Illuminate\Support\Str;
-use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Core\Models\CoreConfig;
 
 class RateLimitTest extends AdminApiTestCase
 {
     /**
-     * Test per minute cap is enforced.
+     * Test the per-admin limit is enforced for a login session.
      */
-    public function test_per_minute_cap_is_enforced(): void
+    public function test_per_admin_limit_is_enforced(): void
     {
-        $token = $this->cappedToken(perMinute: 3);
+        $this->limitSessionRequestsPerMinute(3);
+
+        $token = $this->adminToken($this->createAdmin());
 
         for ($i = 0; $i < 3; $i++) {
             $this->getWithToken($token)->assertOk();
@@ -27,37 +28,31 @@ class RateLimitTest extends AdminApiTestCase
     }
 
     /**
-     * Test per day cap is enforced.
+     * Test two sessions of the same admin share one bucket.
      */
-    public function test_per_day_cap_is_enforced(): void
+    public function test_sessions_of_one_admin_share_a_bucket(): void
     {
-        $token = $this->cappedToken(perDay: 2);
+        $this->limitSessionRequestsPerMinute(2);
 
-        $this->getWithToken($token)->assertOk();
-        $this->getWithToken($token)->assertOk();
+        $admin = $this->createAdmin();
+        $first = $this->adminToken($admin);
+        $second = $this->adminToken($admin);
 
-        $this->getWithToken($token)->assertStatus(429);
+        $this->getWithToken($first)->assertOk();
+        $this->getWithToken($second)->assertOk();
+
+        $this->getWithToken($first)->assertStatus(429);
     }
 
     /**
-     * Test token without caps is not throttled.
+     * Test each admin gets their own bucket.
      */
-    public function test_token_without_caps_is_not_throttled(): void
+    public function test_each_admin_gets_their_own_bucket(): void
     {
-        $token = $this->cappedToken();
+        $this->limitSessionRequestsPerMinute(2);
 
-        for ($i = 0; $i < 12; $i++) {
-            $this->getWithToken($token)->assertOk();
-        }
-    }
-
-    /**
-     * Test each token gets its own bucket.
-     */
-    public function test_each_token_gets_its_own_bucket(): void
-    {
-        $first = $this->cappedToken(perMinute: 2);
-        $second = $this->cappedToken(perMinute: 2);
+        $first = $this->adminToken($this->createAdmin());
+        $second = $this->adminToken($this->createAdmin());
 
         $this->getWithToken($first)->assertOk();
         $this->getWithToken($first)->assertOk();
@@ -71,7 +66,9 @@ class RateLimitTest extends AdminApiTestCase
      */
     public function test_shop_routes_are_not_throttled_by_the_admin_limiter(): void
     {
-        $token = $this->cappedToken(perMinute: 2);
+        $this->limitSessionRequestsPerMinute(2);
+
+        $token = $this->adminToken($this->createAdmin());
 
         $this->getWithToken($token)->assertOk();
         $this->getWithToken($token)->assertOk();
@@ -81,32 +78,24 @@ class RateLimitTest extends AdminApiTestCase
     }
 
     /**
-     * Capped token.
+     * Set the configured number of requests per minute for each signed-in admin.
      */
-    protected function cappedToken(?int $perMinute = null, ?int $perDay = null): string
+    protected function limitSessionRequestsPerMinute(int $limit): void
     {
-        $admin = $this->createAdmin();
-        $plain = Str::random(40);
+        $code = 'api.admin_auth.rate_limits.session_requests_per_minute';
 
-        $row = AdminPersonalAccessToken::create([
-            'admin_id' => $admin->id,
-            'name' => 'rate-limit-test-'.Str::random(6),
-            'token' => hash('sha256', $plain),
-            'token_preview' => substr($plain, 0, 8),
-            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_ALL,
-            'abilities' => [],
-            'rate_limit_per_minute' => $perMinute,
-            'rate_limit_per_day' => $perDay,
-            'expires_at' => now()->addDay(),
-            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
-            'created_by_admin_id' => $admin->id,
+        CoreConfig::query()->where('code', $code)->delete();
+
+        CoreConfig::query()->create([
+            'code' => $code,
+            'value' => (string) $limit,
         ]);
 
-        return $row->id.'|'.$plain;
+        $this->forgetCoreConfigCache();
     }
 
     /**
-     * Get with token.
+     * Send an admin GET request with the given Bearer token.
      */
     protected function getWithToken(string $token, string $uri = '/api/admin/get')
     {

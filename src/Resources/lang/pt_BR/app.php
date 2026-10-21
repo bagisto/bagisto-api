@@ -642,6 +642,8 @@ return [
             'notify-success-message' => '   ✅ :count notificações de expiração enviadas',
             'notify-failed-message' => '   ⚠️ Falha ao notificar sobre :key: :error',
             'publish-assets-warning' => 'Aviso: não foi possível publicar os assets do pacote. :error',
+            'env-file-not-found' => 'O arquivo .env não foi encontrado. Crie-o antes de instalar.',
+            'env-permission-denied' => 'O arquivo .env não pode ser gravado. Verifique as permissões.',
             'env-config-saved' => '✓ Configuração de ambiente da API Platform salva com sucesso',
             'api-endpoints' => 'Endpoints da API:',
             'api-documentation' => 'Documentação da API: :url',
@@ -649,6 +651,11 @@ return [
             'graphql-playground' => 'GraphQL Playground: :url',
             'rest-api-storefront' => 'Swagger da API REST da loja: :url',
             'rest-api-admin' => 'Swagger da API REST do administrador: :url',
+            'generating-jwt-keys' => 'Gerando as chaves de assinatura JWT para os tokens da API administrativa...',
+            'jwt-keys-generated' => '✓ As chaves de assinatura JWT estão prontas',
+            'jwt-keys-warning' => 'Aviso: não foi possível gerar as chaves de assinatura JWT. Execute php artisan bagisto-api:jwt-keys manualmente. :error',
+            'admin-login' => 'Login da API administrativa: :url',
+            'admin-api-tokens' => 'Tokens da API administrativa (integrações de servidor): :url',
             'key-rotation-invalid-key' => 'Não é possível rotacionar uma chave inválida ou expirada',
             'env-file-not-found' => 'O arquivo .env não foi encontrado',
             'env-permission-denied' => 'Permissão negada: não é possível gravar no arquivo .env. Verifique as permissões do arquivo.',
@@ -744,9 +751,6 @@ return [
     ],
 
     'admin' => [
-        // login / logout / forgot-password / profile-update keys removed in the
-        // 2026-05-27 auth refactor — admin clients now authenticate via
-        // pre-issued integration tokens (Bearer header, AdminApiGuard).
         'profile' => [
             'unauthenticated' => 'Você não está autenticado.',
         ],
@@ -1370,10 +1374,7 @@ return [
             ],
 
             'currency' => [
-                // Read
                 'not-found' => 'Moeda não encontrada.',
-
-                // Create / Update / Delete
                 'created' => 'Moeda criada com sucesso.',
                 'updated' => 'Moeda atualizada com sucesso.',
                 'deleted' => 'Moeda excluída com sucesso.',
@@ -1850,22 +1851,14 @@ return [
                 'not-active' => 'Esta sessão já foi revogada ou expirou.',
             ],
         ],
-    ],
 
-    'integration' => [
-        'menu' => [
-            'title' => 'Integração',
-            'tokens' => 'Fichas',
-        ],
-
-        'history' => [
+        'api-audit' => [
             'menu' => [
-                'title' => 'História',
+                'title' => 'Auditoria da API',
             ],
 
             'acl' => [
                 'title' => 'Histórico de alterações da API',
-                'view' => 'Visualizar',
                 'delete' => 'Excluir histórico',
             ],
 
@@ -1904,10 +1897,10 @@ return [
                 'date' => 'Data',
                 'admin' => 'Administrador',
                 'token' => 'Símbolo',
-                'action' => 'Ação',
+                'token-kind' => 'Tipo de token',
+                'channel' => 'Canal',
                 'operation' => 'Operação',
                 'resource' => 'Recurso',
-                'version' => 'Versão',
                 'method' => 'Método',
                 'ip' => 'PI',
                 'view' => 'Ver',
@@ -1920,193 +1913,26 @@ return [
                 'deleted' => 'Excluído',
             ],
 
+            'token-kinds' => [
+                'session' => 'Sessão de login',
+                'api-token' => 'Token de API',
+                'integration' => 'Token de integração (removido)',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => 'Painel administrativo',
+                'cli' => 'Comando de console',
+            ],
+
             'deleted' => ':count registros de histórico excluídos.',
             'cleanup-input-required' => 'Forneça um número de dias ou uma data para a limpeza.',
         ],
 
-        'acl' => [
-            'title' => 'Integração',
-            'view' => 'Visualizar',
-            'create' => 'Criar Integração',
-            'edit' => 'Editar integração',
-            'delete' => 'Revogar token de integração',
-            'generate' => 'Gerar token de integração',
-            'regenerate' => 'Regenerar token de integração',
-        ],
-
-        'index' => [
-            'title' => 'Integrações',
-            'create-btn' => 'Criar Integração',
-        ],
-
-        'create' => [
-            'title' => 'Criar Integração',
-            'save-btn' => 'Salvar',
-            'back-btn' => 'Voltar',
-        ],
-
-        'edit' => [
-            'title' => 'Editar integração',
-            'save-btn' => 'Salvar',
-            'back-btn' => 'Voltar',
-            'generate-btn' => 'Gerar token',
-            'regenerate-btn' => 'Regenerar token',
-            'revoke-btn' => 'Revogar token',
-            'copy-btn' => 'Copiar',
-            'token-warning' => 'Salve este token agora – ele não será mostrado novamente.',
-            'token-label' => 'Símbolo',
-            'not-generated' => 'Ainda não gerado',
-            'masked' => '(Armazenado — mostrado apenas uma vez na geração)',
-            'history-banner' => 'Este token não está mais ativo.',
-        ],
-
-        'fields' => [
-            'name' => 'Nome',
-            'description' => 'Descrição',
-            'assign-user' => 'Atribuir usuário',
-            'permission-type' => 'Tipo de permissão',
-            'access-control' => 'Controle de acesso',
-            'general' => 'Geral',
-            'token-settings' => 'Configurações de token',
-            'valid-till' => 'Válido até',
-            'rate-limit-per-minute' => 'Limite de taxa (por minuto)',
-            'rate-limit-per-day' => 'Limite de tarifa (por dia)',
-            'never-expires' => 'Nunca expira',
-            'expires-on' => 'Expira em',
-            'unlimited' => 'Ilimitado',
-            'limit-to' => 'Limitar a',
-            'requests-per-minute' => 'solicitações/minuto',
-            'requests-per-day' => 'solicitações / dia',
-            'select-admin' => 'Selecione um administrador',
-            'no-available-admins' => 'Nenhum administrador disponível – cada administrador já possui um token ativo.',
-            'same-as-web-hint' => 'O token espelhará as permissões de função atuais do administrador atribuído ao vivo.',
-            'ip-allowlist' => 'Lista de permissões de IP',
-            'ip-any' => 'Qualquer IP (padrão)',
-            'ip-restricted' => 'Restrito a IPs específicos',
-            'ip-list-hint' => 'Uma entrada por linha. Suporta IPv4, IPv6 e CIDR (por exemplo, 10.0.0.0/24 ou 2001:db8::/32). Deixe em branco para permitir todos os IPs.',
-        ],
-
-        'permission-type' => [
-            'all' => 'Todos',
-            'custom' => 'Personalizado',
-            'same-as-web' => 'O mesmo que permissão da Web',
-        ],
-
-        'status' => [
-            'draft' => 'Rascunho',
-            'active' => 'Ativo',
-            'revoked' => 'Revogado',
-            'regenerated' => 'Regenerado',
-        ],
-
-        'datagrid' => [
-            'id' => 'ID',
-            'name' => 'Nome',
-            'admin' => 'Administrador',
-            'token' => 'Símbolo',
-            'status' => 'Estado',
-            'permission-type' => 'Tipo de permissão',
-            'expires-at' => 'Válido até',
-            'last-used-at' => 'Último uso',
-            'created-at' => 'Criado em',
-            'edit' => 'Editar',
-            'revoke' => 'Revogar',
-        ],
-
-        'messages' => [
-            'draft-created' => 'Integração criada. Gere o token para começar a usá-lo.',
-            'updated' => 'Integração atualizada com sucesso.',
-            'generated' => 'Token gerado. Copie agora – ele não será mostrado novamente.',
-            'regenerated' => 'Token regenerado. Copie o novo token agora – ele não será mostrado novamente.',
-            'revoked' => 'Token revogado com sucesso.',
-            'generate-only-draft' => 'Apenas rascunhos de integrações podem ter seu token gerado.',
-            'regenerate-only-active' => 'Apenas tokens ativos podem ser regenerados.',
-            'cannot-edit-historic' => 'Os tokens revogados ou regenerados não podem ser editados.',
-            'already-inactive' => 'Este token já está inativo.',
-        ],
-
-        'errors' => [
-            'admin-has-token' => 'O administrador selecionado já possui um token de integração ativo.',
-            'only-draft-generate' => 'Somente tokens em rascunho podem ser gerados.',
-        ],
-
-        'validation' => [
-            'ip-invalid' => 'Cada IP permitido deve ser um endereço IPv4 ou IPv6 válido (notação CIDR suportada).',
-            'cidr-prefix-invalid' => 'O prefixo CIDR é inválido para a versão IP fornecida.',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => 'API',
-                'info' => 'Configurações para a API Bagisto e seus módulos de administração.',
-            ],
-
-            'integration' => [
-                'title' => 'Integração',
-                'info' => 'Gerencie o plug-in de integração de API usado para emitir tokens de API de administrador.',
-            ],
-
-            'settings' => [
-                'title' => 'Configurações do módulo',
-                'info' => 'Habilite ou desabilite o plugin de integração de API. Quando desativado, o menu da barra lateral fica oculto e suas páginas retornam 404.',
-                'enable' => 'Habilitar módulo de integração de API',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => 'Um novo token de API foi gerado: :name',
-                'greeting' => 'Um token de integração de API chamado ":name" acabou de ser gerado em sua conta.',
-            ],
-
-            'regenerated' => [
-                'subject' => 'Seu token de API foi regenerado: :name',
-                'greeting' => 'O token de integração da API denominado ":name" acabou de ser regenerado. O token anterior parou de funcionar — apenas o novo é válido.',
-            ],
-
-            'revoked' => [
-                'subject' => 'Seu token de API foi revogado: :name',
-                'greeting' => 'O token de integração da API denominado ":name" foi revogado. Qualquer cliente que o utilize perdeu o acesso.',
-            ],
-
-            'details' => [
-                'name' => 'Nome do token',
-                'date' => 'Data',
-                'ip' => 'Do IP',
-            ],
-
-            'revoke-hint' => 'Se você não esperava por isso, revogue o token imediatamente usando o botão abaixo.',
-            'revoke-btn' => 'Revogar este token',
-            'revoke-expiry' => 'Este link de revogação é válido por 7 dias. Depois disso, faça login no painel de administração para gerenciar o token.',
-            'no-action' => 'Nenhuma ação é necessária – este e-mail é apenas uma confirmação.',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => 'Revogar token de API',
-            'confirm-title' => 'Revogar este token?',
-            'confirm-message' => 'O token ":name" deixará de funcionar imediatamente para todos os clientes que o utilizam.',
-            'confirm-button' => 'Revogar token',
-            'success-title' => 'Token revogado',
-            'success-message' => 'O token ":name" foi revogado. Qualquer cliente que o utilize perdeu o acesso imediatamente.',
-            'already-inactive-title' => 'Token já inativo',
-            'already-inactive-message' => 'O token ":name" já foi revogado ou regenerado. Nenhuma ação adicional é necessária.',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => 'Gerar token',
-                'message' => 'Gerar o token agora? O texto simples será mostrado apenas uma vez – copie-o antes de sair da página.',
-            ],
-
-            'regenerate' => [
-                'title' => 'Regenerar token',
-                'message' => 'Regenerar o token? O token antigo irá parar de funcionar imediatamente e o novo texto simples será mostrado apenas uma vez.',
-            ],
-
-            'revoke' => [
-                'title' => 'Revogar token',
-                'message' => 'Revogar este token? Qualquer cliente que o utilize perderá o acesso imediatamente. Esta ação não pode ser desfeita.',
-            ],
+        'api-configuration' => [
+            'title' => 'API',
+            'info' => 'Configurações para a API Bagisto e seus módulos de administração.',
         ],
     ],
 ];

@@ -32,9 +32,7 @@ class CategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        \DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->delete();
+        $this->revokeAdminSessions($admin);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/categories', $token);
 
@@ -49,9 +47,7 @@ class CategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        \DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->update(['expires_at' => now()->subDay()]);
+        $this->expireAdminSessions($admin);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/categories', $token);
 
@@ -749,9 +745,7 @@ class CategoryTest extends AdminApiTestCase
         $token = $this->adminToken($admin);
         $id = $this->insertCategoryWithTranslations(['name' => 'Revoked Token Test']);
 
-        \DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->delete();
+        $this->revokeAdminSessions($admin);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/categories/'.$id, $token);
 

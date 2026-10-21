@@ -642,6 +642,8 @@ return [
             'notify-success-message' => '   ✅ S\'han enviat :count notificacions de caducitat',
             'notify-failed-message' => '   ⚠️ No s\'ha pogut notificar sobre :key: :error',
             'publish-assets-warning' => 'Avís: no s\'han pogut publicar els recursos del paquet. :error',
+            'env-file-not-found' => 'No s\'ha trobat el fitxer .env. Creeu-lo abans d\'instal·lar.',
+            'env-permission-denied' => 'No es pot escriure al fitxer .env. Comproveu-ne els permisos.',
             'env-config-saved' => '✓ Configuració d\'entorn d\'API Platform desada correctament',
             'api-endpoints' => 'Punts d\'accés de l\'API:',
             'api-documentation' => 'Documentació de l\'API: :url',
@@ -649,6 +651,11 @@ return [
             'graphql-playground' => 'GraphQL Playground: :url',
             'rest-api-storefront' => 'Swagger de l\'API REST de la botiga: :url',
             'rest-api-admin' => 'Swagger de l\'API REST d\'administració: :url',
+            'generating-jwt-keys' => 'S\'estan generant les claus de signatura JWT per als tokens de l\'API d\'administració...',
+            'jwt-keys-generated' => '✓ Les claus de signatura JWT estan a punt',
+            'jwt-keys-warning' => 'Avís: no s\'han pogut generar les claus de signatura JWT. Executeu php artisan bagisto-api:jwt-keys manualment. :error',
+            'admin-login' => 'Inici de sessió de l\'API d\'administració: :url',
+            'admin-api-tokens' => 'Tokens de l\'API d\'administració (integracions de servidor): :url',
             'key-rotation-invalid-key' => 'No es pot rotar una clau no vàlida o caducada',
             'env-file-not-found' => 'No s\'ha trobat el fitxer .env',
             'env-permission-denied' => 'Permís denegat: no es pot escriure al fitxer .env. Comproveu els permisos del fitxer.',
@@ -744,9 +751,6 @@ return [
     ],
 
     'admin' => [
-        // login / logout / forgot-password / profile-update keys removed in the
-        // 2026-05-27 auth refactor — admin clients now authenticate via
-        // pre-issued integration tokens (Bearer header, AdminApiGuard).
         'profile' => [
             'unauthenticated' => 'No esteu autenticat.',
         ],
@@ -1370,10 +1374,7 @@ return [
             ],
 
             'currency' => [
-                // Read
                 'not-found' => 'Moneda no trobada.',
-
-                // Create / Update / Delete
                 'created' => 'Moneda creada correctament.',
                 'updated' => 'Moneda actualitzada correctament.',
                 'deleted' => 'Moneda suprimida correctament.',
@@ -1850,22 +1851,14 @@ return [
                 'not-active' => 'Aquesta sessió ja està revocada o ha caducat.',
             ],
         ],
-    ],
 
-    'integration' => [
-        'menu' => [
-            'title' => 'Integració',
-            'tokens' => 'Fitxes',
-        ],
-
-        'history' => [
+        'api-audit' => [
             'menu' => [
-                'title' => 'Història',
+                'title' => 'Auditoria de l\'API',
             ],
 
             'acl' => [
                 'title' => 'Historial de canvis de l\'API',
-                'view' => 'Veure',
                 'delete' => 'Suprimeix l\'historial',
             ],
 
@@ -1904,10 +1897,10 @@ return [
                 'date' => 'Data',
                 'admin' => 'Admin',
                 'token' => 'Token',
-                'action' => 'Acció',
+                'token-kind' => 'Tipus de token',
+                'channel' => 'Canal',
                 'operation' => 'Funcionament',
                 'resource' => 'Recurs',
-                'version' => 'Versió',
                 'method' => 'Mètode',
                 'ip' => 'IP',
                 'view' => 'Veure',
@@ -1920,193 +1913,26 @@ return [
                 'deleted' => 'S\'ha suprimit',
             ],
 
+            'token-kinds' => [
+                'session' => 'Sessió d\'inici de sessió',
+                'api-token' => 'Token d\'API',
+                'integration' => 'Token d\'integració (eliminat)',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => 'Tauler d\'administració',
+                'cli' => 'Ordre de consola',
+            ],
+
             'deleted' => 'S\'han suprimit :count registres d\'historial.',
             'cleanup-input-required' => 'Proporcioneu un nombre de dies o una data per netejar.',
         ],
 
-        'acl' => [
-            'title' => 'Integració',
-            'view' => 'Veure',
-            'create' => 'Crea integració',
-            'edit' => 'Edita la integració',
-            'delete' => 'Revoca el testimoni d\'integració',
-            'generate' => 'Generar testimoni d\'integració',
-            'regenerate' => 'Regenera el testimoni d\'integració',
-        ],
-
-        'index' => [
-            'title' => 'Integracions',
-            'create-btn' => 'Crea integració',
-        ],
-
-        'create' => [
-            'title' => 'Crea integració',
-            'save-btn' => 'Desa',
-            'back-btn' => 'Enrere',
-        ],
-
-        'edit' => [
-            'title' => 'Edita la integració',
-            'save-btn' => 'Desa',
-            'back-btn' => 'Enrere',
-            'generate-btn' => 'Genera un testimoni',
-            'regenerate-btn' => 'Regenera el testimoni',
-            'revoke-btn' => 'Revoca el testimoni',
-            'copy-btn' => 'Còpia',
-            'token-warning' => 'Desa aquest testimoni ara; no es tornarà a mostrar.',
-            'token-label' => 'Token',
-            'not-generated' => 'Encara no s\'ha generat',
-            'masked' => '(Es emmagatzema: només es mostra una vegada a la generació)',
-            'history-banner' => 'Aquest testimoni ja no està actiu.',
-        ],
-
-        'fields' => [
-            'name' => 'Nom',
-            'description' => 'Descripció',
-            'assign-user' => 'Assigna usuari',
-            'permission-type' => 'Tipus de permís',
-            'access-control' => 'Control d\'accés',
-            'general' => 'General',
-            'token-settings' => 'Configuració del testimoni',
-            'valid-till' => 'Vàlid fins a',
-            'rate-limit-per-minute' => 'Límit de velocitat (per minut)',
-            'rate-limit-per-day' => 'Límit de tarifa (per dia)',
-            'never-expires' => 'Mai caduca',
-            'expires-on' => 'Caduca el',
-            'unlimited' => 'Il·limitat',
-            'limit-to' => 'Limitar a',
-            'requests-per-minute' => 'peticions / minut',
-            'requests-per-day' => 'sol·licituds/dia',
-            'select-admin' => 'Seleccioneu un administrador',
-            'no-available-admins' => 'No hi ha administradors disponibles: tots els administradors ja tenen un testimoni actiu.',
-            'same-as-web-hint' => 'El testimoni reflectirà en directe els permisos actuals del rol de l\'administrador assignat.',
-            'ip-allowlist' => 'Llista d\'IP permeses',
-            'ip-any' => 'Qualsevol IP (per defecte)',
-            'ip-restricted' => 'Restringit a IP específiques',
-            'ip-list-hint' => 'Una entrada per línia. Admet IPv4, IPv6 i CIDR (per exemple, 10.0.0.0/24 o 2001:db8::/32). Deixeu-lo en blanc per permetre totes les IP.',
-        ],
-
-        'permission-type' => [
-            'all' => 'Tots',
-            'custom' => 'Personalitzat',
-            'same-as-web' => 'Igual que el permís web',
-        ],
-
-        'status' => [
-            'draft' => 'Esborrany',
-            'active' => 'Actius',
-            'revoked' => 'Revocat',
-            'regenerated' => 'Regenerat',
-        ],
-
-        'datagrid' => [
-            'id' => 'ID',
-            'name' => 'Nom',
-            'admin' => 'Admin',
-            'token' => 'Token',
-            'status' => 'Estat',
-            'permission-type' => 'Tipus de permís',
-            'expires-at' => 'Vàlid fins a',
-            'last-used-at' => 'Darrer ús',
-            'created-at' => 'Creat a',
-            'edit' => 'Edita',
-            'revoke' => 'Revocar',
-        ],
-
-        'messages' => [
-            'draft-created' => 'Integració creada. Genereu el testimoni per començar a utilitzar-lo.',
-            'updated' => 'La integració s\'ha actualitzat correctament.',
-            'generated' => 'Token generat. Copieu-lo ara; no es tornarà a mostrar.',
-            'regenerated' => 'Token regenerat. Copieu ara el testimoni nou; no es tornarà a mostrar.',
-            'revoked' => 'El testimoni s\'ha revocat correctament.',
-            'generate-only-draft' => 'Només es poden generar el seu testimoni d\'integracions esborranys.',
-            'regenerate-only-active' => 'Només es poden regenerar fitxes actives.',
-            'cannot-edit-historic' => 'Les fitxes revocades o regenerades no es poden editar.',
-            'already-inactive' => 'Aquest testimoni ja està inactiu.',
-        ],
-
-        'errors' => [
-            'admin-has-token' => 'L\'administrador seleccionat ja té un testimoni d\'integració actiu.',
-            'only-draft-generate' => 'Només es poden generar testimonis en esborrany.',
-        ],
-
-        'validation' => [
-            'ip-invalid' => 'Cada IP permesa ha de ser una adreça IPv4 o IPv6 vàlida (admet la notació CIDR).',
-            'cidr-prefix-invalid' => 'El prefix CIDR no és vàlid per a la versió IP determinada.',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => 'API',
-                'info' => 'Configuració de l\'API Bagisto i els seus mòduls d\'administració.',
-            ],
-
-            'integration' => [
-                'title' => 'Integració',
-                'info' => 'Gestioneu el connector d\'integració de l\'API utilitzat per emetre testimonis d\'API d\'administrador.',
-            ],
-
-            'settings' => [
-                'title' => 'Configuració del mòdul',
-                'info' => 'Activeu o desactiveu el connector d\'integració de l\'API. Quan està desactivat, el seu menú de la barra lateral s\'amaga i les seves pàgines tornen 404.',
-                'enable' => 'Activa el mòdul d\'integració de l\'API',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => 'S\'ha generat un testimoni d\'API nou: :name',
-                'greeting' => 'S\'acaba de generar un testimoni d\'integració de l\'API anomenat ":name" al vostre compte.',
-            ],
-
-            'regenerated' => [
-                'subject' => 'El vostre testimoni de l\'API s\'ha regenerat: :name',
-                'greeting' => 'El testimoni d\'integració de l\'API anomenat ":name" s\'acaba de regenerar. El testimoni anterior ha deixat de funcionar; només el nou és vàlid.',
-            ],
-
-            'revoked' => [
-                'subject' => 'S\'ha revocat el vostre testimoni de l\'API: :name',
-                'greeting' => 'El testimoni d\'integració de l\'API anomenat ":name" s\'ha revocat. Qualsevol client que l\'utilitzi ha perdut l\'accés.',
-            ],
-
-            'details' => [
-                'name' => 'Nom del testimoni',
-                'date' => 'Data',
-                'ip' => 'Des de la IP',
-            ],
-
-            'revoke-hint' => 'Si no us esperàveu això, revoqueu el testimoni immediatament utilitzant el botó següent.',
-            'revoke-btn' => 'Revoca aquest testimoni',
-            'revoke-expiry' => 'Aquest enllaç de revocació és vàlid durant 7 dies. Després d\'això, inicieu la sessió al tauler d\'administració per gestionar el testimoni.',
-            'no-action' => 'No cal cap acció: aquest correu electrònic només és una confirmació.',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => 'Revoca el testimoni de l\'API',
-            'confirm-title' => 'Voleu revocar aquest testimoni?',
-            'confirm-message' => 'El testimoni ":name" deixarà de funcionar immediatament per a tots els clients que l\'utilitzin.',
-            'confirm-button' => 'Revoca el testimoni',
-            'success-title' => 'Token revocat',
-            'success-message' => 'El testimoni ":name" s\'ha revocat. Qualsevol client que l\'utilitzi ha perdut l\'accés immediatament.',
-            'already-inactive-title' => 'El testimoni ja està inactiu',
-            'already-inactive-message' => 'El testimoni ":name" ja s\'ha revocat o regenerat. No cal més acció.',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => 'Genera un testimoni',
-                'message' => 'Voleu generar el testimoni ara? El text sense format es mostrarà només una vegada; copieu-lo abans de sortir de la pàgina.',
-            ],
-
-            'regenerate' => [
-                'title' => 'Regenera el testimoni',
-                'message' => 'Voleu regenerar el testimoni? El testimoni antic deixarà de funcionar immediatament i el nou text sense format només es mostrarà una vegada.',
-            ],
-
-            'revoke' => [
-                'title' => 'Revoca el testimoni',
-                'message' => 'Vols revocar aquest testimoni? Qualsevol client que l\'utilitzi perdrà l\'accés immediatament. Aquesta acció no es pot desfer.',
-            ],
+        'api-configuration' => [
+            'title' => 'API',
+            'info' => 'Configuració de l\'API Bagisto i els seus mòduls d\'administració.',
         ],
     ],
 ];

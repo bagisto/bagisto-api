@@ -642,6 +642,8 @@ return [
             'notify-success-message' => '   ✅ Mengirim :count notifikasi kedaluwarsa',
             'notify-failed-message' => '   ⚠️ Gagal memberi notifikasi tentang :key: :error',
             'publish-assets-warning' => 'Peringatan: Tidak dapat memublikasikan aset paket. :error',
+            'env-file-not-found' => 'File .env tidak ditemukan. Buat file tersebut sebelum menginstal.',
+            'env-permission-denied' => 'File .env tidak dapat ditulis. Periksa izinnya.',
             'env-config-saved' => '✓ Konfigurasi lingkungan API Platform berhasil disimpan',
             'api-endpoints' => 'Endpoint API:',
             'api-documentation' => 'Dokumentasi API: :url',
@@ -649,6 +651,11 @@ return [
             'graphql-playground' => 'GraphQL Playground: :url',
             'rest-api-storefront' => 'Swagger Rest API Storefront: :url',
             'rest-api-admin' => 'Swagger Rest API Admin: :url',
+            'generating-jwt-keys' => 'Membuat kunci penandatanganan JWT untuk token API admin...',
+            'jwt-keys-generated' => '✓ Kunci penandatanganan JWT siap',
+            'jwt-keys-warning' => 'Peringatan: kunci penandatanganan JWT tidak dapat dibuat. Jalankan php artisan bagisto-api:jwt-keys secara manual. :error',
+            'admin-login' => 'Login API Admin: :url',
+            'admin-api-tokens' => 'Token API Admin (integrasi server): :url',
             'key-rotation-invalid-key' => 'Tidak dapat merotasi kunci yang tidak valid atau kedaluwarsa',
             'env-file-not-found' => 'File .env tidak ditemukan',
             'env-permission-denied' => 'Izin ditolak: Tidak dapat menulis ke file .env. Silakan periksa izin file.',
@@ -744,9 +751,6 @@ return [
     ],
 
     'admin' => [
-        // login / logout / forgot-password / profile-update keys removed in the
-        // 2026-05-27 auth refactor — admin clients now authenticate via
-        // pre-issued integration tokens (Bearer header, AdminApiGuard).
         'profile' => [
             'unauthenticated' => 'Anda tidak terautentikasi.',
         ],
@@ -1370,10 +1374,7 @@ return [
             ],
 
             'currency' => [
-                // Read
                 'not-found' => 'Mata uang tidak ditemukan.',
-
-                // Create / Update / Delete
                 'created' => 'Mata uang berhasil dibuat.',
                 'updated' => 'Mata uang berhasil diperbarui.',
                 'deleted' => 'Mata uang berhasil dihapus.',
@@ -1850,22 +1851,14 @@ return [
                 'not-active' => 'Sesi ini sudah dicabut atau kedaluwarsa.',
             ],
         ],
-    ],
 
-    'integration' => [
-        'menu' => [
-            'title' => 'Integrasi',
-            'tokens' => 'Token',
-        ],
-
-        'history' => [
+        'api-audit' => [
             'menu' => [
-                'title' => 'Sejarah',
+                'title' => 'Audit API',
             ],
 
             'acl' => [
                 'title' => 'Riwayat Perubahan API',
-                'view' => 'Lihat',
                 'delete' => 'Hapus Riwayat',
             ],
 
@@ -1904,10 +1897,10 @@ return [
                 'date' => 'Tanggal',
                 'admin' => 'Admin',
                 'token' => 'Tanda',
-                'action' => 'Tindakan',
+                'token-kind' => 'Jenis Token',
+                'channel' => 'Kanal',
                 'operation' => 'Operasi',
                 'resource' => 'Sumber daya',
-                'version' => 'Versi',
                 'method' => 'Metode',
                 'ip' => 'IP',
                 'view' => 'Lihat',
@@ -1920,193 +1913,26 @@ return [
                 'deleted' => 'Dihapus',
             ],
 
+            'token-kinds' => [
+                'session' => 'Sesi Login',
+                'api-token' => 'Token API',
+                'integration' => 'Token Integrasi (dihapus)',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => 'Panel Admin',
+                'cli' => 'Perintah Konsol',
+            ],
+
             'deleted' => ':count catatan riwayat dihapus.',
             'cleanup-input-required' => 'Cantumkan jumlah hari atau tanggal untuk membersihkan.',
         ],
 
-        'acl' => [
-            'title' => 'Integrasi',
-            'view' => 'Lihat',
-            'create' => 'Buat Integrasi',
-            'edit' => 'Sunting Integrasi',
-            'delete' => 'Cabut Token Integrasi',
-            'generate' => 'Hasilkan Token Integrasi',
-            'regenerate' => 'Regenerasi Token Integrasi',
-        ],
-
-        'index' => [
-            'title' => 'Integrasi',
-            'create-btn' => 'Buat Integrasi',
-        ],
-
-        'create' => [
-            'title' => 'Buat Integrasi',
-            'save-btn' => 'Simpan',
-            'back-btn' => 'Kembali',
-        ],
-
-        'edit' => [
-            'title' => 'Sunting Integrasi',
-            'save-btn' => 'Simpan',
-            'back-btn' => 'Kembali',
-            'generate-btn' => 'Hasilkan Token',
-            'regenerate-btn' => 'Regenerasi Token',
-            'revoke-btn' => 'Cabut Token',
-            'copy-btn' => 'Salin',
-            'token-warning' => 'Simpan token ini sekarang — token ini tidak akan ditampilkan lagi.',
-            'token-label' => 'Tanda',
-            'not-generated' => 'Belum dihasilkan',
-            'masked' => '(Disimpan — hanya ditampilkan sekali pada generasi)',
-            'history-banner' => 'Token ini sudah tidak aktif.',
-        ],
-
-        'fields' => [
-            'name' => 'Nama',
-            'description' => 'Deskripsi',
-            'assign-user' => 'Tetapkan Pengguna',
-            'permission-type' => 'Jenis Izin',
-            'access-control' => 'Kontrol Akses',
-            'general' => 'Umum',
-            'token-settings' => 'Pengaturan Token',
-            'valid-till' => 'Berlaku Sampai',
-            'rate-limit-per-minute' => 'Batas Tarif (per menit)',
-            'rate-limit-per-day' => 'Batas Tarif (per hari)',
-            'never-expires' => 'Tidak pernah kadaluarsa',
-            'expires-on' => 'Kedaluwarsa pada',
-            'unlimited' => 'Tidak terbatas',
-            'limit-to' => 'Batasi hingga',
-            'requests-per-minute' => 'permintaan / menit',
-            'requests-per-day' => 'permintaan / hari',
-            'select-admin' => 'Pilih admin',
-            'no-available-admins' => 'Tidak ada admin yang tersedia — setiap admin sudah memiliki token aktif.',
-            'same-as-web-hint' => 'Token akan mencerminkan izin peran admin yang ditugaskan saat ini secara langsung.',
-            'ip-allowlist' => 'Daftar IP yang Diizinkan',
-            'ip-any' => 'IP apa pun (default)',
-            'ip-restricted' => 'Dibatasi untuk IP tertentu',
-            'ip-list-hint' => 'Satu entri per baris. Mendukung IPv4, IPv6 dan CIDR (misalnya 10.0.0.0/24 atau 2001:db8::/32). Biarkan kosong untuk mengizinkan semua IP.',
-        ],
-
-        'permission-type' => [
-            'all' => 'Semua',
-            'custom' => 'Adat',
-            'same-as-web' => 'Sama seperti Izin Web',
-        ],
-
-        'status' => [
-            'draft' => 'Draf',
-            'active' => 'Aktif',
-            'revoked' => 'Dicabut',
-            'regenerated' => 'Diregenerasi',
-        ],
-
-        'datagrid' => [
-            'id' => 'tanda pengenal',
-            'name' => 'Nama',
-            'admin' => 'Admin',
-            'token' => 'Tanda',
-            'status' => 'Status',
-            'permission-type' => 'Jenis Izin',
-            'expires-at' => 'Berlaku Sampai',
-            'last-used-at' => 'Terakhir Digunakan',
-            'created-at' => 'Dibuat Pada',
-            'edit' => 'Sunting',
-            'revoke' => 'Cabut',
-        ],
-
-        'messages' => [
-            'draft-created' => 'Integrasi tercipta. Hasilkan token untuk mulai menggunakannya.',
-            'updated' => 'Integrasi berhasil diperbarui.',
-            'generated' => 'Token dihasilkan. Salin sekarang — itu tidak akan ditampilkan lagi.',
-            'regenerated' => 'Token dibuat ulang. Salin token baru sekarang — token tidak akan ditampilkan lagi.',
-            'revoked' => 'Token berhasil dicabut.',
-            'generate-only-draft' => 'Hanya draf integrasi yang dapat membuat tokennya.',
-            'regenerate-only-active' => 'Hanya token aktif yang dapat dibuat ulang.',
-            'cannot-edit-historic' => 'Token yang dicabut atau dibuat ulang tidak dapat diedit.',
-            'already-inactive' => 'Token ini sudah tidak aktif.',
-        ],
-
-        'errors' => [
-            'admin-has-token' => 'Admin yang dipilih sudah memiliki token integrasi aktif.',
-            'only-draft-generate' => 'Hanya token draf yang dapat dibuat.',
-        ],
-
-        'validation' => [
-            'ip-invalid' => 'Setiap IP yang diizinkan harus berupa alamat IPv4 atau IPv6 yang valid (didukung notasi CIDR).',
-            'cidr-prefix-invalid' => 'Awalan CIDR tidak valid untuk versi IP yang diberikan.',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => 'API',
-                'info' => 'Pengaturan Bagisto API dan modul adminnya.',
-            ],
-
-            'integration' => [
-                'title' => 'Integrasi',
-                'info' => 'Kelola plugin Integrasi API yang digunakan untuk menerbitkan token API admin.',
-            ],
-
-            'settings' => [
-                'title' => 'Pengaturan Modul',
-                'info' => 'Mengaktifkan atau menonaktifkan plugin Integrasi API. Saat dinonaktifkan, menu sidebarnya disembunyikan dan halamannya kembali menjadi 404.',
-                'enable' => 'Aktifkan Modul Integrasi API',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => 'Token API baru telah dibuat: :name',
-                'greeting' => 'Token integrasi API bernama ":name" baru saja dibuat di akun Anda.',
-            ],
-
-            'regenerated' => [
-                'subject' => 'Token API Anda telah dibuat ulang: :name',
-                'greeting' => 'Token integrasi API bernama ":name" baru saja dibuat ulang. Token sebelumnya telah berhenti berfungsi — hanya token baru yang valid.',
-            ],
-
-            'revoked' => [
-                'subject' => 'Token API Anda telah dicabut: :name',
-                'greeting' => 'Token integrasi API bernama ":name" telah dicabut. Setiap klien yang menggunakannya telah kehilangan akses.',
-            ],
-
-            'details' => [
-                'name' => 'Nama Token',
-                'date' => 'Tanggal',
-                'ip' => 'Dari pengusaha perorangan',
-            ],
-
-            'revoke-hint' => 'Jika Anda tidak menduganya, segera cabut token menggunakan tombol di bawah.',
-            'revoke-btn' => 'Cabut Token Ini',
-            'revoke-expiry' => 'Tautan pencabutan ini berlaku selama 7 hari. Setelah itu, masuk ke panel admin untuk mengelola token.',
-            'no-action' => 'Tidak diperlukan tindakan apa pun — email ini hanya konfirmasi.',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => 'Cabut Token API',
-            'confirm-title' => 'Cabut token ini?',
-            'confirm-message' => 'Token ":name" akan segera berhenti berfungsi untuk setiap klien yang menggunakannya.',
-            'confirm-button' => 'Cabut token',
-            'success-title' => 'Token Dicabut',
-            'success-message' => 'Token ":name" telah dicabut. Setiap klien yang menggunakannya akan segera kehilangan akses.',
-            'already-inactive-title' => 'Token Sudah Tidak Aktif',
-            'already-inactive-message' => 'Token ":name" telah dicabut atau dibuat ulang. Tidak diperlukan tindakan lebih lanjut.',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => 'Hasilkan Token',
-                'message' => 'Hasilkan token sekarang? Teks biasa hanya akan ditampilkan sekali — salin sebelum meninggalkan halaman.',
-            ],
-
-            'regenerate' => [
-                'title' => 'Regenerasi Token',
-                'message' => 'Regenerasi tokennya? Token lama akan segera berhenti berfungsi dan teks biasa baru hanya akan ditampilkan satu kali.',
-            ],
-
-            'revoke' => [
-                'title' => 'Cabut Token',
-                'message' => 'Cabut token ini? Setiap klien yang menggunakannya akan segera kehilangan akses. Tindakan ini tidak dapat dibatalkan.',
-            ],
+        'api-configuration' => [
+            'title' => 'API',
+            'info' => 'Pengaturan Bagisto API dan modul adminnya.',
         ],
     ],
 ];

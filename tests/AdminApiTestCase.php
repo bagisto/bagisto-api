@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Tests;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use Webkul\BagistoApi\Admin\Models\AdminApiSession;
 use Webkul\BagistoApi\Admin\Services\AdminApiTokenService;
 use Webkul\BagistoApi\Admin\Services\Jwt\JwtKeyStore;
 use Webkul\User\Models\Admin;
@@ -127,6 +128,29 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
         $headers = $admin ? $this->adminHeaders($admin, $token) : [];
 
         return $this->postJson($this->graphqlUrl, $payload, $headers);
+    }
+
+    /**
+     * Revoke every login session of an admin, so their access tokens stop working.
+     */
+    protected function revokeAdminSessions(Admin $admin): void
+    {
+        AdminApiSession::query()
+            ->where('admin_id', $admin->id)
+            ->update([
+                'revoked_at' => now(),
+                'revoked_reason' => 'test',
+            ]);
+    }
+
+    /**
+     * Move every login session of an admin past its absolute lifetime.
+     */
+    protected function expireAdminSessions(Admin $admin): void
+    {
+        AdminApiSession::query()
+            ->where('admin_id', $admin->id)
+            ->update(['expires_at' => now()->subDay()]);
     }
 
     /**

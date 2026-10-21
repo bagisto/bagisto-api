@@ -1689,10 +1689,165 @@ return [
             'password' => [
                 'reset' => 'Votre mot de passe a été réinitialisé. Veuillez vous reconnecter.',
             ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'Jetons d\'API',
+            ],
 
             'acl' => [
-                'api-sessions' => 'Sessions d\'API',
-                'revoke' => 'Révoquer les sessions',
+                'title' => 'Jetons d\'API',
+                'create' => 'Créer',
+                'delete' => 'Révoquer',
+                'manage-others' => 'Gérer les jetons des autres administrateurs',
+            ],
+
+            'index' => [
+                'title' => 'Jetons d\'API',
+                'info' => 'Les intégrations serveur, comme un ERP, un PIM, un entrepôt ou un logiciel de comptabilité, s\'authentifient avec des jetons d\'API. Chaque jeton agit en tant qu\'un administrateur, avec les permissions de son rôle, et ne fonctionne que depuis le domaine auquel il est lié.',
+                'create-btn' => 'Créer un jeton d\'API',
+            ],
+
+            'create' => [
+                'title' => 'Créer un jeton d\'API',
+                'back-btn' => 'Retour',
+                'save-btn' => 'Créer le jeton',
+                'general' => 'Général',
+                'expiry' => 'Expiration',
+                'admin-info' => 'Le jeton agit en tant que cet administrateur et a exactement les permissions de son rôle.',
+                'domain-info' => 'L\'hôte depuis lequel l\'intégration appelle, par exemple erp.example.com. Une URL est réduite à son hôte. Les adresses IP et les jokers ne sont pas acceptés, et le domaine ne peut pas être modifié ensuite.',
+                'expires-on-date' => 'Expire à une date',
+                'never-expires' => 'N\'expire jamais',
+                'no-expiry-warning' => 'Un jeton sans expiration fonctionne jusqu\'à sa révocation. Conservez-le dans un coffre de secrets et révoquez-le dès qu\'il n\'est plus utile.',
+                'no-expiry-confirm' => 'Je comprends que ce jeton n\'expire jamais.',
+                'no-admins' => 'Il n\'y a aucun administrateur pour lequel vous pouvez créer un jeton d\'API.',
+            ],
+
+            'view' => [
+                'title' => 'Jeton d\'API',
+                'back-btn' => 'Retour',
+                'save-btn' => 'Enregistrer',
+                'revoke-btn' => 'Révoquer',
+                'details' => 'Détails',
+                'usage' => 'Utilisation',
+                'token-once-title' => 'Copiez votre jeton d\'API maintenant',
+                'token-once-info' => 'Le jeton n\'est affiché que cette fois. Conservez-le dans un coffre de secrets ; s\'il est perdu, révoquez-le et créez-en un nouveau.',
+                'copy-btn' => 'Copier',
+                'copied' => 'Le jeton a été copié.',
+                'usage-info' => 'Envoyez-le comme jeton Bearer dans l\'en-tête Authorization des requêtes REST et GraphQL.',
+                'not-yet' => 'Pas encore',
+                'revoke-confirm' => 'Révoquer ce jeton d\'API ? L\'intégration qui l\'utilise cesse de fonctionner immédiatement.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Nom',
+                'admin' => 'Administrateur',
+                'token' => 'Jeton',
+                'domain' => 'Domaine',
+                'expiry' => 'Expiration',
+                'expires-at' => 'Expire le',
+                'no-expiry-confirmation' => 'Confirmation sans expiration',
+                'status' => 'Statut',
+                'created-by' => 'Créé par',
+                'created-at' => 'Créé le',
+                'last-used-at' => 'Dernière utilisation le',
+                'last-ip-address' => 'Dernière adresse IP',
+                'last-user-agent' => 'Dernier agent utilisateur',
+                'last-channel' => 'Dernier canal',
+                'resolved-ips' => 'Adresses IP résolues',
+                'resolved-at' => 'Résolu le',
+                'domain-mismatches' => 'Requêtes depuis d\'autres domaines',
+                'last-domain-mismatch-at' => 'Dernière requête depuis un autre domaine',
+                'revoked-at' => 'Révoqué le',
+                'revoked-by' => 'Révoqué par',
+            ],
+
+            'datagrid' => [
+                'never' => 'Jamais',
+                'console' => 'Commande console',
+                'view' => 'Voir',
+                'revoke' => 'Révoquer',
+            ],
+
+            'status' => [
+                'active' => 'Actif',
+                'expired' => 'Expiré',
+                'revoked' => 'Révoqué',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'Le jeton d\'API a été créé.',
+                'updated' => 'Le jeton d\'API a été mis à jour.',
+                'revoked' => 'Le jeton d\'API a été révoqué.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les jetons d\'API.',
+                'not-found' => 'Jeton d\'API introuvable.',
+                'cannot-create-for-admin' => 'Vous ne pouvez pas créer de jeton d\'API pour cet administrateur : son rôle a des permissions que le vôtre n\'a pas, ou vous ne pouvez pas gérer les jetons des autres administrateurs.',
+                'cannot-manage' => 'Vous ne pouvez pas gérer ce jeton d\'API.',
+                'already-revoked' => 'Le jeton d\'API est déjà révoqué.',
+                'invalid-name' => 'Le nom est obligatoire et ne peut pas dépasser 100 caractères.',
+                'invalid-domain' => 'Saisissez un nom de domaine comme erp.example.com. Les adresses IP et les jokers ne sont pas acceptés.',
+                'expiry-required' => 'Les jetons d\'API doivent avoir une date d\'expiration.',
+                'expiry-in-past' => 'La date d\'expiration doit être dans le futur.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'Sessions API',
+            ],
+
+            'acl' => [
+                'title' => 'Sessions API',
+                'delete' => 'Révoquer',
+            ],
+
+            'index' => [
+                'title' => 'Sessions API',
+                'info' => 'Administrateurs connectés à l\'API d\'administration depuis des applications web, mobiles, de caisse ou de bureau. Révoquer une session déconnecte cet appareil immédiatement.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Administrateur',
+                'device' => 'Appareil',
+                'client-type' => 'Type de client',
+                'ip-address' => 'Adresse IP de connexion',
+                'user-agent' => 'Agent utilisateur de connexion',
+                'last-ip-address' => 'Dernière adresse IP',
+                'last-user-agent' => 'Dernier agent utilisateur',
+                'last-used-at' => 'Dernière utilisation le',
+                'last-channel' => 'Dernier canal',
+                'refresh-expires-at' => 'Rafraîchissement expire le',
+                'expires-at' => 'Expire le',
+                'status' => 'Statut',
+                'created-at' => 'Connecté le',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Révoquer',
+                'revoke-all' => 'Révoquer toutes les sessions de cet administrateur',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Mobile',
+                'pos' => 'Caisse',
+                'desktop' => 'Bureau',
+                'other' => 'Autre',
+            ],
+
+            'errors' => [
+                'not-active' => 'Cette session est déjà révoquée ou expirée.',
             ],
         ],
     ],

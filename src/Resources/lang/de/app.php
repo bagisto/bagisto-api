@@ -1689,10 +1689,165 @@ return [
             'password' => [
                 'reset' => 'Ihr Passwort wurde zurückgesetzt. Bitte melden Sie sich erneut an.',
             ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'API-Token',
+            ],
 
             'acl' => [
-                'api-sessions' => 'API-Sitzungen',
-                'revoke' => 'Sitzungen widerrufen',
+                'title' => 'API-Token',
+                'create' => 'Erstellen',
+                'delete' => 'Widerrufen',
+                'manage-others' => 'Token anderer Administratoren verwalten',
+            ],
+
+            'index' => [
+                'title' => 'API-Token',
+                'info' => 'Server-Integrationen wie ein ERP-, PIM-, Lager- oder Buchhaltungssystem authentifizieren sich mit API-Token. Jedes Token handelt als ein Administrator mit den Berechtigungen seiner Rolle und funktioniert nur von der Domain, an die es gebunden ist.',
+                'create-btn' => 'API-Token erstellen',
+            ],
+
+            'create' => [
+                'title' => 'API-Token erstellen',
+                'back-btn' => 'Zurück',
+                'save-btn' => 'Token erstellen',
+                'general' => 'Allgemein',
+                'expiry' => 'Ablauf',
+                'admin-info' => 'Das Token handelt als dieser Administrator und hat genau die Berechtigungen seiner Rolle.',
+                'domain-info' => 'Der Host, von dem die Integration aus aufruft, z. B. erp.example.com. Eine URL wird auf ihren Host gekürzt. IP-Adressen und Platzhalter werden nicht akzeptiert, und die Domain kann später nicht geändert werden.',
+                'expires-on-date' => 'Läuft an einem Datum ab',
+                'never-expires' => 'Läuft nie ab',
+                'no-expiry-warning' => 'Ein Token ohne Ablauf funktioniert, bis es widerrufen wird. Bewahren Sie es in einem Geheimnisspeicher auf und widerrufen Sie es, sobald es nicht mehr benötigt wird.',
+                'no-expiry-confirm' => 'Mir ist bewusst, dass dieses Token nie abläuft.',
+                'no-admins' => 'Es gibt keinen Administrator, für den Sie ein API-Token erstellen dürfen.',
+            ],
+
+            'view' => [
+                'title' => 'API-Token',
+                'back-btn' => 'Zurück',
+                'save-btn' => 'Speichern',
+                'revoke-btn' => 'Widerrufen',
+                'details' => 'Details',
+                'usage' => 'Nutzung',
+                'token-once-title' => 'Kopieren Sie jetzt Ihr API-Token',
+                'token-once-info' => 'Das Token wird nur dieses eine Mal angezeigt. Bewahren Sie es in einem Geheimnisspeicher auf; geht es verloren, widerrufen Sie es und erstellen Sie ein neues.',
+                'copy-btn' => 'Kopieren',
+                'copied' => 'Das Token wurde kopiert.',
+                'usage-info' => 'Senden Sie es als Bearer-Token im Authorization-Header von REST- und GraphQL-Anfragen.',
+                'not-yet' => 'Noch nicht',
+                'revoke-confirm' => 'Dieses API-Token widerrufen? Die Integration, die es nutzt, funktioniert sofort nicht mehr.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Name',
+                'admin' => 'Administrator',
+                'token' => 'Token',
+                'domain' => 'Domain',
+                'expiry' => 'Ablauf',
+                'expires-at' => 'Läuft ab am',
+                'no-expiry-confirmation' => 'Bestätigung ohne Ablauf',
+                'status' => 'Status',
+                'created-by' => 'Erstellt von',
+                'created-at' => 'Erstellt am',
+                'last-used-at' => 'Zuletzt verwendet am',
+                'last-ip-address' => 'Letzte IP-Adresse',
+                'last-user-agent' => 'Letzter User-Agent',
+                'last-channel' => 'Letzter Kanal',
+                'resolved-ips' => 'Aufgelöste IP-Adressen',
+                'resolved-at' => 'Aufgelöst am',
+                'domain-mismatches' => 'Anfragen von anderen Domains',
+                'last-domain-mismatch-at' => 'Letzte Anfrage von einer anderen Domain',
+                'revoked-at' => 'Widerrufen am',
+                'revoked-by' => 'Widerrufen von',
+            ],
+
+            'datagrid' => [
+                'never' => 'Nie',
+                'console' => 'Konsolenbefehl',
+                'view' => 'Ansehen',
+                'revoke' => 'Widerrufen',
+            ],
+
+            'status' => [
+                'active' => 'Aktiv',
+                'expired' => 'Abgelaufen',
+                'revoked' => 'Widerrufen',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'Das API-Token wurde erstellt.',
+                'updated' => 'Das API-Token wurde aktualisiert.',
+                'revoked' => 'Das API-Token wurde widerrufen.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Sie haben keine Berechtigung, API-Token zu verwalten.',
+                'not-found' => 'API-Token nicht gefunden.',
+                'cannot-create-for-admin' => 'Sie können für diesen Administrator kein API-Token erstellen: Seine Rolle hat Berechtigungen, die Ihre nicht hat, oder Sie dürfen die Token anderer Administratoren nicht verwalten.',
+                'cannot-manage' => 'Sie können dieses API-Token nicht verwalten.',
+                'already-revoked' => 'Das API-Token ist bereits widerrufen.',
+                'invalid-name' => 'Der Name ist erforderlich und darf höchstens 100 Zeichen lang sein.',
+                'invalid-domain' => 'Geben Sie einen Domainnamen wie erp.example.com ein. IP-Adressen und Platzhalter werden nicht akzeptiert.',
+                'expiry-required' => 'API-Token müssen ein Ablaufdatum haben.',
+                'expiry-in-past' => 'Das Ablaufdatum muss in der Zukunft liegen.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'API-Sitzungen',
+            ],
+
+            'acl' => [
+                'title' => 'API-Sitzungen',
+                'delete' => 'Widerrufen',
+            ],
+
+            'index' => [
+                'title' => 'API-Sitzungen',
+                'info' => 'Administratoren, die über Apps wie eine Web-, Mobil-, Kassen- oder Desktop-App an der Admin-API angemeldet sind. Das Widerrufen einer Sitzung meldet dieses Gerät sofort ab.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Administrator',
+                'device' => 'Gerät',
+                'client-type' => 'Client-Typ',
+                'ip-address' => 'Anmelde-IP-Adresse',
+                'user-agent' => 'Anmelde-User-Agent',
+                'last-ip-address' => 'Letzte IP-Adresse',
+                'last-user-agent' => 'Letzter User-Agent',
+                'last-used-at' => 'Zuletzt verwendet am',
+                'last-channel' => 'Letzter Kanal',
+                'refresh-expires-at' => 'Refresh läuft ab am',
+                'expires-at' => 'Läuft ab am',
+                'status' => 'Status',
+                'created-at' => 'Angemeldet am',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Widerrufen',
+                'revoke-all' => 'Alle Sitzungen dieses Administrators widerrufen',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Mobil',
+                'pos' => 'Kasse',
+                'desktop' => 'Desktop',
+                'other' => 'Sonstige',
+            ],
+
+            'errors' => [
+                'not-active' => 'Diese Sitzung ist bereits widerrufen oder abgelaufen.',
             ],
         ],
     ],

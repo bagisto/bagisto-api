@@ -1689,10 +1689,165 @@ return [
             'password' => [
                 'reset' => 'S\'ha restablert la contrasenya. Torneu a iniciar la sessió.',
             ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'Tokens d\'API',
+            ],
 
             'acl' => [
-                'api-sessions' => 'Sessions de l\'API',
-                'revoke' => 'Revoca les sessions',
+                'title' => 'Tokens d\'API',
+                'create' => 'Crea',
+                'delete' => 'Revoca',
+                'manage-others' => 'Gestiona els tokens d\'altres administradors',
+            ],
+
+            'index' => [
+                'title' => 'Tokens d\'API',
+                'info' => 'Les integracions de servidor, com un ERP, un PIM, un magatzem o un sistema comptable, s\'autentiquen amb tokens d\'API. Cada token actua com un administrador amb els permisos del seu rol i només funciona des del domini al qual està vinculat.',
+                'create-btn' => 'Crea un token d\'API',
+            ],
+
+            'create' => [
+                'title' => 'Crea un token d\'API',
+                'back-btn' => 'Enrere',
+                'save-btn' => 'Crea el token',
+                'general' => 'General',
+                'expiry' => 'Caducitat',
+                'admin-info' => 'El token actua com aquest administrador i té exactament els permisos del seu rol.',
+                'domain-info' => 'L\'amfitrió des del qual crida la integració, com erp.example.com. Un URL es redueix al seu amfitrió. No s\'accepten adreces IP ni comodins, i el domini no es pot canviar després.',
+                'expires-on-date' => 'Caduca en una data',
+                'never-expires' => 'No caduca mai',
+                'no-expiry-warning' => 'Un token sense caducitat funciona fins que es revoca. Deseu-lo en un magatzem de secrets i revoqueu-lo tan aviat com no calgui.',
+                'no-expiry-confirm' => 'Entenc que aquest token no caduca mai.',
+                'no-admins' => 'No hi ha cap administrador per al qual pugueu crear un token d\'API.',
+            ],
+
+            'view' => [
+                'title' => 'Token d\'API',
+                'back-btn' => 'Enrere',
+                'save-btn' => 'Desa',
+                'revoke-btn' => 'Revoca',
+                'details' => 'Detalls',
+                'usage' => 'Ús',
+                'token-once-title' => 'Copieu ara el vostre token d\'API',
+                'token-once-info' => 'És l\'única vegada que es mostra el token. Deseu-lo en un magatzem de secrets; si es perd, revoqueu-lo i creeu-ne un de nou.',
+                'copy-btn' => 'Copia',
+                'copied' => 'S\'ha copiat el token.',
+                'usage-info' => 'Envieu-lo com a token Bearer a la capçalera Authorization de les peticions REST i GraphQL.',
+                'not-yet' => 'Encara no',
+                'revoke-confirm' => 'Voleu revocar aquest token d\'API? La integració que l\'utilitza deixa de funcionar immediatament.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Nom',
+                'admin' => 'Administrador',
+                'token' => 'Token',
+                'domain' => 'Domini',
+                'expiry' => 'Caducitat',
+                'expires-at' => 'Caduca el',
+                'no-expiry-confirmation' => 'Confirmació sense caducitat',
+                'status' => 'Estat',
+                'created-by' => 'Creat per',
+                'created-at' => 'Creat el',
+                'last-used-at' => 'Darrer ús el',
+                'last-ip-address' => 'Darrera adreça IP',
+                'last-user-agent' => 'Darrer agent d\'usuari',
+                'last-channel' => 'Darrer canal',
+                'resolved-ips' => 'Adreces IP resoltes',
+                'resolved-at' => 'Resolt el',
+                'domain-mismatches' => 'Peticions des d\'altres dominis',
+                'last-domain-mismatch-at' => 'Darrera petició des d\'un altre domini',
+                'revoked-at' => 'Revocat el',
+                'revoked-by' => 'Revocat per',
+            ],
+
+            'datagrid' => [
+                'never' => 'Mai',
+                'console' => 'Ordre de consola',
+                'view' => 'Mostra',
+                'revoke' => 'Revoca',
+            ],
+
+            'status' => [
+                'active' => 'Actiu',
+                'expired' => 'Caducat',
+                'revoked' => 'Revocat',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'S\'ha creat el token d\'API.',
+                'updated' => 'S\'ha actualitzat el token d\'API.',
+                'revoked' => 'S\'ha revocat el token d\'API.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'No teniu permís per gestionar tokens d\'API.',
+                'not-found' => 'No s\'ha trobat el token d\'API.',
+                'cannot-create-for-admin' => 'No podeu crear un token d\'API per a aquest administrador: el seu rol té permisos que el vostre no té, o no podeu gestionar els tokens d\'altres administradors.',
+                'cannot-manage' => 'No podeu gestionar aquest token d\'API.',
+                'already-revoked' => 'El token d\'API ja està revocat.',
+                'invalid-name' => 'El nom és obligatori i pot tenir com a màxim 100 caràcters.',
+                'invalid-domain' => 'Introduïu un nom de domini com erp.example.com. No s\'accepten adreces IP ni comodins.',
+                'expiry-required' => 'Els tokens d\'API han de tenir una data de caducitat.',
+                'expiry-in-past' => 'La data de caducitat ha de ser futura.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'Sessions d\'API',
+            ],
+
+            'acl' => [
+                'title' => 'Sessions d\'API',
+                'delete' => 'Revoca',
+            ],
+
+            'index' => [
+                'title' => 'Sessions d\'API',
+                'info' => 'Administradors que han iniciat sessió a l\'API d\'administració des d\'aplicacions web, mòbils, de punt de venda o d\'escriptori. Revocar una sessió tanca la sessió d\'aquest dispositiu immediatament.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Administrador',
+                'device' => 'Dispositiu',
+                'client-type' => 'Tipus de client',
+                'ip-address' => 'IP d\'inici de sessió',
+                'user-agent' => 'Agent d\'usuari d\'inici de sessió',
+                'last-ip-address' => 'Darrera adreça IP',
+                'last-user-agent' => 'Darrer agent d\'usuari',
+                'last-used-at' => 'Darrer ús el',
+                'last-channel' => 'Darrer canal',
+                'refresh-expires-at' => 'L\'actualització caduca el',
+                'expires-at' => 'Caduca el',
+                'status' => 'Estat',
+                'created-at' => 'Sessió iniciada el',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Revoca',
+                'revoke-all' => 'Revoca totes les sessions d\'aquest administrador',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Mòbil',
+                'pos' => 'Punt de venda',
+                'desktop' => 'Escriptori',
+                'other' => 'Altre',
+            ],
+
+            'errors' => [
+                'not-active' => 'Aquesta sessió ja està revocada o ha caducat.',
             ],
         ],
     ],

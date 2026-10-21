@@ -22,6 +22,16 @@ class AdminApiAudit extends Model
     public const TOKEN_KIND_INTEGRATION = 'integration';
 
     /**
+     * The channel of an event triggered from the admin panel.
+     */
+    public const CHANNEL_PANEL = 'panel';
+
+    /**
+     * The channel of an event triggered by a console command.
+     */
+    public const CHANNEL_CLI = 'cli';
+
+    /**
      * The timestamps.
      */
     public $timestamps = false;

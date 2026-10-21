@@ -1689,10 +1689,165 @@ return [
             'password' => [
                 'reset' => 'Parolanız sıfırlandı. Lütfen yeniden giriş yapın.',
             ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'API Belirteçleri',
+            ],
 
             'acl' => [
-                'api-sessions' => 'API Oturumları',
-                'revoke' => 'Oturumları İptal Et',
+                'title' => 'API Belirteçleri',
+                'create' => 'Oluştur',
+                'delete' => 'İptal Et',
+                'manage-others' => 'Diğer Yöneticilerin Belirteçlerini Yönet',
+            ],
+
+            'index' => [
+                'title' => 'API Belirteçleri',
+                'info' => 'ERP, PIM, depo veya muhasebe sistemi gibi sunucu entegrasyonları API belirteçleriyle kimlik doğrular. Her belirteç, rolünün izinleriyle tek bir yönetici olarak davranır ve yalnızca bağlı olduğu alan adından çalışır.',
+                'create-btn' => 'API Belirteci Oluştur',
+            ],
+
+            'create' => [
+                'title' => 'API Belirteci Oluştur',
+                'back-btn' => 'Geri',
+                'save-btn' => 'Belirteç Oluştur',
+                'general' => 'Genel',
+                'expiry' => 'Geçerlilik Süresi',
+                'admin-info' => 'Belirteç bu yönetici olarak davranır ve tam olarak rolünün izinlerine sahiptir.',
+                'domain-info' => 'Entegrasyonun istek gönderdiği ana makine, örneğin erp.example.com. Bir URL ana makinesine indirgenir. IP adresleri ve joker karakterler kabul edilmez ve alan adı sonradan değiştirilemez.',
+                'expires-on-date' => 'Bir tarihte sona erer',
+                'never-expires' => 'Hiçbir zaman sona ermez',
+                'no-expiry-warning' => 'Süresi olmayan bir belirteç iptal edilene kadar çalışır. Bir gizli bilgi kasasında saklayın ve artık gerekmediğinde hemen iptal edin.',
+                'no-expiry-confirm' => 'Bu belirtecin hiçbir zaman sona ermeyeceğini anlıyorum.',
+                'no-admins' => 'API belirteci oluşturabileceğiniz bir yönetici yok.',
+            ],
+
+            'view' => [
+                'title' => 'API Belirteci',
+                'back-btn' => 'Geri',
+                'save-btn' => 'Kaydet',
+                'revoke-btn' => 'İptal Et',
+                'details' => 'Ayrıntılar',
+                'usage' => 'Kullanım',
+                'token-once-title' => 'API belirtecinizi şimdi kopyalayın',
+                'token-once-info' => 'Belirteç yalnızca bu kez gösterilir. Bir gizli bilgi kasasında saklayın; kaybolursa iptal edip yenisini oluşturun.',
+                'copy-btn' => 'Kopyala',
+                'copied' => 'Belirteç kopyalandı.',
+                'usage-info' => 'REST ve GraphQL isteklerinin Authorization başlığında Bearer belirteci olarak gönderin.',
+                'not-yet' => 'Henüz değil',
+                'revoke-confirm' => 'Bu API belirteci iptal edilsin mi? Onu kullanan entegrasyon hemen çalışmayı durdurur.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Ad',
+                'admin' => 'Yönetici',
+                'token' => 'Belirteç',
+                'domain' => 'Alan Adı',
+                'expiry' => 'Geçerlilik Süresi',
+                'expires-at' => 'Sona Erme Tarihi',
+                'no-expiry-confirmation' => 'Süresiz onay',
+                'status' => 'Durum',
+                'created-by' => 'Oluşturan',
+                'created-at' => 'Oluşturulma Tarihi',
+                'last-used-at' => 'Son Kullanım',
+                'last-ip-address' => 'Son IP Adresi',
+                'last-user-agent' => 'Son Kullanıcı Aracısı',
+                'last-channel' => 'Son Kanal',
+                'resolved-ips' => 'Çözümlenen IP Adresleri',
+                'resolved-at' => 'Çözümlenme Tarihi',
+                'domain-mismatches' => 'Diğer Alan Adlarından İstekler',
+                'last-domain-mismatch-at' => 'Başka Alan Adından Son İstek',
+                'revoked-at' => 'İptal Tarihi',
+                'revoked-by' => 'İptal Eden',
+            ],
+
+            'datagrid' => [
+                'never' => 'Hiçbir zaman',
+                'console' => 'Konsol komutu',
+                'view' => 'Görüntüle',
+                'revoke' => 'İptal Et',
+            ],
+
+            'status' => [
+                'active' => 'Etkin',
+                'expired' => 'Süresi Dolmuş',
+                'revoked' => 'İptal Edilmiş',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'API belirteci oluşturuldu.',
+                'updated' => 'API belirteci güncellendi.',
+                'revoked' => 'API belirteci iptal edildi.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'API belirteçlerini yönetme izniniz yok.',
+                'not-found' => 'API belirteci bulunamadı.',
+                'cannot-create-for-admin' => 'Bu yönetici için API belirteci oluşturamazsınız: rolünde sizinkinde olmayan izinler var veya diğer yöneticilerin belirteçlerini yönetemezsiniz.',
+                'cannot-manage' => 'Bu API belirtecini yönetemezsiniz.',
+                'already-revoked' => 'API belirteci zaten iptal edilmiş.',
+                'invalid-name' => 'Ad zorunludur ve en fazla 100 karakter olabilir.',
+                'invalid-domain' => 'erp.example.com gibi bir alan adı girin. IP adresleri ve joker karakterler kabul edilmez.',
+                'expiry-required' => 'API belirteçlerinin bir sona erme tarihi olmalıdır.',
+                'expiry-in-past' => 'Sona erme tarihi gelecekte olmalıdır.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'API Oturumları',
+            ],
+
+            'acl' => [
+                'title' => 'API Oturumları',
+                'delete' => 'İptal Et',
+            ],
+
+            'index' => [
+                'title' => 'API Oturumları',
+                'info' => 'Web, mobil, POS veya masaüstü uygulamalarından yönetim API\'sine giriş yapmış yöneticiler. Bir oturumu iptal etmek o cihazın oturumunu hemen kapatır.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Yönetici',
+                'device' => 'Cihaz',
+                'client-type' => 'İstemci Türü',
+                'ip-address' => 'Giriş IP Adresi',
+                'user-agent' => 'Giriş Kullanıcı Aracısı',
+                'last-ip-address' => 'Son IP Adresi',
+                'last-user-agent' => 'Son Kullanıcı Aracısı',
+                'last-used-at' => 'Son Kullanım',
+                'last-channel' => 'Son Kanal',
+                'refresh-expires-at' => 'Yenileme Bitiş Tarihi',
+                'expires-at' => 'Sona Erme Tarihi',
+                'status' => 'Durum',
+                'created-at' => 'Giriş Tarihi',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'İptal Et',
+                'revoke-all' => 'Bu Yöneticinin Tüm Oturumlarını İptal Et',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Mobil',
+                'pos' => 'POS',
+                'desktop' => 'Masaüstü',
+                'other' => 'Diğer',
+            ],
+
+            'errors' => [
+                'not-active' => 'Bu oturum zaten iptal edilmiş veya süresi dolmuş.',
             ],
         ],
     ],

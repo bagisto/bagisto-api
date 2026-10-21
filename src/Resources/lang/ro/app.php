@@ -1689,10 +1689,165 @@ return [
             'password' => [
                 'reset' => 'Parola a fost resetată. Vă rugăm să vă conectați din nou.',
             ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'Tokenuri API',
+            ],
 
             'acl' => [
-                'api-sessions' => 'Sesiuni API',
-                'revoke' => 'Revocă sesiunile',
+                'title' => 'Tokenuri API',
+                'create' => 'Creează',
+                'delete' => 'Revocă',
+                'manage-others' => 'Gestionează tokenurile altor administratori',
+            ],
+
+            'index' => [
+                'title' => 'Tokenuri API',
+                'info' => 'Integrările de server, precum un ERP, PIM, depozit sau sistem de contabilitate, se autentifică cu tokenuri API. Fiecare token acționează ca un administrator, cu permisiunile rolului său, și funcționează doar de pe domeniul de care este legat.',
+                'create-btn' => 'Creează token API',
+            ],
+
+            'create' => [
+                'title' => 'Creează token API',
+                'back-btn' => 'Înapoi',
+                'save-btn' => 'Creează tokenul',
+                'general' => 'General',
+                'expiry' => 'Expirare',
+                'admin-info' => 'Tokenul acționează ca acest administrator și are exact permisiunile rolului său.',
+                'domain-info' => 'Gazda de pe care apelează integrarea, de exemplu erp.example.com. Un URL este redus la gazda sa. Adresele IP și caracterele wildcard nu sunt acceptate, iar domeniul nu poate fi schimbat ulterior.',
+                'expires-on-date' => 'Expiră la o dată',
+                'never-expires' => 'Nu expiră niciodată',
+                'no-expiry-warning' => 'Un token fără expirare funcționează până este revocat. Păstrați-l într-un seif de secrete și revocați-l imediat ce nu mai este necesar.',
+                'no-expiry-confirm' => 'Înțeleg că acest token nu expiră niciodată.',
+                'no-admins' => 'Nu există niciun administrator pentru care puteți crea un token API.',
+            ],
+
+            'view' => [
+                'title' => 'Token API',
+                'back-btn' => 'Înapoi',
+                'save-btn' => 'Salvează',
+                'revoke-btn' => 'Revocă',
+                'details' => 'Detalii',
+                'usage' => 'Utilizare',
+                'token-once-title' => 'Copiați acum tokenul API',
+                'token-once-info' => 'Este singura dată când tokenul este afișat. Păstrați-l într-un seif de secrete; dacă se pierde, revocați-l și creați unul nou.',
+                'copy-btn' => 'Copiază',
+                'copied' => 'Tokenul a fost copiat.',
+                'usage-info' => 'Trimiteți-l ca token Bearer în antetul Authorization al cererilor REST și GraphQL.',
+                'not-yet' => 'Încă nu',
+                'revoke-confirm' => 'Revocați acest token API? Integrarea care îl folosește nu mai funcționează imediat.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Nume',
+                'admin' => 'Administrator',
+                'token' => 'Token',
+                'domain' => 'Domeniu',
+                'expiry' => 'Expirare',
+                'expires-at' => 'Expiră la',
+                'no-expiry-confirmation' => 'Confirmare fără expirare',
+                'status' => 'Stare',
+                'created-by' => 'Creat de',
+                'created-at' => 'Creat la',
+                'last-used-at' => 'Ultima utilizare la',
+                'last-ip-address' => 'Ultima adresă IP',
+                'last-user-agent' => 'Ultimul user agent',
+                'last-channel' => 'Ultimul canal',
+                'resolved-ips' => 'Adrese IP rezolvate',
+                'resolved-at' => 'Rezolvat la',
+                'domain-mismatches' => 'Cereri de pe alte domenii',
+                'last-domain-mismatch-at' => 'Ultima cerere de pe alt domeniu',
+                'revoked-at' => 'Revocat la',
+                'revoked-by' => 'Revocat de',
+            ],
+
+            'datagrid' => [
+                'never' => 'Niciodată',
+                'console' => 'Comandă din consolă',
+                'view' => 'Vizualizează',
+                'revoke' => 'Revocă',
+            ],
+
+            'status' => [
+                'active' => 'Activ',
+                'expired' => 'Expirat',
+                'revoked' => 'Revocat',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'Tokenul API a fost creat.',
+                'updated' => 'Tokenul API a fost actualizat.',
+                'revoked' => 'Tokenul API a fost revocat.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Nu aveți permisiunea de a gestiona tokenuri API.',
+                'not-found' => 'Tokenul API nu a fost găsit.',
+                'cannot-create-for-admin' => 'Nu puteți crea un token API pentru acest administrator: rolul său are permisiuni pe care al dumneavoastră nu le are sau nu puteți gestiona tokenurile altor administratori.',
+                'cannot-manage' => 'Nu puteți gestiona acest token API.',
+                'already-revoked' => 'Tokenul API este deja revocat.',
+                'invalid-name' => 'Numele este obligatoriu și poate avea cel mult 100 de caractere.',
+                'invalid-domain' => 'Introduceți un nume de domeniu precum erp.example.com. Adresele IP și caracterele wildcard nu sunt acceptate.',
+                'expiry-required' => 'Tokenurile API trebuie să aibă o dată de expirare.',
+                'expiry-in-past' => 'Data de expirare trebuie să fie în viitor.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'Sesiuni API',
+            ],
+
+            'acl' => [
+                'title' => 'Sesiuni API',
+                'delete' => 'Revocă',
+            ],
+
+            'index' => [
+                'title' => 'Sesiuni API',
+                'info' => 'Administratori conectați la API-ul de administrare din aplicații web, mobile, POS sau desktop. Revocarea unei sesiuni deconectează imediat acel dispozitiv.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Administrator',
+                'device' => 'Dispozitiv',
+                'client-type' => 'Tip client',
+                'ip-address' => 'IP de autentificare',
+                'user-agent' => 'User agent de autentificare',
+                'last-ip-address' => 'Ultima adresă IP',
+                'last-user-agent' => 'Ultimul user agent',
+                'last-used-at' => 'Ultima utilizare la',
+                'last-channel' => 'Ultimul canal',
+                'refresh-expires-at' => 'Reîmprospătarea expiră la',
+                'expires-at' => 'Expiră la',
+                'status' => 'Stare',
+                'created-at' => 'Conectat la',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Revocă',
+                'revoke-all' => 'Revocă toate sesiunile acestui administrator',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Mobil',
+                'pos' => 'POS',
+                'desktop' => 'Desktop',
+                'other' => 'Altul',
+            ],
+
+            'errors' => [
+                'not-active' => 'Această sesiune este deja revocată sau expirată.',
             ],
         ],
     ],

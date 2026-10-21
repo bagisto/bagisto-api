@@ -1689,10 +1689,165 @@ return [
             'password' => [
                 'reset' => '您的密码已重置。请重新登录。',
             ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'API 令牌',
+            ],
 
             'acl' => [
-                'api-sessions' => 'API 会话',
-                'revoke' => '撤销会话',
+                'title' => 'API 令牌',
+                'create' => '创建',
+                'delete' => '撤销',
+                'manage-others' => '管理其他管理员的令牌',
+            ],
+
+            'index' => [
+                'title' => 'API 令牌',
+                'info' => 'ERP、PIM、仓库或财务系统等服务器集成使用 API 令牌进行认证。每个令牌以一位管理员的身份、按其角色权限执行操作,并且只能从绑定的域名使用。',
+                'create-btn' => '创建 API 令牌',
+            ],
+
+            'create' => [
+                'title' => '创建 API 令牌',
+                'back-btn' => '返回',
+                'save-btn' => '创建令牌',
+                'general' => '常规',
+                'expiry' => '有效期',
+                'admin-info' => '令牌以该管理员身份执行操作,权限与其角色完全一致。',
+                'domain-info' => '集成发起调用的主机,例如 erp.example.com。URL 只保留主机部分。不接受 IP 地址和通配符,域名创建后无法修改。',
+                'expires-on-date' => '在指定日期过期',
+                'never-expires' => '永不过期',
+                'no-expiry-warning' => '没有有效期的令牌在被撤销前一直有效。请将其保存在密钥库中,不再需要时立即撤销。',
+                'no-expiry-confirm' => '我了解此令牌永不过期。',
+                'no-admins' => '没有您可以为其创建 API 令牌的管理员。',
+            ],
+
+            'view' => [
+                'title' => 'API 令牌',
+                'back-btn' => '返回',
+                'save-btn' => '保存',
+                'revoke-btn' => '撤销',
+                'details' => '详情',
+                'usage' => '使用情况',
+                'token-once-title' => '请立即复制您的 API 令牌',
+                'token-once-info' => '令牌仅显示这一次。请将其保存在密钥库中;如果丢失,请撤销并重新创建。',
+                'copy-btn' => '复制',
+                'copied' => '令牌已复制。',
+                'usage-info' => '在 REST 和 GraphQL 请求的 Authorization 请求头中以 Bearer 令牌的形式发送。',
+                'not-yet' => '暂无',
+                'revoke-confirm' => '撤销此 API 令牌?使用它的集成将立即停止工作。',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => '名称',
+                'admin' => '管理员',
+                'token' => '令牌',
+                'domain' => '域名',
+                'expiry' => '有效期',
+                'expires-at' => '过期时间',
+                'no-expiry-confirmation' => '永不过期确认',
+                'status' => '状态',
+                'created-by' => '创建者',
+                'created-at' => '创建时间',
+                'last-used-at' => '最后使用时间',
+                'last-ip-address' => '最后 IP 地址',
+                'last-user-agent' => '最后用户代理',
+                'last-channel' => '最后渠道',
+                'resolved-ips' => '解析的 IP 地址',
+                'resolved-at' => '解析时间',
+                'domain-mismatches' => '来自其他域名的请求',
+                'last-domain-mismatch-at' => '最后一次来自其他域名的请求',
+                'revoked-at' => '撤销时间',
+                'revoked-by' => '撤销者',
+            ],
+
+            'datagrid' => [
+                'never' => '永不',
+                'console' => '控制台命令',
+                'view' => '查看',
+                'revoke' => '撤销',
+            ],
+
+            'status' => [
+                'active' => '有效',
+                'expired' => '已过期',
+                'revoked' => '已撤销',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'API 令牌已创建。',
+                'updated' => 'API 令牌已更新。',
+                'revoked' => 'API 令牌已撤销。',
+            ],
+
+            'errors' => [
+                'no-permission' => '您没有管理 API 令牌的权限。',
+                'not-found' => '未找到 API 令牌。',
+                'cannot-create-for-admin' => '您无法为该管理员创建 API 令牌:其角色拥有您的角色没有的权限,或您无权管理其他管理员的令牌。',
+                'cannot-manage' => '您无法管理此 API 令牌。',
+                'already-revoked' => '该 API 令牌已被撤销。',
+                'invalid-name' => '名称为必填项,最多 100 个字符。',
+                'invalid-domain' => '请输入域名,例如 erp.example.com。不接受 IP 地址和通配符。',
+                'expiry-required' => 'API 令牌必须设置过期日期。',
+                'expiry-in-past' => '过期日期必须是将来的日期。',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'API 会话',
+            ],
+
+            'acl' => [
+                'title' => 'API 会话',
+                'delete' => '撤销',
+            ],
+
+            'index' => [
+                'title' => 'API 会话',
+                'info' => '通过网页、移动、POS 或桌面应用登录管理 API 的管理员。撤销会话会立即让该设备退出登录。',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => '管理员',
+                'device' => '设备',
+                'client-type' => '客户端类型',
+                'ip-address' => '登录 IP 地址',
+                'user-agent' => '登录用户代理',
+                'last-ip-address' => '最后 IP 地址',
+                'last-user-agent' => '最后用户代理',
+                'last-used-at' => '最后使用时间',
+                'last-channel' => '最后渠道',
+                'refresh-expires-at' => '刷新过期时间',
+                'expires-at' => '过期时间',
+                'status' => '状态',
+                'created-at' => '登录时间',
+            ],
+
+            'datagrid' => [
+                'revoke' => '撤销',
+                'revoke-all' => '撤销该管理员的所有会话',
+            ],
+
+            'client-types' => [
+                'web' => '网页',
+                'mobile' => '移动',
+                'pos' => 'POS',
+                'desktop' => '桌面',
+                'other' => '其他',
+            ],
+
+            'errors' => [
+                'not-active' => '该会话已被撤销或已过期。',
             ],
         ],
     ],

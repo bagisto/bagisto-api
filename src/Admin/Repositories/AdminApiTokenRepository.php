@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\Repositories;
 
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Webkul\BagistoApi\Admin\Contracts\AdminApiToken as AdminApiTokenContract;
 use Webkul\BagistoApi\Admin\Models\AdminApiToken;
@@ -26,6 +27,66 @@ class AdminApiTokenRepository extends Repository
             ->with('admin.role')
             ->where('jti', $jti)
             ->first();
+    }
+
+    /**
+     * Find an API token with its admin, creator and revoker loaded.
+     */
+    public function findWithAdmin(int $id): ?AdminApiToken
+    {
+        return $this->model->newQuery()
+            ->with(['admin.role', 'createdBy', 'revokedBy'])
+            ->find($id);
+    }
+
+    /**
+     * A page of API tokens, newest first, optionally of one admin, one status and one domain.
+     */
+    public function paginateFiltered(?int $adminId, ?string $status, ?string $domain, int $page, int $perPage): LengthAwarePaginator
+    {
+        return $this->model->newQuery()
+            ->with(['admin', 'createdBy'])
+            ->when($adminId !== null, fn ($query) => $query->where('admin_id', $adminId))
+            ->when($domain !== null, fn ($query) => $query->where('domain', $domain))
+            ->when($status === AdminApiToken::STATUS_REVOKED, fn ($query) => $query->whereNotNull('revoked_at'))
+            ->when($status === AdminApiToken::STATUS_EXPIRED, fn ($query) => $query->whereNull('revoked_at')
+                ->whereNotNull('expires_at')
+                ->where('expires_at', '<=', now()))
+            ->when($status === AdminApiToken::STATUS_ACTIVE, fn ($query) => $query->whereNull('revoked_at')
+                ->where(function ($query) {
+                    $query->whereNull('expires_at')
+                        ->orWhere('expires_at', '>', now());
+                }))
+            ->orderByDesc('id')
+            ->paginate($perPage, ['*'], 'page', $page);
+    }
+
+    /**
+     * Change the name of an API token.
+     */
+    public function rename(AdminApiToken $token, string $name): AdminApiToken
+    {
+        $token->forceFill(['name' => $name])->save();
+
+        return $token;
+    }
+
+    /**
+     * Revoke an API token that is not revoked yet, keeping the first reason it was revoked for.
+     */
+    public function revoke(AdminApiToken $token, string $reason, ?int $revokedByAdminId = null): AdminApiToken
+    {
+        if ($token->isRevoked()) {
+            return $token;
+        }
+
+        $token->forceFill([
+            'revoked_at' => now(),
+            'revoked_reason' => $reason,
+            'revoked_by_admin_id' => $revokedByAdminId,
+        ])->save();
+
+        return $token;
     }
 
     /**

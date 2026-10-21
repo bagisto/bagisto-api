@@ -1689,10 +1689,165 @@ return [
             'password' => [
                 'reset' => 'Je wachtwoord is hersteld. Log opnieuw in.',
             ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'API-tokens',
+            ],
 
             'acl' => [
-                'api-sessions' => 'API-sessies',
-                'revoke' => 'Sessies intrekken',
+                'title' => 'API-tokens',
+                'create' => 'Aanmaken',
+                'delete' => 'Intrekken',
+                'manage-others' => 'Tokens van andere beheerders beheren',
+            ],
+
+            'index' => [
+                'title' => 'API-tokens',
+                'info' => 'Serverintegraties zoals een ERP-, PIM-, magazijn- of boekhoudsysteem authenticeren met API-tokens. Elk token handelt als één beheerder met de rechten van diens rol en werkt alleen vanaf het domein waaraan het is gekoppeld.',
+                'create-btn' => 'API-token aanmaken',
+            ],
+
+            'create' => [
+                'title' => 'API-token aanmaken',
+                'back-btn' => 'Terug',
+                'save-btn' => 'Token aanmaken',
+                'general' => 'Algemeen',
+                'expiry' => 'Vervaldatum',
+                'admin-info' => 'Het token handelt als deze beheerder en heeft precies de rechten van diens rol.',
+                'domain-info' => 'De host waarvandaan de integratie aanroept, zoals erp.example.com. Een URL wordt teruggebracht tot de host. IP-adressen en jokertekens worden niet geaccepteerd en het domein kan later niet worden gewijzigd.',
+                'expires-on-date' => 'Verloopt op een datum',
+                'never-expires' => 'Verloopt nooit',
+                'no-expiry-warning' => 'Een token zonder vervaldatum blijft werken tot het wordt ingetrokken. Bewaar het in een geheimenkluis en trek het in zodra het niet meer nodig is.',
+                'no-expiry-confirm' => 'Ik begrijp dat dit token nooit verloopt.',
+                'no-admins' => 'Er is geen beheerder voor wie u een API-token mag aanmaken.',
+            ],
+
+            'view' => [
+                'title' => 'API-token',
+                'back-btn' => 'Terug',
+                'save-btn' => 'Opslaan',
+                'revoke-btn' => 'Intrekken',
+                'details' => 'Details',
+                'usage' => 'Gebruik',
+                'token-once-title' => 'Kopieer nu uw API-token',
+                'token-once-info' => 'Dit is de enige keer dat het token wordt getoond. Bewaar het in een geheimenkluis; raakt het kwijt, trek het dan in en maak een nieuw aan.',
+                'copy-btn' => 'Kopiëren',
+                'copied' => 'Het token is gekopieerd.',
+                'usage-info' => 'Stuur het als Bearer-token in de Authorization-header van REST- en GraphQL-verzoeken.',
+                'not-yet' => 'Nog niet',
+                'revoke-confirm' => 'Dit API-token intrekken? De integratie die het gebruikt, werkt direct niet meer.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Naam',
+                'admin' => 'Beheerder',
+                'token' => 'Token',
+                'domain' => 'Domein',
+                'expiry' => 'Vervaldatum',
+                'expires-at' => 'Verloopt op',
+                'no-expiry-confirmation' => 'Bevestiging zonder vervaldatum',
+                'status' => 'Status',
+                'created-by' => 'Aangemaakt door',
+                'created-at' => 'Aangemaakt op',
+                'last-used-at' => 'Laatst gebruikt op',
+                'last-ip-address' => 'Laatste IP-adres',
+                'last-user-agent' => 'Laatste user-agent',
+                'last-channel' => 'Laatste kanaal',
+                'resolved-ips' => 'Opgeloste IP-adressen',
+                'resolved-at' => 'Opgelost op',
+                'domain-mismatches' => 'Verzoeken van andere domeinen',
+                'last-domain-mismatch-at' => 'Laatste verzoek van een ander domein',
+                'revoked-at' => 'Ingetrokken op',
+                'revoked-by' => 'Ingetrokken door',
+            ],
+
+            'datagrid' => [
+                'never' => 'Nooit',
+                'console' => 'Consoleopdracht',
+                'view' => 'Bekijken',
+                'revoke' => 'Intrekken',
+            ],
+
+            'status' => [
+                'active' => 'Actief',
+                'expired' => 'Verlopen',
+                'revoked' => 'Ingetrokken',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'Het API-token is aangemaakt.',
+                'updated' => 'Het API-token is bijgewerkt.',
+                'revoked' => 'Het API-token is ingetrokken.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'U hebt geen toestemming om API-tokens te beheren.',
+                'not-found' => 'API-token niet gevonden.',
+                'cannot-create-for-admin' => 'U kunt voor deze beheerder geen API-token aanmaken: diens rol heeft rechten die de uwe niet heeft, of u mag de tokens van andere beheerders niet beheren.',
+                'cannot-manage' => 'U kunt dit API-token niet beheren.',
+                'already-revoked' => 'Het API-token is al ingetrokken.',
+                'invalid-name' => 'De naam is verplicht en mag maximaal 100 tekens hebben.',
+                'invalid-domain' => 'Voer een domeinnaam in zoals erp.example.com. IP-adressen en jokertekens worden niet geaccepteerd.',
+                'expiry-required' => 'API-tokens moeten een vervaldatum hebben.',
+                'expiry-in-past' => 'De vervaldatum moet in de toekomst liggen.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'API-sessies',
+            ],
+
+            'acl' => [
+                'title' => 'API-sessies',
+                'delete' => 'Intrekken',
+            ],
+
+            'index' => [
+                'title' => 'API-sessies',
+                'info' => 'Beheerders die via apps zoals een web-, mobiele, kassa- of desktopapp zijn aangemeld bij de beheer-API. Een sessie intrekken meldt dat apparaat direct af.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Beheerder',
+                'device' => 'Apparaat',
+                'client-type' => 'Clienttype',
+                'ip-address' => 'Aanmeld-IP-adres',
+                'user-agent' => 'Aanmeld-user-agent',
+                'last-ip-address' => 'Laatste IP-adres',
+                'last-user-agent' => 'Laatste user-agent',
+                'last-used-at' => 'Laatst gebruikt op',
+                'last-channel' => 'Laatste kanaal',
+                'refresh-expires-at' => 'Vernieuwing verloopt op',
+                'expires-at' => 'Verloopt op',
+                'status' => 'Status',
+                'created-at' => 'Aangemeld op',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Intrekken',
+                'revoke-all' => 'Alle sessies van deze beheerder intrekken',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Mobiel',
+                'pos' => 'Kassa',
+                'desktop' => 'Desktop',
+                'other' => 'Overig',
+            ],
+
+            'errors' => [
+                'not-active' => 'Deze sessie is al ingetrokken of verlopen.',
             ],
         ],
     ],

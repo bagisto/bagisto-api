@@ -46,6 +46,7 @@ use Webkul\BagistoApi\Admin\Services\AdminApiCredentialRevoker;
 use Webkul\BagistoApi\CacheProfiles\ApiAwareResponseCache;
 use Webkul\BagistoApi\Console\Commands\ApiKeyMaintenanceCommand;
 use Webkul\BagistoApi\Console\Commands\ApiKeyManagementCommand;
+use Webkul\BagistoApi\Console\Commands\ApiTokenCreateCommand;
 use Webkul\BagistoApi\Console\Commands\ClearApiPlatformCacheCommand;
 use Webkul\BagistoApi\Console\Commands\ExportSchemaCommand;
 use Webkul\BagistoApi\Console\Commands\GenerateStorefrontKey;
@@ -413,6 +414,7 @@ class BagistoApiServiceProvider extends ServiceProvider
             PruneAuditsCommand::class,
             PruneCartUploadsCommand::class,
             JwtKeysCommand::class,
+            ApiTokenCreateCommand::class,
             PruneAdminTokensCommand::class,
             ExportSchemaCommand::class,
         ]);
@@ -491,7 +493,7 @@ class BagistoApiServiceProvider extends ServiceProvider
     }
 
     /**
-     * Merge the admin Integration ACL and menu configs into core arrays.
+     * Merge the package ACL and system configuration into core's.
      */
     protected function mergeAdminConfigs(): void
     {
@@ -503,21 +505,25 @@ class BagistoApiServiceProvider extends ServiceProvider
     }
 
     /**
-     * Merge the admin Integration menu into the admin menu when the module is enabled.
+     * Merge the package menu into the admin menu, leaving out the Integration entries while that module is off.
      */
-    protected function registerIntegrationMenu(): void
+    protected function registerAdminMenu(): void
     {
+        $menuConfig = require __DIR__.'/../Admin/Config/menu.php';
+
         if (! $this->isIntegrationModuleEnabled()) {
-            return;
+            $menuConfig = array_values(array_filter(
+                $menuConfig,
+                fn (array $item) => ! str_starts_with($item['key'], 'integration')
+            ));
         }
 
-        $menuConfig = require __DIR__.'/../Admin/Config/menu.php';
         $existingMenu = (array) config('menu.admin', []);
         config(['menu.admin' => array_merge($existingMenu, $menuConfig)]);
     }
 
     /**
-     * Load the admin integration routes and views, and register the admin API guard and rate limiter.
+     * Load the admin panel routes, views and menu, and register the admin API guard and rate limiter.
      */
     protected function bootAdminIntegration(): void
     {
@@ -528,7 +534,7 @@ class BagistoApiServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(__DIR__.'/../Admin/Resources/views', 'bagistoapi');
 
-        $this->registerIntegrationMenu();
+        $this->registerAdminMenu();
 
         AdminProxy::modelClass()::observe(AdminCredentialObserver::class);
 

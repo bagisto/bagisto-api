@@ -75,6 +75,7 @@ use Webkul\BagistoApi\Admin\Models\AdminRmaRule;
 use Webkul\BagistoApi\Admin\Models\AdminRmaStatus;
 use Webkul\BagistoApi\Admin\Models\AdminSession;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsApiSession;
+use Webkul\BagistoApi\Admin\Models\AdminSettingsApiToken;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsChannel;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsCurrency;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsDataTransferImport;
@@ -185,6 +186,7 @@ class AdminReadPermissions
         AdminSettingsRole::class => 'settings.roles',
         AdminSettingsUserSession::class => 'settings.api_sessions',
         AdminSettingsApiSession::class => 'settings.api_sessions',
+        AdminSettingsApiToken::class => 'settings.api_tokens',
         AdminSettingsTaxCategory::class => 'settings.taxes.tax_categories',
         AdminSettingsTaxRate::class => 'settings.taxes.tax_rates',
         AdminSettingsTheme::class => 'settings.themes',

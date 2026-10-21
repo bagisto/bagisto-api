@@ -1689,10 +1689,165 @@ return [
             'password' => [
                 'reset' => 'パスワードがリセットされました。もう一度ログインしてください。',
             ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'APIトークン',
+            ],
 
             'acl' => [
-                'api-sessions' => 'APIセッション',
-                'revoke' => 'セッションを取り消す',
+                'title' => 'APIトークン',
+                'create' => '作成',
+                'delete' => '失効',
+                'manage-others' => '他の管理者のトークンを管理',
+            ],
+
+            'index' => [
+                'title' => 'APIトークン',
+                'info' => 'ERP、PIM、倉庫、会計システムなどのサーバー連携は API トークンで認証します。各トークンは 1 人の管理者としてそのロールの権限で動作し、紐付けられたドメインからのみ使用できます。',
+                'create-btn' => 'APIトークンを作成',
+            ],
+
+            'create' => [
+                'title' => 'APIトークンを作成',
+                'back-btn' => '戻る',
+                'save-btn' => 'トークンを作成',
+                'general' => '一般',
+                'expiry' => '有効期限',
+                'admin-info' => 'トークンはこの管理者として動作し、そのロールの権限をそのまま持ちます。',
+                'domain-info' => '連携が呼び出し元とするホスト(例: erp.example.com)。URL はホストのみに短縮されます。IP アドレスとワイルドカードは使用できず、ドメインは後から変更できません。',
+                'expires-on-date' => '指定日に失効',
+                'never-expires' => '失効しない',
+                'no-expiry-warning' => '有効期限のないトークンは失効させるまで使用できます。シークレットストアに保管し、不要になったらすぐに失効させてください。',
+                'no-expiry-confirm' => 'このトークンに有効期限がないことを理解しました。',
+                'no-admins' => 'APIトークンを作成できる管理者がいません。',
+            ],
+
+            'view' => [
+                'title' => 'APIトークン',
+                'back-btn' => '戻る',
+                'save-btn' => '保存',
+                'revoke-btn' => '失効',
+                'details' => '詳細',
+                'usage' => '利用状況',
+                'token-once-title' => '今すぐ API トークンをコピーしてください',
+                'token-once-info' => 'トークンが表示されるのはこの一度だけです。シークレットストアに保管し、紛失した場合は失効させて新しく作成してください。',
+                'copy-btn' => 'コピー',
+                'copied' => 'トークンをコピーしました。',
+                'usage-info' => 'REST と GraphQL のリクエストの Authorization ヘッダーで Bearer トークンとして送信してください。',
+                'not-yet' => 'まだありません',
+                'revoke-confirm' => 'この API トークンを失効させますか?使用している連携はすぐに動作しなくなります。',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => '名前',
+                'admin' => '管理者',
+                'token' => 'トークン',
+                'domain' => 'ドメイン',
+                'expiry' => '有効期限',
+                'expires-at' => '失効日時',
+                'no-expiry-confirmation' => '無期限の確認',
+                'status' => 'ステータス',
+                'created-by' => '作成者',
+                'created-at' => '作成日時',
+                'last-used-at' => '最終使用日時',
+                'last-ip-address' => '最終 IP アドレス',
+                'last-user-agent' => '最終ユーザーエージェント',
+                'last-channel' => '最終チャネル',
+                'resolved-ips' => '解決済み IP アドレス',
+                'resolved-at' => '解決日時',
+                'domain-mismatches' => '他のドメインからのリクエスト',
+                'last-domain-mismatch-at' => '他のドメインからの最終リクエスト',
+                'revoked-at' => '失効日時',
+                'revoked-by' => '失効させた管理者',
+            ],
+
+            'datagrid' => [
+                'never' => 'なし',
+                'console' => 'コンソールコマンド',
+                'view' => '表示',
+                'revoke' => '失効',
+            ],
+
+            'status' => [
+                'active' => '有効',
+                'expired' => '期限切れ',
+                'revoked' => '失効済み',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'APIトークンを作成しました。',
+                'updated' => 'APIトークンを更新しました。',
+                'revoked' => 'APIトークンを失効させました。',
+            ],
+
+            'errors' => [
+                'no-permission' => 'APIトークンを管理する権限がありません。',
+                'not-found' => 'APIトークンが見つかりません。',
+                'cannot-create-for-admin' => 'この管理者の API トークンは作成できません。そのロールにあなたのロールにない権限があるか、他の管理者のトークンを管理する権限がありません。',
+                'cannot-manage' => 'この API トークンは管理できません。',
+                'already-revoked' => 'この API トークンはすでに失効しています。',
+                'invalid-name' => '名前は必須で、100 文字以内で入力してください。',
+                'invalid-domain' => 'erp.example.com のようなドメイン名を入力してください。IP アドレスとワイルドカードは使用できません。',
+                'expiry-required' => 'APIトークンには有効期限が必要です。',
+                'expiry-in-past' => '有効期限は未来の日付にしてください。',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'APIセッション',
+            ],
+
+            'acl' => [
+                'title' => 'APIセッション',
+                'delete' => '失効',
+            ],
+
+            'index' => [
+                'title' => 'APIセッション',
+                'info' => 'Web、モバイル、POS、デスクトップなどのアプリから管理 API にサインインしている管理者です。セッションを失効させると、その端末はすぐにサインアウトされます。',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => '管理者',
+                'device' => 'デバイス',
+                'client-type' => 'クライアント種別',
+                'ip-address' => 'ログイン IP アドレス',
+                'user-agent' => 'ログイン時のユーザーエージェント',
+                'last-ip-address' => '最終 IP アドレス',
+                'last-user-agent' => '最終ユーザーエージェント',
+                'last-used-at' => '最終使用日時',
+                'last-channel' => '最終チャネル',
+                'refresh-expires-at' => 'リフレッシュ期限',
+                'expires-at' => '有効期限',
+                'status' => 'ステータス',
+                'created-at' => 'ログイン日時',
+            ],
+
+            'datagrid' => [
+                'revoke' => '失効',
+                'revoke-all' => 'この管理者のすべてのセッションを失効',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'モバイル',
+                'pos' => 'POS',
+                'desktop' => 'デスクトップ',
+                'other' => 'その他',
+            ],
+
+            'errors' => [
+                'not-active' => 'このセッションはすでに失効しているか期限切れです。',
             ],
         ],
     ],

@@ -25,6 +25,20 @@ class AdminApiToken extends Model implements AdminApiTokenContract
     public const STATUS_REVOKED = 'revoked';
 
     /**
+     * Every status a token can have.
+     */
+    public const STATUSES = [
+        self::STATUS_ACTIVE,
+        self::STATUS_EXPIRED,
+        self::STATUS_REVOKED,
+    ];
+
+    /**
+     * The revoke reason of a token revoked by an admin in the panel or through the API.
+     */
+    public const REVOKED_BY_ADMIN = 'revoked_by_admin';
+
+    /**
      * The table.
      */
     protected $table = 'admin_api_tokens';

@@ -1689,10 +1689,165 @@ return [
             'password' => [
                 'reset' => 'Your password has been reset. Please log in again.',
             ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'API Tokens',
+            ],
 
             'acl' => [
-                'api-sessions' => 'API Sessions',
-                'revoke' => 'Revoke Sessions',
+                'title' => 'API Tokens',
+                'create' => 'Create',
+                'delete' => 'Revoke',
+                'manage-others' => 'Manage Other Admins\' Tokens',
+            ],
+
+            'index' => [
+                'title' => 'API Tokens',
+                'info' => 'Server integrations such as an ERP, PIM, warehouse or accounting system authenticate with API tokens. Each token acts as one admin user with that admin\'s role permissions, and works only from the domain it is bound to.',
+                'create-btn' => 'Create API Token',
+            ],
+
+            'create' => [
+                'title' => 'Create API Token',
+                'back-btn' => 'Back',
+                'save-btn' => 'Create Token',
+                'general' => 'General',
+                'expiry' => 'Expiry',
+                'admin-info' => 'The token acts as this admin user and has exactly the permissions of their role.',
+                'domain-info' => 'The host the integration calls from, such as erp.example.com. A URL is reduced to its host. IP addresses and wildcards are not accepted, and the domain cannot be changed later.',
+                'expires-on-date' => 'Expires on a date',
+                'never-expires' => 'Never expires',
+                'no-expiry-warning' => 'A token without expiry keeps working until it is revoked. Keep it in a secret store and revoke it as soon as it is no longer needed.',
+                'no-expiry-confirm' => 'I understand that this token never expires.',
+                'no-admins' => 'There is no admin user you may create an API token for.',
+            ],
+
+            'view' => [
+                'title' => 'API Token',
+                'back-btn' => 'Back',
+                'save-btn' => 'Save',
+                'revoke-btn' => 'Revoke',
+                'details' => 'Details',
+                'usage' => 'Usage',
+                'token-once-title' => 'Copy your API token now',
+                'token-once-info' => 'This is the only time the token is shown. Keep it in a secret store; if it is lost, revoke it and create a new one.',
+                'copy-btn' => 'Copy',
+                'copied' => 'The token has been copied.',
+                'usage-info' => 'Send it as a Bearer token in the Authorization header of REST and GraphQL requests.',
+                'not-yet' => 'Not yet',
+                'revoke-confirm' => 'Revoke this API token? The integration using it stops working at once.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Name',
+                'admin' => 'Admin User',
+                'token' => 'Token',
+                'domain' => 'Domain',
+                'expiry' => 'Expiry',
+                'expires-at' => 'Expires At',
+                'no-expiry-confirmation' => 'No expiry confirmation',
+                'status' => 'Status',
+                'created-by' => 'Created By',
+                'created-at' => 'Created At',
+                'last-used-at' => 'Last Used At',
+                'last-ip-address' => 'Last IP Address',
+                'last-user-agent' => 'Last User Agent',
+                'last-channel' => 'Last Channel',
+                'resolved-ips' => 'Resolved IP Addresses',
+                'resolved-at' => 'Resolved At',
+                'domain-mismatches' => 'Requests From Other Domains',
+                'last-domain-mismatch-at' => 'Last Request From Another Domain',
+                'revoked-at' => 'Revoked At',
+                'revoked-by' => 'Revoked By',
+            ],
+
+            'datagrid' => [
+                'never' => 'Never',
+                'console' => 'Console command',
+                'view' => 'View',
+                'revoke' => 'Revoke',
+            ],
+
+            'status' => [
+                'active' => 'Active',
+                'expired' => 'Expired',
+                'revoked' => 'Revoked',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'The API token has been created.',
+                'updated' => 'The API token has been updated.',
+                'revoked' => 'The API token has been revoked.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'You do not have permission to manage API tokens.',
+                'not-found' => 'API token not found.',
+                'cannot-create-for-admin' => 'You cannot create an API token for this admin user: their role has permissions yours does not, or you may not manage the tokens of other admins.',
+                'cannot-manage' => 'You cannot manage this API token.',
+                'already-revoked' => 'The API token is already revoked.',
+                'invalid-name' => 'The name is required and may have at most 100 characters.',
+                'invalid-domain' => 'Enter a domain name such as erp.example.com. IP addresses and wildcards are not accepted.',
+                'expiry-required' => 'API tokens must have an expiry date.',
+                'expiry-in-past' => 'The expiry date must be in the future.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'API Sessions',
+            ],
+
+            'acl' => [
+                'title' => 'API Sessions',
+                'delete' => 'Revoke',
+            ],
+
+            'index' => [
+                'title' => 'API Sessions',
+                'info' => 'Admin users signed in to the admin API from apps such as a web, mobile, POS or desktop app. Revoking a session signs that device out at once.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Admin User',
+                'device' => 'Device',
+                'client-type' => 'Client Type',
+                'ip-address' => 'Login IP Address',
+                'user-agent' => 'Login User Agent',
+                'last-ip-address' => 'Last IP Address',
+                'last-user-agent' => 'Last User Agent',
+                'last-used-at' => 'Last Used At',
+                'last-channel' => 'Last Channel',
+                'refresh-expires-at' => 'Refresh Expires At',
+                'expires-at' => 'Expires At',
+                'status' => 'Status',
+                'created-at' => 'Logged In At',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Revoke',
+                'revoke-all' => 'Revoke All Sessions of This Admin',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Mobile',
+                'pos' => 'POS',
+                'desktop' => 'Desktop',
+                'other' => 'Other',
+            ],
+
+            'errors' => [
+                'not-active' => 'This session is already revoked or expired.',
             ],
         ],
     ],

@@ -1689,10 +1689,165 @@ return [
             'password' => [
                 'reset' => 'Kata sandi Anda telah diatur ulang. Silakan login kembali.',
             ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'Token API',
+            ],
 
             'acl' => [
-                'api-sessions' => 'Sesi API',
-                'revoke' => 'Cabut Sesi',
+                'title' => 'Token API',
+                'create' => 'Buat',
+                'delete' => 'Cabut',
+                'manage-others' => 'Kelola Token Admin Lain',
+            ],
+
+            'index' => [
+                'title' => 'Token API',
+                'info' => 'Integrasi server seperti ERP, PIM, gudang, atau sistem akuntansi mengautentikasi dengan token API. Setiap token bertindak sebagai satu admin dengan izin perannya dan hanya berfungsi dari domain yang terikat padanya.',
+                'create-btn' => 'Buat Token API',
+            ],
+
+            'create' => [
+                'title' => 'Buat Token API',
+                'back-btn' => 'Kembali',
+                'save-btn' => 'Buat Token',
+                'general' => 'Umum',
+                'expiry' => 'Masa Berlaku',
+                'admin-info' => 'Token bertindak sebagai admin ini dan memiliki persis izin perannya.',
+                'domain-info' => 'Host tempat integrasi melakukan panggilan, misalnya erp.example.com. URL dipersingkat menjadi host-nya. Alamat IP dan wildcard tidak diterima, dan domain tidak dapat diubah nanti.',
+                'expires-on-date' => 'Kedaluwarsa pada tanggal',
+                'never-expires' => 'Tidak pernah kedaluwarsa',
+                'no-expiry-warning' => 'Token tanpa masa berlaku tetap berfungsi sampai dicabut. Simpan di penyimpanan rahasia dan cabut segera setelah tidak diperlukan.',
+                'no-expiry-confirm' => 'Saya mengerti bahwa token ini tidak pernah kedaluwarsa.',
+                'no-admins' => 'Tidak ada admin yang dapat Anda buatkan token API.',
+            ],
+
+            'view' => [
+                'title' => 'Token API',
+                'back-btn' => 'Kembali',
+                'save-btn' => 'Simpan',
+                'revoke-btn' => 'Cabut',
+                'details' => 'Detail',
+                'usage' => 'Penggunaan',
+                'token-once-title' => 'Salin token API Anda sekarang',
+                'token-once-info' => 'Ini satu-satunya saat token ditampilkan. Simpan di penyimpanan rahasia; jika hilang, cabut dan buat yang baru.',
+                'copy-btn' => 'Salin',
+                'copied' => 'Token telah disalin.',
+                'usage-info' => 'Kirim sebagai token Bearer di header Authorization pada permintaan REST dan GraphQL.',
+                'not-yet' => 'Belum',
+                'revoke-confirm' => 'Cabut token API ini? Integrasi yang menggunakannya langsung berhenti berfungsi.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Nama',
+                'admin' => 'Admin',
+                'token' => 'Token',
+                'domain' => 'Domain',
+                'expiry' => 'Masa Berlaku',
+                'expires-at' => 'Kedaluwarsa Pada',
+                'no-expiry-confirmation' => 'Konfirmasi tanpa masa berlaku',
+                'status' => 'Status',
+                'created-by' => 'Dibuat Oleh',
+                'created-at' => 'Dibuat Pada',
+                'last-used-at' => 'Terakhir Digunakan',
+                'last-ip-address' => 'Alamat IP Terakhir',
+                'last-user-agent' => 'User Agent Terakhir',
+                'last-channel' => 'Kanal Terakhir',
+                'resolved-ips' => 'Alamat IP Hasil Resolusi',
+                'resolved-at' => 'Diresolusi Pada',
+                'domain-mismatches' => 'Permintaan dari Domain Lain',
+                'last-domain-mismatch-at' => 'Permintaan Terakhir dari Domain Lain',
+                'revoked-at' => 'Dicabut Pada',
+                'revoked-by' => 'Dicabut Oleh',
+            ],
+
+            'datagrid' => [
+                'never' => 'Tidak pernah',
+                'console' => 'Perintah konsol',
+                'view' => 'Lihat',
+                'revoke' => 'Cabut',
+            ],
+
+            'status' => [
+                'active' => 'Aktif',
+                'expired' => 'Kedaluwarsa',
+                'revoked' => 'Dicabut',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'Token API telah dibuat.',
+                'updated' => 'Token API telah diperbarui.',
+                'revoked' => 'Token API telah dicabut.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Anda tidak memiliki izin untuk mengelola token API.',
+                'not-found' => 'Token API tidak ditemukan.',
+                'cannot-create-for-admin' => 'Anda tidak dapat membuat token API untuk admin ini: perannya memiliki izin yang tidak dimiliki peran Anda, atau Anda tidak boleh mengelola token admin lain.',
+                'cannot-manage' => 'Anda tidak dapat mengelola token API ini.',
+                'already-revoked' => 'Token API sudah dicabut.',
+                'invalid-name' => 'Nama wajib diisi dan paling banyak 100 karakter.',
+                'invalid-domain' => 'Masukkan nama domain seperti erp.example.com. Alamat IP dan wildcard tidak diterima.',
+                'expiry-required' => 'Token API harus memiliki tanggal kedaluwarsa.',
+                'expiry-in-past' => 'Tanggal kedaluwarsa harus di masa depan.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'Sesi API',
+            ],
+
+            'acl' => [
+                'title' => 'Sesi API',
+                'delete' => 'Cabut',
+            ],
+
+            'index' => [
+                'title' => 'Sesi API',
+                'info' => 'Admin yang masuk ke API admin dari aplikasi web, seluler, POS, atau desktop. Mencabut sesi langsung mengeluarkan perangkat tersebut.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Admin',
+                'device' => 'Perangkat',
+                'client-type' => 'Jenis Klien',
+                'ip-address' => 'Alamat IP Login',
+                'user-agent' => 'User Agent Login',
+                'last-ip-address' => 'Alamat IP Terakhir',
+                'last-user-agent' => 'User Agent Terakhir',
+                'last-used-at' => 'Terakhir Digunakan',
+                'last-channel' => 'Kanal Terakhir',
+                'refresh-expires-at' => 'Refresh Kedaluwarsa Pada',
+                'expires-at' => 'Kedaluwarsa Pada',
+                'status' => 'Status',
+                'created-at' => 'Masuk Pada',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Cabut',
+                'revoke-all' => 'Cabut Semua Sesi Admin Ini',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Seluler',
+                'pos' => 'POS',
+                'desktop' => 'Desktop',
+                'other' => 'Lainnya',
+            ],
+
+            'errors' => [
+                'not-active' => 'Sesi ini sudah dicabut atau kedaluwarsa.',
             ],
         ],
     ],

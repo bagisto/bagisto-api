@@ -1689,10 +1689,165 @@ return [
             'password' => [
                 'reset' => 'Tu contraseña se ha restablecido. Vuelve a iniciar sesión.',
             ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'Tokens de API',
+            ],
 
             'acl' => [
-                'api-sessions' => 'Sesiones de API',
-                'revoke' => 'Revocar sesiones',
+                'title' => 'Tokens de API',
+                'create' => 'Crear',
+                'delete' => 'Revocar',
+                'manage-others' => 'Gestionar los tokens de otros administradores',
+            ],
+
+            'index' => [
+                'title' => 'Tokens de API',
+                'info' => 'Las integraciones de servidor, como un ERP, PIM, almacén o sistema contable, se autentican con tokens de API. Cada token actúa como un administrador con los permisos de su rol y solo funciona desde el dominio al que está vinculado.',
+                'create-btn' => 'Crear token de API',
+            ],
+
+            'create' => [
+                'title' => 'Crear token de API',
+                'back-btn' => 'Volver',
+                'save-btn' => 'Crear token',
+                'general' => 'General',
+                'expiry' => 'Caducidad',
+                'admin-info' => 'El token actúa como este administrador y tiene exactamente los permisos de su rol.',
+                'domain-info' => 'El host desde el que llama la integración, como erp.example.com. Una URL se reduce a su host. No se aceptan direcciones IP ni comodines, y el dominio no se puede cambiar después.',
+                'expires-on-date' => 'Caduca en una fecha',
+                'never-expires' => 'Nunca caduca',
+                'no-expiry-warning' => 'Un token sin caducidad funciona hasta que se revoca. Guárdelo en un almacén de secretos y revóquelo en cuanto deje de necesitarse.',
+                'no-expiry-confirm' => 'Entiendo que este token nunca caduca.',
+                'no-admins' => 'No hay ningún administrador para el que pueda crear un token de API.',
+            ],
+
+            'view' => [
+                'title' => 'Token de API',
+                'back-btn' => 'Volver',
+                'save-btn' => 'Guardar',
+                'revoke-btn' => 'Revocar',
+                'details' => 'Detalles',
+                'usage' => 'Uso',
+                'token-once-title' => 'Copie ahora su token de API',
+                'token-once-info' => 'Esta es la única vez que se muestra el token. Guárdelo en un almacén de secretos; si se pierde, revóquelo y cree uno nuevo.',
+                'copy-btn' => 'Copiar',
+                'copied' => 'El token se ha copiado.',
+                'usage-info' => 'Envíelo como token Bearer en la cabecera Authorization de las solicitudes REST y GraphQL.',
+                'not-yet' => 'Todavía no',
+                'revoke-confirm' => '¿Revocar este token de API? La integración que lo usa deja de funcionar de inmediato.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Nombre',
+                'admin' => 'Administrador',
+                'token' => 'Token',
+                'domain' => 'Dominio',
+                'expiry' => 'Caducidad',
+                'expires-at' => 'Caduca el',
+                'no-expiry-confirmation' => 'Confirmación sin caducidad',
+                'status' => 'Estado',
+                'created-by' => 'Creado por',
+                'created-at' => 'Creado el',
+                'last-used-at' => 'Último uso el',
+                'last-ip-address' => 'Última dirección IP',
+                'last-user-agent' => 'Último agente de usuario',
+                'last-channel' => 'Último canal',
+                'resolved-ips' => 'Direcciones IP resueltas',
+                'resolved-at' => 'Resuelto el',
+                'domain-mismatches' => 'Solicitudes desde otros dominios',
+                'last-domain-mismatch-at' => 'Última solicitud desde otro dominio',
+                'revoked-at' => 'Revocado el',
+                'revoked-by' => 'Revocado por',
+            ],
+
+            'datagrid' => [
+                'never' => 'Nunca',
+                'console' => 'Comando de consola',
+                'view' => 'Ver',
+                'revoke' => 'Revocar',
+            ],
+
+            'status' => [
+                'active' => 'Activo',
+                'expired' => 'Caducado',
+                'revoked' => 'Revocado',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'El token de API se ha creado.',
+                'updated' => 'El token de API se ha actualizado.',
+                'revoked' => 'El token de API se ha revocado.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'No tiene permiso para gestionar tokens de API.',
+                'not-found' => 'Token de API no encontrado.',
+                'cannot-create-for-admin' => 'No puede crear un token de API para este administrador: su rol tiene permisos que el suyo no tiene, o no puede gestionar los tokens de otros administradores.',
+                'cannot-manage' => 'No puede gestionar este token de API.',
+                'already-revoked' => 'El token de API ya está revocado.',
+                'invalid-name' => 'El nombre es obligatorio y puede tener como máximo 100 caracteres.',
+                'invalid-domain' => 'Introduzca un nombre de dominio como erp.example.com. No se aceptan direcciones IP ni comodines.',
+                'expiry-required' => 'Los tokens de API deben tener una fecha de caducidad.',
+                'expiry-in-past' => 'La fecha de caducidad debe ser futura.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'Sesiones de API',
+            ],
+
+            'acl' => [
+                'title' => 'Sesiones de API',
+                'delete' => 'Revocar',
+            ],
+
+            'index' => [
+                'title' => 'Sesiones de API',
+                'info' => 'Administradores que han iniciado sesión en la API de administración desde aplicaciones web, móviles, de punto de venta o de escritorio. Revocar una sesión cierra la sesión de ese dispositivo de inmediato.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Administrador',
+                'device' => 'Dispositivo',
+                'client-type' => 'Tipo de cliente',
+                'ip-address' => 'IP de inicio de sesión',
+                'user-agent' => 'Agente de usuario de inicio de sesión',
+                'last-ip-address' => 'Última dirección IP',
+                'last-user-agent' => 'Último agente de usuario',
+                'last-used-at' => 'Último uso el',
+                'last-channel' => 'Último canal',
+                'refresh-expires-at' => 'Actualización caduca el',
+                'expires-at' => 'Caduca el',
+                'status' => 'Estado',
+                'created-at' => 'Sesión iniciada el',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Revocar',
+                'revoke-all' => 'Revocar todas las sesiones de este administrador',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Móvil',
+                'pos' => 'Punto de venta',
+                'desktop' => 'Escritorio',
+                'other' => 'Otro',
+            ],
+
+            'errors' => [
+                'not-active' => 'Esta sesión ya está revocada o ha caducado.',
             ],
         ],
     ],

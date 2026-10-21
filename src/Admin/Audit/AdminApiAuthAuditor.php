@@ -93,6 +93,21 @@ class AdminApiAuthAuditor
     public const EVENT_CREDENTIALS_AUTO_REVOKED = 'credentials_auto_revoked';
 
     /**
+     * The event of an API token created in the panel or with the console command.
+     */
+    public const EVENT_API_TOKEN_CREATED = 'api_token_created';
+
+    /**
+     * The event of an API token given a new name.
+     */
+    public const EVENT_API_TOKEN_RENAMED = 'api_token_renamed';
+
+    /**
+     * The event of an API token revoked by an admin.
+     */
+    public const EVENT_API_TOKEN_REVOKED = 'api_token_revoked';
+
+    /**
      * The tag every authentication audit row carries.
      */
     public const TAG = 'auth';
@@ -132,13 +147,27 @@ class AdminApiAuthAuditor
             'token_id' => $subject?->getKey(),
             'token_name' => $subject?->name,
             'token_kind' => $this->tokenKind($subject),
-            'channel' => AdminAuthHelper::channel($request),
+            'channel' => $this->channel($request),
             'method' => $request->method(),
             'url' => $request->fullUrl(),
             'ip_address' => $request->ip(),
             'user_agent' => Str::limit((string) $request->userAgent(), 1000, ''),
             'tags' => self::TAG,
         ]);
+    }
+
+    /**
+     * The channel of the request: rest or graphql for the API, panel for the admin panel, cli without a route.
+     */
+    protected function channel(Request $request): string
+    {
+        if ($request->route() === null) {
+            return AdminApiAudit::CHANNEL_CLI;
+        }
+
+        return $request->is('api/*')
+            ? AdminAuthHelper::channel($request)
+            : AdminApiAudit::CHANNEL_PANEL;
     }
 
     /**

@@ -72,13 +72,44 @@ return [
 
         'sort' => 2,
     ], [
-        'key' => 'settings.api_sessions',
-        'name' => 'bagistoapi::app.admin.auth.acl.api-sessions',
-        'route' => 'admin.settings.api_sessions.index',
+        'key' => 'settings.api_tokens',
+        'name' => 'bagistoapi::app.admin.api-tokens.acl.title',
+
+        'route' => [
+            'admin.settings.api_tokens.index',
+            'admin.settings.api_tokens.view',
+        ],
+
         'sort' => 11,
     ], [
+        'key' => 'settings.api_tokens.create',
+        'name' => 'bagistoapi::app.admin.api-tokens.acl.create',
+
+        'route' => [
+            'admin.settings.api_tokens.create',
+            'admin.settings.api_tokens.store',
+            'admin.settings.api_tokens.update',
+        ],
+
+        'sort' => 1,
+    ], [
+        'key' => 'settings.api_tokens.delete',
+        'name' => 'bagistoapi::app.admin.api-tokens.acl.delete',
+        'route' => 'admin.settings.api_tokens.delete',
+        'sort' => 2,
+    ], [
+        'key' => 'settings.api_tokens.manage_others',
+        'name' => 'bagistoapi::app.admin.api-tokens.acl.manage-others',
+        'route' => [],
+        'sort' => 3,
+    ], [
+        'key' => 'settings.api_sessions',
+        'name' => 'bagistoapi::app.admin.api-sessions.acl.title',
+        'route' => 'admin.settings.api_sessions.index',
+        'sort' => 12,
+    ], [
         'key' => 'settings.api_sessions.delete',
-        'name' => 'bagistoapi::app.admin.auth.acl.revoke',
+        'name' => 'bagistoapi::app.admin.api-sessions.acl.delete',
 
         'route' => [
             'admin.settings.api_sessions.delete',

@@ -1689,10 +1689,165 @@ return [
             'password' => [
                 'reset' => 'La tua password è stata reimpostata. Accedi di nuovo.',
             ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'Token API',
+            ],
 
             'acl' => [
-                'api-sessions' => 'Sessioni API',
-                'revoke' => 'Revoca sessioni',
+                'title' => 'Token API',
+                'create' => 'Crea',
+                'delete' => 'Revoca',
+                'manage-others' => 'Gestisci i token degli altri amministratori',
+            ],
+
+            'index' => [
+                'title' => 'Token API',
+                'info' => 'Le integrazioni server, come un ERP, un PIM, un magazzino o un sistema contabile, si autenticano con token API. Ogni token agisce come un amministratore con i permessi del suo ruolo e funziona solo dal dominio a cui è associato.',
+                'create-btn' => 'Crea token API',
+            ],
+
+            'create' => [
+                'title' => 'Crea token API',
+                'back-btn' => 'Indietro',
+                'save-btn' => 'Crea token',
+                'general' => 'Generale',
+                'expiry' => 'Scadenza',
+                'admin-info' => 'Il token agisce come questo amministratore e ha esattamente i permessi del suo ruolo.',
+                'domain-info' => 'L\'host da cui chiama l\'integrazione, ad esempio erp.example.com. Un URL viene ridotto al suo host. Indirizzi IP e caratteri jolly non sono accettati e il dominio non può essere modificato in seguito.',
+                'expires-on-date' => 'Scade in una data',
+                'never-expires' => 'Non scade mai',
+                'no-expiry-warning' => 'Un token senza scadenza funziona finché non viene revocato. Conservalo in un archivio di segreti e revocalo appena non serve più.',
+                'no-expiry-confirm' => 'Ho capito che questo token non scade mai.',
+                'no-admins' => 'Non c\'è alcun amministratore per cui puoi creare un token API.',
+            ],
+
+            'view' => [
+                'title' => 'Token API',
+                'back-btn' => 'Indietro',
+                'save-btn' => 'Salva',
+                'revoke-btn' => 'Revoca',
+                'details' => 'Dettagli',
+                'usage' => 'Utilizzo',
+                'token-once-title' => 'Copia ora il tuo token API',
+                'token-once-info' => 'È l\'unica volta in cui il token viene mostrato. Conservalo in un archivio di segreti; se viene perso, revocalo e creane uno nuovo.',
+                'copy-btn' => 'Copia',
+                'copied' => 'Il token è stato copiato.',
+                'usage-info' => 'Invialo come token Bearer nell\'intestazione Authorization delle richieste REST e GraphQL.',
+                'not-yet' => 'Non ancora',
+                'revoke-confirm' => 'Revocare questo token API? L\'integrazione che lo usa smette subito di funzionare.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Nome',
+                'admin' => 'Amministratore',
+                'token' => 'Token',
+                'domain' => 'Dominio',
+                'expiry' => 'Scadenza',
+                'expires-at' => 'Scade il',
+                'no-expiry-confirmation' => 'Conferma senza scadenza',
+                'status' => 'Stato',
+                'created-by' => 'Creato da',
+                'created-at' => 'Creato il',
+                'last-used-at' => 'Ultimo utilizzo il',
+                'last-ip-address' => 'Ultimo indirizzo IP',
+                'last-user-agent' => 'Ultimo user agent',
+                'last-channel' => 'Ultimo canale',
+                'resolved-ips' => 'Indirizzi IP risolti',
+                'resolved-at' => 'Risolto il',
+                'domain-mismatches' => 'Richieste da altri domini',
+                'last-domain-mismatch-at' => 'Ultima richiesta da un altro dominio',
+                'revoked-at' => 'Revocato il',
+                'revoked-by' => 'Revocato da',
+            ],
+
+            'datagrid' => [
+                'never' => 'Mai',
+                'console' => 'Comando da console',
+                'view' => 'Visualizza',
+                'revoke' => 'Revoca',
+            ],
+
+            'status' => [
+                'active' => 'Attivo',
+                'expired' => 'Scaduto',
+                'revoked' => 'Revocato',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'Il token API è stato creato.',
+                'updated' => 'Il token API è stato aggiornato.',
+                'revoked' => 'Il token API è stato revocato.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Non hai il permesso di gestire i token API.',
+                'not-found' => 'Token API non trovato.',
+                'cannot-create-for-admin' => 'Non puoi creare un token API per questo amministratore: il suo ruolo ha permessi che il tuo non ha, oppure non puoi gestire i token degli altri amministratori.',
+                'cannot-manage' => 'Non puoi gestire questo token API.',
+                'already-revoked' => 'Il token API è già revocato.',
+                'invalid-name' => 'Il nome è obbligatorio e può avere al massimo 100 caratteri.',
+                'invalid-domain' => 'Inserisci un nome di dominio come erp.example.com. Indirizzi IP e caratteri jolly non sono accettati.',
+                'expiry-required' => 'I token API devono avere una data di scadenza.',
+                'expiry-in-past' => 'La data di scadenza deve essere nel futuro.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'Sessioni API',
+            ],
+
+            'acl' => [
+                'title' => 'Sessioni API',
+                'delete' => 'Revoca',
+            ],
+
+            'index' => [
+                'title' => 'Sessioni API',
+                'info' => 'Amministratori collegati all\'API di amministrazione da app web, mobili, POS o desktop. Revocare una sessione disconnette subito quel dispositivo.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Amministratore',
+                'device' => 'Dispositivo',
+                'client-type' => 'Tipo di client',
+                'ip-address' => 'IP di accesso',
+                'user-agent' => 'User agent di accesso',
+                'last-ip-address' => 'Ultimo indirizzo IP',
+                'last-user-agent' => 'Ultimo user agent',
+                'last-used-at' => 'Ultimo utilizzo il',
+                'last-channel' => 'Ultimo canale',
+                'refresh-expires-at' => 'Refresh scade il',
+                'expires-at' => 'Scade il',
+                'status' => 'Stato',
+                'created-at' => 'Accesso il',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Revoca',
+                'revoke-all' => 'Revoca tutte le sessioni di questo amministratore',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Mobile',
+                'pos' => 'POS',
+                'desktop' => 'Desktop',
+                'other' => 'Altro',
+            ],
+
+            'errors' => [
+                'not-active' => 'Questa sessione è già revocata o scaduta.',
             ],
         ],
     ],

@@ -1689,10 +1689,165 @@ return [
             'password' => [
                 'reset' => 'Twoje hasło zostało zresetowane. Zaloguj się ponownie.',
             ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'Tokeny API',
+            ],
 
             'acl' => [
-                'api-sessions' => 'Sesje API',
-                'revoke' => 'Unieważnij sesje',
+                'title' => 'Tokeny API',
+                'create' => 'Utwórz',
+                'delete' => 'Unieważnij',
+                'manage-others' => 'Zarządzaj tokenami innych administratorów',
+            ],
+
+            'index' => [
+                'title' => 'Tokeny API',
+                'info' => 'Integracje serwerowe, takie jak system ERP, PIM, magazynowy lub księgowy, uwierzytelniają się tokenami API. Każdy token działa jako jeden administrator z uprawnieniami jego roli i działa tylko z domeny, do której jest przypisany.',
+                'create-btn' => 'Utwórz token API',
+            ],
+
+            'create' => [
+                'title' => 'Utwórz token API',
+                'back-btn' => 'Wstecz',
+                'save-btn' => 'Utwórz token',
+                'general' => 'Ogólne',
+                'expiry' => 'Wygaśnięcie',
+                'admin-info' => 'Token działa jako ten administrator i ma dokładnie uprawnienia jego roli.',
+                'domain-info' => 'Host, z którego wywołuje integracja, np. erp.example.com. Adres URL jest skracany do hosta. Adresy IP i symbole wieloznaczne nie są akceptowane, a domeny nie można później zmienić.',
+                'expires-on-date' => 'Wygasa w dniu',
+                'never-expires' => 'Nigdy nie wygasa',
+                'no-expiry-warning' => 'Token bez daty wygaśnięcia działa, dopóki nie zostanie unieważniony. Przechowuj go w sejfie sekretów i unieważnij, gdy tylko przestanie być potrzebny.',
+                'no-expiry-confirm' => 'Rozumiem, że ten token nigdy nie wygasa.',
+                'no-admins' => 'Nie ma administratora, dla którego możesz utworzyć token API.',
+            ],
+
+            'view' => [
+                'title' => 'Token API',
+                'back-btn' => 'Wstecz',
+                'save-btn' => 'Zapisz',
+                'revoke-btn' => 'Unieważnij',
+                'details' => 'Szczegóły',
+                'usage' => 'Użycie',
+                'token-once-title' => 'Skopiuj teraz swój token API',
+                'token-once-info' => 'To jedyny raz, kiedy token jest wyświetlany. Przechowuj go w sejfie sekretów; jeśli go zgubisz, unieważnij go i utwórz nowy.',
+                'copy-btn' => 'Kopiuj',
+                'copied' => 'Token został skopiowany.',
+                'usage-info' => 'Wysyłaj go jako token Bearer w nagłówku Authorization żądań REST i GraphQL.',
+                'not-yet' => 'Jeszcze nie',
+                'revoke-confirm' => 'Unieważnić ten token API? Integracja, która go używa, natychmiast przestanie działać.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Nazwa',
+                'admin' => 'Administrator',
+                'token' => 'Token',
+                'domain' => 'Domena',
+                'expiry' => 'Wygaśnięcie',
+                'expires-at' => 'Wygasa',
+                'no-expiry-confirmation' => 'Potwierdzenie braku wygaśnięcia',
+                'status' => 'Status',
+                'created-by' => 'Utworzony przez',
+                'created-at' => 'Utworzono',
+                'last-used-at' => 'Ostatnio użyty',
+                'last-ip-address' => 'Ostatni adres IP',
+                'last-user-agent' => 'Ostatni user agent',
+                'last-channel' => 'Ostatni kanał',
+                'resolved-ips' => 'Rozwiązane adresy IP',
+                'resolved-at' => 'Rozwiązano',
+                'domain-mismatches' => 'Żądania z innych domen',
+                'last-domain-mismatch-at' => 'Ostatnie żądanie z innej domeny',
+                'revoked-at' => 'Unieważniono',
+                'revoked-by' => 'Unieważnił',
+            ],
+
+            'datagrid' => [
+                'never' => 'Nigdy',
+                'console' => 'Polecenie konsoli',
+                'view' => 'Wyświetl',
+                'revoke' => 'Unieważnij',
+            ],
+
+            'status' => [
+                'active' => 'Aktywny',
+                'expired' => 'Wygasły',
+                'revoked' => 'Unieważniony',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'Token API został utworzony.',
+                'updated' => 'Token API został zaktualizowany.',
+                'revoked' => 'Token API został unieważniony.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Nie masz uprawnień do zarządzania tokenami API.',
+                'not-found' => 'Nie znaleziono tokenu API.',
+                'cannot-create-for-admin' => 'Nie możesz utworzyć tokenu API dla tego administratora: jego rola ma uprawnienia, których nie ma Twoja, albo nie możesz zarządzać tokenami innych administratorów.',
+                'cannot-manage' => 'Nie możesz zarządzać tym tokenem API.',
+                'already-revoked' => 'Token API jest już unieważniony.',
+                'invalid-name' => 'Nazwa jest wymagana i może mieć najwyżej 100 znaków.',
+                'invalid-domain' => 'Wpisz nazwę domeny, np. erp.example.com. Adresy IP i symbole wieloznaczne nie są akceptowane.',
+                'expiry-required' => 'Tokeny API muszą mieć datę wygaśnięcia.',
+                'expiry-in-past' => 'Data wygaśnięcia musi być w przyszłości.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'Sesje API',
+            ],
+
+            'acl' => [
+                'title' => 'Sesje API',
+                'delete' => 'Unieważnij',
+            ],
+
+            'index' => [
+                'title' => 'Sesje API',
+                'info' => 'Administratorzy zalogowani do API administracyjnego z aplikacji webowych, mobilnych, POS lub desktopowych. Unieważnienie sesji natychmiast wylogowuje to urządzenie.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Administrator',
+                'device' => 'Urządzenie',
+                'client-type' => 'Typ klienta',
+                'ip-address' => 'Adres IP logowania',
+                'user-agent' => 'User agent logowania',
+                'last-ip-address' => 'Ostatni adres IP',
+                'last-user-agent' => 'Ostatni user agent',
+                'last-used-at' => 'Ostatnio użyta',
+                'last-channel' => 'Ostatni kanał',
+                'refresh-expires-at' => 'Odświeżenie wygasa',
+                'expires-at' => 'Wygasa',
+                'status' => 'Status',
+                'created-at' => 'Zalogowano',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Unieważnij',
+                'revoke-all' => 'Unieważnij wszystkie sesje tego administratora',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Mobilna',
+                'pos' => 'POS',
+                'desktop' => 'Desktop',
+                'other' => 'Inna',
+            ],
+
+            'errors' => [
+                'not-active' => 'Ta sesja jest już unieważniona lub wygasła.',
             ],
         ],
     ],

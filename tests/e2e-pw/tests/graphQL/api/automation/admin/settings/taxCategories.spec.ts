@@ -135,7 +135,7 @@ test.describe('admin settings tax categories graphql api', () => {
 
     const node = dataOf(await gql(request, CATEGORY_DETAIL, { id: CATEGORY_IRI(category._id) }), 'adminSettingsTaxCategory');
     expect(node).toEqual(expect.objectContaining({ _id: category._id, code: category.code, name: category.name, description: 'e2e description' }));
-    expect(node.taxRates.edges.map((edge: any) => edge.node)).toEqual([{ _id: rate._id, identifier: rate.identifier, taxRate: 8.5 }]);
+    expect(node.taxRates.edges.map((edge: any) => edge.node)).toEqual([{ _id: rate._id, identifier: rate.identifier, taxRate: '8.5' }]);
   });
 
   test('detail of an unknown category reports not found', async ({ request }) => {

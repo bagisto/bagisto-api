@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'O token de API foi revogado.',
                 'api-token-domain-mismatch' => 'O token de API não pode ser usado a partir deste domínio.',
                 'access-token-required' => 'Esta ação precisa do token de acesso de uma sessão de login; tokens de API não podem usá-la.',
-                'two-factor-required' => 'A autenticação de dois fatores está ativada para esta conta, e o login na API com um segundo fator ainda não está disponível.',
+                'two-factor-required' => 'Digite o código de 6 dígitos do seu aplicativo autenticador, ou um dos seus códigos de backup, para concluir o login.',
                 'too-many-login-attempts' => 'Muitas tentativas de login. Tente novamente em :seconds segundos.',
+                'two-factor-challenge-invalid' => 'O desafio de dois fatores é inválido ou expirou. Faça login novamente.',
+                'two-factor-attempts-exceeded' => 'Muitos códigos incorretos. Faça login novamente.',
+                'password-reset-token-invalid' => 'Este token de redefinição de senha é inválido ou expirou.',
+                'too-many-password-requests' => 'Muitas solicitações de senha. Tente novamente em :seconds segundos.',
                 'rate-limit-exceeded' => 'Muitas tentativas.',
                 'no-permission' => 'Você não tem permissão para gerenciar as sessões da API de administração.',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => 'Sessão não encontrada.',
                 'revoked' => 'A sessão foi revogada.',
                 'revoked-for-admin' => 'Sessões revogadas: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'Sua senha foi redefinida. Faça login novamente.',
             ],
 
             'acl' => [

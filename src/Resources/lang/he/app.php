@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'אסימון ה-API בוטל.',
                 'api-token-domain-mismatch' => 'לא ניתן להשתמש באסימון ה-API מדומיין זה.',
                 'access-token-required' => 'פעולה זו דורשת את אסימון הגישה של סשן התחברות; אסימוני API אינם יכולים להשתמש בה.',
-                'two-factor-required' => 'אימות דו-שלבי מופעל עבור חשבון זה, והתחברות ל-API עם גורם שני עדיין אינה זמינה.',
+                'two-factor-required' => 'הזינו את הקוד בן 6 הספרות מאפליקציית האימות, או אחד מקודי הגיבוי שלכם, כדי להשלים את ההתחברות.',
                 'too-many-login-attempts' => 'יותר מדי ניסיונות התחברות. נסה שוב בעוד :seconds שניות.',
+                'two-factor-challenge-invalid' => 'אתגר האימות הדו-שלבי אינו תקף או שפג תוקפו. נא להתחבר שוב.',
+                'two-factor-attempts-exceeded' => 'יותר מדי קודים שגויים. נא להתחבר שוב.',
+                'password-reset-token-invalid' => 'אסימון איפוס הסיסמה הזה אינו תקף או שפג תוקפו.',
+                'too-many-password-requests' => 'יותר מדי בקשות סיסמה. נא לנסות שוב בעוד :seconds שניות.',
                 'rate-limit-exceeded' => 'יותר מדי ניסיונות.',
                 'no-permission' => 'אין לך הרשאה לנהל סשנים של API המנהלים.',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => 'הסשן לא נמצא.',
                 'revoked' => 'הסשן בוטל.',
                 'revoked-for-admin' => 'סשנים שבוטלו: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'הסיסמה שלכם אופסה. נא להתחבר שוב.',
             ],
 
             'acl' => [

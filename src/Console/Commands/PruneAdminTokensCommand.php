@@ -15,7 +15,7 @@ class PruneAdminTokensCommand extends Command
     /**
      * The description.
      */
-    protected $description = 'Delete expired admin API refresh tokens, long-ended sessions and retired JWT keys no longer needed.';
+    protected $description = 'Delete expired admin API refresh tokens and two-factor challenges, long-ended sessions and retired JWT keys no longer needed.';
 
     /**
      * Handle the command.
@@ -24,7 +24,7 @@ class PruneAdminTokensCommand extends Command
     {
         $pruned = $tokenService->prune();
 
-        $this->info("Pruned {$pruned['refresh_tokens']} refresh token(s) and {$pruned['sessions']} session(s).");
+        $this->info("Pruned {$pruned['refresh_tokens']} refresh token(s), {$pruned['sessions']} session(s) and {$pruned['two_factor_challenges']} two-factor challenge(s).");
 
         foreach ($pruned['keys'] as $kid) {
             $this->info("Dropped the retired JWT key {$kid}.");

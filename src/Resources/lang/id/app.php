@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'Token API telah dicabut.',
                 'api-token-domain-mismatch' => 'Token API tidak dapat digunakan dari domain ini.',
                 'access-token-required' => 'Tindakan ini memerlukan token akses dari sesi login; token API tidak dapat menggunakannya.',
-                'two-factor-required' => 'Autentikasi dua faktor aktif untuk akun ini, dan login API dengan faktor kedua belum tersedia.',
+                'two-factor-required' => 'Masukkan kode 6 digit dari aplikasi autentikator Anda, atau salah satu kode cadangan Anda, untuk menyelesaikan login.',
                 'too-many-login-attempts' => 'Terlalu banyak percobaan login. Silakan coba lagi dalam :seconds detik.',
+                'two-factor-challenge-invalid' => 'Tantangan dua faktor tidak valid atau telah kedaluwarsa. Silakan login kembali.',
+                'two-factor-attempts-exceeded' => 'Terlalu banyak kode yang salah. Silakan login kembali.',
+                'password-reset-token-invalid' => 'Token pengaturan ulang kata sandi ini tidak valid atau telah kedaluwarsa.',
+                'too-many-password-requests' => 'Terlalu banyak permintaan kata sandi. Silakan coba lagi dalam :seconds detik.',
                 'rate-limit-exceeded' => 'Terlalu banyak percobaan.',
                 'no-permission' => 'Anda tidak memiliki izin untuk mengelola sesi API admin.',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => 'Sesi tidak ditemukan.',
                 'revoked' => 'Sesi telah dicabut.',
                 'revoked-for-admin' => 'Sesi yang dicabut: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'Kata sandi Anda telah diatur ulang. Silakan login kembali.',
             ],
 
             'acl' => [

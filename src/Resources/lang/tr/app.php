@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'API belirteci iptal edildi.',
                 'api-token-domain-mismatch' => 'API belirteci bu alan adından kullanılamaz.',
                 'access-token-required' => 'Bu işlem bir oturum açma oturumunun erişim belirtecini gerektirir; API belirteçleri bunu kullanamaz.',
-                'two-factor-required' => 'Bu hesap için iki faktörlü kimlik doğrulama etkin ve ikinci faktörle API girişi henüz kullanılamıyor.',
+                'two-factor-required' => 'Girişi tamamlamak için kimlik doğrulama uygulamanızdaki 6 haneli kodu veya yedek kodlarınızdan birini girin.',
                 'too-many-login-attempts' => 'Çok fazla giriş denemesi. Lütfen :seconds saniye sonra tekrar deneyin.',
+                'two-factor-challenge-invalid' => 'İki faktörlü doğrulama isteği geçersiz veya süresi dolmuş. Lütfen yeniden giriş yapın.',
+                'two-factor-attempts-exceeded' => 'Çok fazla hatalı kod. Lütfen yeniden giriş yapın.',
+                'password-reset-token-invalid' => 'Bu parola sıfırlama belirteci geçersiz veya süresi dolmuş.',
+                'too-many-password-requests' => 'Çok fazla parola isteği. Lütfen :seconds saniye sonra tekrar deneyin.',
                 'rate-limit-exceeded' => 'Çok fazla deneme.',
                 'no-permission' => 'Yönetici API oturumlarını yönetme izniniz yok.',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => 'Oturum bulunamadı.',
                 'revoked' => 'Oturum iptal edildi.',
                 'revoked-for-admin' => 'İptal edilen oturumlar: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'Parolanız sıfırlandı. Lütfen yeniden giriş yapın.',
             ],
 
             'acl' => [

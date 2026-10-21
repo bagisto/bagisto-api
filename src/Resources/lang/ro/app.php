@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'Tokenul API a fost revocat.',
                 'api-token-domain-mismatch' => 'Tokenul API nu poate fi folosit de pe acest domeniu.',
                 'access-token-required' => 'Această acțiune necesită tokenul de acces al unei sesiuni de autentificare; tokenurile API nu o pot folosi.',
-                'two-factor-required' => 'Autentificarea în doi pași este activată pentru acest cont, iar autentificarea în API cu un al doilea factor nu este încă disponibilă.',
+                'two-factor-required' => 'Introduceți codul de 6 cifre din aplicația de autentificare sau unul dintre codurile de rezervă pentru a finaliza conectarea.',
                 'too-many-login-attempts' => 'Prea multe încercări de autentificare. Încercați din nou peste :seconds secunde.',
+                'two-factor-challenge-invalid' => 'Verificarea în doi pași nu este validă sau a expirat. Vă rugăm să vă conectați din nou.',
+                'two-factor-attempts-exceeded' => 'Prea multe coduri greșite. Vă rugăm să vă conectați din nou.',
+                'password-reset-token-invalid' => 'Acest token de resetare a parolei nu este valid sau a expirat.',
+                'too-many-password-requests' => 'Prea multe solicitări de parolă. Vă rugăm să încercați din nou peste :seconds secunde.',
                 'rate-limit-exceeded' => 'Prea multe încercări.',
                 'no-permission' => 'Nu aveți permisiunea de a gestiona sesiunile API ale administratorilor.',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => 'Sesiunea nu a fost găsită.',
                 'revoked' => 'Sesiunea a fost revocată.',
                 'revoked-for-admin' => 'Sesiuni revocate: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'Parola a fost resetată. Vă rugăm să vă conectați din nou.',
             ],
 
             'acl' => [

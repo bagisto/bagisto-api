@@ -55,9 +55,29 @@ class AdminAuthException extends \Exception implements ClientAware, HttpExceptio
     public const CODE_ACCOUNT_INACTIVE = 'account_inactive';
 
     /**
-     * The machine-readable code of a login that needs a second factor.
+     * The machine-readable code of a wrong two-factor or backup code.
      */
-    public const CODE_TWO_FACTOR_REQUIRED = 'two_factor_required';
+    public const CODE_INVALID_TWO_FACTOR_CODE = 'invalid_two_factor_code';
+
+    /**
+     * The machine-readable code of a two-factor challenge that is unknown, used, revoked or expired.
+     */
+    public const CODE_TWO_FACTOR_CHALLENGE_INVALID = 'two_factor_challenge_invalid';
+
+    /**
+     * The machine-readable code of a wrong current password on an account update.
+     */
+    public const CODE_INVALID_CURRENT_PASSWORD = 'invalid_current_password';
+
+    /**
+     * The machine-readable code of a password reset link or token that cannot be used.
+     */
+    public const CODE_PASSWORD_RESET_TOKEN_INVALID = 'password_reset_token_invalid';
+
+    /**
+     * The machine-readable code of too many forgot or reset password requests.
+     */
+    public const CODE_TOO_MANY_PASSWORD_REQUESTS = 'too_many_password_requests';
 
     /**
      * The machine-readable code of too many failed logins.
@@ -159,6 +179,7 @@ class AdminAuthException extends \Exception implements ClientAware, HttpExceptio
     {
         return match ($this->status) {
             403 => 'Forbidden',
+            422 => 'Unprocessable Content',
             429 => 'Too Many Requests',
             default => 'Unauthorized',
         };

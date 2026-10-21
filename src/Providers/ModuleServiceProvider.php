@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Providers;
 use Webkul\BagistoApi\Admin\Models\AdminApiRefreshToken;
 use Webkul\BagistoApi\Admin\Models\AdminApiSession;
 use Webkul\BagistoApi\Admin\Models\AdminApiToken;
+use Webkul\BagistoApi\Admin\Models\AdminApiTwoFactorChallenge;
 use Webkul\BagistoApi\Models\GuestCartTokens;
 use Webkul\Core\Providers\CoreModuleServiceProvider;
 
@@ -20,6 +21,7 @@ class ModuleServiceProvider extends CoreModuleServiceProvider
         AdminApiSession::class,
         AdminApiRefreshToken::class,
         AdminApiToken::class,
+        AdminApiTwoFactorChallenge::class,
     ];
 
     /**

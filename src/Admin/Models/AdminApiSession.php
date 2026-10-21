@@ -85,6 +85,11 @@ class AdminApiSession extends Model implements AdminApiSessionContract
     public const REVOKED_PASSWORD_CHANGE = 'password_change';
 
     /**
+     * The revoke reason when the admin resets a forgotten password.
+     */
+    public const REVOKED_PASSWORD_RESET = 'password_reset';
+
+    /**
      * The revoke reason when the admin is deactivated.
      */
     public const REVOKED_DEACTIVATED = 'deactivated';

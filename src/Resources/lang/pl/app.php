@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'Token API został unieważniony.',
                 'api-token-domain-mismatch' => 'Tokenu API nie można używać z tej domeny.',
                 'access-token-required' => 'Ta operacja wymaga tokenu dostępu sesji logowania; tokeny API nie mogą z niej korzystać.',
-                'two-factor-required' => 'Dla tego konta włączone jest uwierzytelnianie dwuskładnikowe, a logowanie do API z drugim składnikiem nie jest jeszcze dostępne.',
+                'two-factor-required' => 'Wprowadź 6-cyfrowy kod z aplikacji uwierzytelniającej lub jeden z kodów zapasowych, aby dokończyć logowanie.',
                 'too-many-login-attempts' => 'Zbyt wiele prób logowania. Spróbuj ponownie za :seconds s.',
+                'two-factor-challenge-invalid' => 'Wyzwanie uwierzytelniania dwuskładnikowego jest nieprawidłowe lub wygasło. Zaloguj się ponownie.',
+                'two-factor-attempts-exceeded' => 'Zbyt wiele błędnych kodów. Zaloguj się ponownie.',
+                'password-reset-token-invalid' => 'Ten token resetowania hasła jest nieprawidłowy lub wygasł.',
+                'too-many-password-requests' => 'Zbyt wiele żądań dotyczących hasła. Spróbuj ponownie za :seconds s.',
                 'rate-limit-exceeded' => 'Zbyt wiele prób.',
                 'no-permission' => 'Nie masz uprawnień do zarządzania sesjami API administratorów.',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => 'Nie znaleziono sesji.',
                 'revoked' => 'Sesja została unieważniona.',
                 'revoked-for-admin' => 'Unieważnione sesje: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'Twoje hasło zostało zresetowane. Zaloguj się ponownie.',
             ],
 
             'acl' => [

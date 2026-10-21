@@ -63,6 +63,36 @@ class AdminApiAuthAuditor
     public const EVENT_DOMAIN_MISMATCH = 'domain_mismatch';
 
     /**
+     * The audit event of a password accepted for an admin who must still pass a second factor.
+     */
+    public const EVENT_TWO_FACTOR_CHALLENGE = 'two_factor_challenge';
+
+    /**
+     * The audit event of a wrong two-factor or backup code.
+     */
+    public const EVENT_TWO_FACTOR_FAILED = 'two_factor_failed';
+
+    /**
+     * The audit event of a forgot password request.
+     */
+    public const EVENT_PASSWORD_RESET_REQUESTED = 'password_reset_requested';
+
+    /**
+     * The audit event of a password reset with a reset token.
+     */
+    public const EVENT_PASSWORD_RESET = 'password_reset';
+
+    /**
+     * The audit event of an admin updating their own account.
+     */
+    public const EVENT_ACCOUNT_UPDATED = 'account_updated';
+
+    /**
+     * The audit event of sessions or API tokens revoked by a password change, deactivation or reset.
+     */
+    public const EVENT_CREDENTIALS_AUTO_REVOKED = 'credentials_auto_revoked';
+
+    /**
      * The tag every authentication audit row carries.
      */
     public const TAG = 'auth';

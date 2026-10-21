@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'El token de API ha sido revocado.',
                 'api-token-domain-mismatch' => 'El token de API no se puede usar desde este dominio.',
                 'access-token-required' => 'Esta acción necesita el token de acceso de una sesión iniciada; los tokens de API no pueden usarla.',
-                'two-factor-required' => 'La autenticación de dos factores está activada para esta cuenta y el inicio de sesión en la API con un segundo factor aún no está disponible.',
+                'two-factor-required' => 'Introduce el código de 6 dígitos de tu aplicación de autenticación, o uno de tus códigos de respaldo, para terminar de iniciar sesión.',
                 'too-many-login-attempts' => 'Demasiados intentos de inicio de sesión. Vuelva a intentarlo en :seconds segundos.',
+                'two-factor-challenge-invalid' => 'El desafío de dos factores no es válido o ha caducado. Vuelve a iniciar sesión.',
+                'two-factor-attempts-exceeded' => 'Demasiados códigos incorrectos. Vuelve a iniciar sesión.',
+                'password-reset-token-invalid' => 'Este token de restablecimiento de contraseña no es válido o ha caducado.',
+                'too-many-password-requests' => 'Demasiadas solicitudes de contraseña. Inténtalo de nuevo en :seconds segundos.',
                 'rate-limit-exceeded' => 'Demasiados intentos.',
                 'no-permission' => 'No tiene permiso para gestionar las sesiones de la API de administración.',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => 'Sesión no encontrada.',
                 'revoked' => 'La sesión ha sido revocada.',
                 'revoked-for-admin' => 'Sesiones revocadas: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'Tu contraseña se ha restablecido. Vuelve a iniciar sesión.',
             ],
 
             'acl' => [

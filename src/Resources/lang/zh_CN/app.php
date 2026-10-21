@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'API 令牌已被撤销。',
                 'api-token-domain-mismatch' => '无法从此域名使用该 API 令牌。',
                 'access-token-required' => '此操作需要登录会话的访问令牌；API 令牌无法使用。',
-                'two-factor-required' => '此账户已启用双重身份验证，暂不支持使用第二因素登录 API。',
+                'two-factor-required' => '请输入身份验证器应用中的 6 位验证码，或任一备用码，以完成登录。',
                 'too-many-login-attempts' => '登录尝试次数过多。请在 :seconds 秒后重试。',
+                'two-factor-challenge-invalid' => '双重验证请求无效或已过期。请重新登录。',
+                'two-factor-attempts-exceeded' => '错误验证码次数过多。请重新登录。',
+                'password-reset-token-invalid' => '此密码重置令牌无效或已过期。',
+                'too-many-password-requests' => '密码请求过多。请在 :seconds 秒后重试。',
                 'rate-limit-exceeded' => '尝试次数过多。',
                 'no-permission' => '您没有管理管理员 API 会话的权限。',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => '未找到会话。',
                 'revoked' => '会话已被撤销。',
                 'revoked-for-admin' => '已撤销的会话：:count。',
+            ],
+
+            'password' => [
+                'reset' => '您的密码已重置。请重新登录。',
             ],
 
             'acl' => [

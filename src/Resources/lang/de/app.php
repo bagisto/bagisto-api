@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'Das API-Token wurde widerrufen.',
                 'api-token-domain-mismatch' => 'Das API-Token kann von dieser Domain aus nicht verwendet werden.',
                 'access-token-required' => 'Diese Aktion erfordert das Zugriffstoken einer Anmeldesitzung; API-Tokens können sie nicht verwenden.',
-                'two-factor-required' => 'Für dieses Konto ist die Zwei-Faktor-Authentifizierung aktiviert, und die API-Anmeldung mit einem zweiten Faktor ist noch nicht verfügbar.',
+                'two-factor-required' => 'Geben Sie den 6-stelligen Code aus Ihrer Authentifizierungs-App oder einen Ihrer Backup-Codes ein, um die Anmeldung abzuschließen.',
                 'too-many-login-attempts' => 'Zu viele Anmeldeversuche. Bitte versuchen Sie es in :seconds Sekunden erneut.',
+                'two-factor-challenge-invalid' => 'Die Zwei-Faktor-Anfrage ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an.',
+                'two-factor-attempts-exceeded' => 'Zu viele falsche Codes. Bitte melden Sie sich erneut an.',
+                'password-reset-token-invalid' => 'Dieses Token zum Zurücksetzen des Passworts ist ungültig oder abgelaufen.',
+                'too-many-password-requests' => 'Zu viele Passwortanfragen. Bitte versuchen Sie es in :seconds Sekunden erneut.',
                 'rate-limit-exceeded' => 'Zu viele Versuche.',
                 'no-permission' => 'Sie haben keine Berechtigung, Admin-API-Sitzungen zu verwalten.',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => 'Sitzung nicht gefunden.',
                 'revoked' => 'Die Sitzung wurde widerrufen.',
                 'revoked-for-admin' => 'Widerrufene Sitzungen: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'Ihr Passwort wurde zurückgesetzt. Bitte melden Sie sich erneut an.',
             ],
 
             'acl' => [

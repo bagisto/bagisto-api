@@ -113,6 +113,22 @@ class AdminApiTokenRepository extends Repository
     }
 
     /**
+     * Revoke every API token of an admin that is not revoked yet, and return how many were revoked.
+     */
+    public function revokeAllForAdmin(int $adminId, string $reason, ?int $revokedByAdminId = null): int
+    {
+        return $this->model->newQuery()
+            ->where('admin_id', $adminId)
+            ->whereNull('revoked_at')
+            ->update([
+                'revoked_at' => now(),
+                'revoked_reason' => $reason,
+                'revoked_by_admin_id' => $revokedByAdminId,
+                'updated_at' => now(),
+            ]);
+    }
+
+    /**
      * The query over API tokens that are neither revoked nor expired.
      */
     protected function activeQuery()

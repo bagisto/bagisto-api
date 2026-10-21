@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'Het API-token is ingetrokken.',
                 'api-token-domain-mismatch' => 'Het API-token kan niet vanaf dit domein worden gebruikt.',
                 'access-token-required' => 'Deze actie vereist het toegangstoken van een inlogsessie; API-tokens kunnen deze niet gebruiken.',
-                'two-factor-required' => 'Tweestapsverificatie is ingeschakeld voor dit account en inloggen op de API met een tweede factor is nog niet beschikbaar.',
+                'two-factor-required' => 'Voer de 6-cijferige code uit je authenticator-app of een van je back-upcodes in om het inloggen af te ronden.',
                 'too-many-login-attempts' => 'Te veel inlogpogingen. Probeer het over :seconds seconden opnieuw.',
+                'two-factor-challenge-invalid' => 'De tweestapsverificatie is ongeldig of verlopen. Log opnieuw in.',
+                'two-factor-attempts-exceeded' => 'Te veel onjuiste codes. Log opnieuw in.',
+                'password-reset-token-invalid' => 'Dit token voor het herstellen van het wachtwoord is ongeldig of verlopen.',
+                'too-many-password-requests' => 'Te veel wachtwoordverzoeken. Probeer het over :seconds seconden opnieuw.',
                 'rate-limit-exceeded' => 'Te veel pogingen.',
                 'no-permission' => 'U hebt geen toestemming om admin-API-sessies te beheren.',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => 'Sessie niet gevonden.',
                 'revoked' => 'De sessie is ingetrokken.',
                 'revoked-for-admin' => 'Ingetrokken sessies: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'Je wachtwoord is hersteld. Log opnieuw in.',
             ],
 
             'acl' => [

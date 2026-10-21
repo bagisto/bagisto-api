@@ -35,10 +35,14 @@ use Webkul\BagistoApi\Admin\Auth\AdminApiGuard;
 use Webkul\BagistoApi\Admin\Contracts\AdminApiRefreshToken as AdminApiRefreshTokenContract;
 use Webkul\BagistoApi\Admin\Contracts\AdminApiSession as AdminApiSessionContract;
 use Webkul\BagistoApi\Admin\Contracts\AdminApiToken as AdminApiTokenContract;
+use Webkul\BagistoApi\Admin\Contracts\AdminApiTwoFactorChallenge as AdminApiTwoFactorChallengeContract;
 use Webkul\BagistoApi\Admin\Models\AdminApiRefreshToken;
 use Webkul\BagistoApi\Admin\Models\AdminApiSession;
 use Webkul\BagistoApi\Admin\Models\AdminApiToken;
+use Webkul\BagistoApi\Admin\Models\AdminApiTwoFactorChallenge;
+use Webkul\BagistoApi\Admin\Observers\AdminCredentialObserver;
 use Webkul\BagistoApi\Admin\Services\AdminApiAuthSettings;
+use Webkul\BagistoApi\Admin\Services\AdminApiCredentialRevoker;
 use Webkul\BagistoApi\CacheProfiles\ApiAwareResponseCache;
 use Webkul\BagistoApi\Console\Commands\ApiKeyMaintenanceCommand;
 use Webkul\BagistoApi\Console\Commands\ApiKeyManagementCommand;
@@ -81,6 +85,7 @@ use Webkul\BagistoApi\Providers\Concerns\RegistersStorefrontState;
 use Webkul\BagistoApi\State\SnakeCaseLinksHandler;
 use Webkul\EUWithdrawal\Services\WithdrawalService;
 use Webkul\FPC\CacheProfiles\FullPageCacheProfile;
+use Webkul\User\Models\AdminProxy;
 
 class BagistoApiServiceProvider extends ServiceProvider
 {
@@ -106,6 +111,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->registerStorefrontProviders();
         $this->registerGraphQlResolvers();
         $this->registerGraphQlDecorators();
+
+        $this->app->scoped(AdminApiCredentialRevoker::class);
     }
 
     /**
@@ -244,6 +251,7 @@ class BagistoApiServiceProvider extends ServiceProvider
             AdminApiSessionContract::class => AdminApiSession::class,
             AdminApiRefreshTokenContract::class => AdminApiRefreshToken::class,
             AdminApiTokenContract::class => AdminApiToken::class,
+            AdminApiTwoFactorChallengeContract::class => AdminApiTwoFactorChallenge::class,
         ];
 
         foreach ($models as $contract => $model) {
@@ -521,6 +529,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../Admin/Resources/views', 'bagistoapi');
 
         $this->registerIntegrationMenu();
+
+        AdminProxy::modelClass()::observe(AdminCredentialObserver::class);
 
         Auth::extend('admin-api', function ($app, $name, array $config) {
             return new AdminApiGuard(

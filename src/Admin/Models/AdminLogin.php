@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\Models;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
@@ -23,7 +24,7 @@ use Webkul\BagistoApi\Admin\State\AdminLoginProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Authentication'],
                 summary: 'Log in with email and password',
-                description: 'Starts a session and returns a short-lived JWT access token and a refresh token. Send the access token as `Authorization: Bearer <accessToken>` and exchange the refresh token at `/api/admin/auth/refresh` before or after the access token expires. Five failed attempts per email and address in a minute lock the login for that minute.',
+                description: 'Starts a session and returns a short-lived JWT access token and a refresh token. Send the access token as `Authorization: Bearer <accessToken>` and exchange the refresh token at `/api/admin/auth/refresh` before or after the access token expires. When the admin has two-factor authentication enabled, the response is `202` with `twoFactorRequired: true` and a single-use `challengeToken` valid for 5 minutes, and no tokens: send it with the code to `/api/admin/auth/two-factor`. Five failed attempts per email and address in a minute lock the login for that minute.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -90,12 +91,29 @@ use Webkul\BagistoApi\Admin\State\AdminLoginProcessor;
                                         ],
                                     ],
                                     'permissions' => ['*'],
+                                    'twoFactorRequired' => false,
+                                    'challengeToken' => null,
+                                    'challengeTokenExpiresAt' => null,
+                                    'message' => null,
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '202' => new Model\Response(
+                        description: 'Password accepted; a second factor is required. Every token field is null.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'twoFactorRequired' => true,
+                                    'challengeToken' => '41|9b1e7c...',
+                                    'challengeTokenExpiresAt' => '2026-10-21T10:05:00+05:30',
+                                    'message' => 'Enter the 6-digit code from your authenticator app, or one of your backup codes, to finish logging in.',
                                 ],
                             ],
                         ]),
                     ),
                     '401' => new Model\Response(description: 'Wrong email or password (`invalid_credentials`).'),
-                    '403' => new Model\Response(description: 'The admin is inactive (`account_inactive`) or has two-factor authentication enabled (`two_factor_required`).'),
+                    '403' => new Model\Response(description: 'The admin is inactive (`account_inactive`).'),
                     '422' => new Model\Response(description: 'Validation failure.'),
                     '429' => new Model\Response(description: 'Too many failed attempts (`too_many_login_attempts`); see `Retry-After`.'),
                 ],
@@ -108,8 +126,33 @@ use Webkul\BagistoApi\Admin\State\AdminLoginProcessor;
             input: AdminLoginInput::class,
             output: self::class,
             processor: AdminLoginProcessor::class,
-            description: 'Log in with email and password and get an access and refresh token. Becomes createAdminLogin; reachable without a token.',
+            description: 'Log in with email and password and get an access and refresh token, or a challengeToken for createAdminTwoFactorVerify when twoFactorRequired is true. Becomes createAdminLogin; reachable without a token.',
         ),
     ],
 )]
-class AdminLogin extends AdminAuthTokenResponse {}
+class AdminLogin extends AdminAuthTokenResponse
+{
+    /**
+     * Whether the admin must still pass a second factor, in which case no token is returned.
+     */
+    #[ApiProperty(writable: false, example: false)]
+    public ?bool $two_factor_required = null;
+
+    /**
+     * The single-use token to send with the two-factor code.
+     */
+    #[ApiProperty(writable: false, example: '41|9b1e7c...')]
+    public ?string $challenge_token = null;
+
+    /**
+     * When the challenge token expires.
+     */
+    #[ApiProperty(writable: false, example: '2026-10-21T10:05:00+05:30')]
+    public ?string $challenge_token_expires_at = null;
+
+    /**
+     * What the client has to do next, when a second factor is required.
+     */
+    #[ApiProperty(writable: false, example: null)]
+    public ?string $message = null;
+}

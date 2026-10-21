@@ -11,6 +11,7 @@ use Webkul\BagistoApi\Admin\Models\AdminApiSession;
 use Webkul\BagistoApi\Admin\Repositories\AdminApiRefreshTokenRepository;
 use Webkul\BagistoApi\Admin\Repositories\AdminApiSessionRepository;
 use Webkul\BagistoApi\Admin\Repositories\AdminApiTokenRepository;
+use Webkul\BagistoApi\Admin\Repositories\AdminApiTwoFactorChallengeRepository;
 use Webkul\BagistoApi\Admin\Services\Jwt\JwtKeyStore;
 use Webkul\BagistoApi\Admin\Services\Jwt\JwtSigner;
 use Webkul\User\Contracts\Admin;
@@ -34,6 +35,7 @@ class AdminApiTokenService
         protected AdminApiSessionRepository $sessionRepository,
         protected AdminApiRefreshTokenRepository $refreshTokenRepository,
         protected AdminApiTokenRepository $apiTokenRepository,
+        protected AdminApiTwoFactorChallengeRepository $challengeRepository,
         protected AdminApiAuthSettings $settings,
         protected JwtSigner $signer,
         protected JwtKeyStore $keys,
@@ -161,9 +163,9 @@ class AdminApiTokenService
     }
 
     /**
-     * Delete expired refresh tokens, long-ended sessions and retired keys nothing valid is signed with.
+     * Delete expired refresh tokens and challenges, long-ended sessions and retired keys nothing uses.
      *
-     * @return array{refresh_tokens: int, sessions: int, keys: array<int, string>}
+     * @return array{refresh_tokens: int, sessions: int, two_factor_challenges: int, keys: array<int, string>}
      */
     public function prune(): array
     {
@@ -178,6 +180,7 @@ class AdminApiTokenService
         return [
             'refresh_tokens' => $refreshTokens,
             'sessions' => $sessions,
+            'two_factor_challenges' => $this->challengeRepository->deleteExpiredBefore($now),
             'keys' => $this->pruneRetiredKeys($now),
         ];
     }

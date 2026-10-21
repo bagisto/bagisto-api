@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'Le jeton d\'API a été révoqué.',
                 'api-token-domain-mismatch' => 'Le jeton d\'API ne peut pas être utilisé depuis ce domaine.',
                 'access-token-required' => 'Cette action nécessite le jeton d\'accès d\'une session connectée ; les jetons d\'API ne peuvent pas l\'utiliser.',
-                'two-factor-required' => 'L\'authentification à deux facteurs est activée pour ce compte, et la connexion à l\'API avec un second facteur n\'est pas encore disponible.',
+                'two-factor-required' => 'Saisissez le code à 6 chiffres de votre application d\'authentification, ou l\'un de vos codes de secours, pour terminer la connexion.',
                 'too-many-login-attempts' => 'Trop de tentatives de connexion. Veuillez réessayer dans :seconds secondes.',
+                'two-factor-challenge-invalid' => 'La vérification à deux facteurs est invalide ou a expiré. Veuillez vous reconnecter.',
+                'two-factor-attempts-exceeded' => 'Trop de codes erronés. Veuillez vous reconnecter.',
+                'password-reset-token-invalid' => 'Ce jeton de réinitialisation du mot de passe est invalide ou a expiré.',
+                'too-many-password-requests' => 'Trop de demandes de mot de passe. Veuillez réessayer dans :seconds secondes.',
                 'rate-limit-exceeded' => 'Trop de tentatives.',
                 'no-permission' => 'Vous n\'avez pas l\'autorisation de gérer les sessions de l\'API d\'administration.',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => 'Session introuvable.',
                 'revoked' => 'La session a été révoquée.',
                 'revoked-for-admin' => 'Sessions révoquées : :count.',
+            ],
+
+            'password' => [
+                'reset' => 'Votre mot de passe a été réinitialisé. Veuillez vous reconnecter.',
             ],
 
             'acl' => [

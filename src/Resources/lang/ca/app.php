@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'El testimoni de l\'API s\'ha revocat.',
                 'api-token-domain-mismatch' => 'El testimoni de l\'API no es pot utilitzar des d\'aquest domini.',
                 'access-token-required' => 'Aquesta acció necessita el testimoni d\'accés d\'una sessió iniciada; els testimonis de l\'API no la poden utilitzar.',
-                'two-factor-required' => 'L\'autenticació de dos factors està activada per a aquest compte, i l\'inici de sessió a l\'API amb un segon factor encara no està disponible.',
+                'two-factor-required' => 'Introduïu el codi de 6 dígits de l\'aplicació d\'autenticació, o un dels vostres codis de seguretat, per acabar d\'iniciar la sessió.',
                 'too-many-login-attempts' => 'Massa intents d\'inici de sessió. Torneu-ho a provar d\'aquí a :seconds segons.',
+                'two-factor-challenge-invalid' => 'La verificació en dos passos no és vàlida o ha caducat. Torneu a iniciar la sessió.',
+                'two-factor-attempts-exceeded' => 'Massa codis incorrectes. Torneu a iniciar la sessió.',
+                'password-reset-token-invalid' => 'Aquest testimoni de restabliment de la contrasenya no és vàlid o ha caducat.',
+                'too-many-password-requests' => 'Massa sol·licituds de contrasenya. Torneu-ho a provar d\'aquí a :seconds segons.',
                 'rate-limit-exceeded' => 'Massa intents.',
                 'no-permission' => 'No teniu permís per gestionar les sessions de l\'API d\'administració.',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => 'No s\'ha trobat la sessió.',
                 'revoked' => 'S\'ha revocat la sessió.',
                 'revoked-for-admin' => 'Sessions revocades: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'S\'ha restablert la contrasenya. Torneu a iniciar la sessió.',
             ],
 
             'acl' => [

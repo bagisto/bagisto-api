@@ -4,6 +4,7 @@ use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
 use Webkul\BagistoApi\Admin\Models\AdminApiRefreshToken;
 use Webkul\BagistoApi\Admin\Models\AdminApiSession;
 use Webkul\BagistoApi\Admin\Models\AdminApiToken;
+use Webkul\BagistoApi\Admin\Models\AdminApiTwoFactorChallenge;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\Core\Models\CoreConfig;
 
@@ -26,6 +27,7 @@ return [
         'current_password',
         'remember_token',
         'api_token',
+        'two_factor_backup_codes',
         'secret',
         '*_token',
         '*_secret',
@@ -58,6 +60,7 @@ return [
         AdminApiSession::class,
         AdminApiRefreshToken::class,
         AdminApiToken::class,
+        AdminApiTwoFactorChallenge::class,
     ],
 
     /**

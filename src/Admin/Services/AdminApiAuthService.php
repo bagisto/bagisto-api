@@ -41,19 +41,20 @@ class AdminApiAuthService
      */
     public function __construct(
         protected AdminApiTokenService $tokenService,
+        protected AdminApiTwoFactorService $twoFactorService,
         protected AdminApiAuthAuditor $auditor,
         protected RateLimiter $limiter,
         protected AuthManager $auth,
     ) {}
 
     /**
-     * Check an admin's email and password and start a session, firing core's login events.
+     * Check an admin's email and password and start a session, or a challenge when a second factor is due.
      *
      * @param  array{email: string, password: string, device_name?: ?string, client_type?: ?string}  $input
      *
      * @throws AdminAuthException
      */
-    public function login(array $input, Request $request): AdminApiTokenPair
+    public function login(array $input, Request $request): AdminApiTokenPair|AdminApiTwoFactorChallengeToken
     {
         $credentials = [
             'email' => (string) $input['email'],
@@ -81,23 +82,59 @@ class AdminApiAuthService
 
         $this->limiter->clear($throttleKey);
 
-        $this->assertCanLogIn($admin, $request);
+        $this->assertActive($admin, $request);
 
-        $pair = $this->tokenService->issue($admin, [
+        $client = [
             'name' => $input['device_name'] ?? null,
             'client_type' => $input['client_type'] ?? null,
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
             'channel' => AdminAuthHelper::channel($request),
+        ];
+
+        if ($this->twoFactorService->isRequiredFor($admin)) {
+            $challenge = $this->twoFactorService->createChallenge($admin, $client);
+
+            $this->auditor->record(AdminApiAuthAuditor::EVENT_TWO_FACTOR_CHALLENGE, $admin, null, $request, [
+                'challenge_id' => (int) $challenge->challenge->id,
+                'client_type' => $challenge->challenge->client_type,
+            ]);
+
+            return $challenge;
+        }
+
+        return $this->startSession($admin, $client, $request);
+    }
+
+    /**
+     * Finish a login that needed a second factor with an authenticator or backup code.
+     *
+     * @param  array{challenge_token: string, code?: ?string, backup_code?: ?string}  $input
+     *
+     * @throws AdminAuthException
+     */
+    public function verifyTwoFactor(array $input, Request $request): AdminApiTokenPair
+    {
+        $challenge = $this->twoFactorService->verify(
+            (string) $input['challenge_token'],
+            $input['code'] ?? null,
+            $input['backup_code'] ?? null,
+            $request,
+        );
+
+        $admin = $challenge->admin;
+
+        $this->assertActive($admin, $request);
+
+        return $this->startSession($admin, [
+            'name' => $challenge->name,
+            'client_type' => $challenge->client_type,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'channel' => AdminAuthHelper::channel($request),
+        ], $request, [
+            'two_factor' => isset($input['backup_code']) ? 'backup_code' : 'code',
         ]);
-
-        Event::dispatch(new Login(self::GUARD, $admin, false));
-
-        $this->auditor->record(AdminApiAuthAuditor::EVENT_LOGIN, $admin, $pair->session, $request, [
-            'client_type' => $pair->session->client_type,
-        ]);
-
-        return $pair;
     }
 
     /**
@@ -192,6 +229,23 @@ class AdminApiAuthService
     }
 
     /**
+     * Issue the session of a completed login, firing core's login event and auditing it.
+     */
+    protected function startSession(Admin $admin, array $client, Request $request, array $details = []): AdminApiTokenPair
+    {
+        $pair = $this->tokenService->issue($admin, $client);
+
+        Event::dispatch(new Login(self::GUARD, $admin, false));
+
+        $this->auditor->record(AdminApiAuthAuditor::EVENT_LOGIN, $admin, $pair->session, $request, [
+            'client_type' => $pair->session->client_type,
+            ...$details,
+        ]);
+
+        return $pair;
+    }
+
+    /**
      * Refuse a login the throttle has locked out, telling the client when to retry.
      *
      * @throws AdminAuthException
@@ -237,11 +291,11 @@ class AdminApiAuthService
     }
 
     /**
-     * Refuse an inactive admin with core's message, and an admin who must pass a second factor.
+     * Refuse an inactive admin with core's message.
      *
      * @throws AdminAuthException
      */
-    protected function assertCanLogIn(Admin $admin, Request $request): void
+    protected function assertActive(Admin $admin, Request $request): void
     {
         if (! $admin->status) {
             $this->auditor->record(AdminApiAuthAuditor::EVENT_LOGIN_FAILED, $admin, null, $request, [
@@ -252,14 +306,6 @@ class AdminApiAuthService
             throw new AdminAuthException(
                 trans('admin::app.settings.users.activate-warning'),
                 AdminAuthException::CODE_ACCOUNT_INACTIVE,
-                403,
-            );
-        }
-
-        if ($admin->two_factor_enabled) {
-            throw new AdminAuthException(
-                trans('bagistoapi::app.admin.auth.errors.two-factor-required'),
-                AdminAuthException::CODE_TWO_FACTOR_REQUIRED,
                 403,
             );
         }

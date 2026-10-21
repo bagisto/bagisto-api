@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'Il token API è stato revocato.',
                 'api-token-domain-mismatch' => 'Il token API non può essere usato da questo dominio.',
                 'access-token-required' => 'Questa azione richiede il token di accesso di una sessione di login; i token API non possono usarla.',
-                'two-factor-required' => 'L\'autenticazione a due fattori è attiva per questo account e l\'accesso all\'API con un secondo fattore non è ancora disponibile.',
+                'two-factor-required' => 'Inserisci il codice a 6 cifre dell\'app di autenticazione, o uno dei tuoi codici di backup, per completare l\'accesso.',
                 'too-many-login-attempts' => 'Troppi tentativi di accesso. Riprova tra :seconds secondi.',
+                'two-factor-challenge-invalid' => 'La verifica a due fattori non è valida o è scaduta. Accedi di nuovo.',
+                'two-factor-attempts-exceeded' => 'Troppi codici errati. Accedi di nuovo.',
+                'password-reset-token-invalid' => 'Questo token di reimpostazione della password non è valido o è scaduto.',
+                'too-many-password-requests' => 'Troppe richieste di password. Riprova tra :seconds secondi.',
                 'rate-limit-exceeded' => 'Troppi tentativi.',
                 'no-permission' => 'Non hai il permesso di gestire le sessioni API degli amministratori.',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => 'Sessione non trovata.',
                 'revoked' => 'La sessione è stata revocata.',
                 'revoked-for-admin' => 'Sessioni revocate: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'La tua password è stata reimpostata. Accedi di nuovo.',
             ],
 
             'acl' => [

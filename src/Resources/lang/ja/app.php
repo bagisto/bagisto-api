@@ -1668,8 +1668,12 @@ return [
                 'api-token-revoked' => 'APIトークンは取り消されました。',
                 'api-token-domain-mismatch' => 'このドメインからはAPIトークンを使用できません。',
                 'access-token-required' => 'この操作にはログインセッションのアクセストークンが必要です。APIトークンでは使用できません。',
-                'two-factor-required' => 'このアカウントでは二要素認証が有効になっており、第二要素を使ったAPIログインはまだ利用できません。',
+                'two-factor-required' => 'ログインを完了するには、認証アプリの6桁のコード、またはバックアップコードのいずれかを入力してください。',
                 'too-many-login-attempts' => 'ログイン試行回数が多すぎます。:seconds 秒後にもう一度お試しください。',
+                'two-factor-challenge-invalid' => '2段階認証のチャレンジが無効か、有効期限が切れています。もう一度ログインしてください。',
+                'two-factor-attempts-exceeded' => '誤ったコードが多すぎます。もう一度ログインしてください。',
+                'password-reset-token-invalid' => 'このパスワードリセットトークンは無効か、有効期限が切れています。',
+                'too-many-password-requests' => 'パスワードのリクエストが多すぎます。:seconds秒後にもう一度お試しください。',
                 'rate-limit-exceeded' => '試行回数が多すぎます。',
                 'no-permission' => '管理者APIセッションを管理する権限がありません。',
             ],
@@ -1680,6 +1684,10 @@ return [
                 'not-found' => 'セッションが見つかりません。',
                 'revoked' => 'セッションは取り消されました。',
                 'revoked-for-admin' => '取り消されたセッション: :count。',
+            ],
+
+            'password' => [
+                'reset' => 'パスワードがリセットされました。もう一度ログインしてください。',
             ],
 
             'acl' => [

@@ -952,7 +952,7 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
      */
     public function test_download_sample_streams_for_valid_type_format(): void
     {
-        Storage::fake('local');
+        Storage::fake(config('filesystems.default'));
         $admin = $this->createAdmin();
 
         $samplePath = config('importers.products.sample_paths.csv');

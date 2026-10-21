@@ -450,7 +450,7 @@ class MarketingSitemapTest extends AdminApiTestCase
      */
     public function test_delete_removes_storage_files(): void
     {
-        Storage::fake('local');
+        Storage::fake(config('filesystems.default'));
         $admin = $this->createAdmin();
 
         $filePath = 'fake-sitemap-'.uniqid().'.xml';

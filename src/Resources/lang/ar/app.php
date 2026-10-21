@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'ليس لديك إذن لإدارة مصطلحات البحث.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'مصادقة المسؤول',
+                'info' => 'مدد صلاحية الرموز وحدود المعدل وقواعد الأمان لتسجيل دخول المسؤول عبر API ورموز API.',
+
+                'tokens' => [
+                    'title' => 'مدد صلاحية الرموز',
+                    'info' => 'مدة بقاء رموز الوصول ورموز التحديث والجلسات صالحة. تُطبَّق التغييرات على الرموز الصادرة بعدها.',
+                    'access-token-ttl' => 'مدة صلاحية رمز الوصول (بالدقائق)',
+                    'access-token-ttl-info' => 'بين 5 و60 دقيقة. القيمة الافتراضية 15.',
+                    'refresh-token-ttl' => 'مدة صلاحية رمز التحديث (بالأيام)',
+                    'refresh-token-ttl-info' => 'بين 1 و90 يومًا. القيمة الافتراضية 30.',
+                    'session-lifetime' => 'المدة القصوى للجلسة (بالأيام)',
+                    'session-lifetime-info' => 'بين 1 و365 يومًا. القيمة الافتراضية 90. بعدها يجب على المسؤول تسجيل الدخول مجددًا مهما تم تحديث الجلسة.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'حدود المعدل',
+                    'info' => 'الحد الأقصى لطلبات API المسؤول في الدقيقة.',
+                    'session-requests-per-minute' => 'الطلبات في الدقيقة لكل مسؤول مسجَّل الدخول',
+                    'api-token-requests-per-minute' => 'الطلبات في الدقيقة لكل رمز API',
+                ],
+
+                'security' => [
+                    'title' => 'الأمان',
+                    'info' => 'قواعد الإلغاء وانتهاء صلاحية رموز API وربط النطاق.',
+                    'revoke-sessions-on-password-change' => 'إلغاء الجلسات عند تغيير كلمة المرور',
+                    'revoke-api-tokens-on-password-change' => 'إلغاء رموز API عند تغيير كلمة المرور',
+                    'allow-non-expiring-api-tokens' => 'السماح برموز API بدون انتهاء صلاحية',
+                    'domain-binding-mode' => 'وضع ربط النطاق',
+                    'domain-binding-mode-info' => 'يتحقق DNS من أن الطلب صادر من عنوان IP يشير إليه نطاق الرمز. يتحقق Origin من ترويسة Origin أو Referer ويناسب المتصفحات فقط.',
+                    'domain-binding-dns' => 'DNS (عنوان IP للعميل)',
+                    'domain-binding-origin' => 'ترويسة Origin',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'أنت غير مصادق.',
+                'access-token-expired' => 'انتهت صلاحية رمز الوصول. قم بتحديثه للمتابعة.',
+                'api-token-expired' => 'انتهت صلاحية رمز API.',
+                'refresh-token-invalid' => 'رمز التحديث غير صالح أو منتهي الصلاحية. يرجى تسجيل الدخول مجددًا.',
+            ],
+        ],
     ],
 
     'integration' => [

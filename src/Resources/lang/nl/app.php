@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'U hebt geen toestemming om zoektermen te beheren.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Beheerdersauthenticatie',
+                'info' => 'Tokenlooptijden, verzoeklimieten en beveiligingsregels voor admin-API-aanmeldingen en API-tokens.',
+
+                'tokens' => [
+                    'title' => 'Tokenlooptijden',
+                    'info' => 'Hoe lang toegangstokens, vernieuwingstokens en sessies geldig blijven. Wijzigingen gelden voor tokens die daarna worden uitgegeven.',
+                    'access-token-ttl' => 'Looptijd toegangstoken (minuten)',
+                    'access-token-ttl-info' => 'Tussen 5 en 60 minuten. Standaard 15.',
+                    'refresh-token-ttl' => 'Looptijd vernieuwingstoken (dagen)',
+                    'refresh-token-ttl-info' => 'Tussen 1 en 90 dagen. Standaard 30.',
+                    'session-lifetime' => 'Maximale sessieduur (dagen)',
+                    'session-lifetime-info' => 'Tussen 1 en 365 dagen. Standaard 90. Daarna moet de beheerder opnieuw inloggen, hoe vaak de sessie ook is vernieuwd.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Verzoeklimieten',
+                    'info' => 'Maximaal aantal admin-API-verzoeken per minuut.',
+                    'session-requests-per-minute' => 'Verzoeken per minuut per ingelogde beheerder',
+                    'api-token-requests-per-minute' => 'Verzoeken per minuut per API-token',
+                ],
+
+                'security' => [
+                    'title' => 'Beveiliging',
+                    'info' => 'Intrekkingsregels, verloop van API-tokens en domeinbinding.',
+                    'revoke-sessions-on-password-change' => 'Sessies intrekken bij wachtwoordwijziging',
+                    'revoke-api-tokens-on-password-change' => 'API-tokens intrekken bij wachtwoordwijziging',
+                    'allow-non-expiring-api-tokens' => 'API-tokens zonder vervaldatum toestaan',
+                    'domain-binding-mode' => 'Domeinbindingsmodus',
+                    'domain-binding-mode-info' => 'DNS controleert of het verzoek komt van een IP-adres waarnaar het domein van het token verwijst. Origin controleert de Origin- of Referer-header en is alleen geschikt voor browsers.',
+                    'domain-binding-dns' => 'DNS (IP-adres van de client)',
+                    'domain-binding-origin' => 'Origin-header',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'U bent niet geverifieerd.',
+                'access-token-expired' => 'Het toegangstoken is verlopen. Vernieuw het om door te gaan.',
+                'api-token-expired' => 'Het API-token is verlopen.',
+                'refresh-token-invalid' => 'Het vernieuwingstoken is ongeldig of verlopen. Log opnieuw in.',
+            ],
+        ],
     ],
 
     'integration' => [

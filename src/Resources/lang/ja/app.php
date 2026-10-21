@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => '検索語を管理する権限がありません。',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => '管理者認証',
+                'info' => '管理者 API ログインと API トークンのトークン有効期間、レート制限、セキュリティルール。',
+
+                'tokens' => [
+                    'title' => 'トークンの有効期間',
+                    'info' => 'アクセストークン、リフレッシュトークン、セッションの有効期間。変更はその後に発行されるトークンに適用されます。',
+                    'access-token-ttl' => 'アクセストークンの有効期間（分）',
+                    'access-token-ttl-info' => '5～60 分。既定値 15。',
+                    'refresh-token-ttl' => 'リフレッシュトークンの有効期間（日）',
+                    'refresh-token-ttl-info' => '1～90 日。既定値 30。',
+                    'session-lifetime' => 'セッションの最大有効期間（日）',
+                    'session-lifetime-info' => '1～365 日。既定値 90。この期間を過ぎると、何度リフレッシュしても管理者は再ログインが必要です。',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'レート制限',
+                    'info' => '1 分あたりの管理者 API リクエストの上限。',
+                    'session-requests-per-minute' => 'ログイン中の管理者ごとの 1 分あたりのリクエスト数',
+                    'api-token-requests-per-minute' => 'API トークンごとの 1 分あたりのリクエスト数',
+                ],
+
+                'security' => [
+                    'title' => 'セキュリティ',
+                    'info' => '失効ルール、API トークンの有効期限、ドメインバインディング。',
+                    'revoke-sessions-on-password-change' => 'パスワード変更時にセッションを失効させる',
+                    'revoke-api-tokens-on-password-change' => 'パスワード変更時に API トークンを失効させる',
+                    'allow-non-expiring-api-tokens' => '有効期限のない API トークンを許可する',
+                    'domain-binding-mode' => 'ドメインバインディングモード',
+                    'domain-binding-mode-info' => 'DNS は、トークンのドメインが解決される IP アドレスからのリクエストかを確認します。Origin は Origin または Referer ヘッダーを確認し、ブラウザーからの呼び出しにのみ適しています。',
+                    'domain-binding-dns' => 'DNS（クライアントの IP アドレス）',
+                    'domain-binding-origin' => 'Origin ヘッダー',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => '認証されていません。',
+                'access-token-expired' => 'アクセストークンの有効期限が切れました。続行するにはリフレッシュしてください。',
+                'api-token-expired' => 'API トークンの有効期限が切れました。',
+                'refresh-token-invalid' => 'リフレッシュトークンが無効か期限切れです。再度ログインしてください。',
+            ],
+        ],
     ],
 
     'integration' => [

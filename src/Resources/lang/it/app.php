@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'Non hai l\'autorizzazione per gestire i termini di ricerca.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Autenticazione amministratore',
+                'info' => 'Durata dei token, limiti di richieste e regole di sicurezza per gli accessi all\'API di amministrazione e i token API.',
+
+                'tokens' => [
+                    'title' => 'Durata dei token',
+                    'info' => 'Per quanto tempo restano validi i token di accesso, i token di aggiornamento e le sessioni. Le modifiche si applicano ai token emessi in seguito.',
+                    'access-token-ttl' => 'Durata del token di accesso (minuti)',
+                    'access-token-ttl-info' => 'Tra 5 e 60 minuti. Predefinito 15.',
+                    'refresh-token-ttl' => 'Durata del token di aggiornamento (giorni)',
+                    'refresh-token-ttl-info' => 'Tra 1 e 90 giorni. Predefinito 30.',
+                    'session-lifetime' => 'Durata massima della sessione (giorni)',
+                    'session-lifetime-info' => 'Tra 1 e 365 giorni. Predefinito 90. Dopo, l\'amministratore deve accedere di nuovo, indipendentemente da quante volte la sessione è stata aggiornata.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Limiti di richieste',
+                    'info' => 'Numero massimo di richieste all\'API di amministrazione al minuto.',
+                    'session-requests-per-minute' => 'Richieste al minuto per amministratore connesso',
+                    'api-token-requests-per-minute' => 'Richieste al minuto per token API',
+                ],
+
+                'security' => [
+                    'title' => 'Sicurezza',
+                    'info' => 'Regole di revoca, scadenza dei token API e associazione al dominio.',
+                    'revoke-sessions-on-password-change' => 'Revoca le sessioni al cambio password',
+                    'revoke-api-tokens-on-password-change' => 'Revoca i token API al cambio password',
+                    'allow-non-expiring-api-tokens' => 'Consenti token API senza scadenza',
+                    'domain-binding-mode' => 'Modalità di associazione al dominio',
+                    'domain-binding-mode-info' => 'DNS verifica che la richiesta provenga da un indirizzo IP a cui punta il dominio del token. Origin verifica l\'intestazione Origin o Referer ed è adatto solo ai browser.',
+                    'domain-binding-dns' => 'DNS (indirizzo IP del client)',
+                    'domain-binding-origin' => 'Intestazione Origin',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'Non sei autenticato.',
+                'access-token-expired' => 'Il token di accesso è scaduto. Aggiornalo per continuare.',
+                'api-token-expired' => 'Il token API è scaduto.',
+                'refresh-token-invalid' => 'Il token di aggiornamento non è valido o è scaduto. Accedi di nuovo.',
+            ],
+        ],
     ],
 
     'integration' => [

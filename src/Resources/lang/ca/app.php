@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'No teniu permís per gestionar els termes de cerca.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Autenticació d\'administrador',
+                'info' => 'Durada dels tokens, límits de peticions i regles de seguretat per als inicis de sessió de l\'API d\'administració i els tokens d\'API.',
+
+                'tokens' => [
+                    'title' => 'Durada dels tokens',
+                    'info' => 'Quant de temps són vàlids els tokens d\'accés, els tokens de refresc i les sessions. Els canvis s\'apliquen als tokens emesos després.',
+                    'access-token-ttl' => 'Durada del token d\'accés (minuts)',
+                    'access-token-ttl-info' => 'Entre 5 i 60 minuts. Per defecte 15.',
+                    'refresh-token-ttl' => 'Durada del token de refresc (dies)',
+                    'refresh-token-ttl-info' => 'Entre 1 i 90 dies. Per defecte 30.',
+                    'session-lifetime' => 'Durada màxima de la sessió (dies)',
+                    'session-lifetime-info' => 'Entre 1 i 365 dies. Per defecte 90. Després, l\'administrador ha de tornar a iniciar sessió, per molt que s\'hagi refrescat la sessió.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Límits de peticions',
+                    'info' => 'Màxim de peticions a l\'API d\'administració per minut.',
+                    'session-requests-per-minute' => 'Peticions per minut per administrador connectat',
+                    'api-token-requests-per-minute' => 'Peticions per minut per token d\'API',
+                ],
+
+                'security' => [
+                    'title' => 'Seguretat',
+                    'info' => 'Regles de revocació, caducitat dels tokens d\'API i vinculació de domini.',
+                    'revoke-sessions-on-password-change' => 'Revocar les sessions en canviar la contrasenya',
+                    'revoke-api-tokens-on-password-change' => 'Revocar els tokens d\'API en canviar la contrasenya',
+                    'allow-non-expiring-api-tokens' => 'Permetre tokens d\'API sense caducitat',
+                    'domain-binding-mode' => 'Mode de vinculació de domini',
+                    'domain-binding-mode-info' => 'DNS comprova que la petició ve d\'una adreça IP a la qual resol el domini del token. Origin comprova la capçalera Origin o Referer i només és adequat per a navegadors.',
+                    'domain-binding-dns' => 'DNS (adreça IP del client)',
+                    'domain-binding-origin' => 'Capçalera Origin',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'No esteu autenticat.',
+                'access-token-expired' => 'El token d\'accés ha caducat. Refresca\'l per continuar.',
+                'api-token-expired' => 'El token d\'API ha caducat.',
+                'refresh-token-invalid' => 'El token de refresc no és vàlid o ha caducat. Torna a iniciar sessió.',
+            ],
+        ],
     ],
 
     'integration' => [

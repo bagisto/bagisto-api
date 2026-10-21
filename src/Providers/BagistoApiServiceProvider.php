@@ -32,6 +32,12 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Webkul\Attribute\Contracts\Attribute as AttributeContract;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
 use Webkul\BagistoApi\Admin\Auth\AdminApiGuard;
+use Webkul\BagistoApi\Admin\Contracts\AdminApiRefreshToken as AdminApiRefreshTokenContract;
+use Webkul\BagistoApi\Admin\Contracts\AdminApiSession as AdminApiSessionContract;
+use Webkul\BagistoApi\Admin\Contracts\AdminApiToken as AdminApiTokenContract;
+use Webkul\BagistoApi\Admin\Models\AdminApiRefreshToken;
+use Webkul\BagistoApi\Admin\Models\AdminApiSession;
+use Webkul\BagistoApi\Admin\Models\AdminApiToken;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\CacheProfiles\ApiAwareResponseCache;
 use Webkul\BagistoApi\Console\Commands\ApiKeyMaintenanceCommand;
@@ -40,7 +46,9 @@ use Webkul\BagistoApi\Console\Commands\ClearApiPlatformCacheCommand;
 use Webkul\BagistoApi\Console\Commands\ExportSchemaCommand;
 use Webkul\BagistoApi\Console\Commands\GenerateStorefrontKey;
 use Webkul\BagistoApi\Console\Commands\InstallApiPlatformCommand;
+use Webkul\BagistoApi\Console\Commands\JwtKeysCommand;
 use Webkul\BagistoApi\Console\Commands\OptimizeApiPlatformCommand;
+use Webkul\BagistoApi\Console\Commands\PruneAdminTokensCommand;
 use Webkul\BagistoApi\Console\Commands\PruneAuditsCommand;
 use Webkul\BagistoApi\Console\Commands\PruneCartUploadsCommand;
 use Webkul\BagistoApi\Console\Commands\WarmApiPlatformCacheCommand;
@@ -223,7 +231,7 @@ class BagistoApiServiceProvider extends ServiceProvider
     }
 
     /**
-     * Substitute the API attribute model for the core attribute contract through Concord.
+     * Substitute the API attribute model for the core attribute contract and register the admin auth models.
      */
     protected function registerModelSubstitutions(): void
     {
@@ -231,13 +239,19 @@ class BagistoApiServiceProvider extends ServiceProvider
             return;
         }
 
-        try {
-            $this->app->make('concord')->registerModel(
-                AttributeContract::class,
-                CoreAttribute::class
-            );
-        } catch (\Throwable $exception) {
-            report($exception);
+        $models = [
+            AttributeContract::class => CoreAttribute::class,
+            AdminApiSessionContract::class => AdminApiSession::class,
+            AdminApiRefreshTokenContract::class => AdminApiRefreshToken::class,
+            AdminApiTokenContract::class => AdminApiToken::class,
+        ];
+
+        foreach ($models as $contract => $model) {
+            try {
+                $this->app->make('concord')->registerModel($contract, $model);
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
         }
     }
 
@@ -390,11 +404,15 @@ class BagistoApiServiceProvider extends ServiceProvider
             ApiKeyMaintenanceCommand::class,
             PruneAuditsCommand::class,
             PruneCartUploadsCommand::class,
+            JwtKeysCommand::class,
+            PruneAdminTokensCommand::class,
             ExportSchemaCommand::class,
         ]);
 
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
             $schedule->command('bagisto-api:prune-cart-uploads')->everyTwoHours();
+
+            $schedule->command('bagisto-api:prune-admin-tokens')->hourly();
         });
     }
 

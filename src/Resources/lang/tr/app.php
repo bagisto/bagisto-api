@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'Arama terimlerini yönetme izniniz yok.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Yönetici Kimlik Doğrulaması',
+                'info' => 'Yönetici API girişleri ve API belirteçleri için belirteç süreleri, istek sınırları ve güvenlik kuralları.',
+
+                'tokens' => [
+                    'title' => 'Belirteç Süreleri',
+                    'info' => 'Erişim belirteçlerinin, yenileme belirteçlerinin ve oturumların ne kadar geçerli kalacağı. Değişiklikler sonradan verilen belirteçlere uygulanır.',
+                    'access-token-ttl' => 'Erişim Belirteci Süresi (dakika)',
+                    'access-token-ttl-info' => '5 ile 60 dakika arası. Varsayılan 15.',
+                    'refresh-token-ttl' => 'Yenileme Belirteci Süresi (gün)',
+                    'refresh-token-ttl-info' => '1 ile 90 gün arası. Varsayılan 30.',
+                    'session-lifetime' => 'En Uzun Oturum Süresi (gün)',
+                    'session-lifetime-info' => '1 ile 365 gün arası. Varsayılan 90. Bundan sonra oturum kaç kez yenilenmiş olursa olsun yönetici yeniden giriş yapmalıdır.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'İstek Sınırları',
+                    'info' => 'Dakika başına en fazla yönetici API isteği.',
+                    'session-requests-per-minute' => 'Giriş Yapmış Yönetici Başına Dakikalık İstek',
+                    'api-token-requests-per-minute' => 'API Belirteci Başına Dakikalık İstek',
+                ],
+
+                'security' => [
+                    'title' => 'Güvenlik',
+                    'info' => 'İptal kuralları, API belirteci süre sonu ve alan adı bağlama.',
+                    'revoke-sessions-on-password-change' => 'Parola Değişince Oturumları İptal Et',
+                    'revoke-api-tokens-on-password-change' => 'Parola Değişince API Belirteçlerini İptal Et',
+                    'allow-non-expiring-api-tokens' => 'Süresiz API Belirteçlerine İzin Ver',
+                    'domain-binding-mode' => 'Alan Adı Bağlama Modu',
+                    'domain-binding-mode-info' => 'DNS, isteğin belirtecin alan adının çözümlendiği bir IP adresinden geldiğini denetler. Origin, Origin veya Referer başlığını denetler ve yalnızca tarayıcılar için uygundur.',
+                    'domain-binding-dns' => 'DNS (istemci IP adresi)',
+                    'domain-binding-origin' => 'Origin başlığı',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'Kimliğiniz doğrulanmadı.',
+                'access-token-expired' => 'Erişim belirtecinin süresi doldu. Devam etmek için yenileyin.',
+                'api-token-expired' => 'API belirtecinin süresi doldu.',
+                'refresh-token-invalid' => 'Yenileme belirteci geçersiz veya süresi dolmuş. Lütfen yeniden giriş yapın.',
+            ],
+        ],
     ],
 
     'integration' => [

@@ -1,6 +1,9 @@
 <?php
 
 use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
+use Webkul\BagistoApi\Admin\Models\AdminApiRefreshToken;
+use Webkul\BagistoApi\Admin\Models\AdminApiSession;
+use Webkul\BagistoApi\Admin\Models\AdminApiToken;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\Core\Models\CoreConfig;
 
@@ -52,6 +55,9 @@ return [
     'exclude_models' => [
         AdminApiAudit::class,
         AdminPersonalAccessToken::class,
+        AdminApiSession::class,
+        AdminApiRefreshToken::class,
+        AdminApiToken::class,
     ],
 
     /**

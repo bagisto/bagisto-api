@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'Você não tem permissão para gerenciar termos de pesquisa.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Autenticação de administrador',
+                'info' => 'Duração dos tokens, limites de requisições e regras de segurança para logins na API de administração e tokens de API.',
+
+                'tokens' => [
+                    'title' => 'Duração dos tokens',
+                    'info' => 'Por quanto tempo tokens de acesso, tokens de atualização e sessões permanecem válidos. As alterações valem para tokens emitidos depois.',
+                    'access-token-ttl' => 'Duração do token de acesso (minutos)',
+                    'access-token-ttl-info' => 'Entre 5 e 60 minutos. Padrão 15.',
+                    'refresh-token-ttl' => 'Duração do token de atualização (dias)',
+                    'refresh-token-ttl-info' => 'Entre 1 e 90 dias. Padrão 30.',
+                    'session-lifetime' => 'Duração máxima da sessão (dias)',
+                    'session-lifetime-info' => 'Entre 1 e 365 dias. Padrão 90. Depois disso o administrador precisa entrar novamente, não importa quantas vezes a sessão foi atualizada.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Limites de requisições',
+                    'info' => 'Máximo de requisições à API de administração por minuto.',
+                    'session-requests-per-minute' => 'Requisições por minuto por administrador conectado',
+                    'api-token-requests-per-minute' => 'Requisições por minuto por token de API',
+                ],
+
+                'security' => [
+                    'title' => 'Segurança',
+                    'info' => 'Regras de revogação, expiração dos tokens de API e vínculo de domínio.',
+                    'revoke-sessions-on-password-change' => 'Revogar sessões ao alterar a senha',
+                    'revoke-api-tokens-on-password-change' => 'Revogar tokens de API ao alterar a senha',
+                    'allow-non-expiring-api-tokens' => 'Permitir tokens de API sem expiração',
+                    'domain-binding-mode' => 'Modo de vínculo de domínio',
+                    'domain-binding-mode-info' => 'DNS verifica se a requisição vem de um endereço IP para o qual o domínio do token aponta. Origin verifica o cabeçalho Origin ou Referer e serve apenas para navegadores.',
+                    'domain-binding-dns' => 'DNS (endereço IP do cliente)',
+                    'domain-binding-origin' => 'Cabeçalho Origin',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'Você não está autenticado.',
+                'access-token-expired' => 'O token de acesso expirou. Atualize-o para continuar.',
+                'api-token-expired' => 'O token de API expirou.',
+                'refresh-token-invalid' => 'O token de atualização é inválido ou expirou. Entre novamente.',
+            ],
+        ],
     ],
 
     'integration' => [

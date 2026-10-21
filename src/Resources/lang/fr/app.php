@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'Vous n\'avez pas la permission de gérer les termes de recherche.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Authentification administrateur',
+                'info' => 'Durées des jetons, limites de requêtes et règles de sécurité pour les connexions à l\'API d\'administration et les jetons d\'API.',
+
+                'tokens' => [
+                    'title' => 'Durées des jetons',
+                    'info' => 'Durée de validité des jetons d\'accès, des jetons de rafraîchissement et des sessions. Les modifications s\'appliquent aux jetons émis ensuite.',
+                    'access-token-ttl' => 'Durée du jeton d\'accès (minutes)',
+                    'access-token-ttl-info' => 'Entre 5 et 60 minutes. Par défaut 15.',
+                    'refresh-token-ttl' => 'Durée du jeton de rafraîchissement (jours)',
+                    'refresh-token-ttl-info' => 'Entre 1 et 90 jours. Par défaut 30.',
+                    'session-lifetime' => 'Durée maximale de la session (jours)',
+                    'session-lifetime-info' => 'Entre 1 et 365 jours. Par défaut 90. Ensuite, l\'administrateur doit se reconnecter, quel que soit le nombre de rafraîchissements.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Limites de requêtes',
+                    'info' => 'Nombre maximal de requêtes à l\'API d\'administration par minute.',
+                    'session-requests-per-minute' => 'Requêtes par minute par administrateur connecté',
+                    'api-token-requests-per-minute' => 'Requêtes par minute par jeton d\'API',
+                ],
+
+                'security' => [
+                    'title' => 'Sécurité',
+                    'info' => 'Règles de révocation, expiration des jetons d\'API et liaison de domaine.',
+                    'revoke-sessions-on-password-change' => 'Révoquer les sessions lors d\'un changement de mot de passe',
+                    'revoke-api-tokens-on-password-change' => 'Révoquer les jetons d\'API lors d\'un changement de mot de passe',
+                    'allow-non-expiring-api-tokens' => 'Autoriser les jetons d\'API sans expiration',
+                    'domain-binding-mode' => 'Mode de liaison de domaine',
+                    'domain-binding-mode-info' => 'DNS vérifie que la requête provient d\'une adresse IP vers laquelle pointe le domaine du jeton. Origin vérifie l\'en-tête Origin ou Referer et ne convient qu\'aux navigateurs.',
+                    'domain-binding-dns' => 'DNS (adresse IP du client)',
+                    'domain-binding-origin' => 'En-tête Origin',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'Vous n\'êtes pas authentifié.',
+                'access-token-expired' => 'Le jeton d\'accès a expiré. Rafraîchissez-le pour continuer.',
+                'api-token-expired' => 'Le jeton d\'API a expiré.',
+                'refresh-token-invalid' => 'Le jeton de rafraîchissement est invalide ou a expiré. Veuillez vous reconnecter.',
+            ],
+        ],
     ],
 
     'integration' => [

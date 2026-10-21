@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'You do not have permission to manage search terms.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Admin Authentication',
+                'info' => 'Token lifetimes, rate limits and security rules for admin API logins and API tokens.',
+
+                'tokens' => [
+                    'title' => 'Token Lifetimes',
+                    'info' => 'How long access tokens, refresh tokens and sessions stay valid. Changes apply to tokens issued afterwards.',
+                    'access-token-ttl' => 'Access Token Lifetime (minutes)',
+                    'access-token-ttl-info' => 'Between 5 and 60 minutes. Default 15.',
+                    'refresh-token-ttl' => 'Refresh Token Lifetime (days)',
+                    'refresh-token-ttl-info' => 'Between 1 and 90 days. Default 30.',
+                    'session-lifetime' => 'Absolute Session Lifetime (days)',
+                    'session-lifetime-info' => 'Between 1 and 365 days. Default 90. After this the admin must log in again, however often the session is refreshed.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Rate Limits',
+                    'info' => 'Maximum admin API requests per minute.',
+                    'session-requests-per-minute' => 'Requests per Minute per Signed-in Admin',
+                    'api-token-requests-per-minute' => 'Requests per Minute per API Token',
+                ],
+
+                'security' => [
+                    'title' => 'Security',
+                    'info' => 'Revocation rules, API token expiry and domain binding.',
+                    'revoke-sessions-on-password-change' => 'Revoke Sessions on Password Change',
+                    'revoke-api-tokens-on-password-change' => 'Revoke API Tokens on Password Change',
+                    'allow-non-expiring-api-tokens' => 'Allow API Tokens Without Expiry',
+                    'domain-binding-mode' => 'Domain Binding Mode',
+                    'domain-binding-mode-info' => 'DNS checks that the request comes from an IP address the token\'s domain resolves to. Origin checks the Origin or Referer header and only suits browser callers.',
+                    'domain-binding-dns' => 'DNS (client IP address)',
+                    'domain-binding-origin' => 'Origin header',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'You are not authenticated.',
+                'access-token-expired' => 'The access token has expired. Refresh it to continue.',
+                'api-token-expired' => 'The API token has expired.',
+                'refresh-token-invalid' => 'The refresh token is invalid or has expired. Please log in again.',
+            ],
+        ],
     ],
 
     'integration' => [

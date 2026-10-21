@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'Nu aveți permisiunea de a gestiona termenii de căutare.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Autentificare administrator',
+                'info' => 'Durata tokenurilor, limite de cereri și reguli de securitate pentru autentificările în API-ul de administrare și tokenurile API.',
+
+                'tokens' => [
+                    'title' => 'Durata tokenurilor',
+                    'info' => 'Cât timp rămân valide tokenurile de acces, tokenurile de reîmprospătare și sesiunile. Modificările se aplică tokenurilor emise ulterior.',
+                    'access-token-ttl' => 'Durata tokenului de acces (minute)',
+                    'access-token-ttl-info' => 'Între 5 și 60 de minute. Implicit 15.',
+                    'refresh-token-ttl' => 'Durata tokenului de reîmprospătare (zile)',
+                    'refresh-token-ttl-info' => 'Între 1 și 90 de zile. Implicit 30.',
+                    'session-lifetime' => 'Durata maximă a sesiunii (zile)',
+                    'session-lifetime-info' => 'Între 1 și 365 de zile. Implicit 90. După aceea administratorul trebuie să se autentifice din nou, indiferent de câte ori a fost reîmprospătată sesiunea.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Limite de cereri',
+                    'info' => 'Numărul maxim de cereri către API-ul de administrare pe minut.',
+                    'session-requests-per-minute' => 'Cereri pe minut per administrator autentificat',
+                    'api-token-requests-per-minute' => 'Cereri pe minut per token API',
+                ],
+
+                'security' => [
+                    'title' => 'Securitate',
+                    'info' => 'Reguli de revocare, expirarea tokenurilor API și legarea de domeniu.',
+                    'revoke-sessions-on-password-change' => 'Revocă sesiunile la schimbarea parolei',
+                    'revoke-api-tokens-on-password-change' => 'Revocă tokenurile API la schimbarea parolei',
+                    'allow-non-expiring-api-tokens' => 'Permite tokenuri API fără expirare',
+                    'domain-binding-mode' => 'Mod de legare de domeniu',
+                    'domain-binding-mode-info' => 'DNS verifică dacă cererea vine de la o adresă IP la care se rezolvă domeniul tokenului. Origin verifică antetul Origin sau Referer și este potrivit doar pentru browsere.',
+                    'domain-binding-dns' => 'DNS (adresa IP a clientului)',
+                    'domain-binding-origin' => 'Antetul Origin',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'Nu sunteți autentificat.',
+                'access-token-expired' => 'Tokenul de acces a expirat. Reîmprospătează-l pentru a continua.',
+                'api-token-expired' => 'Tokenul API a expirat.',
+                'refresh-token-invalid' => 'Tokenul de reîmprospătare este invalid sau a expirat. Autentifică-te din nou.',
+            ],
+        ],
     ],
 
     'integration' => [

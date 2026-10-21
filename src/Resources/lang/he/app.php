@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'אין לך הרשאה לנהל מונחי חיפוש.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'אימות מנהל',
+                'info' => 'משכי תוקף של אסימונים, מגבלות קצב וכללי אבטחה עבור כניסות מנהל ל-API ואסימוני API.',
+
+                'tokens' => [
+                    'title' => 'משכי תוקף של אסימונים',
+                    'info' => 'כמה זמן אסימוני גישה, אסימוני רענון והפעלות נשארים בתוקף. השינויים חלים על אסימונים שיונפקו לאחר מכן.',
+                    'access-token-ttl' => 'משך תוקף אסימון הגישה (דקות)',
+                    'access-token-ttl-info' => 'בין 5 ל-60 דקות. ברירת מחדל 15.',
+                    'refresh-token-ttl' => 'משך תוקף אסימון הרענון (ימים)',
+                    'refresh-token-ttl-info' => 'בין 1 ל-90 ימים. ברירת מחדל 30.',
+                    'session-lifetime' => 'משך מרבי של הפעלה (ימים)',
+                    'session-lifetime-info' => 'בין 1 ל-365 ימים. ברירת מחדל 90. לאחר מכן המנהל חייב להתחבר מחדש, לא משנה כמה פעמים ההפעלה רועננה.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'מגבלות קצב',
+                    'info' => 'מספר מרבי של בקשות API של מנהל בדקה.',
+                    'session-requests-per-minute' => 'בקשות לדקה לכל מנהל מחובר',
+                    'api-token-requests-per-minute' => 'בקשות לדקה לכל אסימון API',
+                ],
+
+                'security' => [
+                    'title' => 'אבטחה',
+                    'info' => 'כללי ביטול, תפוגת אסימוני API וקישור לדומיין.',
+                    'revoke-sessions-on-password-change' => 'בטל הפעלות בעת שינוי סיסמה',
+                    'revoke-api-tokens-on-password-change' => 'בטל אסימוני API בעת שינוי סיסמה',
+                    'allow-non-expiring-api-tokens' => 'אפשר אסימוני API ללא תפוגה',
+                    'domain-binding-mode' => 'מצב קישור לדומיין',
+                    'domain-binding-mode-info' => 'DNS בודק שהבקשה מגיעה מכתובת IP שאליה מצביע הדומיין של האסימון. Origin בודק את הכותרת Origin או Referer ומתאים לדפדפנים בלבד.',
+                    'domain-binding-dns' => 'DNS (כתובת IP של הלקוח)',
+                    'domain-binding-origin' => 'כותרת Origin',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'אינך מאומת.',
+                'access-token-expired' => 'תוקף אסימון הגישה פג. רענן אותו כדי להמשיך.',
+                'api-token-expired' => 'תוקף אסימון ה-API פג.',
+                'refresh-token-invalid' => 'אסימון הרענון אינו תקף או שפג תוקפו. נא להתחבר מחדש.',
+            ],
+        ],
     ],
 
     'integration' => [

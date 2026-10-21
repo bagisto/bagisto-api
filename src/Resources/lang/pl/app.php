@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'Nie masz uprawnień do zarządzania wyszukiwanymi frazami.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Uwierzytelnianie administratora',
+                'info' => 'Czas ważności tokenów, limity żądań i reguły bezpieczeństwa dla logowań do API administratora i tokenów API.',
+
+                'tokens' => [
+                    'title' => 'Czas ważności tokenów',
+                    'info' => 'Jak długo ważne są tokeny dostępu, tokeny odświeżania i sesje. Zmiany dotyczą tokenów wydanych później.',
+                    'access-token-ttl' => 'Czas ważności tokenu dostępu (minuty)',
+                    'access-token-ttl-info' => 'Od 5 do 60 minut. Domyślnie 15.',
+                    'refresh-token-ttl' => 'Czas ważności tokenu odświeżania (dni)',
+                    'refresh-token-ttl-info' => 'Od 1 do 90 dni. Domyślnie 30.',
+                    'session-lifetime' => 'Maksymalny czas trwania sesji (dni)',
+                    'session-lifetime-info' => 'Od 1 do 365 dni. Domyślnie 90. Potem administrator musi zalogować się ponownie, niezależnie od liczby odświeżeń sesji.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Limity żądań',
+                    'info' => 'Maksymalna liczba żądań do API administratora na minutę.',
+                    'session-requests-per-minute' => 'Żądania na minutę na zalogowanego administratora',
+                    'api-token-requests-per-minute' => 'Żądania na minutę na token API',
+                ],
+
+                'security' => [
+                    'title' => 'Bezpieczeństwo',
+                    'info' => 'Reguły unieważniania, wygasanie tokenów API i powiązanie z domeną.',
+                    'revoke-sessions-on-password-change' => 'Unieważniaj sesje przy zmianie hasła',
+                    'revoke-api-tokens-on-password-change' => 'Unieważniaj tokeny API przy zmianie hasła',
+                    'allow-non-expiring-api-tokens' => 'Zezwalaj na tokeny API bez daty wygaśnięcia',
+                    'domain-binding-mode' => 'Tryb powiązania z domeną',
+                    'domain-binding-mode-info' => 'DNS sprawdza, czy żądanie pochodzi z adresu IP, na który wskazuje domena tokenu. Origin sprawdza nagłówek Origin lub Referer i nadaje się tylko dla przeglądarek.',
+                    'domain-binding-dns' => 'DNS (adres IP klienta)',
+                    'domain-binding-origin' => 'Nagłówek Origin',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'Nie jesteś uwierzytelniony.',
+                'access-token-expired' => 'Token dostępu wygasł. Odśwież go, aby kontynuować.',
+                'api-token-expired' => 'Token API wygasł.',
+                'refresh-token-invalid' => 'Token odświeżania jest nieprawidłowy lub wygasł. Zaloguj się ponownie.',
+            ],
+        ],
     ],
 
     'integration' => [

@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'Anda tidak memiliki izin untuk mengelola istilah pencarian.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Autentikasi Admin',
+                'info' => 'Masa berlaku token, batas laju, dan aturan keamanan untuk login API admin dan token API.',
+
+                'tokens' => [
+                    'title' => 'Masa Berlaku Token',
+                    'info' => 'Berapa lama token akses, token penyegaran, dan sesi tetap berlaku. Perubahan berlaku untuk token yang diterbitkan setelahnya.',
+                    'access-token-ttl' => 'Masa Berlaku Token Akses (menit)',
+                    'access-token-ttl-info' => 'Antara 5 dan 60 menit. Bawaan 15.',
+                    'refresh-token-ttl' => 'Masa Berlaku Token Penyegaran (hari)',
+                    'refresh-token-ttl-info' => 'Antara 1 dan 90 hari. Bawaan 30.',
+                    'session-lifetime' => 'Masa Berlaku Maksimum Sesi (hari)',
+                    'session-lifetime-info' => 'Antara 1 dan 365 hari. Bawaan 90. Setelah itu admin harus login lagi, berapa kali pun sesi disegarkan.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Batas Laju',
+                    'info' => 'Jumlah maksimum permintaan API admin per menit.',
+                    'session-requests-per-minute' => 'Permintaan per Menit per Admin yang Login',
+                    'api-token-requests-per-minute' => 'Permintaan per Menit per Token API',
+                ],
+
+                'security' => [
+                    'title' => 'Keamanan',
+                    'info' => 'Aturan pencabutan, kedaluwarsa token API, dan pengikatan domain.',
+                    'revoke-sessions-on-password-change' => 'Cabut Sesi Saat Kata Sandi Diubah',
+                    'revoke-api-tokens-on-password-change' => 'Cabut Token API Saat Kata Sandi Diubah',
+                    'allow-non-expiring-api-tokens' => 'Izinkan Token API Tanpa Kedaluwarsa',
+                    'domain-binding-mode' => 'Mode Pengikatan Domain',
+                    'domain-binding-mode-info' => 'DNS memeriksa bahwa permintaan berasal dari alamat IP tujuan domain token. Origin memeriksa header Origin atau Referer dan hanya cocok untuk browser.',
+                    'domain-binding-dns' => 'DNS (alamat IP klien)',
+                    'domain-binding-origin' => 'Header Origin',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'Anda tidak terautentikasi.',
+                'access-token-expired' => 'Token akses telah kedaluwarsa. Segarkan untuk melanjutkan.',
+                'api-token-expired' => 'Token API telah kedaluwarsa.',
+                'refresh-token-invalid' => 'Token penyegaran tidak valid atau telah kedaluwarsa. Silakan login kembali.',
+            ],
+        ],
     ],
 
     'integration' => [

@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'Sie haben keine Berechtigung, Suchbegriffe zu verwalten.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Admin-Authentifizierung',
+                'info' => 'Token-Laufzeiten, Ratenbegrenzungen und Sicherheitsregeln für Admin-API-Anmeldungen und API-Tokens.',
+
+                'tokens' => [
+                    'title' => 'Token-Laufzeiten',
+                    'info' => 'Wie lange Zugriffstokens, Aktualisierungstokens und Sitzungen gültig bleiben. Änderungen gelten für danach ausgestellte Tokens.',
+                    'access-token-ttl' => 'Laufzeit des Zugriffstokens (Minuten)',
+                    'access-token-ttl-info' => 'Zwischen 5 und 60 Minuten. Standard 15.',
+                    'refresh-token-ttl' => 'Laufzeit des Aktualisierungstokens (Tage)',
+                    'refresh-token-ttl-info' => 'Zwischen 1 und 90 Tagen. Standard 30.',
+                    'session-lifetime' => 'Maximale Sitzungsdauer (Tage)',
+                    'session-lifetime-info' => 'Zwischen 1 und 365 Tagen. Standard 90. Danach muss sich der Admin erneut anmelden, egal wie oft die Sitzung aktualisiert wurde.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Ratenbegrenzungen',
+                    'info' => 'Maximale Admin-API-Anfragen pro Minute.',
+                    'session-requests-per-minute' => 'Anfragen pro Minute je angemeldetem Admin',
+                    'api-token-requests-per-minute' => 'Anfragen pro Minute je API-Token',
+                ],
+
+                'security' => [
+                    'title' => 'Sicherheit',
+                    'info' => 'Widerrufsregeln, Ablauf von API-Tokens und Domainbindung.',
+                    'revoke-sessions-on-password-change' => 'Sitzungen bei Passwortänderung widerrufen',
+                    'revoke-api-tokens-on-password-change' => 'API-Tokens bei Passwortänderung widerrufen',
+                    'allow-non-expiring-api-tokens' => 'API-Tokens ohne Ablaufdatum erlauben',
+                    'domain-binding-mode' => 'Domainbindungsmodus',
+                    'domain-binding-mode-info' => 'DNS prüft, dass die Anfrage von einer IP-Adresse kommt, auf die die Domain des Tokens auflöst. Origin prüft den Origin- oder Referer-Header und eignet sich nur für Browser.',
+                    'domain-binding-dns' => 'DNS (IP-Adresse des Clients)',
+                    'domain-binding-origin' => 'Origin-Header',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'Sie sind nicht authentifiziert.',
+                'access-token-expired' => 'Das Zugriffstoken ist abgelaufen. Aktualisieren Sie es, um fortzufahren.',
+                'api-token-expired' => 'Das API-Token ist abgelaufen.',
+                'refresh-token-invalid' => 'Das Aktualisierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an.',
+            ],
+        ],
     ],
 
     'integration' => [

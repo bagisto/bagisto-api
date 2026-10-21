@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => 'شما مجوز مدیریت عبارت‌های جستجو را ندارید.',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'احراز هویت مدیر',
+                'info' => 'مدت اعتبار توکن‌ها، محدودیت نرخ و قوانین امنیتی برای ورود مدیر به API و توکن‌های API.',
+
+                'tokens' => [
+                    'title' => 'مدت اعتبار توکن‌ها',
+                    'info' => 'مدت اعتبار توکن‌های دسترسی، توکن‌های تازه‌سازی و نشست‌ها. تغییرات برای توکن‌های صادرشده پس از آن اعمال می‌شود.',
+                    'access-token-ttl' => 'مدت اعتبار توکن دسترسی (دقیقه)',
+                    'access-token-ttl-info' => 'بین ۵ تا ۶۰ دقیقه. پیش‌فرض ۱۵.',
+                    'refresh-token-ttl' => 'مدت اعتبار توکن تازه‌سازی (روز)',
+                    'refresh-token-ttl-info' => 'بین ۱ تا ۹۰ روز. پیش‌فرض ۳۰.',
+                    'session-lifetime' => 'حداکثر مدت نشست (روز)',
+                    'session-lifetime-info' => 'بین ۱ تا ۳۶۵ روز. پیش‌فرض ۹۰. پس از آن مدیر باید دوباره وارد شود، هر چند بار که نشست تازه‌سازی شده باشد.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'محدودیت نرخ',
+                    'info' => 'حداکثر درخواست‌های API مدیر در دقیقه.',
+                    'session-requests-per-minute' => 'درخواست در دقیقه برای هر مدیر واردشده',
+                    'api-token-requests-per-minute' => 'درخواست در دقیقه برای هر توکن API',
+                ],
+
+                'security' => [
+                    'title' => 'امنیت',
+                    'info' => 'قوانین لغو، انقضای توکن‌های API و اتصال دامنه.',
+                    'revoke-sessions-on-password-change' => 'لغو نشست‌ها هنگام تغییر رمز عبور',
+                    'revoke-api-tokens-on-password-change' => 'لغو توکن‌های API هنگام تغییر رمز عبور',
+                    'allow-non-expiring-api-tokens' => 'اجازه توکن‌های API بدون انقضا',
+                    'domain-binding-mode' => 'حالت اتصال دامنه',
+                    'domain-binding-mode-info' => 'DNS بررسی می‌کند که درخواست از نشانی IP‌ای باشد که دامنه توکن به آن اشاره می‌کند. Origin سرآیند Origin یا Referer را بررسی می‌کند و فقط برای مرورگرها مناسب است.',
+                    'domain-binding-dns' => 'DNS (نشانی IP کلاینت)',
+                    'domain-binding-origin' => 'سرآیند Origin',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'احراز هویت نشده‌اید.',
+                'access-token-expired' => 'توکن دسترسی منقضی شده است. برای ادامه آن را تازه‌سازی کنید.',
+                'api-token-expired' => 'توکن API منقضی شده است.',
+                'refresh-token-invalid' => 'توکن تازه‌سازی نامعتبر یا منقضی است. لطفاً دوباره وارد شوید.',
+            ],
+        ],
     ],
 
     'integration' => [

@@ -7,6 +7,21 @@ use Illuminate\Database\Eloquent\Model;
 class AdminApiAudit extends Model
 {
     /**
+     * The token kind of a request made with a login session's access token.
+     */
+    public const TOKEN_KIND_SESSION = 'session';
+
+    /**
+     * The token kind of a request made with an API token.
+     */
+    public const TOKEN_KIND_API_TOKEN = 'api_token';
+
+    /**
+     * The token kind of rows written by the removed Integration tokens.
+     */
+    public const TOKEN_KIND_INTEGRATION = 'integration';
+
+    /**
      * The timestamps.
      */
     public $timestamps = false;
@@ -32,6 +47,8 @@ class AdminApiAudit extends Model
         'admin_name',
         'token_id',
         'token_name',
+        'token_kind',
+        'channel',
         'method',
         'url',
         'ip_address',

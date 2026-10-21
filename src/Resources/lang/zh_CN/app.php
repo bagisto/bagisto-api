@@ -1624,6 +1624,49 @@ return [
                 'no-permission' => '您没有管理搜索词的权限。',
             ],
         ],
+        'auth' => [
+            'configuration' => [
+                'title' => '管理员认证',
+                'info' => '管理员 API 登录和 API 令牌的令牌有效期、速率限制和安全规则。',
+
+                'tokens' => [
+                    'title' => '令牌有效期',
+                    'info' => '访问令牌、刷新令牌和会话的有效时长。更改适用于之后签发的令牌。',
+                    'access-token-ttl' => '访问令牌有效期（分钟）',
+                    'access-token-ttl-info' => '5 到 60 分钟。默认 15。',
+                    'refresh-token-ttl' => '刷新令牌有效期（天）',
+                    'refresh-token-ttl-info' => '1 到 90 天。默认 30。',
+                    'session-lifetime' => '会话最长有效期（天）',
+                    'session-lifetime-info' => '1 到 365 天。默认 90。之后无论会话刷新多少次，管理员都必须重新登录。',
+                ],
+
+                'rate-limits' => [
+                    'title' => '速率限制',
+                    'info' => '每分钟管理员 API 请求的最大次数。',
+                    'session-requests-per-minute' => '每个已登录管理员每分钟请求数',
+                    'api-token-requests-per-minute' => '每个 API 令牌每分钟请求数',
+                ],
+
+                'security' => [
+                    'title' => '安全',
+                    'info' => '撤销规则、API 令牌过期和域名绑定。',
+                    'revoke-sessions-on-password-change' => '修改密码时撤销会话',
+                    'revoke-api-tokens-on-password-change' => '修改密码时撤销 API 令牌',
+                    'allow-non-expiring-api-tokens' => '允许永不过期的 API 令牌',
+                    'domain-binding-mode' => '域名绑定模式',
+                    'domain-binding-mode-info' => 'DNS 检查请求是否来自令牌域名解析到的 IP 地址。Origin 检查 Origin 或 Referer 请求头，仅适用于浏览器调用。',
+                    'domain-binding-dns' => 'DNS（客户端 IP 地址）',
+                    'domain-binding-origin' => 'Origin 请求头',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => '您尚未通过身份验证。',
+                'access-token-expired' => '访问令牌已过期。请刷新后继续。',
+                'api-token-expired' => 'API 令牌已过期。',
+                'refresh-token-invalid' => '刷新令牌无效或已过期。请重新登录。',
+            ],
+        ],
     ],
 
     'integration' => [

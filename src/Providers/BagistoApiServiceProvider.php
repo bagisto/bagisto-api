@@ -139,7 +139,11 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'webkul');
 
-        $this->registerModelSubstitutions();
+        $this->app->booted(function () {
+            $this->registerModelSubstitutions();
+
+            AdminProxy::modelClass()::observe(AdminCredentialObserver::class);
+        });
 
         $this->bootAdminPanel();
 
@@ -240,6 +244,7 @@ class BagistoApiServiceProvider extends ServiceProvider
 
     /**
      * Substitute the API attribute model for the core attribute contract and register the admin auth models.
+     * Runs once every provider has booted, so core's own Concord registrations cannot override it.
      */
     protected function registerModelSubstitutions(): void
     {
@@ -532,8 +537,6 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../Admin/Resources/views', 'bagistoapi');
 
         $this->registerAdminMenu();
-
-        AdminProxy::modelClass()::observe(AdminCredentialObserver::class);
 
         Auth::extend('admin-api', function ($app, $name, array $config) {
             return new AdminApiGuard(

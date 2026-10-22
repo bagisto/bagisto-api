@@ -39,6 +39,14 @@ use Webkul\BagistoApi\Admin\State\AdminLogoutProcessor;
                         description: 'Logged out: the session is revoked, so its access and refresh tokens stop working.',
                         content: new \ArrayObject([
                             'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+
+                                    'properties' => [
+                                        'success' => ['type' => 'boolean'],
+                                        'message' => ['type' => 'string'],
+                                    ],
+                                ],
                                 'example' => [
                                     'success' => true,
                                     'message' => 'You have been logged out.',

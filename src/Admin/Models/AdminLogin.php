@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminLoginInput;
 use Webkul\BagistoApi\Admin\State\AdminLoginProcessor;
+use Webkul\BagistoApi\OpenApi\AdminAuthResponses;
+use Webkul\BagistoApi\OpenApi\ApiSchemas;
 
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -59,63 +61,79 @@ use Webkul\BagistoApi\Admin\State\AdminLoginProcessor;
                                     ],
                                 ],
                             ],
+
+                            'example' => [
+                                'email' => 'admin@example.com',
+                                'password' => 'admin123',
+                                'device_name' => 'iPhone',
+                                'client_type' => 'mobile',
+                            ],
                         ],
                     ]),
                 ),
                 responses: [
                     '200' => new Model\Response(
-                        description: 'Logged in.',
+                        description: 'Logged in: the token pair, with `twoFactorRequired: false`.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => [
-                                    'tokenType' => 'Bearer',
-                                    'accessToken' => 'eyJhbGciOiJFUzI1NiIsImtpZCI6Ii4uLiIsInR5cCI6IkpXVCJ9.eyJ...',
-                                    'expiresIn' => 900,
-                                    'accessTokenExpiresAt' => '2026-10-21T10:15:00+05:30',
-                                    'refreshToken' => '77|3f9c0d...',
-                                    'refreshTokenExpiresAt' => '2026-11-20T10:00:00+05:30',
-                                    'session' => [
-                                        'id' => 12,
-                                        'name' => 'iPhone',
-                                        'clientType' => 'mobile',
-                                        'expiresAt' => '2027-01-19T10:00:00+05:30',
-                                    ],
-                                    'admin' => [
-                                        'id' => 3,
-                                        'name' => 'Example Admin',
-                                        'email' => 'admin@example.com',
-                                        'role' => [
-                                            'id' => 1,
-                                            'name' => 'Administrator',
-                                            'permissionType' => 'all',
-                                        ],
-                                    ],
-                                    'permissions' => ['*'],
-                                    'twoFactorRequired' => false,
-                                    'challengeToken' => null,
-                                    'challengeTokenExpiresAt' => null,
-                                    'message' => null,
-                                ],
+                                'schema' => AdminAuthResponses::LOGIN_SCHEMA,
+                                'example' => AdminAuthResponses::LOGIN,
                             ],
                         ]),
                     ),
                     '202' => new Model\Response(
-                        description: 'Password accepted; a second factor is required. Every token field is null.',
+                        description: 'Password accepted; a second factor is required. `twoFactorRequired` is true, `challengeToken` is valid once for 5 minutes, and every token field is null.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => [
-                                    'twoFactorRequired' => true,
-                                    'challengeToken' => '41|9b1e7c...',
-                                    'challengeTokenExpiresAt' => '2026-10-21T10:05:00+05:30',
-                                    'message' => 'Enter the 6-digit code from your authenticator app, or one of your backup codes, to finish logging in.',
+                                'schema' => AdminAuthResponses::LOGIN_SCHEMA,
+                                'example' => AdminAuthResponses::LOGIN_CHALLENGE,
+                            ],
+                        ]),
+                    ),
+                    '401' => new Model\Response(
+                        description: 'Wrong email or password (`invalid_credentials`). The message is the same whether or not the email exists.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'schema' => ['$ref' => ApiSchemas::AUTH_ERROR_REF],
+                                'examples' => [
+                                    'invalid_credentials' => ['value' => AdminAuthResponses::INVALID_CREDENTIALS],
                                 ],
                             ],
                         ]),
                     ),
-                    '401' => new Model\Response(description: 'Wrong email or password (`invalid_credentials`).'),
-                    '403' => new Model\Response(description: 'The admin is inactive (`account_inactive`).'),
-                    '422' => new Model\Response(description: 'Validation failure.'),
-                    '429' => new Model\Response(description: 'Too many failed attempts (`too_many_login_attempts`); see `Retry-After`.'),
+                    '403' => new Model\Response(
+                        description: 'The admin is inactive (`account_inactive`).',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'schema' => ['$ref' => ApiSchemas::AUTH_ERROR_REF],
+                                'examples' => [
+                                    'account_inactive' => ['value' => AdminAuthResponses::ACCOUNT_INACTIVE],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(
+                        description: 'Validation failure: a missing or malformed `email`, a missing `password`, or an unknown `client_type`. `detail` holds the first message.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'schema' => ['$ref' => ApiSchemas::PROBLEM_REF],
+                                'example' => AdminAuthResponses::VALIDATION_FAILED,
+                            ],
+                        ]),
+                    ),
+                    '429' => new Model\Response(
+                        description: 'Five failed logins for this email and address in a minute (`too_many_login_attempts`), or more than 60 requests a minute from this address (`rate_limit_exceeded`). Wait for `Retry-After` seconds.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'schema' => ['$ref' => ApiSchemas::AUTH_ERROR_REF],
+                                'examples' => [
+                                    'too_many_login_attempts' => ['value' => AdminAuthResponses::TOO_MANY_LOGIN_ATTEMPTS],
+                                    'rate_limit_exceeded' => ['value' => AdminAuthResponses::RATE_LIMIT_EXCEEDED],
+                                ],
+                            ],
+                        ]),
+                        headers: new \ArrayObject(AdminAuthResponses::RETRY_AFTER),
+                    ),
                 ],
             ),
         ),

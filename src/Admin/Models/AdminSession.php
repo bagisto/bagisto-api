@@ -11,6 +11,8 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSessionRevokeInput;
 use Webkul\BagistoApi\Admin\State\AdminSessionCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSessionProcessor;
+use Webkul\BagistoApi\OpenApi\AdminAuthResponses;
+use Webkul\BagistoApi\OpenApi\ApiSchemas;
 
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -61,9 +63,17 @@ use Webkul\BagistoApi\Admin\State\AdminSessionProcessor;
                     ]),
                 ],
                 responses: [
-                    '204' => new Model\Response(description: 'Session revoked.'),
+                    '204' => new Model\Response(description: 'Session revoked; its access and refresh tokens stop working at once.'),
                     '403' => new Model\Response(description: 'Called with an API token (`access_token_required`).'),
-                    '404' => new Model\Response(description: 'No live session of the calling admin has this id.'),
+                    '404' => new Model\Response(
+                        description: 'No live session of the calling admin has this id.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'schema' => ['$ref' => ApiSchemas::PROBLEM_REF],
+                                'example' => AdminAuthResponses::SESSION_NOT_FOUND,
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),

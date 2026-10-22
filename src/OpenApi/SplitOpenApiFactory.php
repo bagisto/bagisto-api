@@ -22,6 +22,35 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
     private const HTTP_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
 
     /**
+     * The messages the purchased download route refuses a request with, by error code.
+     */
+    private const DOWNLOAD_REFUSALS = [
+        'unauthenticated' => 'Unauthorized: Customer authentication required.',
+        'not_found' => 'Downloadable product not found.',
+        'download_pending' => 'Download is pending. Please wait for the order to be invoiced.',
+        'download_limit_exceeded' => 'Download limit exceeded.',
+        'no_downloads_remaining' => 'No more downloads available.',
+        'file_not_found' => 'File not found.',
+    ];
+
+    /**
+     * The schema of a purchased download refusal.
+     */
+    private const DOWNLOAD_REFUSAL_SCHEMA = [
+        'type' => 'object',
+        'required' => ['message', 'error'],
+
+        'properties' => [
+            'message' => ['type' => 'string'],
+
+            'error' => [
+                'type' => 'string',
+                'enum' => ['unauthenticated', 'not_found', 'download_pending', 'download_limit_exceeded', 'no_downloads_remaining', 'file_not_found'],
+            ],
+        ],
+    ];
+
+    /**
      * Create a new instance.
      */
     public function __construct(private OpenApiFactoryInterface $decorated) {}
@@ -52,16 +81,18 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
 
         if ($endpointType === 'shop') {
             $openApi = $this->filterShopPaths($openApi);
-            $description = 'Bagisto Shop API - Customer-facing operations for products, cart, orders, and checkout.';
+            $description = ApiGuide::SHOP;
             $openApi = $this->addStorefrontKeyHeader($openApi);
         } else {
             $openApi = $this->filterAdminPaths($openApi);
-            $description = 'Bagisto Admin API - Administrative operations for store management and configuration.';
+            $description = ApiGuide::ADMIN;
         }
 
         $openApi = $this->cleanPathParameters($openApi);
 
         $openApi = $this->withDescription($openApi, $description);
+
+        $openApi = (new AccessDocumenter)($openApi, $endpointType);
 
         $usedTags = [];
         $usedSchemas = [];
@@ -578,24 +609,12 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * Add laravel backed shop paths.
+     * Add the storefront downloads served by plain Laravel routes rather than API Platform operations.
      */
     private function addLaravelBackedShopPaths(OpenApi $openApi): OpenApi
     {
         $paths = $openApi->getPaths();
 
-        $bearerParam = new Parameter(
-            name: 'Authorization',
-            in: 'header',
-            description: 'Bearer token for authenticated customer (format: `Bearer <token>`).',
-            required: true,
-            deprecated: false,
-            allowEmptyValue: false,
-            schema: [
-                'type' => 'string',
-                'example' => 'Bearer 1234|abcdef...',
-            ],
-        );
         $idParam = new Parameter(
             name: 'id',
             in: 'path',
@@ -606,63 +625,127 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             schema: ['type' => 'integer'],
         );
 
-        $binaryResponse = new Response(
-            description: 'Binary file stream',
-            content: new \ArrayObject([
-                'application/octet-stream' => ['schema' => [
-                    'type' => 'string',
-                    'format' => 'binary',
-                ]],
-            ]),
+        $missingKey = $this->plainErrorResponse(
+            'The `X-STOREFRONT-KEY` header is missing (`missing_key`).',
+            ApiSchemas::STOREFRONT_KEY_ERROR_REF,
+            ['missing_key' => [
+                'message' => 'X-STOREFRONT-KEY header is required',
+                'error' => 'missing_key',
+                'header_name' => 'X-STOREFRONT-KEY',
+                'key_type' => 'shop',
+            ]],
         );
+
+        $invalidKey = [
+            'message' => 'Invalid or inactive shop API key',
+            'error' => 'invalid_key',
+        ];
+
+        $noCustomer = ApiSchemas::problem(403, 'Forbidden', 'Unauthenticated. Please login to perform this action');
 
         $pdfOp = new Operation(
             operationId: 'downloadCustomerInvoicePdf',
             tags: ['Customer Order'],
             responses: [
-                '200' => $binaryResponse,
-                '401' => new Response(description: 'Unauthorized'),
-                '403' => new Response(description: 'Forbidden'),
-                '404' => new Response(description: 'Invoice not found'),
+                '200' => $this->fileResponse('The invoice PDF, as an attachment named `invoice-<dd-mm-yyyy>.pdf`.', 'application/pdf'),
+                '401' => $missingKey,
+                '403' => $this->plainErrorResponse(
+                    'The storefront key is invalid (`invalid_key`), or no customer token was sent (a problem document).',
+                    [ApiSchemas::STOREFRONT_KEY_ERROR_REF, ApiSchemas::PROBLEM_REF],
+                    [
+                        'invalid_key' => $invalidKey,
+                        'no_customer_token' => $noCustomer,
+                    ],
+                ),
+                '404' => $this->plainErrorResponse(
+                    'No invoice of the customer\'s orders has this id.',
+                    ApiSchemas::PROBLEM_REF,
+                    ['not_found' => ApiSchemas::problem(404, 'Not Found', 'Customer invoice with ID "7" not found')],
+                ),
             ],
             summary: 'Download invoice PDF',
-            description: 'Streams the PDF for a customer invoice. Requires Bearer token; the invoice must belong to the authenticated customer.',
-            parameters: [$idParam, $bearerParam],
+            description: 'Streams the PDF of one of the customer\'s invoices, rendered by core\'s storefront invoice view. Needs the customer token; an invoice of another customer answers 404.',
+            parameters: [$idParam],
         );
 
         $downloadOp = new Operation(
             operationId: 'downloadCustomerDownloadableProduct',
             tags: ['Customer Order'],
             responses: [
-                '200' => $binaryResponse,
-                '401' => new Response(description: 'Unauthorized'),
-                '403' => new Response(description: 'Forbidden (pending / download limit exceeded)'),
-                '404' => new Response(description: 'Download not found'),
+                '200' => $this->fileResponse('The purchased file, as an attachment, with its own content type.', 'application/octet-stream'),
+                '401' => $this->plainErrorResponse(
+                    'The `X-STOREFRONT-KEY` header is missing (`missing_key`), or no customer token was sent (`unauthenticated`).',
+                    [ApiSchemas::STOREFRONT_KEY_ERROR_REF, self::DOWNLOAD_REFUSAL_SCHEMA],
+                    [
+                        'missing_key' => [
+                            'message' => 'X-STOREFRONT-KEY header is required',
+                            'error' => 'missing_key',
+                            'header_name' => 'X-STOREFRONT-KEY',
+                            'key_type' => 'shop',
+                        ],
+                        'unauthenticated' => $this->downloadRefusal('unauthenticated'),
+                    ],
+                ),
+                '403' => $this->plainErrorResponse(
+                    'The storefront key is invalid (`invalid_key`), the purchase is still pending (`download_pending`), or no downloads remain (`download_limit_exceeded`, `no_downloads_remaining`).',
+                    [ApiSchemas::STOREFRONT_KEY_ERROR_REF, self::DOWNLOAD_REFUSAL_SCHEMA],
+                    [
+                        'invalid_key' => $invalidKey,
+                        'download_pending' => $this->downloadRefusal('download_pending'),
+                        'download_limit_exceeded' => $this->downloadRefusal('download_limit_exceeded'),
+                        'no_downloads_remaining' => $this->downloadRefusal('no_downloads_remaining'),
+                    ],
+                ),
+                '404' => $this->plainErrorResponse(
+                    'No purchase of the customer has this id, or its link is invalid (`not_found`), or its file is missing (`file_not_found`).',
+                    self::DOWNLOAD_REFUSAL_SCHEMA,
+                    [
+                        'not_found' => $this->downloadRefusal('not_found'),
+                        'file_not_found' => $this->downloadRefusal('file_not_found'),
+                    ],
+                ),
             ],
             summary: 'Download purchased downloadable product',
-            description: 'Streams the purchased file. Increments `download_used` on each successful call. `{id}` is the `downloadable_link_purchased` row id from `GET /customer-downloadable-products`.',
-            parameters: [$idParam, $bearerParam],
+            description: 'Streams the purchased file. Increments `download_used` on each successful call. `{id}` is the `downloadable_link_purchased` row id from `GET /customer-downloadable-products`. Needs the customer token. Errors carry a code in `error`.',
+            parameters: [$idParam],
         );
 
         $gdprPdfOp = new Operation(
             operationId: 'downloadGdprDataPdf',
             tags: ['GDPR'],
             responses: [
-                '200' => new Response(
-                    description: 'PDF file stream',
-                    content: new \ArrayObject([
-                        'application/pdf' => ['schema' => [
-                            'type' => 'string',
-                            'format' => 'binary',
-                        ]],
-                    ]),
-                ),
-                '401' => new Response(description: 'Unauthorized'),
-                '404' => new Response(description: 'GDPR is disabled'),
+                '200' => $this->fileResponse('The customer\'s data as a PDF attachment named `customerInfo.pdf`.', 'application/pdf'),
+                '401' => new Response(description: 'The `X-STOREFRONT-KEY` header is missing (`missing_key`), or no customer token was sent.'),
+                '403' => new Response(description: 'The storefront key is invalid or inactive (`invalid_key`).'),
+                '404' => new Response(description: 'GDPR is disabled.'),
             ],
             summary: 'Download GDPR data PDF',
-            description: "Streams the authenticated customer's GDPR data export (profile, addresses and orders) as a PDF rendered by core's GDPR view. Requires Bearer token and GDPR enabled.",
-            parameters: [$bearerParam],
+            description: "Streams the authenticated customer's GDPR data export (profile, addresses and orders) as a PDF rendered by core's GDPR view. Needs the customer token and GDPR enabled.",
+        );
+
+        $attachmentOp = new Operation(
+            operationId: 'downloadCustomerReturnMessageAttachment',
+            tags: ['Customer Return'],
+            responses: [
+                '200' => $this->fileResponse('The file attached to the message, as an attachment under its original name and with its own content type.', 'application/octet-stream'),
+                '401' => $missingKey,
+                '403' => $this->plainErrorResponse(
+                    'The storefront key is invalid (`invalid_key`), or no customer token was sent (a problem document).',
+                    [ApiSchemas::STOREFRONT_KEY_ERROR_REF, ApiSchemas::PROBLEM_REF],
+                    [
+                        'invalid_key' => $invalidKey,
+                        'no_customer_token' => $noCustomer,
+                    ],
+                ),
+                '404' => $this->plainErrorResponse(
+                    'No message on the customer\'s own returns has this id, the message has no attachment, or its file is missing.',
+                    ApiSchemas::PROBLEM_REF,
+                    ['not_found' => ApiSchemas::problem(404, 'Not Found', 'Message attachment not found.')],
+                ),
+            ],
+            summary: 'Download a return message attachment',
+            description: 'Streams the file attached to a message on one of the customer\'s returns, as core\'s storefront return page does. `{id}` is the message id from `GET /return-messages`. Needs the customer token; a message on another customer\'s return answers 404.',
+            parameters: [$idParam],
         );
 
         $paths->addPath(
@@ -677,7 +760,57 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             '/api/shop/gdpr-data/pdf',
             (new PathItem)->withGet($gdprPdfOp),
         );
+        $paths->addPath(
+            '/api/shop/return-messages/{id}/attachment',
+            (new PathItem)->withGet($attachmentOp),
+        );
 
         return $openApi->withPaths($paths);
+    }
+
+    /**
+     * A successful file download response of a media type.
+     */
+    private function fileResponse(string $description, string $mediaType): Response
+    {
+        return new Response(
+            description: $description,
+            content: new \ArrayObject([
+                $mediaType => ['schema' => [
+                    'type' => 'string',
+                    'format' => 'binary',
+                ]],
+            ]),
+            headers: new \ArrayObject([
+                'Content-Disposition' => [
+                    'description' => '`attachment` with the file name.',
+                    'schema' => ['type' => 'string'],
+                ],
+            ]),
+        );
+    }
+
+    /**
+     * A JSON error response of a plain route, with named examples.
+     *
+     * @param  string|list<string>  $refs
+     */
+    private function plainErrorResponse(string $description, string|array $refs, array $examples): Response
+    {
+        return new Response(
+            description: $description,
+            content: ApiSchemas::content($refs, $examples),
+        );
+    }
+
+    /**
+     * The JSON body the purchased download route refuses a request with.
+     */
+    private function downloadRefusal(string $error): array
+    {
+        return [
+            'message' => self::DOWNLOAD_REFUSALS[$error],
+            'error' => $error,
+        ];
     }
 }

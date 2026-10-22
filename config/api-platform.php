@@ -132,12 +132,7 @@ return [
 
     'swagger_ui' => [
         'enabled' => true,
-        'http_auth' => [
-            'bearerAuth' => [
-                'scheme' => 'bearer',
-                'bearerFormat' => 'UUID',
-            ],
-        ],
+        'http_auth' => [],
     ],
 
     'url_generation_strategy' => UrlGeneratorInterface::ABS_PATH,

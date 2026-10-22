@@ -10,6 +10,8 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminAccountUpdateInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAccountUpdateProcessor;
+use Webkul\BagistoApi\OpenApi\AdminAuthResponses;
+use Webkul\BagistoApi\OpenApi\ApiSchemas;
 
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -68,6 +70,14 @@ use Webkul\BagistoApi\Admin\State\AdminAccountUpdateProcessor;
                                     ],
                                 ],
                             ],
+
+                            'example' => [
+                                'name' => 'Example Admin',
+                                'email' => 'admin@example.com',
+                                'password' => 'new-secret',
+                                'password_confirmation' => 'new-secret',
+                                'current_password' => 'admin123',
+                            ],
                         ],
                     ]),
                 ),
@@ -92,9 +102,32 @@ use Webkul\BagistoApi\Admin\State\AdminAccountUpdateProcessor;
                             ],
                         ]),
                     ),
-                    '401' => new Model\Response(description: 'Missing or invalid token.'),
+                    '401' => new Model\Response(description: 'The access token is missing or invalid, or its session was revoked (`unauthenticated`), or it expired (`access_token_expired`).'),
                     '403' => new Model\Response(description: 'Called with an API token (`access_token_required`).'),
-                    '422' => new Model\Response(description: 'Validation failure, or a wrong current password (`invalid_current_password`).'),
+                    '422' => new Model\Response(
+                        description: 'Validation failure (a problem document; `detail` holds the first message), such as a missing `name` or `current_password`, an email another admin uses or a password confirmation that does not match, or a wrong current password (`invalid_current_password`).',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'schema' => [
+                                    'oneOf' => [
+                                        ['$ref' => ApiSchemas::PROBLEM_REF],
+                                        ['$ref' => ApiSchemas::AUTH_ERROR_REF],
+                                    ],
+                                ],
+                                'examples' => [
+                                    'validation_failed' => [
+                                        'value' => [
+                                            'type' => '/errors/422',
+                                            'title' => 'Bad Request',
+                                            'status' => 422,
+                                            'detail' => 'The current password field is required.',
+                                        ],
+                                    ],
+                                    'invalid_current_password' => ['value' => AdminAuthResponses::INVALID_CURRENT_PASSWORD],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),

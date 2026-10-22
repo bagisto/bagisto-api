@@ -2,10 +2,13 @@
 
 namespace Webkul\BagistoApi\Services;
 
+use ApiPlatform\OpenApi\OpenApi;
+use Symfony\Component\Serializer\Serializer;
+
 class OpenApiSerializer
 {
     /**
-     * Convert an OpenAPI object to an array recursively.
+     * Convert an OpenAPI object to an array, as the schema export writes it, or field by field when that fails.
      */
     public static function toArray($openApi): array
     {
@@ -17,6 +20,13 @@ class OpenApiSerializer
 
         if (! is_object($openApi)) {
             return $result;
+        }
+
+        if (
+            $openApi instanceof OpenApi
+            && ($normalized = static::normalize($openApi)) !== null
+        ) {
+            return $normalized;
         }
 
         if (
@@ -56,7 +66,7 @@ class OpenApiSerializer
 
         if (
             static::hasMethod($openApi, 'getSecurity')
-            && $openApi->getSecurity()
+            && $openApi->getSecurity() !== null
         ) {
             $result['security'] = static::serializeSecurity($openApi->getSecurity());
         }
@@ -76,6 +86,24 @@ class OpenApiSerializer
         }
 
         return $result;
+    }
+
+    /**
+     * Normalize the document with API Platform's serializer, or null when it cannot.
+     */
+    private static function normalize(OpenApi $openApi): ?array
+    {
+        try {
+            $normalized = app(Serializer::class)->normalize($openApi, 'json', ['spec_version' => '3']);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return null;
+        }
+
+        return is_array($normalized)
+            ? $normalized
+            : null;
     }
 
     /**
@@ -444,7 +472,7 @@ class OpenApiSerializer
 
         if (
             static::hasMethod($operation, 'getSecurity')
-            && $operation->getSecurity()
+            && $operation->getSecurity() !== null
         ) {
             $result['security'] = static::serializeSecurity($operation->getSecurity());
         }
@@ -737,6 +765,10 @@ class OpenApiSerializer
 
         if (is_array($schema)) {
             return $schema;
+        }
+
+        if ($schema instanceof \ArrayObject) {
+            return $schema->getArrayCopy();
         }
 
         if (! is_object($schema)) {

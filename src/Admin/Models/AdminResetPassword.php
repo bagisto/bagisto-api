@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminResetPasswordInput;
 use Webkul\BagistoApi\Admin\State\AdminPasswordProcessor;
+use Webkul\BagistoApi\OpenApi\AdminAuthResponses;
+use Webkul\BagistoApi\OpenApi\ApiSchemas;
 
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -59,13 +61,73 @@ use Webkul\BagistoApi\Admin\State\AdminPasswordProcessor;
                                     ],
                                 ],
                             ],
+
+                            'example' => [
+                                'token' => '6f1c0e...',
+                                'email' => 'admin@example.com',
+                                'password' => 'new-secret',
+                                'password_confirmation' => 'new-secret',
+                            ],
                         ],
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'Password reset; every session was revoked.'),
-                    '422' => new Model\Response(description: 'Validation failure, or the token or email does not match a reset request (`password_reset_token_invalid`).'),
-                    '429' => new Model\Response(description: 'Too many requests (`too_many_password_requests`); see `Retry-After`.'),
+                    '200' => new Model\Response(
+                        description: 'Password reset; every API session of the admin was revoked. Log in again.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+
+                                    'properties' => [
+                                        'success' => ['type' => 'boolean'],
+                                        'message' => ['type' => 'string'],
+                                    ],
+                                ],
+                                'example' => [
+                                    'success' => true,
+                                    'message' => 'Your password has been reset. Please log in again.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(
+                        description: 'Validation failure (a problem document; `detail` holds the first message), or the token and email do not match a live reset request (`password_reset_token_invalid`).',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'schema' => [
+                                    'oneOf' => [
+                                        ['$ref' => ApiSchemas::PROBLEM_REF],
+                                        ['$ref' => ApiSchemas::AUTH_ERROR_REF],
+                                    ],
+                                ],
+                                'examples' => [
+                                    'validation_failed' => [
+                                        'value' => [
+                                            'type' => '/errors/422',
+                                            'title' => 'Bad Request',
+                                            'status' => 422,
+                                            'detail' => 'The password field confirmation does not match.',
+                                        ],
+                                    ],
+                                    'password_reset_token_invalid' => ['value' => AdminAuthResponses::PASSWORD_RESET_TOKEN_INVALID],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '429' => new Model\Response(
+                        description: 'More than five reset-password requests from this address in a minute (`too_many_password_requests`), or more than 60 requests a minute (`rate_limit_exceeded`). Wait for `Retry-After` seconds.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'schema' => ['$ref' => ApiSchemas::AUTH_ERROR_REF],
+                                'examples' => [
+                                    'too_many_password_requests' => ['value' => AdminAuthResponses::TOO_MANY_PASSWORD_REQUESTS],
+                                    'rate_limit_exceeded' => ['value' => AdminAuthResponses::RATE_LIMIT_EXCEEDED],
+                                ],
+                            ],
+                        ]),
+                        headers: new \ArrayObject(AdminAuthResponses::RETRY_AFTER),
+                    ),
                 ],
             ),
         ),

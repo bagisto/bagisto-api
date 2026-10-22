@@ -39,6 +39,19 @@ use Webkul\BagistoApi\Admin\State\AdminLogoutProcessor;
                         description: 'Logged out of every session; `revoked` is how many sessions were ended, the current one included.',
                         content: new \ArrayObject([
                             'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+
+                                    'properties' => [
+                                        'success' => ['type' => 'boolean'],
+                                        'message' => ['type' => 'string'],
+
+                                        'revoked' => [
+                                            'type' => 'integer',
+                                            'description' => 'How many sessions were revoked.',
+                                        ],
+                                    ],
+                                ],
                                 'example' => [
                                     'success' => true,
                                     'message' => 'You have been logged out of every session.',

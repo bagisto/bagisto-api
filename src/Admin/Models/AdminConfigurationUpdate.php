@@ -72,9 +72,20 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationUpdateProcessor;
                                 'required' => ['slug'],
 
                                 'properties' => [
-                                    'slug' => ['type' => 'string'],
-                                    'channel' => ['type' => 'string'],
-                                    'locale' => ['type' => 'string'],
+                                    'slug' => [
+                                        'type' => 'string',
+                                        'example' => 'general.design',
+                                    ],
+
+                                    'channel' => [
+                                        'type' => 'string',
+                                        'example' => 'default',
+                                    ],
+
+                                    'locale' => [
+                                        'type' => 'string',
+                                        'example' => 'en',
+                                    ],
 
                                     'values[general.design.admin_logo.logo_image]' => [
                                         'type' => 'string',

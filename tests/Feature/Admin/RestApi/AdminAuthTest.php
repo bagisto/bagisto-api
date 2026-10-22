@@ -549,6 +549,32 @@ class AdminAuthTest extends AdminApiTestCase
             ->assertStatus(422);
     }
 
+    /**
+     * Test auth input in the query string is ignored, and the audited address leaves the query string out.
+     */
+    public function test_auth_input_in_the_query_string_is_ignored(): void
+    {
+        $admin = $this->createAdmin();
+        $pair = $this->adminTokenPair($admin);
+
+        $this->postJson(self::REFRESH.'?refresh_token='.rawurlencode($pair->refreshToken), [])
+            ->assertStatus(422);
+
+        $this->postJson(self::LOGIN.'?password='.rawurlencode($this->adminPassword), ['email' => $admin->email])
+            ->assertStatus(422);
+
+        $session = $this->postJson(self::LOGIN.'?client_type=pos', [
+            'email' => $admin->email,
+            'password' => $this->adminPassword,
+        ])->assertOk()->json('session.id');
+
+        $this->assertSame('other', AdminApiSession::query()->find($session)->client_type);
+        $this->assertStringNotContainsString(
+            '?',
+            (string) AdminApiAudit::query()->where('event', AdminApiAuthAuditor::EVENT_LOGIN)->latest('id')->value('url'),
+        );
+    }
+
     // ========================================================================
     // Logout And Sessions
     // ========================================================================

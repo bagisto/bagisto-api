@@ -33,7 +33,7 @@ return new class extends Migration
             $table->unsignedInteger('domain_mismatch_count')->default(0);
             $table->timestamp('last_domain_mismatch_at')->nullable();
 
-            $table->timestamp('expires_at')->nullable();
+            $table->dateTime('expires_at')->nullable();
 
             $table->timestamp('last_used_at')->nullable();
             $table->string('last_ip_address', 45)->nullable();

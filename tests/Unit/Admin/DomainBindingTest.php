@@ -93,6 +93,36 @@ class DomainBindingTest extends BagistoApiTest
     }
 
     /**
+     * Test dns mode matches an IPv4-mapped IPv6 client address against the IPv4 record.
+     */
+    public function test_dns_mode_matches_an_ipv4_mapped_client_address(): void
+    {
+        $token = $this->token('erp.example.com', ['203.0.113.10']);
+
+        $this->assertTrue($this->binding()->matches($token, $this->request('::ffff:203.0.113.10')));
+        $this->assertFalse($this->binding()->matches($token, $this->request('::ffff:203.0.113.11')));
+    }
+
+    /**
+     * Test an empty lookup is not cached, so the next request resolves the domain again.
+     */
+    public function test_an_empty_lookup_is_not_cached(): void
+    {
+        $resolver = new FakeDomainResolver;
+
+        $this->app->instance(DomainResolver::class, $resolver);
+
+        $token = new AdminApiToken;
+        $token->domain = 'erp.example.com';
+
+        $this->assertFalse($this->binding()->matches($token, $this->request('203.0.113.10')));
+        $this->assertNull($token->resolved_at);
+
+        $this->assertFalse($this->binding()->matches($token, $this->request('203.0.113.10')));
+        $this->assertSame(2, $resolver->lookupsOf('erp.example.com'));
+    }
+
+    /**
      * Test dns mode ignores the Origin header, which any server can send.
      */
     public function test_dns_mode_ignores_the_origin_header(): void

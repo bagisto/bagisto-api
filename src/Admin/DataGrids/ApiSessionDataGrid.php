@@ -16,7 +16,7 @@ class ApiSessionDataGrid extends DataGrid
     public const STATUS_ACTIVE = 'active';
 
     /**
-     * The status of a session past its absolute lifetime.
+     * The status of a session past its absolute lifetime or idle past its refresh lifetime.
      */
     public const STATUS_EXPIRED = 'expired';
 
@@ -37,6 +37,7 @@ class ApiSessionDataGrid extends DataGrid
         $status = "CASE
             WHEN {$tablePrefix}s.revoked_at IS NOT NULL THEN '".self::STATUS_REVOKED."'
             WHEN {$tablePrefix}s.expires_at <= '{$now}' THEN '".self::STATUS_EXPIRED."'
+            WHEN {$tablePrefix}s.refresh_expires_at <= '{$now}' THEN '".self::STATUS_EXPIRED."'
             ELSE '".self::STATUS_ACTIVE."'
         END";
 

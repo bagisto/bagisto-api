@@ -31,7 +31,7 @@ class AdminApiSessionRepository extends Repository
     }
 
     /**
-     * The sessions of an admin that are neither revoked nor past their absolute lifetime.
+     * The live sessions of an admin, newest first.
      */
     public function activeForAdmin(int $adminId): Collection
     {
@@ -124,12 +124,14 @@ class AdminApiSessionRepository extends Repository
     }
 
     /**
-     * The query over sessions that are neither revoked nor past their absolute lifetime.
+     * The query over sessions that are neither revoked, idle past their refresh lifetime nor past their absolute lifetime.
      */
     protected function activeQuery(): Builder
     {
         return $this->model->newQuery()
             ->whereNull('revoked_at')
-            ->where('expires_at', '>', now());
+            ->where('expires_at', '>', now())
+            ->where(fn ($query) => $query->whereNull('refresh_expires_at')
+                ->orWhere('refresh_expires_at', '>', now()));
     }
 }

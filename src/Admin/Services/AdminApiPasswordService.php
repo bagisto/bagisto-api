@@ -11,10 +11,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuthAuditor;
+use Webkul\BagistoApi\Admin\Repositories\AdminCredentialRepository;
 use Webkul\BagistoApi\Exception\AdminAuthException;
 use Webkul\Core\Helpers\SessionPurger;
 use Webkul\User\Models\Admin;
-use Webkul\User\Repositories\AdminRepository;
 
 class AdminApiPasswordService
 {
@@ -37,7 +37,7 @@ class AdminApiPasswordService
      * Create a new admin password service.
      */
     public function __construct(
-        protected AdminRepository $adminRepository,
+        protected AdminCredentialRepository $credentialRepository,
         protected AdminApiCredentialRevoker $revoker,
         protected AdminApiAuthAuditor $auditor,
         protected RateLimiter $limiter,
@@ -112,13 +112,7 @@ class AdminApiPasswordService
      */
     protected function resetPassword(Admin $admin, string $password): Admin
     {
-        $admin = $this->adminRepository->update([
-            'password' => Hash::make($password),
-        ], $admin->id);
-
-        $admin->setRememberToken(Str::random(60));
-
-        $admin->save();
+        $admin = $this->credentialRepository->resetPassword($admin->id, Hash::make($password), Str::random(60));
 
         $this->sessionPurger->forget('admin', $admin->id);
 

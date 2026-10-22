@@ -7,6 +7,7 @@ use Jose\Component\Signature\Algorithm\ES256;
 use Jose\Component\Signature\JWS;
 use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
+use Webkul\BagistoApi\Admin\Services\AdminApiAuthSettings;
 
 class JwtVerifier
 {
@@ -27,7 +28,7 @@ class JwtVerifier
     }
 
     /**
-     * Verify an access token or an API token and return its claims.
+     * Verify an access token or an API token and return its claims, with the header's key id as kid.
      *
      * @throws InvalidJwtException
      * @throws ExpiredJwtException
@@ -48,7 +49,10 @@ class JwtVerifier
         $claims = $this->claims($jws);
 
         $this->assertClaims($claims);
+        $this->assertKeyServesAccessTokens((string) $header['kid'], $claims['typ']);
         $this->assertTimes($claims);
+
+        $claims['kid'] = (string) $header['kid'];
 
         return $claims;
     }
@@ -136,6 +140,32 @@ class JwtVerifier
         }
 
         if (! $valid) {
+            throw new InvalidJwtException;
+        }
+    }
+
+    /**
+     * Accept an access token only from the current key or one retired within the longest access token lifetime.
+     */
+    protected function assertKeyServesAccessTokens(string $kid, string $type): void
+    {
+        if (
+            $type !== JwtSigner::TYPE_ACCESS
+            || $kid === $this->keys->signingKid()
+        ) {
+            return;
+        }
+
+        $retiredAt = $this->keys->retiredKeys()[$kid] ?? null;
+
+        $cutoff = now()
+            ->subMinutes(AdminApiAuthSettings::ACCESS_TOKEN_TTL_MAX)
+            ->subSeconds(max(0, (int) config('bagistoapi.admin_auth.jwt.leeway', 30)));
+
+        if (
+            $retiredAt === null
+            || $retiredAt->lessThan($cutoff)
+        ) {
             throw new InvalidJwtException;
         }
     }

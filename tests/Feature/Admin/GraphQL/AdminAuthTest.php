@@ -78,6 +78,20 @@ class AdminAuthTest extends AdminApiTestCase
     }
 
     /**
+     * Test the client type is stored, and a missing one is stored as other.
+     */
+    public function test_client_type_is_stored_on_the_session(): void
+    {
+        $admin = $this->createAdmin();
+
+        $pos = $this->login($admin->email, $this->adminPassword, null, 'pos')->json('data.createAdminLogin.adminLogin.session.id');
+        $none = $this->login($admin->email, $this->adminPassword)->json('data.createAdminLogin.adminLogin.session.id');
+
+        $this->assertSame('pos', AdminApiSession::query()->find($pos)->client_type);
+        $this->assertSame('other', AdminApiSession::query()->find($none)->client_type);
+    }
+
+    /**
      * Test a wrong password and an unknown email get the same error code and message.
      */
     public function test_wrong_password_and_unknown_email_get_the_same_answer(): void
@@ -161,6 +175,43 @@ class AdminAuthTest extends AdminApiTestCase
         $this->adminEndpointGraphQL('{ __schema { types { name } } }')->assertStatus(401);
     }
 
+    /**
+     * Test a public mutation in the query string cannot make the body's document public.
+     */
+    public function test_a_query_string_document_does_not_make_the_body_public(): void
+    {
+        $admin = $this->createAdmin();
+
+        $login = 'mutation { createAdminLogin(input: { email: "'.$admin->email.'", password: "x" }) { adminLogin { accessToken } } }';
+
+        $json = $this->postJson($this->adminGraphqlUrl.'?query='.rawurlencode($login), ['query' => self::PROFILE]);
+
+        $json->assertStatus(401);
+        $this->assertSame('unauthenticated', $json->json('errors.0.extensions.code'));
+
+        $plain = $this->call(
+            'POST',
+            $this->adminGraphqlUrl.'?query='.rawurlencode($login),
+            server: ['CONTENT_TYPE' => 'text/plain', 'HTTP_ACCEPT' => 'application/json'],
+            content: json_encode(['query' => self::PROFILE]),
+        );
+
+        $plain->assertStatus(401);
+        $this->assertNull($plain->json('data.readAdminProfile'));
+    }
+
+    /**
+     * Test a batch of documents is never public.
+     */
+    public function test_a_batched_body_is_not_public(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->postJson($this->adminGraphqlUrl, [[
+            'query' => 'mutation { createAdminLogin(input: { email: "'.$admin->email.'", password: "x" }) { adminLogin { accessToken } } }',
+        ]])->assertStatus(401);
+    }
+
     // ========================================================================
     // Two-Factor Authentication
     // ========================================================================
@@ -206,6 +257,63 @@ class AdminAuthTest extends AdminApiTestCase
         $this->assertSame('two_factor_challenge_invalid', $this->verifyTwoFactor($challenge, $current)->json('errors.0.extensions.code'));
     }
 
+    /**
+     * Test five wrong codes revoke the challenge, so even the right code is then refused.
+     */
+    public function test_five_wrong_codes_revoke_the_challenge(): void
+    {
+        $admin = $this->createAdmin();
+        $secret = $this->enableTwoFactor($admin);
+
+        $challenge = $this->login($admin->email, $this->adminPassword)->json('data.createAdminLogin.adminLogin.challengeToken');
+
+        for ($attempt = 1; $attempt <= 5; $attempt++) {
+            $this->verifyTwoFactor($challenge, $this->wrongOtp($secret));
+        }
+
+        $this->travel(61)->seconds();
+
+        $this->assertSame(
+            'two_factor_challenge_invalid',
+            $this->verifyTwoFactor($challenge, (new Google2FA)->getCurrentOtp($secret))->json('errors.0.extensions.code'),
+        );
+    }
+
+    /**
+     * Test a backup code finishes the login once and is burned.
+     */
+    public function test_a_backup_code_works_once(): void
+    {
+        $admin = $this->createAdmin();
+        $this->enableTwoFactor($admin, ['670089', '569097']);
+
+        $first = $this->login($admin->email, $this->adminPassword)->json('data.createAdminLogin.adminLogin.challengeToken');
+
+        $verified = $this->verifyTwoFactor($first, backupCode: '670089');
+
+        $this->assertNotEmpty($verified->json('data.createAdminTwoFactorVerify.adminTwoFactorVerify.accessToken'), $verified->getContent());
+        $this->assertCount(1, $admin->fresh()->two_factor_backup_codes);
+
+        $second = $this->login($admin->email, $this->adminPassword)->json('data.createAdminLogin.adminLogin.challengeToken');
+
+        $this->assertSame('invalid_two_factor_code', $this->verifyTwoFactor($second, backupCode: '670089')->json('errors.0.extensions.code'));
+    }
+
+    /**
+     * Test a challenge expires after five minutes.
+     */
+    public function test_a_challenge_expires_after_five_minutes(): void
+    {
+        $admin = $this->createAdmin();
+        $this->enableTwoFactor($admin);
+
+        $challenge = $this->login($admin->email, $this->adminPassword)->json('data.createAdminLogin.adminLogin.challengeToken');
+
+        $this->travel(6)->minutes();
+
+        $this->assertSame('two_factor_challenge_invalid', $this->verifyTwoFactor($challenge, backupCode: '670089')->json('errors.0.extensions.code'));
+    }
+
     // ========================================================================
     // Access Token
     // ========================================================================
@@ -223,6 +331,44 @@ class AdminAuthTest extends AdminApiTestCase
 
         $response->assertStatus(401);
         $this->assertSame('access_token_expired', $response->json('errors.0.extensions.code'));
+    }
+
+    /**
+     * Test an access token stays valid inside the leeway after its expiry.
+     */
+    public function test_an_access_token_is_accepted_inside_the_leeway(): void
+    {
+        $token = $this->adminAccessToken($this->createAdmin());
+
+        $this->travel(15 * 60 + 20)->seconds();
+
+        $this->assertNull($this->adminEndpointGraphQL(self::PROFILE, [], $token)->json('errors'));
+    }
+
+    /**
+     * Test the last-used address and channel are recorded, at most once a minute from one address.
+     */
+    public function test_last_used_details_are_recorded_and_throttled(): void
+    {
+        $pair = $this->adminTokenPair($this->createAdmin());
+
+        $this->adminEndpointGraphQL(self::PROFILE, [], $pair->accessToken)->assertOk();
+
+        $session = $pair->session->fresh();
+        $firstUse = $session->last_used_at;
+
+        $this->assertSame('127.0.0.1', $session->last_ip_address);
+        $this->assertSame('graphql', $session->last_channel);
+
+        $this->travel(30)->seconds();
+        $this->adminEndpointGraphQL(self::PROFILE, [], $pair->accessToken)->assertOk();
+
+        $this->assertTrue($firstUse->equalTo($pair->session->fresh()->last_used_at));
+
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.7']);
+        $this->adminEndpointGraphQL(self::PROFILE, [], $pair->accessToken)->assertOk();
+
+        $this->assertSame('203.0.113.7', $pair->session->fresh()->last_ip_address);
     }
 
     /**
@@ -446,6 +592,26 @@ class AdminAuthTest extends AdminApiTestCase
     }
 
     /**
+     * Test createAdminAccountUpdate needs the current password.
+     */
+    public function test_the_account_update_needs_the_current_password(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminEndpointGraphQL(
+            'mutation ($input: createAdminAccountUpdateInput!) { createAdminAccountUpdate(input: $input) { adminAccountUpdate { passwordChanged } } }',
+            ['input' => [
+                'name' => 'Renamed',
+                'currentPassword' => 'not-my-password',
+            ]],
+            $this->adminAccessToken($admin),
+        );
+
+        $this->assertSame('invalid_current_password', $response->json('errors.0.extensions.code'));
+        $this->assertNotSame('Renamed', $admin->fresh()->name);
+    }
+
+    /**
      * Test deactivation rejects a live token, and a role change applies on the next request.
      */
     public function test_deactivation_and_role_changes_apply_on_the_next_request(): void
@@ -501,6 +667,27 @@ class AdminAuthTest extends AdminApiTestCase
         $this->assertTrue($reset->json('data.createAdminResetPassword.adminResetPassword.success'), $reset->getContent());
         $this->adminEndpointGraphQL(self::PROFILE, [], $token)->assertStatus(401);
         $this->assertTrue(Hash::check('reset-secret-1', $admin->fresh()->password));
+    }
+
+    /**
+     * Test a wrong reset token is refused.
+     */
+    public function test_a_wrong_reset_token_is_refused(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminEndpointGraphQL(
+            'mutation ($input: createAdminResetPasswordInput!) { createAdminResetPassword(input: $input) { adminResetPassword { success } } }',
+            ['input' => [
+                'token' => 'not-a-reset-token',
+                'email' => $admin->email,
+                'password' => 'reset-secret-1',
+                'passwordConfirmation' => 'reset-secret-1',
+            ]],
+        );
+
+        $this->assertSame('password_reset_token_invalid', $response->json('errors.0.extensions.code'));
+        $this->assertFalse(Hash::check('reset-secret-1', $admin->fresh()->password));
     }
 
     // ========================================================================
@@ -569,20 +756,26 @@ class AdminAuthTest extends AdminApiTestCase
     }
 
     /**
-     * Send createAdminTwoFactorVerify with a code.
+     * Send createAdminTwoFactorVerify with a code or a backup code.
      */
-    protected function verifyTwoFactor(string $challengeToken, string $code): TestResponse
+    protected function verifyTwoFactor(string $challengeToken, ?string $code = null, ?string $backupCode = null): TestResponse
     {
+        $input = array_filter([
+            'challengeToken' => $challengeToken,
+            'code' => $code,
+            'backupCode' => $backupCode,
+        ], fn ($value) => $value !== null);
+
         return $this->adminEndpointGraphQL(
             'mutation ($input: createAdminTwoFactorVerifyInput!) { createAdminTwoFactorVerify(input: $input) { adminTwoFactorVerify { '.self::PAIR_FIELDS.' } } }',
-            ['input' => ['challengeToken' => $challengeToken, 'code' => $code]],
+            ['input' => $input],
         );
     }
 
     /**
      * Turn two-factor authentication on for an admin and return its secret.
      */
-    protected function enableTwoFactor(Admin $admin): string
+    protected function enableTwoFactor(Admin $admin, array $backupCodes = ['670089']): string
     {
         if (! Schema::hasColumn('admins', 'two_factor_enabled')) {
             $this->markTestSkipped('Two-factor authentication needs a core with the admin two-factor columns.');
@@ -593,10 +786,20 @@ class AdminAuthTest extends AdminApiTestCase
         $admin->update([
             'two_factor_secret' => encrypt($secret),
             'two_factor_enabled' => true,
-            'two_factor_backup_codes' => [Hash::make('670089')],
+            'two_factor_backup_codes' => array_map(fn ($code) => Hash::make($code), $backupCodes),
             'two_factor_verified_at' => now(),
         ]);
 
         return $secret;
+    }
+
+    /**
+     * A six-digit code that is not the current one for the secret.
+     */
+    protected function wrongOtp(string $secret): string
+    {
+        $current = (new Google2FA)->getCurrentOtp($secret);
+
+        return str_pad((string) (((int) $current + 1) % 1000000), 6, '0', STR_PAD_LEFT);
     }
 }

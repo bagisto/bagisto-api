@@ -161,6 +161,44 @@ class JwtKeysCommandTest extends AdminApiTestCase
     }
 
     /**
+     * Test a retired key kept for an API token verifies only that token, never a fresh access token.
+     */
+    public function test_a_retired_key_kept_for_an_api_token_does_not_verify_access_tokens(): void
+    {
+        $this->artisan('bagisto-api:jwt-keys')->assertSuccessful();
+
+        $old = $this->manifest()['current'];
+        $oldPrivateKey = (string) file_get_contents($this->keyDirectory.'/'.$old.'.key');
+
+        $admin = $this->createAdmin();
+        $kept = $this->issueAdminApiToken($admin);
+
+        $this->artisan('bagisto-api:jwt-keys --rotate')->assertSuccessful();
+
+        $this->travel(2)->hours();
+
+        $this->artisan('bagisto-api:prune-admin-tokens')->assertSuccessful();
+
+        $this->assertArrayHasKey($old, $this->manifest()['keys']);
+
+        $now = now()->getTimestamp();
+
+        $forgedAccess = $this->signJwt(array_merge($this->jwtClaims($this->adminAccessToken($admin)), [
+            'iat' => $now,
+            'nbf' => $now,
+            'exp' => $now + 900,
+        ]), ['kid' => $old], $oldPrivateKey);
+
+        $other = $this->issueAdminApiToken($admin);
+
+        $forgedApi = $this->signJwt($this->jwtClaims($other->plainText), ['kid' => $old], $oldPrivateKey);
+
+        $this->withBearer('GET', '/api/admin/get', $kept->plainText)->assertOk();
+        $this->withBearer('GET', '/api/admin/get', $forgedAccess)->assertStatus(401);
+        $this->withBearer('GET', '/api/admin/get', $forgedApi)->assertStatus(401);
+    }
+
+    /**
      * Keep the keys in an empty temporary directory instead of the configuration.
      */
     protected function setUp(): void

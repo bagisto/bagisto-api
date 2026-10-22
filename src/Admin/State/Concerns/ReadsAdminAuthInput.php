@@ -11,13 +11,13 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 trait ReadsAdminAuthInput
 {
     /**
-     * The request input with snake_case keys, from the GraphQL input argument or the REST body.
+     * The request input with snake_case keys, from the GraphQL input argument or the REST body, never the query string.
      */
     protected function authInput(Operation $operation, array $context): array
     {
         $raw = $operation instanceof GraphQlOperation
             ? (array) ($context['args']['input'] ?? [])
-            : request()->all();
+            : request()->request->all();
 
         unset($raw['clientMutationId']);
 

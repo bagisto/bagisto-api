@@ -88,19 +88,51 @@ class EnforceAdminApiAuth
         $path = rtrim($request->getPathInfo(), '/');
 
         if ($path === self::GRAPHQL_PATH) {
-            return $this->isPublicGraphQlDocument($request->input('query'));
+            return $this->isPublicGraphQlDocument($this->graphQlDocument($request));
         }
 
         return in_array($path, self::PUBLIC_REST_PATHS, true);
     }
 
     /**
-     * Whether a GraphQL document holds only mutations whose every root field is a public auth mutation.
+     * The GraphQL document the entrypoint will run, read from the raw body, or null when it is ambiguous.
      */
-    protected function isPublicGraphQlDocument(mixed $query): bool
+    protected function graphQlDocument(Request $request): ?string
     {
         if (
-            ! is_string($query)
+            $request->query->has('query')
+            || $request->request->has('operations')
+            || count($request->files->all()) > 0
+            || str_contains((string) $request->headers->get('Content-Type'), 'multipart/')
+        ) {
+            return null;
+        }
+
+        $content = (string) $request->getContent();
+
+        $data = json_decode($content, true);
+
+        if (! is_array($data)) {
+            return $content;
+        }
+
+        if (
+            array_is_list($data)
+            || ! is_string($data['query'] ?? null)
+        ) {
+            return null;
+        }
+
+        return $data['query'];
+    }
+
+    /**
+     * Whether a GraphQL document holds only mutations whose every root field is a public auth mutation.
+     */
+    protected function isPublicGraphQlDocument(?string $query): bool
+    {
+        if (
+            $query === null
             || trim($query) === ''
         ) {
             return false;

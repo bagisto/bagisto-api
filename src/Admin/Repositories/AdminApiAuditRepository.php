@@ -19,6 +19,32 @@ class AdminApiAuditRepository extends Repository
     }
 
     /**
+     * Write one audit row.
+     */
+    public function record(array $attributes): AdminApiAudit
+    {
+        return $this->model->newQuery()->create($attributes);
+    }
+
+    /**
+     * The version the next audit row of a record gets, starting at 1.
+     */
+    public function nextVersion(?string $auditableType, mixed $auditableId): int
+    {
+        if (
+            ! $auditableType
+            || $auditableId === null
+        ) {
+            return 1;
+        }
+
+        return (int) $this->model->newQuery()
+            ->where('auditable_type', $auditableType)
+            ->where('auditable_id', $auditableId)
+            ->max('version_id') + 1;
+    }
+
+    /**
      * The other audit rows written by the same request as the given row, oldest first.
      */
     public function siblingsOf(AdminApiAudit $audit): Collection

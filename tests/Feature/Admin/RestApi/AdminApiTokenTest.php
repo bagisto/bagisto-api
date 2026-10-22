@@ -329,8 +329,8 @@ class AdminApiTokenTest extends AdminApiTestCase
 
         $payload = ['name' => 'Minted', 'domain' => 'erp.example.com'];
 
-        $this->assertNotContains($this->withBearer('POST', self::TOKENS, $apiToken, $payload)->getStatusCode(), [200, 201]);
-        $this->assertNotContains($this->adminPost($admin, self::TOKENS, $payload)->getStatusCode(), [200, 201]);
+        $this->withBearer('POST', self::TOKENS, $apiToken, $payload)->assertStatus(405);
+        $this->adminPost($admin, self::TOKENS, $payload)->assertStatus(405);
 
         $this->assertSame($before, AdminApiToken::query()->count());
     }

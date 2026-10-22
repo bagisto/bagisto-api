@@ -114,7 +114,7 @@ class JwtSignerTest extends BagistoApiTest
             $this->assertRejected(fn () => $this->verifier()->verify($value), $case);
         }
 
-        $this->assertSame($claims, $this->verifier()->verify($this->signJwt($claims)));
+        $this->assertSame(array_merge($claims, ['kid' => $this->fixtureKid()]), $this->verifier()->verify($this->signJwt($claims)));
     }
 
     /**

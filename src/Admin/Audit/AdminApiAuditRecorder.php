@@ -4,7 +4,7 @@ namespace Webkul\BagistoApi\Admin\Audit;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
-use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
+use Webkul\BagistoApi\Admin\Repositories\AdminApiAuditRepository;
 
 class AdminApiAuditRecorder
 {
@@ -12,6 +12,11 @@ class AdminApiAuditRecorder
      * Pre-save diffs keyed by spl_object_id, captured on `updating`.
      */
     protected array $pending = [];
+
+    /**
+     * The audit repository, resolved on first write so registering the listeners at boot builds no model.
+     */
+    protected ?AdminApiAuditRepository $audits = null;
 
     /**
      * Create a new instance.
@@ -30,7 +35,7 @@ class AdminApiAuditRecorder
     }
 
     /**
-     * On updating.
+     * Capture the pre-save diff of an audited model about to be updated.
      */
     public function onUpdating(string $event, array $payload): void
     {
@@ -54,7 +59,7 @@ class AdminApiAuditRecorder
     }
 
     /**
-     * On updated.
+     * Write the audit row of an audited model that was updated.
      */
     public function onUpdated(string $event, array $payload): void
     {
@@ -77,7 +82,7 @@ class AdminApiAuditRecorder
     }
 
     /**
-     * On created.
+     * Write the audit row of an audited model that was created.
      */
     public function onCreated(string $event, array $payload): void
     {
@@ -93,7 +98,7 @@ class AdminApiAuditRecorder
     }
 
     /**
-     * On deleted.
+     * Write the audit row of an audited model that was deleted.
      */
     public function onDeleted(string $event, array $payload): void
     {
@@ -118,7 +123,7 @@ class AdminApiAuditRecorder
         }
 
         try {
-            AdminApiAudit::create(array_merge($this->context->baseAttributes(), [
+            $this->audits()->record(array_merge($this->context->baseAttributes(), [
                 'version_id' => $auditableId ? $this->nextVersion($auditableType, $auditableId) : 1,
                 'event' => $event,
                 'auditable_type' => $auditableType,
@@ -140,7 +145,7 @@ class AdminApiAuditRecorder
     public function writeEvent(array $attributes): void
     {
         try {
-            AdminApiAudit::create(array_merge($attributes, [
+            $this->audits()->record(array_merge($attributes, [
                 'version_id' => $this->nextVersion($attributes['auditable_type'] ?? null, $attributes['auditable_id'] ?? null),
                 'created_at' => now(),
             ]));
@@ -154,7 +159,7 @@ class AdminApiAuditRecorder
     }
 
     /**
-     * Persist.
+     * Write the audit row of a model event under the active request context.
      */
     protected function persist(Model $model, string $event, ?array $old, ?array $new): void
     {
@@ -162,7 +167,7 @@ class AdminApiAuditRecorder
             $type = get_class($model);
             $id = $model->getKey();
 
-            AdminApiAudit::create(array_merge($this->context->baseAttributes(), [
+            $this->audits()->record(array_merge($this->context->baseAttributes(), [
                 'version_id' => $this->nextVersion($type, $id),
                 'event' => $event,
                 'auditable_type' => $type,
@@ -179,7 +184,7 @@ class AdminApiAuditRecorder
     }
 
     /**
-     * Should audit.
+     * Whether a model change is audited: auditing is on, a request context is active and the model is not excluded.
      */
     protected function shouldAudit(Model $model): bool
     {
@@ -201,24 +206,23 @@ class AdminApiAuditRecorder
     }
 
     /**
-     * Next version.
+     * The version the next audit row of a record gets, or 1 when it cannot be read.
      */
     protected function nextVersion(?string $type, $id): int
     {
-        if (
-            ! $type
-            || $id === null
-        ) {
-            return 1;
-        }
-
         try {
-            return (int) AdminApiAudit::where('auditable_type', $type)
-                ->where('auditable_id', $id)
-                ->max('version_id') + 1;
+            return $this->audits()->nextVersion($type, $id);
         } catch (\Throwable) {
             return 1;
         }
+    }
+
+    /**
+     * The audit repository.
+     */
+    protected function audits(): AdminApiAuditRepository
+    {
+        return $this->audits ??= app(AdminApiAuditRepository::class);
     }
 
     /**

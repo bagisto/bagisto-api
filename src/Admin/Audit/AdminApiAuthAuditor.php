@@ -149,7 +149,7 @@ class AdminApiAuthAuditor
             'token_kind' => $this->tokenKind($subject),
             'channel' => $this->channel($request),
             'method' => $request->method(),
-            'url' => $request->fullUrl(),
+            'url' => $request->url(),
             'ip_address' => $request->ip(),
             'user_agent' => Str::limit((string) $request->userAgent(), 1000, ''),
             'tags' => self::TAG,

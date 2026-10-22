@@ -167,12 +167,22 @@ class AdminApiSession extends Model implements AdminApiSessionContract
     }
 
     /**
-     * Whether the session is neither revoked nor past its absolute lifetime.
+     * Whether the session has sat unused past its refresh lifetime, so it can never be refreshed again.
+     */
+    public function isIdleExpired(): bool
+    {
+        return $this->refresh_expires_at !== null
+            && $this->refresh_expires_at->isPast();
+    }
+
+    /**
+     * Whether the session is neither revoked, idle past its refresh lifetime nor past its absolute lifetime.
      */
     public function isActive(): bool
     {
         return ! $this->isRevoked()
-            && ! $this->isExpired();
+            && ! $this->isExpired()
+            && ! $this->isIdleExpired();
     }
 
     /**

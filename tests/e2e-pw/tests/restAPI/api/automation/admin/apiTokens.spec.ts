@@ -104,7 +104,8 @@ test.describe('admin api tokens rest api', () => {
       domain: 'localhost',
     });
 
-    expect([200, 201]).not.toContain(response.status());
+    expect(response.status()).toBe(405);
+    expect(typeof (await response.json()).message).toBe('string');
 
     const listed = await sendAdminRequest(request, ADMIN_AUTH.API_TOKENS, { params: { per_page: '50' } });
     const names = (await listed.json()).data.map((row: any) => row.name);

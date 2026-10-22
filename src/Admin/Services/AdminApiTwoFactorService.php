@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuthAuditor;
 use Webkul\BagistoApi\Admin\Models\AdminApiTwoFactorChallenge;
 use Webkul\BagistoApi\Admin\Repositories\AdminApiTwoFactorChallengeRepository;
+use Webkul\BagistoApi\Admin\Repositories\AdminCredentialRepository;
 use Webkul\BagistoApi\Exception\AdminAuthException;
 use Webkul\User\Models\Admin;
 use Webkul\User\Repositories\AdminRepository;
@@ -33,11 +34,27 @@ class AdminApiTwoFactorService
     public const FAILURE_DECAY_SECONDS = 60;
 
     /**
+     * The outcome of a code that was accepted and recorded.
+     */
+    protected const OUTCOME_ACCEPTED = 'accepted';
+
+    /**
+     * The outcome of a code or backup code that did not match.
+     */
+    protected const OUTCOME_CODE_REJECTED = 'code-rejected';
+
+    /**
+     * The outcome of a challenge that was used up, or whose admin is gone, while the code was checked.
+     */
+    protected const OUTCOME_CHALLENGE_INVALID = 'challenge-invalid';
+
+    /**
      * Create a new two-factor service.
      */
     public function __construct(
         protected AdminApiTwoFactorChallengeRepository $challengeRepository,
         protected AdminRepository $adminRepository,
+        protected AdminCredentialRepository $credentialRepository,
         protected AdminApiAuthAuditor $auditor,
         protected RateLimiter $limiter,
     ) {}
@@ -97,19 +114,18 @@ class AdminApiTwoFactorService
 
         $this->assertNotLockedOut($admin);
 
-        $changes = $backupCode !== null
-            ? $this->acceptBackupCode($admin, $backupCode)
-            : $this->acceptCode($admin, (string) $code);
+        $outcome = $this->credentialRepository->withLockedAdmin(
+            $admin->id,
+            fn (?Admin $locked) => $this->useSecondFactor($locked, $challenge, $code, $backupCode),
+        );
 
-        if ($changes === null) {
+        if ($outcome === self::OUTCOME_CODE_REJECTED) {
             $this->rejectCode($challenge, $admin, $request, $backupCode !== null);
         }
 
-        if (! $this->challengeRepository->consume($challenge->id)) {
+        if ($outcome !== self::OUTCOME_ACCEPTED) {
             $this->rejectChallenge();
         }
-
-        $this->adminRepository->update($changes, $admin->id);
 
         $this->limiter->clear($this->throttleKey($admin));
 
@@ -152,6 +168,32 @@ class AdminApiTwoFactorService
         }
 
         return $challenge;
+    }
+
+    /**
+     * Check the code against the locked admin, use the challenge up and record the code, returning the outcome.
+     */
+    protected function useSecondFactor(?Admin $admin, AdminApiTwoFactorChallenge $challenge, ?string $code, ?string $backupCode): string
+    {
+        if ($admin === null) {
+            return self::OUTCOME_CHALLENGE_INVALID;
+        }
+
+        $changes = $backupCode !== null
+            ? $this->acceptBackupCode($admin, $backupCode)
+            : $this->acceptCode($admin, (string) $code);
+
+        if ($changes === null) {
+            return self::OUTCOME_CODE_REJECTED;
+        }
+
+        if (! $this->challengeRepository->consume($challenge->id)) {
+            return self::OUTCOME_CHALLENGE_INVALID;
+        }
+
+        $this->adminRepository->update($changes, $admin->id);
+
+        return self::OUTCOME_ACCEPTED;
     }
 
     /**

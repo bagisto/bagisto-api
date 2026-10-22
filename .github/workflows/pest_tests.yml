@@ -257,6 +257,13 @@ jobs:
           done
           exit $status
 
+      - name: Run unit Pest (plugin suite)
+        id: unit_tests
+        if: always()
+        working-directory: bagisto
+        continue-on-error: true
+        run: vendor/bin/pest --parallel --processes=4 --colors=always vendor/bagisto/bagisto-api/tests/Unit
+
       - name: Run schema export drift Pest (plugin suite)
         id: schema_tests
         if: always()
@@ -273,6 +280,7 @@ jobs:
           echo "Admin REST:     ${{ steps.admin_rest_tests.outcome }}"
           echo "Admin Audit/Web: ${{ steps.admin_web_tests.outcome }}"
           echo "Package-level:  ${{ steps.package_tests.outcome }}"
+          echo "Unit:           ${{ steps.unit_tests.outcome }}"
           echo "Schema drift:   ${{ steps.schema_tests.outcome }}"
 
           if [ "${{ steps.graphql_tests.outcome }}" != "success" ] \
@@ -281,6 +289,7 @@ jobs:
             || [ "${{ steps.admin_rest_tests.outcome }}" != "success" ] \
             || [ "${{ steps.admin_web_tests.outcome }}" != "success" ] \
             || [ "${{ steps.package_tests.outcome }}" != "success" ] \
+            || [ "${{ steps.unit_tests.outcome }}" != "success" ] \
             || [ "${{ steps.schema_tests.outcome }}" != "success" ]; then
             echo "::error::One or more Pest suites failed."
             exit 1

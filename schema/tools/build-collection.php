@@ -268,6 +268,8 @@ MD;
     }
 
     /**
+     * The exported OpenAPI document of a surface.
+     *
      * @return array<string, mixed>
      */
     private function loadSpec(string $surface): array
@@ -356,6 +358,8 @@ MD;
     }
 
     /**
+     * Add requests to the folder tree under the given path segments.
+     *
      * @param  array<string, mixed>  $tree
      * @param  list<string>  $segments
      * @param  list<array<string, mixed>>  $requests
@@ -379,6 +383,8 @@ MD;
     }
 
     /**
+     * The Postman items of a folder tree, folders sorted by name and before their requests.
+     *
      * @param  array<string, mixed>  $tree
      * @return list<array<string, mixed>>
      */
@@ -399,6 +405,8 @@ MD;
     }
 
     /**
+     * The Postman request of one OpenAPI operation.
+     *
      * @param  array<string, mixed>  $operation
      * @param  array<string, mixed>  $spec
      * @return array<string, mixed>
@@ -447,6 +455,8 @@ MD;
     }
 
     /**
+     * The headers an operation documents, filled from the environment.
+     *
      * @param  array<string, mixed>  $operation
      * @return list<array<string, string>>
      */
@@ -474,6 +484,9 @@ MD;
         return $headers;
     }
 
+    /**
+     * An example value as Postman text, or the fallback when there is none.
+     */
     private function scalar(mixed $example, string $fallback): string
     {
         if ($example === null) {
@@ -492,6 +505,8 @@ MD;
     }
 
     /**
+     * The Postman URL of an operation, with its query and path variables.
+     *
      * @param  array<string, mixed>  $operation
      * @return array<string, mixed>
      */
@@ -547,6 +562,8 @@ MD;
     }
 
     /**
+     * The request body of an operation, from its example or its schema.
+     *
      * @param  array<string, mixed>  $operation
      * @param  array<string, mixed>  $spec
      * @return array<string, mixed>|null
@@ -584,6 +601,8 @@ MD;
     }
 
     /**
+     * The form-data fields of a multipart schema.
+     *
      * @param  array<string, mixed>  $schema
      * @param  array<string, mixed>  $spec
      * @return list<array<string, string>>
@@ -655,6 +674,8 @@ MD;
     }
 
     /**
+     * The schema a reference points to, following at most ten references.
+     *
      * @param  array<string, mixed>  $schema
      * @param  array<string, mixed>  $spec
      * @return array<string, mixed>
@@ -827,6 +848,8 @@ MD;
     }
 
     /**
+     * A Postman test event running the given script lines.
+     *
      * @param  list<string>  $lines
      * @return array<string, mixed>
      */
@@ -843,6 +866,8 @@ MD;
     }
 
     /**
+     * A Postman bearer authorisation with the given token.
+     *
      * @return array<string, mixed>
      */
     private function bearer(string $token): array
@@ -1134,6 +1159,8 @@ MD;
     }
 
     /**
+     * The example values whose snake_case or camelCase key names an input field.
+     *
      * @param  array<string, mixed>  $fields
      * @param  array<string, mixed>  $example
      * @return array<string, mixed>
@@ -1157,6 +1184,9 @@ MD;
         return $matched;
     }
 
+    /**
+     * A placeholder value for a GraphQL argument, guessed from its name and scalar type.
+     */
     private function dummyValue(string $name, string $scalar): mixed
     {
         $lower = strtolower($name);
@@ -1183,6 +1213,8 @@ MD;
     }
 
     /**
+     * The fields to select for a GraphQL type, down to the maximum depth, or null for a leaf.
+     *
      * @return array<string, mixed>|null
      */
     private function selectionTree(Type $type, int $depth): ?array
@@ -1236,6 +1268,8 @@ MD;
     }
 
     /**
+     * The GraphQL selection set of a field tree, indented to the level.
+     *
      * @param  array<string, mixed>  $tree
      */
     private function renderSelection(array $tree, int $level): string
@@ -1254,6 +1288,8 @@ MD;
     }
 
     /**
+     * The test script that stores the token a GraphQL login or refresh returns, or null for other fields.
+     *
      * @return list<array<string, mixed>>|null
      */
     private function graphQlTokenScript(string $field): ?array
@@ -1281,6 +1317,8 @@ MD;
     }
 
     /**
+     * The number of requests in an item and its folders.
+     *
      * @param  array<string, mixed>  $item
      */
     private function countRequests(array $item): int

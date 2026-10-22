@@ -292,6 +292,9 @@ vendor/bin/pest --parallel --processes=4 tests/Feature/GraphQL
 vendor/bin/pest --parallel --processes=4 tests/Feature/RestApi
 vendor/bin/pest --parallel --processes=4 tests/Feature/Admin/GraphQL
 vendor/bin/pest --parallel --processes=4 tests/Feature/Admin/RestApi
+vendor/bin/pest --parallel --processes=4 tests/Feature/Admin/Audit
+vendor/bin/pest --parallel --processes=4 tests/Feature/Admin/Web
+vendor/bin/pest --parallel --processes=4 tests/Unit
 vendor/bin/pest tests/Feature/SchemaExportTest.php
 vendor/bin/pest --filter="test name"
 ```
@@ -586,7 +589,7 @@ it, ja, nl, pl, pt_BR, ro, ru, sin, tr, uk, zh_CN.
 
 | Workflow | Trigger | What it does |
 |----------|---------|--------------|
-| `pest_tests.yml` | push, pull request | Installs Bagisto v2.5.0, wires the package via a path repository, runs the Pest feature suites (GraphQL, RestApi, Admin GraphQL/RestApi, schema export) in parallel on PHP 8.4 × MySQL 8.0 |
+| `pest_tests.yml` | push, pull request | Installs Bagisto v2.5.0, wires the package via a path repository, runs the Pest suites (GraphQL, RestApi, Admin GraphQL/RestApi/Audit/Web, Unit, schema export) in parallel on PHP 8.4 × MySQL 8.0 |
 | `pint_tests.yml` | push, pull request | Runs `pint --test` |
 | `validate.yml` | push, pull request, manual | Rebuilds the Postman collections from the schema and fails if the committed copies differ |
 | `push-to-postman.yml` | push to `main`, manual | Publishes the collections to the Postman workspace when they change |

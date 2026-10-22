@@ -80,7 +80,7 @@ class DomainBinding
     }
 
     /**
-     * The addresses the token's domain resolves to, from the cache while it is fresh.
+     * The addresses the token's domain resolves to, from the cache while it is fresh; an empty lookup is not cached.
      *
      * @return array<int, string>
      */
@@ -90,6 +90,7 @@ class DomainBinding
 
         if (
             is_array($token->resolved_ips)
+            && $token->resolved_ips !== []
             && $token->resolved_at !== null
             && $token->resolved_at->greaterThan(Carbon::now()->subSeconds($cacheSeconds))
         ) {
@@ -98,7 +99,9 @@ class DomainBinding
 
         $addresses = $this->resolver->resolve((string) $token->domain);
 
-        $this->apiTokenRepository->storeResolvedIps($token, $addresses);
+        if ($addresses !== []) {
+            $this->apiTokenRepository->storeResolvedIps($token, $addresses);
+        }
 
         return $addresses;
     }
@@ -125,19 +128,40 @@ class DomainBinding
      */
     protected function matchesAddress(AdminApiToken $token, string $clientIp): bool
     {
-        $client = @inet_pton($clientIp);
+        $client = $this->packedAddress($clientIp);
 
-        if ($client === false) {
+        if ($client === null) {
             return false;
         }
 
         foreach ($this->resolvedAddresses($token) as $address) {
-            if (@inet_pton((string) $address) === $client) {
+            if ($this->packedAddress((string) $address) === $client) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * The binary form of an IP address, with an IPv4-mapped IPv6 address reduced to its IPv4 form.
+     */
+    protected function packedAddress(string $address): ?string
+    {
+        $packed = @inet_pton($address);
+
+        if ($packed === false) {
+            return null;
+        }
+
+        if (
+            strlen($packed) === 16
+            && str_starts_with($packed, str_repeat("\0", 10)."\xff\xff")
+        ) {
+            return substr($packed, 12);
+        }
+
+        return $packed;
     }
 
     /**

@@ -81,7 +81,8 @@ class AdminApiAuthenticator
     }
 
     /**
-     * Resolve an API token by its id, rejecting it when revoked, expired, used from another domain or its admin is inactive.
+     * Resolve an API token by its id and signing key, rejecting it when revoked, expired, used from another domain
+     * or its admin is inactive.
      *
      * @throws AdminAuthException
      */
@@ -93,6 +94,7 @@ class AdminApiAuthenticator
             ! $token
             || (int) $token->admin_id !== $claims['sub']
             || $token->domain !== $claims['aud']
+            || $token->signing_kid !== $claims['kid']
         ) {
             throw new InvalidJwtException;
         }

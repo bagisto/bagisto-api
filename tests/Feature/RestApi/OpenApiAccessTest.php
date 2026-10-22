@@ -103,7 +103,7 @@ class OpenApiAccessTest extends RestApiTestCase
                         continue;
                     }
 
-                    expect($operation['responses'])->toHaveKey('401', "{$surface} {$method} {$path} documents no 401");
+                    expect($operation['responses'])->toHaveKey('401', message: "{$surface} {$method} {$path} documents no 401");
                 }
             }
         }

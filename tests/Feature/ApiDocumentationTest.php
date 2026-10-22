@@ -117,7 +117,7 @@ class ApiDocumentationTest extends BagistoApiTest
                 expect($missing)->toBe([], "{$label} POST {$path} documents no ".implode(', ', $missing));
 
                 expect($responses['429']['headers'] ?? [])
-                    ->toHaveKey('Retry-After', "{$label} POST {$path} documents no Retry-After on its 429");
+                    ->toHaveKey('Retry-After', message: "{$label} POST {$path} documents no Retry-After on its 429");
             }
 
             expect($document['components']['schemas'] ?? [])
@@ -134,7 +134,7 @@ class ApiDocumentationTest extends BagistoApiTest
             $schemes = $document['components']['securitySchemes'] ?? [];
 
             foreach (['adminAccessToken', 'adminApiToken'] as $name) {
-                expect($schemes)->toHaveKey($name, "{$label} declares no {$name} scheme");
+                expect($schemes)->toHaveKey($name, message: "{$label} declares no {$name} scheme");
 
                 expect([
                     $schemes[$name]['type'] ?? null,

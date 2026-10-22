@@ -1,11 +1,11 @@
 type Query {
-  "Product attribute resource"
+  "One product attribute. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   attribute(id: ID!): Attribute
 
-  "Attribute option resource"
+  "One attribute option. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   attributeOption(id: ID!): AttributeOption
 
-  "Attribute option resource"
+  "Every attribute option of every attribute, ordered by ID; read one attribute's options through its `options` field instead. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   attributeOptions(
     "Returns the first n elements from the list."
     first: Int
@@ -20,7 +20,10 @@ type Query {
     after: String
   ): AttributeOptionCursorConnection
 
+  "One attribute translation. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   attributeTranslation(id: ID!): AttributeTranslation
+
+  "Every attribute translation (one row per attribute and locale), ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   attributeTranslations(
     "Returns the first n elements from the list."
     first: Int
@@ -35,7 +38,7 @@ type Query {
     after: String
   ): AttributeTranslationCursorConnection
 
-  "Product attribute resource"
+  "Every product attribute, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   attributes(
     "Returns the first n elements from the list."
     first: Int
@@ -74,6 +77,7 @@ type Query {
     after: String
   ): CartCrossSellCursorConnection
 
+  "Active categories as a flat list ordered by ID; disabled categories are never returned. Use `treeCategories` or `categoryTrees` for a nested tree. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   categories(
     "Returns the first n elements from the list."
     first: Int
@@ -87,6 +91,8 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): CategoryCursorConnection
+
+  "One active category; a disabled category is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   category(id: ID!): Category
 
   "Attribute Filters for the category or product grid page"
@@ -106,8 +112,13 @@ type Query {
     before: String
   ): CategoryAttributeFilterCursorConnection
 
+  "The current channel's root category and its active descendants as a nested tree (up to four levels by default), ordered by position, as a plain list (not paginated). Takes no arguments. Needs the X-STOREFRONT-KEY header."
   categoryTrees: [CategoryTree]
+
+  "One storefront channel. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   channel(id: ID!): Channel
+
+  "Every storefront channel with its locales, currencies, default locale and base currency, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   channels(
     "Returns the first n elements from the list."
     first: Int
@@ -125,6 +136,7 @@ type Query {
   "Generate the AI checkout success message for an order placed with the bearer token; null when the feature is disabled or generation fails."
   checkoutMessage(orderId: Int!): CheckoutMessage
 
+  "The store's default channel with its locales, currencies, inventory sources and root category, as a connection holding one node (none when no default channel is set). The pagination arguments are ignored. Needs the X-STOREFRONT-KEY header."
   collectionDefaultChannels(
     "Returns the first n elements from the list."
     first: Int
@@ -160,7 +172,10 @@ type Query {
   "Get available shipping rates for a cart by token"
   collectionShippingRates: [ShippingRates]
 
+  "One compare-list item of the authenticated customer; another customer's item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   compareItem(id: ID!): CompareItem
+
+  "The authenticated customer's compare list, oldest first. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   compareItems(
     "Returns the first n elements from the list."
     first: Int
@@ -174,6 +189,8 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): CompareItemCursorConnection
+
+  "Every country with its states, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   countries(
     "Returns the first n elements from the list."
     first: Int
@@ -187,18 +204,14 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): CountryCursorConnection
+
+  "One country with its states. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   country(id: ID!): Country
 
-  """
-  CountryState - Subresource of Country with REST and GraphQL support
-  Pattern: Like AttributeOption - multiple #[ApiResource] annotations.
-  """
+  "One country state. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   countryState(id: ID!): CountryState
 
-  """
-  CountryState - Subresource of Country with REST and GraphQL support
-  Pattern: Like AttributeOption - multiple #[ApiResource] annotations.
-  """
+  "The states of country `countryId` (required), ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is not capped, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   countryStates(
     "Filter states by country ID (required)"
     countryId: Int!
@@ -216,6 +229,7 @@ type Query {
     before: String
   ): CountryStateCursorConnection
 
+  "Every currency set up in the store, ordered by ID; the current channel's currencies are on the channel. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   currencies(
     "Returns the first n elements from the list."
     first: Int
@@ -229,10 +243,20 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): CurrencyCursorConnection
+
+  "One currency. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   currency(id: ID!): Currency
+
+  "The authenticated customer's profile. The schema requires `id`, but it is ignored: the customer is always the owner of the Bearer token. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customer(id: ID!): Customer
+
+  "One saved address of the authenticated customer; another customer's address is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerAddress(id: ID!): CustomerAddress
+
+  "One downloadable-product purchase of the authenticated customer; another customer's purchase is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerDownloadableProduct(id: ID!): CustomerDownloadableProduct
+
+  "The authenticated customer's downloadable-product purchases, newest first; `status` filters by exact purchase status. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerDownloadableProducts(
     "Filter by status (available, expired, pending)"
     status: String
@@ -249,7 +273,11 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): CustomerDownloadableProductCursorConnection
+
+  "One invoice of an order placed by the authenticated customer; any other invoice is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerInvoice(id: ID!): CustomerInvoice
+
+  "Invoices of the authenticated customer's orders, newest first. Filters: `orderId`, and `state` (paid, pending, pending_payment, overdue or refunded). Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerInvoices(
     "Filter invoices by order ID"
     orderId: Int
@@ -269,9 +297,17 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): CustomerInvoiceCursorConnection
+
+  "One order placed by the authenticated customer, with its items, addresses, payment and shipments; any other order is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerOrder(id: ID!): CustomerOrder
+
+  "One shipment of an order placed by the authenticated customer; any other shipment is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerOrderShipment(id: ID!): CustomerOrderShipment
+
+  "One shipped item of the authenticated customer's shipments; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerOrderShipmentItem(id: ID!): CustomerOrderShipmentItem
+
+  "Shipped items across the authenticated customer's shipments, newest first. Paginate forward only: `first` (default 30, between 1 and 50) and `after`; `last` and `before` are ignored. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerOrderShipmentItems(
     "Returns the first n elements from the list."
     first: Int
@@ -285,6 +321,8 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): CustomerOrderShipmentItemCursorConnection
+
+  "Shipments of the authenticated customer's orders, newest first. Filters: `orderId` and `status`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerOrderShipments(
     "Filter shipments by order ID"
     orderId: Int
@@ -304,6 +342,8 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): CustomerOrderShipmentCursorConnection
+
+  "Orders placed by the authenticated customer, newest first; `status` filters by exact order status. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerOrders(
     "Filter orders by status (pending, processing, completed, canceled, closed, fraud)"
     status: String
@@ -320,11 +360,17 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): CustomerOrderCursorConnection
+
+  "One return request on an order of the authenticated customer; any other return is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerReturn(id: ID!): CustomerReturn
+
+  "Every message in the conversation of return `returnId`, newest first, as a plain list (not paginated). The return must be on one of the authenticated customer's orders, otherwise it is not found. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerReturnMessages(
     "Return (RMA) id"
     returnId: Int!
   ): [CustomerReturnMessage]
+
+  "Return requests on the authenticated customer's orders, newest first; `status` filters by RMA status ID. Paginate forward only: `first` (default 10, between 1 and 50) and `after`. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerReturns(
     "Filter by RMA status id"
     status: Int
@@ -332,7 +378,11 @@ type Query {
     first: Int
     after: String
   ): CustomerReturnCursorConnection
+
+  "One review written by the authenticated customer, whatever its status; another customer's review is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerReview(id: ID!): CustomerReview
+
+  "Reviews written by the authenticated customer, newest first. Filters: `status` (pending, approved or disapproved) and `rating`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   customerReviews(
     "Filter reviews by status (pending, approved, rejected)"
     status: String
@@ -352,8 +402,14 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): CustomerReviewCursorConnection
+
+  "One EU withdrawal declaration on an order of the authenticated customer; any other declaration is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   euWithdrawal(id: ID!): EuWithdrawal
+
+  "Whether customers can file an EU withdrawal on the current channel. Takes no arguments and needs no customer login. Needs the X-STOREFRONT-KEY header."
   euWithdrawalStatus: EuWithdrawalStatus
+
+  "EU withdrawal declarations on the authenticated customer's orders, newest first. Paginate forward only: `first` (default 30, between 1 and 50) and `after`. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   euWithdrawals(first: Int, after: String): EuWithdrawalCursorConnection
 
   "Returns the authenticated customer's profile, addresses, and orders when GDPR is enabled."
@@ -362,7 +418,10 @@ type Query {
   "Return the authenticated customer's GDPR export as a base64-encoded PDF when GDPR is enabled."
   gdprDataPdf: GdprDataPdfItem
 
+  "One GDPR data request of the authenticated customer; another customer's request is not found. Fails while GDPR is switched off in the store settings. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   gdprRequest(id: ID!): GdprRequest
+
+  "The authenticated customer's GDPR data requests. `sort` is `id` or `created_at` (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default). Fails while GDPR is switched off. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   gdprRequests(
     "Returns the first n elements from the list."
     first: Int
@@ -379,7 +438,11 @@ type Query {
     sort: String
     order: String
   ): GdprRequestCursorConnection
+
+  "Whether customers can raise GDPR data requests on the current channel. Takes no arguments and needs no customer login. Needs the X-STOREFRONT-KEY header."
   gdprStatus: GdprStatus
+
+  "The authenticated customer's saved addresses. `sort` is `id` or `created_at` (or `column-asc`/`column-desc`) and `order` is `asc` (default) or `desc`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   getCustomerAddresses(
     "Returns the first n elements from the list."
     first: Int
@@ -400,7 +463,10 @@ type Query {
   "Read a guest withdrawal confirmation using the withdrawal UUID and guest order email."
   guestEuWithdrawalConfirmation(uuid: String!, email: String!): GuestEuWithdrawalConfirmation
 
+  "One locale. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   locale(id: ID!): Locale
+
+  "Every locale set up in the store, ordered by ID; the current channel's locales are on the channel. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   locales(
     "Returns the first n elements from the list."
     first: Int
@@ -414,13 +480,22 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): LocaleCursorConnection
+
   node(id: ID!): Node
+
+  "One CMS page with its translations. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   page(id: ID!): page
+
+  "The CMS page of the current channel whose URL key is `urlKey`, as a list holding that page or nothing (not paginated). Needs the X-STOREFRONT-KEY header."
   pageByUrlKeypages(
     "The URL key of the page"
     urlKey: String!
   ): [page]
+
+  "One CMS page translation. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   pageTranslation(id: ID!): PageTranslation
+
+  "Every CMS page translation (one row per page and locale), ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   pageTranslations(
     "Returns the first n elements from the list."
     first: Int
@@ -434,6 +509,8 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): PageTranslationCursorConnection
+
+  "Every CMS page of every channel, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   pages(
     "Returns the first n elements from the list."
     first: Int
@@ -447,6 +524,8 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): pageCursorConnection
+
+  "One product visible in the storefront, found by `id` (IRI or numeric ID), `sku` or `urlKey`, checked in that order; sending none is an error and a product that is disabled or not visible in the channel is not found. `locale` and `channel` (codes) choose the language and channel the values are read in. Needs the X-STOREFRONT-KEY header."
   product(
     id: ID
     sku: String
@@ -462,8 +541,13 @@ type Query {
   "Return a stored file/image attribute of a storefront-visible product, base64-encoded in `content` along with its file name, mime type, and size."
   productAttributeFile(productId: Int!, attributeId: Int!): ProductAttributeFileItem
 
+  "One bundle option. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   productBundleOption(id: ID!): ProductBundleOption
+
+  "One bundle option product. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   productBundleOptionProduct(id: ID!): ProductBundleOptionProduct
+
+  "Every product of every bundle option. Read one option's products through its `bundleOptionProducts` field instead, which returns the first page of that option. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header."
   productBundleOptionProducts(
     "Returns the first n elements from the list."
     first: Int
@@ -477,6 +561,8 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): ProductBundleOptionProductCursorConnection
+
+  "Every bundle option of every bundle product, ordered by ID; read one product's options through its `bundleOptions` field instead. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   productBundleOptions(
     "Returns the first n elements from the list."
     first: Int
@@ -490,7 +576,11 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): ProductBundleOptionCursorConnection
+
+  "One downloadable link. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   productDownloadableLink(id: ID!): ProductDownloadableLink
+
+  "Every downloadable link of every downloadable product. Read one product's links through its `downloadableLinks` field instead, which returns the first page of that product. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header."
   productDownloadableLinks(
     "Returns the first n elements from the list."
     first: Int
@@ -504,7 +594,11 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): ProductDownloadableLinkCursorConnection
+
+  "One downloadable sample. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   productDownloadableSample(id: ID!): ProductDownloadableSample
+
+  "Every downloadable sample of every downloadable product. Read one product's samples through its `downloadableSamples` field instead, which returns the first page of that product. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header."
   productDownloadableSamples(
     "Returns the first n elements from the list."
     first: Int
@@ -518,7 +612,11 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): ProductDownloadableSampleCursorConnection
+
+  "One grouped-product link. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   productGroupedProduct(id: ID!): ProductGroupedProduct
+
+  "Every grouped-product link of every grouped product. Read one product's links through its `groupedProducts` field instead, which returns the first page of that product. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header."
   productGroupedProducts(
     "Returns the first n elements from the list."
     first: Int
@@ -532,15 +630,20 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): ProductGroupedProductCursorConnection
+
+  "Product images ordered by ID, optionally only those of product `product_id`. The query takes no pagination arguments, so it returns at most the first 10. Needs the X-STOREFRONT-KEY header."
   productImages(
     "Filter by product ID"
     product_id: Int
   ): ProductImagesCursorConnection
+
+  "One approved product review; a pending or disapproved review is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   productReview(id: ID!): ProductReview
 
   "Translate an approved product review into the current store locale."
   productReviewTranslation(productId: Int!, reviewId: Int!): ProductReviewTranslation
 
+  "Approved product reviews, oldest first. Filters: `product_id` and `rating`; `status` is accepted but ignored, as only approved reviews are public. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   productReviews(
     "Filter reviews by product ID"
     product_id: Int
@@ -563,10 +666,14 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): ProductReviewCursorConnection
+
+  "Product videos ordered by ID, optionally only those of product `product_id`. The query takes no pagination arguments, so it returns at most the first 10. Needs the X-STOREFRONT-KEY header."
   productVideos(
     "Filter by product ID"
     product_id: Int
   ): ProductVideosCursorConnection
+
+  "Products visible in the storefront of the channel. `query` searches SKU and name (partial match); `filter` is a JSON object of attribute filters such as type, sku, category_id or price; `sortKey` is TITLE (or NAME), CREATED_AT, UPDATED_AT, PRICE or ID (default), ascending unless `reverse` is true. `locale` and `channel` (codes) choose where values are read. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   products(
     "Sort products by field (TITLE, CREATED_AT, UPDATED_AT, PRICE, etc.)"
     sortKey: String
@@ -611,15 +718,22 @@ type Query {
   "Get single customer address by id using token."
   readGetCustomerAddress(id: ID!): GetCustomerAddress
 
+  "The active custom fields the return form must collect, with their options and validation, as a plain list (not paginated). Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   returnCustomFields: [ReturnCustomField]
+
+  "The active return reasons offered for `resolutionType` (`return` or `cancel_items`), as a plain list (not paginated); any other resolution type is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   returnReasons(
     "return | cancel_items"
     resolutionType: String!
   ): [ReturnReason]
+
+  "The items of order `orderId` that can be put on a return, each with its quantity caps (`forReturnQuantity`, `forCancelQuantity`, `currentQuantity`), as a plain list (not paginated). The order must belong to the authenticated customer. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   returnableItems(
     "Order id to list returnable items for"
     orderId: Int!
   ): [ReturnableItem]
+
+  "The authenticated customer's orders a return can still be opened for (not canceled, closed, fraud or pending payment, with an item inside its return window and quantity left), as a plain list (not paginated). Filters: `incrementId` (partial match) and `status`. `sort` is `created_at` (default), `increment_id` or `grand_total`; `order` is `asc` or `desc` (default). Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   returnableOrders(
     "Filter by order number (partial match)."
     incrementId: String
@@ -633,7 +747,11 @@ type Query {
     "Sort direction — desc or asc."
     order: String
   ): [ReturnableOrder]
+
+  "One active theme section of the current channel's theme; a switched-off section or one of another channel or theme is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   section(id: ID!): Section
+
+  "The active sections of the current channel's theme in display order; `type` filters by section type. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   sections(
     "Returns the first n elements from the list."
     first: Int
@@ -649,13 +767,23 @@ type Query {
 
     type: String
   ): SectionCursorConnection
+
+  "The non-secret store settings a storefront or app needs before the customer logs in, for the current channel and locale (send `X-Channel` and `X-Locale` to read others). Takes no arguments. Needs the X-STOREFRONT-KEY header."
   storeConfig: StoreConfig
+
+  "The theme the current channel's storefront is drawn with and the section types it can hold; read the sections themselves with `sections`. Takes no arguments. Needs the X-STOREFRONT-KEY header."
   theme: Theme
+
+  "Active categories as a nested tree, ordered by position, as a plain list (not paginated). With `parentId` it returns the descendants of that category, without the category itself; without it, every active category tree. Needs the X-STOREFRONT-KEY header."
   treeCategories(
     "Only children of this category will be returned, usually a root category."
     parentId: Int
   ): [Category]
+
+  "One wishlist item of the authenticated customer on the current channel; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   wishlist(id: ID!): Wishlist
+
+  "The authenticated customer's wishlist on the current channel. `sort` is `id` or `created_at` (or `column-asc`/`column-desc`) and `order` is `asc` (default) or `desc`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   wishlists(
     "Returns the first n elements from the list."
     first: Int
@@ -693,7 +821,7 @@ type AttributeEdge {
   node: Attribute
 }
 
-"Product attribute resource"
+"Every product attribute, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
 type Attribute implements Node {
   _id: Int!
   adminName: String!
@@ -764,7 +892,7 @@ type AttributeOptionEdge {
   node: AttributeOption
 }
 
-"Attribute option resource"
+"Every attribute option of every attribute, ordered by ID; read one attribute's options through its `options` field instead. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
 type AttributeOption implements Node {
   _id: Int!
   adminName: String
@@ -830,6 +958,7 @@ type AttributeOptionPageInfo {
   startCursor: String
 }
 
+"Every attribute translation (one row per attribute and locale), ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
 type AttributeTranslation implements Node {
   _id: Int!
   attributeId: Int!
@@ -914,6 +1043,7 @@ type CartCrossSellPageInfo {
   startCursor: String
 }
 
+"One active category; a disabled category is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
 type Category implements Node {
   _id: Int!
   _lft: Int!
@@ -1045,10 +1175,12 @@ type CategoryPageInfo {
   startCursor: String
 }
 
+"The current channel's root category and its active descendants as a nested tree (up to four levels by default), ordered by position, as a plain list (not paginated). Takes no arguments. Needs the X-STOREFRONT-KEY header."
 type CategoryTree implements Node {
   id: ID!
 }
 
+"One storefront channel. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
 type Channel implements Node {
   _id: Int!
   baseCurrency: Currency
@@ -1123,6 +1255,7 @@ type LocaleEdge {
   node: Locale
 }
 
+"One locale. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
 type Locale implements Node {
   _id: Int!
   code: String!
@@ -1156,6 +1289,7 @@ type CurrencyEdge {
   node: Currency
 }
 
+"One currency. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
 type Currency implements Node {
   _id: Int!
   code: String!
@@ -1270,6 +1404,7 @@ type CheckoutMessage implements Node {
   message: String
 }
 
+"One compare-list item of the authenticated customer; another customer's item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type CompareItem implements Node {
   _id: Int!
   createdAt: String
@@ -1285,6 +1420,7 @@ type CompareItem implements Node {
   updatedAt: String
 }
 
+"One product visible in the storefront, found by `id` (IRI or numeric ID), `sku` or `urlKey`, checked in that order; sending none is an error and a product that is disabled or not visible in the channel is not found. `locale` and `channel` (codes) choose the language and channel the values are read in. Needs the X-STOREFRONT-KEY header."
 type Product implements Node {
   _id: Int!
   additional: Iterable
@@ -1639,6 +1775,7 @@ type ProductImagesEdge {
   node: ProductImages
 }
 
+"Product images ordered by ID, optionally only those of product `product_id`. The query takes no pagination arguments, so it returns at most the first 10. Needs the X-STOREFRONT-KEY header."
 type ProductImages implements Node {
   _id: Int!
   altText: String
@@ -1672,6 +1809,7 @@ type ProductVideosEdge {
   node: ProductVideos
 }
 
+"Product videos ordered by ID, optionally only those of product `product_id`. The query takes no pagination arguments, so it returns at most the first 10. Needs the X-STOREFRONT-KEY header."
 type ProductVideos implements Node {
   _id: Int!
   id: ID!
@@ -1703,6 +1841,7 @@ type ProductReviewEdge {
   node: ProductReview
 }
 
+"Approved product reviews, oldest first. Filters: `product_id` and `rating`; `status` is accepted but ignored, as only approved reviews are public. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
 type ProductReview implements Node {
   _id: Int!
   attachments: String
@@ -1878,6 +2017,7 @@ type ProductGroupedProductEdge {
   node: ProductGroupedProduct
 }
 
+"Every grouped-product link of every grouped product. Read one product's links through its `groupedProducts` field instead, which returns the first page of that product. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header."
 type ProductGroupedProduct implements Node {
   _id: Int!
   associatedProduct: Product
@@ -2095,6 +2235,7 @@ type ProductDownloadableSampleEdge {
   node: ProductDownloadableSample
 }
 
+"Every downloadable sample of every downloadable product. Read one product's samples through its `downloadableSamples` field instead, which returns the first page of that product. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header."
 type ProductDownloadableSample implements Node {
   _id: Int!
   createdAt: String
@@ -2173,6 +2314,7 @@ type ProductDownloadableLinkEdge {
   node: ProductDownloadableLink
 }
 
+"Every downloadable link of every downloadable product. Read one product's links through its `downloadableLinks` field instead, which returns the first page of that product. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header."
 type ProductDownloadableLink implements Node {
   _id: Int!
   createdAt: String
@@ -2256,6 +2398,7 @@ type ProductBundleOptionEdge {
   node: ProductBundleOption
 }
 
+"Every bundle option of every bundle product, ordered by ID; read one product's options through its `bundleOptions` field instead. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
 type ProductBundleOption implements Node {
   _id: Int!
   bundleOptionProducts(
@@ -2305,6 +2448,7 @@ type ProductBundleOptionProductEdge {
   node: ProductBundleOptionProduct
 }
 
+"Every product of every bundle option. Read one option's products through its `bundleOptionProducts` field instead, which returns the first page of that option. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header."
 type ProductBundleOptionProduct implements Node {
   _id: Int!
   bundleOption: ProductBundleOption
@@ -2361,6 +2505,7 @@ type ProductBundleOptionPageInfo {
   startCursor: String
 }
 
+"The authenticated customer's profile. The schema requires `id`, but it is ignored: the customer is always the owner of the Bearer token. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type Customer implements Node {
   _id: Int!
   apiToken: String
@@ -2404,6 +2549,7 @@ type CompareItemPageInfo {
   startCursor: String
 }
 
+"One country with its states. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
 type Country implements Node {
   _id: Int!
   code: String!
@@ -2566,6 +2712,7 @@ type CountryPageInfo {
   startCursor: String
 }
 
+"One saved address of the authenticated customer; another customer's address is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type CustomerAddress implements Node {
   _id: Int!
   additional: String
@@ -2626,6 +2773,7 @@ type GetCustomerAddressesEdge {
   node: GetCustomerAddresses
 }
 
+"The authenticated customer's saved addresses. `sort` is `id` or `created_at` (or `column-asc`/`column-desc`) and `order` is `asc` (default) or `desc`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type GetCustomerAddresses implements Node {
   _id: Int!
   additional: String
@@ -2681,6 +2829,7 @@ type CustomerAddressToken implements Node {
   vatId: String
 }
 
+"One downloadable-product purchase of the authenticated customer; another customer's purchase is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type CustomerDownloadableProduct implements Node {
   _id: Int!
   createdAt: String
@@ -2708,6 +2857,7 @@ type CustomerDownloadableProduct implements Node {
   url: String
 }
 
+"One order placed by the authenticated customer, with its items, addresses, payment and shipments; any other order is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type CustomerOrder implements Node {
   _id: Int!
   addresses(
@@ -2978,6 +3128,7 @@ type CustomerOrderShipmentEdge {
   node: CustomerOrderShipment
 }
 
+"One shipment of an order placed by the authenticated customer; any other shipment is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type CustomerOrderShipment implements Node {
   _id: Int!
   billingAddress: CustomerOrderAddress
@@ -3025,6 +3176,7 @@ type CustomerOrderShipmentItemEdge {
   node: CustomerOrderShipmentItem
 }
 
+"One shipped item of the authenticated customer's shipments; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type CustomerOrderShipmentItem implements Node {
   _id: Int!
   additional: Iterable
@@ -3076,6 +3228,7 @@ type CustomerInvoiceEdge {
   node: CustomerInvoice
 }
 
+"One invoice of an order placed by the authenticated customer; any other invoice is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type CustomerInvoice implements Node {
   _id: Int!
   addresses(
@@ -3305,6 +3458,7 @@ type CustomerProfile implements Node {
   success: Boolean
 }
 
+"One return request on an order of the authenticated customer; any other return is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type CustomerReturn implements Node {
   _id: Int
   canClose: Boolean
@@ -3347,6 +3501,7 @@ type CustomerReturnPageInfo {
   startCursor: String
 }
 
+"Every message in the conversation of return `returnId`, newest first, as a plain list (not paginated). The return must be on one of the authenticated customer's orders, otherwise it is not found. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type CustomerReturnMessage implements Node {
   _id: Int
   attachment: String
@@ -3358,6 +3513,7 @@ type CustomerReturnMessage implements Node {
   rmaId: Int
 }
 
+"One review written by the authenticated customer, whatever its status; another customer's review is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type CustomerReview implements Node {
   _id: Int!
   comment: String
@@ -3412,6 +3568,7 @@ type DefaultChannelEdge {
   node: DefaultChannel
 }
 
+"The store's default channel with its locales, currencies, inventory sources and root category, as a connection holding one node (none when no default channel is set). The pagination arguments are ignored. Needs the X-STOREFRONT-KEY header."
 type DefaultChannel implements Node {
   _id: Int!
   baseCurrencyId: Int
@@ -3444,6 +3601,7 @@ type DefaultChannelPageInfo {
   startCursor: String
 }
 
+"One EU withdrawal declaration on an order of the authenticated customer; any other declaration is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type EuWithdrawal implements Node {
   _id: Int
   confirmationSentAt: String
@@ -3485,6 +3643,7 @@ type EuWithdrawalPageInfo {
   startCursor: String
 }
 
+"Whether customers can file an EU withdrawal on the current channel. Takes no arguments and needs no customer login. Needs the X-STOREFRONT-KEY header."
 type EuWithdrawalStatus implements Node {
   _id: String
   channel: String
@@ -3619,6 +3778,7 @@ type GdprDataPdfItem implements Node {
   size: Int
 }
 
+"One GDPR data request of the authenticated customer; another customer's request is not found. Fails while GDPR is switched off in the store settings. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type GdprRequest implements Node {
   _id: Int!
   createdAt: String
@@ -3657,6 +3817,7 @@ type GdprRequestPageInfo {
   startCursor: String
 }
 
+"Whether customers can raise GDPR data requests on the current channel. Takes no arguments and needs no customer login. Needs the X-STOREFRONT-KEY header."
 type GdprStatus implements Node {
   _id: String
   channel: String
@@ -3721,6 +3882,7 @@ type GuestEuWithdrawalConfirmation implements Node {
   uuid: String
 }
 
+"One CMS page with its translations. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
 type page implements Node {
   _id: Int!
   createdAt: String
@@ -3743,6 +3905,7 @@ type page implements Node {
   updatedAt: String
 }
 
+"Every CMS page translation (one row per page and locale), ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
 type PageTranslation implements Node {
   _id: Int!
   cmsPageId: Int!
@@ -3827,6 +3990,7 @@ type ProductReviewTranslation implements Node {
   id: ID!
 }
 
+"The active custom fields the return form must collect, with their options and validation, as a plain list (not paginated). Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type ReturnCustomField implements Node {
   _id: Int
   code: String
@@ -3839,6 +4003,7 @@ type ReturnCustomField implements Node {
   type: String
 }
 
+"The active return reasons offered for `resolutionType` (`return` or `cancel_items`), as a plain list (not paginated); any other resolution type is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type ReturnReason implements Node {
   _id: Int
   id: ID!
@@ -3846,6 +4011,7 @@ type ReturnReason implements Node {
   title: String
 }
 
+"The items of order `orderId` that can be put on a return, each with its quantity caps (`forReturnQuantity`, `forCancelQuantity`, `currentQuantity`), as a plain list (not paginated). The order must belong to the authenticated customer. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type ReturnableItem implements Node {
   baseImageUrl: String
   currentQuantity: Int
@@ -3864,6 +4030,7 @@ type ReturnableItem implements Node {
   urlKey: String
 }
 
+"The authenticated customer's orders a return can still be opened for (not canceled, closed, fraud or pending payment, with an item inside its return window and quantity left), as a plain list (not paginated). Filters: `incrementId` (partial match) and `status`. `sort` is `created_at` (default), `increment_id` or `grand_total`; `order` is `asc` or `desc` (default). Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type ReturnableOrder implements Node {
   _id: Int
   createdAt: String
@@ -3880,6 +4047,7 @@ type ReturnableOrder implements Node {
   totalReturnedQty: Int
 }
 
+"One active theme section of the current channel's theme; a switched-off section or one of another channel or theme is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
 type Section implements Node {
   _id: Int!
   channelId: Int!
@@ -3980,6 +4148,7 @@ type ShippingRates implements Node {
   price: Float
 }
 
+"The non-secret store settings a storefront or app needs before the customer logs in, for the current channel and locale (send `X-Channel` and `X-Locale` to read others). Takes no arguments. Needs the X-STOREFRONT-KEY header."
 type StoreConfig implements Node {
   _id: String
   buyNowEnabled: Boolean
@@ -4021,6 +4190,7 @@ type StoreConfig implements Node {
   wishlistEnabled: Boolean
 }
 
+"The theme the current channel's storefront is drawn with and the section types it can hold; read the sections themselves with `sections`. Takes no arguments. Needs the X-STOREFRONT-KEY header."
 type Theme implements Node {
   code: String
   id: ID!
@@ -4028,6 +4198,7 @@ type Theme implements Node {
   sectionTypes: Iterable!
 }
 
+"One wishlist item of the authenticated customer on the current channel; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type Wishlist implements Node {
   _id: Int!
   additional: Iterable

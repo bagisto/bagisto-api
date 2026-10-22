@@ -1,10 +1,63 @@
 type Query {
+  "Every active admin API session (cursor pagination). Requires settings.api_sessions."
+  adminApiSessions(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+
+    admin_id: Int
+    client_type: String
+  ): AdminApiSessionCursorConnection
+
+  "API token detail by id. Requires settings.api_tokens."
+  adminApiToken(id: ID!): AdminApiToken
+
+  "API tokens (cursor pagination). Requires settings.api_tokens; only your own without settings.api_tokens.manage_others."
+  adminApiTokens(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+
+    admin_id: Int
+    status: String
+    domain: String
+  ): AdminApiTokenCursorConnection
+
+  "One theme section by its IRI or numeric ID, with its published values, staged draft and the content of every locale. Needs the `appearance.sections` permission."
   adminAppearanceSection(id: ID!): AdminAppearanceSection
+
+  "The editor field schema for the type of section `sectionId` and the options it holds in `locale`: staged edits when there are any, otherwise the published values. Needs the `appearance.sections` permission."
   adminAppearanceSectionFields(sectionId: Int!, locale: String): AdminAppearanceSectionFields
+
+  "The sections of theme `code` that `channel` would draw if its staged edits were published: draft options, status and order applied, switched-off sections left out, footer links last. Needs the `appearance.sections` permission."
   adminAppearanceSectionPreview(code: String!, channel: Int, locale: String): AdminAppearanceSectionPreview
+
+  "Every section of the theme `code` for one channel, as a plain list (not paginated), in sort order with the footer links section last. An unknown `channel` falls back to the current channel, and `locale` to one the channel runs. Needs the `appearance.sections` permission; an unknown theme is an error."
   adminAppearanceSections(code: String!, channel: Int, locale: String): [AdminAppearanceSection]
+
+  "One theme from the gallery by its `code`, installed or not, with its status and the channels it is active on. Needs the `appearance.themes` permission."
   adminAppearanceTheme(code: String!): AdminAppearanceTheme
+
+  "Which of `channelIds` already hold sections built for their current theme, and how many, so activating theme `code` there would replace them. Needs the `appearance.themes` permission."
   adminAppearanceThemeImpact(code: String!, channelIds: [Int!]!): AdminAppearanceThemeImpact
+
+  "The theme gallery as a plain list (not paginated): every installed theme and every theme available to install, active themes first. Needs the `appearance.themes` permission."
   adminAppearanceThemes: [AdminAppearanceTheme]
 
   "Admin catalog attribute detail by id, with translations and options inlined."
@@ -112,6 +165,7 @@ type Query {
   "Admin catalog product detail by id (type-aware payload)."
   adminCatalogProduct(id: ID!): AdminCatalogProduct
 
+  "Every customer-group (tier) price row of product `productId`, ordered by quantity, as a plain list (not paginated). Needs the `catalog.products` permission; an unknown product is an error."
   adminCatalogProductCustomerGroupPrices(productId: Int!): [AdminCatalogProductCustomerGroupPrice]
 
   "List per-source inventory rows for a product (becomes adminCatalogProductInventories in GraphQL)."
@@ -232,10 +286,13 @@ type Query {
     customerId: Int!
   ): AdminCustomerAddressCursorConnection
 
+  "Top-level items in the active cart of customer `customerId`, all in one page (no pagination arguments); empty when the customer has no active cart. Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
   adminCustomerCartItems(
     "Customer ID"
     customerId: Int!
   ): AdminCustomerCartItemCursorConnection
+
+  "Every product in the compare list of customer `customerId`, all in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
   adminCustomerCompareItems(
     "Customer ID"
     customerId: Int!
@@ -299,6 +356,7 @@ type Query {
     customerId: Int!
   ): AdminCustomerNoteCursorConnection
 
+  "Up to 5 top-level items from the most recent orders of customer `customerId`, one per product, newest first, in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
   adminCustomerRecentOrderItems(
     "Customer ID"
     customerId: Int!
@@ -331,6 +389,7 @@ type Query {
     order: String
   ): AdminCustomerReviewCursorConnection
 
+  "Every product in the wishlist of customer `customerId`, all in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
   adminCustomerWishlistItems(
     "Customer ID"
     customerId: Int!
@@ -364,7 +423,10 @@ type Query {
     order: String
   ): AdminCustomerCursorConnection
 
+  "One withdrawal declaration with its evidence and timeline. Needs the `sales.eu_withdrawals.view` permission."
   adminEuWithdrawal(id: ID!): AdminEuWithdrawal
+
+  "EU right-of-withdrawal declarations, newest first by default. Filters: `order_increment_id` and `customer_email` (partial match), `status` (received, refunded or declined), `channel_code`, and `received_at_from`/`_to` and `confirmation_sent_at_from`/`_to` dates. Sortable by id, received_at or status. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.eu_withdrawals` permission."
   adminEuWithdrawals(order_increment_id: String, customer_email: String, status: String, channel_code: String, received_at_from: String, received_at_to: String, confirmation_sent_at_from: String, confirmation_sent_at_to: String, sort: String, order: String, first: Int, after: String): AdminEuWithdrawalCursorConnection
 
   "Get an invoice by id."
@@ -768,29 +830,73 @@ type Query {
     order: String
   ): AdminRefundCursorConnection
 
+  "One return request with the returned item, images, status, order and customer context, whether it can be reopened and the statuses the admin may set next. Needs the `sales.rma.requests` permission."
   adminReturn(id: ID!): AdminReturn
+
+  "Every message in the conversation of return request `returnId`, newest first, as a plain list (not paginated). Needs the `sales.rma.requests` permission; an unknown return is an error."
   adminReturnMessages(
     "Return (RMA) id"
     returnId: Int!
   ): [AdminReturnMessage]
+
+  "The active return reasons offered for `resolutionType` (`return` or `cancel_items`), as a plain list (not paginated). Needs the `sales.rma.requests.create` permission; any other resolution type is an error."
   adminReturnReasons(
     "return | cancel_items"
     resolutionType: String!
   ): [AdminReturnReason]
+
+  "The items of order `orderId` that can be put on a return, each with its quantity caps (`forReturnQuantity`, `forCancelQuantity`, `currentQuantity`), as a plain list (not paginated). Any customer's order can be used. Needs the `sales.rma.requests.create` permission."
   adminReturnableItems(
     "Order id"
     orderId: Int!
   ): [AdminReturnableItem]
+
+  "The orders a return can be opened for (the order picker of the admin RMA create form): not canceled, closed, fraud or pending payment, with an item still inside its return window. Filters: `id`, `increment_id` and `customer_name` (partial match), `status`, `method_title`, `grand_total_from`/`_to`, `created_at_from`/`_to`. Sortable by id, increment_id, customer_name, created_at, grand_total, method_title or status. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.requests.create` permission."
   adminReturnableOrders(id: Int, increment_id: String, customer_name: String, status: String, method_title: String, grand_total_from: Float, grand_total_to: Float, created_at_from: String, created_at_to: String, sort: String, order: String, first: Int, after: String): AdminReturnableOrderCursorConnection
+
+  "Every return (RMA) request, as in the admin RMA grid. Filters: `id`, `order_id`, `status` (partial match on the status title) and `customer_name` (partial match). Sortable by id, order_id or created_at. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.requests` permission."
   adminReturns(id: Int, order_id: Int, status: String, customer_name: String, sort: String, order: String, first: Int, after: String): AdminReturnCursorConnection
+
+  "One RMA custom field with its options. Needs the `sales.rma.custom-fields` permission."
   adminRmaCustomField(id: ID!): AdminRmaCustomField
+
+  "The extra fields the return form collects. Filters: `code` and `label` (partial match), `type`, `status` (0 or 1). Sortable by id, position or code. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.custom-fields` permission."
   adminRmaCustomFields(code: String, label: String, type: String, status: Int, sort: String, order: String, first: Int, after: String): AdminRmaCustomFieldCursorConnection
+
+  "One RMA reason with its resolution types. Needs the `sales.rma.reasons` permission."
   adminRmaReason(id: ID!): AdminRmaReason
+
+  "The return and cancel reasons the RMA form offers, each with its resolution types. Filters: `title` (partial match), `status` (0 or 1). Sortable by id, position or title. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.reasons` permission."
   adminRmaReasons(title: String, status: Int, sort: String, order: String, first: Int, after: String): AdminRmaReasonCursorConnection
+
+  "One RMA rule. Needs the `sales.rma.rules` permission."
   adminRmaRule(id: ID!): AdminRmaRule
+
+  "The return rules, each setting the return window for the products it matches. Filters: `name` (partial match), `status` (0 or 1). Sortable by id or name. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.rules` permission."
   adminRmaRules(name: String, status: Int, sort: String, order: String, first: Int, after: String): AdminRmaRuleCursorConnection
+
+  "One RMA status. Needs the `sales.rma.statuses` permission."
   adminRmaStatus(id: ID!): AdminRmaStatus
+
+  "The return statuses, default and custom. Filters: `title` (partial match), `status` (0 or 1). Sortable by id or title. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.statuses` permission."
   adminRmaStatuses(title: String, status: Int, sort: String, order: String, first: Int, after: String): AdminRmaStatusCursorConnection
+
+  "The signed-in admin's active sessions (cursor pagination)."
+  adminSessions(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+
+    client_type: String
+  ): AdminSessionCursorConnection
 
   "Admin channel detail by id."
   adminSettingsChannel(id: ID!): AdminSettingsChannel
@@ -1019,6 +1125,24 @@ type Query {
   "Admin settings user detail by id."
   adminSettingsUser(id: ID!): AdminSettingsUser
 
+  "An admin user's active sessions (cursor pagination). Requires settings.api_sessions."
+  adminSettingsUserSessions(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+
+    admin_id: Int!
+    client_type: String
+  ): AdminSettingsUserSessionCursorConnection
+
   "Admin settings users listing (cursor pagination)."
   adminSettingsUsers(
     "Returns the first n elements from the list."
@@ -1041,6 +1165,7 @@ type Query {
     order: String
   ): AdminSettingsUserCursorConnection
 
+  "One shipment with every column, the order and customer context, billing and shipping addresses, the inventory source and the shipped line items. Needs the `sales.shipments.view` permission."
   adminShipment(id: ID!): AdminShipment
 
   "Admin shipments datagrid listing (cursor pagination)."
@@ -1098,7 +1223,10 @@ type Query {
     order: String
   ): AdminTransactionCursorConnection
 
+  "The admin sidebar menu as a nested tree, filtered to what the authenticated admin's role may see. Each node carries its label, ACL key, hierarchy and the matching API resource (REST path and GraphQL field), or null for group headers and panel-only screens. Needs only a valid access token or API token."
   getAdminMenu: AdminMenu
+
+  "The permissions of the authenticated admin's role: `permissionType` (`all` or `custom`) and the granted `permissions` keys, `[\"*\"]` for `all`. Needs only a valid access token or API token; use it to gate UI actions instead of waiting for 403s."
   getAdminPermissions: AdminPermissions
 
   "Lists every registered configuration slug for discovery."
@@ -1109,7 +1237,7 @@ type Query {
 
   node(id: ID!): Node
 
-  "Read the authenticated admin's profile using the Bearer token in the Authorization header."
+  "Read the authenticated admin's profile and the kind, id and expiry of the token in the Authorization header."
   readAdminProfile: AdminProfile
 
   "Admin dashboard statistics. Pass `type` to choose the stat group (default: over-all). `start` / `end` (ISO dates) and `channel` (code) narrow the window."
@@ -1146,6 +1274,7 @@ interface Node {
   id: ID!
 }
 
+"One theme section by its IRI or numeric ID, with its published values, staged draft and the content of every locale. Needs the `appearance.sections` permission."
 type AdminAppearanceSection implements Node {
   _id: Int!
   channelId: Int!
@@ -1210,6 +1339,7 @@ type AdminAppearanceSectionTranslationPageInfo {
   startCursor: String
 }
 
+"The editor field schema for the type of section `sectionId` and the options it holds in `locale`: staged edits when there are any, otherwise the published values. Needs the `appearance.sections` permission."
 type AdminAppearanceSectionFields implements Node {
   id: ID!
   locale: String
@@ -1219,6 +1349,7 @@ type AdminAppearanceSectionFields implements Node {
   type: String
 }
 
+"The sections of theme `code` that `channel` would draw if its staged edits were published: draft options, status and order applied, switched-off sections left out, footer links last. Needs the `appearance.sections` permission."
 type AdminAppearanceSectionPreview implements Node {
   channelId: Int
   id: ID!
@@ -1227,6 +1358,7 @@ type AdminAppearanceSectionPreview implements Node {
   themeCode: String
 }
 
+"One theme from the gallery by its `code`, installed or not, with its status and the channels it is active on. Needs the `appearance.themes` permission."
 type AdminAppearanceTheme implements Node {
   activeOn: Iterable!
   author: String
@@ -1245,6 +1377,7 @@ type AdminAppearanceTheme implements Node {
   version: String
 }
 
+"Which of `channelIds` already hold sections built for their current theme, and how many, so activating theme `code` there would replace them. Needs the `appearance.themes` permission."
 type AdminAppearanceThemeImpact implements Node {
   code: String
   id: ID!
@@ -2654,6 +2787,7 @@ type AdminCatalogProductPageInfo {
   startCursor: String
 }
 
+"Every customer-group (tier) price row of product `productId`, ordered by quantity, as a plain list (not paginated). Needs the `catalog.products` permission; an unknown product is an error."
 type AdminCatalogProductCustomerGroupPrice implements Node {
   _id: Int
   customerGroupId: Int
@@ -3057,6 +3191,7 @@ type AdminCustomerCartItemEdge {
   node: AdminCustomerCartItem
 }
 
+"Top-level items in the active cart of customer `customerId`, all in one page (no pagination arguments); empty when the customer has no active cart. Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
 type AdminCustomerCartItem implements Node {
   _id: Int
   additional: Iterable
@@ -3093,6 +3228,7 @@ type AdminCustomerCompareItemEdge {
   node: AdminCustomerCompareItem
 }
 
+"Every product in the compare list of customer `customerId`, all in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
 type AdminCustomerCompareItem implements Node {
   _id: Int
   formattedPrice: String
@@ -3226,6 +3362,7 @@ type AdminCustomerRecentOrderItemEdge {
   node: AdminCustomerRecentOrderItem
 }
 
+"Up to 5 top-level items from the most recent orders of customer `customerId`, one per product, newest first, in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
 type AdminCustomerRecentOrderItem implements Node {
   _id: Int
   additional: Iterable
@@ -3375,6 +3512,7 @@ type AdminCustomerWishlistItemEdge {
   node: AdminCustomerWishlistItem
 }
 
+"Every product in the wishlist of customer `customerId`, all in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
 type AdminCustomerWishlistItem implements Node {
   _id: Int
   additional: Iterable
@@ -3416,6 +3554,7 @@ type AdminEuWithdrawalEdge {
   node: AdminEuWithdrawal
 }
 
+"EU right-of-withdrawal declarations, newest first by default. Filters: `order_increment_id` and `customer_email` (partial match), `status` (received, refunded or declined), `channel_code`, and `received_at_from`/`_to` and `confirmation_sent_at_from`/`_to` dates. Sortable by id, received_at or status. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.eu_withdrawals` permission."
 type AdminEuWithdrawal implements Node {
   _id: Int
   channelCode: String
@@ -4674,6 +4813,7 @@ type AdminMarketingUrlRewritePageInfo {
   startCursor: String
 }
 
+"The admin sidebar menu as a nested tree, filtered to what the authenticated admin's role may see. Each node carries its label, ACL key, hierarchy and the matching API resource (REST path and GraphQL field), or null for group headers and panel-only screens. Needs only a valid access token or API token."
 type AdminMenu implements Node {
   _id: String
   id: ID!
@@ -4896,6 +5036,7 @@ type AdminOrderCommentPageInfo {
   startCursor: String
 }
 
+"The permissions of the authenticated admin's role: `permissionType` (`all` or `custom`) and the granted `permissions` keys, `[\"*\"]` for `all`. Needs only a valid access token or API token; use it to gate UI actions instead of waiting for 403s."
 type AdminPermissions implements Node {
   _id: String
   id: ID!
@@ -4938,7 +5079,7 @@ type AdminProductPageInfo {
   startCursor: String
 }
 
-"Read the authenticated admin's profile using the Bearer token in the Authorization header."
+"Read the authenticated admin's profile and the kind, id and expiry of the token in the Authorization header."
 type AdminProfile implements Node {
   _id: String
   email: String
@@ -4950,6 +5091,9 @@ type AdminProfile implements Node {
   roleName: String
   status: String
   success: Boolean
+  tokenExpiresAt: String
+  tokenId: Int
+  tokenKind: String
 }
 
 "Get a refund by id."
@@ -5092,6 +5236,7 @@ type AdminReturnEdge {
   node: AdminReturn
 }
 
+"Every return (RMA) request, as in the admin RMA grid. Filters: `id`, `order_id`, `status` (partial match on the status title) and `customer_name` (partial match). Sortable by id, order_id or created_at. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.requests` permission."
 type AdminReturn implements Node {
   _id: Int
   availableStatuses: Iterable
@@ -5123,6 +5268,7 @@ type AdminReturnPageInfo {
   startCursor: String
 }
 
+"Every message in the conversation of return request `returnId`, newest first, as a plain list (not paginated). Needs the `sales.rma.requests` permission; an unknown return is an error."
 type AdminReturnMessage implements Node {
   _id: Int
   attachment: String
@@ -5134,6 +5280,7 @@ type AdminReturnMessage implements Node {
   rmaId: Int
 }
 
+"The active return reasons offered for `resolutionType` (`return` or `cancel_items`), as a plain list (not paginated). Needs the `sales.rma.requests.create` permission; any other resolution type is an error."
 type AdminReturnReason implements Node {
   _id: Int
   id: ID!
@@ -5141,6 +5288,7 @@ type AdminReturnReason implements Node {
   title: String
 }
 
+"The items of order `orderId` that can be put on a return, each with its quantity caps (`forReturnQuantity`, `forCancelQuantity`, `currentQuantity`), as a plain list (not paginated). Any customer's order can be used. Needs the `sales.rma.requests.create` permission."
 type AdminReturnableItem implements Node {
   currentQuantity: Int
   forCancelQuantity: Int
@@ -5170,6 +5318,7 @@ type AdminReturnableOrderEdge {
   node: AdminReturnableOrder
 }
 
+"The orders a return can be opened for (the order picker of the admin RMA create form): not canceled, closed, fraud or pending payment, with an item still inside its return window. Filters: `id`, `increment_id` and `customer_name` (partial match), `status`, `method_title`, `grand_total_from`/`_to`, `created_at_from`/`_to`. Sortable by id, increment_id, customer_name, created_at, grand_total, method_title or status. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.requests.create` permission."
 type AdminReturnableOrder implements Node {
   _id: Int
   createdAt: String
@@ -5208,6 +5357,7 @@ type AdminRmaCustomFieldEdge {
   node: AdminRmaCustomField
 }
 
+"The extra fields the return form collects. Filters: `code` and `label` (partial match), `type`, `status` (0 or 1). Sortable by id, position or code. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.custom-fields` permission."
 type AdminRmaCustomField implements Node {
   _id: Int
   code: String
@@ -5245,6 +5395,7 @@ type AdminRmaReasonEdge {
   node: AdminRmaReason
 }
 
+"The return and cancel reasons the RMA form offers, each with its resolution types. Filters: `title` (partial match), `status` (0 or 1). Sortable by id, position or title. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.reasons` permission."
 type AdminRmaReason implements Node {
   _id: Int
   createdAt: String
@@ -5279,6 +5430,7 @@ type AdminRmaRuleEdge {
   node: AdminRmaRule
 }
 
+"The return rules, each setting the return window for the products it matches. Filters: `name` (partial match), `status` (0 or 1). Sortable by id or name. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.rules` permission."
 type AdminRmaRule implements Node {
   _id: Int
   createdAt: String
@@ -5313,6 +5465,7 @@ type AdminRmaStatusEdge {
   node: AdminRmaStatus
 }
 
+"The return statuses, default and custom. Filters: `title` (partial match), `status` (0 or 1). Sortable by id or title. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page's `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.statuses` permission."
 type AdminRmaStatus implements Node {
   _id: Int
   color: String
@@ -5327,6 +5480,146 @@ type AdminRmaStatus implements Node {
 
 "Information about the current page."
 type AdminRmaStatusPageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
+
+"Cursor connection for AdminSession."
+type AdminSessionCursorConnection {
+  edges: [AdminSessionEdge]
+  pageInfo: AdminSessionPageInfo!
+  totalCount: Int!
+}
+
+"Edge of AdminSession."
+type AdminSessionEdge {
+  cursor: String!
+  node: AdminSession
+}
+
+"The signed-in admin's active sessions (cursor pagination)."
+type AdminSession implements Node {
+  _id: Int
+  adminId: Int
+  adminName: String
+  clientType: String
+  createdAt: String
+  expiresAt: String
+  id: ID!
+  ipAddress: String
+  isCurrent: Boolean
+  lastChannel: String
+  lastIpAddress: String
+  lastUsedAt: String
+  lastUserAgent: String
+  message: String
+  name: String
+  refreshExpiresAt: String
+  revokedAt: String
+  revokedReason: String
+  status: String
+  userAgent: String
+}
+
+"Information about the current page."
+type AdminSessionPageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
+
+"Cursor connection for AdminApiSession."
+type AdminApiSessionCursorConnection {
+  edges: [AdminApiSessionEdge]
+  pageInfo: AdminApiSessionPageInfo!
+  totalCount: Int!
+}
+
+"Edge of AdminApiSession."
+type AdminApiSessionEdge {
+  cursor: String!
+  node: AdminApiSession
+}
+
+"Every active admin API session (cursor pagination). Requires settings.api_sessions."
+type AdminApiSession implements Node {
+  _id: Int
+  adminId: Int
+  adminName: String
+  clientType: String
+  createdAt: String
+  expiresAt: String
+  id: ID!
+  ipAddress: String
+  isCurrent: Boolean
+  lastChannel: String
+  lastIpAddress: String
+  lastUsedAt: String
+  lastUserAgent: String
+  message: String
+  name: String
+  refreshExpiresAt: String
+  revokedAt: String
+  revokedReason: String
+  status: String
+  userAgent: String
+}
+
+"Information about the current page."
+type AdminApiSessionPageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
+
+"Cursor connection for AdminApiToken."
+type AdminApiTokenCursorConnection {
+  edges: [AdminApiTokenEdge]
+  pageInfo: AdminApiTokenPageInfo!
+  totalCount: Int!
+}
+
+"Edge of AdminApiToken."
+type AdminApiTokenEdge {
+  cursor: String!
+  node: AdminApiToken
+}
+
+"API tokens (cursor pagination). Requires settings.api_tokens; only your own without settings.api_tokens.manage_others."
+type AdminApiToken implements Node {
+  _id: Int
+  adminId: Int
+  adminName: String
+  createdAt: String
+  createdByAdminId: Int
+  createdByName: String
+  domain: String
+  domainMismatchCount: Int
+  expiresAt: String
+  id: ID!
+  isCurrent: Boolean
+  lastChannel: String
+  lastDomainMismatchAt: String
+  lastIpAddress: String
+  lastUsedAt: String
+  lastUserAgent: String
+  message: String
+  name: String
+  resolvedAt: String
+  resolvedIps: Iterable
+  revokedAt: String
+  revokedByAdminId: Int
+  revokedReason: String
+  status: String
+  tokenPreview: String
+}
+
+"Information about the current page."
+type AdminApiTokenPageInfo {
   endCursor: String
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
@@ -6013,6 +6306,52 @@ type AdminSettingsUserPageInfo {
   startCursor: String
 }
 
+"Cursor connection for AdminSettingsUserSession."
+type AdminSettingsUserSessionCursorConnection {
+  edges: [AdminSettingsUserSessionEdge]
+  pageInfo: AdminSettingsUserSessionPageInfo!
+  totalCount: Int!
+}
+
+"Edge of AdminSettingsUserSession."
+type AdminSettingsUserSessionEdge {
+  cursor: String!
+  node: AdminSettingsUserSession
+}
+
+"An admin user's active sessions (cursor pagination). Requires settings.api_sessions."
+type AdminSettingsUserSession implements Node {
+  _id: Int
+  adminId: Int
+  adminName: String
+  clientType: String
+  createdAt: String
+  expiresAt: String
+  id: ID!
+  ipAddress: String
+  isCurrent: Boolean
+  lastChannel: String
+  lastIpAddress: String
+  lastUsedAt: String
+  lastUserAgent: String
+  message: String
+  name: String
+  refreshExpiresAt: String
+  revokedAt: String
+  revokedReason: String
+  status: String
+  userAgent: String
+}
+
+"Information about the current page."
+type AdminSettingsUserSessionPageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
+
+"One shipment with every column, the order and customer context, billing and shipping addresses, the inventory source and the shipped line items. Needs the `sales.shipments.view` permission."
 type AdminShipment implements Node {
   _id: Int
   baseShippingAmount: Float
@@ -6122,6 +6461,9 @@ type Mutation {
 
   "Becomes copyAdminMarketingCartRule. Input: { cartRuleId }. Returns the new rule detail."
   copyAdminMarketingCartRule(input: copyAdminMarketingCartRuleInput!): copyAdminMarketingCartRulePayload
+
+  "Update the signed-in admin's name, email and password; currentPassword is required. Becomes createAdminAccountUpdate; needs a login session access token."
+  createAdminAccountUpdate(input: createAdminAccountUpdateInput!): createAdminAccountUpdatePayload
 
   "Creates a AdminAppearanceSection."
   createAdminAppearanceSection(input: createAdminAppearanceSectionInput!): createAdminAppearanceSectionPayload
@@ -6240,6 +6582,9 @@ type Mutation {
   "Create an empty admin draft cart for the given customer."
   createAdminDraftCart(input: createAdminDraftCartInput!): createAdminDraftCartPayload
 
+  "Email an admin password reset link; the answer never says whether the email exists. Becomes createAdminForgotPassword; reachable without a token."
+  createAdminForgotPassword(input: createAdminForgotPasswordInput!): createAdminForgotPasswordPayload
+
   "Create an invoice on an order."
   createAdminInvoice(input: createAdminInvoiceInput!): createAdminInvoicePayload
 
@@ -6248,6 +6593,15 @@ type Mutation {
 
   "Send a duplicate invoice email. Becomes createAdminInvoiceSendDuplicate."
   createAdminInvoiceSendDuplicate(input: createAdminInvoiceSendDuplicateInput!): createAdminInvoiceSendDuplicatePayload
+
+  "Log in with email and password and get an access and refresh token, or a challengeToken for createAdminTwoFactorVerify when twoFactorRequired is true. Becomes createAdminLogin; reachable without a token."
+  createAdminLogin(input: createAdminLoginInput!): createAdminLoginPayload
+
+  "Log out of the current session. Becomes createAdminLogout."
+  createAdminLogout(input: createAdminLogoutInput!): createAdminLogoutPayload
+
+  "Log out of every session of the signed-in admin. Becomes createAdminLogoutAll."
+  createAdminLogoutAll(input: createAdminLogoutAllInput!): createAdminLogoutAllPayload
 
   "Create a marketing campaign. Becomes createAdminMarketingCampaign."
   createAdminMarketingCampaign(input: createAdminMarketingCampaignInput!): createAdminMarketingCampaignPayload
@@ -6317,6 +6671,9 @@ type Mutation {
 
   "Build a fresh admin draft cart from a previous order's items."
   createAdminReorder(input: createAdminReorderInput!): createAdminReorderPayload
+
+  "Reset an admin password with the emailed token; revokes every API session. Becomes createAdminResetPassword; reachable without a token."
+  createAdminResetPassword(input: createAdminResetPasswordInput!): createAdminResetPasswordPayload
 
   "Creates a AdminReturn."
   createAdminReturn(input: createAdminReturnInput!): createAdminReturnPayload
@@ -6411,11 +6768,20 @@ type Mutation {
   "Creates a AdminShipment."
   createAdminShipment(input: createAdminShipmentInput!): createAdminShipmentPayload
 
+  "Exchange a refresh token for a new access and refresh token. Becomes createAdminTokenRefresh; reachable without a token."
+  createAdminTokenRefresh(input: createAdminTokenRefreshInput!): createAdminTokenRefreshPayload
+
   "Record a payment against an invoice (create transaction)."
   createAdminTransaction(input: createAdminTransactionInput!): createAdminTransactionPayload
 
+  "Finish a login that returned twoFactorRequired with an authenticator code or a backup code. Becomes createAdminTwoFactorVerify; reachable without a token."
+  createAdminTwoFactorVerify(input: createAdminTwoFactorVerifyInput!): createAdminTwoFactorVerifyPayload
+
   "Declines a AdminEuWithdrawal."
   declineAdminEuWithdrawal(input: declineAdminEuWithdrawalInput!): declineAdminEuWithdrawalPayload
+
+  "Revoke an API token. Becomes deleteAdminApiToken; requires settings.api_tokens.delete."
+  deleteAdminApiToken(input: deleteAdminApiTokenInput!): deleteAdminApiTokenPayload
 
   "Deletes a AdminAppearanceSection."
   deleteAdminAppearanceSection(input: deleteAdminAppearanceSectionInput!): deleteAdminAppearanceSectionPayload
@@ -6507,6 +6873,9 @@ type Mutation {
   "Deletes a AdminRmaStatus."
   deleteAdminRmaStatus(input: deleteAdminRmaStatusInput!): deleteAdminRmaStatusPayload
 
+  "Revoke one of the signed-in admin's sessions. Becomes deleteAdminSession."
+  deleteAdminSession(input: deleteAdminSessionInput!): deleteAdminSessionPayload
+
   "Delete a channel. Refused for the last channel or the default app channel."
   deleteAdminSettingsChannel(input: deleteAdminSettingsChannelInput!): deleteAdminSettingsChannelPayload
 
@@ -6563,6 +6932,9 @@ type Mutation {
 
   "ResendConfirmations a AdminEuWithdrawal."
   resendConfirmationAdminEuWithdrawal(input: resendConfirmationAdminEuWithdrawalInput!): resendConfirmationAdminEuWithdrawalPayload
+
+  "Revoke every login session of an admin user. Becomes revokeSessionsAdminSettingsUser; requires settings.api_sessions.delete."
+  revokeSessionsAdminSettingsUser(input: revokeSessionsAdminSettingsUserInput!): revokeSessionsAdminSettingsUserPayload
 
   "Save billing and shipping addresses on the draft cart."
   saveAddressAdminCart(input: saveAddressAdminCartInput!): saveAddressAdminCartPayload
@@ -6701,6 +7073,48 @@ type Mutation {
 
   "Validate an import."
   validateAdminSettingsDataTransferImportValidate(input: validateAdminSettingsDataTransferImportValidateInput!): validateAdminSettingsDataTransferImportValidatePayload
+}
+
+"Update the signed-in admin's name, email and password; currentPassword is required. Becomes createAdminAccountUpdate; needs a login session access token."
+input createAdminAccountUpdateInput {
+  clientMutationId: String
+
+  "Current password; required."
+  currentPassword: String
+
+  "Email address; left unchanged when omitted."
+  email: String
+
+  "Name."
+  name: String
+
+  "New password (min 6); omit to keep the current one."
+  password: String
+
+  "New password again, required with password."
+  passwordConfirmation: String
+}
+
+"Update the signed-in admin's name, email and password; currentPassword is required. Becomes createAdminAccountUpdate; needs a login session access token."
+type createAdminAccountUpdatePayload {
+  adminAccountUpdate: createAdminAccountUpdatePayloadData
+  clientMutationId: String
+}
+
+"Update the signed-in admin's name, email and password; currentPassword is required. Becomes createAdminAccountUpdate; needs a login session access token."
+type createAdminAccountUpdatePayloadData implements Node {
+  _id: Int
+  email: String
+  id: ID!
+  image: String
+  message: String
+  name: String
+  passwordChanged: Boolean
+  revokedApiTokens: Int
+  revokedSessions: Int
+  roleId: Int
+  roleName: String
+  success: Boolean
 }
 
 "Creates a AdminAppearanceSection."
@@ -8969,6 +9383,27 @@ type resendConfirmationAdminEuWithdrawalPayload {
   clientMutationId: String
 }
 
+"Email an admin password reset link; the answer never says whether the email exists. Becomes createAdminForgotPassword; reachable without a token."
+input createAdminForgotPasswordInput {
+  clientMutationId: String
+
+  "Admin email address."
+  email: String
+}
+
+"Email an admin password reset link; the answer never says whether the email exists. Becomes createAdminForgotPassword; reachable without a token."
+type createAdminForgotPasswordPayload {
+  adminForgotPassword: createAdminForgotPasswordPayloadData
+  clientMutationId: String
+}
+
+"Email an admin password reset link; the answer never says whether the email exists. Becomes createAdminForgotPassword; reachable without a token."
+type createAdminForgotPasswordPayloadData implements Node {
+  id: ID!
+  message: String
+  success: Boolean
+}
+
 "Create an invoice on an order."
 input createAdminInvoiceInput {
   "When true, also records an order transaction for the invoice (the admin \"Create Transaction\" checkbox). The transaction captures the invoice amount against the order's payment method. Defaults to false."
@@ -9030,6 +9465,84 @@ type AdminInvoiceSendDuplicate implements Node {
   email: String
   id: ID!
   message: String
+  success: Boolean
+}
+
+"Log in with email and password and get an access and refresh token, or a challengeToken for createAdminTwoFactorVerify when twoFactorRequired is true. Becomes createAdminLogin; reachable without a token."
+input createAdminLoginInput {
+  clientMutationId: String
+
+  "One of web, mobile, pos, desktop or other (default other)."
+  clientType: String
+
+  "Device or app label shown in the sessions list (max 100)."
+  deviceName: String
+
+  "Admin login email."
+  email: String
+
+  "Admin password."
+  password: String
+}
+
+"Log in with email and password and get an access and refresh token, or a challengeToken for createAdminTwoFactorVerify when twoFactorRequired is true. Becomes createAdminLogin; reachable without a token."
+type createAdminLoginPayload {
+  adminLogin: createAdminLoginPayloadData
+  clientMutationId: String
+}
+
+"Log in with email and password and get an access and refresh token, or a challengeToken for createAdminTwoFactorVerify when twoFactorRequired is true. Becomes createAdminLogin; reachable without a token."
+type createAdminLoginPayloadData implements Node {
+  accessToken: String
+  accessTokenExpiresAt: String
+  admin: Iterable
+  challengeToken: String
+  challengeTokenExpiresAt: String
+  expiresIn: Int
+  id: ID!
+  message: String
+  permissions: Iterable
+  refreshToken: String
+  refreshTokenExpiresAt: String
+  session: Iterable
+  tokenType: String
+  twoFactorRequired: Boolean
+}
+
+"Log out of the current session. Becomes createAdminLogout."
+input createAdminLogoutInput {
+  clientMutationId: String
+}
+
+"Log out of the current session. Becomes createAdminLogout."
+type createAdminLogoutPayload {
+  adminLogout: createAdminLogoutPayloadData
+  clientMutationId: String
+}
+
+"Log out of the current session. Becomes createAdminLogout."
+type createAdminLogoutPayloadData implements Node {
+  id: ID!
+  message: String
+  success: Boolean
+}
+
+"Log out of every session of the signed-in admin. Becomes createAdminLogoutAll."
+input createAdminLogoutAllInput {
+  clientMutationId: String
+}
+
+"Log out of every session of the signed-in admin. Becomes createAdminLogoutAll."
+type createAdminLogoutAllPayload {
+  adminLogoutAll: createAdminLogoutAllPayloadData
+  clientMutationId: String
+}
+
+"Log out of every session of the signed-in admin. Becomes createAdminLogoutAll."
+type createAdminLogoutAllPayloadData implements Node {
+  id: ID!
+  message: String
+  revoked: Int
   success: Boolean
 }
 
@@ -10054,6 +10567,36 @@ type createAdminReorderPayloadData implements Node {
   success: Boolean
 }
 
+"Reset an admin password with the emailed token; revokes every API session. Becomes createAdminResetPassword; reachable without a token."
+input createAdminResetPasswordInput {
+  clientMutationId: String
+
+  "Admin email address."
+  email: String
+
+  "New password (min 6)."
+  password: String
+
+  "New password again."
+  passwordConfirmation: String
+
+  "The token from the reset link emailed by forgot-password."
+  token: String
+}
+
+"Reset an admin password with the emailed token; revokes every API session. Becomes createAdminResetPassword; reachable without a token."
+type createAdminResetPasswordPayload {
+  adminResetPassword: createAdminResetPasswordPayloadData
+  clientMutationId: String
+}
+
+"Reset an admin password with the emailed token; revokes every API session. Becomes createAdminResetPassword; reachable without a token."
+type createAdminResetPasswordPayloadData implements Node {
+  id: ID!
+  message: String
+  success: Boolean
+}
+
 "Creates a AdminReturn."
 input createAdminReturnInput {
   clientMutationId: String
@@ -10520,6 +11063,30 @@ type AdminRmaStatusMassUpdateStatus implements Node {
   id: ID!
   message: String
   updated: Iterable
+}
+
+"Revoke one of the signed-in admin's sessions. Becomes deleteAdminSession."
+input deleteAdminSessionInput {
+  clientMutationId: String
+  id: ID!
+}
+
+"Revoke one of the signed-in admin's sessions. Becomes deleteAdminSession."
+type deleteAdminSessionPayload {
+  adminSession: AdminSession
+  clientMutationId: String
+}
+
+"Revoke an API token. Becomes deleteAdminApiToken; requires settings.api_tokens.delete."
+input deleteAdminApiTokenInput {
+  clientMutationId: String
+  id: ID!
+}
+
+"Revoke an API token. Becomes deleteAdminApiToken; requires settings.api_tokens.delete."
+type deleteAdminApiTokenPayload {
+  adminApiToken: AdminApiToken
+  clientMutationId: String
 }
 
 "Create a new channel."
@@ -11574,6 +12141,20 @@ type updateAdminSettingsUserPayload {
   clientMutationId: String
 }
 
+"Revoke every login session of an admin user. Becomes revokeSessionsAdminSettingsUser; requires settings.api_sessions.delete."
+input revokeSessionsAdminSettingsUserInput {
+  "Resource IRI (e.g. /api/admin/auth/sessions/12) or numeric id."
+  _id: String
+  clientMutationId: String
+  id: ID!
+}
+
+"Revoke every login session of an admin user. Becomes revokeSessionsAdminSettingsUser; requires settings.api_sessions.delete."
+type revokeSessionsAdminSettingsUserPayload {
+  adminSettingsUser: AdminSettingsUser
+  clientMutationId: String
+}
+
 "Delete an admin user. Becomes deleteAdminSettingsUser."
 input deleteAdminSettingsUserInput {
   clientMutationId: String
@@ -11627,6 +12208,34 @@ type createAdminShipmentPayload {
   clientMutationId: String
 }
 
+"Exchange a refresh token for a new access and refresh token. Becomes createAdminTokenRefresh; reachable without a token."
+input createAdminTokenRefreshInput {
+  clientMutationId: String
+
+  "The refresh token from the last login or refresh."
+  refreshToken: String
+}
+
+"Exchange a refresh token for a new access and refresh token. Becomes createAdminTokenRefresh; reachable without a token."
+type createAdminTokenRefreshPayload {
+  adminTokenRefresh: createAdminTokenRefreshPayloadData
+  clientMutationId: String
+}
+
+"Exchange a refresh token for a new access and refresh token. Becomes createAdminTokenRefresh; reachable without a token."
+type createAdminTokenRefreshPayloadData implements Node {
+  accessToken: String
+  accessTokenExpiresAt: String
+  admin: Iterable
+  expiresIn: Int
+  id: ID!
+  permissions: Iterable
+  refreshToken: String
+  refreshTokenExpiresAt: String
+  session: Iterable
+  tokenType: String
+}
+
 "Record a payment against an invoice (create transaction)."
 input createAdminTransactionInput {
   "Amount paid. Must be > 0 and cannot push the invoice total above its grand total."
@@ -11644,4 +12253,37 @@ input createAdminTransactionInput {
 type createAdminTransactionPayload {
   adminTransaction: AdminTransaction
   clientMutationId: String
+}
+
+"Finish a login that returned twoFactorRequired with an authenticator code or a backup code. Becomes createAdminTwoFactorVerify; reachable without a token."
+input createAdminTwoFactorVerifyInput {
+  "One of the backup codes given when two-factor authentication was enabled; each works once. Send this or code."
+  backupCode: String
+
+  "The challengeToken returned by the login."
+  challengeToken: String
+  clientMutationId: String
+
+  "The 6-digit code from the authenticator app. Send this or backupCode."
+  code: String
+}
+
+"Finish a login that returned twoFactorRequired with an authenticator code or a backup code. Becomes createAdminTwoFactorVerify; reachable without a token."
+type createAdminTwoFactorVerifyPayload {
+  adminTwoFactorVerify: createAdminTwoFactorVerifyPayloadData
+  clientMutationId: String
+}
+
+"Finish a login that returned twoFactorRequired with an authenticator code or a backup code. Becomes createAdminTwoFactorVerify; reachable without a token."
+type createAdminTwoFactorVerifyPayloadData implements Node {
+  accessToken: String
+  accessTokenExpiresAt: String
+  admin: Iterable
+  expiresIn: Int
+  id: ID!
+  permissions: Iterable
+  refreshToken: String
+  refreshTokenExpiresAt: String
+  session: Iterable
+  tokenType: String
 }

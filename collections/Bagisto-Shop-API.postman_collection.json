@@ -2,7 +2,7 @@
     "info": {
         "_postman_id": "e7c1a940-6b2d-4f18-9a35-1d8c05b7e240",
         "name": "Bagisto Shop API",
-        "description": "Storefront endpoints for the [Bagisto](https://bagisto.com) e-commerce platform — products, cart, checkout, orders, returns, reviews, wishlist and more. Both transports are covered: `REST/` and `GraphQL/`.\n\n## Setup\n\n1. Select the **Bagisto** environment (top right). Import it first if it is not in your workspace. One environment serves both the storefront and the admin collection.\n2. Fill in these values:\n\n| Variable | Where it comes from |\n| --- | --- |\n| `url` | Your store, e.g. `http://localhost:8000` |\n| `storefrontKey` | Admin panel → Configuration → API |\n| `customerEmail` / `customerPassword` | Any storefront customer account |\n\n3. Run **REST → Customer → Customer login**. It saves `customerToken` to the environment, and every other request sends it as the bearer automatically.\n\n## Shopping as a guest\n\nGuest carts authenticate with a cart token instead of a customer token. Run **Create cart token** — it saves `cartToken` to the environment.\n\nTo act as that guest, send `{{cartToken}}` as the bearer: change it on the collection's **Authorization** tab, or override it on the individual request. Leave it as `{{customerToken}}` for logged-in flows. The cart and checkout endpoints serve both, so which token you send is what decides whose cart you are working on.\n\n## Layout\n\n`REST/` and `GraphQL/` share one folder tree, grouped by feature, so `Cart` holds the cart endpoints on either transport. GraphQL is split into `Queries/` and `Mutations/` under each feature.\n\n## Worth knowing\n\n- `X-STOREFRONT-KEY` is sent on every request and is required by all storefront endpoints.\n- `X-Locale`, `X-Channel` and `X-Currency` are optional; omit them to use the channel defaults.\n- GraphQL requests declare only the arguments an operation **requires**, plus `first` where it paginates. The complete argument list for any operation is in the GraphiQL playground at `/api/graphiql`.\n- Postman's **Auto Fetch** runs a schema introspection query, which costs far more than a normal request. If things feel slow, switch it off and fetch the schema when you need it.\n\nFull reference: [api-docs.bagisto.com](https://api-docs.bagisto.com/)",
+        "description": "Storefront endpoints for the [Bagisto](https://bagisto.com) e-commerce platform — products, cart, checkout, orders, returns, reviews, wishlist and more. Both transports are covered: `REST/` and `GraphQL/`.\n\n## Setup\n\n1. Select the **Bagisto** environment (top right). Import it first if it is not in your workspace. One environment serves both the storefront and the admin collection.\n2. Fill in these values:\n\n| Variable | Where it comes from |\n| --- | --- |\n| `url` | Your store, e.g. `http://localhost:8000` |\n| `storefrontKey` | `STOREFRONT_PLAYGROUND_KEY` in `.env` (written by the installer), or `php artisan bagisto-api:generate-key` |\n| `customerEmail` / `customerPassword` | Any storefront customer account |\n\n3. Run **REST → Customer → Customer login**. It saves `customerToken` to the environment, and every other request sends it as the bearer automatically. A failed login is not an HTTP error: the answer is `201` with `success: false`, a `message` and an empty `token`.\n\nThe customer token is a Laravel Sanctum token: it has no refresh token, does not expire unless Sanctum's `expiration` is set, and **Customer logout** revokes it. The full authentication guide is [docs/authentication.md](https://github.com/bagisto/bagisto-api/blob/main/docs/authentication.md).\n\n## Shopping as a guest\n\nGuest carts authenticate with a cart token instead of a customer token. Run **Create cart token** with `customerToken` empty (or the request's **Authorization** set to *No Auth*) — it saves `cartToken` to the environment. Called with a customer token, it returns the customer's own cart instead.\n\nTo act as that guest, send `{{cartToken}}` as the bearer: change it on the collection's **Authorization** tab, or override it on the individual request. Leave it as `{{customerToken}}` for logged-in flows. The cart and checkout endpoints serve both, so which token you send is what decides whose cart you are working on.\n\n## Layout\n\n`REST/` and `GraphQL/` share one folder tree, grouped by feature, so `Cart` holds the cart endpoints on either transport. GraphQL is split into `Queries/` and `Mutations/` under each feature.\n\n## Worth knowing\n\n- `X-STOREFRONT-KEY` is sent on every request and is required by all storefront endpoints.\n- `X-Locale`, `X-Channel` and `X-Currency` are optional; omit them to use the channel defaults.\n- GraphQL requests declare only the arguments an operation **requires**, plus `first` where it paginates. The complete argument list for any operation is in the GraphiQL playground at `/api/graphiql`.\n- Postman's **Auto Fetch** runs a schema introspection query, which costs far more than a normal request. If things feel slow, switch it off and fetch the schema when you need it.\n\nFull reference: [api-docs.bagisto.com](https://api-docs.bagisto.com/)",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "auth": {
@@ -1756,7 +1756,7 @@
                                         }
                                     ]
                                 },
-                                "description": "Returns the payment methods available for the authenticated customer's active cart."
+                                "description": "Returns the payment methods available for the cart the bearer token names: a guest cart token or a customer token. A missing or unknown token answers 404, not 401."
                             }
                         },
                         {
@@ -1925,7 +1925,7 @@
                                         "checkout-payment-methods"
                                     ]
                                 },
-                                "description": "Save selected payment method for checkout",
+                                "description": "Saves `paymentMethod` on the cart the bearer token names (a guest cart token or a customer token); it must be a method available for that cart. For a redirect gateway the answer carries `paymentGatewayUrl` and `paymentData`, which include the optional `paymentSuccessUrl`, `paymentFailureUrl` and `paymentCancelUrl`.",
                                 "body": {
                                     "mode": "raw",
                                     "raw": "{\n    \"paymentMethod\": \"moneytransfer\"\n}",
@@ -1976,7 +1976,7 @@
                                         "checkout-shipping-methods"
                                     ]
                                 },
-                                "description": "Save selected shipping method for checkout",
+                                "description": "Saves `shippingMethod` on the cart the bearer token names (a guest cart token or a customer token). The cart needs its addresses first, and the code must be one of the rates GET /api/shop/checkout-shipping-methods returns; the cart totals are recalculated.",
                                 "body": {
                                     "mode": "raw",
                                     "raw": "{\n    \"shippingMethod\": \"flatrate_flatrate\"\n}",
@@ -3780,7 +3780,7 @@
                                         }
                                     ]
                                 },
-                                "description": "Streams the PDF for a customer invoice. Requires Bearer token; the invoice must belong to the authenticated customer."
+                                "description": "Streams the PDF of one of the customer's invoices, rendered by core's storefront invoice view. Needs the customer token; an invoice of another customer answers 404."
                             }
                         },
                         {
@@ -3827,7 +3827,237 @@
                                         }
                                     ]
                                 },
-                                "description": "Streams the purchased file. Increments `download_used` on each successful call. `{id}` is the `downloadable_link_purchased` row id from `GET /customer-downloadable-products`."
+                                "description": "Streams the purchased file. Increments `download_used` on each successful call. `{id}` is the `downloadable_link_purchased` row id from `GET /customer-downloadable-products`. Needs the customer token. Errors carry a code in `error`."
+                            }
+                        },
+                        {
+                            "name": "Get a downloadable-product purchase",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-downloadable-products/:id",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-downloadable-products",
+                                        ":id"
+                                    ],
+                                    "variable": [
+                                        {
+                                            "key": "id",
+                                            "value": "1",
+                                            "description": "Customer downloadable product ID"
+                                        }
+                                    ]
+                                },
+                                "description": "One downloadable-product purchase of the authenticated customer; another customer's purchase or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
+                            }
+                        },
+                        {
+                            "name": "Get a shipment of the customer",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-order-shipments/:id",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-order-shipments",
+                                        ":id"
+                                    ],
+                                    "variable": [
+                                        {
+                                            "key": "id",
+                                            "value": "1",
+                                            "description": "Customer order shipment ID"
+                                        }
+                                    ]
+                                },
+                                "description": "One shipment of an order placed by the authenticated customer; any other shipment or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
+                            }
+                        },
+                        {
+                            "name": "Get a shipped item of the customer",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-order-shipment-items/:id",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-order-shipment-items",
+                                        ":id"
+                                    ],
+                                    "variable": [
+                                        {
+                                            "key": "id",
+                                            "value": "1",
+                                            "description": "Customer order shipment item ID"
+                                        }
+                                    ]
+                                },
+                                "description": "One shipped item of the authenticated customer's shipments; any other item or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
+                            }
+                        },
+                        {
+                            "name": "Get an invoice of the customer",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-invoices/:id",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-invoices",
+                                        ":id"
+                                    ],
+                                    "variable": [
+                                        {
+                                            "key": "id",
+                                            "value": "1",
+                                            "description": "Customer invoice ID"
+                                        }
+                                    ]
+                                },
+                                "description": "One invoice of an order placed by the authenticated customer; any other invoice or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
+                            }
+                        },
+                        {
+                            "name": "Get an order of the customer",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-orders/:id",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-orders",
+                                        ":id"
+                                    ],
+                                    "variable": [
+                                        {
+                                            "key": "id",
+                                            "value": "1",
+                                            "description": "Customer order ID"
+                                        }
+                                    ]
+                                },
+                                "description": "One order placed by the authenticated customer, with its items, addresses, payment and shipments; another customer's order or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                             }
                         },
                         {
@@ -3959,6 +4189,162 @@
                             }
                         },
                         {
+                            "name": "List the customer's downloadable products",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-downloadable-products",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-downloadable-products"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "page",
+                                            "value": "",
+                                            "description": "The collection page number",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "per_page",
+                                            "value": "",
+                                            "description": "The number of items per page",
+                                            "disabled": true
+                                        }
+                                    ]
+                                },
+                                "description": "The authenticated customer's downloadable-product purchases, newest first, with the remaining downloads and the download URL; `status` filters by exact purchase status. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
+                            }
+                        },
+                        {
+                            "name": "List the customer's orders",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-orders",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-orders"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "page",
+                                            "value": "",
+                                            "description": "The collection page number",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "per_page",
+                                            "value": "",
+                                            "description": "The number of items per page",
+                                            "disabled": true
+                                        }
+                                    ]
+                                },
+                                "description": "Orders placed by the authenticated customer, newest first; `status` filters by exact order status. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
+                            }
+                        },
+                        {
+                            "name": "List the customer's shipped items",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-order-shipment-items",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-order-shipment-items"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "page",
+                                            "value": "",
+                                            "description": "The collection page number",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "per_page",
+                                            "value": "",
+                                            "description": "The number of items per page",
+                                            "disabled": true
+                                        }
+                                    ]
+                                },
+                                "description": "Shipped items across the authenticated customer's shipments, newest first. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
+                            }
+                        },
+                        {
                             "name": "Reorder items from a previous customer order",
                             "request": {
                                 "method": "POST",
@@ -4007,392 +4393,6 @@
                                         }
                                     }
                                 }
-                            }
-                        },
-                        {
-                            "name": "Retrieves a CustomerDownloadableProduct resource.",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-downloadable-products/:id",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-downloadable-products",
-                                        ":id"
-                                    ],
-                                    "variable": [
-                                        {
-                                            "key": "id",
-                                            "value": "1",
-                                            "description": "Customer downloadable product ID"
-                                        }
-                                    ]
-                                },
-                                "description": "Retrieves a CustomerDownloadableProduct resource."
-                            }
-                        },
-                        {
-                            "name": "Retrieves a CustomerInvoice resource.",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-invoices/:id",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-invoices",
-                                        ":id"
-                                    ],
-                                    "variable": [
-                                        {
-                                            "key": "id",
-                                            "value": "1",
-                                            "description": "Customer invoice ID"
-                                        }
-                                    ]
-                                },
-                                "description": "Retrieves a CustomerInvoice resource."
-                            }
-                        },
-                        {
-                            "name": "Retrieves a CustomerOrder resource.",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-orders/:id",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-orders",
-                                        ":id"
-                                    ],
-                                    "variable": [
-                                        {
-                                            "key": "id",
-                                            "value": "1",
-                                            "description": "Customer order ID"
-                                        }
-                                    ]
-                                },
-                                "description": "Retrieves a CustomerOrder resource."
-                            }
-                        },
-                        {
-                            "name": "Retrieves a CustomerOrderShipment resource.",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-order-shipments/:id",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-order-shipments",
-                                        ":id"
-                                    ],
-                                    "variable": [
-                                        {
-                                            "key": "id",
-                                            "value": "1",
-                                            "description": "Customer order shipment ID"
-                                        }
-                                    ]
-                                },
-                                "description": "Retrieves a CustomerOrderShipment resource."
-                            }
-                        },
-                        {
-                            "name": "Retrieves a CustomerOrderShipmentItem resource.",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-order-shipment-items/:id",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-order-shipment-items",
-                                        ":id"
-                                    ],
-                                    "variable": [
-                                        {
-                                            "key": "id",
-                                            "value": "1",
-                                            "description": "Customer order shipment item ID"
-                                        }
-                                    ]
-                                },
-                                "description": "Retrieves a CustomerOrderShipmentItem resource."
-                            }
-                        },
-                        {
-                            "name": "Retrieves the collection of CustomerDownloadableProduct resources.",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-downloadable-products",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-downloadable-products"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "page",
-                                            "value": "",
-                                            "description": "The collection page number",
-                                            "disabled": true
-                                        },
-                                        {
-                                            "key": "per_page",
-                                            "value": "",
-                                            "description": "The number of items per page",
-                                            "disabled": true
-                                        }
-                                    ]
-                                },
-                                "description": "Retrieves the collection of CustomerDownloadableProduct resources."
-                            }
-                        },
-                        {
-                            "name": "Retrieves the collection of CustomerOrder resources.",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-orders",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-orders"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "page",
-                                            "value": "",
-                                            "description": "The collection page number",
-                                            "disabled": true
-                                        },
-                                        {
-                                            "key": "per_page",
-                                            "value": "",
-                                            "description": "The number of items per page",
-                                            "disabled": true
-                                        }
-                                    ]
-                                },
-                                "description": "Retrieves the collection of CustomerOrder resources."
-                            }
-                        },
-                        {
-                            "name": "Retrieves the collection of CustomerOrderShipmentItem resources.",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-order-shipment-items",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-order-shipment-items"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "page",
-                                            "value": "",
-                                            "description": "The collection page number",
-                                            "disabled": true
-                                        },
-                                        {
-                                            "key": "per_page",
-                                            "value": "",
-                                            "description": "The number of items per page",
-                                            "disabled": true
-                                        }
-                                    ]
-                                },
-                                "description": "Retrieves the collection of CustomerOrderShipmentItem resources."
                             }
                         }
                     ]
@@ -4518,6 +4518,53 @@
                                         }
                                     }
                                 }
+                            }
+                        },
+                        {
+                            "name": "Download a return message attachment",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/return-messages/:id/attachment",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "return-messages",
+                                        ":id",
+                                        "attachment"
+                                    ],
+                                    "variable": [
+                                        {
+                                            "key": "id",
+                                            "value": "1",
+                                            "description": "Identifier"
+                                        }
+                                    ]
+                                },
+                                "description": "Streams the file attached to a message on one of the customer's returns, as core's storefront return page does. `{id}` is the message id from `GET /return-messages`. Needs the customer token; a message on another customer's return answers 404."
                             }
                         },
                         {
@@ -5606,7 +5653,7 @@
                                         "pdf"
                                     ]
                                 },
-                                "description": "Streams the authenticated customer's GDPR data export (profile, addresses and orders) as a PDF rendered by core's GDPR view. Requires Bearer token and GDPR enabled."
+                                "description": "Streams the authenticated customer's GDPR data export (profile, addresses and orders) as a PDF rendered by core's GDPR view. Needs the customer token and GDPR enabled."
                             }
                         },
                         {
@@ -6555,7 +6602,7 @@
                                         }
                                     ]
                                 },
-                                "description": "Get a single product review by ID"
+                                "description": "One product review by ID. Only approved reviews are returned; an unknown, pending or disapproved review is a 404. Needs the X-STOREFRONT-KEY header."
                             }
                         },
                         {
@@ -7848,7 +7895,7 @@
                                         }
                                     ]
                                 },
-                                "description": "Get a single downloadable link"
+                                "description": "One downloadable link of a downloadable product by ID. An unknown ID is a 404. Needs the X-STOREFRONT-KEY header."
                             }
                         },
                         {
@@ -9111,7 +9158,7 @@
                                         "image-searches"
                                     ]
                                 },
-                                "description": "Uploads an image and returns its stored URL plus search keywords. When storefront image-search AI is enabled, keywords are analyzed by Magic AI; otherwise the result uses the TensorFlow search engine. Upload the image as a multipart file; the GraphQL mutation accepts the same image base64-encoded.",
+                                "description": "Uploads an image and returns its stored URL plus search keywords. When Magic AI and its storefront image search are both enabled, the keywords come from Magic AI and `engine` is `ai`; otherwise `keywords` is empty and `engine` is `tensorflow`, telling the client to run its own TensorFlow search on `imageUrl`. Send `multipart/form-data` with an `image` field; the GraphQL mutation accepts the same image base64-encoded. Needs the storefront key; no customer login. Limited to 10 requests a minute per IP address.",
                                 "body": {
                                     "mode": "formdata",
                                     "formdata": [
@@ -9119,7 +9166,7 @@
                                             "key": "image",
                                             "type": "file",
                                             "value": "",
-                                            "description": ""
+                                            "description": "A jpeg, jpg, png, gif, svg or webp image of at most 2 MB; its real content type is checked."
                                         }
                                     ]
                                 }
@@ -9726,7 +9773,7 @@
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
                                         },
-                                        "description": "Product attribute resource"
+                                        "description": "One product attribute. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -9760,7 +9807,7 @@
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
                                         },
-                                        "description": "Attribute option resource"
+                                        "description": "One attribute option. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -9794,7 +9841,7 @@
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
                                         },
-                                        "description": "Attribute option resource"
+                                        "description": "Every attribute option of every attribute, ordered by ID; read one attribute's options through its `options` field instead. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -9828,7 +9875,7 @@
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
                                         },
-                                        "description": "Product attribute resource"
+                                        "description": "Every product attribute, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -9871,7 +9918,8 @@
                                                 "query": "query AttributeTranslation($id: ID!) {\n  attributeTranslation(id: $id) {\n    _id\n    attributeId\n    id\n    locale\n    name\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One attribute translation. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -9904,7 +9952,8 @@
                                                 "query": "query AttributeTranslations($first: Int) {\n  attributeTranslations(first: $first) {\n    edges {\n      node {\n        _id\n        attributeId\n        id\n        locale\n        name\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Every attribute translation (one row per attribute and locale), ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -9947,7 +9996,8 @@
                                                 "query": "query Page($id: ID!) {\n  page(id: $id) {\n    _id\n    createdAt\n    id\n    layout\n    translation {\n      _id\n      cmsPageId\n      htmlContent\n      id\n      locale\n      metaDescription\n      metaKeywords\n      metaTitle\n      pageTitle\n      urlKey\n    }\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One CMS page with its translations. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -9980,7 +10030,8 @@
                                                 "query": "query PageByUrlKeypages($urlKey: String!) {\n  pageByUrlKeypages(urlKey: $urlKey) {\n    _id\n    createdAt\n    id\n    layout\n    translation {\n      _id\n      cmsPageId\n      htmlContent\n      id\n      locale\n      metaDescription\n      metaKeywords\n      metaTitle\n      pageTitle\n      urlKey\n    }\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"urlKey\": \"sample-url-key\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "The CMS page of the current channel whose URL key is `urlKey`, as a list holding that page or nothing (not paginated). Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -10013,7 +10064,8 @@
                                                 "query": "query Pages($first: Int) {\n  pages(first: $first) {\n    edges {\n      node {\n        _id\n        createdAt\n        id\n        layout\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Every CMS page of every channel, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -10056,7 +10108,8 @@
                                                 "query": "query PageTranslation($id: ID!) {\n  pageTranslation(id: $id) {\n    _id\n    cmsPageId\n    htmlContent\n    id\n    locale\n    metaDescription\n    metaKeywords\n    metaTitle\n    pageTitle\n    urlKey\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One CMS page translation. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -10089,7 +10142,8 @@
                                                 "query": "query PageTranslations($first: Int) {\n  pageTranslations(first: $first) {\n    edges {\n      node {\n        _id\n        cmsPageId\n        htmlContent\n        id\n        locale\n        metaDescription\n        metaKeywords\n        metaTitle\n        pageTitle\n        urlKey\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Every CMS page translation (one row per page and locale), ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -10570,7 +10624,8 @@
                                                 "query": "query Categories($first: Int) {\n  categories(first: $first) {\n    edges {\n      node {\n        _id\n        _lft\n        _rgt\n        additional\n        bannerFileName\n        bannerPath\n        bannerUrl\n        createdAt\n        displayMode\n        id\n        logoFileName\n        logoPath\n        logoUrl\n        maxPrice\n        minPrice\n        position\n        status\n        updatedAt\n        url\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Active categories as a flat list ordered by ID; disabled categories are never returned. Use `treeCategories` or `categoryTrees` for a nested tree. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -10603,7 +10658,8 @@
                                                 "query": "query Category($id: ID!) {\n  category(id: $id) {\n    _id\n    _lft\n    _rgt\n    additional\n    bannerFileName\n    bannerPath\n    bannerUrl\n    createdAt\n    displayMode\n    id\n    logoFileName\n    logoPath\n    logoUrl\n    maxPrice\n    minPrice\n    parent {\n      _id\n      _lft\n      _rgt\n      additional\n      bannerFileName\n      bannerPath\n      bannerUrl\n      createdAt\n      displayMode\n      id\n      logoFileName\n      logoPath\n      logoUrl\n      maxPrice\n      minPrice\n      position\n      status\n      updatedAt\n      url\n    }\n    position\n    status\n    translation {\n      _id\n      bannerAlt\n      categoryId\n      description\n      id\n      locale\n      localeId\n      logoAlt\n      metaDescription\n      metaKeywords\n      metaTitle\n      name\n      slug\n      urlPath\n    }\n    updatedAt\n    url\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One active category; a disabled category is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -10670,7 +10726,8 @@
                                                 "query": "query TreeCategories {\n  treeCategories {\n    _id\n    _lft\n    _rgt\n    additional\n    bannerFileName\n    bannerPath\n    bannerUrl\n    createdAt\n    displayMode\n    id\n    logoFileName\n    logoPath\n    logoUrl\n    maxPrice\n    minPrice\n    parent {\n      _id\n      _lft\n      _rgt\n      additional\n      bannerFileName\n      bannerPath\n      bannerUrl\n      createdAt\n      displayMode\n      id\n      logoFileName\n      logoPath\n      logoUrl\n      maxPrice\n      minPrice\n      position\n      status\n      updatedAt\n      url\n    }\n    position\n    status\n    translation {\n      _id\n      bannerAlt\n      categoryId\n      description\n      id\n      locale\n      localeId\n      logoAlt\n      metaDescription\n      metaKeywords\n      metaTitle\n      name\n      slug\n      urlPath\n    }\n    updatedAt\n    url\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        }
+                                        },
+                                        "description": "Active categories as a nested tree, ordered by position, as a plain list (not paginated). With `parentId` it returns the descendants of that category, without the category itself; without it, every active category tree. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -10713,7 +10770,8 @@
                                                 "query": "query CategoryTrees {\n  categoryTrees {\n    id\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        }
+                                        },
+                                        "description": "The current channel's root category and its active descendants as a nested tree (up to four levels by default), ordered by position, as a plain list (not paginated). Takes no arguments. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -10756,7 +10814,8 @@
                                                 "query": "query Channel($id: ID!) {\n  channel(id: $id) {\n    _id\n    baseCurrency {\n      _id\n      code\n      createdAt\n      currencyPosition\n      decimal\n      decimalSeparator\n      groupSeparator\n      id\n      name\n      symbol\n      updatedAt\n    }\n    code\n    createdAt\n    defaultLocale {\n      _id\n      code\n      createdAt\n      direction\n      id\n      logoPath\n      logoUrl\n      name\n      updatedAt\n    }\n    favicon\n    faviconFileName\n    faviconUrl\n    homeSeo\n    hostname\n    id\n    isMaintenanceOn\n    logo\n    logoFileName\n    logoUrl\n    theme\n    timezone\n    translation {\n      _id\n      channelId\n      createdAt\n      description\n      homeSeo\n      id\n      locale\n      logoAlt\n      maintenanceModeText\n      name\n      updatedAt\n    }\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One storefront channel. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -10789,7 +10848,8 @@
                                                 "query": "query Channels($first: Int) {\n  channels(first: $first) {\n    edges {\n      node {\n        _id\n        code\n        createdAt\n        favicon\n        faviconFileName\n        faviconUrl\n        homeSeo\n        hostname\n        id\n        isMaintenanceOn\n        logo\n        logoFileName\n        logoUrl\n        theme\n        timezone\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Every storefront channel with its locales, currencies, default locale and base currency, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -10822,7 +10882,8 @@
                                                 "query": "query CollectionDefaultChannels($first: Int) {\n  collectionDefaultChannels(first: $first) {\n    edges {\n      node {\n        _id\n        baseCurrencyId\n        code\n        createdAt\n        currencies\n        defaultLocaleId\n        description\n        faviconUrl\n        hostname\n        id\n        inventorySources\n        isMaintenanceOn\n        locales\n        logoUrl\n        maintenanceModeText\n        name\n        rootCategoryId\n        theme\n        timezone\n        translations\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "The store's default channel with its locales, currencies, inventory sources and root category, as a connection holding one node (none when no default channel is set). The pagination arguments are ignored. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -11429,7 +11490,8 @@
                                                 "query": "query CompareItem($id: ID!) {\n  compareItem(id: $id) {\n    _id\n    createdAt\n    customer {\n      _id\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    id\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One compare-list item of the authenticated customer; another customer's item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -11462,7 +11524,8 @@
                                                 "query": "query CompareItems($first: Int) {\n  compareItems(first: $first) {\n    edges {\n      node {\n        _id\n        createdAt\n        id\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "The authenticated customer's compare list, oldest first. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 }
                             ]
@@ -11549,7 +11612,8 @@
                                                 "query": "query Countries($first: Int) {\n  countries(first: $first) {\n    edges {\n      node {\n        _id\n        code\n        id\n        name\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Every country with its states, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -11582,7 +11646,8 @@
                                                 "query": "query Country($id: ID!) {\n  country(id: $id) {\n    _id\n    code\n    id\n    name\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One country with its states. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -11626,7 +11691,7 @@
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
                                         },
-                                        "description": "CountryState - Subresource of Country with REST and GraphQL support\nPattern: Like AttributeOption - multiple #[ApiResource] annotations."
+                                        "description": "One country state. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -11660,7 +11725,7 @@
                                                 "variables": "{\n    \"countryId\": 1,\n    \"first\": 10\n}"
                                             }
                                         },
-                                        "description": "CountryState - Subresource of Country with REST and GraphQL support\nPattern: Like AttributeOption - multiple #[ApiResource] annotations."
+                                        "description": "The states of country `countryId` (required), ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is not capped, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -11703,7 +11768,8 @@
                                                 "query": "query Currencies($first: Int) {\n  currencies(first: $first) {\n    edges {\n      node {\n        _id\n        code\n        createdAt\n        currencyPosition\n        decimal\n        decimalSeparator\n        groupSeparator\n        id\n        name\n        symbol\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Every currency set up in the store, ordered by ID; the current channel's currencies are on the channel. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -11736,7 +11802,8 @@
                                                 "query": "query Currency($id: ID!) {\n  currency(id: $id) {\n    _id\n    code\n    createdAt\n    currencyPosition\n    decimal\n    decimalSeparator\n    groupSeparator\n    id\n    name\n    symbol\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One currency. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -11824,8 +11891,8 @@
                                                 "exec": [
                                                     "const data = pm.response.json()?.data?.createCustomerLogin?.customerLogin;",
                                                     "",
-                                                    "if (data?.token || data?.apiToken) {",
-                                                    "    pm.environment.set('customerToken', data.token || data.apiToken);",
+                                                    "if (data?.token) {",
+                                                    "    pm.environment.set('customerToken', data.token);",
                                                     "}"
                                                 ]
                                             }
@@ -12173,7 +12240,8 @@
                                                 "query": "query Customer($id: ID!) {\n  customer(id: $id) {\n    _id\n    apiToken\n    channelId\n    customerGroupId\n    dateOfBirth\n    email\n    firstName\n    gender\n    id\n    isSuspended\n    isVerified\n    lastName\n    message\n    name\n    phone\n    rememberToken\n    status\n    subscribedToNewsLetter\n    token\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "The authenticated customer's profile. The schema requires `id`, but it is ignored: the customer is always the owner of the Bearer token. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -12391,7 +12459,8 @@
                                                 "query": "query CustomerAddress($id: ID!) {\n  customerAddress(id: $id) {\n    _id\n    additional\n    address\n    addressType\n    cartId\n    city\n    companyName\n    country\n    createdAt\n    defaultAddress\n    email\n    firstName\n    gender\n    id\n    lastName\n    name\n    orderId\n    parentAddressId\n    phone\n    postcode\n    state\n    updatedAt\n    useForShipping\n    vatId\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One saved address of the authenticated customer; another customer's address is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -12424,7 +12493,8 @@
                                                 "query": "query GetCustomerAddresses($first: Int) {\n  getCustomerAddresses(first: $first) {\n    edges {\n      node {\n        _id\n        additional\n        address\n        addressType\n        cartId\n        city\n        companyName\n        country\n        createdAt\n        defaultAddress\n        email\n        firstName\n        gender\n        id\n        lastName\n        name\n        orderId\n        parentAddressId\n        phone\n        postcode\n        state\n        updatedAt\n        useForShipping\n        vatId\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "The authenticated customer's saved addresses. `sort` is `id` or `created_at` (or `column-asc`/`column-desc`) and `order` is `asc` (default) or `desc`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -12642,7 +12712,8 @@
                                                 "query": "query CustomerDownloadableProduct($id: ID!) {\n  customerDownloadableProduct(id: $id) {\n    _id\n    createdAt\n    customer {\n      _id\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    downloadBought\n    downloadCanceled\n    downloadUrl\n    downloadUsed\n    file\n    fileName\n    id\n    name\n    order {\n      _id\n      appliedCartRuleIds\n      baseCurrencyCode\n      baseDiscountAmount\n      baseDiscountInvoiced\n      baseDiscountRefunded\n      baseGrandTotal\n      baseGrandTotalInvoiced\n      baseGrandTotalRefunded\n      baseShippingAmount\n      baseShippingAmountInclTax\n      baseShippingDiscountAmount\n      baseShippingInvoiced\n      baseShippingRefunded\n      baseShippingTaxAmount\n      baseShippingTaxRefunded\n      baseSubTotal\n      baseSubTotalInclTax\n      baseSubTotalInvoiced\n      baseSubTotalRefunded\n      baseTaxAmount\n      baseTaxAmountInvoiced\n      baseTaxAmountRefunded\n      cartId\n      channelCurrencyCode\n      channelId\n      channelName\n      channelType\n      couponCode\n      createdAt\n      customerEmail\n      customerFirstName\n      customerFullName\n      customerId\n      customerLastName\n      customerType\n      discountAmount\n      discountInvoiced\n      discountPercent\n      discountRefunded\n      grandTotal\n      grandTotalInvoiced\n      grandTotalRefunded\n      id\n      incrementId\n      isGift\n      isGuest\n      orderCurrencyCode\n      shippingAmount\n      shippingAmountInclTax\n      shippingDescription\n      shippingDiscountAmount\n      shippingInvoiced\n      shippingMethod\n      shippingRefunded\n      shippingTaxAmount\n      shippingTaxRefunded\n      shippingTitle\n      status\n      subTotal\n      subTotalInclTax\n      subTotalInvoiced\n      subTotalRefunded\n      taxAmount\n      taxAmountInvoiced\n      taxAmountRefunded\n      totalItemCount\n      totalQtyOrdered\n      updatedAt\n    }\n    productName\n    remainingDownloads\n    status\n    type\n    updatedAt\n    url\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One downloadable-product purchase of the authenticated customer; another customer's purchase is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -12675,7 +12746,8 @@
                                                 "query": "query CustomerDownloadableProducts($first: Int) {\n  customerDownloadableProducts(first: $first) {\n    edges {\n      node {\n        _id\n        createdAt\n        downloadBought\n        downloadCanceled\n        downloadUrl\n        downloadUsed\n        file\n        fileName\n        id\n        name\n        productName\n        remainingDownloads\n        status\n        type\n        updatedAt\n        url\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "The authenticated customer's downloadable-product purchases, newest first; `status` filters by exact purchase status. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -12708,7 +12780,8 @@
                                                 "query": "query CustomerInvoice($id: ID!) {\n  customerInvoice(id: $id) {\n    _id\n    baseCurrencyCode\n    baseDiscountAmount\n    baseGrandTotal\n    baseShippingAmount\n    baseShippingAmountInclTax\n    baseShippingTaxAmount\n    baseSubTotal\n    baseSubTotalInclTax\n    baseTaxAmount\n    channelCurrencyCode\n    createdAt\n    discountAmount\n    downloadUrl\n    emailSent\n    grandTotal\n    id\n    incrementId\n    nextReminderAt\n    orderCurrencyCode\n    reminders\n    shippingAmount\n    shippingAmountInclTax\n    shippingTaxAmount\n    state\n    subTotal\n    subTotalInclTax\n    taxAmount\n    totalQty\n    transactionId\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One invoice of an order placed by the authenticated customer; any other invoice is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -12741,7 +12814,8 @@
                                                 "query": "query CustomerInvoices($first: Int) {\n  customerInvoices(first: $first) {\n    edges {\n      node {\n        _id\n        baseCurrencyCode\n        baseDiscountAmount\n        baseGrandTotal\n        baseShippingAmount\n        baseShippingAmountInclTax\n        baseShippingTaxAmount\n        baseSubTotal\n        baseSubTotalInclTax\n        baseTaxAmount\n        channelCurrencyCode\n        createdAt\n        discountAmount\n        downloadUrl\n        emailSent\n        grandTotal\n        id\n        incrementId\n        nextReminderAt\n        orderCurrencyCode\n        reminders\n        shippingAmount\n        shippingAmountInclTax\n        shippingTaxAmount\n        state\n        subTotal\n        subTotalInclTax\n        taxAmount\n        totalQty\n        transactionId\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Invoices of the authenticated customer's orders, newest first. Filters: `orderId`, and `state` (paid, pending, pending_payment, overdue or refunded). Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -12774,7 +12848,8 @@
                                                 "query": "query CustomerOrder($id: ID!) {\n  customerOrder(id: $id) {\n    _id\n    appliedCartRuleIds\n    baseCurrencyCode\n    baseDiscountAmount\n    baseDiscountInvoiced\n    baseDiscountRefunded\n    baseGrandTotal\n    baseGrandTotalInvoiced\n    baseGrandTotalRefunded\n    baseShippingAmount\n    baseShippingAmountInclTax\n    baseShippingDiscountAmount\n    baseShippingInvoiced\n    baseShippingRefunded\n    baseShippingTaxAmount\n    baseShippingTaxRefunded\n    baseSubTotal\n    baseSubTotalInclTax\n    baseSubTotalInvoiced\n    baseSubTotalRefunded\n    baseTaxAmount\n    baseTaxAmountInvoiced\n    baseTaxAmountRefunded\n    cartId\n    channelCurrencyCode\n    channelId\n    channelName\n    channelType\n    couponCode\n    createdAt\n    customerEmail\n    customerFirstName\n    customerFullName\n    customerId\n    customerLastName\n    customerType\n    discountAmount\n    discountInvoiced\n    discountPercent\n    discountRefunded\n    grandTotal\n    grandTotalInvoiced\n    grandTotalRefunded\n    id\n    incrementId\n    isGift\n    isGuest\n    orderCurrencyCode\n    payment {\n      _id\n      additional\n      createdAt\n      id\n      method\n      methodTitle\n      orderId\n      updatedAt\n    }\n    shippingAmount\n    shippingAmountInclTax\n    shippingDescription\n    shippingDiscountAmount\n    shippingInvoiced\n    shippingMethod\n    shippingRefunded\n    shippingTaxAmount\n    shippingTaxRefunded\n    shippingTitle\n    status\n    subTotal\n    subTotalInclTax\n    subTotalInvoiced\n    subTotalRefunded\n    taxAmount\n    taxAmountInvoiced\n    taxAmountRefunded\n    totalItemCount\n    totalQtyOrdered\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One order placed by the authenticated customer, with its items, addresses, payment and shipments; any other order is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -12807,7 +12882,8 @@
                                                 "query": "query CustomerOrderShipment($id: ID!) {\n  customerOrderShipment(id: $id) {\n    _id\n    billingAddress {\n      _id\n      additional\n      address\n      addressType\n      cartId\n      city\n      companyName\n      country\n      createdAt\n      customerId\n      defaultAddress\n      email\n      firstName\n      gender\n      id\n      lastName\n      name\n      orderId\n      parentAddressId\n      phone\n      postcode\n      state\n      updatedAt\n      useForShipping\n      vatId\n    }\n    carrierCode\n    carrierTitle\n    createdAt\n    customerId\n    customerType\n    emailSent\n    id\n    inventorySourceId\n    inventorySourceName\n    shippingAddress {\n      _id\n      additional\n      address\n      addressType\n      cartId\n      city\n      companyName\n      country\n      createdAt\n      customerId\n      defaultAddress\n      email\n      firstName\n      gender\n      id\n      lastName\n      name\n      orderId\n      parentAddressId\n      phone\n      postcode\n      state\n      updatedAt\n      useForShipping\n      vatId\n    }\n    shippingNumber\n    status\n    totalQty\n    totalWeight\n    trackNumber\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One shipment of an order placed by the authenticated customer; any other shipment is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -12840,7 +12916,8 @@
                                                 "query": "query CustomerOrderShipmentItem($id: ID!) {\n  customerOrderShipmentItem(id: $id) {\n    _id\n    additional\n    basePrice\n    basePriceInclTax\n    baseTotal\n    createdAt\n    description\n    id\n    name\n    price\n    priceInclTax\n    productId\n    productType\n    qty\n    shipment {\n      _id\n      carrierCode\n      carrierTitle\n      createdAt\n      customerId\n      customerType\n      emailSent\n      id\n      inventorySourceId\n      inventorySourceName\n      shippingNumber\n      status\n      totalQty\n      totalWeight\n      trackNumber\n      updatedAt\n    }\n    sku\n    total\n    updatedAt\n    weight\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One shipped item of the authenticated customer's shipments; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -12873,7 +12950,8 @@
                                                 "query": "query CustomerOrderShipmentItems($first: Int) {\n  customerOrderShipmentItems(first: $first) {\n    edges {\n      node {\n        _id\n        additional\n        basePrice\n        basePriceInclTax\n        baseTotal\n        createdAt\n        description\n        id\n        name\n        price\n        priceInclTax\n        productId\n        productType\n        qty\n        sku\n        total\n        updatedAt\n        weight\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Shipped items across the authenticated customer's shipments, newest first. Paginate forward only: `first` (default 30, between 1 and 50) and `after`; `last` and `before` are ignored. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -12906,7 +12984,8 @@
                                                 "query": "query CustomerOrderShipments($first: Int) {\n  customerOrderShipments(first: $first) {\n    edges {\n      node {\n        _id\n        carrierCode\n        carrierTitle\n        createdAt\n        customerId\n        customerType\n        emailSent\n        id\n        inventorySourceId\n        inventorySourceName\n        shippingNumber\n        status\n        totalQty\n        totalWeight\n        trackNumber\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Shipments of the authenticated customer's orders, newest first. Filters: `orderId` and `status`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -12939,7 +13018,8 @@
                                                 "query": "query CustomerOrders($first: Int) {\n  customerOrders(first: $first) {\n    edges {\n      node {\n        _id\n        appliedCartRuleIds\n        baseCurrencyCode\n        baseDiscountAmount\n        baseDiscountInvoiced\n        baseDiscountRefunded\n        baseGrandTotal\n        baseGrandTotalInvoiced\n        baseGrandTotalRefunded\n        baseShippingAmount\n        baseShippingAmountInclTax\n        baseShippingDiscountAmount\n        baseShippingInvoiced\n        baseShippingRefunded\n        baseShippingTaxAmount\n        baseShippingTaxRefunded\n        baseSubTotal\n        baseSubTotalInclTax\n        baseSubTotalInvoiced\n        baseSubTotalRefunded\n        baseTaxAmount\n        baseTaxAmountInvoiced\n        baseTaxAmountRefunded\n        cartId\n        channelCurrencyCode\n        channelId\n        channelName\n        channelType\n        couponCode\n        createdAt\n        customerEmail\n        customerFirstName\n        customerFullName\n        customerId\n        customerLastName\n        customerType\n        discountAmount\n        discountInvoiced\n        discountPercent\n        discountRefunded\n        grandTotal\n        grandTotalInvoiced\n        grandTotalRefunded\n        id\n        incrementId\n        isGift\n        isGuest\n        orderCurrencyCode\n        shippingAmount\n        shippingAmountInclTax\n        shippingDescription\n        shippingDiscountAmount\n        shippingInvoiced\n        shippingMethod\n        shippingRefunded\n        shippingTaxAmount\n        shippingTaxRefunded\n        shippingTitle\n        status\n        subTotal\n        subTotalInclTax\n        subTotalInvoiced\n        subTotalRefunded\n        taxAmount\n        taxAmountInvoiced\n        taxAmountRefunded\n        totalItemCount\n        totalQtyOrdered\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Orders placed by the authenticated customer, newest first; `status` filters by exact order status. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 }
                             ]
@@ -13157,7 +13237,8 @@
                                                 "query": "query CustomerReturn($id: ID!) {\n  customerReturn(id: $id) {\n    _id\n    canClose\n    canReopen\n    createdAt\n    customAttributes\n    id\n    images\n    information\n    isExpired\n    item\n    messagesCount\n    orderId\n    orderIncrementId\n    packageCondition\n    statusColor\n    statusId\n    statusTitle\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One return request on an order of the authenticated customer; any other return is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -13190,7 +13271,8 @@
                                                 "query": "query CustomerReturnMessages($returnId: Int!) {\n  customerReturnMessages(returnId: $returnId) {\n    _id\n    attachment\n    attachmentUrl\n    createdAt\n    id\n    isAdmin\n    message\n    rmaId\n  }\n}\n",
                                                 "variables": "{\n    \"returnId\": 1\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Every message in the conversation of return `returnId`, newest first, as a plain list (not paginated). The return must be on one of the authenticated customer's orders, otherwise it is not found. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -13223,7 +13305,8 @@
                                                 "query": "query CustomerReturns($first: Int) {\n  customerReturns(first: $first) {\n    edges {\n      node {\n        _id\n        canClose\n        canReopen\n        createdAt\n        customAttributes\n        id\n        images\n        information\n        isExpired\n        item\n        messagesCount\n        orderId\n        orderIncrementId\n        packageCondition\n        statusColor\n        statusId\n        statusTitle\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Return requests on the authenticated customer's orders, newest first; `status` filters by RMA status ID. Paginate forward only: `first` (default 10, between 1 and 50) and `after`. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -13256,7 +13339,8 @@
                                                 "query": "query ReturnCustomFields {\n  returnCustomFields {\n    _id\n    code\n    id\n    inputValidation\n    isRequired\n    label\n    options\n    position\n    type\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        }
+                                        },
+                                        "description": "The active custom fields the return form must collect, with their options and validation, as a plain list (not paginated). Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -13289,7 +13373,8 @@
                                                 "query": "query ReturnReasons($resolutionType: String!) {\n  returnReasons(resolutionType: $resolutionType) {\n    _id\n    id\n    position\n    title\n  }\n}\n",
                                                 "variables": "{\n    \"resolutionType\": \"sample\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "The active return reasons offered for `resolutionType` (`return` or `cancel_items`), as a plain list (not paginated); any other resolution type is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -13322,7 +13407,8 @@
                                                 "query": "query ReturnableItems($orderId: Int!) {\n  returnableItems(orderId: $orderId) {\n    baseImageUrl\n    currentQuantity\n    forCancelQuantity\n    forReturnQuantity\n    id\n    name\n    orderItemId\n    price\n    productId\n    qtyOrdered\n    rmaQuantity\n    rmaReturnPeriod\n    sku\n    type\n    urlKey\n  }\n}\n",
                                                 "variables": "{\n    \"orderId\": 1\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "The items of order `orderId` that can be put on a return, each with its quantity caps (`forReturnQuantity`, `forCancelQuantity`, `currentQuantity`), as a plain list (not paginated). The order must belong to the authenticated customer. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -13355,7 +13441,8 @@
                                                 "query": "query ReturnableOrders {\n  returnableOrders {\n    _id\n    createdAt\n    formattedGrandTotal\n    grandTotal\n    id\n    incrementId\n    orderCurrencyCode\n    paymentMethodTitle\n    returnableQty\n    status\n    statusLabel\n    totalQtyOrdered\n    totalReturnedQty\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        }
+                                        },
+                                        "description": "The authenticated customer's orders a return can still be opened for (not canceled, closed, fraud or pending payment, with an item inside its return window and quantity left), as a plain list (not paginated). Filters: `incrementId` (partial match) and `status`. `sort` is `created_at` (default), `increment_id` or `grand_total`; `order` is `asc` or `desc` (default). Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 }
                             ]
@@ -13398,7 +13485,8 @@
                                                 "query": "query CustomerReview($id: ID!) {\n  customerReview(id: $id) {\n    _id\n    comment\n    createdAt\n    customer {\n      _id\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    id\n    name\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    rating\n    status\n    title\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One review written by the authenticated customer, whatever its status; another customer's review is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -13431,7 +13519,8 @@
                                                 "query": "query CustomerReviews($first: Int) {\n  customerReviews(first: $first) {\n    edges {\n      node {\n        _id\n        comment\n        createdAt\n        id\n        name\n        rating\n        status\n        title\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Reviews written by the authenticated customer, newest first. Filters: `status` (pending, approved or disapproved) and `rating`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 }
                             ]
@@ -13547,7 +13636,8 @@
                                                 "query": "query EuWithdrawal($id: ID!) {\n  euWithdrawal(id: $id) {\n    _id\n    confirmationSentAt\n    createdAt\n    customerEmail\n    declinedAt\n    declinedReason\n    id\n    isGuest\n    orderId\n    orderIncrementId\n    reasonText\n    receivedAt\n    refundNote\n    refundedAt\n    status\n    updatedAt\n    uuid\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One EU withdrawal declaration on an order of the authenticated customer; any other declaration is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -13580,7 +13670,8 @@
                                                 "query": "query EuWithdrawalStatus {\n  euWithdrawalStatus {\n    _id\n    channel\n    enabled\n    id\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        }
+                                        },
+                                        "description": "Whether customers can file an EU withdrawal on the current channel. Takes no arguments and needs no customer login. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -13613,7 +13704,8 @@
                                                 "query": "query EuWithdrawals($first: Int) {\n  euWithdrawals(first: $first) {\n    edges {\n      node {\n        _id\n        confirmationSentAt\n        createdAt\n        customerEmail\n        declinedAt\n        declinedReason\n        id\n        isGuest\n        orderId\n        orderIncrementId\n        reasonText\n        receivedAt\n        refundNote\n        refundedAt\n        status\n        updatedAt\n        uuid\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "EU withdrawal declarations on the authenticated customer's orders, newest first. Paginate forward only: `first` (default 30, between 1 and 50) and `after`. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -13875,7 +13967,8 @@
                                                 "query": "query GdprRequest($id: ID!) {\n  gdprRequest(id: $id) {\n    _id\n    createdAt\n    customer {\n      _id\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    email\n    id\n    message\n    revokedAt\n    status\n    successMessage\n    type\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One GDPR data request of the authenticated customer; another customer's request is not found. Fails while GDPR is switched off in the store settings. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -13908,7 +14001,8 @@
                                                 "query": "query GdprRequests($first: Int) {\n  gdprRequests(first: $first) {\n    edges {\n      node {\n        _id\n        createdAt\n        email\n        id\n        message\n        revokedAt\n        status\n        successMessage\n        type\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "The authenticated customer's GDPR data requests. `sort` is `id` or `created_at` (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default). Fails while GDPR is switched off. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -13941,7 +14035,8 @@
                                                 "query": "query GdprStatus {\n  gdprStatus {\n    _id\n    channel\n    enabled\n    id\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        }
+                                        },
+                                        "description": "Whether customers can raise GDPR data requests on the current channel. Takes no arguments and needs no customer login. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -13984,7 +14079,8 @@
                                                 "query": "query Locale($id: ID!) {\n  locale(id: $id) {\n    _id\n    code\n    createdAt\n    direction\n    id\n    logoPath\n    logoUrl\n    name\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One locale. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14017,7 +14113,8 @@
                                                 "query": "query Locales($first: Int) {\n  locales(first: $first) {\n    edges {\n      node {\n        _id\n        code\n        createdAt\n        direction\n        id\n        logoPath\n        logoUrl\n        name\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Every locale set up in the store, ordered by ID; the current channel's locales are on the channel. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -14289,7 +14386,8 @@
                                                 "query": "query Product($id: ID) {\n  product(id: $id) {\n    _id\n    additional\n    attributeFamily {\n      _id\n      code\n      id\n      isUserDefined\n      name\n      status\n    }\n    baseImageUrl\n    bookingType\n    brand\n    channel\n    color\n    combinations\n    createdAt\n    description\n    descriptionHtml\n    featured\n    formattedMaximumPrice\n    formattedMinimumPrice\n    formattedPrice\n    formattedRegularMaximumPrice\n    formattedRegularMinimumPrice\n    formattedSpecialPrice\n    guestCheckout\n    height\n    id\n    index\n    isInCompare\n    isInWishlist\n    isSaleable\n    length\n    locale\n    manageStock\n    maximumPrice\n    metaDescription\n    metaKeywords\n    metaTitle\n    minimumPrice\n    name\n    new\n    parent {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    price\n    productNumber\n    regularMaximumPrice\n    regularMinimumPrice\n    shortDescription\n    size\n    sku\n    specialPrice\n    specialPriceFrom\n    specialPriceTo\n    status\n    superAttributeOptions\n    taxCategoryId\n    type\n    updatedAt\n    urlKey\n    visibleIndividually\n    weight\n    width\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One product visible in the storefront, found by `id` (IRI or numeric ID), `sku` or `urlKey`, checked in that order; sending none is an error and a product that is disabled or not visible in the channel is not found. `locale` and `channel` (codes) choose the language and channel the values are read in. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14356,7 +14454,8 @@
                                                 "query": "query ProductImages {\n  productImages {\n    edges {\n      node {\n        _id\n        altText\n        fileName\n        id\n        path\n        position\n        productId\n        publicPath\n        type\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        }
+                                        },
+                                        "description": "Product images ordered by ID, optionally only those of product `product_id`. The query takes no pagination arguments, so it returns at most the first 10. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14389,7 +14488,8 @@
                                                 "query": "query ProductReview($id: ID!) {\n  productReview(id: $id) {\n    _id\n    attachments\n    comment\n    createdAt\n    id\n    name\n    rating\n    status\n    title\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One approved product review; a pending or disapproved review is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14456,7 +14556,8 @@
                                                 "query": "query ProductReviews($first: Int) {\n  productReviews(first: $first) {\n    edges {\n      node {\n        _id\n        attachments\n        comment\n        createdAt\n        id\n        name\n        rating\n        status\n        title\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Approved product reviews, oldest first. Filters: `product_id` and `rating`; `status` is accepted but ignored, as only approved reviews are public. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14489,7 +14590,8 @@
                                                 "query": "query ProductVideos {\n  productVideos {\n    edges {\n      node {\n        _id\n        id\n        path\n        position\n        productId\n        publicPath\n        type\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        }
+                                        },
+                                        "description": "Product videos ordered by ID, optionally only those of product `product_id`. The query takes no pagination arguments, so it returns at most the first 10. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14522,7 +14624,8 @@
                                                 "query": "query Products($first: Int) {\n  products(first: $first) {\n    edges {\n      node {\n        _id\n        additional\n        baseImageUrl\n        bookingType\n        brand\n        channel\n        color\n        combinations\n        createdAt\n        description\n        descriptionHtml\n        featured\n        formattedMaximumPrice\n        formattedMinimumPrice\n        formattedPrice\n        formattedRegularMaximumPrice\n        formattedRegularMinimumPrice\n        formattedSpecialPrice\n        guestCheckout\n        height\n        id\n        index\n        isInCompare\n        isInWishlist\n        isSaleable\n        length\n        locale\n        manageStock\n        maximumPrice\n        metaDescription\n        metaKeywords\n        metaTitle\n        minimumPrice\n        name\n        new\n        price\n        productNumber\n        regularMaximumPrice\n        regularMinimumPrice\n        shortDescription\n        size\n        sku\n        specialPrice\n        specialPriceFrom\n        specialPriceTo\n        status\n        superAttributeOptions\n        taxCategoryId\n        type\n        updatedAt\n        urlKey\n        visibleIndividually\n        weight\n        width\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Products visible in the storefront of the channel. `query` searches SKU and name (partial match); `filter` is a JSON object of attribute filters such as type, sku, category_id or price; `sortKey` is TITLE (or NAME), CREATED_AT, UPDATED_AT, PRICE or ID (default), ascending unless `reverse` is true. `locale` and `channel` (codes) choose where values are read. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -14599,7 +14702,8 @@
                                                 "query": "query ProductBundleOption($id: ID!) {\n  productBundleOption(id: $id) {\n    _id\n    id\n    isRequired\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    sortOrder\n    translation {\n      _id\n      id\n      label\n      locale\n      productBundleOptionId\n    }\n    type\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One bundle option. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14632,7 +14736,8 @@
                                                 "query": "query ProductBundleOptionProduct($id: ID!) {\n  productBundleOptionProduct(id: $id) {\n    _id\n    bundleOption {\n      _id\n      id\n      isRequired\n      sortOrder\n      type\n    }\n    id\n    isDefault\n    isUserDefined\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    qty\n    sortOrder\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One bundle option product. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14665,7 +14770,8 @@
                                                 "query": "query ProductBundleOptionProducts($first: Int) {\n  productBundleOptionProducts(first: $first) {\n    edges {\n      node {\n        _id\n        id\n        isDefault\n        isUserDefined\n        qty\n        sortOrder\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Every product of every bundle option. Read one option's products through its `bundleOptionProducts` field instead, which returns the first page of that option. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14698,7 +14804,8 @@
                                                 "query": "query ProductBundleOptions($first: Int) {\n  productBundleOptions(first: $first) {\n    edges {\n      node {\n        _id\n        id\n        isRequired\n        sortOrder\n        type\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Every bundle option of every bundle product, ordered by ID; read one product's options through its `bundleOptions` field instead. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14731,7 +14838,8 @@
                                                 "query": "query ProductDownloadableLink($id: ID!) {\n  productDownloadableLink(id: $id) {\n    _id\n    createdAt\n    downloads\n    fileUrl\n    formattedPrice\n    id\n    price\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    sampleFile\n    sampleFileName\n    sampleFileUrl\n    sampleType\n    sampleUrl\n    sortOrder\n    translation {\n      _id\n      id\n      locale\n      title\n    }\n    type\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One downloadable link. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14764,7 +14872,8 @@
                                                 "query": "query ProductDownloadableLinks($first: Int) {\n  productDownloadableLinks(first: $first) {\n    edges {\n      node {\n        _id\n        createdAt\n        downloads\n        fileUrl\n        formattedPrice\n        id\n        price\n        sampleFile\n        sampleFileName\n        sampleFileUrl\n        sampleType\n        sampleUrl\n        sortOrder\n        type\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Every downloadable link of every downloadable product. Read one product's links through its `downloadableLinks` field instead, which returns the first page of that product. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14797,7 +14906,8 @@
                                                 "query": "query ProductDownloadableSample($id: ID!) {\n  productDownloadableSample(id: $id) {\n    _id\n    createdAt\n    file\n    fileName\n    fileUrl\n    id\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    sortOrder\n    translation {\n      _id\n      id\n      locale\n      title\n    }\n    type\n    updatedAt\n    url\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One downloadable sample. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14830,7 +14940,8 @@
                                                 "query": "query ProductDownloadableSamples($first: Int) {\n  productDownloadableSamples(first: $first) {\n    edges {\n      node {\n        _id\n        createdAt\n        file\n        fileName\n        fileUrl\n        id\n        sortOrder\n        type\n        updatedAt\n        url\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Every downloadable sample of every downloadable product. Read one product's samples through its `downloadableSamples` field instead, which returns the first page of that product. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14863,7 +14974,8 @@
                                                 "query": "query ProductGroupedProduct($id: ID!) {\n  productGroupedProduct(id: $id) {\n    _id\n    associatedProduct {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    id\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    qty\n    sortOrder\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One grouped-product link. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -14896,7 +15008,8 @@
                                                 "query": "query ProductGroupedProducts($first: Int) {\n  productGroupedProducts(first: $first) {\n    edges {\n      node {\n        _id\n        id\n        qty\n        sortOrder\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "Every grouped-product link of every grouped product. Read one product's links through its `groupedProducts` field instead, which returns the first page of that product. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -14983,7 +15096,8 @@
                                                 "query": "query StoreConfig {\n  storeConfig {\n    _id\n    buyNowEnabled\n    captchaEnabled\n    cartCrossSellEnabled\n    channel\n    compareEnabled\n    customerReviewEnabled\n    defaultSortBy\n    emailVerificationRequired\n    estimateShippingEnabled\n    euWithdrawalEnabled\n    gdprEnabled\n    guestCheckoutEnabled\n    guestReviewEnabled\n    id\n    imageSearchEnabled\n    listingMode\n    locale\n    minimumOrderAmount\n    minimumOrderEnabled\n    minimumOrderIncludesDiscount\n    minimumOrderIncludesTax\n    minimumOrderMessage\n    newsletterEnabled\n    productsPerPage\n    reorderEnabled\n    reviewSummary\n    reviewerNameCensored\n    socialLoginProviders\n    socialShareEnabled\n    taxCartDisplayPrices\n    taxCartDisplayShipping\n    taxCartDisplaySubtotal\n    taxCartShowBreakdown\n    taxOrderDisplayPrices\n    taxOrderDisplayShipping\n    taxOrderDisplaySubtotal\n    wishlistEnabled\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        }
+                                        },
+                                        "description": "The non-secret store settings a storefront or app needs before the customer logs in, for the current channel and locale (send `X-Channel` and `X-Locale` to read others). Takes no arguments. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -15026,7 +15140,8 @@
                                                 "query": "query Section($id: ID!) {\n  section(id: $id) {\n    _id\n    channelId\n    createdAt\n    id\n    name\n    sortOrder\n    status\n    themeCode\n    translation {\n      _id\n      id\n      locale\n      options\n      sectionId\n    }\n    type\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One active theme section of the current channel's theme; a switched-off section or one of another channel or theme is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -15059,7 +15174,8 @@
                                                 "query": "query Sections($first: Int) {\n  sections(first: $first) {\n    edges {\n      node {\n        _id\n        channelId\n        createdAt\n        id\n        name\n        sortOrder\n        status\n        themeCode\n        type\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "The active sections of the current channel's theme in display order; `type` filters by section type. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -15092,7 +15208,8 @@
                                                 "query": "query Theme {\n  theme {\n    code\n    id\n    name\n    sectionTypes\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        }
+                                        },
+                                        "description": "The theme the current channel's storefront is drawn with and the section types it can hold; read the sections themselves with `sections`. Takes no arguments. Needs the X-STOREFRONT-KEY header."
                                     }
                                 }
                             ]
@@ -15310,7 +15427,8 @@
                                                 "query": "query Wishlist($id: ID!) {\n  wishlist(id: $id) {\n    _id\n    additional\n    channel {\n      _id\n      code\n      createdAt\n      favicon\n      faviconFileName\n      faviconUrl\n      homeSeo\n      hostname\n      id\n      isMaintenanceOn\n      logo\n      logoFileName\n      logoUrl\n      theme\n      timezone\n      updatedAt\n    }\n    createdAt\n    customer {\n      _id\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    id\n    message\n    movedToCart\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    shared\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One wishlist item of the authenticated customer on the current channel; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 },
                                 {
@@ -15343,7 +15461,8 @@
                                                 "query": "query Wishlists($first: Int) {\n  wishlists(first: $first) {\n    edges {\n      node {\n        _id\n        additional\n        createdAt\n        id\n        message\n        movedToCart\n        shared\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "The authenticated customer's wishlist on the current channel. `sort` is `id` or `created_at` (or `column-asc`/`column-desc`) and `order` is `asc` (default) or `desc`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                                     }
                                 }
                             ]

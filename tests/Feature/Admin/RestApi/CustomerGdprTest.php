@@ -4,9 +4,14 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerGroup;
 use Webkul\GDPR\Models\GDPRDataRequest;
+use Webkul\Product\Models\Product;
+use Webkul\Sales\Models\DownloadableLinkPurchased;
+use Webkul\Sales\Models\Order;
+use Webkul\Sales\Models\OrderItem;
 use Webkul\User\Models\Role;
 
 class CustomerGdprTest extends AdminApiTestCase
@@ -327,6 +332,53 @@ class CustomerGdprTest extends AdminApiTestCase
         expect($data)->toBeArray();
         expect($data)->toHaveKeys(['customer', 'addresses', 'orders', 'reviews', 'wishlist', 'notes']);
         expect($data['customer'])->not()->toHaveKey('password');
+    }
+
+    /**
+     * Test download data works for a customer who bought a downloadable product.
+     */
+    public function test_download_data_includes_downloadable_order_items(): void
+    {
+        $admin = $this->createAdmin();
+        $customer = $this->seedCustomer();
+
+        $order = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'customer_first_name' => $customer->first_name,
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => Channel::query()->first()->id,
+            'status' => 'completed',
+        ]);
+
+        $item = OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => Product::factory()->create()->id,
+            'sku' => 'GDPR-DOWNLOAD',
+            'type' => 'downloadable',
+            'name' => 'GDPR Download',
+        ]);
+
+        DownloadableLinkPurchased::create([
+            'product_name' => 'GDPR Download',
+            'name' => 'GDPR Link',
+            'type' => 'file',
+            'file' => 'downloadable/gdpr.pdf',
+            'file_name' => 'gdpr.pdf',
+            'download_bought' => 1,
+            'download_used' => 0,
+            'status' => 'available',
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'order_item_id' => $item->id,
+            'download_canceled' => 0,
+        ]);
+
+        $response = $this->adminPost($admin, '/api/admin/customers/'.$customer->id.'/gdpr-download-data');
+
+        $response->assertOk();
+        expect($response->json('data.orders.0.items.0.sku'))->toBe('GDPR-DOWNLOAD');
+        expect($response->json('data.orders.0.items.0.downloadable_links.0.name'))->toBe('GDPR Link');
     }
 
     /**

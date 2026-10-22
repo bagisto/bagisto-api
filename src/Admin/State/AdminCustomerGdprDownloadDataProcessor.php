@@ -58,16 +58,24 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
         $dto->customerId = $customerId;
         $dto->customerEmail = $customer->email;
         $dto->generatedAt = Carbon::now()->toIso8601String();
-        $dto->data = [
+        $dto->data = $this->plainData([
             'customer' => $customerData,
             'addresses' => $addresses,
             'orders' => $orders,
             'reviews' => $reviews,
             'wishlist' => $wishlist,
             'notes' => $notes,
-        ];
+        ]);
 
         return $dto;
+    }
+
+    /**
+     * The export as plain arrays and scalars, since core's toArray() leaves collections such as downloadable_links inside.
+     */
+    protected function plainData(array $data): array
+    {
+        return json_decode(json_encode($data, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
     }
 
     /**

@@ -40,16 +40,12 @@ test.describe('admin auth rest api', () => {
       method: 'POST',
       data: { email: env.adminEmail, password: 'whatever' },
     });
+    expect(response.status()).toBe(405);
+    expect(response.headers()['allow']).toBe('GET, HEAD');
+
     const body = await response.json();
     expect(body).not.toHaveProperty('token');
-
-    if ('exception' in body) {
-      expect(response.status()).toBe(405);
-      expect(body.exception).toBe('Symfony\\Component\\HttpKernel\\Exception\\MethodNotAllowedHttpException');
-    } else {
-      expect(response.status()).toBe(500);
-      expect(body.error).toBe('500 Internal Server Error');
-    }
+    expect(body.message).toBe('The POST method is not supported for route api/admin/login. Supported methods: GET, HEAD.');
   });
 
   test('admin endpoint accepts bearer token without x-admin-key', async ({ request }) => {

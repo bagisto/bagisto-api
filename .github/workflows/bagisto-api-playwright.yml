@@ -138,9 +138,28 @@ jobs:
           sed -i "s|^DB_DATABASE=.*|DB_DATABASE=bagisto|" .env
           sed -i "s|^DB_USERNAME=.*|DB_USERNAME=${{ matrix.db.user }}|" .env
           sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=${{ matrix.db.password }}|" .env
+          sed -i "s|^MAIL_MAILER=.*|MAIL_MAILER=log|" .env
           grep -q '^CACHE_STORE=' .env && sed -i "s|^CACHE_STORE=.*|CACHE_STORE=file|" .env || echo "CACHE_STORE=file" >> .env
           php artisan bagisto:install --no-interaction --demo-samples
           php artisan indexer:index --mode=full
+
+      - name: Resync PostgreSQL sequences
+        if: matrix.db.connection == 'pgsql'
+        working-directory: bagisto
+        run: |
+          cat > /tmp/sync-sequences.php <<'PHP'
+          <?php
+          $synced = 0;
+          foreach (DB::select("SELECT table_name FROM information_schema.columns WHERE table_schema = current_schema() AND column_name = 'id' AND column_default LIKE 'nextval(%'") as $row) {
+              $sequence = DB::selectOne("SELECT pg_get_serial_sequence(?, 'id') AS name", [$row->table_name])->name;
+              if ($sequence) {
+                  DB::statement("SELECT setval(?, COALESCE((SELECT MAX(id) FROM \"{$row->table_name}\"), 0) + 1, false)", [$sequence]);
+                  $synced++;
+              }
+          }
+          echo "Synced {$synced} sequences\n";
+          PHP
+          php -r 'require "vendor/autoload.php"; $app = require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); require "/tmp/sync-sequences.php";'
 
       - name: Copy Bagisto API package
         run: |

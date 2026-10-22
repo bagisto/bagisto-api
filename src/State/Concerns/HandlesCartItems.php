@@ -572,9 +572,22 @@ trait HandlesCartItems
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.item-ids-required'));
         }
 
+        if (
+            $customer
+            && $cart->customer_id !== $customer->id
+        ) {
+            throw new AuthorizationException(__('bagistoapi::app.graphql.cart.unauthorized-access'));
+        }
+
+        $itemIds = array_values(array_unique(array_map('intval', $data->itemIds)));
+
+        if (array_diff($itemIds, $cart->items->pluck('id')->all()) !== []) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.cart-item-not-found'));
+        }
+
         CartFacade::setCart($cart);
 
-        foreach ($data->itemIds as $itemId) {
+        foreach ($itemIds as $itemId) {
             try {
                 CartFacade::removeItem($itemId);
             } catch (\Exception $exception) {

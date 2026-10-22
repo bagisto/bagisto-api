@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
+use Webkul\Checkout\Models\CartItem;
 use Webkul\Product\Models\Product;
 
 class CartTest extends RestApiTestCase
@@ -450,15 +451,61 @@ class CartTest extends RestApiTestCase
             'quantity' => 1,
         ]);
 
-        $id1 = (int) ($resp1->json('items.0.id') ?? 0);
-        $id2 = (int) ($resp2->json('items.1.id') ?? $resp2->json('items.0.id') ?? 0);
+        $resp1->assertSuccessful();
+        $items = collect($resp2->json('items'));
+        $id1 = (int) $items->firstWhere('productId', $product1->id)['id'];
+        $id2 = (int) $items->firstWhere('productId', $product2->id)['id'];
 
         $response = $this->postWithToken($this->removeItemsUrl, $token, [
-            'itemIds' => array_filter([$id1, $id2]),
+            'itemIds' => [$id1, $id2],
         ]);
 
-        expect($response->getStatusCode())->toBeIn([200, 201]);
+        $response->assertSuccessful();
         expect((int) $response->json('itemsCount'))->toBe(0);
+    }
+
+    /**
+     * Removing the same cart item twice in one request removes it once.
+     */
+    public function test_remove_multiple_cart_items_ignores_duplicate_ids(): void
+    {
+        $this->seedRequiredData();
+        $product1 = $this->createSimpleProduct();
+        $product2 = $this->createSimpleProduct();
+        $token = $this->createGuestCartToken();
+
+        $this->postWithToken($this->addProductUrl, $token, ['productId' => $product1->id, 'quantity' => 1])->assertSuccessful();
+        $items = collect($this->postWithToken($this->addProductUrl, $token, ['productId' => $product2->id, 'quantity' => 1])->json('items'));
+        $id1 = (int) $items->firstWhere('productId', $product1->id)['id'];
+
+        $response = $this->postWithToken($this->removeItemsUrl, $token, [
+            'itemIds' => [$id1, $id1],
+        ]);
+
+        $response->assertSuccessful();
+        expect((int) $response->json('itemsCount'))->toBe(1);
+        expect(collect($response->json('items'))->pluck('productId')->all())->toBe([$product2->id]);
+    }
+
+    /**
+     * Removing a list that names an item outside the cart removes nothing.
+     */
+    public function test_remove_multiple_cart_items_rejects_an_item_outside_the_cart(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->createSimpleProduct();
+        $token = $this->createGuestCartToken();
+
+        $items = collect($this->postWithToken($this->addProductUrl, $token, ['productId' => $product->id, 'quantity' => 1])->json('items'));
+        $itemId = (int) $items->first()['id'];
+
+        $response = $this->postWithToken($this->removeItemsUrl, $token, [
+            'itemIds' => [$itemId, 99999999],
+        ]);
+
+        $response->assertStatus(400);
+        expect($response->json('detail') ?? $response->json('message'))->toBe(__('bagistoapi::app.graphql.cart.cart-item-not-found'));
+        expect(CartItem::query()->whereKey($itemId)->exists())->toBeTrue();
     }
 
     /**

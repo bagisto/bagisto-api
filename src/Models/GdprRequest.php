@@ -233,9 +233,13 @@ use Webkul\GDPR\Models\GDPRDataRequest;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: GdprRequestQueryResolver::class),
+        new Query(
+            resolver: GdprRequestQueryResolver::class,
+            description: 'One GDPR data request of the authenticated customer; another customer\'s request is not found. Fails while GDPR is switched off in the store settings. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
         new QueryCollection(
             provider: GdprRequestProvider::class,
+            description: 'The authenticated customer\'s GDPR data requests. `sort` is `id` or `created_at` (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default). Fails while GDPR is switched off. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             extraArgs: [
                 'sort' => ['type' => 'String'],

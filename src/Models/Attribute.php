@@ -22,8 +22,14 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
     description: 'Product attribute resource',
     routePrefix: '/api/shop',
     graphQlOperations: [
-        new QueryCollection(provider: CursorAwareCollectionProvider::class),
-        new Query(resolver: BaseQueryItemResolver::class),
+        new QueryCollection(
+            provider: CursorAwareCollectionProvider::class,
+            description: 'Every product attribute, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
+        ),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One product attribute. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
     ],
     operations: [
         new GetCollection(

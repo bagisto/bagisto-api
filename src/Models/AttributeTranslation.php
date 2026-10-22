@@ -67,8 +67,14 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
         ),
     ],
     graphQlOperations: [
-        new QueryCollection(provider: CursorAwareCollectionProvider::class),
-        new Query(resolver: BaseQueryItemResolver::class),
+        new QueryCollection(
+            provider: CursorAwareCollectionProvider::class,
+            description: 'Every attribute translation (one row per attribute and locale), ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
+        ),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One attribute translation. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
     ],
 )]
 class AttributeTranslation extends \Webkul\Attribute\Models\AttributeTranslation

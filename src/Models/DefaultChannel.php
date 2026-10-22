@@ -14,6 +14,7 @@ use Webkul\BagistoApi\State\DefaultChannelProvider;
     graphQlOperations: [
         new QueryCollection(
             name: 'collection',
+            description: 'The store\'s default channel with its locales, currencies, inventory sources and root category, as a connection holding one node (none when no default channel is set). The pagination arguments are ignored. Needs the X-STOREFRONT-KEY header.',
             provider: DefaultChannelProvider::class,
         ),
     ],

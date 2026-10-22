@@ -61,6 +61,7 @@ use Webkul\BagistoApi\State\ReturnableOrderProvider;
     graphQlOperations: [
         new QueryCollection(
             provider: ReturnableOrderProvider::class,
+            description: 'The authenticated customer\'s orders a return can still be opened for (not canceled, closed, fraud or pending payment, with an item inside its return window and quantity left), as a plain list (not paginated). Filters: `incrementId` (partial match) and `status`. `sort` is `created_at` (default), `increment_id` or `grand_total`; `order` is `asc` or `desc` (default). Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             extraArgs: [
                 'incrementId' => [
                     'type' => 'String',

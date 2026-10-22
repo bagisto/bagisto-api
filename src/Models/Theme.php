@@ -55,6 +55,7 @@ use Webkul\BagistoApi\State\ThemeProvider;
     graphQlOperations: [
         new Query(
             resolver: ThemeQueryResolver::class,
+            description: 'The theme the current channel\'s storefront is drawn with and the section types it can hold; read the sections themselves with `sections`. Takes no arguments. Needs the X-STOREFRONT-KEY header.',
             args: [],
         ),
     ],

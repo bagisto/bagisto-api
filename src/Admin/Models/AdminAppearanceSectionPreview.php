@@ -64,6 +64,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionPreviewProvider;
     graphQlOperations: [
         new Query(
             resolver: AdminAppearanceSectionPreviewQueryResolver::class,
+            description: 'The sections of theme `code` that `channel` would draw if its staged edits were published: draft options, status and order applied, switched-off sections left out, footer links last. Needs the `appearance.sections` permission.',
             args: [
                 'code' => ['type' => 'String!'],
                 'channel' => ['type' => 'Int'],

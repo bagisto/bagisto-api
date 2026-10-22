@@ -62,6 +62,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeImpactProvider;
     graphQlOperations: [
         new Query(
             resolver: AdminAppearanceThemeImpactQueryResolver::class,
+            description: 'Which of `channelIds` already hold sections built for their current theme, and how many, so activating theme `code` there would replace them. Needs the `appearance.themes` permission.',
             args: [
                 'code' => ['type' => 'String!'],
                 'channelIds' => ['type' => '[Int!]!'],

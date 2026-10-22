@@ -159,7 +159,10 @@ use Webkul\BagistoApi\State\CustomerProcessor;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: CustomerQueryResolver::class),
+        new Query(
+            resolver: CustomerQueryResolver::class,
+            description: 'The authenticated customer\'s profile. The schema requires `id`, but it is ignored: the customer is always the owner of the Bearer token. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
         new Mutation(
             name: 'create',
             processor: CustomerProcessor::class,

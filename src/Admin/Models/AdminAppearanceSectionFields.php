@@ -55,6 +55,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionFieldsProvider;
     graphQlOperations: [
         new Query(
             resolver: AdminAppearanceSectionFieldsQueryResolver::class,
+            description: 'The editor field schema for the type of section `sectionId` and the options it holds in `locale`: staged edits when there are any, otherwise the published values. Needs the `appearance.sections` permission.',
             args: [
                 'sectionId' => ['type' => 'Int!'],
                 'locale' => ['type' => 'String'],

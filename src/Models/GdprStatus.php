@@ -47,6 +47,7 @@ use Webkul\BagistoApi\State\FeatureStatusProvider;
     graphQlOperations: [
         new Query(
             resolver: GdprStatusQueryResolver::class,
+            description: 'Whether customers can raise GDPR data requests on the current channel. Takes no arguments and needs no customer login. Needs the X-STOREFRONT-KEY header.',
             args: [],
         ),
     ],

@@ -50,6 +50,7 @@ use Webkul\Product\Models\ProductGroupedProduct as BaseProductGroupedProduct;
     graphQlOperations: [
         new QueryCollection(
             provider: GroupedProductsProvider::class,
+            description: 'Every grouped-product link of every grouped product. Read one product\'s links through its `groupedProducts` field instead, which returns the first page of that product. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header.',
             links: [
                 new Link(
                     fromProperty: 'groupedProducts',
@@ -59,7 +60,10 @@ use Webkul\Product\Models\ProductGroupedProduct as BaseProductGroupedProduct;
                 ),
             ],
         ),
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One grouped-product link. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 #[ApiResource(

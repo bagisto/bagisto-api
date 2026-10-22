@@ -157,9 +157,13 @@ use Webkul\BagistoApi\State\EuWithdrawalProvider;
         ),
     ],
     graphQlOperations: [
-        new Query(provider: EuWithdrawalProvider::class),
+        new Query(
+            provider: EuWithdrawalProvider::class,
+            description: 'One EU withdrawal declaration on an order of the authenticated customer; any other declaration is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
         new QueryCollection(
             provider: EuWithdrawalProvider::class,
+            description: 'EU withdrawal declarations on the authenticated customer\'s orders, newest first. Paginate forward only: `first` (default 30, between 1 and 50) and `after`. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'first' => ['type' => 'Int'],

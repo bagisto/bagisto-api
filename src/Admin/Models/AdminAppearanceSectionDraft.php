@@ -50,7 +50,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDraftProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'Draft saved.',
                         content: new \ArrayObject([
                             'application/json' => ['example' => [

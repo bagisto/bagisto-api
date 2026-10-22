@@ -91,6 +91,7 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
     graphQlOperations: [
         new QueryCollection(
             provider: DownloadableSamplesProvider::class,
+            description: 'Every downloadable sample of every downloadable product. Read one product\'s samples through its `downloadableSamples` field instead, which returns the first page of that product. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header.',
             links: [
                 new Link(
                     fromProperty: 'downloadableSamples',
@@ -100,7 +101,10 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
                 ),
             ],
         ),
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One downloadable sample. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 #[ApiResource(

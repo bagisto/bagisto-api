@@ -201,6 +201,7 @@ use Webkul\BagistoApi\Admin\State\AdminShipmentProvider;
     graphQlOperations: [
         new Query(
             provider: AdminShipmentProvider::class,
+            description: 'One shipment with every column, the order and customer context, billing and shipping addresses, the inventory source and the shipped line items. Needs the `sales.shipments.view` permission.',
         ),
         new QueryCollection(
             provider: AdminShipmentCollectionProvider::class,

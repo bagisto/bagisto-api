@@ -96,7 +96,11 @@ use Webkul\BagistoApi\State\CategoryTreeProvider;
         ),
     ],
     graphQlOperations: [
-        new QueryCollection(provider: CategoryTreeProvider::class, paginationEnabled: false),
+        new QueryCollection(
+            provider: CategoryTreeProvider::class,
+            paginationEnabled: false,
+            description: 'The current channel\'s root category and its active descendants as a nested tree (up to four levels by default), ordered by position, as a plain list (not paginated). Takes no arguments. Needs the X-STOREFRONT-KEY header.',
+        ),
     ],
 )]
 class CategoryTree

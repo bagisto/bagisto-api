@@ -133,9 +133,13 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One active theme section of the current channel\'s theme; a switched-off section or one of another channel or theme is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
         new QueryCollection(
             provider: CursorAwareCollectionProvider::class,
+            description: 'The active sections of the current channel\'s theme in display order; `type` filters by section type. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
             parameters: [
                 'type' => new QueryParameter(key: 'type', property: 'type', filter: new EqualsFilter),
             ],

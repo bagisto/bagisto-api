@@ -31,7 +31,7 @@ use Webkul\BagistoApi\State\ImageSearchProcessor;
             openapi: new Model\Operation(
                 tags: ['Search'],
                 summary: 'Search products by image',
-                description: 'Uploads an image and returns its stored URL plus search keywords. When storefront image-search AI is enabled, keywords are analyzed by Magic AI; otherwise the result uses the TensorFlow search engine. Upload the image as a multipart file; the GraphQL mutation accepts the same image base64-encoded.',
+                description: 'Uploads an image and returns its stored URL plus search keywords. When Magic AI and its storefront image search are both enabled, the keywords come from Magic AI and `engine` is `ai`; otherwise `keywords` is empty and `engine` is `tensorflow`, telling the client to run its own TensorFlow search on `imageUrl`. Send `multipart/form-data` with an `image` field; the GraphQL mutation accepts the same image base64-encoded. Needs the storefront key; no customer login. Limited to 10 requests a minute per IP address.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -44,6 +44,8 @@ use Webkul\BagistoApi\State\ImageSearchProcessor;
                                     'image' => [
                                         'type' => 'string',
                                         'format' => 'binary',
+                                        'description' => 'A jpeg, jpg, png, gif, svg or webp image of at most 2 MB; its real content type is checked.',
+                                        'example' => 'red-sneaker.jpg',
                                     ],
                                 ],
                             ],
@@ -51,9 +53,22 @@ use Webkul\BagistoApi\State\ImageSearchProcessor;
                     ]),
                 ),
                 responses: [
-                    200 => new Model\Response(description: 'Image URL, search keywords, and selected engine.'),
-                    403 => new Model\Response(description: 'Image search is disabled.'),
+                    200 => new Model\Response(
+                        description: 'Image URL, search keywords, and selected engine.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'imageUrl' => 'http://localhost/storage/product-search/9tQpX3cVfLr2.jpg',
+                                    'keywords' => 'red sneaker, running shoe, sportswear',
+                                    'engine' => 'ai',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    401 => new Model\Response(description: 'The X-STOREFRONT-KEY header is missing.'),
+                    403 => new Model\Response(description: 'The storefront key is invalid.'),
                     422 => new Model\Response(description: 'Image is missing, unsupported, or larger than 2 MB.'),
+                    429 => new Model\Response(description: 'More than 10 image searches in a minute from this IP address.'),
                 ],
             ),
         ),

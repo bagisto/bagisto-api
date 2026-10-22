@@ -54,7 +54,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionPublishProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'Staged edits published.',
                         content: new \ArrayObject([
                             'application/json' => [

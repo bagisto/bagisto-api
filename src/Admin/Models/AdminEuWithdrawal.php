@@ -164,7 +164,7 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The declined withdrawal declaration.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -217,7 +217,7 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The refunded withdrawal declaration.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -254,7 +254,7 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
                 summary: 'Resend the durable-medium confirmation email',
                 description: 'Empty body. Re-sends the confirmation email in the declaration\'s locale. Permission: sales.eu_withdrawals.resend_confirmation.',
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The declaration after the confirmation email was re-sent (confirmationSentAt refreshed).',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -280,6 +280,7 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
         new QueryCollection(
             provider: AdminEuWithdrawalCollectionProvider::class,
             paginationType: 'cursor',
+            description: 'EU right-of-withdrawal declarations, newest first by default. Filters: `order_increment_id` and `customer_email` (partial match), `status` (received, refunded or declined), `channel_code`, and `received_at_from`/`_to` and `confirmation_sent_at_from`/`_to` dates. Sortable by id, received_at or status. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page\'s `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.eu_withdrawals` permission.',
             args: [
                 'order_increment_id' => ['type' => 'String'],
                 'customer_email' => ['type' => 'String'],
@@ -295,7 +296,10 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
                 'after' => ['type' => 'String'],
             ],
         ),
-        new Query(provider: AdminEuWithdrawalItemProvider::class),
+        new Query(
+            provider: AdminEuWithdrawalItemProvider::class,
+            description: 'One withdrawal declaration with its evidence and timeline. Needs the `sales.eu_withdrawals.view` permission.',
+        ),
         new Mutation(name: 'decline', input: AdminEuWithdrawalDeclineInput::class, processor: AdminEuWithdrawalProcessor::class),
         new Mutation(name: 'markRefunded', input: AdminEuWithdrawalMarkRefundedInput::class, processor: AdminEuWithdrawalProcessor::class),
         new Mutation(name: 'resendConfirmation', input: AdminEuWithdrawalActionInput::class, processor: AdminEuWithdrawalProcessor::class),

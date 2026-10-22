@@ -379,6 +379,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider;
         new QueryCollection(
             provider: AdminRmaCustomFieldCollectionProvider::class,
             paginationType: 'cursor',
+            description: 'The extra fields the return form collects. Filters: `code` and `label` (partial match), `type`, `status` (0 or 1). Sortable by id, position or code. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page\'s `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.custom-fields` permission.',
             args: [
                 'code' => ['type' => 'String'],
                 'label' => ['type' => 'String'],
@@ -390,7 +391,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider;
                 'after' => ['type' => 'String'],
             ],
         ),
-        new Query(provider: AdminRmaCustomFieldItemProvider::class),
+        new Query(
+            provider: AdminRmaCustomFieldItemProvider::class,
+            description: 'One RMA custom field with its options. Needs the `sales.rma.custom-fields` permission.',
+        ),
         new Mutation(name: 'create', input: AdminRmaCustomFieldCreateInput::class, processor: AdminRmaCustomFieldProcessor::class),
         new Mutation(name: 'update', input: AdminRmaCustomFieldUpdateInput::class, processor: AdminRmaCustomFieldProcessor::class),
         new Mutation(name: 'delete', input: AdminRmaCustomFieldUpdateInput::class, processor: AdminRmaCustomFieldProcessor::class),

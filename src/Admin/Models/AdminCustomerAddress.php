@@ -83,6 +83,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Address detail',
+                description: 'One saved address of the customer. The address must belong to `customerId`; an address of another customer, or an unknown ID, is a 404. Needs the `customers.addresses` permission.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Address ID', true, schema: ['type' => 'integer']),
@@ -103,6 +104,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                             ],
                         ]),
                     ),
+                    '403' => new Model\Response(description: 'Admin role lacks customers.addresses.'),
                     '404' => new Model\Response(description: 'Address not found.'),
                 ],
             ),
@@ -213,6 +215,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Update address',
+                description: 'Partial update of a saved address: only the fields sent with a non-null value change. `address` may be a string or an array of lines, joined with new lines. Sending `default_address: true` makes it the customer\'s only default address. Needs the `customers.addresses.edit` permission.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Address ID', true, schema: ['type' => 'integer']),
@@ -289,7 +292,8 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                             ],
                         ]),
                     ),
-                    '403' => new Model\Response(description: 'Address does not belong to the customer.'),
+                    '403' => new Model\Response(description: 'Address does not belong to the customer, or the admin role lacks customers.addresses.edit.'),
+                    '404' => new Model\Response(description: 'Address not found.'),
                 ],
             ),
         ),
@@ -305,6 +309,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Delete address',
+                description: 'Deletes a saved address of the customer and answers 200 with a message (not 204). Needs the `customers.addresses.delete` permission.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Address ID', true, schema: ['type' => 'integer']),
@@ -318,7 +323,8 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                             ],
                         ]),
                     ),
-                    '403' => new Model\Response(description: 'Address does not belong to the customer.'),
+                    '403' => new Model\Response(description: 'Address does not belong to the customer, or the admin role lacks customers.addresses.delete.'),
+                    '404' => new Model\Response(description: 'Address not found.'),
                 ],
             ),
         ),

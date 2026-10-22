@@ -50,7 +50,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusMassUpdateStatusProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The updated status ids.',
                         content: new \ArrayObject([
                             'application/json' => [

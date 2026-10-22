@@ -43,7 +43,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionStatusProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'Status staged.',
                         content: new \ArrayObject([
                             'application/json' => ['example' => [

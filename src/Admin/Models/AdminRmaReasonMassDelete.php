@@ -44,7 +44,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonMassDeleteProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The deleted reason ids.',
                         content: new \ArrayObject([
                             'application/json' => [

@@ -83,6 +83,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnableOrderProvider;
         new QueryCollection(
             provider: AdminReturnableOrderProvider::class,
             paginationType: 'cursor',
+            description: 'The orders a return can be opened for (the order picker of the admin RMA create form): not canceled, closed, fraud or pending payment, with an item still inside its return window. Filters: `id`, `increment_id` and `customer_name` (partial match), `status`, `method_title`, `grand_total_from`/`_to`, `created_at_from`/`_to`. Sortable by id, increment_id, customer_name, created_at, grand_total, method_title or status. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page\'s `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.requests.create` permission.',
             args: [
                 'id' => ['type' => 'Int'],
                 'increment_id' => ['type' => 'String'],

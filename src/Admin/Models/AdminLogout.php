@@ -35,8 +35,18 @@ use Webkul\BagistoApi\Admin\State\AdminLogoutProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'Logged out.'),
-                    '401' => new Model\Response(description: 'Missing or invalid token.'),
+                    '200' => new Model\Response(
+                        description: 'Logged out: the session is revoked, so its access and refresh tokens stop working.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'success' => true,
+                                    'message' => 'You have been logged out.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '401' => new Model\Response(description: 'The access token is missing or invalid, or its session was already revoked (`unauthenticated`), or it expired (`access_token_expired`).'),
                     '403' => new Model\Response(description: 'Called with an API token (`access_token_required`).'),
                 ],
             ),

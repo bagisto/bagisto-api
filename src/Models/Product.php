@@ -307,7 +307,8 @@ use Webkul\Product\Models\Product as BaseProduct;
                     'description' => 'Channel code (e.g. "default")',
                 ],
             ],
-            resolver: SingleProductBagistoApiResolver::class
+            resolver: SingleProductBagistoApiResolver::class,
+            description: 'One product visible in the storefront, found by `id` (IRI or numeric ID), `sku` or `urlKey`, checked in that order; sending none is an error and a product that is disabled or not visible in the channel is not found. `locale` and `channel` (codes) choose the language and channel the values are read in. Needs the X-STOREFRONT-KEY header.',
         ),
     ]
 )]
@@ -318,9 +319,13 @@ use Webkul\Product\Models\Product as BaseProduct;
     operations: [
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One product visible in the storefront of the current channel. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
         new QueryCollection(
             provider: ProductGraphQLProvider::class,
+            description: 'Products visible in the storefront of the channel. `query` searches SKU and name (partial match); `filter` is a JSON object of attribute filters such as type, sku, category_id or price; `sortKey` is TITLE (or NAME), CREATED_AT, UPDATED_AT, PRICE or ID (default), ascending unless `reverse` is true. `locale` and `channel` (codes) choose where values are read. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
             args: [
                 'sortKey' => [
                     'type' => 'String',

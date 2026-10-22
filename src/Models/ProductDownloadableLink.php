@@ -116,6 +116,7 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
     graphQlOperations: [
         new QueryCollection(
             provider: DownloadableLinksProvider::class,
+            description: 'Every downloadable link of every downloadable product. Read one product\'s links through its `downloadableLinks` field instead, which returns the first page of that product. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header.',
             links: [
                 new Link(
                     fromProperty: 'downloadableLinks',
@@ -125,7 +126,10 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
                 ),
             ],
         ),
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One downloadable link. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 #[ApiResource(

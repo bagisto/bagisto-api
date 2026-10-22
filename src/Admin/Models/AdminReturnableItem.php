@@ -57,6 +57,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnableItemProvider;
         new QueryCollection(
             provider: AdminReturnableItemProvider::class,
             paginationType: 'cursor',
+            description: 'The items of order `orderId` that can be put on a return, each with its quantity caps (`forReturnQuantity`, `forCancelQuantity`, `currentQuantity`), as a plain list (not paginated). Any customer\'s order can be used. Needs the `sales.rma.requests.create` permission.',
             args: [
                 'orderId' => [
                     'type' => 'Int!',

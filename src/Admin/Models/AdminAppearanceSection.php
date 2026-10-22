@@ -98,6 +98,7 @@ use Webkul\Theme\Models\Section;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Get a section',
+                description: 'One section by ID with its published values, any staged draft (`draftStatus`, `draftSortOrder` and each translation\'s `draftOptions`) and the content of every locale. Needs the `appearance.sections` permission; an unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Section ID', true, schema: ['type' => 'integer']),
                 ],
@@ -312,6 +313,7 @@ use Webkul\Theme\Models\Section;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Delete a section',
+                description: 'Deletes the section and its content straight away, without staging; the storefront stops drawing it at once. Needs the `appearance.sections.delete` permission.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Section ID', true, schema: ['type' => 'integer']),
                 ],
@@ -323,9 +325,13 @@ use Webkul\Theme\Models\Section;
         ),
     ],
     graphQlOperations: [
-        new Query(provider: AdminAppearanceSectionItemProvider::class),
+        new Query(
+            provider: AdminAppearanceSectionItemProvider::class,
+            description: 'One theme section by its IRI or numeric ID, with its published values, staged draft and the content of every locale. Needs the `appearance.sections` permission.',
+        ),
         new QueryCollection(
             provider: AdminAppearanceSectionCollectionProvider::class,
+            description: 'Every section of the theme `code` for one channel, as a plain list (not paginated), in sort order with the footer links section last. An unknown `channel` falls back to the current channel, and `locale` to one the channel runs. Needs the `appearance.sections` permission; an unknown theme is an error.',
             paginationEnabled: false,
             extraArgs: [
                 'code' => ['type' => 'String!'],

@@ -60,6 +60,7 @@ use Webkul\BagistoApi\State\ReturnableItemProvider;
     graphQlOperations: [
         new QueryCollection(
             provider: ReturnableItemProvider::class,
+            description: 'The items of order `orderId` that can be put on a return, each with its quantity caps (`forReturnQuantity`, `forCancelQuantity`, `currentQuantity`), as a plain list (not paginated). The order must belong to the authenticated customer. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'orderId' => [

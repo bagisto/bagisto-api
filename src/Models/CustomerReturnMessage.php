@@ -147,6 +147,7 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
     graphQlOperations: [
         new QueryCollection(
             provider: CustomerReturnMessageProvider::class,
+            description: 'Every message in the conversation of return `returnId`, newest first, as a plain list (not paginated). The return must be on one of the authenticated customer\'s orders, otherwise it is not found. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'returnId' => [

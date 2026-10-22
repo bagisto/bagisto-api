@@ -147,9 +147,13 @@ use Webkul\BagistoApi\State\CompareItemProvider;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: CompareItemQueryResolver::class),
+        new Query(
+            resolver: CompareItemQueryResolver::class,
+            description: 'One compare-list item of the authenticated customer; another customer\'s item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
         new QueryCollection(
             provider: CompareItemProvider::class,
+            description: 'The authenticated customer\'s compare list, oldest first. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
         ),
         new Mutation(

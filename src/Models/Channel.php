@@ -115,8 +115,14 @@ use Webkul\BagistoApi\State\ChannelProvider;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
-        new QueryCollection(provider: ChannelProvider::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One storefront channel. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
+        new QueryCollection(
+            provider: ChannelProvider::class,
+            description: 'Every storefront channel with its locales, currencies, default locale and base currency, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 class Channel extends \Webkul\Core\Models\Channel

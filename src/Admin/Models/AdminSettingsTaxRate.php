@@ -152,10 +152,80 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Rates'],
                 summary: 'Update a tax rate',
-                description: 'Partial update; identifier uniqueness excludes self.',
+                description: 'Partial update: fields left out, null or empty keep their stored value, and the result is validated as a whole (identifier unique excluding this rate, two-letter country, rate 0 to 100). Switching `is_zip` to true needs `zip_from` and `zip_to` and clears `zip_code`; switching it to false needs `zip_code` and clears the range. Needs the `settings.taxes.tax_rates.edit` permission.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Tax rate ID.', true, schema: ['type' => 'integer']),
                 ],
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+
+                                'properties' => [
+                                    'identifier' => [
+                                        'type' => 'string',
+                                        'example' => 'US-CA-SF',
+                                    ],
+
+                                    'is_zip' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                    ],
+
+                                    'zip_code' => [
+                                        'type' => 'string',
+                                        'example' => '94103',
+                                    ],
+
+                                    'zip_from' => [
+                                        'type' => 'string',
+                                        'example' => '94100',
+                                    ],
+
+                                    'zip_to' => [
+                                        'type' => 'string',
+                                        'example' => '94199',
+                                    ],
+
+                                    'state' => [
+                                        'type' => 'string',
+                                        'example' => 'CA',
+                                    ],
+
+                                    'country' => [
+                                        'type' => 'string',
+                                        'example' => 'US',
+                                    ],
+
+                                    'tax_rate' => [
+                                        'type' => 'number',
+                                        'format' => 'float',
+                                        'example' => 9.25,
+                                    ],
+                                ],
+                            ],
+
+                            'examples' => [
+                                'change-rate' => [
+                                    'summary' => 'Change only the rate',
+                                    'value' => ['tax_rate' => 9.25],
+                                ],
+
+                                'switch-to-zip-range' => [
+                                    'summary' => 'Switch to a zip range (is_zip=true)',
+
+                                    'value' => [
+                                        'is_zip' => true,
+                                        'zip_from' => '94000',
+                                        'zip_to' => '94999',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
                 responses: [
                     '200' => new Model\Response(description: 'Tax rate updated.'),
                     '404' => new Model\Response(description: 'Tax rate not found.'),

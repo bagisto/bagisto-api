@@ -24,7 +24,7 @@ use Webkul\BagistoApi\Admin\State\AdminPermissionsProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Menu'],
                 summary: 'Authenticated admin permissions',
-                description: 'Returns the effective permission set for the authenticated token: `permissionType` (`all` / `custom` / `same_as_web`) and the granted `permissions` keys (capped by the admin\'s role). `permissionType: "all"` returns `permissions: ["*"]` (full access). Use this to gate UI actions without trial-and-error 403s.',
+                description: 'Returns the effective permission set for the authenticated token: `permissionType` (`all` or `custom`, the admin role\'s type) and the granted `permissions` keys of that role. `permissionType: "all"` returns `permissions: ["*"]` (full access). Use this to gate UI actions without trial-and-error 403s.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'The token\'s effective permissions.',
@@ -47,6 +47,7 @@ use Webkul\BagistoApi\Admin\State\AdminPermissionsProvider;
         new Query(
             name: 'get',
             resolver: AdminPermissionsQueryResolver::class,
+            description: 'The permissions of the authenticated admin\'s role: `permissionType` (`all` or `custom`) and the granted `permissions` keys, `["*"]` for `all`. Needs only a valid access token or API token; use it to gate UI actions instead of waiting for 403s.',
             args: [],
             normalizationContext: ['skip_null_values' => false],
         ),

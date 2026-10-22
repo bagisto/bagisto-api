@@ -237,14 +237,9 @@ use Webkul\BagistoApi\Admin\State\AdminRmaRuleWriteProvider;
                 summary: 'Delete an RMA rule',
                 description: 'Permission: sales.rma.rules.delete.',
                 responses: [
-                    '200' => new Model\Response(
-                        description: 'The RMA rule was deleted.',
-                        content: new \ArrayObject([
-                            'application/json' => [
-                                'example' => ['message' => 'RMA rule deleted successfully.'],
-                            ],
-                        ]),
-                    ),
+                    '204' => new Model\Response(description: 'The RMA rule was deleted. No body is returned.'),
+                    '403' => new Model\Response(description: 'Admin role lacks sales.rma.rules.delete.'),
+                    '404' => new Model\Response(description: 'The RMA rule was not found.'),
                 ],
             ),
         ),
@@ -253,6 +248,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaRuleWriteProvider;
         new QueryCollection(
             provider: AdminRmaRuleCollectionProvider::class,
             paginationType: 'cursor',
+            description: 'The return rules, each setting the return window for the products it matches. Filters: `name` (partial match), `status` (0 or 1). Sortable by id or name. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page\'s `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.rules` permission.',
             args: [
                 'name' => ['type' => 'String'],
                 'status' => ['type' => 'Int'],
@@ -262,7 +258,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaRuleWriteProvider;
                 'after' => ['type' => 'String'],
             ],
         ),
-        new Query(provider: AdminRmaRuleItemProvider::class),
+        new Query(
+            provider: AdminRmaRuleItemProvider::class,
+            description: 'One RMA rule. Needs the `sales.rma.rules` permission.',
+        ),
         new Mutation(name: 'create', input: AdminRmaRuleCreateInput::class, processor: AdminRmaRuleProcessor::class),
         new Mutation(name: 'update', input: AdminRmaRuleUpdateInput::class, processor: AdminRmaRuleProcessor::class),
         new Mutation(name: 'delete', input: AdminRmaRuleUpdateInput::class, processor: AdminRmaRuleProcessor::class),

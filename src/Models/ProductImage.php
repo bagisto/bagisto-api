@@ -55,6 +55,7 @@ use Webkul\Product\Models\ProductImageTranslation;
     graphQlOperations: [
         new QueryCollection(
             provider: CursorAwareCollectionProvider::class,
+            description: 'Product images ordered by ID, optionally only those of product `product_id`. The query takes no pagination arguments, so it returns at most the first 10. Needs the X-STOREFRONT-KEY header.',
             args: [
                 'product_id' => [
                     'type' => 'Int',
@@ -101,7 +102,10 @@ use Webkul\Product\Models\ProductImageTranslation;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One product image. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 #[ApiResource(

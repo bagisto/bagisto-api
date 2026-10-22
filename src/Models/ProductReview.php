@@ -303,6 +303,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
     graphQlOperations: [
         new QueryCollection(
             provider: ProductReviewProvider::class,
+            description: 'Approved product reviews, oldest first. Filters: `product_id` and `rating`; `status` is accepted but ignored, as only approved reviews are public. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
             args: [
                 'product_id' => [
                     'type' => 'Int',
@@ -340,7 +341,10 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                 ],
             ]
         ),
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One approved product review; a pending or disapproved review is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
         new Mutation(
             name: 'create',
             input: CreateProductReviewInput::class,

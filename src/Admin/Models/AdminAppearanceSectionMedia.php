@@ -24,7 +24,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionMediaProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Upload media for a section',
-                description: 'Stores one image or video against the section and returns the path to record in its options.',
+                description: 'Stores one image or video against the section and returns the path to record in its options. Send `multipart/form-data` with a `file` field. Needs the `appearance.sections.edit` permission.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Section ID', true, schema: ['type' => 'integer']),
                 ],
@@ -40,6 +40,8 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionMediaProcessor;
                                     'file' => [
                                         'type' => 'string',
                                         'format' => 'binary',
+                                        'description' => 'An image (bmp, jpeg, jpg, png, webp) or a video (mp4, webm, ogg) of at most 50 MB.',
+                                        'example' => 'banner.webp',
                                     ],
                                 ],
                             ],
@@ -55,12 +57,13 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionMediaProcessor;
                                     'sectionId' => 3,
                                     'path' => 'storage/theme/3/banner.webp',
                                     'type' => 'image',
+                                    'message' => 'Media uploaded successfully.',
                                 ],
                             ],
                         ]),
                     ),
                     '404' => new Model\Response(description: 'Section not found.'),
-                    '422' => new Model\Response(description: 'No file supplied.'),
+                    '422' => new Model\Response(description: 'No file supplied, or the file is not an allowed image or video, or is larger than 50 MB.'),
                 ],
             ),
         ),

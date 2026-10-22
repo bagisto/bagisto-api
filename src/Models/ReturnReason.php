@@ -60,6 +60,7 @@ use Webkul\BagistoApi\State\ReturnReasonProvider;
     graphQlOperations: [
         new QueryCollection(
             provider: ReturnReasonProvider::class,
+            description: 'The active return reasons offered for `resolutionType` (`return` or `cancel_items`), as a plain list (not paginated); any other resolution type is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'resolutionType' => [

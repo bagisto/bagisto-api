@@ -113,7 +113,7 @@ use Webkul\BagistoApi\State\Processor\NewsletterUnsubscriptionProcessor;
                     ]),
                 ),
                 responses: [
-                    200 => new Response(description: 'The subscription was removed, or no subscription matched.'),
+                    201 => new Response(description: 'The subscription was removed, or no subscription matched.'),
                     400 => new Response(description: 'The token is missing or invalid.'),
                 ],
             ),

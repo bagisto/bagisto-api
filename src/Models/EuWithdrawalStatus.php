@@ -47,6 +47,7 @@ use Webkul\BagistoApi\State\FeatureStatusProvider;
     graphQlOperations: [
         new Query(
             resolver: EuWithdrawalStatusQueryResolver::class,
+            description: 'Whether customers can file an EU withdrawal on the current channel. Takes no arguments and needs no customer login. Needs the X-STOREFRONT-KEY header.',
             args: [],
         ),
     ],

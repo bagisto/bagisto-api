@@ -145,6 +145,7 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
         new QueryCollection(
             provider: AdminReturnMessageProvider::class,
             paginationType: 'cursor',
+            description: 'Every message in the conversation of return request `returnId`, newest first, as a plain list (not paginated). Needs the `sales.rma.requests` permission; an unknown return is an error.',
             args: [
                 'returnId' => [
                     'type' => 'Int!',

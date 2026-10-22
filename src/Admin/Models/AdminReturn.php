@@ -347,7 +347,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The updated return request after the status change.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -397,7 +397,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                 summary: 'Reopen an RMA request',
                 description: 'Reopens a declined/canceled RMA back to pending when store settings allow it (otherwise 422). Empty body. Returns the updated RMA. Permission: sales.rma.requests.',
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The reopened return request.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -434,6 +434,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
         new QueryCollection(
             provider: AdminReturnCollectionProvider::class,
             paginationType: 'cursor',
+            description: 'Every return (RMA) request, as in the admin RMA grid. Filters: `id`, `order_id`, `status` (partial match on the status title) and `customer_name` (partial match). Sortable by id, order_id or created_at. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page\'s `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.requests` permission.',
             args: [
                 'id' => ['type' => 'Int'],
                 'order_id' => ['type' => 'Int'],
@@ -445,7 +446,10 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                 'after' => ['type' => 'String'],
             ],
         ),
-        new Query(provider: AdminReturnItemProvider::class),
+        new Query(
+            provider: AdminReturnItemProvider::class,
+            description: 'One return request with the returned item, images, status, order and customer context, whether it can be reopened and the statuses the admin may set next. Needs the `sales.rma.requests` permission.',
+        ),
         new Mutation(
             name: 'create',
             input: AdminCreateReturnInput::class,

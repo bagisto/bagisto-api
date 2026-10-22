@@ -38,7 +38,7 @@ use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'The updated order detail.'),
+                    '201' => new Model\Response(description: 'The updated order detail.'),
                     '404' => new Model\Response(description: 'Order not found.'),
                     '422' => new Model\Response(description: 'Order is closed / fraud / has nothing to cancel, or admin lacks `sales.orders.cancel`.'),
                 ],

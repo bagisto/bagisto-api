@@ -31,8 +31,14 @@ use Webkul\Sales\Models\OrderItem;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
-        new QueryCollection(provider: CustomerOrderShipmentItemProvider::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One shipped item of the authenticated customer\'s shipments; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
+        new QueryCollection(
+            provider: CustomerOrderShipmentItemProvider::class,
+            description: 'Shipped items across the authenticated customer\'s shipments, newest first. Paginate forward only: `first` (default 30, between 1 and 50) and `after`; `last` and `before` are ignored. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
     ],
 )]
 class CustomerOrderShipmentItem extends Model

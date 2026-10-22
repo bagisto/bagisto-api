@@ -87,9 +87,11 @@ use Webkul\Product\Models\ProductReview;
     graphQlOperations: [
         new Query(
             resolver: BaseQueryItemResolver::class,
+            description: 'One review written by the authenticated customer, whatever its status; another customer\'s review is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
         ),
         new QueryCollection(
             provider: CustomerReviewProvider::class,
+            description: 'Reviews written by the authenticated customer, newest first. Filters: `status` (pending, approved or disapproved) and `rating`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'status' => [

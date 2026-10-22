@@ -33,9 +33,11 @@ use Webkul\Sales\Models\DownloadableLinkPurchased;
     graphQlOperations: [
         new Query(
             resolver: BaseQueryItemResolver::class,
+            description: 'One downloadable-product purchase of the authenticated customer; another customer\'s purchase is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
         ),
         new QueryCollection(
             provider: CustomerDownloadableProductProvider::class,
+            description: 'The authenticated customer\'s downloadable-product purchases, newest first; `status` filters by exact purchase status. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'status' => [

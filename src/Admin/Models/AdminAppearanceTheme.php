@@ -64,6 +64,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeItemProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Themes'],
                 summary: 'Get a theme',
+                description: 'One theme from the gallery by its code, installed or not, with whether it is installed, its status and the channels it is active on. Needs the `appearance.themes` permission; an unknown code is a 404.',
                 parameters: [
                     new Model\Parameter('code', 'path', 'Theme code', true, schema: [
                         'type' => 'string',
@@ -105,9 +106,11 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeItemProvider;
         new Query(
             resolver: AdminAppearanceThemeQueryResolver::class,
             args: ['code' => ['type' => 'String!']],
+            description: 'One theme from the gallery by its `code`, installed or not, with its status and the channels it is active on. Needs the `appearance.themes` permission.',
         ),
         new QueryCollection(
             provider: AdminAppearanceThemeCollectionProvider::class,
+            description: 'The theme gallery as a plain list (not paginated): every installed theme and every theme available to install, active themes first. Needs the `appearance.themes` permission.',
             paginationEnabled: false,
         ),
     ],

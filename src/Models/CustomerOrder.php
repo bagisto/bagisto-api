@@ -40,9 +40,11 @@ use Webkul\Sales\Models\RefundProxy;
     graphQlOperations: [
         new Query(
             provider: CustomerOrderProvider::class,
+            description: 'One order placed by the authenticated customer, with its items, addresses, payment and shipments; any other order is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
         ),
         new QueryCollection(
             provider: CustomerOrderProvider::class,
+            description: 'Orders placed by the authenticated customer, newest first; `status` filters by exact order status. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'status' => [

@@ -218,6 +218,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Data Transfer'],
                 summary: 'Import detail',
+                description: 'One import with its state, settings, row and error counts, the error report path and the summary, so a client can poll it while it validates and runs. Needs the `settings.data_transfer.imports` permission.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Import ID.', true, schema: [
                         'type' => 'integer',

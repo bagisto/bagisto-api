@@ -96,6 +96,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Users'],
                 summary: 'Update an admin user',
+                description: 'Partial update: `name`, `email`, `role_id` and `status` keep their stored value when left out, `password` changes only when sent (at least 6 characters), and `image` sets or, with null, clears the stored image path. Needs `settings.users.edit`. Deactivating the user ends their API login sessions; a password change does so when *Admin Authentication* is set to.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Admin ID.', true, schema: [
                         'type' => 'integer',
@@ -110,34 +111,56 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
                                 'type' => 'object',
 
                                 'properties' => [
-                                    'name' => ['type' => 'string'],
-                                    'email' => ['type' => 'string'],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Jane Manager',
+                                    ],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'example' => 'jane.manager@example.com',
+                                    ],
 
                                     'password' => [
                                         'type' => 'string',
                                         'nullable' => true,
+                                        'example' => 'N3wSecret!',
                                     ],
 
-                                    'role_id' => ['type' => 'integer'],
+                                    'role_id' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
 
                                     'status' => [
                                         'type' => 'integer',
                                         'enum' => [0, 1],
+                                        'example' => 1,
                                     ],
 
                                     'image' => [
                                         'type' => 'string',
                                         'nullable' => true,
+                                        'example' => null,
                                     ],
                                 ],
+                            ],
+
+                            'example' => [
+                                'name' => 'Jane Manager',
+                                'email' => 'jane.manager@example.com',
+                                'role_id' => 2,
+                                'status' => 1,
                             ],
                         ],
                     ]),
                 ),
                 responses: [
                     '200' => new Model\Response(description: 'Admin updated.'),
+                    '400' => new Model\Response(description: 'Deactivating the last active all-access admin, or changing the role while only one admin has all access.'),
+                    '403' => new Model\Response(description: 'Admin role lacks settings.users.edit, or the user\'s current or new role holds a permission the caller lacks.'),
                     '404' => new Model\Response(description: 'Admin not found.'),
-                    '422' => new Model\Response(description: 'Validation failure.'),
+                    '422' => new Model\Response(description: 'Validation failure (email taken, unknown role_id, password under 6 characters).'),
                 ],
             ),
         ),

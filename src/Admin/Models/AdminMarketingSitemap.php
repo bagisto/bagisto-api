@@ -190,6 +190,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Sitemap detail',
+                description: 'One sitemap with its channels, its public URLs and, once it has been generated, `generatedAt`, the index file and the sitemap files written per channel. Needs the `marketing.search_seo.sitemaps` permission.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Sitemap row with generated_at and generated index/sitemap file paths.',

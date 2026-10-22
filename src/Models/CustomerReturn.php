@@ -334,7 +334,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                 summary: 'Cancel a return request',
                 description: 'Cancels the customer\'s own RMA (unless it is already canceled). Empty body. Returns the updated RMA.',
                 responses: [
-                    '200' => new Response(
+                    '201' => new Response(
                         description: 'The canceled return request.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -375,7 +375,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                 summary: 'Reopen a return request',
                 description: 'Reopens a canceled/declined RMA back to pending — only when store settings allow it (otherwise 400). Empty body. Returns the updated RMA.',
                 responses: [
-                    '200' => new Response(
+                    '201' => new Response(
                         description: 'The reopened return request.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -416,7 +416,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                 summary: 'Close (mark solved) a return request',
                 description: 'Marks the customer\'s own RMA as solved and adds a conversation note. Empty body. Returns the updated RMA.',
                 responses: [
-                    '200' => new Response(
+                    '201' => new Response(
                         description: 'The closed (solved) return request.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -441,7 +441,10 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
         ),
     ],
     graphQlOperations: [
-        new Query(provider: CustomerReturnProvider::class),
+        new Query(
+            provider: CustomerReturnProvider::class,
+            description: 'One return request on an order of the authenticated customer; any other return is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
         new Mutation(
             name: 'create',
             input: CreateCustomerReturnInput::class,
@@ -464,6 +467,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
         ),
         new QueryCollection(
             provider: CustomerReturnProvider::class,
+            description: 'Return requests on the authenticated customer\'s orders, newest first; `status` filters by RMA status ID. Paginate forward only: `first` (default 10, between 1 and 50) and `after`. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'status' => [

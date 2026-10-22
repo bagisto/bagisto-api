@@ -218,9 +218,13 @@ use Webkul\BagistoApi\State\WishlistProvider;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: WishlistQueryResolver::class),
+        new Query(
+            resolver: WishlistQueryResolver::class,
+            description: 'One wishlist item of the authenticated customer on the current channel; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
         new QueryCollection(
             provider: WishlistProvider::class,
+            description: 'The authenticated customer\'s wishlist on the current channel. `sort` is `id` or `created_at` (or `column-asc`/`column-desc`) and `order` is `asc` (default) or `desc`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             extraArgs: [
                 'sort' => ['type' => 'String'],

@@ -201,6 +201,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Locales'],
                 summary: 'Locale detail',
+                description: 'One locale with its code, name, text direction and logo. Needs the `settings.locales` permission.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Locale ID.', true, schema: [
                         'type' => 'integer',

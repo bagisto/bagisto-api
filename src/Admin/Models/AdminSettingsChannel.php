@@ -157,6 +157,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Channels'],
                 summary: 'Channel detail',
+                description: 'One channel with its translations, locales, currencies and inventory sources as object arrays, and its home page SEO. Needs the `settings.channels` permission.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Channel ID.', true, schema: [
                         'type' => 'integer',

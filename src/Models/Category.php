@@ -128,10 +128,17 @@ use Webkul\Category\Models\Category as BaseCategory;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
-        new QueryCollection(provider: CursorAwareCollectionProvider::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One active category; a disabled category is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
+        new QueryCollection(
+            provider: CursorAwareCollectionProvider::class,
+            description: 'Active categories as a flat list ordered by ID; disabled categories are never returned. Use `treeCategories` or `categoryTrees` for a nested tree. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
+        ),
         new QueryCollection(
             name: 'tree',
+            description: 'Active categories as a nested tree, ordered by position, as a plain list (not paginated). With `parentId` it returns the descendants of that category, without the category itself; without it, every active category tree. Needs the X-STOREFRONT-KEY header.',
             args: [
                 'parentId' => [
                     'type' => 'Int',

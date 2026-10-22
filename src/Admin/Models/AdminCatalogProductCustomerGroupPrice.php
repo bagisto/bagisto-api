@@ -248,6 +248,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
         new QueryCollection(
             provider: AdminCatalogProductCustomerGroupPriceProvider::class,
             paginationEnabled: false,
+            description: 'Every customer-group (tier) price row of product `productId`, ordered by quantity, as a plain list (not paginated). Needs the `catalog.products` permission; an unknown product is an error.',
             extraArgs: [
                 'productId' => ['type' => 'Int!'],
             ],

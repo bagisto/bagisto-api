@@ -81,6 +81,7 @@ use Webkul\BagistoApi\State\StoreConfigProvider;
     graphQlOperations: [
         new Query(
             resolver: StoreConfigQueryResolver::class,
+            description: 'The non-secret store settings a storefront or app needs before the customer logs in, for the current channel and locale (send `X-Channel` and `X-Locale` to read others). Takes no arguments. Needs the X-STOREFRONT-KEY header.',
             args: [],
         ),
     ],

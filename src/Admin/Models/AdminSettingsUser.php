@@ -291,6 +291,8 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             input: AdminSessionRevokeInput::class,
             processor: AdminSettingsUserRevokeSessionsProcessor::class,
             read: false,
+            deserialize: false,
+            write: true,
             description: 'Revoke every login session of an admin user. Becomes revokeSessionsAdminSettingsUser; requires settings.api_sessions.delete.',
         ),
         new Mutation(

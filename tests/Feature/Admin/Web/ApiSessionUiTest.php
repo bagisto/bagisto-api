@@ -36,7 +36,7 @@ class ApiSessionUiTest extends TestCase
     {
         $this->actingAdmin();
 
-        $phone = $this->startSession($this->createAdmin(), ['name' => 'Warehouse phone', 'client_type' => 'mobile', 'ip_address' => '203.0.113.4'])->session;
+        $phone = $this->issueAdminSession($this->createAdmin(), ['name' => 'Warehouse phone', 'client_type' => 'mobile', 'ip_address' => '203.0.113.4'])->session;
 
         $this->get(route('admin.settings.api_sessions.index'))->assertOk();
 
@@ -55,8 +55,8 @@ class ApiSessionUiTest extends TestCase
         $this->actingAdmin();
 
         $admin = $this->createAdmin();
-        $pos = $this->startSession($admin, ['client_type' => 'pos'])->session;
-        $web = $this->startSession($admin, ['client_type' => 'web'])->session;
+        $pos = $this->issueAdminSession($admin, ['client_type' => 'pos'])->session;
+        $web = $this->issueAdminSession($admin, ['client_type' => 'web'])->session;
 
         $ids = collect($this->grid(['filters' => ['client_type' => ['pos']]])->json('records'))->pluck('id')->all();
 
@@ -70,7 +70,7 @@ class ApiSessionUiTest extends TestCase
     public function test_each_route_needs_its_permission(): void
     {
         $target = $this->createAdmin();
-        $session = $this->startSession($target)->session;
+        $session = $this->issueAdminSession($target)->session;
 
         $this->actingAdminWithPermissions(['settings']);
 
@@ -97,8 +97,8 @@ class ApiSessionUiTest extends TestCase
         $this->actingAdmin();
 
         $admin = $this->createAdmin();
-        $lost = $this->startSession($admin);
-        $kept = $this->startSession($admin);
+        $lost = $this->issueAdminSession($admin);
+        $kept = $this->issueAdminSession($admin);
 
         $this->deleteJson(route('admin.settings.api_sessions.delete', $lost->session->id))->assertOk();
 
@@ -118,9 +118,9 @@ class ApiSessionUiTest extends TestCase
         $this->actingAdmin();
 
         $admin = $this->createAdmin();
-        $first = $this->startSession($admin)->session;
-        $second = $this->startSession($admin)->session;
-        $other = $this->startSession($this->createAdmin())->session;
+        $first = $this->issueAdminSession($admin)->session;
+        $second = $this->issueAdminSession($admin)->session;
+        $other = $this->issueAdminSession($this->createAdmin())->session;
 
         $this->postJson(route('admin.settings.api_sessions.revoke_all', $admin->id))->assertOk();
 
@@ -161,7 +161,7 @@ class ApiSessionUiTest extends TestCase
     /**
      * Start a login session for an admin.
      */
-    protected function startSession(Admin $admin, array $client = []): AdminApiTokenPair
+    protected function issueAdminSession(Admin $admin, array $client = []): AdminApiTokenPair
     {
         return app(AdminApiTokenService::class)->issue($admin, array_merge([
             'name' => 'UI test '.Str::random(6),

@@ -25,7 +25,7 @@ class AdminTokenRefreshProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminTokenRefresh
     {
         $input = $this->validateAuthInput($this->authInput($operation, $context), [
-            'refresh_token' => ['required', 'string', 'max:255'],
+            'refresh_token' => ['required', 'string', 'max:4096'],
         ]);
 
         $pair = $this->authService->refresh($input['refresh_token'], request());

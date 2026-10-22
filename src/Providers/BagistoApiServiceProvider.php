@@ -98,6 +98,17 @@ class BagistoApiServiceProvider extends ServiceProvider
     use RegistersStorefrontState;
 
     /**
+     * The admin auth model contracts and the models that implement them.
+     */
+    private const AUTH_MODELS = [
+        AdminApiSessionContract::class => AdminApiSession::class,
+        AdminApiRefreshTokenContract::class => AdminApiRefreshToken::class,
+        AdminApiTokenContract::class => AdminApiToken::class,
+        AdminApiTwoFactorChallengeContract::class => AdminApiTwoFactorChallenge::class,
+        AdminApiAuditContract::class => AdminApiAudit::class,
+    ];
+
+    /**
      * Package version, surfaced as the OpenAPI `info.version`.
      */
     const BAGISTO_API_VERSION = '2.5.0';
@@ -114,6 +125,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->registerStorefrontProviders();
         $this->registerGraphQlResolvers();
         $this->registerGraphQlDecorators();
+        $this->registerAuthModelContracts();
 
         $this->app->scoped(AdminApiCredentialRevoker::class);
     }
@@ -235,14 +247,7 @@ class BagistoApiServiceProvider extends ServiceProvider
             return;
         }
 
-        $models = [
-            AttributeContract::class => CoreAttribute::class,
-            AdminApiSessionContract::class => AdminApiSession::class,
-            AdminApiRefreshTokenContract::class => AdminApiRefreshToken::class,
-            AdminApiTokenContract::class => AdminApiToken::class,
-            AdminApiTwoFactorChallengeContract::class => AdminApiTwoFactorChallenge::class,
-            AdminApiAuditContract::class => AdminApiAudit::class,
-        ];
+        $models = [AttributeContract::class => CoreAttribute::class] + self::AUTH_MODELS;
 
         foreach ($models as $contract => $model) {
             try {
@@ -250,6 +255,16 @@ class BagistoApiServiceProvider extends ServiceProvider
             } catch (\Throwable $exception) {
                 report($exception);
             }
+        }
+    }
+
+    /**
+     * Bind the admin auth model contracts before any provider boots, since API Platform builds their repositories while booting.
+     */
+    protected function registerAuthModelContracts(): void
+    {
+        foreach (self::AUTH_MODELS as $contract => $model) {
+            $this->app->bind($contract, $model);
         }
     }
 

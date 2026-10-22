@@ -16,11 +16,11 @@ class DatabaseIndependentColumnTypePropertyMetadataFactory implements PropertyMe
      * Column types each driver names differently, mapped to the API type they share, as PostgreSQL resolves them.
      */
     private const COLUMN_TYPES = [
-        '/^(int|integer)( unsigned)?$/' => 'int',
+        '/^(int|integer)(\(\d+\))?( unsigned)?$/' => 'int',
         '/^(tinyint\(1\)|boolean)( unsigned)?$/' => 'bool',
         '/^(decimal|numeric)\(\d+,\s*\d+\)( unsigned)?$/' => 'string',
         '/^(timestamp|datetime)(\(\d\))?( without time zone)?$/' => 'string',
-        '/^(bigint|smallint|tinyint)( unsigned)?$/' => 'string',
+        '/^(bigint|smallint|tinyint)(\(\d+\))?( unsigned)?$/' => 'string',
         '/^(double|double precision)$/' => 'string',
     ];
 

@@ -86,8 +86,8 @@ class VerifyAccountProcessor implements ProcessorInterface
         if ((bool) core()->getConfigData('emails.general.notifications.emails.general.notifications.registration')) {
             try {
                 Mail::queue(new RegistrationNotification($customer));
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
             }
         }
 

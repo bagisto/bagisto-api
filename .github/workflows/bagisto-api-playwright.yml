@@ -237,6 +237,21 @@ jobs:
             exit 1
           fi
 
+      - name: Start the API server
+        working-directory: bagisto/public
+        env:
+          STOREFRONT_ACCESS_KEY: ${{ env.STOREFRONT_ACCESS_KEY }}
+        run: |
+          PHP_CLI_SERVER_WORKERS=4 nohup php -d memory_limit=1024M -S 127.0.0.1:8000 ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php > ../storage/logs/php-server.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf -o /dev/null http://127.0.0.1:8000/api/shop && break; sleep 2; done
+          SHOP=$(curl -s -o /dev/null -w "%{http_code}" -H "X-STOREFRONT-KEY: $STOREFRONT_ACCESS_KEY" http://127.0.0.1:8000/api/shop/channels)
+          echo "API server on 127.0.0.1:8000 answered $SHOP"
+          if [ "$SHOP" != "200" ]; then
+            echo "::error::The API server on 127.0.0.1:8000 is not answering (shop=$SHOP)."
+            tail -50 ../storage/logs/php-server.log
+            exit 1
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -260,4 +275,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-${{ matrix.db.connection }}-${{ strategy.job-index }}
-          path: bagisto/packages/Webkul/BagistoApi/tests/e2e-pw/playwright-report
+          path: |
+            bagisto/packages/Webkul/BagistoApi/tests/e2e-pw/playwright-report
+            bagisto/storage/logs/laravel.log
+            bagisto/storage/logs/php-server.log

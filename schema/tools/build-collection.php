@@ -110,6 +110,34 @@ final class CollectionBuilder
     ];
 
     /**
+     * The admin sign-in requests, REST as "METHOD path" and GraphQL by field, in the order a client uses them.
+     */
+    private const CLIENT_ORDER = [
+        'POST /auth/login',
+        'POST /auth/two-factor',
+        'POST /auth/refresh',
+        'GET /get',
+        'GET /auth/sessions',
+        'DELETE /auth/sessions/:id',
+        'POST /auth/logout',
+        'POST /auth/logout-all',
+        'POST /auth/forgot-password',
+        'POST /auth/reset-password',
+        'PUT /account',
+        'readAdminProfile',
+        'adminSessions',
+        'createAdminLogin',
+        'createAdminTwoFactorVerify',
+        'createAdminTokenRefresh',
+        'deleteAdminSession',
+        'createAdminLogout',
+        'createAdminLogoutAll',
+        'createAdminForgotPassword',
+        'createAdminResetPassword',
+        'createAdminAccountUpdate',
+    ];
+
+    /**
      * The directory the collections are written to.
      */
     private string $outputDir;
@@ -152,13 +180,7 @@ final class CollectionBuilder
 
                 'auth' => $this->bearer($config['token']),
 
-                'variable' => [
-                    [
-                        'key' => 'baseUrl',
-                        'value' => $this->baseUrl($spec),
-                        'type' => 'string',
-                    ],
-                ],
+                'variable' => $this->collectionVariables($surface, $spec),
 
                 'item' => $items,
             ];
@@ -192,14 +214,16 @@ Storefront endpoints for the [Bagisto](https://bagisto.com) e-commerce platform 
 | Variable | Where it comes from |
 | --- | --- |
 | `url` | Your store, e.g. `http://localhost:8000` |
-| `storefrontKey` | Admin panel → Configuration → API |
+| `storefrontKey` | `STOREFRONT_PLAYGROUND_KEY` in `.env` (written by the installer), or `php artisan bagisto-api:generate-key` |
 | `customerEmail` / `customerPassword` | Any storefront customer account |
 
-3. Run **REST → Customer → Customer login**. It saves `customerToken` to the environment, and every other request sends it as the bearer automatically.
+3. Run **REST → Customer → Customer login**. It saves `customerToken` to the environment, and every other request sends it as the bearer automatically. A failed login is not an HTTP error: the answer is `201` with `success: false`, a `message` and an empty `token`.
+
+The customer token is a Laravel Sanctum token: it has no refresh token, does not expire unless Sanctum's `expiration` is set, and **Customer logout** revokes it. The full authentication guide is [docs/authentication.md](https://github.com/bagisto/bagisto-api/blob/main/docs/authentication.md).
 
 ## Shopping as a guest
 
-Guest carts authenticate with a cart token instead of a customer token. Run **Create cart token** — it saves `cartToken` to the environment.
+Guest carts authenticate with a cart token instead of a customer token. Run **Create cart token** with `customerToken` empty (or the request's **Authorization** set to *No Auth*) — it saves `cartToken` to the environment. Called with a customer token, it returns the customer's own cart instead.
 
 To act as that guest, send `{{cartToken}}` as the bearer: change it on the collection's **Authorization** tab, or override it on the individual request. Leave it as `{{customerToken}}` for logged-in flows. The cart and checkout endpoints serve both, so which token you send is what decides whose cart you are working on.
 
@@ -221,14 +245,18 @@ MD;
         return <<<'MD'
 Administrative endpoints for the [Bagisto](https://bagisto.com) e-commerce platform — catalog, sales, customers, marketing, settings, CMS and reporting. Both transports are covered: `REST/` and `GraphQL/`.
 
+The full authentication guide, with sequence diagrams, curl and GraphQL examples and client notes, is [docs/authentication.md](https://github.com/bagisto/bagisto-api/blob/main/docs/authentication.md).
+
 ## Setup
 
 1. Select the **Bagisto** environment (top right). Import it first if it is not in your workspace. One environment serves both the admin and the storefront collection.
 2. Choose how to authenticate.
 
-**As an app (login and refresh).** Set `adminEmail` and `adminPassword`, then run **REST → Auth → Log in with email and password**. It saves `adminAccessToken`, `adminRefreshToken` and `adminAccessTokenExpiresAt` to the environment. The access token lasts 15 minutes; before each request the collection renews it through `POST /api/admin/auth/refresh` when it is about to expire, so you only log in again once the refresh token itself expires. An admin with two-factor authentication gets a `challengeToken` instead: send it with the code to **Auth → Verify the second factor**, which saves the tokens the same way.
+**As an app (login and refresh).** Set `adminEmail` and `adminPassword`, then run **REST → Auth → Log in with email and password**. It saves `adminAccessToken`, `adminRefreshToken` and `adminAccessTokenExpiresAt` to the environment. The access token lasts 15 minutes by default; before each request the collection renews it through `POST /api/admin/auth/refresh` when it expires within 60 seconds, so you only log in again once the refresh token or the session ends.
 
-**As a server integration (API token).** Create an API token under **Settings → API Tokens** in the admin panel, bound to the domain the integration calls from, and paste it into `adminApiToken`. While `adminApiToken` is set it is sent on every request and nothing is refreshed. An API token is shown once, so copy it immediately.
+**With two-factor authentication.** When the admin has it enabled, the login answers `202` with `twoFactorRequired: true` and a `challengeToken` instead of tokens. The login request stores the challenge token in the collection variable `adminChallengeToken`; put the 6-digit code (or a `backup_code` instead of `code`) into the **Auth** two-factor request and send it within 5 minutes. It saves the tokens the same way.
+
+**As a server integration (API token).** Create an API token under **Settings → API Tokens** in the admin panel (or with `php artisan bagisto-api:api-token:create`), bound to the domain the integration calls from, and paste it into `adminApiToken`. While `adminApiToken` is set it is sent on every request and nothing is refreshed. An API token is shown once, so copy it immediately.
 
 | Variable | Where it comes from |
 | --- | --- |
@@ -236,6 +264,7 @@ Administrative endpoints for the [Bagisto](https://bagisto.com) e-commerce platf
 | `adminEmail` / `adminPassword` | Any active admin user |
 | `adminAccessToken` / `adminRefreshToken` / `adminAccessTokenExpiresAt` | Written by the login, two-factor and refresh requests |
 | `adminApiToken` | An API token from **Settings → API Tokens**; leave it empty to use the login session |
+| `adminChallengeToken` (collection variable) | Written by a login that needs a second factor |
 
 The token is sent as the bearer on every request:
 
@@ -243,20 +272,40 @@ The token is sent as the bearer on every request:
 Authorization: Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6Ii4uLiIsInR5cCI6IkpXVCJ9...
 ```
 
+## The login flow
+
+1. **Auth → Log in** returns the access token, the refresh token, the session, the admin and the role's `permissions`.
+2. Every request sends the access token. When it expires, a request answers `401` with `error: access_token_expired`.
+3. **Auth → Refresh** exchanges the refresh token for a **new pair**. The old refresh token stops working, and presenting it again is treated as theft: the whole session is revoked and every later refresh answers `refresh_token_invalid`. Run one refresh at a time.
+4. On `401 refresh_token_invalid` (expired, used or revoked, or the session reached its absolute lifetime, 90 days by default), log in again.
+5. **Auth → Log out** ends the session, **Log out of every session** ends all of the admin's sessions, and the sessions requests list and revoke them one by one. These, and **Update my account**, need a login session's access token; an API token gets `403 access_token_required`.
+
+The lifetimes, rate limits and revocation rules are set in the admin panel under **Configuration → API → Admin Authentication**.
+
 ## Permissions
 
-A token has exactly the permissions of the admin user's role, read on every request, so a valid token can still return **403** on an endpoint that user cannot reach. Login sessions are listed and revoked under **Auth** and **Settings → API Sessions**, and API tokens under **Settings → API Tokens**. API tokens are created in the admin panel only.
+A token has exactly the permissions of the admin user's role, read on every request, so a valid token can still return **403** on an endpoint that user cannot reach. Login sessions are listed and revoked under **Auth** and **Settings → API Sessions**, and API tokens under **Settings → API Tokens**. API tokens are created in the admin panel or the console only.
 
 ## Errors worth handling
 
-- `401 access_token_expired`: refresh, then retry the request.
-- `401 refresh_token_invalid`: log in again.
-- `401 api_token_expired` or `api_token_revoked`: create a new API token.
-- `403 api_token_domain_mismatch`: the API token was used from an address its domain does not resolve to.
+REST bodies carry the code in `error`; GraphQL errors carry it in `extensions.code`.
+
+| Status and code | What to do |
+| --- | --- |
+| `401 access_token_expired` | Refresh, then retry the request |
+| `401 refresh_token_invalid` | Log in again |
+| `401 unauthenticated` | The token is invalid, its session was revoked or the admin is inactive: log in again |
+| `401 invalid_credentials` | Wrong email or password |
+| `401 invalid_two_factor_code` / `two_factor_challenge_invalid` | Retry the code / log in again |
+| `401 api_token_expired` / `api_token_revoked` | Create a new API token |
+| `403 api_token_domain_mismatch` | Call from the domain the API token is bound to |
+| `403 access_token_required` | Use a login session's access token, not an API token |
+| `403 account_inactive` | An administrator must activate the admin |
+| `429 too_many_login_attempts` / `too_many_password_requests` / `rate_limit_exceeded` | Wait for the `Retry-After` seconds |
 
 ## Layout
 
-`REST/` and `GraphQL/` share one folder tree that mirrors the admin sidebar — `Settings/Currencies` holds exactly the endpoints behind that screen. GraphQL is split into `Queries/` and `Mutations/` under each area.
+`REST/` and `GraphQL/` share one folder tree that mirrors the admin sidebar — `Settings/Currencies` holds exactly the endpoints behind that screen. `Auth` lists its requests in the order a client uses them. GraphQL is split into `Queries/` and `Mutations/` under each area.
 
 ## Worth knowing
 
@@ -298,6 +347,31 @@ MD;
     }
 
     /**
+     * The collection variables: the base URL, and for the admin the challenge token a two-factor login hands over.
+     *
+     * @param  array<string, mixed>  $spec
+     * @return list<array<string, string>>
+     */
+    private function collectionVariables(string $surface, array $spec): array
+    {
+        $variables = [[
+            'key' => 'baseUrl',
+            'value' => $this->baseUrl($spec),
+            'type' => 'string',
+        ]];
+
+        if ($surface === 'admin') {
+            $variables[] = [
+                'key' => 'adminChallengeToken',
+                'value' => '',
+                'type' => 'string',
+            ];
+        }
+
+        return $variables;
+    }
+
+    /**
      * Group every operation into a REST folder tree derived from its OpenAPI tag.
      *
      * @param  array<string, mixed>  $spec
@@ -327,7 +401,7 @@ MD;
         $tree = [];
 
         foreach ($grouped as $key => $requests) {
-            usort($requests, fn ($a, $b) => strcmp($a['name'], $b['name']));
+            usort($requests, fn ($a, $b) => $this->compareRequests($a, $b));
 
             $this->insert($tree, explode("\0", (string) $key), $requests);
         }
@@ -402,6 +476,41 @@ MD;
         }
 
         return $items;
+    }
+
+    /**
+     * Order two requests of a folder: the admin sign-in requests in client order first, then by name.
+     *
+     * @param  array<string, mixed>  $a
+     * @param  array<string, mixed>  $b
+     */
+    private function compareRequests(array $a, array $b): int
+    {
+        $position = $this->clientPosition($a) <=> $this->clientPosition($b);
+
+        return $position !== 0
+            ? $position
+            : strcmp($a['name'], $b['name']);
+    }
+
+    /**
+     * The place of a request in the client order, or PHP_INT_MAX for a request outside it.
+     *
+     * @param  array<string, mixed>  $item
+     */
+    private function clientPosition(array $item): int
+    {
+        $request = $item['request'];
+
+        $key = ($request['body']['mode'] ?? null) === 'graphql'
+            ? $item['name']
+            : $request['method'].' /'.implode('/', $request['url']['path'] ?? []);
+
+        $position = array_search($key, self::CLIENT_ORDER, true);
+
+        return $position === false
+            ? PHP_INT_MAX
+            : $position;
     }
 
     /**
@@ -752,6 +861,11 @@ MD;
                 'client_type' => 'other',
             ],
 
+            '/auth/two-factor' => [
+                'challenge_token' => '{{adminChallengeToken}}',
+                'code' => '123456',
+            ],
+
             '/auth/refresh' => [
                 'refresh_token' => '{{adminRefreshToken}}',
             ],
@@ -761,7 +875,7 @@ MD;
     }
 
     /**
-     * A test script storing the access token, refresh token and expiry found in a token pair answer.
+     * A test script storing the token pair of an answer, or the challenge token of a login that needs a second factor.
      *
      * @return array<string, mixed>
      */
@@ -774,6 +888,10 @@ MD;
             "    pm.environment.set('adminAccessToken', pair.accessToken);",
             "    pm.environment.set('adminRefreshToken', pair.refreshToken);",
             "    pm.environment.set('adminAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+            "    pm.collectionVariables.set('adminChallengeToken', '');",
+            '} else if (pair?.twoFactorRequired && pair?.challengeToken) {',
+            "    pm.collectionVariables.set('adminChallengeToken', pair.challengeToken);",
+            "    console.info('A second factor is required: send the code with the Auth two-factor request (POST /auth/two-factor).');",
             '}',
         ]);
     }
@@ -920,7 +1038,7 @@ MD;
         $tree = [];
 
         foreach ($grouped as $key => $requests) {
-            usort($requests, fn ($a, $b) => strcmp($a['name'], $b['name']));
+            usort($requests, fn ($a, $b) => $this->compareRequests($a, $b));
 
             $this->insert($tree, explode("\0", (string) $key), $requests);
         }
@@ -1095,6 +1213,11 @@ MD;
                 'password' => '{{adminPassword}}',
                 'deviceName' => 'Postman',
                 'clientType' => 'other',
+            ]] + $variables,
+
+            'createAdminTwoFactorVerify' => ['input' => [
+                'challengeToken' => '{{adminChallengeToken}}',
+                'code' => '123456',
             ]] + $variables,
 
             'createAdminTokenRefresh' => ['input' => [
@@ -1298,8 +1421,8 @@ MD;
             'createCustomerLogin' => [$this->script([
                 'const data = pm.response.json()?.data?.createCustomerLogin?.customerLogin;',
                 '',
-                'if (data?.token || data?.apiToken) {',
-                "    pm.environment.set('customerToken', data.token || data.apiToken);",
+                'if (data?.token) {',
+                "    pm.environment.set('customerToken', data.token);",
                 '}',
             ])],
             'createCartToken' => [$this->script([

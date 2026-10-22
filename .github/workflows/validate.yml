@@ -81,7 +81,7 @@ jobs:
                   if orphans:
                       failures.append(f'{collection_path} has GraphQL folders with no REST counterpart: {sorted(orphans)}')
 
-              declared = {value['key'] for value in environment['values']} | {'baseUrl'}
+              declared = {value['key'] for value in environment['values']} | {value['key'] for value in collection.get('variable', [])}
               used = set(re.findall(r'\{\{(\w+)\}\}', raw))
 
               undeclared = used - declared

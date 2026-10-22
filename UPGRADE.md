@@ -75,9 +75,11 @@ Steps for each server integration:
 2. Create an API token for that admin with the integration's domain. In the default `dns` binding mode the integration must call from an address the domain resolves to; restrict the trusted proxies at the edge so the client address cannot be forged with `X-Forwarded-For`. The `origin` mode (*Configuration → API → Admin Authentication*) checks the `Origin` or `Referer` host instead.
 3. Replace the old token in the integration's secret store. On `401` with `api_token_expired` or `api_token_revoked`, create a new token.
 
+The login, refresh and two-factor flow, the API token domain binding and the client implementation notes are explained step by step in [`docs/authentication.md`](docs/authentication.md).
+
 Other changes clients notice:
 
-- The guard answers with a code in the REST `error` field and in GraphQL `extensions.code`: `access_token_expired`, `unauthenticated`, `refresh_token_invalid`, `api_token_expired`, `api_token_revoked`, `api_token_domain_mismatch`.
+- The guard answers with a code in the REST `error` field and in GraphQL `extensions.code`: `access_token_expired`, `unauthenticated`, `refresh_token_invalid`, `api_token_expired`, `api_token_revoked`, `api_token_domain_mismatch`. Logout, the sessions list and `PUT /api/admin/account` need a login session and refuse an API token with `403` and `access_token_required`.
 - Rate limits apply per admin for login sessions and per API token, from *Configuration → API → Admin Authentication*; the per-token limits of Integration tokens are gone.
 - `GET /api/admin/get` and `readAdminProfile` also return `tokenKind`, `tokenId` and `tokenExpiresAt`.
 - The audit history moved from *Settings → Integration → History* to *Settings → API Audit*. Roles that held `integration.history` or `integration.history.delete` need `settings.api_audit` and `settings.api_audit.delete`; roles that managed Integration tokens need `settings.api_tokens` and its children, and `settings.api_sessions` to see and revoke login sessions.

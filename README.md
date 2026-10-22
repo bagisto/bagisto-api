@@ -78,10 +78,10 @@ Both transports are covered: requests are foldered `REST/` and `GraphQL/` under 
 | Variable | Used by | Description |
 |---|---|---|
 | `url` | Both | Your Bagisto URL, e.g. `http://localhost:8000` |
-| `storefrontKey` | Shop | Storefront API key, from admin → Configuration → API |
+| `storefrontKey` | Shop | Storefront API key: `STOREFRONT_PLAYGROUND_KEY` in `.env` (written by the installer), or a key from `php artisan bagisto-api:generate-key` |
 | `customerEmail` | Shop | A storefront customer's email |
 | `customerPassword` | Shop | That customer's password |
-| `customerToken` | Shop | Filled in by the Customer login request |
+| `customerToken` | Shop | Filled in by the Customer login request (the response's `token`) |
 | `cartToken` | Shop | Filled in by the Create cart token request |
 | `adminEmail` | Admin | An admin user's email, for the login request |
 | `adminPassword` | Admin | That admin's password |
@@ -89,6 +89,8 @@ Both transports are covered: requests are foldered `REST/` and `GraphQL/` under 
 | `adminRefreshToken` | Admin | Filled in by the same requests |
 | `adminAccessTokenExpiresAt` | Admin | Filled in by the same requests |
 | `adminApiToken` | Admin | Optional API token from admin → Settings → API Tokens; when set it is sent instead of the login session |
+
+The admin collection also keeps one collection variable, `adminChallengeToken`, which a login that needs a second factor fills in for the two-factor request.
 | `locale` | Both | Locale code, defaults to `en` |
 | `channel` | Both | Channel code, defaults to `default` |
 | `currency` | Shop | Currency code, defaults to `USD` |
@@ -97,9 +99,11 @@ Fill in only what the collection you are using needs.
 
 ### Authenticating
 
+Both flows are explained step by step, with diagrams and curl and GraphQL examples, in [`docs/authentication.md`](docs/authentication.md).
+
 **Shop** — run **REST → Customer → Customer login**. It stores `customerToken`, which every other request sends as the bearer. For a guest cart, run **Create cart token** instead and set the collection's **Authorization** tab to `{{cartToken}}`; the cart and checkout endpoints serve guests and logged-in customers alike, so the token you send decides whose cart you are working on.
 
-**Admin** — fill in `adminEmail` and `adminPassword` and run **REST → Auth → Log in with email and password**. It stores `adminAccessToken` and `adminRefreshToken`, and before each request the collection refreshes the access token when it is about to expire. To call the API as a server integration instead, paste an API token into `adminApiToken`; it is then sent on every request and nothing is refreshed. See [Admin API Authentication](#admin-api-authentication).
+**Admin** — fill in `adminEmail` and `adminPassword` and run **REST → Auth → Log in with email and password**. It stores `adminAccessToken`, `adminRefreshToken` and `adminAccessTokenExpiresAt`, and before each request the collection refreshes the access token when it expires within 60 seconds. For an admin with two-factor authentication the login stores a challenge token instead: enter the code in **REST → Auth → Finish a login with a two-factor code** and send it. The **Auth** folder lists its requests in the order a client uses them. To call the API as a server integration instead, paste an API token into `adminApiToken`; it is then sent on every request and nothing is refreshed. See [Admin API Authentication](#admin-api-authentication).
 
 ### Keeping them current
 
@@ -121,6 +125,8 @@ Collection and environment UIDs come from Postman — open the item, then **Info
 Values in the requests are placeholders — replace them with records that exist on your store. Postman's **Auto Fetch** runs a schema introspection query that costs far more than a normal request; switch it off if the GraphQL folders feel slow.
 
 ## Admin API Authentication
+
+The complete guide to both surfaces — the admin login, two-factor, refresh and reuse detection, sessions, API tokens, the storefront key, the customer token and the guest cart token — is [`docs/authentication.md`](docs/authentication.md). This section is the summary.
 
 Admin endpoints (`/api/admin/*` and `/api/admin/graphql`) take a Bearer token, and every request is allowed or refused by the admin user's **role permissions**, the same permissions the admin panel uses, read on every request. There are two kinds of token, and both work over REST and GraphQL alike.
 
@@ -147,9 +153,11 @@ The answer carries `accessToken`, `accessTokenExpiresAt`, `refreshToken`, `refre
 A client should:
 
 1. Store both tokens in secure storage (the Keychain or Keystore on mobile), never in plain local storage.
-2. Before a request, read `exp` from the access token (or `accessTokenExpiresAt`) and, when it is about to pass, call `POST /api/admin/auth/refresh` with `{ "refresh_token": "<refreshToken>" }`. The refresh token is read from the body only. Every refresh returns a new pair; the old refresh token stops working, and presenting it again revokes the whole session.
+2. Before a request, read `exp` from the access token (or `accessTokenExpiresAt`) and, when it is about to pass, call `POST /api/admin/auth/refresh` with `{ "refresh_token": "<refreshToken>" }`. The refresh token is read from the body only. Every refresh returns a new pair; the old refresh token stops working, and presenting it again revokes the whole session. Let only one refresh run at a time: two parallel refreshes with the same token count as reuse.
 3. On `401` with `access_token_expired`, refresh once and retry the request.
 4. On `401` with `refresh_token_invalid` (expired, used or revoked, or the session reached its absolute lifetime of 90 days by default), log in again.
+
+A minimal client (the guide has a single-flight version that also refreshes ahead of expiry):
 
 ```js
 async function adminFetch(path, options = {}) {
@@ -174,7 +182,7 @@ async function adminFetch(path, options = {}) {
 }
 ```
 
-An admin with two-factor authentication enabled gets `202` with `twoFactorRequired: true` and a `challengeToken` instead of tokens; send it with the 6-digit `code` (or a `backup_code`) to `POST /api/admin/auth/two-factor` within 5 minutes to receive the pair. `POST /api/admin/auth/logout` ends the current session, `POST /api/admin/auth/logout-all` every session of the admin, and `GET /api/admin/auth/sessions` lists them. Forgotten passwords go through `POST /api/admin/auth/forgot-password` and `POST /api/admin/auth/reset-password`. The GraphQL equivalents are `createAdminLogin`, `createAdminTwoFactorVerify`, `createAdminTokenRefresh`, `createAdminLogout`, `createAdminLogoutAll` and `adminSessions`, on `/api/admin/graphql`.
+An admin with two-factor authentication enabled gets `202` with `twoFactorRequired: true` and a `challengeToken` instead of tokens; send it with the 6-digit `code` (or a `backup_code`) to `POST /api/admin/auth/two-factor` within 5 minutes to receive the pair. `POST /api/admin/auth/logout` ends the current session, `POST /api/admin/auth/logout-all` every session of the admin, `GET /api/admin/auth/sessions` lists them and `DELETE /api/admin/auth/sessions/{id}` revokes one. `PUT /api/admin/account` updates the admin's own name, email and password. These five need a login session's access token; an API token gets `403` with `access_token_required`. Forgotten passwords go through `POST /api/admin/auth/forgot-password` and `POST /api/admin/auth/reset-password`, which, like login, two-factor and refresh, need no token. The GraphQL equivalents are `createAdminLogin`, `createAdminTwoFactorVerify`, `createAdminTokenRefresh`, `createAdminLogout`, `createAdminLogoutAll`, `adminSessions`, `deleteAdminSession`, `createAdminAccountUpdate`, `createAdminForgotPassword` and `createAdminResetPassword`, on `/api/admin/graphql`.
 
 ### Server integrations: API tokens
 
@@ -193,18 +201,24 @@ API tokens can be listed, read and revoked through `GET`/`DELETE /api/admin/sett
 |---|---|---|
 | `401 access_token_expired` | The access token passed its expiry | Refresh, then retry |
 | `401 refresh_token_invalid` | The refresh token is expired, used or revoked, or the session ended | Log in again |
-| `401 unauthenticated` | The token is invalid, or its session was revoked | Log in again |
+| `401 unauthenticated` | No token, an invalid token, a revoked session or an inactive admin | Log in again |
+| `401 invalid_credentials` | Wrong email or password at login | Ask again |
+| `401 invalid_two_factor_code` / `two_factor_challenge_invalid` | Wrong code / the challenge is used, expired or revoked | Retry the code / log in again |
 | `401 api_token_expired` / `api_token_revoked` | The API token can no longer be used | Create a new API token |
 | `403 api_token_domain_mismatch` | The API token was used from another domain | Call from the bound domain |
+| `403 access_token_required` | An API token called logout, sessions or the account update | Use a login session's access token |
+| `403 account_inactive` | The admin is inactive | Activate the admin |
 | `403` | The admin's role lacks the permission | Grant the permission to the role |
+| `429 too_many_login_attempts` / `too_many_password_requests` / `rate_limit_exceeded` | Too many failed logins or codes, password requests, or requests | Wait for the `Retry-After` seconds |
 
-REST bodies carry the code in `error`; GraphQL errors carry it in `extensions.code`.
+REST bodies carry the code in `error`; GraphQL errors carry it in `extensions.code`. The full table, with the body shapes, is in [`docs/authentication.md`](docs/authentication.md#errors).
 
 ### Signing keys
 
 Access tokens and API tokens are ES256-signed JWTs. `bagisto-api-platform:install` creates the key pair with `php artisan bagisto-api:jwt-keys` under `storage/app/private/bagisto-api/jwt/`. On several servers, every node needs the same keys: set `BAGISTO_API_JWT_PRIVATE_KEY` and `BAGISTO_API_JWT_PUBLIC_KEY` (PEM or base64-encoded PEM) instead. `bagisto-api:jwt-keys --rotate` makes a new signing key and keeps the old public key, so issued tokens keep working; API tokens signed by the old key are listed, and `--reissue-api-tokens` signs them again and prints each new token once.
 
 ## Documentation
+- Authentication guide: [`docs/authentication.md`](docs/authentication.md)
 - Bagisto API: [Demo Page](https://api-demo.bagisto.com/api)
 - API Documentation: [Bagisto API Docs](https://api-docs.bagisto.com/)
 - GraphQL Playground (Shop): [Interactive Playground](https://api-demo.bagisto.com/api/graphiql)

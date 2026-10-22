@@ -89,11 +89,11 @@ Both transports are covered: requests are foldered `REST/` and `GraphQL/` under 
 | `adminRefreshToken` | Admin | Filled in by the same requests |
 | `adminAccessTokenExpiresAt` | Admin | Filled in by the same requests |
 | `adminApiToken` | Admin | Optional API token from admin → Settings → API Tokens; when set it is sent instead of the login session |
-
-The admin collection also keeps one collection variable, `adminChallengeToken`, which a login that needs a second factor fills in for the two-factor request.
 | `locale` | Both | Locale code, defaults to `en` |
 | `channel` | Both | Channel code, defaults to `default` |
 | `currency` | Shop | Currency code, defaults to `USD` |
+
+The admin collection also keeps one collection variable, `adminChallengeToken`, which a login that needs a second factor fills in for the two-factor request.
 
 Fill in only what the collection you are using needs.
 

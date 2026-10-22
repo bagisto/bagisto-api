@@ -103,6 +103,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customer Reviews'],
                 summary: 'Delete a review',
+                description: 'Deletes the product review. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Review ID', true, schema: ['type' => 'integer']),
                 ],
@@ -127,6 +128,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customer Reviews'],
                 summary: 'Review detail (with linked product + customer)',
+                description: 'One product review by ID, with its product, the customer who wrote it and its images. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Review ID', true, schema: ['type' => 'integer']),
                 ],

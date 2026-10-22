@@ -22,12 +22,20 @@ use Webkul\Sales\Models\OrderItem;
         new Get(
             uriTemplate: '/customer-order-shipment-items/{id}',
             provider: CustomerOrderShipmentItemProvider::class,
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'Get a shipped item of the customer',
+                description: 'One shipped item of the authenticated customer\'s shipments; any other item or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
         new GetCollection(
             uriTemplate: '/customer-order-shipment-items',
             provider: CustomerOrderShipmentItemProvider::class,
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'List the customer\'s shipped items',
+                description: 'Shipped items across the authenticated customer\'s shipments, newest first. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
     ],
     graphQlOperations: [

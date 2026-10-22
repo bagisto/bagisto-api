@@ -34,6 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Create a URL rewrite',
+                description: 'Creates a URL rewrite. `entity_type` (product, category or cms_page), `request_path`, `target_path`, `redirect_type` (301 or 302) and an existing `locale` code are required.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -105,6 +106,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Update a URL rewrite',
+                description: 'Updates the URL rewrite; the fields are validated as on create. An unknown ID is a 404.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -176,6 +178,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a URL rewrite',
+                description: 'Deletes the URL rewrite. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'URL rewrite deleted.',
@@ -198,6 +201,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'URL rewrite detail',
+                description: 'One URL rewrite by ID with its entity type, paths, redirect type and locale. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Single URL rewrite.',

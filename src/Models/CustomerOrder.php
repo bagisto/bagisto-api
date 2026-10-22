@@ -27,14 +27,22 @@ use Webkul\Sales\Models\RefundProxy;
             provider: CustomerOrderProvider::class,
             output: CustomerOrderListDto::class,
             normalizationContext: ['skip_null_values' => false],
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'List the customer\'s orders',
+                description: 'Orders placed by the authenticated customer, newest first; `status` filters by exact order status. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
         new Get(
             uriTemplate: '/customer-orders/{id}',
             provider: CustomerOrderProvider::class,
             output: CustomerOrderDetailDto::class,
             normalizationContext: ['skip_null_values' => false],
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'Get an order of the customer',
+                description: 'One order placed by the authenticated customer, with its items, addresses, payment and shipments; another customer\'s order or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
     ],
     graphQlOperations: [

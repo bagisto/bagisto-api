@@ -37,6 +37,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Categories'],
                 summary: 'Create a tax category',
+                description: 'Creates a tax category and attaches the tax rates in `taxrates`. `code` (unique), `name`, `description` and `taxrates` are required.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -153,6 +154,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Categories'],
                 summary: 'Tax category detail',
+                description: 'One tax category by ID with the tax rates attached to it. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Single tax category including attached tax_rates.',

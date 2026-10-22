@@ -32,6 +32,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
             openapi: new Operation(
                 tags: ['Checkout'],
                 summary: 'Save selected payment method for checkout',
+                description: 'Saves `paymentMethod` on the cart the bearer token names (a guest cart token or a customer token); it must be a method available for that cart. For a redirect gateway the answer carries `paymentGatewayUrl` and `paymentData`, which include the optional `paymentSuccessUrl`, `paymentFailureUrl` and `paymentCancelUrl`.',
                 requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([

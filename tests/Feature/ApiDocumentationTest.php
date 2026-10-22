@@ -29,6 +29,11 @@ class ApiDocumentationTest extends BagistoApiTest
     private const MIN_DESCRIPTION_LENGTH = 15;
 
     /**
+     * The sentence API Platform writes in place of a missing summary or description.
+     */
+    private const GENERATED_SENTENCE = '/^(Retrieves|Creates|Replaces|Updates|Removes) (the collection of |an? |the )\w+ resources?\.$/';
+
+    /**
      * The admin sign-in, session, account, API token and API session operations.
      */
     private const ADMIN_AUTH_OPERATIONS = [
@@ -228,7 +233,7 @@ class ApiDocumentationTest extends BagistoApiTest
     }
 
     /**
-     * Every REST operation has a summary and a description that says more than a label.
+     * Every REST operation has its own summary and a description that says more than the summary.
      */
     public function test_every_operation_has_a_summary_and_a_description(): void
     {
@@ -237,12 +242,26 @@ class ApiDocumentationTest extends BagistoApiTest
                 $offenders = [];
 
                 foreach ($this->operations($document) as $key => $operation) {
-                    if (trim((string) ($operation['summary'] ?? '')) === '') {
-                        $offenders[] = "{$key}: no summary";
+                    $summary = trim((string) ($operation['summary'] ?? ''));
+
+                    $description = trim((string) ($operation['description'] ?? ''));
+
+                    if (
+                        $summary === ''
+                        || preg_match(self::GENERATED_SENTENCE, $summary)
+                    ) {
+                        $offenders[] = "{$key}: no summary of its own";
                     }
 
-                    if (mb_strlen(trim((string) ($operation['description'] ?? ''))) < self::MIN_DESCRIPTION_LENGTH) {
+                    if (mb_strlen($description) < self::MIN_DESCRIPTION_LENGTH) {
                         $offenders[] = "{$key}: description shorter than ".self::MIN_DESCRIPTION_LENGTH.' characters';
+                    }
+
+                    if (
+                        $description === $summary
+                        || preg_match(self::GENERATED_SENTENCE, $description)
+                    ) {
+                        $offenders[] = "{$key}: no description of its own (it repeats the summary or API Platform's default)";
                     }
                 }
 

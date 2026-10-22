@@ -34,6 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Create a marketing event',
+                description: 'Creates a marketing event that campaigns can be scheduled on. `name`, `description` and `date` are required.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -91,6 +92,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Update a marketing event',
+                description: 'Updates the marketing event; `name`, `description` and `date` are validated as on create. An unknown ID is a 404.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -148,6 +150,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Delete a marketing event',
+                description: 'Deletes the marketing event. An event a campaign still uses is refused with 400; an unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Marketing event deleted.',
@@ -168,6 +171,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Marketing event detail',
+                description: 'One marketing event by ID with its name, description and date. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Single marketing event.',

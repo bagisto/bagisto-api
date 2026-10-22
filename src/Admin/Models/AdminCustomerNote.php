@@ -27,6 +27,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: "List a customer's notes",
+                description: 'The notes admins left on the customer, newest first. An unknown customer is a 404.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],
@@ -70,6 +71,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Add a note to a customer',
+                description: 'Adds an admin note to the customer and returns it; an empty note is a 422. An unknown customer is a 404.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],

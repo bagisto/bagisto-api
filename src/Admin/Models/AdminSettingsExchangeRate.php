@@ -138,6 +138,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Exchange Rates'],
                 summary: 'Delete an exchange rate',
+                description: 'Deletes the exchange rate. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Exchange rate ID.', true, schema: [
                         'type' => 'integer',
@@ -164,6 +165,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Exchange Rates'],
                 summary: 'Exchange rate detail',
+                description: 'One exchange rate by ID: the target currency and its rate against the base currency. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Exchange rate ID.', true, schema: [
                         'type' => 'integer',

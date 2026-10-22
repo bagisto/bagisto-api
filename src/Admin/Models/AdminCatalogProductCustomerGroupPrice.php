@@ -220,6 +220,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Catalog: Products'],
                 summary: 'Delete a customer-group price row',
+                description: 'Deletes one customer-group (tier) price row of the product. An unknown product, or a row that does not belong to it, is a 404.',
                 parameters: [
                     new Model\Parameter('productId', 'path', 'Product ID.', true, schema: [
                         'type' => 'integer',

@@ -180,6 +180,7 @@ use Webkul\BagistoApi\Admin\State\AdminRefundProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Orders'],
                 summary: 'Create a refund for an order',
+                description: 'Refunds the given item quantities plus `shipping` and `adjustmentRefund`, less `adjustmentFee`. Refused with 422 for a closed or fraud order, nothing to refund, a quantity above what is refundable, or a total that is zero or above the refundable amount.',
                 parameters: [
                     new Model\Parameter('orderId', 'path', 'Order ID', true, schema: ['type' => 'integer']),
                 ],
@@ -211,6 +212,7 @@ use Webkul\BagistoApi\Admin\State\AdminRefundProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Orders'],
                 summary: 'Preview refund totals without saving',
+                description: 'Calculates the totals a refund with this payload would have (subtotal, discount, tax, shipping and adjustments) without saving anything. Takes the same body as creating a refund.',
                 parameters: [
                     new Model\Parameter('orderId', 'path', 'Order ID', true, schema: ['type' => 'integer']),
                 ],

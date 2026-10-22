@@ -37,6 +37,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Create a catalog rule',
+                description: 'Creates a catalog price rule. `name`, `channels`, `customer_groups`, `action_type` (by_percent, by_fixed, to_percent or to_fixed) and a non-negative `discount_amount` are required; `ends_till` may not be before `starts_from`.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -314,6 +315,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Delete a catalog rule',
+                description: 'Deletes the catalog rule. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Catalog rule deleted.',
@@ -335,6 +337,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Catalog rule detail',
+                description: 'One catalog rule by ID, with its channels, customer groups and conditions. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Single catalog rule with channels + customerGroups (object arrays) + conditions.',

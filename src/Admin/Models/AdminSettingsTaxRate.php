@@ -35,6 +35,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Rates'],
                 summary: 'Create a new tax rate',
+                description: 'Creates a tax rate. `identifier` (unique), a two-letter `country`, `tax_rate` (0 to 100) and `is_zip` are required; with `is_zip` true send `zip_from` and `zip_to`, otherwise `zip_code`.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -242,6 +243,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Rates'],
                 summary: 'Delete a tax rate',
+                description: 'Deletes the tax rate and detaches it from every tax category. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Tax rate ID.', true, schema: ['type' => 'integer']),
                 ],
@@ -265,6 +267,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Rates'],
                 summary: 'Tax rate detail',
+                description: 'One tax rate by ID with its country, state, zip code or range and rate. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Tax rate ID.', true, schema: ['type' => 'integer']),
                 ],

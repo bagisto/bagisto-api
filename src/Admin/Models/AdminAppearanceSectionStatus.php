@@ -23,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionStatusProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Stage a section on/off',
+                description: 'Stages switching one section on or off as a draft (`status` is required). The storefront keeps the published status until the theme\'s staged edits are published; the answer says whether the section still has a draft.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Section ID', true, schema: ['type' => 'integer']),
                 ],

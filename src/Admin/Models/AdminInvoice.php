@@ -268,6 +268,7 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Orders'],
                 summary: 'Create an invoice for an order',
+                description: 'Invoices the given quantities of the order\'s items (`items` of `orderItemId` and `quantity`). Refused with 422 for a closed or fraud order, a PayPal Standard order, nothing left to invoice, or a quantity above what is left; `can_create_transaction` also records a payment transaction.',
                 parameters: [
                     new Model\Parameter('orderId', 'path', 'Order ID', true, schema: ['type' => 'integer']),
                 ],

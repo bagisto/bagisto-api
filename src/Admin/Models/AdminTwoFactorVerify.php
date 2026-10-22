@@ -71,7 +71,7 @@ use Webkul\BagistoApi\OpenApi\ApiSchemas;
                         ]),
                     ),
                     '401' => new Model\Response(
-                        description: 'Wrong code (`invalid_two_factor_code`): retry with the same challenge. The challenge is unknown, used or expired, or a fifth wrong code revoked it (`two_factor_challenge_invalid`): log in again.',
+                        description: 'Wrong code (`invalid_two_factor_code`): retry with the same challenge. The challenge is unknown, used or expired, a fifth wrong code revoked it, or the admin was deactivated or reset their password since the password step, which revokes it (`two_factor_challenge_invalid`): log in again.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'schema' => ['$ref' => ApiSchemas::AUTH_ERROR_REF],
@@ -84,7 +84,7 @@ use Webkul\BagistoApi\OpenApi\ApiSchemas;
                         ]),
                     ),
                     '403' => new Model\Response(
-                        description: 'The admin was deactivated after the password step (`account_inactive`).',
+                        description: 'The admin is inactive although the challenge is still valid (`account_inactive`): only when the status changed without the admin model\'s events, since a normal deactivation revokes the challenge and answers 401.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'schema' => ['$ref' => ApiSchemas::AUTH_ERROR_REF],

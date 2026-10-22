@@ -34,6 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Create a new inventory source',
+                description: 'Creates an inventory source. `code` (letters, digits, `_` and `-`), `name`, the contact fields and the address fields are required; `priority`, `latitude`, `longitude` and `status` (0 or 1) are optional.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -145,6 +146,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Update an inventory source',
+                description: 'Updates the inventory source; the fields are validated as on create. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: [
                         'type' => 'integer',
@@ -195,6 +197,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Delete an inventory source',
+                description: 'Deletes the inventory source. Refused with 400 for the last remaining source or one that holds product stock; an unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: [
                         'type' => 'integer',
@@ -222,6 +225,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Inventory source detail',
+                description: 'One inventory source by ID with its contact details, address, priority and status. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: [
                         'type' => 'integer',

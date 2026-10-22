@@ -70,6 +70,7 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
             openapi: new Operation(
                 tags: ['Product Types'],
                 summary: 'Get a single downloadable link',
+                description: 'One downloadable link of a downloadable product by ID. An unknown ID is a 404. Needs the X-STOREFRONT-KEY header.',
                 responses: [
                     '200' => new Response(
                         description: 'Downloadable link',

@@ -29,6 +29,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'List coupons for a cart rule',
+                description: 'The coupon codes of one cart rule with their usage limits, use counts and expiry. An unknown cart rule is a 404.',
                 parameters: [
                     new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
                 ],
@@ -78,6 +79,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Create a single coupon code for a cart rule',
+                description: 'Adds one coupon code to the cart rule. `code` is required and must be unique across all coupons; `usage_limit`, `usage_per_customer` and `expired_at` are optional. An unknown cart rule is a 404.',
                 parameters: [
                     new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
                 ],
@@ -156,6 +158,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Delete a coupon',
+                description: 'Deletes one coupon code of the cart rule. An unknown coupon, or one of another cart rule, is a 404.',
                 parameters: [
                     new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Coupon ID', true, schema: ['type' => 'integer']),

@@ -34,6 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Create a sitemap',
+                description: 'Creates a sitemap definition. `file_name` must end in .xml, `path` must start and end with a slash, and `channels` lists existing channel IDs. The XML is built by the generate endpoint, not here.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -97,6 +98,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Update a sitemap',
+                description: 'Updates the sitemap definition; `file_name`, `path` and `channels` are validated as on create. An unknown ID is a 404.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -170,6 +172,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a sitemap (removes the DB row and generated XML files).',
+                description: 'Deletes the sitemap definition and the XML files generated for it. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Sitemap deleted.',

@@ -23,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassUpdateStatusProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Customer Reviews'],
                 summary: 'Mass update review status',
+                description: 'Sets the status of the product reviews in `indices` to `value` (pending, approved or disapproved), and returns the IDs updated. An empty `indices` or another value is a 422.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([

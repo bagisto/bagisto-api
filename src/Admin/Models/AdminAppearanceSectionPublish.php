@@ -23,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionPublishProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Publish staged section edits',
+                description: 'Makes every staged draft (content, status and order) of the theme\'s sections on one channel live on the storefront, and returns the IDs of the sections published. An unknown theme is a 404.',
                 parameters: [
                     new Model\Parameter('code', 'path', 'Theme code', true, schema: [
                         'type' => 'string',

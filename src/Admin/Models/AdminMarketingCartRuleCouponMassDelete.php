@@ -24,6 +24,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponMassDeleteProcesso
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Mass-delete coupons for a cart rule',
+                description: 'Deletes the coupons in `indices` that belong to the cart rule; IDs that do not are returned under `skipped`. An empty `indices` is a 422 and an unknown cart rule a 404.',
                 parameters: [
                     new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
                 ],

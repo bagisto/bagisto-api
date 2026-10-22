@@ -53,7 +53,11 @@ use Webkul\Sales\Models\Order;
         new Get(
             uriTemplate: '/customer-order-shipments/{id}',
             provider: CustomerOrderShipmentProvider::class,
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'Get a shipment of the customer',
+                description: 'One shipment of an order placed by the authenticated customer; any other shipment or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
     ],
     graphQlOperations: [

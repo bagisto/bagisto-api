@@ -158,6 +158,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customer Groups'],
                 summary: 'Customer group detail',
+                description: 'One customer group by ID, with whether it is user-defined and how many customers belong to it. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Customer group ID', true, schema: ['type' => 'integer']),
                 ],

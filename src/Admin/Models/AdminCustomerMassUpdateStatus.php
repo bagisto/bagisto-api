@@ -23,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerMassUpdateStatusProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Mass update customer status',
+                description: 'Sets `status` to `value` (1 active, 0 inactive) on the customers in `indices`, and returns the IDs updated. An empty `indices` or another value is a 422.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([

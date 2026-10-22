@@ -208,6 +208,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Currencies'],
                 summary: 'Currency detail',
+                description: 'One currency by ID with its code, name, symbol and formatting. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Currency ID.', true, schema: [
                         'type' => 'integer',

@@ -74,6 +74,7 @@ use Webkul\BagistoApi\State\ShippingRatesProvider;
             openapi: new Operation(
                 tags: ['Checkout'],
                 summary: 'Save selected shipping method for checkout',
+                description: 'Saves `shippingMethod` on the cart the bearer token names (a guest cart token or a customer token). The cart needs its addresses first, and the code must be one of the rates GET /api/shop/checkout-shipping-methods returns; the cart totals are recalculated.',
                 requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([

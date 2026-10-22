@@ -23,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceMassDeleteProcesso
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Mass delete inventory sources',
+                description: 'Deletes the inventory sources in `indices`; unknown IDs are ignored. Refused with 400 when it would leave no source or any of them holds product stock, and with 422 when `indices` is empty.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([

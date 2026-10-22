@@ -92,6 +92,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customer GDPR'],
                 summary: 'Delete a GDPR request',
+                description: 'Deletes the GDPR request record only; no customer data is touched. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Request ID', true, schema: ['type' => 'integer']),
                 ],
@@ -115,6 +116,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customer GDPR'],
                 summary: 'GDPR request detail',
+                description: 'One customer GDPR request by ID: its type, status, message and the customer who made it. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Request ID', true, schema: ['type' => 'integer']),
                 ],

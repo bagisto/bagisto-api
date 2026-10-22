@@ -91,6 +91,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'Get an RMA custom field (with its options)',
+                description: 'One RMA custom field by ID with its options; `options` is filled only for select, multiselect, checkbox and radio fields. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'The RMA custom field with its options.',

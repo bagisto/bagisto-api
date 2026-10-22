@@ -23,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDiscardProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Discard staged section edits',
+                description: 'Throws away every staged draft (content, status and order) of the theme\'s sections on one channel, and returns the IDs of the sections that had one. An unknown theme is a 404.',
                 parameters: [
                     new Model\Parameter('code', 'path', 'Theme code', true, schema: [
                         'type' => 'string',

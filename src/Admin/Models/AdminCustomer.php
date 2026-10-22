@@ -38,6 +38,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Create a new customer',
+                description: 'Creates a verified customer on the given channel (the current one by default). `first_name`, `last_name`, a unique `email` and `customer_group_id` are required; by default a password is generated and emailed, or send `send_password: false` with a `password` of at least 6 characters.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -149,6 +150,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Update a customer',
+                description: 'Partial update: only the fields sent change (`first_name`, `last_name`, `email`, `phone`, `gender`, `date_of_birth`, `customer_group_id`, `status`, `is_suspended`, `subscribed_to_news_letter`, and `password` when not empty). The email must stay unique on the customer\'s channel. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],

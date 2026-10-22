@@ -40,6 +40,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Create a new cart rule',
+                description: 'Creates a cart price rule. `name`, `channels`, `customer_groups`, `coupon_type` (0 no coupon, 1 coupon), `action_type` (by_percent, by_fixed, cart_fixed or buy_x_get_y) and `discount_amount` are required; `ends_till` may not be before `starts_from`.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -474,6 +475,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Delete a cart rule',
+                description: 'Deletes the cart rule. An unknown ID is a 404.',
                 parameters: [new Model\Parameter('id', 'path', 'Cart rule ID.', true, schema: ['type' => 'integer'])],
                 responses: [
                     '200' => new Model\Response(
@@ -496,6 +498,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Cart rule detail',
+                description: 'One cart rule by ID, with its conditions, channels and customer groups. An unknown ID is a 404.',
                 parameters: [new Model\Parameter('id', 'path', 'Cart rule ID.', true, schema: ['type' => 'integer'])],
                 responses: [
                     '200' => new Model\Response(

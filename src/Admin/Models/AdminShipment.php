@@ -127,6 +127,7 @@ use Webkul\BagistoApi\Admin\State\AdminShipmentProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Orders'],
                 summary: 'Create a shipment for an order',
+                description: 'Ships the given quantities of the order\'s items from one inventory source (`source`), with an optional `carrierTitle` and `trackNumber`. Refused with 422 for a closed or fraud order, nothing to ship, a quantity above what is left, or too little stock at the source.',
                 parameters: [
                     new Model\Parameter('orderId', 'path', 'Order ID', true, schema: ['type' => 'integer']),
                 ],

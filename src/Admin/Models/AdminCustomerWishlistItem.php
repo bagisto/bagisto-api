@@ -22,6 +22,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWishlistItemProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: "Get a customer's wishlist",
+                description: 'The products in the customer\'s wishlist. An unknown customer is a 404.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],

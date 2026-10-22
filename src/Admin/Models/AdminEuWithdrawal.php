@@ -94,6 +94,7 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: EU Withdrawal'],
                 summary: 'Get a withdrawal declaration (evidence + timeline)',
+                description: 'One EU right-of-withdrawal declaration by ID, with the evidence the customer submitted and its timeline. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'The withdrawal declaration with its full evidence timeline.',

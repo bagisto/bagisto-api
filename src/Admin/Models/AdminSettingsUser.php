@@ -36,6 +36,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Users'],
                 summary: 'Create a new admin user',
+                description: 'Creates an admin user. `name`, a unique `email`, a `password` of at least 6 characters and an existing `role_id` are required, and `status` is 0 or 1. A role holding a permission the caller lacks is refused with 403.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -227,6 +228,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Users'],
                 summary: 'Admin user detail',
+                description: 'One admin user by ID with their role and status. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Admin ID.', true, schema: [
                         'type' => 'integer',
@@ -246,6 +248,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Users'],
                 summary: 'List admin users',
+                description: 'Admin users with their role, in the { data, meta } envelope. Filters: `name` and `email` (partial match), `role_id`, `status`; sortable by id, name or email.',
                 parameters: [
                     new Model\Parameter('page', 'query', 'Page (1-based).', false, schema: [
                         'type' => 'integer',

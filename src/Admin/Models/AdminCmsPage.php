@@ -199,6 +199,7 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin CMS'],
                 summary: 'Delete a CMS page',
+                description: 'Deletes the CMS page, so its URL stops resolving on the storefront. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'CMS page ID.', true, schema: [
                         'type' => 'integer',
@@ -219,6 +220,7 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin CMS'],
                 summary: 'CMS page detail with all translations + channels',
+                description: 'One CMS page by ID, with the translation of every locale and the channels it is shown on. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'CMS page ID.', true, schema: [
                         'type' => 'integer',

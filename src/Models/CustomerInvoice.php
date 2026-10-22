@@ -52,7 +52,11 @@ use Webkul\Sales\Models\Order;
         new Get(
             uriTemplate: '/customer-invoices/{id}',
             provider: CustomerInvoiceProvider::class,
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'Get an invoice of the customer',
+                description: 'One invoice of an order placed by the authenticated customer; any other invoice or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
     ],
     graphQlOperations: [

@@ -76,6 +76,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaRuleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'Get an RMA rule',
+                description: 'One RMA rule by ID, with the return window it sets for the products it matches. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'The RMA rule.',

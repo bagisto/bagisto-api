@@ -76,6 +76,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'Get an RMA reason',
+                description: 'One RMA reason by ID with its resolution types. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'The RMA reason.',

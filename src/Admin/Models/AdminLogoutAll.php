@@ -87,7 +87,7 @@ class AdminLogoutAll
     /**
      * The confirmation message.
      */
-    #[ApiProperty(writable: false, example: 'You have been logged out.')]
+    #[ApiProperty(writable: false, example: 'You have been logged out of every session.')]
     public ?string $message = null;
 
     /**

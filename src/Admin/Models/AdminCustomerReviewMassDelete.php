@@ -23,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassDeleteProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Customer Reviews'],
                 summary: 'Mass delete reviews',
+                description: 'Deletes the product reviews whose IDs are sent in `indices`. Unknown IDs are ignored, and a review that fails to delete is listed under `skipped` with the reason; an empty `indices` is a 422.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([

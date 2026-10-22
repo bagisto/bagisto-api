@@ -37,6 +37,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Create a marketing campaign',
+                description: 'Creates an email campaign. `name`, `subject`, `marketing_template_id`, `channel_id` and `customer_group_id` are required and must exist; `marketing_event_id` is optional and `status` is 0 or 1.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -135,6 +136,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Update a marketing campaign',
+                description: 'Updates the campaign; the payload is validated as on create (`name`, `subject`, `marketing_template_id`, `channel_id` and `customer_group_id`). An unknown ID is a 404.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -233,6 +235,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Delete a marketing campaign',
+                description: 'Deletes the marketing campaign. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Campaign deleted.',
@@ -254,6 +257,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Campaign detail',
+                description: 'One marketing campaign by ID, with its channel, customer group, email template and event embedded. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Campaign with embedded channel / customerGroup / marketingTemplate / marketingEvent objects.',

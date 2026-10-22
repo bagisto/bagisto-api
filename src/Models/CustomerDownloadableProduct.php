@@ -22,12 +22,20 @@ use Webkul\Sales\Models\DownloadableLinkPurchased;
         new GetCollection(
             uriTemplate: '/customer-downloadable-products',
             provider: CustomerDownloadableProductProvider::class,
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'List the customer\'s downloadable products',
+                description: 'The authenticated customer\'s downloadable-product purchases, newest first, with the remaining downloads and the download URL; `status` filters by exact purchase status. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
         new Get(
             uriTemplate: '/customer-downloadable-products/{id}',
             provider: CustomerDownloadableProductProvider::class,
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'Get a downloadable-product purchase',
+                description: 'One downloadable-product purchase of the authenticated customer; another customer\'s purchase or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
     ],
     graphQlOperations: [

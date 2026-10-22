@@ -22,6 +22,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCompareItemProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: "Get a customer's compare list",
+                description: 'The products in the customer\'s compare list. An unknown customer is a 404.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],

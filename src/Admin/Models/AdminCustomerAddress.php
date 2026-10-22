@@ -34,6 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: "Get a customer's saved addresses",
+                description: 'Every saved address of the customer, in the { data, meta } envelope. An unknown customer is a 404.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],
@@ -120,6 +121,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Create address for a customer',
+                description: 'Adds an address to the customer. `first_name`, `last_name`, `address`, `city`, `country`, `postcode` and `phone` are required; `default_address: true` makes it the default and unsets the previous one. An unknown customer is a 404.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],
@@ -342,6 +344,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Set a customer address as the default',
+                description: 'Makes the address the customer\'s default and unsets every other default address; no body is needed. An address of another customer is a 403, and an unknown address a 404.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Address ID', true, schema: ['type' => 'integer']),

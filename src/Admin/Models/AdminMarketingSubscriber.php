@@ -97,6 +97,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Delete a subscription',
+                description: 'Deletes the newsletter subscription and, when it belongs to a customer, turns that customer\'s newsletter flag off. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Subscriber ID', true, schema: ['type' => 'integer']),
                 ],
@@ -123,6 +124,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Subscription detail',
+                description: 'One newsletter subscription by ID: the email, whether it is subscribed, its channel and the linked customer, if any. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Subscriber ID', true, schema: ['type' => 'integer']),
                 ],

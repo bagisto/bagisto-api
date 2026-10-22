@@ -93,6 +93,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
             openapi: new Operation(
                 tags: ['Product'],
                 summary: 'Get a single product review by ID',
+                description: 'One product review by ID. Only approved reviews are returned; an unknown, pending or disapproved review is a 404. Needs the X-STOREFRONT-KEY header.',
                 responses: [
                     '200' => new Response(
                         description: 'The product review.',

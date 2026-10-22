@@ -34,6 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Create a search synonym',
+                description: 'Creates a group of search synonyms. `name` and `terms` (a comma-separated list) are required.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -85,6 +86,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Update a search synonym',
+                description: 'Updates the synonym group; `name` and `terms` are validated as on create. An unknown ID is a 404.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -136,6 +138,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a search synonym',
+                description: 'Deletes the search synonym group. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Search synonym deleted.',
@@ -158,6 +161,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Search synonym detail',
+                description: 'One search synonym group by ID with its name and terms. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Single search synonym.',

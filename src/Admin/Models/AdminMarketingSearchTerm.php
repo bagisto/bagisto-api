@@ -177,6 +177,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a search term',
+                description: 'Deletes the search term. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Search term ID', true, schema: ['type' => 'integer']),
                 ],
@@ -201,6 +202,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Search term detail',
+                description: 'One search term by ID with its channel, locale, redirect URL and use and result counts. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Search term ID', true, schema: ['type' => 'integer']),
                 ],

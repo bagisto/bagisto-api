@@ -42,6 +42,7 @@ export const SHOP_CART_MESSAGES = {
   NEW_GUEST_CART: 'New guest cart created with unique session token',
   AUTHENTICATED_CART: 'Using authenticated customer cart',
   ITEM_IDS_REQUIRED: 'Item IDs array is required',
+  CART_ITEM_NOT_FOUND: 'Cart item not found',
   ADDRESS_DATA_REQUIRED: 'Country, state, and postcode are required',
   TOKEN_IS_VALID: 'Token is valid',
   UNAUTHENTICATED: 'Unauthenticated. Please login to perform this action',

@@ -153,11 +153,14 @@ test.describe('shop create remove cart items graphql api', () => {
       bearer(intruder.token)
     );
 
-    expectNoErrors(body);
-    expect(body.data.createRemoveCartItems.removeCartItems.itemsCount).toBe(1);
+    expect(graphQLErrorMessages(body)).toContain(SHOP_CART_MESSAGES.CART_ITEM_NOT_FOUND);
+    expect(body.data?.createRemoveCartItems ?? null).toBeNull();
 
+    const intruderCart = await readJson(await readCart(request, intruder.token));
     const ownerCart = await readJson(await readCart(request, owner.token));
 
+    expect(intruderCart.itemsCount).toBe(1);
+    expect(ownerCart.itemsCount).toBe(1);
     expect(ownerCart.items.map((item: any) => Number(item.id))).toContain(ownerLine.itemId);
   });
 });

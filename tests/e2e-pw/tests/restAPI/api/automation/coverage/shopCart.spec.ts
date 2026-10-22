@@ -180,10 +180,12 @@ test.describe('shop remove cart items rest api', () => {
       data: { itemIds: [ownerLine.itemId] },
       headers: bearer(intruder.token),
     });
-    const body = await readJson(response);
 
-    expect(response.status(), JSON.stringify(body)).toBe(201);
-    expect(body.itemsCount).toBe(1);
+    await expectProblem(response, 400, SHOP_CART_MESSAGES.CART_ITEM_NOT_FOUND);
+
+    const intruderCart = await readJson(await readCart(request, intruder.token));
+
+    expect(intruderCart.itemsCount).toBe(1);
 
     const ownerCart = await readJson(await readCart(request, owner.token));
 

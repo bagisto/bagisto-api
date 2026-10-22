@@ -359,7 +359,7 @@ class InvoiceTest extends AdminApiTestCase
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
 
-        $this->adminPost($admin, '/api/admin/invoices/'.$invoice->id.'/send-duplicate', ['email' => 'copy@example.com'], $this->adminTokenSameAsWeb($admin))
+        $this->adminPost($admin, '/api/admin/invoices/'.$invoice->id.'/send-duplicate', ['email' => 'copy@example.com'], $this->adminAccessToken($admin))
             ->assertStatus(403);
 
         Mail::assertNothingQueued();

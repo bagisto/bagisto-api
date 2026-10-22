@@ -530,7 +530,7 @@ class ConfigurationTest extends AdminApiTestCase
             [],
             ['values' => [$fileField => $file]],
             [
-                'HTTP_AUTHORIZATION' => 'Bearer '.$this->adminToken($admin),
+                'HTTP_AUTHORIZATION' => 'Bearer '.$this->adminAccessToken($admin),
                 'HTTP_ACCEPT' => 'application/json',
             ],
         );

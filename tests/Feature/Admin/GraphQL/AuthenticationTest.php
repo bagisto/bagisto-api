@@ -65,51 +65,6 @@ class AuthenticationTest extends AdminApiTestCase
     }
 
     /**
-     * Test removed login mutation no longer in schema.
-     */
-    public function test_removed_login_mutation_no_longer_in_schema(): void
-    {
-        $mutation = <<<'GQL'
-            mutation { createAdminLogin(input: { email: "a@b.co", password: "x" }) { adminLogin { id } } }
-        GQL;
-
-        $response = $this->adminGraphQL($mutation);
-
-        $errors = $response->json('errors');
-        $this->assertNotEmpty($errors, 'createAdminLogin should be missing from the schema after the refactor');
-    }
-
-    /**
-     * Test removed logout mutation no longer in schema.
-     */
-    public function test_removed_logout_mutation_no_longer_in_schema(): void
-    {
-        $admin = $this->createAdmin();
-
-        $mutation = <<<'GQL'
-            mutation { createAdminLogout(input: { all: false }) { adminLogout { success } } }
-        GQL;
-
-        $response = $this->adminGraphQL($mutation, [], $admin);
-
-        $this->assertNotEmpty($response->json('errors'), 'createAdminLogout should be missing from the schema after the refactor');
-    }
-
-    /**
-     * Test removed forgot password mutation no longer in schema.
-     */
-    public function test_removed_forgot_password_mutation_no_longer_in_schema(): void
-    {
-        $mutation = <<<'GQL'
-            mutation { createAdminForgotPassword(input: { email: "a@b.co" }) { adminForgotPassword { success } } }
-        GQL;
-
-        $response = $this->adminGraphQL($mutation);
-
-        $this->assertNotEmpty($response->json('errors'), 'createAdminForgotPassword should be missing from the schema after the refactor');
-    }
-
-    /**
      * Test removed update mutation no longer in schema.
      */
     public function test_removed_update_mutation_no_longer_in_schema(): void

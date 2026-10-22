@@ -148,7 +148,7 @@ class RmaCustomFieldTest extends AdminApiTestCase
         $response = $this->massUpdateCustomFieldStatus([
             'indices' => [$id],
             'value' => 0,
-        ], $admin, $this->adminTokenSameAsWeb($admin));
+        ], $admin, $this->adminAccessToken($admin));
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.rma.no-permission'));
         $this->assertDatabaseHas('rma_custom_fields', [

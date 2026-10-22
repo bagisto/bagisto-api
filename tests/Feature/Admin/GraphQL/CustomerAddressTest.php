@@ -164,7 +164,7 @@ class CustomerAddressTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, ['input' => [
             'id' => '/api/admin/customers/'.$customer->id.'/addresses/'.$second->id,
             'customerId' => $customer->id,
-        ]], $admin, $this->adminTokenSameAsWeb($admin));
+        ]], $admin, $this->adminAccessToken($admin));
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.customer.no-permission'));
         expect((int) CustomerAddress::find($first->id)->default_address)->toBe(1);
@@ -239,7 +239,7 @@ class CustomerAddressTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, ['input' => [
             'id' => '/api/admin/customers/'.$customer->id.'/addresses/'.$second->id,
-        ]], $admin, $this->adminTokenSameAsWeb($admin));
+        ]], $admin, $this->adminAccessToken($admin));
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.customer.no-permission'));
         $this->assertDatabaseHas('addresses', ['id' => $second->id]);

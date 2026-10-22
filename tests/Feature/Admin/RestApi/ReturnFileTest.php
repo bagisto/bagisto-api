@@ -393,7 +393,7 @@ class ReturnFileTest extends AdminApiTestCase
 
         $admin->forceFill(['role_id' => $role->id])->save();
 
-        return $this->adminToken($admin->fresh());
+        return $this->adminAccessToken($admin->fresh());
     }
 
     /**

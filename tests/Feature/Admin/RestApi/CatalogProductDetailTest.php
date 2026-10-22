@@ -28,7 +28,7 @@ class CatalogProductDetailTest extends AdminApiTestCase
     public function test_detail_revoked_token_returns_401(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $this->revokeAdminSessions($admin);
 
@@ -46,7 +46,7 @@ class CatalogProductDetailTest extends AdminApiTestCase
     public function test_detail_expired_token_returns_401(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $this->expireAdminSessions($admin);
 

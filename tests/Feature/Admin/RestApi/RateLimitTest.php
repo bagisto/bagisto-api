@@ -14,7 +14,7 @@ class RateLimitTest extends AdminApiTestCase
     {
         $this->limitSessionRequestsPerMinute(3);
 
-        $token = $this->adminToken($this->createAdmin());
+        $token = $this->adminAccessToken($this->createAdmin());
 
         for ($i = 0; $i < 3; $i++) {
             $this->getWithToken($token)->assertOk();
@@ -35,8 +35,8 @@ class RateLimitTest extends AdminApiTestCase
         $this->limitSessionRequestsPerMinute(2);
 
         $admin = $this->createAdmin();
-        $first = $this->adminToken($admin);
-        $second = $this->adminToken($admin);
+        $first = $this->adminAccessToken($admin);
+        $second = $this->adminAccessToken($admin);
 
         $this->getWithToken($first)->assertOk();
         $this->getWithToken($second)->assertOk();
@@ -51,8 +51,8 @@ class RateLimitTest extends AdminApiTestCase
     {
         $this->limitSessionRequestsPerMinute(2);
 
-        $first = $this->adminToken($this->createAdmin());
-        $second = $this->adminToken($this->createAdmin());
+        $first = $this->adminAccessToken($this->createAdmin());
+        $second = $this->adminAccessToken($this->createAdmin());
 
         $this->getWithToken($first)->assertOk();
         $this->getWithToken($first)->assertOk();
@@ -68,7 +68,7 @@ class RateLimitTest extends AdminApiTestCase
     {
         $this->limitSessionRequestsPerMinute(2);
 
-        $token = $this->adminToken($this->createAdmin());
+        $token = $this->adminAccessToken($this->createAdmin());
 
         $this->getWithToken($token)->assertOk();
         $this->getWithToken($token)->assertOk();

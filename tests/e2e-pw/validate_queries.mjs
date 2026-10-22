@@ -4,8 +4,24 @@ import 'dotenv/config';
 
 const ROOT = 'tests/graphQL/graphql/Queries';
 const BASE = process.env.BAGISTO_URL || 'http://127.0.0.1:8000';
-const ADMIN_TOKEN = process.env.ADMIN_INTEGRATION_TOKEN;
 const SHOP_KEY = process.env.STOREFRONT_ACCESS_KEY;
+
+async function adminAccessToken() {
+  const response = await fetch(`${BASE.replace(/\/+$/, '')}/api/admin/auth/login`, {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: process.env.ADMIN_EMAIL,
+      password: process.env.ADMIN_PASSWORD,
+      device_name: 'validate-queries',
+      client_type: 'other',
+    }),
+  });
+
+  return (await response.json()).accessToken;
+}
+
+const ADMIN_TOKEN = process.env.ADMIN_API_TOKEN || await adminAccessToken();
 
 function walk(d) {
   return fs.readdirSync(d, { withFileTypes: true }).flatMap(e => {
@@ -14,7 +30,6 @@ function walk(d) {
   });
 }
 
-// pull `export const NAME = ` + backtick template literal
 function extract(src) {
   const out = [];
   const re = /export\s+const\s+([A-Z0-9_]+)\s*=\s*`([\s\S]*?)`;/g;

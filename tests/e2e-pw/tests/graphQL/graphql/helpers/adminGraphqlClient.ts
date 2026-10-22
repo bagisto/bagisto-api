@@ -1,14 +1,11 @@
-// tests/graphQL/graphql/helpers/adminGraphqlClient.ts
-//
-// Wraps sendGraphQLRequest with admin Bearer injection. Admin operations are
-// served by the dedicated admin-scoped endpoint /api/admin/graphql — the
-// storefront /api/graphql does NOT expose admin operations. The admin token
-// is generated at test-setup time (never hardcoded).
-
 import { APIRequestContext, APIResponse } from '@playwright/test';
 import { sendGraphQLRequest } from './graphqlClient';
-import { adminGraphQLHeaders } from '../../config/adminAuth';
+import { adminGraphQLHeaders, withAdminToken } from '../../config/adminAuth';
 import { env } from '../../config/env';
+
+function hasAuthorization(headers: Record<string, string>): boolean {
+  return Object.keys(headers).some(name => name.toLowerCase() === 'authorization');
+}
 
 export async function sendAdminGraphQLRequest(
   request: APIRequestContext,
@@ -16,14 +13,27 @@ export async function sendAdminGraphQLRequest(
   variables: Record<string, any> = {},
   extraHeaders: Record<string, string> = {}
 ): Promise<APIResponse> {
-  return sendGraphQLRequest(
+  if (hasAuthorization(extraHeaders)) {
+    return sendGraphQLRequest(request, query, variables, extraHeaders, env.adminGraphqlEndpoint);
+  }
+
+  return withAdminToken(request, token => sendGraphQLRequest(
     request,
     query,
     variables,
     {
-      ...adminGraphQLHeaders(),
-      ...extraHeaders, // caller wins on conflict
+      ...adminGraphQLHeaders(token),
+      ...extraHeaders,
     },
     env.adminGraphqlEndpoint
-  );
+  ));
+}
+
+export async function sendPublicAdminGraphQLRequest(
+  request: APIRequestContext,
+  query: string,
+  variables: Record<string, any> = {},
+  headers: Record<string, string> = {}
+): Promise<APIResponse> {
+  return sendGraphQLRequest(request, query, variables, headers, env.adminGraphqlEndpoint);
 }

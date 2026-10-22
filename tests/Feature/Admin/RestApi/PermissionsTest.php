@@ -46,7 +46,7 @@ class PermissionsTest extends AdminApiTestCase
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->adminTokenSameAsWeb($admin);
+        $token = $this->adminAccessToken($admin);
 
         $payload = $this->adminGet($admin, '/api/admin/permissions', $token)->json('0');
 

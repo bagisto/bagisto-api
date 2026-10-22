@@ -147,7 +147,7 @@ class OrderActionTest extends AdminApiTestCase
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->adminTokenSameAsWeb($admin);
+        $token = $this->adminAccessToken($admin);
 
         $response = $this->runReorder($id, $admin, $token);
         $errors = $response->json('errors');

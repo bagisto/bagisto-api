@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { sendAdminGraphQLRequest } from '../../../graphql/helpers/adminGraphqlClient';
 import { sendGraphQLRequest } from '../../../graphql/helpers/graphqlClient';
 import { env } from '../../../config/env';
+import { withAdminToken } from '../../../config/adminAuth';
 import {
   ADMIN_CONFIGURATION_SLUGS_COVERAGE_QUERY,
   ADMIN_CONFIGURATION_SLUGS_UNKNOWN_FIELD_QUERY,
@@ -46,9 +47,9 @@ test.describe('admin configuration slugs graphql', () => {
     const body = await resp.json();
     expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
 
-    const rest = await request.get(`${env.baseUrl}/api/admin/configuration/slugs`, {
-      headers: { Accept: 'application/json', Authorization: `Bearer ${env.adminIntegrationToken}` },
-    });
+    const rest = await withAdminToken(request, token => request.get(`${env.baseUrl}/api/admin/configuration/slugs`, {
+      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+    }));
     expect(rest.status()).toBe(200);
 
     expect(body.data.listAdminConfigurationSlug.slugs).toEqual((await rest.json())[0].slugs);

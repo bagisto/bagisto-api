@@ -26,7 +26,7 @@ class AttributeFamilyTest extends AdminApiTestCase
     public function test_listing_rejects_revoked_token(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $this->revokeAdminSessions($admin);
 
@@ -41,7 +41,7 @@ class AttributeFamilyTest extends AdminApiTestCase
     public function test_listing_rejects_expired_token(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $this->expireAdminSessions($admin);
 
@@ -362,7 +362,7 @@ class AttributeFamilyTest extends AdminApiTestCase
     public function test_detail_rejects_revoked_token(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
         $familyId = $this->insertFamily(['code' => 'detail_rev_'.uniqid()]);
 
         $this->revokeAdminSessions($admin);

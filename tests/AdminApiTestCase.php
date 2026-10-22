@@ -2,25 +2,63 @@
 
 namespace Webkul\BagistoApi\Tests;
 
+use Carbon\CarbonInterface;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Admin\Models\AdminApiSession;
+use Webkul\BagistoApi\Admin\Services\AdminApiAuthSettings;
+use Webkul\BagistoApi\Admin\Services\AdminApiTokenIssuer;
+use Webkul\BagistoApi\Admin\Services\AdminApiTokenPair;
 use Webkul\BagistoApi\Admin\Services\AdminApiTokenService;
-use Webkul\BagistoApi\Admin\Services\Jwt\JwtKeyStore;
+use Webkul\BagistoApi\Admin\Services\DomainResolver;
+use Webkul\BagistoApi\Admin\Services\IssuedAdminApiToken;
+use Webkul\BagistoApi\Tests\Concerns\CraftsAdminJwts;
+use Webkul\BagistoApi\Tests\Fakes\FakeDomainResolver;
+use Webkul\Core\Models\CoreConfig;
 use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 abstract class AdminApiTestCase extends BagistoApiTestCase
 {
+    use CraftsAdminJwts;
+
     /**
      * GraphQL endpoint URL.
      */
     protected string $graphqlUrl = '/api/graphql';
 
     /**
+     * The admin GraphQL endpoint, where the public auth mutations are allowlisted.
+     */
+    protected string $adminGraphqlUrl = '/api/admin/graphql';
+
+    /**
      * Known plaintext password for admins created in tests.
      */
     protected string $adminPassword = 'admin123';
+
+    /**
+     * The DNS resolver the domain binding uses in tests.
+     */
+    protected FakeDomainResolver $domainResolver;
+
+    /**
+     * Sign with the test JWT key pair and resolve domains through a fake resolver.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->useFixtureJwtKeys();
+
+        $this->domainResolver = new FakeDomainResolver([
+            'localhost' => ['127.0.0.1', '::1'],
+        ]);
+
+        $this->app->instance(DomainResolver::class, $this->domainResolver);
+    }
 
     /**
      * Create an admin with a known password.
@@ -36,26 +74,90 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
     }
 
     /**
-     * Start a real login session for an admin and return its JWT access token.
+     * Create an admin whose custom role grants exactly the given permissions.
      */
-    protected function adminToken(Admin $admin): string
+    protected function createAdminWithRolePermissions(array $permissions, array $attributes = []): Admin
     {
-        $this->ensureJwtKeys();
+        $role = Role::create([
+            'name' => 'API test role '.Str::random(8),
+            'description' => 'Created by an admin API test.',
+            'permission_type' => 'custom',
+            'permissions' => $permissions,
+        ]);
 
-        return app(AdminApiTokenService::class)
-            ->issue($admin, [
-                'name' => 'admin-api-test-'.Str::random(6),
-                'client_type' => 'other',
-            ])
-            ->accessToken;
+        return $this->createAdmin(array_merge(['role_id' => $role->id], $attributes));
     }
 
     /**
-     * Issue an access token for an admin; permissions always follow the admin's role now.
+     * Start a real login session for an admin and return its access and refresh tokens.
      */
-    protected function adminTokenSameAsWeb(Admin $admin): string
+    protected function adminTokenPair(Admin $admin, array $client = []): AdminApiTokenPair
     {
-        return $this->adminToken($admin);
+        return app(AdminApiTokenService::class)->issue($admin, array_merge([
+            'name' => 'admin-api-test-'.Str::random(6),
+            'client_type' => AdminApiSession::CLIENT_TYPE_OTHER,
+        ], $client));
+    }
+
+    /**
+     * Start a real login session for an admin and return its JWT access token.
+     */
+    protected function adminAccessToken(Admin $admin, array $client = []): string
+    {
+        return $this->adminTokenPair($admin, $client)->accessToken;
+    }
+
+    /**
+     * Start a real login session for an admin and return its refresh token.
+     */
+    protected function adminRefreshToken(Admin $admin, array $client = []): string
+    {
+        return $this->adminTokenPair($admin, $client)->refreshToken;
+    }
+
+    /**
+     * Create an API token for an admin, bound to a domain, and return the stored row with its string.
+     */
+    protected function issueAdminApiToken(Admin $admin, string $domain = 'localhost', ?CarbonInterface $expiresAt = null, string $name = 'Test integration'): IssuedAdminApiToken
+    {
+        return app(AdminApiTokenIssuer::class)->create(null, $admin, $name, $domain, $expiresAt, Request::create('/'));
+    }
+
+    /**
+     * Create an API token for an admin, bound to a domain, and return its JWT string.
+     */
+    protected function adminApiToken(Admin $admin, string $domain = 'localhost', ?CarbonInterface $expiresAt = null): string
+    {
+        return $this->issueAdminApiToken($admin, $domain, $expiresAt)->plainText;
+    }
+
+    /**
+     * Move the clock past the configured access token lifetime and the verification leeway.
+     */
+    protected function expireAccessToken(): void
+    {
+        $seconds = app(AdminApiAuthSettings::class)->accessTokenTtl() * 60
+            + (int) config('bagistoapi.admin_auth.jwt.leeway', 30)
+            + 1;
+
+        $this->travel($seconds)->seconds();
+    }
+
+    /**
+     * Store an admin authentication setting, such as "security.domain_binding_mode".
+     */
+    protected function setAdminAuthConfig(string $field, mixed $value): void
+    {
+        $code = AdminApiAuthSettings::CONFIG_PREFIX.'.'.$field;
+
+        CoreConfig::query()->where('code', $code)->delete();
+
+        CoreConfig::query()->create([
+            'code' => $code,
+            'value' => is_bool($value) ? (string) (int) $value : (string) $value,
+        ]);
+
+        $this->forgetCoreConfigCache();
     }
 
     /**
@@ -65,7 +167,7 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
     protected function actingAsAdminViaToken(?Admin $admin = null, ?string $token = null): Admin
     {
         $admin ??= $this->createAdmin();
-        $token ??= $this->adminToken($admin);
+        $token ??= $this->adminAccessToken($admin);
 
         $this->withHeader('Authorization', 'Bearer '.$token);
 
@@ -78,7 +180,7 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
     protected function adminHeaders(Admin $admin, ?string $token = null): array
     {
         return [
-            'Authorization' => 'Bearer '.($token ?? $this->adminToken($admin)),
+            'Authorization' => 'Bearer '.($token ?? $this->adminAccessToken($admin)),
         ];
     }
 
@@ -131,6 +233,34 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
     }
 
     /**
+     * Execute a request on the admin GraphQL endpoint with an optional raw Bearer token.
+     */
+    protected function adminEndpointGraphQL(string $query, array $variables = [], ?string $token = null, array $headers = []): TestResponse
+    {
+        $payload = ['query' => $query];
+
+        if (! empty($variables)) {
+            $payload['variables'] = $variables;
+        }
+
+        if ($token !== null) {
+            $headers['Authorization'] = 'Bearer '.$token;
+        }
+
+        return $this->postJson($this->adminGraphqlUrl, $payload, $headers);
+    }
+
+    /**
+     * Send a REST request with a raw Bearer token.
+     */
+    protected function withBearer(string $method, string $url, string $token, array $data = [], array $headers = []): TestResponse
+    {
+        return $this->json($method, $url, $data, array_merge($headers, [
+            'Authorization' => 'Bearer '.$token,
+        ]));
+    }
+
+    /**
      * Revoke every login session of an admin, so their access tokens stop working.
      */
     protected function revokeAdminSessions(Admin $admin): void
@@ -151,20 +281,6 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
         AdminApiSession::query()
             ->where('admin_id', $admin->id)
             ->update(['expires_at' => now()->subDay()]);
-    }
-
-    /**
-     * Point the JWT key store at a per-process temporary directory and create a key pair there once.
-     */
-    protected function ensureJwtKeys(): void
-    {
-        config(['bagistoapi.admin_auth.jwt.path' => sys_get_temp_dir().'/bagisto-api-test-jwt-'.(getenv('TEST_TOKEN') ?: '0')]);
-
-        $keys = app(JwtKeyStore::class);
-
-        if (! $keys->exists()) {
-            $keys->create();
-        }
     }
 
     /**

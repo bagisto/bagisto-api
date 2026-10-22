@@ -147,7 +147,7 @@ class CustomerSidebarTest extends AdminApiTestCase
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
 
-        $this->adminGet($admin, '/api/admin/customers/'.$customer->id.'/compare-items', $this->adminTokenSameAsWeb($admin))
+        $this->adminGet($admin, '/api/admin/customers/'.$customer->id.'/compare-items', $this->adminAccessToken($admin))
             ->assertStatus(403);
     }
 

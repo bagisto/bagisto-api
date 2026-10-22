@@ -42,16 +42,18 @@ If your harness has no skill loader and the skills are not present, this file is
 ```
 ├── src/
 │   ├── Admin/                  # ★ the admin surface
-│   │   ├── Models/             # #[ApiResource] response shapes (POPOs, not Eloquent tables)
+│   │   ├── Models/             # #[ApiResource] response shapes (POPOs), plus the Eloquent auth models + proxies
 │   │   ├── Dto/                # admin typed input DTOs
 │   │   ├── State/              # admin providers + processors (+ Concerns/ base classes)
 │   │   ├── Resolver/           # custom admin GraphQL resolvers
-│   │   ├── Config/             # acl.php, system.php, menu.php, auth/guards.php
-│   │   ├── Routes/             # the admin Integration UI routes
-│   │   ├── Resources/views/    # the admin Integration (token management) Blade views
-│   │   ├── Auth/               # AdminApiGuard (the admin-api guard)
+│   │   ├── Config/             # acl.php, system.php, menu.php, admin-auth.php, auth/guards.php
+│   │   ├── Routes/             # the admin panel routes (API Tokens, API Sessions, API Audit)
+│   │   ├── Resources/views/    # the admin panel Blade views for those screens
+│   │   ├── Auth/               # AdminApiGuard + AdminApiAuthenticator (the admin-api guard)
 │   │   ├── Audit/              # admin API audit recording
-│   │   └── DataGrids/, Exports/, Mail/, Rules/, Security/, Services/
+│   │   ├── Contracts/, Repositories/  # Eloquent contracts + repositories (sessions, tokens, audits)
+│   │   ├── Services/           # token issuing, JWT signing (Services/Jwt), domain binding, 2FA
+│   │   └── DataGrids/, Exports/, Helper/, Http/, Metadata/, Observers/, Security/
 │   ├── Models/                 # storefront #[ApiResource] models (+ Filter/, Concerns/)
 │   ├── Dto/                    # storefront typed input DTOs (CustomerOrder, ProductDetail)
 │   ├── State/                  # storefront providers + processors (+ Concerns/)
@@ -61,7 +63,7 @@ If your harness has no skill loader and the skills are not present, this file is
 │   ├── GraphQl/                # scoped schema builders (shop + admin)
 │   ├── Exception/              # the package's exception → status mapping
 │   ├── Console/Commands/       # bagisto-api-platform:* and bagisto-api:* commands
-│   ├── Database/Migrations/    # cart_tokens, storefront_keys, admin_personal_access_tokens, admin_api_audits
+│   ├── Database/Migrations/    # cart_tokens, storefront_keys, admin_api_{sessions,refresh_tokens,tokens,two_factor_challenges,audits}
 │   ├── Providers/              # BagistoApiServiceProvider + binding providers (+ Concerns/)
 │   ├── Resources/lang/{locale}/app.php   # the single lang file, 22 locales
 │   ├── Attributes/, CacheProfiles/, Contracts/, Facades/, Helper/, Input/, Jobs/,
@@ -76,7 +78,9 @@ If your harness has no skill loader and the skills are not present, this file is
 │   └── tools/build-collection.php
 ├── tests/
 │   ├── Feature/                # Pest: GraphQL/, RestApi/, Admin/{GraphQL,RestApi,Audit,Web}/
-│   ├── Concerns/AdminFixtureFactory.php
+│   ├── Concerns/               # AdminFixtureFactory, CraftsAdminJwts
+│   ├── Fakes/, Fixtures/jwt/   # fake DNS resolver, the test JWT key pair
+│   ├── Unit/Admin/             # JwtSignerTest, DomainBindingTest
 │   └── e2e-pw/                 # Playwright (tests/restAPI, tests/graphQL)
 ├── CHANGELOG.md
 └── UPGRADE.md
@@ -97,8 +101,8 @@ It installs into a Bagisto app one of two ways:
 The service provider is auto-discovered either way via the package `composer.json`
 `extra.laravel.providers` → `Webkul\BagistoApi\Providers\BagistoApiServiceProvider`. The provider's
 `boot()` loads translations from `Resources/lang`, migrations from `Database/Migrations`, views,
-and the admin Integration routes, and registers the model substitution, the `admin-api` guard, the
-rate limiter, the API documentation routes and the console commands.
+and the admin panel routes, and registers the model substitution, the `admin-api` guard, the
+rate limiter, the API documentation routes, the console commands and the hourly token prune.
 
 Because the two layouts put the package at different paths, `config/api-platform.php` and
 `config/api-platform-vendor.php` differ only in the `resources` paths, and the provider publishes
@@ -109,12 +113,13 @@ the matching one (`bagistoapi-config`).
 | Surface | REST prefix | GraphQL endpoint | Auth |
 |---------|-------------|------------------|------|
 | **Storefront (shop)** | `/api/shop/*` | `POST /api/graphql` | `X-STOREFRONT-KEY` header (+ a customer or guest-cart Bearer token for cart/account calls) |
-| **Admin** | `/api/admin/*` | `POST /api/admin/graphql` | `Authorization: Bearer <id>|<token>` (a pre-issued admin Integration token) |
+| **Admin** | `/api/admin/*` | `POST /api/admin/graphql` | `Authorization: Bearer <jwt>` — an access token from login, or an API token from *Settings → API Tokens* |
 
 The shop and admin GraphQL endpoints are **physically separate** — separate middleware, auth and a
 scoped schema (`QueryScopedSchemaBuilder` / `ScopedSchemaBuilder`). A change to one surface must not
 leak types into the other. Storefront auth is Laravel Sanctum; admin auth is the custom
-**`admin-api` guard** (`src/Admin/Auth/AdminApiGuard.php`) for Integration tokens.
+**`admin-api` guard** (`src/Admin/Auth/AdminApiGuard.php`), which accepts ES256 JWT access tokens
+and API tokens.
 
 ### The 5-file pattern per resource
 
@@ -176,15 +181,36 @@ and you get a 404 or wrong data; an untagged Processor cannot be resolved for DI
   camelCase through `OutputOnlySnakeToCamelNameConverter`. A multi-word field that skips this
   returns **null over GraphQL** — always add a GraphQL test that queries a multi-word field.
 
-### The admin Integration surface
+### Admin authentication
 
-The package ships its own admin surface under `src/Admin/` — the API token management UI
-(**Settings → Integration**) and the API audit history. It merges its ACL (`Admin/Config/acl.php`),
-system settings (`Admin/Config/system.php`) and menu (`Admin/Config/menu.php`) into core's, and the
-menu only appears when the integration module is enabled in **Configuration → API → Integration**.
-Admin token requests carry no session admin, so resolve permissions from the resolved admin's role
-via the `ChecksAdminPermission` trait — **never call `bouncer()`**, which reads the session admin a
-token request does not have.
+Two kinds of Bearer token reach the admin surface, over REST and GraphQL alike:
+
+- **Access tokens** for apps that log in. `POST /api/admin/auth/login` (`createAdminLogin`) starts a
+  session (`admin_api_sessions`) and returns a JWT access token (15 minutes by default) and an opaque
+  refresh token (`admin_api_refresh_tokens`, 30 days). `POST /api/admin/auth/refresh` rotates both;
+  a refresh token presented twice revokes the whole session. Admins with 2FA get a challenge first
+  (`/auth/two-factor`). Logout, logout-all, own sessions, forgot and reset password and
+  `PUT /api/admin/account` sit beside them under `src/Admin/Models/Admin{Login,TokenRefresh,…}.php`.
+- **API tokens** for server integrations, created in the admin panel (*Settings → API Tokens*) or with
+  `bagisto-api:api-token:create`, never through the API. Each belongs to one admin, is bound to one
+  domain (`DomainBinding`: `dns` or `origin` mode) and may have no expiry. The API only lists, reads
+  and revokes them.
+
+`AdminApiGuard` verifies the JWT (`Services/Jwt/JwtVerifier`, ES256 only, known `kid`), then
+`AdminApiAuthenticator` loads the session by `sid` or the API token by `jti` and rejects a revoked,
+expired or inactive one. Nothing about permissions is in a token. `EnforceAdminApiAuth` keeps a
+public allowlist: the login, two-factor, refresh, forgot and reset paths and GraphQL documents made
+only of those five mutations. Errors carry a code in the REST `error` field and the GraphQL
+`extensions.code` (`access_token_expired`, `refresh_token_invalid`, `api_token_revoked`, …), thrown as
+`Exception/AdminAuthException`. Configuration lives in `Admin/Config/admin-auth.php`, overridden by
+*Configuration → API → Admin Authentication* (read through `AdminApiAuthSettings`).
+
+The package also ships its admin panel screens under `src/Admin/`: **Settings → API Tokens**,
+**Settings → API Sessions** and **Settings → API Audit**. It merges its ACL (`Admin/Config/acl.php`),
+system settings (`Admin/Config/system.php`) and menu (`Admin/Config/menu.php`) into core's. Admin
+token requests carry no session admin, so resolve permissions from the resolved admin's role via the
+`ChecksAdminPermission` trait — **never call `bouncer()`**, which reads the session admin a token
+request does not have.
 
 ## Commands
 
@@ -198,9 +224,17 @@ php artisan bagisto-api:key:manage       # rotate / expire / manage storefront k
 php artisan bagisto-api:key:maintain     # maintenance pass over the keys
 ```
 
-The admin Integration token is created in the **admin panel**, not the CLI: enable the module (see
-[The admin Integration surface](#the-admin-integration-surface)), then **Settings → Integration →
-Create → Generate**. The plaintext token is shown once.
+Admin API credentials (see [Admin authentication](#admin-authentication)):
+
+```bash
+php artisan bagisto-api:jwt-keys [--rotate] [--reissue-api-tokens]   # the ES256 signing keys (the installer runs it)
+php artisan bagisto-api:api-token:create --admin=<id|email> --name= --domain= [--expires=YYYY-MM-DD|never] [--only-token]
+php artisan bagisto-api:prune-admin-tokens                           # scheduled hourly
+```
+
+Apps log in with an admin's email and password. Server integrations use an API token from
+**Settings → API Tokens** (or the command above); the token is shown once. On several servers set
+`BAGISTO_API_JWT_PRIVATE_KEY` / `BAGISTO_API_JWT_PUBLIC_KEY` so every node signs with the same key.
 
 ### Cache cycle
 
@@ -272,13 +306,22 @@ and run from the app root; CI does exactly this.
   Disable xdebug for a big speedup: `XDEBUG_MODE=off`.
 - Paratest accepts **one path argument** — loop files sequentially rather than space-separating them.
 - Base classes live in `tests/` (key/auth/seed), including `AdminFixtureFactory` for admin fixtures.
+- Admin tests authenticate through `AdminApiTestCase`: `adminHeaders($admin)` sends a real session
+  access token, `adminAccessToken()`, `adminRefreshToken()`, `adminTokenPair()`, `adminApiToken()`
+  and `expireAccessToken()` cover the rest. JWTs are signed with the key pair in
+  `tests/Fixtures/jwt/` (test-only, never used by a store), and DNS lookups for domain binding go
+  through the `FakeDomainResolver` in `$this->domainResolver` (`localhost` → `127.0.0.1`, `::1`).
 - Don't run unprompted full regression sweeps — run the targeted tests for what changed.
 
 ## End-to-End Tests (Playwright)
 
 The Playwright suite lives in `tests/e2e-pw/` (`playwright.config.ts`; specs under `tests/restAPI/`
-and `tests/graphQL/`). Admin auth uses a pre-issued Integration token from the `ADMIN_INTEGRATION_TOKEN`
-env var — there is no login flow. See `tests/e2e-pw/TEST_SUITE_OVERVIEW.md`.
+and `tests/graphQL/`). Admin auth logs in once in `globalSetup` with `ADMIN_EMAIL` and `ADMIN_PASSWORD`
+and caches the pair in `.admin-session.json`; the REST and GraphQL admin clients refresh on
+`access_token_expired` and log in again on `refresh_token_invalid`. `ADMIN_API_TOKEN` (domain
+`localhost`), `ADMIN_API_TOKEN_OTHER_DOMAIN` (domain `example.com`) and
+`ADMIN_API_TOKEN_REVOCABLE_{REST,GRAPHQL}` are API tokens CI creates with
+`bagisto-api:api-token:create`. See `tests/e2e-pw/TEST_SUITE_OVERVIEW.md`.
 
 ```bash
 cd tests/e2e-pw
@@ -489,7 +532,8 @@ payments.
   user-controlled text.
 - **Raw SQL**: bindings for values, an allowlist for identifiers (column and direction cannot be
   bound — a DataGrid sort arrives from the request).
-- **Never log or return a secret** — storefront keys, integration tokens, card data, password hashes.
+- **Never log or return a secret** — storefront keys, JWTs, refresh tokens, API tokens, signing keys,
+  card data, password hashes.
   A token must not be selected into a resource.
 - **Treat a webhook or redirect callback as anonymous and hostile** until its signature verifies;
   confirm amounts and status against the gateway or the stored order, and make it idempotent (the
@@ -499,9 +543,11 @@ payments.
 
 Admin token requests carry no session admin, so `bouncer()->hasPermission()` always returns false.
 Resolve permissions from the resolved admin's role via the `ChecksAdminPermission` trait —
-**never call `bouncer()`** in this package. A `permission_type` of `all` passes everything; `custom`
-checks the permission in the role's `permissions`; `same_as_web` reads the live role. `AdminApiGuard`
-applies the token's ability scope so a token can never exceed its owner's role.
+**never call `bouncer()`** in this package. A role `permission_type` of `all` passes everything;
+`custom` checks the permission in the role's `permissions`. The role is read on every request and no
+permission is carried in a token, so a role change applies on the next request for sessions and API
+tokens alike. Creating an API token for another admin needs `settings.api_tokens.manage_others` and a
+role whose permissions cover the target admin's (`AdminApiTokenIssuer::canCreateFor`).
 
 Storefront requests have no roles — authorization is **ownership**, enforced by scoping the query to
 the authenticated customer or the bearer cart token (see [Data access](#data-access)). This applies to

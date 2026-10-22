@@ -10,8 +10,6 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Utils\BuildSchema;
 
-// Runs both from a host project (packages/Webkul/BagistoApi/...) and from the package
-// repository, where the package itself is the root.
 $autoload = null;
 
 foreach (['/../../../../../vendor/autoload.php', '/../../vendor/autoload.php'] as $candidate) {
@@ -32,27 +30,19 @@ require_once $autoload;
 
 final class CollectionBuilder
 {
+    /**
+     * The directory holding the exported OpenAPI and GraphQL schemas.
+     */
     private const SCHEMA_DIR = __DIR__.'/../generated';
 
-    private string $outputDir;
-
-    public function __construct(?string $outputDir = null)
-    {
-        // The package's own collections/ directory, so running the tool with no argument
-        // regenerates the collections that ship with it.
-        $outputDir ??= __DIR__.'/../../collections';
-
-        $this->outputDir = rtrim($outputDir, '/');
-
-        if (! is_dir($this->outputDir)) {
-            fwrite(STDERR, "Output directory does not exist: {$this->outputDir}\n");
-
-            exit(1);
-        }
-    }
-
+    /**
+     * How deep a generated GraphQL selection set goes.
+     */
     private const MAX_SELECTION_DEPTH = 1;
 
+    /**
+     * The environment variable each documented request header is filled from.
+     */
     private const HEADER_VARS = [
         'X-STOREFRONT-KEY' => '{{storefrontKey}}',
         'X-Locale' => '{{locale}}',
@@ -60,6 +50,9 @@ final class CollectionBuilder
         'X-Currency' => '{{currency}}',
     ];
 
+    /**
+     * Tags renamed to the folder they belong in, per surface.
+     */
     private const TAG_ALIASES = [
         'shop' => [
             'AddUpdateCustomerAddress' => 'Customer Address',
@@ -79,9 +72,14 @@ final class CollectionBuilder
             'NewsletterUnsubscription' => 'Newsletter',
         ],
 
-        'admin' => [],
+        'admin' => [
+            'Admin Authentication' => 'Auth',
+        ],
     ];
 
+    /**
+     * The collection written for each surface.
+     */
     private const SURFACES = [
         'shop' => [
             'id' => 'e7c1a940-6b2d-4f18-9a35-1d8c05b7e240',
@@ -95,11 +93,46 @@ final class CollectionBuilder
             'id' => 'a3d5f218-4c60-4b9e-8f71-2b6e93c4a017',
             'name' => 'Bagisto Admin API',
             'file' => 'Bagisto-Admin-API.postman_collection.json',
-            'token' => '{{adminToken}}',
+            'token' => '{{adminAccessToken}}',
             'graphql' => '{{url}}/api/admin/graphql',
         ],
     ];
 
+    /**
+     * The admin REST paths that exchange credentials for tokens, which the refresh script leaves alone.
+     */
+    private const ADMIN_TOKEN_PATHS = [
+        '/auth/login',
+        '/auth/two-factor',
+        '/auth/refresh',
+        '/auth/forgot-password',
+        '/auth/reset-password',
+    ];
+
+    /**
+     * The directory the collections are written to.
+     */
+    private string $outputDir;
+
+    /**
+     * Create a builder writing to the given directory, or to the package's own collections directory.
+     */
+    public function __construct(?string $outputDir = null)
+    {
+        $outputDir ??= __DIR__.'/../../collections';
+
+        $this->outputDir = rtrim($outputDir, '/');
+
+        if (! is_dir($this->outputDir)) {
+            fwrite(STDERR, "Output directory does not exist: {$this->outputDir}\n");
+
+            exit(1);
+        }
+    }
+
+    /**
+     * Write the collection of every surface.
+     */
     public function build(): void
     {
         foreach (self::SURFACES as $surface => $config) {
@@ -130,6 +163,10 @@ final class CollectionBuilder
                 'item' => $items,
             ];
 
+            if ($events = $this->collectionEvents($surface)) {
+                $collection['event'] = $events;
+            }
+
             $path = $this->outputDir.'/'.$config['file'];
 
             file_put_contents($path, json_encode($collection, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n");
@@ -138,6 +175,9 @@ final class CollectionBuilder
         }
     }
 
+    /**
+     * The overview page of a surface's collection.
+     */
     private function collectionDescription(string $surface): string
     {
         if ($surface === 'shop') {
@@ -184,13 +224,18 @@ Administrative endpoints for the [Bagisto](https://bagisto.com) e-commerce platf
 ## Setup
 
 1. Select the **Bagisto** environment (top right). Import it first if it is not in your workspace. One environment serves both the admin and the storefront collection.
-2. Get an admin token in one of two ways. Either log in with `POST /api/admin/auth/login` (email and password) and copy `accessToken`, which lasts 15 minutes and is renewed with `POST /api/admin/auth/refresh`; or, for a server integration, create an API token under **Settings → API Tokens** in the admin panel. An API token is shown once, so copy it immediately.
-3. Set these values:
+2. Choose how to authenticate.
+
+**As an app (login and refresh).** Set `adminEmail` and `adminPassword`, then run **REST → Auth → Log in with email and password**. It saves `adminAccessToken`, `adminRefreshToken` and `adminAccessTokenExpiresAt` to the environment. The access token lasts 15 minutes; before each request the collection renews it through `POST /api/admin/auth/refresh` when it is about to expire, so you only log in again once the refresh token itself expires. An admin with two-factor authentication gets a `challengeToken` instead: send it with the code to **Auth → Verify the second factor**, which saves the tokens the same way.
+
+**As a server integration (API token).** Create an API token under **Settings → API Tokens** in the admin panel, bound to the domain the integration calls from, and paste it into `adminApiToken`. While `adminApiToken` is set it is sent on every request and nothing is refreshed. An API token is shown once, so copy it immediately.
 
 | Variable | Where it comes from |
 | --- | --- |
 | `url` | Your store, e.g. `http://localhost:8000` |
-| `adminToken` | The access token or API token, copied whole |
+| `adminEmail` / `adminPassword` | Any active admin user |
+| `adminAccessToken` / `adminRefreshToken` / `adminAccessTokenExpiresAt` | Written by the login, two-factor and refresh requests |
+| `adminApiToken` | An API token from **Settings → API Tokens**; leave it empty to use the login session |
 
 The token is sent as the bearer on every request:
 
@@ -200,7 +245,14 @@ Authorization: Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6Ii4uLiIsInR5cCI6IkpXVCJ9...
 
 ## Permissions
 
-A token has exactly the permissions of the admin user's role, so a valid token can still return **403** on an endpoint that user cannot reach. Login sessions are listed and revoked under **Settings → API Sessions**, and API tokens under **Settings → API Tokens**.
+A token has exactly the permissions of the admin user's role, read on every request, so a valid token can still return **403** on an endpoint that user cannot reach. Login sessions are listed and revoked under **Auth** and **Settings → API Sessions**, and API tokens under **Settings → API Tokens**. API tokens are created in the admin panel only.
+
+## Errors worth handling
+
+- `401 access_token_expired`: refresh, then retry the request.
+- `401 refresh_token_invalid`: log in again.
+- `401 api_token_expired` or `api_token_revoked`: create a new API token.
+- `403 api_token_domain_mismatch`: the API token was used from an address its domain does not resolve to.
 
 ## Layout
 
@@ -372,6 +424,14 @@ MD;
                     'value' => 'application/json',
                 ];
             }
+        }
+
+        if ($override = $this->bodyOverride($path, $method)) {
+            $request['body'] = [
+                'mode' => 'raw',
+                'raw' => json_encode($override, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+                'options' => ['raw' => ['language' => 'json']],
+            ];
         }
 
         $item = [
@@ -616,7 +676,7 @@ MD;
     }
 
     /**
-     * The only three requests that carry a script: each writes a token back to the environment.
+     * The test script of the requests that write a token back to the environment.
      *
      * @return list<array<string, mixed>>|null
      */
@@ -624,6 +684,10 @@ MD;
     {
         if (strtolower($method) !== 'post') {
             return null;
+        }
+
+        if (in_array($path, ['/auth/login', '/auth/two-factor', '/auth/refresh'], true)) {
+            return [$this->adminTokenScript('pm.response.json()')];
         }
 
         $capture = match ($path) {
@@ -646,6 +710,120 @@ MD;
             "    pm.environment.set('{$variable}', value);",
             '}',
         ])];
+    }
+
+    /**
+     * The request body that makes a starter admin request runnable from the environment.
+     *
+     * @return array<string, string>|null
+     */
+    private function bodyOverride(string $path, string $method): ?array
+    {
+        if (strtolower($method) !== 'post') {
+            return null;
+        }
+
+        return match ($path) {
+            '/auth/login' => [
+                'email' => '{{adminEmail}}',
+                'password' => '{{adminPassword}}',
+                'device_name' => 'Postman',
+                'client_type' => 'other',
+            ],
+
+            '/auth/refresh' => [
+                'refresh_token' => '{{adminRefreshToken}}',
+            ],
+
+            default => null,
+        };
+    }
+
+    /**
+     * A test script storing the access token, refresh token and expiry found in a token pair answer.
+     *
+     * @return array<string, mixed>
+     */
+    private function adminTokenScript(string $pairExpression): array
+    {
+        return $this->script([
+            "const pair = {$pairExpression};",
+            '',
+            'if (pair?.accessToken && pair?.refreshToken) {',
+            "    pm.environment.set('adminAccessToken', pair.accessToken);",
+            "    pm.environment.set('adminRefreshToken', pair.refreshToken);",
+            "    pm.environment.set('adminAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+            '}',
+        ]);
+    }
+
+    /**
+     * The collection-level scripts: the admin collection renews its access token before a request needs it.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function collectionEvents(string $surface): array
+    {
+        if ($surface !== 'admin') {
+            return [];
+        }
+
+        $tokenPaths = json_encode(self::ADMIN_TOKEN_PATHS, JSON_UNESCAPED_SLASHES);
+
+        return [[
+            'listen' => 'prerequest',
+
+            'script' => [
+                'type' => 'text/javascript',
+
+                'exec' => [
+                    "const apiToken = pm.environment.get('adminApiToken');",
+                    "const path = '/' + pm.request.url.getPath().replace(/^\\/+/, '');",
+                    "const isTokenRequest = {$tokenPaths}.some(tokenPath => path.endsWith(tokenPath));",
+                    "const graphQlQuery = String(pm.request.body?.graphql?.query || pm.request.body?.raw || '');",
+                    'const isPublicMutation = /createAdmin(Login|TwoFactorVerify|TokenRefresh|ForgotPassword|ResetPassword)\b/.test(graphQlQuery);',
+                    '',
+                    'function expiresAt(token) {',
+                    '    try {',
+                    "        const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+                    "        return JSON.parse(atob(part + '='.repeat((4 - part.length % 4) % 4))).exp * 1000;",
+                    '    } catch (error) {',
+                    "        return Date.parse(pm.environment.get('adminAccessTokenExpiresAt') || '') || 0;",
+                    '    }',
+                    '}',
+                    '',
+                    'if (apiToken) {',
+                    "    pm.variables.set('adminAccessToken', apiToken);",
+                    '} else if (',
+                    '    !isTokenRequest',
+                    '    && !isPublicMutation',
+                    "    && pm.environment.get('adminRefreshToken')",
+                    "    && expiresAt(pm.environment.get('adminAccessToken') || '') - Date.now() < 60000",
+                    ') {',
+                    '    pm.sendRequest({',
+                    "        url: pm.environment.get('url') + '/api/admin/auth/refresh',",
+                    "        method: 'POST',",
+                    "        header: { 'Content-Type': 'application/json', 'Accept': 'application/json' },",
+                    "        body: { mode: 'raw', raw: JSON.stringify({ refresh_token: pm.environment.get('adminRefreshToken') }) },",
+                    '    }, (error, response) => {',
+                    '        if (',
+                    '            !error',
+                    '            && response.code === 200',
+                    '        ) {',
+                    '            const pair = response.json();',
+                    '',
+                    "            pm.environment.set('adminAccessToken', pair.accessToken);",
+                    "            pm.environment.set('adminRefreshToken', pair.refreshToken);",
+                    "            pm.environment.set('adminAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+                    "            pm.variables.set('adminAccessToken', pair.accessToken);",
+                    '        } else {',
+                    "            console.warn('The admin refresh token was refused; run Auth → Log in with email and password again.');",
+                    '        }',
+                    '    });',
+                    '}',
+                ],
+            ],
+        ]];
     }
 
     /**
@@ -887,6 +1065,17 @@ MD;
                 'password' => '{{customerPassword}}',
             ]] + $variables,
 
+            'createAdminLogin' => ['input' => [
+                'email' => '{{adminEmail}}',
+                'password' => '{{adminPassword}}',
+                'deviceName' => 'Postman',
+                'clientType' => 'other',
+            ]] + $variables,
+
+            'createAdminTokenRefresh' => ['input' => [
+                'refreshToken' => '{{adminRefreshToken}}',
+            ]] + $variables,
+
             default => $variables,
         };
     }
@@ -1084,6 +1273,9 @@ MD;
                 "    pm.environment.set('cartToken', data.cartToken);",
                 '}',
             ])],
+            'createAdminLogin' => [$this->adminTokenScript('pm.response.json()?.data?.createAdminLogin?.adminLogin')],
+            'createAdminTwoFactorVerify' => [$this->adminTokenScript('pm.response.json()?.data?.createAdminTwoFactorVerify?.adminTwoFactorVerify')],
+            'createAdminTokenRefresh' => [$this->adminTokenScript('pm.response.json()?.data?.createAdminTokenRefresh?.adminTokenRefresh')],
             default => null,
         };
     }

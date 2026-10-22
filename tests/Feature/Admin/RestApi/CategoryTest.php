@@ -30,7 +30,7 @@ class CategoryTest extends AdminApiTestCase
     public function test_listing_rejects_revoked_token(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $this->revokeAdminSessions($admin);
 
@@ -45,7 +45,7 @@ class CategoryTest extends AdminApiTestCase
     public function test_listing_rejects_expired_token(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $this->expireAdminSessions($admin);
 
@@ -742,7 +742,7 @@ class CategoryTest extends AdminApiTestCase
     public function test_detail_rejects_revoked_token(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
         $id = $this->insertCategoryWithTranslations(['name' => 'Revoked Token Test']);
 
         $this->revokeAdminSessions($admin);

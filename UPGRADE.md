@@ -26,17 +26,18 @@ You can run it on a store that already has the API. On an existing install it do
 - Re-publishes the package assets and writes a fresh `config/api-platform.php`.
 - Leaves the service provider to Composer package discovery, and adds it to `bootstrap/providers.php` only when discovery does not register it.
 - Re-applies the API Platform wiring in `bootstrap/app.php` when a Bagisto upgrade replaced that file. The root `composer.json` is no longer edited: the package's own `composer.json` now turns off the package discovery of `api-platform/laravel`.
-- Runs `migrate`. This release adds no table and no column. The one migration that changed (`2026_05_13_130000_align_admin_personal_access_tokens_fks`) is a no-op on a store that already has the foreign keys. It now also works when `DB_PREFIX` is set.
+- Runs `migrate`. It creates the `admin_api_sessions`, `admin_api_refresh_tokens`, `admin_api_tokens` and `admin_api_two_factor_challenges` tables, adds `token_kind` and `channel` to `admin_api_audits` (existing rows that carry a token get `token_kind = integration`), and **drops `admin_personal_access_tokens`**, the Integration token table (see [Admin API authentication](#admin-api-authentication)).
+- Creates the ES256 key pair that signs admin access tokens and API tokens (`php artisan bagisto-api:jwt-keys`), unless one exists or the keys come from the environment, and prints the admin login endpoint and the *Settings → API Tokens* screen.
 - Keeps an existing storefront key and the `STOREFRONT_*` values in `.env`.
 - Clears the caches at the end and caches the configuration and routes again (`php artisan optimize`). After a later `.env` change, run `php artisan optimize` again.
 
-No `.env` edit and no cache command is needed afterwards. No data has to be migrated, and uploaded files stay in the folders 2.4.4 used.
+No cache command is needed afterwards, and uploaded files stay in the folders 2.4.4 used. A store served by more than one server needs the same JWT keys on every node; see [Signing keys](#signing-keys).
 
 ## 4. Breaking changes
 
 ### Admin API permissions
 
-In 2.4.4 most admin **read** endpoints only checked that a token was valid. They now need the same ACL key as the matching admin screen. Review every custom role and every integration token with **Custom** abilities.
+In 2.4.4 most admin **read** endpoints only checked that a token was valid. They now need the same ACL key as the matching admin screen. Review every custom role: a request may do exactly what the admin's role allows, and tokens carry no permissions of their own.
 
 | Endpoint | Key now required |
 |---|---|
@@ -55,10 +56,43 @@ Granting follows the core admin panel:
 
 - A role can only be created or changed with permissions the calling admin holds. Only an all-access admin can create or edit an all-access role.
 - An admin user can only be given a role whose permissions the caller holds. A caller cannot edit or delete an admin whose role is wider than their own.
-- An integration token can only be created, edited, generated, regenerated or revoked for an admin whose role the caller could grant.
-- Custom token abilities must be real ACL keys.
+- An API token can only be created for another admin with `settings.api_tokens.manage_others`, and only when every permission of that admin's role is also held by the creator.
+- An admin whose role lacks the permission for an order action (cancel, invoice, ship, refund, reorder) gets `403` before any order-state rule is checked, instead of `422`.
+- A resource missing from the admin permission map is refused with `403` instead of being open to any signed-in admin.
 
-The integration screens now have ACL entries for saving a new or edited token and for the history detail and clean-up pages. Custom roles that hold `integration.create`, `integration.edit`, `integration.history.view` or `integration.history.delete` can use those pages now.
+### Admin API authentication
+
+**Integration tokens stop working at upgrade.** The `<id>|<secret>` tokens from *Settings → Integration* are removed with their screens, permission types (`all`, `custom`, `same_as_web`), per-token abilities, IP allowlist, notification emails and revoke links, and the migration drops their table. Only their hash was stored and they had no domain, so they cannot be converted. Every client has to move to one of the two new credentials before or right after the upgrade:
+
+| Client | Before | After |
+|---|---|---|
+| An app a person signs in to (web, mobile, POS) | an Integration token pasted into the app | `POST /api/admin/auth/login` with the admin's email and password; send `accessToken` as the Bearer, renew it with `POST /api/admin/auth/refresh`, and log in again on `refresh_token_invalid` |
+| A server integration (ERP, PIM, warehouse) | an Integration token | a new **API token** from *Settings → API Tokens* (or `php artisan bagisto-api:api-token:create`), bound to the domain the integration calls from |
+
+Steps for each server integration:
+
+1. Create, or pick, an admin user with a role that holds only what the integration needs. The token's permissions are that role's, read on every request.
+2. Create an API token for that admin with the integration's domain. In the default `dns` binding mode the integration must call from an address the domain resolves to; restrict the trusted proxies at the edge so the client address cannot be forged with `X-Forwarded-For`. The `origin` mode (*Configuration → API → Admin Authentication*) checks the `Origin` or `Referer` host instead.
+3. Replace the old token in the integration's secret store. On `401` with `api_token_expired` or `api_token_revoked`, create a new token.
+
+Other changes clients notice:
+
+- The guard answers with a code in the REST `error` field and in GraphQL `extensions.code`: `access_token_expired`, `unauthenticated`, `refresh_token_invalid`, `api_token_expired`, `api_token_revoked`, `api_token_domain_mismatch`.
+- Rate limits apply per admin for login sessions and per API token, from *Configuration → API → Admin Authentication*; the per-token limits of Integration tokens are gone.
+- `GET /api/admin/get` and `readAdminProfile` also return `tokenKind`, `tokenId` and `tokenExpiresAt`.
+- The audit history moved from *Settings → Integration → History* to *Settings → API Audit*. Roles that held `integration.history` or `integration.history.delete` need `settings.api_audit` and `settings.api_audit.delete`; roles that managed Integration tokens need `settings.api_tokens` and its children, and `settings.api_sessions` to see and revoke login sessions.
+- The Postman environment replaces `adminToken` with `adminEmail`, `adminPassword`, `adminAccessToken`, `adminRefreshToken`, `adminAccessTokenExpiresAt` and `adminApiToken`; import it again.
+
+### Signing keys
+
+Access tokens and API tokens are ES256-signed JWTs. The installer creates the key pair under `storage/app/private/bagisto-api/jwt/` (private key `0600`). That directory is per server: on several servers, or a container image rebuilt on deploy, provide the keys through the environment instead, the same on every node:
+
+```dotenv
+BAGISTO_API_JWT_PRIVATE_KEY="-----BEGIN EC PRIVATE KEY-----\n...\n-----END EC PRIVATE KEY-----"
+BAGISTO_API_JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
+```
+
+Both accept PEM or base64-encoded PEM, and the key must be on the P-256 curve. If the keys are lost, every access token and API token stops verifying: apps log in again and every API token has to be created again. To rotate stored keys, run `php artisan bagisto-api:jwt-keys --rotate`; issued tokens keep working, and API tokens signed by the old key are listed. `--reissue-api-tokens` signs them again and prints each new token once, for the integrations to switch to. With environment keys, set the new pair and move the old public key into `BAGISTO_API_JWT_PREVIOUS_PUBLIC_KEYS` (a JSON object of key id to PEM).
 
 ### Admin dashboard and reports
 

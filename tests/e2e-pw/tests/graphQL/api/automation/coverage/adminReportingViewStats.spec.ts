@@ -2,6 +2,7 @@ import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminGraphQLRequest } from '../../../graphql/helpers/adminGraphqlClient';
 import { sendGraphQLRequest } from '../../../graphql/helpers/graphqlClient';
 import { env } from '../../../config/env';
+import { withAdminToken } from '../../../config/adminAuth';
 import {
   ADMIN_REPORTING_SALES_VIEW_COVERAGE_QUERY,
   ADMIN_REPORTING_PRODUCTS_VIEW_COVERAGE_QUERY,
@@ -94,9 +95,9 @@ test.describe('admin reporting view stats graphql', () => {
       type: 'sales-by-coupon',
     });
 
-    const rest = await request.get(`${env.baseUrl}/api/admin/reporting/sales/view?type=sales-by-coupon`, {
-      headers: { Accept: 'application/json', Authorization: `Bearer ${env.adminIntegrationToken}` },
-    });
+    const rest = await withAdminToken(request, token => request.get(`${env.baseUrl}/api/admin/reporting/sales/view?type=sales-by-coupon`, {
+      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+    }));
     expect(rest.status()).toBe(200);
     const restRow = (await rest.json())[0];
 

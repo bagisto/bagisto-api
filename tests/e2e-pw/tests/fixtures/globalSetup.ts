@@ -5,6 +5,7 @@ import { request } from '@playwright/test';
 import { E2E_FIXTURES_FILE, E2eFixtures } from './e2eFixtures';
 import { FixtureSeeder } from './FixtureSeeder';
 import { SeedClient } from './SeedClient';
+import { ADMIN_SESSION_FILE, loginAdmin, storeAdminSession } from './adminSession';
 
 const REQUEST_TIMEOUT_MS = 120_000;
 
@@ -40,15 +41,17 @@ function writeFixtures(fixtures: E2eFixtures): void {
 }
 
 export default async function globalSetup(): Promise<void> {
-  const baseUrl = readEnv('BAGISTO_URL') ?? 'http://127.0.0.1:8000';
+  const baseUrl = (readEnv('BAGISTO_URL') ?? 'http://127.0.0.1:8000').replace(/\/+$/, '');
   const storefrontKey = readEnv('STOREFRONT_ACCESS_KEY');
-  const adminToken = readEnv('ADMIN_INTEGRATION_TOKEN');
+  const adminEmail = readEnv('ADMIN_EMAIL');
+  const adminPassword = readEnv('ADMIN_PASSWORD');
 
   if (
     !storefrontKey
-    || !adminToken
+    || !adminEmail
+    || !adminPassword
   ) {
-    console.log('[e2e fixtures] STOREFRONT_ACCESS_KEY or ADMIN_INTEGRATION_TOKEN is not set; no fixtures seeded');
+    console.log('[e2e fixtures] STOREFRONT_ACCESS_KEY, ADMIN_EMAIL or ADMIN_PASSWORD is not set; no admin session and no fixtures');
     writeFixtures({});
 
     return;
@@ -60,7 +63,17 @@ export default async function globalSetup(): Promise<void> {
     const context = await request.newContext({ timeout: REQUEST_TIMEOUT_MS, ignoreHTTPSErrors: true });
 
     try {
-      const client = new SeedClient(context, baseUrl.replace(/\/+$/, ''), storefrontKey, adminToken);
+      const session = await loginAdmin(context, {
+        baseUrl,
+        storefrontKey,
+        email: adminEmail,
+        password: adminPassword,
+      });
+
+      storeAdminSession(session);
+      console.log(`[admin session] logged in as ${adminEmail}; tokens written to ${ADMIN_SESSION_FILE}`);
+
+      const client = new SeedClient(context, baseUrl, storefrontKey, session.accessToken);
 
       fixtures = await new FixtureSeeder(client, appTimezone()).seed();
     } finally {

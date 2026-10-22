@@ -2,6 +2,7 @@ import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminGraphQLRequest } from '../../../graphql/helpers/adminGraphqlClient';
 import { sendGraphQLRequest } from '../../../graphql/helpers/graphqlClient';
 import { env } from '../../../config/env';
+import { withAdminToken } from '../../../config/adminAuth';
 import {
   ADMIN_MENU_COVERAGE_QUERY,
   ADMIN_PERMISSIONS_COVERAGE_QUERY,
@@ -66,9 +67,9 @@ test.describe('admin menu and permissions graphql', () => {
   test('should return the same menu tree over graphql as over rest', async ({ request }) => {
     const data = await adminQuery(request, ADMIN_MENU_COVERAGE_QUERY);
 
-    const rest = await request.get(`${env.baseUrl}/api/admin/menu`, {
-      headers: { Accept: 'application/json', Authorization: `Bearer ${env.adminIntegrationToken}` },
-    });
+    const rest = await withAdminToken(request, token => request.get(`${env.baseUrl}/api/admin/menu`, {
+      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+    }));
     expect(rest.status()).toBe(200);
 
     expect(data.getAdminMenu.tree).toEqual((await rest.json())[0].tree);

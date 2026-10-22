@@ -638,6 +638,6 @@ class AppearanceSectionTest extends AdminApiTestCase
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
 
-        return [$admin, $this->adminTokenSameAsWeb($admin)];
+        return [$admin, $this->adminAccessToken($admin)];
     }
 }

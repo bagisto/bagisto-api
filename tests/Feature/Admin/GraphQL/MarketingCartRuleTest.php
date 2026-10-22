@@ -355,7 +355,7 @@ class MarketingCartRuleTest extends AdminApiTestCase
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
 
-        $response = $this->copyCartRule($sourceId, $admin, $this->adminTokenSameAsWeb($admin));
+        $response = $this->copyCartRule($sourceId, $admin, $this->adminAccessToken($admin));
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.marketing.cart-rule.no-permission'));
         expect(\DB::table('cart_rules')->count())->toBe($count);

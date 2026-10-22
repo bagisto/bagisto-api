@@ -298,7 +298,7 @@ class InvoiceTest extends AdminApiTestCase
         $response = $this->sendDuplicateInvoice([
             'invoiceId' => $invoice->id,
             'email' => 'copy@example.com',
-        ], $admin, $this->adminTokenSameAsWeb($admin));
+        ], $admin, $this->adminAccessToken($admin));
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.order.actions.invoice.no-permission'));
         Mail::assertNothingQueued();

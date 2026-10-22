@@ -50,7 +50,7 @@ class MenuTest extends AdminApiTestCase
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->adminTokenSameAsWeb($admin);
+        $token = $this->adminAccessToken($admin);
 
         $query = 'query { getAdminMenu { tree } }';
 

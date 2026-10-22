@@ -83,7 +83,12 @@ Both transports are covered: requests are foldered `REST/` and `GraphQL/` under 
 | `customerPassword` | Shop | That customer's password |
 | `customerToken` | Shop | Filled in by the Customer login request |
 | `cartToken` | Shop | Filled in by the Create cart token request |
-| `adminToken` | Admin | Integration token, from admin → Settings → Integration |
+| `adminEmail` | Admin | An admin user's email, for the login request |
+| `adminPassword` | Admin | That admin's password |
+| `adminAccessToken` | Admin | Filled in by the login, two-factor and refresh requests |
+| `adminRefreshToken` | Admin | Filled in by the same requests |
+| `adminAccessTokenExpiresAt` | Admin | Filled in by the same requests |
+| `adminApiToken` | Admin | Optional API token from admin → Settings → API Tokens; when set it is sent instead of the login session |
 | `locale` | Both | Locale code, defaults to `en` |
 | `channel` | Both | Channel code, defaults to `default` |
 | `currency` | Shop | Currency code, defaults to `USD` |
@@ -94,7 +99,7 @@ Fill in only what the collection you are using needs.
 
 **Shop** — run **REST → Customer → Customer login**. It stores `customerToken`, which every other request sends as the bearer. For a guest cart, run **Create cart token** instead and set the collection's **Authorization** tab to `{{cartToken}}`; the cart and checkout endpoints serve guests and logged-in customers alike, so the token you send decides whose cart you are working on.
 
-**Admin** — there is no login request. Generate an integration token in the admin panel (see [Admin API Authentication](#admin-api-authentication)) and paste it into `adminToken`.
+**Admin** — fill in `adminEmail` and `adminPassword` and run **REST → Auth → Log in with email and password**. It stores `adminAccessToken` and `adminRefreshToken`, and before each request the collection refreshes the access token when it is about to expire. To call the API as a server integration instead, paste an API token into `adminApiToken`; it is then sent on every request and nothing is refreshed. See [Admin API Authentication](#admin-api-authentication).
 
 ### Keeping them current
 
@@ -117,22 +122,87 @@ Values in the requests are placeholders — replace them with records that exist
 
 ## Admin API Authentication
 
-Admin endpoints (`/api/admin/*` and `/api/admin/graphql`) require an integration-token Bearer header:
+Admin endpoints (`/api/admin/*` and `/api/admin/graphql`) take a Bearer token, and every request is allowed or refused by the admin user's **role permissions**, the same permissions the admin panel uses, read on every request. There are two kinds of token, and both work over REST and GraphQL alike.
 
-Authorization: Bearer id|generated-token
+| | Apps (web, mobile, POS, desktop) | Server integrations (ERP, PIM, warehouse) |
+|---|---|---|
+| Credential | email and password, through login | an **API token** created in the admin panel |
+| Bearer token | a JWT **access token**, 15 minutes by default | the API token, until its expiry date or with no expiry |
+| Renewal | a **refresh token**, 30 days by default, exchanged for a new pair | none: create a new token when it expires or is revoked |
+| Bound to | a session, listed and revoked on its own | one domain |
 
+Lifetimes, rate limits and the revocation rules are set in **Configuration → API → Admin Authentication**.
 
-To generate a token:
+### Apps: log in and refresh
 
-1. Log into the Bagisto admin panel.
-2. Enable the module first: navigate to **Configuration → API → Integration → Module Settings** and turn **Enabled** on. (Without this, the Integration menu stays hidden.)
-3. Navigate to **Settings → Integration**.
-4. Click **Create**, fill in the name / description / assigned admin / permission mode (`All`, `Custom`, or `Same as Web`) / optional IP allowlist / rate limits / expiry, and save as a draft.
-5. Click **Generate**. The plaintext token is shown **once** — copy it immediately. You won't be able to view it again; if lost, use **Regenerate** to issue a new one.
+```http
+POST /api/admin/auth/login
+Content-Type: application/json
 
-Each token is scoped to a single admin user and inherits that admin's role permissions — so tokens can never do more than their owner could in the admin UI. To issue tokens to multiple admins, create one token per admin (each admin can hold only one active token at a time).
+{ "email": "admin@example.com", "password": "secret", "device_name": "iPhone", "client_type": "mobile" }
+```
 
-Tokens can be revoked at any time from the same page or via the signed link in the lifecycle notification email sent to the token owner.
+The answer carries `accessToken`, `accessTokenExpiresAt`, `refreshToken`, `refreshTokenExpiresAt`, the `session`, the `admin` and the role's `permissions`. Send the access token as `Authorization: Bearer <accessToken>`. `client_type` is one of `web`, `mobile`, `pos`, `desktop` or `other`; each login is its own session, so the same admin can be signed in on several devices at once.
+
+A client should:
+
+1. Store both tokens in secure storage (the Keychain or Keystore on mobile), never in plain local storage.
+2. Before a request, read `exp` from the access token (or `accessTokenExpiresAt`) and, when it is about to pass, call `POST /api/admin/auth/refresh` with `{ "refresh_token": "<refreshToken>" }`. The refresh token is read from the body only. Every refresh returns a new pair; the old refresh token stops working, and presenting it again revokes the whole session.
+3. On `401` with `access_token_expired`, refresh once and retry the request.
+4. On `401` with `refresh_token_invalid` (expired, used or revoked, or the session reached its absolute lifetime of 90 days by default), log in again.
+
+```js
+async function adminFetch(path, options = {}) {
+  let response = await send(path, options, tokens.accessToken);
+
+  if (response.status === 401 && (await response.clone().json()).error === 'access_token_expired') {
+    const refreshed = await fetch(`${baseUrl}/api/admin/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ refresh_token: tokens.refreshToken }),
+    });
+
+    if (!refreshed.ok) {
+      return redirectToLogin();
+    }
+
+    tokens = await saveTokens(await refreshed.json());
+    response = await send(path, options, tokens.accessToken);
+  }
+
+  return response;
+}
+```
+
+An admin with two-factor authentication enabled gets `202` with `twoFactorRequired: true` and a `challengeToken` instead of tokens; send it with the 6-digit `code` (or a `backup_code`) to `POST /api/admin/auth/two-factor` within 5 minutes to receive the pair. `POST /api/admin/auth/logout` ends the current session, `POST /api/admin/auth/logout-all` every session of the admin, and `GET /api/admin/auth/sessions` lists them. Forgotten passwords go through `POST /api/admin/auth/forgot-password` and `POST /api/admin/auth/reset-password`. The GraphQL equivalents are `createAdminLogin`, `createAdminTwoFactorVerify`, `createAdminTokenRefresh`, `createAdminLogout`, `createAdminLogoutAll` and `adminSessions`, on `/api/admin/graphql`.
+
+### Server integrations: API tokens
+
+1. Create a dedicated admin user for the integration, with a role that holds only the permissions it needs.
+2. In the admin panel, open **Settings → API Tokens → Create**, choose that admin, a name, the **domain** the integration calls from (for example `erp.example.com`) and an expiry date or no expiry. The CLI does the same: `php artisan bagisto-api:api-token:create --admin=<id|email> --name=ERP --domain=erp.example.com [--expires=YYYY-MM-DD|never]`.
+3. Copy the token, which is shown **once**, into the integration's secret store, and send it as `Authorization: Bearer <api token>`. There is no login and no refresh.
+4. On `401` with `api_token_expired` or `api_token_revoked`, create a new token and replace the old one.
+
+The domain binding is checked on every request. In the default `dns` mode the request must come from an address the domain's A or AAAA records point to; the token's page shows the addresses it resolved. `dns` mode trusts the client address Laravel reports, and Bagisto trusts every proxy by default, so on a server that can be reached without its proxy restrict the trusted proxies at the edge, or `X-Forwarded-For` can be forged. The `origin` mode, chosen in the configuration, compares the `Origin` or `Referer` host instead and only means something for browser callers. A request from elsewhere gets `403` with `api_token_domain_mismatch`.
+
+API tokens can be listed, read and revoked through `GET`/`DELETE /api/admin/settings/api-tokens[/{id}]` (GraphQL `adminApiTokens`, `adminApiToken`, `deleteAdminApiToken`) but are created only in the panel or the CLI. Login sessions of every admin are listed and revoked under **Settings → API Sessions**, and every authentication event is recorded under **Settings → API Audit**.
+
+### Errors
+
+| Status and `error` | Meaning | What to do |
+|---|---|---|
+| `401 access_token_expired` | The access token passed its expiry | Refresh, then retry |
+| `401 refresh_token_invalid` | The refresh token is expired, used or revoked, or the session ended | Log in again |
+| `401 unauthenticated` | The token is invalid, or its session was revoked | Log in again |
+| `401 api_token_expired` / `api_token_revoked` | The API token can no longer be used | Create a new API token |
+| `403 api_token_domain_mismatch` | The API token was used from another domain | Call from the bound domain |
+| `403` | The admin's role lacks the permission | Grant the permission to the role |
+
+REST bodies carry the code in `error`; GraphQL errors carry it in `extensions.code`.
+
+### Signing keys
+
+Access tokens and API tokens are ES256-signed JWTs. `bagisto-api-platform:install` creates the key pair with `php artisan bagisto-api:jwt-keys` under `storage/app/private/bagisto-api/jwt/`. On several servers, every node needs the same keys: set `BAGISTO_API_JWT_PRIVATE_KEY` and `BAGISTO_API_JWT_PUBLIC_KEY` (PEM or base64-encoded PEM) instead. `bagisto-api:jwt-keys --rotate` makes a new signing key and keeps the old public key, so issued tokens keep working; API tokens signed by the old key are listed, and `--reissue-api-tokens` signs them again and prints each new token once.
 
 ## Documentation
 - Bagisto API: [Demo Page](https://api-demo.bagisto.com/api)

@@ -159,7 +159,7 @@ class RmaReasonTest extends AdminApiTestCase
         $response = $this->massUpdateReasonStatus([
             'indices' => [$id],
             'value' => 0,
-        ], $admin, $this->adminTokenSameAsWeb($admin));
+        ], $admin, $this->adminAccessToken($admin));
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.rma.no-permission'));
         $this->assertDatabaseHas('rma_reasons', [

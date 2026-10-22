@@ -214,7 +214,7 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
 
-        $response = $this->massDeleteRewrites([$id], $admin, $this->adminTokenSameAsWeb($admin));
+        $response = $this->massDeleteRewrites([$id], $admin, $this->adminAccessToken($admin));
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.marketing.url-rewrite.no-permission'));
         $this->assertDatabaseHas('url_rewrites', ['id' => $id]);

@@ -12,7 +12,7 @@ class AuthenticationTest extends AdminApiTestCase
     public function test_get_profile_returns_admin_details(): void
     {
         $admin = $this->createAdmin(['name' => 'API Profile Admin']);
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $response = $this->adminGet($admin, '/api/admin/get', $token);
 
@@ -42,7 +42,7 @@ class AuthenticationTest extends AdminApiTestCase
     public function test_disabled_admin_token_is_rejected(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $admin->forceFill(['status' => 0])->save();
 
@@ -84,7 +84,7 @@ class AuthenticationTest extends AdminApiTestCase
     public function test_removed_logout_endpoint_no_longer_exists(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $response = $this->postJson('/api/admin/logout', [], [
             'Authorization' => 'Bearer '.$token,
@@ -111,7 +111,7 @@ class AuthenticationTest extends AdminApiTestCase
     public function test_removed_update_endpoint_no_longer_exists(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $response = $this->postJson('/api/admin/update', [
             'name' => 'Renamed',

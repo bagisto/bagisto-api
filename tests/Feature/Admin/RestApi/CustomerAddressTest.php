@@ -110,7 +110,7 @@ class CustomerAddressTest extends AdminApiTestCase
         [$customer, $first, $second] = $this->aCustomerWithTwoAddresses();
 
         $admin = $this->createAdminWithoutAddressEdit();
-        $this->adminPost($admin, '/api/admin/customers/'.$customer->id.'/addresses/'.$second->id.'/set-default', [], $this->adminTokenSameAsWeb($admin))
+        $this->adminPost($admin, '/api/admin/customers/'.$customer->id.'/addresses/'.$second->id.'/set-default', [], $this->adminAccessToken($admin))
             ->assertStatus(403);
 
         expect((int) CustomerAddress::find($first->id)->default_address)->toBe(1);

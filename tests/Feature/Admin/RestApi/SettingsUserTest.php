@@ -238,7 +238,7 @@ class SettingsUserTest extends AdminApiTestCase
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
         $email = $this->uniqueEmail('cust');
 
         $response = $this->adminPost($admin, '/api/admin/settings/users', [

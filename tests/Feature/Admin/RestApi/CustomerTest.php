@@ -707,7 +707,7 @@ class CustomerTest extends AdminApiTestCase
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $c = $this->seedCustomer();
 
-        $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/impersonate', [], $this->adminTokenSameAsWeb($admin))
+        $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/impersonate', [], $this->adminAccessToken($admin))
             ->assertStatus(403);
     }
 
@@ -725,7 +725,7 @@ class CustomerTest extends AdminApiTestCase
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $c = $this->seedCustomer();
 
-        $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/impersonate', [], $this->adminTokenSameAsWeb($admin))
+        $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/impersonate', [], $this->adminAccessToken($admin))
             ->assertStatus(201);
     }
 

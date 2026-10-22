@@ -206,7 +206,27 @@ Not covered, because the suite has no way to create a purchased, invoiced or shi
 
 Shared admin helpers: `sendAdminMultipartRequest` in `tests/restAPI/rest/helpers/adminClient.ts`, image and video bytes in `tests/restAPI/rest/helpers/mediaFixtures.ts`, and `adminSanitisedHtml.assertions.ts` under both assertion directories.
 
-Not covered: the 403 a caller gets before the last all-access 400 when it may not grant a role (the suite has a single all-access token and no API to issue a restricted one), the last all-access 400 itself (it depends on how many all-access admins the shared database holds), the import images archive rules (the suite does not create imports), and an RMA image or attachment uploaded and downloaded end to end (the suite cannot create an order a return can be opened for).
+Not covered: the 403 a caller gets before the last all-access 400 when it may not grant a role (the shared session belongs to a single all-access admin), the last all-access 400 itself (it depends on how many all-access admins the shared database holds), the import images archive rules (the suite does not create imports), and an RMA image or attachment uploaded and downloaded end to end (the suite cannot create an order a return can be opened for).
+
+## Admin authentication
+
+The admin specs authenticate the way an app does. `tests/fixtures/globalSetup.ts` logs in once with `ADMIN_EMAIL` and `ADMIN_PASSWORD` through `POST /api/admin/auth/login` and writes the access and refresh tokens to the git-ignored `.admin-session.json`. `tests/fixtures/adminSession.ts` holds that session for every worker: `sendAdminRequest` (REST, `tests/restAPI/rest/helpers/adminClient.ts`) and `sendAdminGraphQLRequest` (GraphQL, `tests/graphQL/graphql/helpers/adminGraphqlClient.ts`) send the access token, and on a `401` with `access_token_expired` refresh once and retry; when the refresh token is refused (`refresh_token_invalid`) or the session was revoked they log in again. A call that passes its own `Authorization` header is sent as it is.
+
+| Variable | Used for |
+|---|---|
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | The shared login session; required |
+| `ADMIN_API_TOKEN` | An API token bound to `localhost`; the API token specs skip without it |
+| `ADMIN_API_TOKEN_OTHER_DOMAIN` | An API token bound to `example.com`, refused with `api_token_domain_mismatch` |
+| `ADMIN_API_TOKEN_REVOCABLE_REST`, `ADMIN_API_TOKEN_REVOCABLE_GRAPHQL` | One API token each spec revokes, since the API cannot create API tokens |
+
+CI creates the API tokens with `php artisan bagisto-api:api-token:create --only-token`.
+
+| Spec | Covers |
+|---|---|
+| `tests/restAPI/api/automation/admin/auth.spec.ts`, `tests/graphQL/api/automation/admin/auth.spec.ts` | Login shape and the profile's token kind; a wrong password and an unknown email get the same answer; an inactive admin is refused; refresh rotates the pair and a replayed refresh token revokes the session; a refresh token is not a bearer token; logout and logout-all; two logins with different client types are two sessions and revoking one keeps the other; another admin's sessions listed and revoked through the settings endpoints; a limited role gets 403 where it lacks the permission and 200 where it has it; the GraphQL public allowlist refuses a document that mixes the login mutation with a protected field. Each test creates its own admin and role and deletes them. |
+| `tests/restAPI/api/automation/admin/apiTokens.spec.ts`, `tests/graphQL/api/automation/admin/apiTokens.spec.ts` | The `localhost` API token reads the profile and admin data; the `example.com` token is refused; tokens are listed and read without their string; a revoked token gets `api_token_revoked`; an API token cannot create API tokens or use the login session endpoints. |
+
+Not covered end to end: an expired access token. The shortest access token lifetime is 5 minutes, so the refresh-and-retry path is exercised only when a real token expires during a run, and the expiry itself is covered by the Pest suites with a moved clock. Two-factor login is covered by Pest only, since the suite has no authenticator.
 
 ## Seeded fixtures (`tests/fixtures/`)
 

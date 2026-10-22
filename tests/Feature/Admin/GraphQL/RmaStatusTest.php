@@ -159,7 +159,7 @@ class RmaStatusTest extends AdminApiTestCase
         $response = $this->massUpdateStatusStatus([
             'indices' => [$id],
             'value' => 0,
-        ], $admin, $this->adminTokenSameAsWeb($admin));
+        ], $admin, $this->adminAccessToken($admin));
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.rma.no-permission'));
         $this->assertDatabaseHas('rma_statuses', [

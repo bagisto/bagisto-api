@@ -26,7 +26,7 @@ class AttributeTest extends AdminApiTestCase
     public function test_listing_rejects_revoked_token(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $this->revokeAdminSessions($admin);
 
@@ -41,7 +41,7 @@ class AttributeTest extends AdminApiTestCase
     public function test_listing_rejects_expired_token(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $this->expireAdminSessions($admin);
 
@@ -564,7 +564,7 @@ class AttributeTest extends AdminApiTestCase
     public function test_detail_rejects_revoked_token(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
         $id = $this->insertAttribute(['code' => 'detail_revoked_'.uniqid()]);
 
         $this->revokeAdminSessions($admin);
@@ -1518,7 +1518,7 @@ class AttributeTest extends AdminApiTestCase
     public function test_create_attribute_revoked_token_returns_401(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $this->revokeAdminSessions($admin);
 

@@ -54,6 +54,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                                             'order_item_id' => 78,
                                             'sku' => 'COASTALBREEZEMENSHOODIE',
                                             'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                            'product_image' => 'https://example.com/cache/medium/product/12/hoodie.webp',
                                             'quantity' => 1,
                                             'resolution' => 'return',
                                             'reason_id' => 2,
@@ -78,7 +79,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'Get one of the customer\'s return (RMA) requests',
-                description: 'Full detail of a single RMA owned by the authenticated customer — the returned item, images, status, and action flags (canClose / canReopen / isExpired). 404 if it is not the customer\'s.',
+                description: 'Full detail of a single RMA owned by the authenticated customer — the returned item, images, status, and action flags (canClose / canReopen / isExpired). `item.product_image` is the returned product\'s image, or the store\'s product placeholder when it has none; `images` are the photos the customer attached. 404 if it is not the customer\'s.',
                 responses: [
                     '200' => new Response(
                         description: 'The return request detail.',
@@ -101,6 +102,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                                         'order_item_id' => 78,
                                         'sku' => 'COASTALBREEZEMENSHOODIE',
                                         'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                        'product_image' => 'https://example.com/cache/medium/product/12/hoodie.webp',
                                         'quantity' => 1,
                                         'resolution' => 'return',
                                         'reason_id' => 2,
@@ -209,6 +211,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                                         'order_item_id' => 78,
                                         'sku' => 'COASTALBREEZEMENSHOODIE',
                                         'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                        'product_image' => 'https://example.com/cache/medium/product/12/hoodie.webp',
                                         'quantity' => 1,
                                         'resolution' => 'return',
                                         'reason_id' => 2,

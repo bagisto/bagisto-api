@@ -27,6 +27,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'ProductReview',
+    normalizationContext: ['skip_null_values' => false],
     uriTemplate: '/reviews',
     operations: [
         new GetCollection(
@@ -258,6 +259,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'ProductReview',
+    normalizationContext: ['skip_null_values' => false],
     uriTemplate: '/products/{productId}/reviews',
     uriVariables: [
         'productId' => new Link(
@@ -306,6 +308,8 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
 )]
 class ProductReview extends \Webkul\Product\Models\ProductReview
 {
+    protected $appends = ['customer_image_url'];
+
     protected $fillable = [
         'comment',
         'title',
@@ -359,6 +363,15 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         } else {
             parent::__set($key, $value);
         }
+    }
+
+    /**
+     * The reviewer's profile image URL, or the storefront's default user image for a guest review or a
+     * customer without a photo — the same fallback the storefront account menu uses.
+     */
+    public function getCustomerImageUrlAttribute(): string
+    {
+        return $this->customer?->image_url ?? bagisto_asset('images/user-placeholder.png', 'shop');
     }
 
     public function getAttachmentsAttribute()

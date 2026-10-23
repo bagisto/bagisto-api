@@ -39,7 +39,7 @@ class ProductReviewProvider implements ProviderInterface
 
         $args = $this->resolveArgs($uriVariables, $context, $isGraphQL);
 
-        $query = ProductReview::query();
+        $query = ProductReview::query()->with('customer');
 
         if (! empty($args['product_id'])) {
             $query->where('product_id', (int) $args['product_id']);

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Product\Models\ProductReview;
@@ -448,5 +449,27 @@ class ProductReviewTest extends RestApiTestCase
 
         $response->assertOk();
         expect(array_column($response->json(), 'name'))->toContain('J*** S****');
+    }
+
+    public function test_reviews_carry_the_reviewer_image_and_the_default_image_for_a_guest(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
+
+        DB::table('customers')->where('id', $customer->id)->update(['image' => 'customer/'.$customer->id.'/avatar.webp']);
+
+        $withImage = ProductReview::factory()->create(['customer_id' => $customer->id, 'product_id' => $product->id, 'status' => 'approved']);
+        $guest = ProductReview::factory()->create(['customer_id' => null, 'name' => 'Guest Reviewer', 'product_id' => $product->id, 'status' => 'approved']);
+
+        foreach (['/api/shop/reviews?product_id='.$product->id, '/api/shop/products/'.$product->id.'/reviews'] as $url) {
+            $response = $this->publicGet($url);
+
+            $response->assertOk();
+
+            $rows = collect($response->json('data') ?? $response->json())->keyBy('id');
+
+            expect($rows[$withImage->id]['customerImageUrl'])->toContain('customer/'.$customer->id.'/avatar.webp');
+            expect(array_key_exists('customerImageUrl', $rows[$guest->id]))->toBeTrue();
+            expect($rows[$guest->id]['customerImageUrl'])->toBe(bagisto_asset('images/user-placeholder.png', 'shop'));
+        }
     }
 }

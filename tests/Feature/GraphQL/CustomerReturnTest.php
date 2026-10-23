@@ -96,6 +96,26 @@ class CustomerReturnTest extends GraphQLTestCase
         expect($node['item']['sku'])->toBe('RMA-SKU-1');
     }
 
+    public function test_return_item_carries_the_product_image_or_placeholder(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        DB::table('product_images')->where('product_id', $data['orderItem']->product_id)->delete();
+
+        $response = $this->authenticatedGraphQL(
+            $customer,
+            'query ($id: ID!) { customerReturn(id: $id) { _id item } }',
+            ['id' => "/api/shop/returns/{$data['rma']->id}"],
+        );
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.customerReturn.item.product_image'))
+            ->toBe(product_image()->getProductBaseImage(Product::find($data['orderItem']->product_id))['medium_image_url']);
+    }
+
     public function test_view_own_return(): void
     {
         $this->seedRequiredData();

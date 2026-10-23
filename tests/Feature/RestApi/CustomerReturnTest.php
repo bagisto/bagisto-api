@@ -90,6 +90,42 @@ class CustomerReturnTest extends RestApiTestCase
         expect($response->json('images'))->toBeArray();
     }
 
+    public function test_return_item_carries_the_placeholder_when_the_product_has_no_image(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        DB::table('product_images')->where('product_id', $data['orderItem']->product_id)->delete();
+
+        $expected = product_image()->getProductBaseImage(Product::find($data['orderItem']->product_id))['medium_image_url'];
+
+        $response = $this->authenticatedGet($customer, '/api/shop/returns/'.$data['rma']->id);
+
+        $response->assertOk();
+        expect($response->json('item.product_image'))->toBe($expected);
+        expect($expected)->toContain('placeholder');
+    }
+
+    public function test_return_item_carries_the_product_image(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        DB::table('product_images')->insert([
+            'product_id' => $data['orderItem']->product_id,
+            'type' => 'images',
+            'path' => 'product/'.$data['orderItem']->product_id.'/return-test.webp',
+            'position' => 1,
+        ]);
+
+        $response = $this->authenticatedGet($customer, '/api/shop/returns/'.$data['rma']->id);
+
+        $response->assertOk();
+        expect($response->json('item.product_image'))->toContain('return-test.webp');
+    }
+
     public function test_cannot_view_another_customers_return(): void
     {
         $this->seedRequiredData();

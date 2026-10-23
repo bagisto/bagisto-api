@@ -11,7 +11,7 @@ use Webkul\User\Models\Admin;
 
 class AccountTest extends AdminApiTestCase
 {
-    private function put(Admin $admin, array $data)
+    private function putAccount(Admin $admin, array $data)
     {
         return $this->putJson('/api/admin/account', $data, $this->adminHeaders($admin));
     }
@@ -20,7 +20,7 @@ class AccountTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        $response = $this->put($admin, [
+        $response = $this->putAccount($admin, [
             'name' => 'Renamed Admin',
             'email' => 'renamed-'.uniqid().'@example.com',
             'current_password' => $this->adminPassword,
@@ -35,7 +35,7 @@ class AccountTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin(['name' => 'Original']);
 
-        $response = $this->put($admin, ['name' => 'Changed', 'current_password' => 'wrong-password']);
+        $response = $this->putAccount($admin, ['name' => 'Changed', 'current_password' => 'wrong-password']);
 
         $this->assertSame(422, $response->getStatusCode());
         $this->assertSame('Original', $admin->fresh()->name);
@@ -43,7 +43,7 @@ class AccountTest extends AdminApiTestCase
 
     public function test_update_requires_current_password(): void
     {
-        $response = $this->put($this->createAdmin(), ['name' => 'Changed']);
+        $response = $this->putAccount($this->createAdmin(), ['name' => 'Changed']);
 
         $this->assertSame(422, $response->getStatusCode());
     }
@@ -52,7 +52,7 @@ class AccountTest extends AdminApiTestCase
     {
         $other = $this->createAdmin();
 
-        $response = $this->put($this->createAdmin(), [
+        $response = $this->putAccount($this->createAdmin(), [
             'name' => 'Admin',
             'email' => $other->email,
             'current_password' => $this->adminPassword,
@@ -67,7 +67,7 @@ class AccountTest extends AdminApiTestCase
 
         $admin = $this->createAdmin();
 
-        $response = $this->put($admin, [
+        $response = $this->putAccount($admin, [
             'name' => $admin->name,
             'password' => 'new-secret',
             'password_confirmation' => 'new-secret',
@@ -83,7 +83,7 @@ class AccountTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        $response = $this->put($admin, [
+        $response = $this->putAccount($admin, [
             'name' => $admin->name,
             'password' => 'new-secret',
             'password_confirmation' => 'different',

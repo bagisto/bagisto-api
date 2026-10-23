@@ -3919,6 +3919,322 @@
                     "name": "Customer Order",
                     "item": [
                         {
+                            "name": "1. List customer orders",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-orders",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-orders"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "page",
+                                            "value": "",
+                                            "description": "The collection page number",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "per_page",
+                                            "value": "",
+                                            "description": "The number of items per page",
+                                            "disabled": true
+                                        }
+                                    ]
+                                },
+                                "description": "Step 1. Lists your orders, newest first. Take an order's `id` for the next requests.\n\nOrder → invoice → shipment flow (customer token required):\n1. Order list — take an order's `_id` (REST: `id`).\n2. Order detail — pass that order.\n3. Invoice list of the order — filter by the order's `_id`; take an invoice's `id`.\n4. Invoice detail — pass that invoice.\n5. Shipment list of the order — filter by the order's `_id`; take a shipment's `id`.\n6. Shipment detail — pass that shipment.\nAn order with nothing invoiced or shipped returns an empty list."
+                            }
+                        },
+                        {
+                            "name": "2. Get a customer order",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-orders/:id",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-orders",
+                                        ":id"
+                                    ],
+                                    "variable": [
+                                        {
+                                            "key": "id",
+                                            "value": "1",
+                                            "description": "Customer order ID"
+                                        }
+                                    ]
+                                },
+                                "description": "Step 2. One order in full. `:id` is the order `id` from step 1."
+                            }
+                        },
+                        {
+                            "name": "3. List invoices of an order",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-invoices",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-invoices"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "order_id",
+                                            "value": "1",
+                                            "description": "Return only invoices for this order ID. Accepts `orderId` as an alias."
+                                        },
+                                        {
+                                            "key": "state",
+                                            "value": "",
+                                            "description": "Filter by invoice state (pending, pending_payment, paid, overdue, refunded).",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "page",
+                                            "value": "",
+                                            "description": "The collection page number",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "per_page",
+                                            "value": "",
+                                            "description": "The number of items per page",
+                                            "disabled": true
+                                        }
+                                    ]
+                                },
+                                "description": "Step 3. The invoices of one order: set `order_id` to the order's `id`. Untick `order_id` to list every invoice you have. Optional `state` filter. Take an invoice's `id` for step 4; `downloadUrl` is its PDF."
+                            }
+                        },
+                        {
+                            "name": "4. Get an invoice",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-invoices/:id",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-invoices",
+                                        ":id"
+                                    ],
+                                    "variable": [
+                                        {
+                                            "key": "id",
+                                            "value": "1",
+                                            "description": "Customer invoice ID"
+                                        }
+                                    ]
+                                },
+                                "description": "Step 4. One invoice in full. `:id` is the invoice `id` from step 3."
+                            }
+                        },
+                        {
+                            "name": "5. List shipments of an order",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-order-shipments",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-order-shipments"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "order_id",
+                                            "value": "1",
+                                            "description": "Return only shipments for this order ID. Accepts `orderId` as an alias."
+                                        },
+                                        {
+                                            "key": "status",
+                                            "value": "",
+                                            "description": "Filter by shipment status (pending, shipped, canceled).",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "page",
+                                            "value": "",
+                                            "description": "The collection page number",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "per_page",
+                                            "value": "",
+                                            "description": "The number of items per page",
+                                            "disabled": true
+                                        }
+                                    ]
+                                },
+                                "description": "Step 5. The shipments of one order: set `order_id` to the order's `id`. Untick `order_id` to list every shipment you have. Optional `status` filter. Take a shipment's `id` for step 6."
+                            }
+                        },
+                        {
+                            "name": "6. Get a shipment",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-order-shipments/:id",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-order-shipments",
+                                        ":id"
+                                    ],
+                                    "variable": [
+                                        {
+                                            "key": "id",
+                                            "value": "1",
+                                            "description": "Customer order shipment ID"
+                                        }
+                                    ]
+                                },
+                                "description": "Step 6. One shipment in full. `:id` is the shipment `id` from step 5."
+                            }
+                        },
+                        {
                             "name": "Cancel a customer order",
                             "request": {
                                 "method": "POST",
@@ -4064,134 +4380,6 @@
                             }
                         },
                         {
-                            "name": "List invoices for the authenticated customer",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-invoices",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-invoices"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "order_id",
-                                            "value": "590",
-                                            "description": "Return only invoices for this order ID. Accepts `orderId` as an alias.",
-                                            "disabled": true
-                                        },
-                                        {
-                                            "key": "state",
-                                            "value": "",
-                                            "description": "Filter by invoice state (pending, pending_payment, paid, overdue, refunded).",
-                                            "disabled": true
-                                        },
-                                        {
-                                            "key": "page",
-                                            "value": "",
-                                            "description": "The collection page number",
-                                            "disabled": true
-                                        },
-                                        {
-                                            "key": "per_page",
-                                            "value": "",
-                                            "description": "The number of items per page",
-                                            "disabled": true
-                                        }
-                                    ]
-                                },
-                                "description": "Mirrors the GraphQL `customerInvoices(orderId:)` query. Use `?order_id=N` to scope to a specific order, `?state=paid` (or pending, pending_payment, overdue, refunded) to filter by invoice state."
-                            }
-                        },
-                        {
-                            "name": "List shipments for the authenticated customer",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-order-shipments",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-order-shipments"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "order_id",
-                                            "value": "3",
-                                            "description": "Return only shipments for this order ID. Accepts `orderId` as an alias.",
-                                            "disabled": true
-                                        },
-                                        {
-                                            "key": "status",
-                                            "value": "",
-                                            "description": "Filter by shipment status (pending, shipped, canceled).",
-                                            "disabled": true
-                                        },
-                                        {
-                                            "key": "page",
-                                            "value": "",
-                                            "description": "The collection page number",
-                                            "disabled": true
-                                        },
-                                        {
-                                            "key": "per_page",
-                                            "value": "",
-                                            "description": "The number of items per page",
-                                            "disabled": true
-                                        }
-                                    ]
-                                },
-                                "description": "Mirrors the GraphQL `customerOrderShipments(orderId:)` query. Use `?order_id=N` to scope to a specific order, `?status=X` to filter by shipment status."
-                            }
-                        },
-                        {
                             "name": "Reorder items from a previous customer order",
                             "request": {
                                 "method": "POST",
@@ -4286,144 +4474,6 @@
                                     ]
                                 },
                                 "description": "Retrieves a CustomerDownloadableProduct resource."
-                            }
-                        },
-                        {
-                            "name": "Retrieves a CustomerInvoice resource.",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-invoices/:id",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-invoices",
-                                        ":id"
-                                    ],
-                                    "variable": [
-                                        {
-                                            "key": "id",
-                                            "value": "1",
-                                            "description": "Customer invoice ID"
-                                        }
-                                    ]
-                                },
-                                "description": "Retrieves a CustomerInvoice resource."
-                            }
-                        },
-                        {
-                            "name": "Retrieves a CustomerOrder resource.",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-orders/:id",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-orders",
-                                        ":id"
-                                    ],
-                                    "variable": [
-                                        {
-                                            "key": "id",
-                                            "value": "1",
-                                            "description": "Customer order ID"
-                                        }
-                                    ]
-                                },
-                                "description": "Retrieves a CustomerOrder resource."
-                            }
-                        },
-                        {
-                            "name": "Retrieves a CustomerOrderShipment resource.",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-order-shipments/:id",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-order-shipments",
-                                        ":id"
-                                    ],
-                                    "variable": [
-                                        {
-                                            "key": "id",
-                                            "value": "1",
-                                            "description": "Customer order shipment ID"
-                                        }
-                                    ]
-                                },
-                                "description": "Retrieves a CustomerOrderShipment resource."
                             }
                         },
                         {
@@ -4522,58 +4572,6 @@
                                     ]
                                 },
                                 "description": "Retrieves the collection of CustomerDownloadableProduct resources."
-                            }
-                        },
-                        {
-                            "name": "Retrieves the collection of CustomerOrder resources.",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer-orders",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer-orders"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "page",
-                                            "value": "",
-                                            "description": "The collection page number",
-                                            "disabled": true
-                                        },
-                                        {
-                                            "key": "per_page",
-                                            "value": "",
-                                            "description": "The number of items per page",
-                                            "disabled": true
-                                        }
-                                    ]
-                                },
-                                "description": "Retrieves the collection of CustomerOrder resources."
                             }
                         },
                         {
@@ -4887,7 +4885,7 @@
                                         }
                                     ]
                                 },
-                                "description": "Full detail of a single RMA owned by the authenticated customer — the returned item, images, status, and action flags (canClose / canReopen / isExpired). 404 if it is not the customer's."
+                                "description": "Full detail of a single RMA owned by the authenticated customer — the returned item, images, status, and action flags (canClose / canReopen / isExpired). 404 if it is not the customer's.\n\n`item.product_image` is the returned product's image, or the store's product placeholder image when the product has no photos (as on the storefront product endpoints). `images` are the photos the customer attached to the return."
                             }
                         },
                         {
@@ -5023,7 +5021,7 @@
                                         }
                                     ]
                                 },
-                                "description": "Returns the customer's own RMA requests, newest first. Optional `?status=<id>` filter. Requires a customer Bearer token."
+                                "description": "Returns the customer's own RMA requests, newest first. Optional `?status=<id>` filter. Requires a customer Bearer token.\n\n`item.product_image` is the returned product's image, or the store's product placeholder image when the product has no photos (as on the storefront product endpoints). `images` are the photos the customer attached to the return."
                             }
                         },
                         {
@@ -6835,7 +6833,7 @@
                                     {
                                         "key": "X-STOREFRONT-KEY",
                                         "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.\n\nEach review carries `customerImageUrl`: the reviewer's profile image URL, or the store's default user image for a guest review or a customer without a photo."
                                     },
                                     {
                                         "key": "X-Locale",
@@ -7266,7 +7264,7 @@
                                     {
                                         "key": "X-STOREFRONT-KEY",
                                         "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.\n\nEach review carries `customerImageUrl`: the reviewer's profile image URL, or the store's default user image for a guest review or a customer without a photo."
                                     },
                                     {
                                         "key": "X-Locale",
@@ -7637,7 +7635,7 @@
                                     {
                                         "key": "X-STOREFRONT-KEY",
                                         "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.\n\nEach review carries `customerImageUrl`: the reviewer's profile image URL, or the store's default user image for a guest review or a customer without a photo."
                                     },
                                     {
                                         "key": "X-Locale",
@@ -12984,6 +12982,210 @@
                             "name": "Queries",
                             "item": [
                                 {
+                                    "name": "1. customerOrders — order list",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query CustomerOrders($first: Int) {\n  customerOrders(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        incrementId\n        status\n        channelName\n        isGuest\n        customerEmail\n        customerFirstName\n        customerLastName\n        shippingMethod\n        shippingTitle\n        shippingDescription\n        couponCode\n        isGift\n        totalItemCount\n        totalQtyOrdered\n        baseCurrencyCode\n        channelCurrencyCode\n        orderCurrencyCode\n        grandTotal\n        baseGrandTotal\n        grandTotalInvoiced\n        baseGrandTotalInvoiced\n        grandTotalRefunded\n        baseGrandTotalRefunded\n        subTotal\n        baseSubTotal\n        subTotalInvoiced\n        baseSubTotalInvoiced\n        subTotalRefunded\n        baseSubTotalRefunded\n        discountPercent\n        discountAmount\n        baseDiscountAmount\n        discountInvoiced\n        baseDiscountInvoiced\n        discountRefunded\n        baseDiscountRefunded\n        taxAmount\n        baseTaxAmount\n        taxAmountInvoiced\n        baseTaxAmountInvoiced\n        taxAmountRefunded\n        baseTaxAmountRefunded\n        shippingAmount\n        baseShippingAmount\n        shippingInvoiced\n        baseShippingInvoiced\n        shippingRefunded\n        baseShippingRefunded\n        shippingDiscountAmount\n        baseShippingDiscountAmount\n        shippingTaxAmount\n        baseShippingTaxAmount\n        shippingTaxRefunded\n        baseShippingTaxRefunded\n        subTotalInclTax\n        baseSubTotalInclTax\n        shippingAmountInclTax\n        baseShippingAmountInclTax\n        customerId\n        customerType\n        channelId\n        channelType\n        cartId\n        appliedCartRuleIds\n        createdAt\n        updatedAt\n        customerFullName\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"first\": 10\n}"
+                                            }
+                                        },
+                                        "description": "Step 1. Lists your orders, newest first. Take an order's `_id` for the invoice and shipment lists, and its `id` for the order detail.\n\nOrder → invoice → shipment flow (customer token required):\n1. Order list — take an order's `_id` (REST: `id`).\n2. Order detail — pass that order.\n3. Invoice list of the order — filter by the order's `_id`; take an invoice's `id`.\n4. Invoice detail — pass that invoice.\n5. Shipment list of the order — filter by the order's `_id`; take a shipment's `id`.\n6. Shipment detail — pass that shipment.\nAn order with nothing invoiced or shipped returns an empty list.\n\nGraphQL item queries take the record's full path as `id` (the `id` field of the list row, e.g. `/api/shop/customer-invoices/5`), never the bare number — a bare number answers \"Internal server error\"."
+                                    }
+                                },
+                                {
+                                    "name": "2. customerOrder — order detail",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query CustomerOrder($id: ID!) {\n  customerOrder(id: $id) {\n    id\n    _id\n    incrementId\n    status\n    channelName\n    isGuest\n    customerEmail\n    customerFirstName\n    customerLastName\n    shippingMethod\n    shippingTitle\n    shippingDescription\n    couponCode\n    isGift\n    totalItemCount\n    totalQtyOrdered\n    baseCurrencyCode\n    channelCurrencyCode\n    orderCurrencyCode\n    grandTotal\n    baseGrandTotal\n    grandTotalInvoiced\n    baseGrandTotalInvoiced\n    grandTotalRefunded\n    baseGrandTotalRefunded\n    subTotal\n    baseSubTotal\n    subTotalInvoiced\n    baseSubTotalInvoiced\n    subTotalRefunded\n    baseSubTotalRefunded\n    discountPercent\n    discountAmount\n    baseDiscountAmount\n    discountInvoiced\n    baseDiscountInvoiced\n    discountRefunded\n    baseDiscountRefunded\n    taxAmount\n    baseTaxAmount\n    taxAmountInvoiced\n    baseTaxAmountInvoiced\n    taxAmountRefunded\n    baseTaxAmountRefunded\n    shippingAmount\n    baseShippingAmount\n    shippingInvoiced\n    baseShippingInvoiced\n    shippingRefunded\n    baseShippingRefunded\n    shippingDiscountAmount\n    baseShippingDiscountAmount\n    shippingTaxAmount\n    baseShippingTaxAmount\n    shippingTaxRefunded\n    baseShippingTaxRefunded\n    subTotalInclTax\n    baseSubTotalInclTax\n    shippingAmountInclTax\n    baseShippingAmountInclTax\n    customerId\n    customerType\n    channelId\n    channelType\n    cartId\n    appliedCartRuleIds\n    createdAt\n    updatedAt\n    customerFullName\n    payment {\n      id\n      _id\n      orderId\n      method\n      methodTitle\n      additional\n      createdAt\n      updatedAt\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"id\": \"/api/shop/customer-orders/1\"\n}"
+                                            }
+                                        },
+                                        "description": "Step 2. One order in full. Pass the `id` of an order from step 1.\n\nGraphQL item queries take the record's full path as `id` (the `id` field of the list row, e.g. `/api/shop/customer-invoices/5`), never the bare number — a bare number answers \"Internal server error\"."
+                                    }
+                                },
+                                {
+                                    "name": "3. customerInvoices — invoices of an order",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query CustomerInvoices($orderId: Int, $first: Int) {\n  customerInvoices(orderId: $orderId, first: $first) {\n    edges {\n      node {\n        id\n        _id\n        incrementId\n        state\n        emailSent\n        totalQty\n        baseCurrencyCode\n        channelCurrencyCode\n        orderCurrencyCode\n        subTotal\n        baseSubTotal\n        grandTotal\n        baseGrandTotal\n        shippingAmount\n        baseShippingAmount\n        taxAmount\n        baseTaxAmount\n        discountAmount\n        baseDiscountAmount\n        shippingTaxAmount\n        baseShippingTaxAmount\n        subTotalInclTax\n        baseSubTotalInclTax\n        shippingAmountInclTax\n        baseShippingAmountInclTax\n        transactionId\n        reminders\n        nextReminderAt\n        createdAt\n        updatedAt\n        downloadUrl\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"orderId\": 1,\n    \"first\": 10\n}"
+                                            }
+                                        },
+                                        "description": "Step 3. The invoices of one order: pass the order's `_id` as `orderId`. Leave `orderId` out to list every invoice you have. Optional `state` filter (pending, pending_payment, paid, overdue, refunded). Take an invoice's `id` for step 4; `downloadUrl` is its PDF.\n\nGraphQL item queries take the record's full path as `id` (the `id` field of the list row, e.g. `/api/shop/customer-invoices/5`), never the bare number — a bare number answers \"Internal server error\"."
+                                    }
+                                },
+                                {
+                                    "name": "4. customerInvoice — invoice detail",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query CustomerInvoice($id: ID!) {\n  customerInvoice(id: $id) {\n    id\n    _id\n    incrementId\n    state\n    emailSent\n    totalQty\n    baseCurrencyCode\n    channelCurrencyCode\n    orderCurrencyCode\n    subTotal\n    baseSubTotal\n    grandTotal\n    baseGrandTotal\n    shippingAmount\n    baseShippingAmount\n    taxAmount\n    baseTaxAmount\n    discountAmount\n    baseDiscountAmount\n    shippingTaxAmount\n    baseShippingTaxAmount\n    subTotalInclTax\n    baseSubTotalInclTax\n    shippingAmountInclTax\n    baseShippingAmountInclTax\n    transactionId\n    reminders\n    nextReminderAt\n    createdAt\n    updatedAt\n    downloadUrl\n  }\n}\n",
+                                                "variables": "{\n    \"id\": \"/api/shop/customer-invoices/1\"\n}"
+                                            }
+                                        },
+                                        "description": "Step 4. One invoice in full, with its `items` and `addresses`. Pass the `id` of an invoice from step 3.\n\nGraphQL item queries take the record's full path as `id` (the `id` field of the list row, e.g. `/api/shop/customer-invoices/5`), never the bare number — a bare number answers \"Internal server error\"."
+                                    }
+                                },
+                                {
+                                    "name": "5. customerOrderShipments — shipments of an order",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query CustomerOrderShipments($orderId: Int, $first: Int) {\n  customerOrderShipments(orderId: $orderId, first: $first) {\n    edges {\n      node {\n        id\n        _id\n        status\n        totalQty\n        totalWeight\n        carrierCode\n        carrierTitle\n        trackNumber\n        emailSent\n        customerId\n        customerType\n        inventorySourceId\n        inventorySourceName\n        createdAt\n        updatedAt\n        shippingNumber\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"orderId\": 1,\n    \"first\": 10\n}"
+                                            }
+                                        },
+                                        "description": "Step 5. The shipments of one order: pass the order's `_id` as `orderId`. Leave `orderId` out to list every shipment you have. Optional `status` filter. Take a shipment's `id` for step 6.\n\nGraphQL item queries take the record's full path as `id` (the `id` field of the list row, e.g. `/api/shop/customer-invoices/5`), never the bare number — a bare number answers \"Internal server error\"."
+                                    }
+                                },
+                                {
+                                    "name": "6. customerOrderShipment — shipment detail",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query CustomerOrderShipment($id: ID!) {\n  customerOrderShipment(id: $id) {\n    id\n    _id\n    status\n    totalQty\n    totalWeight\n    carrierCode\n    carrierTitle\n    trackNumber\n    emailSent\n    customerId\n    customerType\n    inventorySourceId\n    inventorySourceName\n    createdAt\n    updatedAt\n    shippingNumber\n    shippingAddress {\n      id\n      _id\n      addressType\n      parentAddressId\n      customerId\n      cartId\n      orderId\n      firstName\n      lastName\n      gender\n      companyName\n      address\n      city\n      state\n      country\n      postcode\n      email\n      phone\n      vatId\n      defaultAddress\n      useForShipping\n      additional\n      createdAt\n      updatedAt\n      name\n    }\n    billingAddress {\n      id\n      _id\n      addressType\n      parentAddressId\n      customerId\n      cartId\n      orderId\n      firstName\n      lastName\n      gender\n      companyName\n      address\n      city\n      state\n      country\n      postcode\n      email\n      phone\n      vatId\n      defaultAddress\n      useForShipping\n      additional\n      createdAt\n      updatedAt\n      name\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"id\": \"/api/shop/customer-order-shipments/1\"\n}"
+                                            }
+                                        },
+                                        "description": "Step 6. One shipment in full, with its `items`, `shippingAddress` and `billingAddress`. Pass the `id` of a shipment from step 5.\n\nGraphQL item queries take the record's full path as `id` (the `id` field of the list row, e.g. `/api/shop/customer-invoices/5`), never the bare number — a bare number answers \"Internal server error\"."
+                                    }
+                                },
+                                {
                                     "name": "customerDownloadableProduct",
                                     "request": {
                                         "method": "POST",
@@ -13052,142 +13254,6 @@
                                     }
                                 },
                                 {
-                                    "name": "customerInvoice",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "query CustomerInvoice($id: ID!) {\n  customerInvoice(id: $id) {\n    id\n    _id\n    incrementId\n    state\n    emailSent\n    totalQty\n    baseCurrencyCode\n    channelCurrencyCode\n    orderCurrencyCode\n    subTotal\n    baseSubTotal\n    grandTotal\n    baseGrandTotal\n    shippingAmount\n    baseShippingAmount\n    taxAmount\n    baseTaxAmount\n    discountAmount\n    baseDiscountAmount\n    shippingTaxAmount\n    baseShippingTaxAmount\n    subTotalInclTax\n    baseSubTotalInclTax\n    shippingAmountInclTax\n    baseShippingAmountInclTax\n    transactionId\n    reminders\n    nextReminderAt\n    createdAt\n    updatedAt\n    downloadUrl\n  }\n}\n",
-                                                "variables": "{\n    \"id\": \"1\"\n}"
-                                            }
-                                        },
-                                        "description": "Customer Invoice API Resource\n\nReturns invoices belonging to authenticated customer's orders.\nRead-only, customer-scoped via order relationship.\nSupports PDF download via separate route."
-                                    }
-                                },
-                                {
-                                    "name": "customerInvoices",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "query CustomerInvoices($first: Int) {\n  customerInvoices(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        incrementId\n        state\n        emailSent\n        totalQty\n        baseCurrencyCode\n        channelCurrencyCode\n        orderCurrencyCode\n        subTotal\n        baseSubTotal\n        grandTotal\n        baseGrandTotal\n        shippingAmount\n        baseShippingAmount\n        taxAmount\n        baseTaxAmount\n        discountAmount\n        baseDiscountAmount\n        shippingTaxAmount\n        baseShippingTaxAmount\n        subTotalInclTax\n        baseSubTotalInclTax\n        shippingAmountInclTax\n        baseShippingAmountInclTax\n        transactionId\n        reminders\n        nextReminderAt\n        createdAt\n        updatedAt\n        downloadUrl\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"first\": 10\n}"
-                                            }
-                                        },
-                                        "description": "Customer Invoice API Resource\n\nReturns invoices belonging to authenticated customer's orders.\nRead-only, customer-scoped via order relationship.\nSupports PDF download via separate route."
-                                    }
-                                },
-                                {
-                                    "name": "customerOrder",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "query CustomerOrder($id: ID!) {\n  customerOrder(id: $id) {\n    id\n    _id\n    incrementId\n    status\n    channelName\n    isGuest\n    customerEmail\n    customerFirstName\n    customerLastName\n    shippingMethod\n    shippingTitle\n    shippingDescription\n    couponCode\n    isGift\n    totalItemCount\n    totalQtyOrdered\n    baseCurrencyCode\n    channelCurrencyCode\n    orderCurrencyCode\n    grandTotal\n    baseGrandTotal\n    grandTotalInvoiced\n    baseGrandTotalInvoiced\n    grandTotalRefunded\n    baseGrandTotalRefunded\n    subTotal\n    baseSubTotal\n    subTotalInvoiced\n    baseSubTotalInvoiced\n    subTotalRefunded\n    baseSubTotalRefunded\n    discountPercent\n    discountAmount\n    baseDiscountAmount\n    discountInvoiced\n    baseDiscountInvoiced\n    discountRefunded\n    baseDiscountRefunded\n    taxAmount\n    baseTaxAmount\n    taxAmountInvoiced\n    baseTaxAmountInvoiced\n    taxAmountRefunded\n    baseTaxAmountRefunded\n    shippingAmount\n    baseShippingAmount\n    shippingInvoiced\n    baseShippingInvoiced\n    shippingRefunded\n    baseShippingRefunded\n    shippingDiscountAmount\n    baseShippingDiscountAmount\n    shippingTaxAmount\n    baseShippingTaxAmount\n    shippingTaxRefunded\n    baseShippingTaxRefunded\n    subTotalInclTax\n    baseSubTotalInclTax\n    shippingAmountInclTax\n    baseShippingAmountInclTax\n    customerId\n    customerType\n    channelId\n    channelType\n    cartId\n    appliedCartRuleIds\n    createdAt\n    updatedAt\n    customerFullName\n    payment {\n      id\n      _id\n      orderId\n      method\n      methodTitle\n      additional\n      createdAt\n      updatedAt\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"id\": \"1\"\n}"
-                                            }
-                                        },
-                                        "description": "Customer Order API Resource\n\nStandalone model pointing to the `orders` table with explicit field casts\nand hand-picked relationships. Follows the same pattern as CustomerInvoice\nto avoid inheriting unwanted relationships from the base Order model\n(morphTo fields, proxy relationships) that can break API Platform serialization.\n\nThis is a read-only, customer-scoped resource."
-                                    }
-                                },
-                                {
-                                    "name": "customerOrderShipment",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "query CustomerOrderShipment($id: ID!) {\n  customerOrderShipment(id: $id) {\n    id\n    _id\n    status\n    totalQty\n    totalWeight\n    carrierCode\n    carrierTitle\n    trackNumber\n    emailSent\n    customerId\n    customerType\n    inventorySourceId\n    inventorySourceName\n    createdAt\n    updatedAt\n    shippingNumber\n    shippingAddress {\n      id\n      _id\n      addressType\n      parentAddressId\n      customerId\n      cartId\n      orderId\n      firstName\n      lastName\n      gender\n      companyName\n      address\n      city\n      state\n      country\n      postcode\n      email\n      phone\n      vatId\n      defaultAddress\n      useForShipping\n      additional\n      createdAt\n      updatedAt\n      name\n    }\n    billingAddress {\n      id\n      _id\n      addressType\n      parentAddressId\n      customerId\n      cartId\n      orderId\n      firstName\n      lastName\n      gender\n      companyName\n      address\n      city\n      state\n      country\n      postcode\n      email\n      phone\n      vatId\n      defaultAddress\n      useForShipping\n      additional\n      createdAt\n      updatedAt\n      name\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"id\": \"1\"\n}"
-                                            }
-                                        },
-                                        "description": "Customer Order Shipment API Resource\n\nStandalone API resource for shipments belonging to authenticated customer's orders.\nProvides shipment details including tracking numbers, items, addresses, and payment info.\nCustomer-scoped via order relationship — customers can only access their own shipments.\n\nRelationships:\n- order: The parent order\n- items: Shipment line items\n- shippingAddress: Destination address for the shipment\n- billingAddress: Billing address from the order"
-                                    }
-                                },
-                                {
                                     "name": "customerOrderShipmentItem",
                                     "request": {
                                         "method": "POST",
@@ -13253,74 +13319,6 @@
                                             }
                                         },
                                         "description": "Customer Order Shipment Item API Resource\n\nNested API resource for items in a customer's order shipment.\nContains product details and quantity shipped."
-                                    }
-                                },
-                                {
-                                    "name": "customerOrderShipments",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "query CustomerOrderShipments($first: Int) {\n  customerOrderShipments(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        status\n        totalQty\n        totalWeight\n        carrierCode\n        carrierTitle\n        trackNumber\n        emailSent\n        customerId\n        customerType\n        inventorySourceId\n        inventorySourceName\n        createdAt\n        updatedAt\n        shippingNumber\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"first\": 10\n}"
-                                            }
-                                        },
-                                        "description": "Customer Order Shipment API Resource\n\nStandalone API resource for shipments belonging to authenticated customer's orders.\nProvides shipment details including tracking numbers, items, addresses, and payment info.\nCustomer-scoped via order relationship — customers can only access their own shipments.\n\nRelationships:\n- order: The parent order\n- items: Shipment line items\n- shippingAddress: Destination address for the shipment\n- billingAddress: Billing address from the order"
-                                    }
-                                },
-                                {
-                                    "name": "customerOrders",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "query CustomerOrders($first: Int) {\n  customerOrders(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        incrementId\n        status\n        channelName\n        isGuest\n        customerEmail\n        customerFirstName\n        customerLastName\n        shippingMethod\n        shippingTitle\n        shippingDescription\n        couponCode\n        isGift\n        totalItemCount\n        totalQtyOrdered\n        baseCurrencyCode\n        channelCurrencyCode\n        orderCurrencyCode\n        grandTotal\n        baseGrandTotal\n        grandTotalInvoiced\n        baseGrandTotalInvoiced\n        grandTotalRefunded\n        baseGrandTotalRefunded\n        subTotal\n        baseSubTotal\n        subTotalInvoiced\n        baseSubTotalInvoiced\n        subTotalRefunded\n        baseSubTotalRefunded\n        discountPercent\n        discountAmount\n        baseDiscountAmount\n        discountInvoiced\n        baseDiscountInvoiced\n        discountRefunded\n        baseDiscountRefunded\n        taxAmount\n        baseTaxAmount\n        taxAmountInvoiced\n        baseTaxAmountInvoiced\n        taxAmountRefunded\n        baseTaxAmountRefunded\n        shippingAmount\n        baseShippingAmount\n        shippingInvoiced\n        baseShippingInvoiced\n        shippingRefunded\n        baseShippingRefunded\n        shippingDiscountAmount\n        baseShippingDiscountAmount\n        shippingTaxAmount\n        baseShippingTaxAmount\n        shippingTaxRefunded\n        baseShippingTaxRefunded\n        subTotalInclTax\n        baseSubTotalInclTax\n        shippingAmountInclTax\n        baseShippingAmountInclTax\n        customerId\n        customerType\n        channelId\n        channelType\n        cartId\n        appliedCartRuleIds\n        createdAt\n        updatedAt\n        customerFullName\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"first\": 10\n}"
-                                            }
-                                        },
-                                        "description": "Customer Order API Resource\n\nStandalone model pointing to the `orders` table with explicit field casts\nand hand-picked relationships. Follows the same pattern as CustomerInvoice\nto avoid inheriting unwanted relationships from the base Order model\n(morphTo fields, proxy relationships) that can break API Platform serialization.\n\nThis is a read-only, customer-scoped resource."
                                     }
                                 }
                             ]
@@ -13399,10 +13397,10 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CancelCustomerReturn($input: cancelCustomerReturnInput!) {\n  cancelCustomerReturn(input: $input) {\n    customerReturn {\n      id\n      _id\n      orderId\n      orderIncrementId\n      statusId\n      statusTitle\n      statusColor\n      packageCondition\n      information\n      canClose\n      canReopen\n      isExpired\n      item\n      images\n      customAttributes\n      messagesCount\n      createdAt\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"id\": \"1\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"id\": \"/api/shop/returns/1\"\n    }\n}"
                                             }
                                         },
-                                        "description": "Cancels a CustomerReturn."
+                                        "description": "Cancels a CustomerReturn.\n\n`id` is the return's full path, `/api/shop/returns/{id}` (the `id` field every return carries). A bare number such as \"1\" is not accepted and answers \"Internal server error\"."
                                     }
                                 },
                                 {
@@ -13433,10 +13431,10 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CloseCustomerReturn($input: closeCustomerReturnInput!) {\n  closeCustomerReturn(input: $input) {\n    customerReturn {\n      id\n      _id\n      orderId\n      orderIncrementId\n      statusId\n      statusTitle\n      statusColor\n      packageCondition\n      information\n      canClose\n      canReopen\n      isExpired\n      item\n      images\n      customAttributes\n      messagesCount\n      createdAt\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"id\": \"1\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"id\": \"/api/shop/returns/1\"\n    }\n}"
                                             }
                                         },
-                                        "description": "Closes a CustomerReturn."
+                                        "description": "Closes a CustomerReturn.\n\n`id` is the return's full path, `/api/shop/returns/{id}` (the `id` field every return carries). A bare number such as \"1\" is not accepted and answers \"Internal server error\"."
                                     }
                                 },
                                 {
@@ -13535,10 +13533,10 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation ReopenCustomerReturn($input: reopenCustomerReturnInput!) {\n  reopenCustomerReturn(input: $input) {\n    customerReturn {\n      id\n      _id\n      orderId\n      orderIncrementId\n      statusId\n      statusTitle\n      statusColor\n      packageCondition\n      information\n      canClose\n      canReopen\n      isExpired\n      item\n      images\n      customAttributes\n      messagesCount\n      createdAt\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"id\": \"1\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"id\": \"/api/shop/returns/1\"\n    }\n}"
                                             }
                                         },
-                                        "description": "Reopens a CustomerReturn."
+                                        "description": "Reopens a CustomerReturn.\n\n`id` is the return's full path, `/api/shop/returns/{id}` (the `id` field every return carries). A bare number such as \"1\" is not accepted and answers \"Internal server error\"."
                                     }
                                 }
                             ]
@@ -13570,11 +13568,12 @@
                                                 "graphql"
                                             ]
                                         },
+                                        "description": "`item.product_image` is the returned product's image, or the store's product placeholder image when the product has no photos (as on the storefront product endpoints). `images` are the photos the customer attached to the return. Query `item` as a whole (it is a JSON value) and read `item.product_image`.",
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "query CustomerReturn($id: ID!) {\n  customerReturn(id: $id) {\n    id\n    _id\n    orderId\n    orderIncrementId\n    statusId\n    statusTitle\n    statusColor\n    packageCondition\n    information\n    canClose\n    canReopen\n    isExpired\n    item\n    images\n    customAttributes\n    messagesCount\n    createdAt\n    updatedAt\n  }\n}\n",
-                                                "variables": "{\n    \"id\": \"1\"\n}"
+                                                "variables": "{\n    \"id\": \"/api/shop/returns/1\"\n}"
                                             }
                                         }
                                     }
@@ -13636,6 +13635,7 @@
                                                 "graphql"
                                             ]
                                         },
+                                        "description": "`item.product_image` is the returned product's image, or the store's product placeholder image when the product has no photos (as on the storefront product endpoints). `images` are the photos the customer attached to the return. Query `item` as a whole (it is a JSON value) and read `item.product_image`.",
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
@@ -14728,11 +14728,12 @@
                                                 "graphql"
                                             ]
                                         },
+                                        "description": "`customerImageUrl` is the reviewer's profile image URL, or the store's default user image for a guest review or a customer without a photo. `id` is the review's full path, `/api/shop/reviews/{id}`; a bare number is not accepted.",
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "query ProductReview($id: ID!) {\n  productReview(id: $id) {\n    id\n    _id\n    name\n    title\n    rating\n    comment\n    status\n    createdAt\n    updatedAt\n    attachments\n  }\n}\n",
-                                                "variables": "{\n    \"id\": \"1\"\n}"
+                                                "query": "query ProductReview($id: ID!) {\n  productReview(id: $id) {\n    id\n    _id\n    name\n    customerImageUrl\n    title\n    rating\n    comment\n    status\n    createdAt\n    updatedAt\n    attachments\n  }\n}\n",
+                                                "variables": "{\n    \"id\": \"/api/shop/reviews/1\"\n}"
                                             }
                                         }
                                     }
@@ -14761,10 +14762,11 @@
                                                 "graphql"
                                             ]
                                         },
+                                        "description": "`customerImageUrl` is the reviewer's profile image URL, or the store's default user image for a guest review or a customer without a photo.",
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "query ProductReviews($first: Int) {\n  productReviews(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        name\n        title\n        rating\n        comment\n        status\n        createdAt\n        updatedAt\n        attachments\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
+                                                "query": "query ProductReviews($first: Int) {\n  productReviews(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        name\n        customerImageUrl\n        title\n        rating\n        comment\n        status\n        createdAt\n        updatedAt\n        attachments\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
                                         }
@@ -15428,9 +15430,10 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "query Section($id: ID!) {\n  section(id: $id) {\n    id\n    _id\n    themeCode\n    type\n    name\n    sortOrder\n    status\n    channelId\n    createdAt\n    updatedAt\n    translation {\n      id\n      _id\n      sectionId\n      locale\n      options\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"id\": \"1\"\n}"
+                                                "variables": "{\n    \"id\": \"/api/shop/sections/1\"\n}"
                                             }
-                                        }
+                                        },
+                                        "description": "One section. `id` is the section's full path (`/api/shop/sections/{id}`, the `id` field of a `sections` row), not the bare number."
                                     }
                                 },
                                 {
@@ -15498,6 +15501,182 @@
                                             }
                                         },
                                         "description": "The theme the current channel runs, and the section types it draws."
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Home Page Sections",
+                            "description": "How the app builds the home page the admin designed under Appearance: read the store defaults, read the sections, then load each product carousel with the `products` query. Run the requests in order.",
+                            "item": [
+                                {
+                                    "name": "1. Store defaults (sort + page size)",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query StoreDefaults {\n  storeConfig {\n    defaultSortBy\n    productsPerPage\n  }\n}\n",
+                                                "variables": "{}"
+                                            }
+                                        },
+                                        "description": "Step 1. The storefront defaults a product carousel falls back on when its section sets no `sort` or `limit`: `defaultSortBy` (e.g. price-desc) and `productsPerPage` (the first value is the default page size). Fetch once at app start."
+                                    }
+                                },
+                                {
+                                    "name": "2. Home page sections",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query HomeSections {\n  sections {\n    edges {\n      node {\n        id\n        _id\n        type\n        name\n        sortOrder\n        status\n        translation {\n          locale\n          options\n        }\n      }\n    }\n  }\n}\n",
+                                                "variables": "{}"
+                                            }
+                                        },
+                                        "description": "Step 2. The sections the admin set up under Appearance for the current channel, in display order (`sortOrder`). `translation.options` is a JSON string: for a `product_carousel` it holds `title` and `filters`, e.g. {\"title\":\"Featured Products\",\"filters\":{\"featured\":\"1\",\"sort\":\"price-asc\",\"limit\":\"12\"}}. For each `product_carousel` row, run one of the requests below."
+                                    }
+                                },
+                                {
+                                    "name": "3. Product carousel — no filters (store defaults)",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query SectionProducts($first: Int, $sortKey: String, $reverse: Boolean, $filter: String) {\n  products(first: $first, sortKey: $sortKey, reverse: $reverse, filter: $filter) {\n    totalCount\n    edges {\n      node {\n        id\n        _id\n        sku\n        type\n        name\n        urlKey\n        price\n        minimumPrice\n        formattedPrice\n        formattedMinimumPrice\n        specialPrice\n        formattedSpecialPrice\n        new\n        featured\n        isSaleable\n        isInWishlist\n        isInCompare\n        baseImageUrl\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"first\": 12,\n    \"sortKey\": \"PRICE\",\n    \"reverse\": true\n}"
+                                            }
+                                        },
+                                        "description": "Step 3. A `product_carousel` whose `filters` is empty ([]). The web then uses the store defaults from step 1; with the admin settings empty that is price high to low, 12 products — so `sortKey: PRICE`, `reverse: true`, `first: 12`, no `filter`.\n\nBuild the variables from the section's `options.filters`:\n- `limit` -> `first` (missing: the first value of `storeConfig.productsPerPage`, 12 by default).\n- `sort` -> `sortKey` + `reverse`: price-asc = PRICE/false, price-desc = PRICE/true, name-asc = NAME/false, name-desc = NAME/true, created_at-asc = CREATED_AT/false, created_at-desc = CREATED_AT/true. Missing: use `storeConfig.defaultSortBy` (price-desc when the admin left it empty).\n- Every other key (new, featured, category_id, ...) goes into `filter` as a JSON string, e.g. \"{\\\"featured\\\":\\\"1\\\"}\".\n`price` sorting orders by `minimumPrice` (what the customer pays), so show `minimumPrice` / `formattedMinimumPrice` in the carousel."
+                                    }
+                                },
+                                {
+                                    "name": "4. Product carousel — New Products",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query SectionProducts($first: Int, $sortKey: String, $reverse: Boolean, $filter: String) {\n  products(first: $first, sortKey: $sortKey, reverse: $reverse, filter: $filter) {\n    totalCount\n    edges {\n      node {\n        id\n        _id\n        sku\n        type\n        name\n        urlKey\n        price\n        minimumPrice\n        formattedPrice\n        formattedMinimumPrice\n        specialPrice\n        formattedSpecialPrice\n        new\n        featured\n        isSaleable\n        isInWishlist\n        isInCompare\n        baseImageUrl\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"first\": 12,\n    \"sortKey\": \"PRICE\",\n    \"reverse\": false,\n    \"filter\": \"{\\\"new\\\":\\\"1\\\"}\"\n}"
+                                            }
+                                        },
+                                        "description": "Step 3, example: a section with filters {\"new\":\"1\",\"sort\":\"price-asc\",\"limit\":\"12\"}.\n\nBuild the variables from the section's `options.filters`:\n- `limit` -> `first` (missing: the first value of `storeConfig.productsPerPage`, 12 by default).\n- `sort` -> `sortKey` + `reverse`: price-asc = PRICE/false, price-desc = PRICE/true, name-asc = NAME/false, name-desc = NAME/true, created_at-asc = CREATED_AT/false, created_at-desc = CREATED_AT/true. Missing: use `storeConfig.defaultSortBy` (price-desc when the admin left it empty).\n- Every other key (new, featured, category_id, ...) goes into `filter` as a JSON string, e.g. \"{\\\"featured\\\":\\\"1\\\"}\".\n`price` sorting orders by `minimumPrice` (what the customer pays), so show `minimumPrice` / `formattedMinimumPrice` in the carousel."
+                                    }
+                                },
+                                {
+                                    "name": "5. Product carousel — Featured Products",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query SectionProducts($first: Int, $sortKey: String, $reverse: Boolean, $filter: String) {\n  products(first: $first, sortKey: $sortKey, reverse: $reverse, filter: $filter) {\n    totalCount\n    edges {\n      node {\n        id\n        _id\n        sku\n        type\n        name\n        urlKey\n        price\n        minimumPrice\n        formattedPrice\n        formattedMinimumPrice\n        specialPrice\n        formattedSpecialPrice\n        new\n        featured\n        isSaleable\n        isInWishlist\n        isInCompare\n        baseImageUrl\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"first\": 12,\n    \"sortKey\": \"PRICE\",\n    \"reverse\": false,\n    \"filter\": \"{\\\"featured\\\":\\\"1\\\"}\"\n}"
+                                            }
+                                        },
+                                        "description": "Step 3, example: a section with filters {\"featured\":\"1\",\"sort\":\"price-asc\",\"limit\":\"12\"}.\n\nBuild the variables from the section's `options.filters`:\n- `limit` -> `first` (missing: the first value of `storeConfig.productsPerPage`, 12 by default).\n- `sort` -> `sortKey` + `reverse`: price-asc = PRICE/false, price-desc = PRICE/true, name-asc = NAME/false, name-desc = NAME/true, created_at-asc = CREATED_AT/false, created_at-desc = CREATED_AT/true. Missing: use `storeConfig.defaultSortBy` (price-desc when the admin left it empty).\n- Every other key (new, featured, category_id, ...) goes into `filter` as a JSON string, e.g. \"{\\\"featured\\\":\\\"1\\\"}\".\n`price` sorting orders by `minimumPrice` (what the customer pays), so show `minimumPrice` / `formattedMinimumPrice` in the carousel."
                                     }
                                 }
                             ]

@@ -125,10 +125,7 @@ class PageProvider implements ProviderInterface
      */
     private function channelPages(): Builder
     {
-        return Page::with('translations')
-            ->whereHas('channels', function ($query) {
-                $query->where('channels.id', core()->getCurrentChannel()->id);
-            });
+        return Page::with('translations')->inCurrentChannel();
     }
 
     /**

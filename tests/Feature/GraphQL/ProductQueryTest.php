@@ -738,6 +738,32 @@ class ProductQueryTest extends GraphQLTestCase
     }
 
     /**
+     * Numeric and boolean product fields come back typed, not as strings.
+     */
+    public function test_product_scalars_are_typed(): void
+    {
+        $product = $this->createBaseProduct('simple');
+
+        $response = $this->graphQL('query($id: ID!) { product(id: $id) { price featured new status isSaleable isInWishlist reviewsCount averageRating } }', [
+            'id' => '/api/shop/products/'.$product->id,
+        ]);
+
+        $response->assertOk();
+
+        $data = $response->json('data.product');
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(is_int($data['price']) || is_float($data['price']))->toBeTrue()
+            ->and($data['featured'])->toBeBool()
+            ->and($data['new'])->toBeBool()
+            ->and($data['status'])->toBeBool()
+            ->and($data['isSaleable'])->toBeTrue()
+            ->and($data['isInWishlist'])->toBe(0)
+            ->and($data['reviewsCount'])->toBe(0)
+            ->and(is_int($data['averageRating']) || is_float($data['averageRating']))->toBeTrue();
+    }
+
+    /**
      * A product resolves its sale badge and review summary over GraphQL, on the item and in the list.
      */
     public function test_product_resolves_the_sale_badge_and_review_summary(): void

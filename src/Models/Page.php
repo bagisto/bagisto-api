@@ -11,6 +11,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\PageByUrlKeyResolver;
@@ -120,11 +121,11 @@ use Webkul\CMS\Models\Page as BasePage;
     graphQlOperations: [
         new Query(
             resolver: BaseQueryItemResolver::class,
-            description: 'One CMS page with its translations. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+            description: 'One CMS page of the current channel with its translations. Pass the IRI or the numeric ID as `id`; an unknown ID, or a page of another channel, is an error. Needs the X-STOREFRONT-KEY header.',
         ),
         new QueryCollection(
             provider: CursorAwareCollectionProvider::class,
-            description: 'Every CMS page of every channel, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
+            description: 'The CMS pages of the current channel, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
         ),
         new QueryCollection(
             name: 'pageByUrlKey',
@@ -150,6 +151,16 @@ class Page extends BasePage
      * @var list<string>
      */
     protected $with = ['translations'];
+
+    /**
+     * Limit a query to the pages assigned to the current channel, as the storefront shows them.
+     */
+    public function scopeInCurrentChannel(Builder $query): Builder
+    {
+        return $query->whereHas('channels', function ($channels) {
+            $channels->where('channels.id', core()->getCurrentChannel()->id);
+        });
+    }
 
     /**
      * Get unique page identifier for API Platform.

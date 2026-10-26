@@ -9,6 +9,7 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Contracts\PreloadsCollection;
 use Webkul\BagistoApi\Models\Category;
+use Webkul\BagistoApi\Models\Page;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
 use Webkul\BagistoApi\State\Concerns\ScopesNestedConnections;
@@ -54,6 +55,10 @@ class CursorAwareCollectionProvider implements ProviderInterface
 
         if ($model instanceof Category) {
             $query->where($model->getTable().'.status', 1);
+        }
+
+        if ($model instanceof Page) {
+            $query->inCurrentChannel();
         }
 
         $filters = $context['filters'] ?? [];

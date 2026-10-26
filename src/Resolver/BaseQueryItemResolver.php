@@ -14,6 +14,7 @@ use Webkul\BagistoApi\Models\CustomerInvoice;
 use Webkul\BagistoApi\Models\CustomerOrderShipment;
 use Webkul\BagistoApi\Models\CustomerOrderShipmentItem;
 use Webkul\BagistoApi\Models\CustomerReview;
+use Webkul\BagistoApi\Models\Page;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\ProductReview;
 use Webkul\BagistoApi\Service\GenericIdNormalizer;
@@ -136,12 +137,16 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
     }
 
     /**
-     * Build a query limited to the rows the storefront shows: active categories, approved reviews, reachable products.
+     * Build a query limited to the rows the storefront shows: active categories, current-channel pages, approved reviews, reachable products.
      */
     protected function publicQuery(string $modelClass): Builder
     {
         if (is_a($modelClass, Category::class, true)) {
             return $modelClass::query()->where('status', 1);
+        }
+
+        if (is_a($modelClass, Page::class, true)) {
+            return $modelClass::query()->inCurrentChannel();
         }
 
         if (is_a($modelClass, ProductReview::class, true)) {

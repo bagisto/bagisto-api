@@ -97,8 +97,8 @@ class AppearanceSectionTest extends AdminApiTestCase
 
         expect($response->json('errors'))->toBeNull();
         expect($response->json('data.adminAppearanceSection._id'))->toBe($section->id);
-        expect($response->json('data.adminAppearanceSection.hasDraft'))->toBe('0');
-        expect($response->json('data.adminAppearanceSection.isPinned'))->toBe('0');
+        expect($response->json('data.adminAppearanceSection.hasDraft'))->toBe(0);
+        expect($response->json('data.adminAppearanceSection.isPinned'))->toBe(0);
     }
 
     /**
@@ -143,8 +143,8 @@ class AppearanceSectionTest extends AdminApiTestCase
 
         expect($node['name'])->toBe('GraphQL Banner');
         expect($node['status'])->toBe(0);
-        expect($node['hasDraft'])->toBe('1');
-        expect($node['isPinned'])->toBe('0');
+        expect($node['hasDraft'])->toBe(1);
+        expect($node['isPinned'])->toBe(0);
 
         $this->assertDatabaseHas('theme_sections', [
             'id' => $node['_id'],
@@ -216,8 +216,8 @@ class AppearanceSectionTest extends AdminApiTestCase
 
         expect($response->json('errors'))->toBeNull();
         expect($response->json('data.updateAdminAppearanceSection.adminAppearanceSection.name'))->toBe('Renamed over GraphQL');
-        expect($response->json('data.updateAdminAppearanceSection.adminAppearanceSection.hasDraft'))->toBeIn(['0', '1']);
-        expect($response->json('data.updateAdminAppearanceSection.adminAppearanceSection.isPinned'))->toBe('0');
+        expect($response->json('data.updateAdminAppearanceSection.adminAppearanceSection.hasDraft'))->toBeIn([0, 1]);
+        expect($response->json('data.updateAdminAppearanceSection.adminAppearanceSection.isPinned'))->toBe(0);
 
         $this->assertDatabaseHas('theme_sections', [
             'id' => $section->id,

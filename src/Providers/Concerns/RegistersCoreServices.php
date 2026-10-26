@@ -17,6 +17,7 @@ use Webkul\BagistoApi\Admin\Services\Jwt\JwtKeyStore;
 use Webkul\BagistoApi\Admin\Services\Jwt\JwtSigner;
 use Webkul\BagistoApi\Admin\Services\Jwt\JwtVerifier;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
+use Webkul\BagistoApi\Metadata\AccessorReturnTypePropertyMetadataFactory;
 use Webkul\BagistoApi\Metadata\DatabaseIndependentColumnTypePropertyMetadataFactory;
 use Webkul\BagistoApi\Metadata\PathGatedResourceNameCollectionFactory;
 use Webkul\BagistoApi\Metadata\SourceDocblockPropertyMetadataFactory;
@@ -107,6 +108,13 @@ trait RegistersCoreServices
             PropertyMetadataFactoryInterface::class,
             function ($decorated) {
                 return new SourceDocblockPropertyMetadataFactory($decorated);
+            }
+        );
+
+        $this->app->extend(
+            PropertyMetadataFactoryInterface::class,
+            function ($decorated) {
+                return new AccessorReturnTypePropertyMetadataFactory($decorated);
             }
         );
 

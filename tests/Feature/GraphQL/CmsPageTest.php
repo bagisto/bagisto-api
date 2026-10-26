@@ -368,6 +368,39 @@ class CmsPageTest extends GraphQLTestCase
     }
 
     /**
+     * The pages list and a page by id leave out pages of other channels, as the storefront does.
+     */
+    public function test_pages_list_and_item_leave_out_other_channels(): void
+    {
+        $this->seedRequiredData();
+
+        $otherChannel = Channel::factory()->create();
+
+        $page = Page::factory()->create(['layout' => 'default']);
+        $page->channels()->attach($otherChannel->id);
+
+        PageTranslation::factory()->create([
+            'cms_page_id' => $page->id,
+            'locale' => 'en',
+            'page_title' => 'Other Channel Page',
+            'url_key' => 'other-channel-list-page',
+            'html_content' => '<p>Hidden</p>',
+        ]);
+
+        $list = $this->graphQL('query { pages(first: 50) { edges { node { _id } } } }');
+
+        $list->assertOk();
+        expect($list->json('errors'))->toBeNull()
+            ->and(collect($list->json('data.pages.edges'))->pluck('node._id')->all())->not->toContain($page->id);
+
+        $item = $this->graphQL('query($id: ID!) { page(id: $id) { _id } }', ['id' => '/api/shop/pages/'.$page->id]);
+
+        $item->assertOk();
+        expect($item->json('data.page'))->toBeNull()
+            ->and($item->json('errors'))->not->toBeEmpty();
+    }
+
+    /**
      * Create test CMS page with translation.
      */
     private function createTestCmsPage(): array

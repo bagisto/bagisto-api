@@ -483,7 +483,7 @@ type Query {
 
   node(id: ID!): Node
 
-  "One CMS page with its translations. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
+  "One CMS page of the current channel with its translations. Pass the IRI or the numeric ID as `id`; an unknown ID, or a page of another channel, is an error. Needs the X-STOREFRONT-KEY header."
   page(id: ID!): page
 
   "The CMS page of the current channel whose URL key is `urlKey`, as a list holding that page or nothing (not paginated). Needs the X-STOREFRONT-KEY header."
@@ -510,7 +510,7 @@ type Query {
     after: String
   ): PageTranslationCursorConnection
 
-  "Every CMS page of every channel, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
+  "The CMS pages of the current channel, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   pages(
     "Returns the first n elements from the list."
     first: Int
@@ -1090,8 +1090,8 @@ type Category implements Node {
   logoFileName: String
   logoPath: String
   logoUrl: String
-  maxPrice: String
-  minPrice: String
+  maxPrice: Float
+  minPrice: Float
   parent: Category
   position: Int!
   status: Boolean!
@@ -1447,7 +1447,7 @@ type Product implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): AttributeValueCursorConnection
-  averageRating: String
+  averageRating: Float
   baseImageUrl: String
   bookingProducts(
     "Returns the first n elements from the list."
@@ -1563,7 +1563,7 @@ type Product implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): ProductDownloadableSampleCursorConnection
-  featured: String
+  featured: Boolean
   formattedMaximumPrice: String
   formattedMinimumPrice: String
   formattedPrice: String
@@ -1583,7 +1583,7 @@ type Product implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): ProductGroupedProductCursorConnection
-  guestCheckout: String
+  guestCheckout: Boolean
   height: String
   id: ID!
   images(
@@ -1600,25 +1600,25 @@ type Product implements Node {
     after: String
   ): ProductImagesCursorConnection
   index: String @deprecated(reason: "Use the VariantAttributeMap property instead")
-  isInCompare: String
-  isInWishlist: String
-  isSaleable: String
+  isInCompare: Int
+  isInWishlist: Int
+  isSaleable: Boolean
   length: String
   locale: String
-  manageStock: String
-  maximumPrice: String
+  manageStock: Boolean
+  maximumPrice: Float
   metaDescription: String
   metaKeywords: String
   metaTitle: String
-  minimumPrice: String
+  minimumPrice: Float
   name: String
-  new: String
-  onSale: String
+  new: Boolean
+  onSale: Int
   parent: Product
-  price: String
+  price: Float
   productNumber: String
-  regularMaximumPrice: String
-  regularMinimumPrice: String
+  regularMaximumPrice: Float
+  regularMinimumPrice: Float
   relatedProducts(
     "Returns the first n elements from the list."
     first: Int
@@ -1645,14 +1645,14 @@ type Product implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): ProductReviewCursorConnection
-  reviewsCount: String
+  reviewsCount: Int
   shortDescription: String
   size: String
   sku: String!
-  specialPrice: String
+  specialPrice: Float
   specialPriceFrom: String
   specialPriceTo: String
-  status: String
+  status: Boolean
   superAttributeOptions: String
   superAttributes(
     "Returns the first n elements from the list."
@@ -1667,8 +1667,8 @@ type Product implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): AttributeCursorConnection
-  taxCategoryId: String
-  totalRating: String
+  taxCategoryId: Int
+  totalRating: Int
   type: String!
   upSells(
     "Returns the first n elements from the list."
@@ -1711,7 +1711,7 @@ type Product implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): ProductVideosCursorConnection
-  visibleIndividually: String
+  visibleIndividually: Boolean
   weight: String
   width: String
 }
@@ -2080,8 +2080,8 @@ type BookingProduct implements Node {
   rentalSlot: BookingProductRentalSlot
   showLocation: Boolean!
   slots: Iterable
-  startingPrice: String
-  startingRegularPrice: String
+  startingPrice: Float
+  startingRegularPrice: Float
   tableSlot: BookingProductTableSlot
   type: String!
   updatedAt: String
@@ -2324,7 +2324,7 @@ type ProductDownloadableLink implements Node {
   fileUrl: String
   formattedPrice: String
   id: ID!
-  price: String!
+  price: Float
   product: Product
   sampleFile: String
   sampleFileName: String
@@ -2517,7 +2517,7 @@ type Customer implements Node {
   customerGroupId: Int
   dateOfBirth: String
   email: String
-  expiresIn: String
+  expiresIn: Int
   firstName: String!
   gender: String
   id: ID!
@@ -2858,7 +2858,7 @@ type CustomerDownloadableProduct implements Node {
 
   orderNumber: String
   productName: String
-  remainingDownloads: String
+  remainingDownloads: Int
   status: String
   type: String!
   updatedAt: String
@@ -3711,8 +3711,8 @@ type CategoryAttributeFilter implements Node {
   isUnique: Boolean!
   isUserDefined: Boolean!
   isVisibleOnFront: Boolean!
-  maxPrice: String
-  minPrice: String
+  maxPrice: Float
+  minPrice: Float
   options(
     "Returns the first n elements from the list."
     first: Int
@@ -3912,7 +3912,7 @@ type GuestEuWithdrawalConfirmation implements Node {
   uuid: String
 }
 
-"One CMS page with its translations. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
+"One CMS page of the current channel with its translations. Pass the IRI or the numeric ID as `id`; an unknown ID, or a page of another channel, is an error. Needs the X-STOREFRONT-KEY header."
 type page implements Node {
   _id: Int!
   createdAt: String
@@ -5642,7 +5642,7 @@ type createCustomerNestedPayload implements Node {
   customerGroupId: Int
   dateOfBirth: String
   email: String
-  expiresIn: String
+  expiresIn: Int
   firstName: String!
   gender: String
   id: ID!

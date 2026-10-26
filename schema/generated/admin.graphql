@@ -1300,9 +1300,9 @@ type AdminAppearanceSection implements Node {
   createdAt: String
   draftSortOrder: Int
   draftStatus: Boolean
-  hasDraft: String
+  hasDraft: Int
   id: ID!
-  isPinned: String
+  isPinned: Int
   message: String
   name: String!
   sortOrder: Int!
@@ -1679,7 +1679,7 @@ type AdminCatalogProduct implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): AdminProductDetailCategoryCursorConnection
-  categoryId: String
+  categoryId: Int
   categoryName: String
   channel: String
   channels(
@@ -1762,7 +1762,7 @@ type AdminCatalogProduct implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): AdminProductDetailDownloadableSampleCursorConnection
-  featured: String
+  featured: Boolean
   formattedPrice: String
   formattedSpecialPrice: String
   id: ID!
@@ -1779,8 +1779,8 @@ type AdminCatalogProduct implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): AdminProductDetailImageCursorConnection
-  imagesCount: String
-  inStock: String
+  imagesCount: Int
+  inStock: Boolean
   inventories(
     "Returns the first n elements from the list."
     first: Int
@@ -1808,15 +1808,15 @@ type AdminCatalogProduct implements Node {
     after: String
   ): AdminProductDetailGroupedProductCursorConnection
   locale: String
-  manageStock: String
+  manageStock: Boolean
   metaDescription: String
   metaKeywords: String
   metaTitle: String
   name: String
-  new: String
+  new: Boolean
   parentId: Int
   price: String
-  quantity: String
+  quantity: Int
   relatedProducts(
     "Returns the first n elements from the list."
     first: Int
@@ -1835,7 +1835,7 @@ type AdminCatalogProduct implements Node {
   specialPrice: String
   specialPriceFrom: String
   specialPriceTo: String
-  status: String
+  status: Int
   superAttributes(
     "Returns the first n elements from the list."
     first: Int
@@ -1849,7 +1849,7 @@ type AdminCatalogProduct implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): AdminProductDetailSuperAttributeCursorConnection
-  taxCategoryId: String
+  taxCategoryId: Int
   translations(
     "Returns the first n elements from the list."
     first: Int
@@ -1905,9 +1905,9 @@ type AdminCatalogProduct implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): AdminProductDetailVideoCursorConnection
-  visibleIndividually: String
+  visibleIndividually: Boolean
   warnings: String
-  weight: String
+  weight: Float
 }
 
 "Cursor connection for AdminProductDetailImage."
@@ -2032,7 +2032,7 @@ type AdminProductDetailInventory implements Node {
   productId: Int!
   qty: Int!
   sourceCode: String
-  sourceId: String
+  sourceId: Int
   vendorId: Int!
 }
 
@@ -2258,11 +2258,11 @@ type AdminProductDetailVariant implements Node {
   createdAt: String
   formattedPrice: String
   id: ID!
-  inStock: String
+  inStock: Boolean
   name: String
   parentId: Int
   price: String
-  quantity: String
+  quantity: Int
   sku: String!
   type: String!
   updatedAt: String
@@ -2294,7 +2294,7 @@ type AdminProductDetailAttributeValue implements Node {
   groupCode: String
   id: ID!
   integerValue: Int
-  isRequired: String
+  isRequired: Boolean
   jsonValue: String
   locale: String
   productId: Int!
@@ -2338,7 +2338,7 @@ type AdminProductDetailBundleOption implements Node {
   id: ID!
   isRequired: Boolean!
   label: String
-  position: String
+  position: Int
   productId: Int!
   products(
     "Returns the first n elements from the list."
@@ -3132,9 +3132,9 @@ type AdminCustomer implements Node {
   phone: String
   status: Int!
   subscribedToNewsLetter: Boolean!
-  totalAddresses: String
-  totalAmountSpent: String
-  totalOrders: String
+  totalAddresses: Int
+  totalAmountSpent: Float
+  totalOrders: Int
   updatedAt: String
 }
 
@@ -3843,7 +3843,7 @@ type AdminOrderDetail implements Node {
   baseTaxAmount: String
   baseTaxAmountInvoiced: String
   baseTaxAmountRefunded: String
-  baseTotalDue: String
+  baseTotalDue: Float
   cartId: Int
   channelCurrencyCode: String
   channelId: Int
@@ -3964,7 +3964,7 @@ type AdminOrderDetail implements Node {
   taxAmount: Float
   taxAmountInvoiced: String
   taxAmountRefunded: String
-  totalDue: String
+  totalDue: Float
   totalItemCount: Int
   totalQtyOrdered: Int
   updatedAt: String
@@ -6295,7 +6295,7 @@ type AdminSettingsTaxRateRef implements Node {
   id: ID!
   identifier: String
   taxCategoryId: Int!
-  taxRate: String
+  taxRate: Float
   taxRateId: Int!
   updatedAt: String
 }
@@ -7234,9 +7234,9 @@ type createAdminAppearanceSectionPayloadData implements Node {
   createdAt: String
   draftSortOrder: Int
   draftStatus: Boolean
-  hasDraft: String
+  hasDraft: Int
   id: ID!
-  isPinned: String
+  isPinned: Int
   message: String
   name: String!
   sortOrder: Int!
@@ -7283,9 +7283,9 @@ type updateAdminAppearanceSectionPayloadData implements Node {
   createdAt: String
   draftSortOrder: Int
   draftStatus: Boolean
-  hasDraft: String
+  hasDraft: Int
   id: ID!
-  isPinned: String
+  isPinned: Int
   message: String
   name: String
   sortOrder: Int
@@ -8214,7 +8214,7 @@ type createAdminCatalogProductPayloadData implements Node {
   bookingProduct: String
   bundleOptions: AdminProductDetailBundleOptionCursorConnection
   categories: AdminProductDetailCategoryCursorConnection
-  categoryId: String
+  categoryId: Int
   categoryName: String
   channel: String
   channels: AdminProductDetailChannelCursorConnection
@@ -8225,34 +8225,34 @@ type createAdminCatalogProductPayloadData implements Node {
   description: String
   downloadableLinks: AdminProductDetailDownloadableLinkCursorConnection
   downloadableSamples: AdminProductDetailDownloadableSampleCursorConnection
-  featured: String
+  featured: Boolean
   formattedPrice: String
   formattedSpecialPrice: String
   id: ID!
   images: AdminProductDetailImageCursorConnection
-  imagesCount: String
-  inStock: String
+  imagesCount: Int
+  inStock: Boolean
   inventories: AdminProductDetailInventoryCursorConnection
   linkedProducts: AdminProductDetailGroupedProductCursorConnection
   locale: String
-  manageStock: String
+  manageStock: Boolean
   metaDescription: String
   metaKeywords: String
   metaTitle: String
   name: String
-  new: String
+  new: Boolean
   parentId: Int
   price: String
-  quantity: String
+  quantity: Int
   relatedProducts: AdminProductDetailProductRefCursorConnection
   shortDescription: String
   sku: String!
   specialPrice: String
   specialPriceFrom: String
   specialPriceTo: String
-  status: String
+  status: Int
   superAttributes: AdminProductDetailSuperAttributeCursorConnection
-  taxCategoryId: String
+  taxCategoryId: Int
   translations: AdminProductDetailTranslationCursorConnection
   type: String!
   upSells: AdminProductDetailProductRefCursorConnection
@@ -8260,9 +8260,9 @@ type createAdminCatalogProductPayloadData implements Node {
   urlKey: String
   variants: AdminProductDetailVariantCursorConnection
   videos: AdminProductDetailVideoCursorConnection
-  visibleIndividually: String
+  visibleIndividually: Boolean
   warnings: String
-  weight: String
+  weight: Float
 }
 
 "Admin catalog product update. Pass the resource IRI as id. Free-shape payload: send only the fields you want to change. Sub-resource fields (images / inventories / customerGroupPrices / videos) are stripped — use the dedicated endpoints. Becomes updateAdminCatalogProduct in GraphQL."
@@ -8315,7 +8315,7 @@ type updateAdminCatalogProductPayloadData implements Node {
   bookingProduct: String
   bundleOptions: AdminProductDetailBundleOptionCursorConnection
   categories: AdminProductDetailCategoryCursorConnection
-  categoryId: String
+  categoryId: Int
   categoryName: String
   channel: String
   channels: AdminProductDetailChannelCursorConnection
@@ -8326,34 +8326,34 @@ type updateAdminCatalogProductPayloadData implements Node {
   description: String
   downloadableLinks: AdminProductDetailDownloadableLinkCursorConnection
   downloadableSamples: AdminProductDetailDownloadableSampleCursorConnection
-  featured: String
+  featured: Boolean
   formattedPrice: String
   formattedSpecialPrice: String
   id: ID!
   images: AdminProductDetailImageCursorConnection
-  imagesCount: String
-  inStock: String
+  imagesCount: Int
+  inStock: Boolean
   inventories: AdminProductDetailInventoryCursorConnection
   linkedProducts: AdminProductDetailGroupedProductCursorConnection
   locale: String
-  manageStock: String
+  manageStock: Boolean
   metaDescription: String
   metaKeywords: String
   metaTitle: String
   name: String
-  new: String
+  new: Boolean
   parentId: Int
   price: String
-  quantity: String
+  quantity: Int
   relatedProducts: AdminProductDetailProductRefCursorConnection
   shortDescription: String
   sku: String
   specialPrice: String
   specialPriceFrom: String
   specialPriceTo: String
-  status: String
+  status: Int
   superAttributes: AdminProductDetailSuperAttributeCursorConnection
-  taxCategoryId: String
+  taxCategoryId: Int
   translations: AdminProductDetailTranslationCursorConnection
   type: String
   upSells: AdminProductDetailProductRefCursorConnection
@@ -8361,9 +8361,9 @@ type updateAdminCatalogProductPayloadData implements Node {
   urlKey: String
   variants: AdminProductDetailVariantCursorConnection
   videos: AdminProductDetailVideoCursorConnection
-  visibleIndividually: String
+  visibleIndividually: Boolean
   warnings: String
-  weight: String
+  weight: Float
 }
 
 "Admin catalog product delete. Pass the resource IRI as id. Configurable variants cascade. Becomes deleteAdminCatalogProduct in GraphQL."

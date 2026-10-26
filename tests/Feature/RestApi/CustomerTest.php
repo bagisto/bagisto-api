@@ -174,6 +174,9 @@ class CustomerTest extends RestApiTestCase
         $data = $response->json();
         expect($data)->toBeArray();
         expect(count($data))->toBeGreaterThanOrEqual(1);
+        expect($data[0]['customerGroupId'])->toBe((int) $customer->customer_group_id)
+            ->and($data[0]['customerGroupCode'])->toBe($customer->group->code)
+            ->and($data[0]['customerGroupName'])->toBe($customer->group->name);
     }
 
     /**

@@ -81,7 +81,7 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
 
         $channel = $this->scope->channel(array_filter(['channel' => $this->requestedChannelId($input->channel, $args)]));
 
-        $this->guardSingleFooter($payload['type'], $theme['code'], (int) $channel->id);
+        $this->scope->guardSingleton($payload['type'], $theme['code'], (int) $channel->id);
 
         Event::dispatch('section.create.before');
 
@@ -133,7 +133,7 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
             'theme_code' => 'required',
         ]);
 
-        $this->guardSingleFooter($payload['type'], $payload['theme_code'], (int) $payload['channel_id'], $section->id);
+        $this->scope->guardSingleton($payload['type'], $payload['theme_code'], (int) $payload['channel_id'], $section->id);
 
         $channel = $this->scope->channel(['channel' => $payload['channel_id']]);
 
@@ -251,27 +251,6 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
         $options = $section->translate($locale)?->options;
 
         return is_array($options) ? $options : [];
-    }
-
-    /**
-     * Guard single footer.
-     */
-    protected function guardSingleFooter(?string $type, ?string $themeCode, int $channelId, ?int $ignoreId = null): void
-    {
-        if ($type !== Section::FOOTER_LINKS) {
-            return;
-        }
-
-        $exists = Section::query()
-            ->where('type', Section::FOOTER_LINKS)
-            ->where('theme_code', $themeCode)
-            ->where('channel_id', $channelId)
-            ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
-            ->exists();
-
-        if ($exists) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.appearance.section.footer-links-exists'), 422);
-        }
     }
 
     /**

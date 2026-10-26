@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Раздел не найден.',
                 'invalid-payload' => 'Неподдерживаемые данные раздела.',
-                'footer-links-exists' => 'У этого канала уже есть раздел ссылок в подвале.',
                 'options-required' => 'Требуются опции.',
                 'status-required' => 'Требуется статус.',
                 'section-ids-required' => 'Требуется хотя бы один раздел.',

@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Розділ не знайдено.',
                 'invalid-payload' => 'Непідтримуване корисне навантаження розділу.',
-                'footer-links-exists' => 'Цей канал уже має розділ посилань футера.',
                 'options-required' => 'Потрібні опції.',
                 'status-required' => 'Потрібен статус.',
                 'section-ids-required' => 'Потрібен принаймні один розділ.',

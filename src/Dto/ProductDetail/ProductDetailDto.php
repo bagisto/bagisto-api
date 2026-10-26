@@ -135,6 +135,51 @@ class ProductDetailDto
     public ?bool $is_saleable = null;
 
     /**
+     * Whether the product can be checked out by a guest.
+     */
+    public ?bool $guest_checkout = null;
+
+    /**
+     * Whether the product is listed on its own, not only as a variant.
+     */
+    public ?bool $visible_individually = null;
+
+    /**
+     * Whether the product sells below its regular price: 1 = yes, 0 = no.
+     */
+    public ?int $on_sale = null;
+
+    /**
+     * The average approved rating, to one decimal.
+     */
+    public ?float $average_rating = null;
+
+    /**
+     * The sum of the approved ratings.
+     */
+    public ?int $total_rating = null;
+
+    /**
+     * The number of approved reviews.
+     */
+    public ?int $reviews_count = null;
+
+    /**
+     * The attributes the storefront shows in the product's specification table.
+     */
+    public array $additional_attributes = [];
+
+    /**
+     * The quantity offers of the customer's group, as the storefront words them.
+     */
+    public array $customer_group_offers = [];
+
+    /**
+     * The option configuration of a configurable product, as the storefront swatch picker reads it.
+     */
+    public ?array $configurable_config = null;
+
+    /**
      * Whether this product is in the authenticated customer's wishlist (current channel): 1 = yes, 0 = no (0 for guests).
      */
     public ?int $is_in_wishlist = null;

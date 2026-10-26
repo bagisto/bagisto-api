@@ -141,4 +141,64 @@ class AdminCustomerCartItem
      */
     #[ApiProperty(writable: false)]
     public ?array $additional = null;
+
+    /**
+     * The id of the cart the item is in.
+     */
+    #[ApiProperty(writable: false)]
+    public ?int $cart_id = null;
+
+    /**
+     * The unit price including tax.
+     */
+    #[ApiProperty(writable: false)]
+    public ?float $price_incl_tax = null;
+
+    /**
+     * The unit price including tax, formatted.
+     */
+    #[ApiProperty(writable: false)]
+    public ?string $formatted_price_incl_tax = null;
+
+    /**
+     * The row total including tax.
+     */
+    #[ApiProperty(writable: false)]
+    public ?float $total_incl_tax = null;
+
+    /**
+     * The row total including tax, formatted.
+     */
+    #[ApiProperty(writable: false)]
+    public ?string $formatted_total_incl_tax = null;
+
+    /**
+     * The chosen options, as the admin cart panel lists them.
+     */
+    #[ApiProperty(writable: false)]
+    public ?array $options = null;
+
+    /**
+     * The URL of the product's first image.
+     */
+    #[ApiProperty(writable: false)]
+    public ?string $product_image = null;
+
+    /**
+     * Whether the product can be bought.
+     */
+    #[ApiProperty(writable: false)]
+    public ?bool $is_saleable = null;
+
+    /**
+     * The quantity available for sale, or null where stock does not apply.
+     */
+    #[ApiProperty(writable: false)]
+    public ?int $qty_available = null;
+
+    /**
+     * Whether the product needs options chosen before it can be added to a cart.
+     */
+    #[ApiProperty(writable: false)]
+    public ?bool $is_options_required = null;
 }

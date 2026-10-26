@@ -90,6 +90,10 @@ class CustomerGdprTest extends AdminApiTestCase
         expect($body['data'])->toBeArray();
         expect(count($body['data']))->toBeGreaterThanOrEqual(2);
         expect($body['meta'])->toHaveKey('total');
+
+        $labels = collect($body['data'])->pluck('typeLabel', 'type')->all();
+        expect($labels['update'] ?? null)->toBe(trans('admin::app.customers.gdpr.index.datagrid.edit'))
+            ->and($labels['delete'] ?? null)->toBe(trans('admin::app.customers.gdpr.index.datagrid.delete'));
     }
 
     /**

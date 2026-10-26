@@ -184,6 +184,9 @@ class CustomerReturnTest extends RestApiTestCase
         $row = $response->json('0');
         expect((int) $row['orderItemId'])->toBe($seed['orderItem']->id);
         expect((int) $row['forReturnQuantity'])->toBe(2);
+        expect($row)->toHaveKeys(['qtyShipped', 'qtyInvoiced', 'qtyRefunded', 'qtyCanceled', 'orderStatus'])
+            ->and($row['orderStatus'])->toBe($seed['order']->status)
+            ->and((int) $row['qtyShipped'])->toBe((int) $seed['orderItem']->qty_shipped);
     }
 
     /**

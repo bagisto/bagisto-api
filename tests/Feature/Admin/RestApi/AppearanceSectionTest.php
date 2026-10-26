@@ -55,6 +55,57 @@ class AppearanceSectionTest extends AdminApiTestCase
     }
 
     /**
+     * Services content is pinned to the bottom of the page as well, as core's editor pins it.
+     */
+    public function test_list_pins_services_content_last(): void
+    {
+        $admin = $this->createAdmin();
+        $channelId = $this->channelId();
+
+        \DB::table('theme_sections')->where('channel_id', $channelId)->delete();
+
+        $services = $this->makeSection([
+            'type' => Section::SERVICES_CONTENT,
+            'sort_order' => 1,
+        ]);
+        $content = $this->makeSection([
+            'type' => Section::STATIC_CONTENT,
+            'sort_order' => 2,
+        ]);
+
+        $response = $this->adminGet($admin, '/api/admin/appearance/themes/default/sections?channel='.$channelId);
+
+        $response->assertOk();
+
+        $rows = collect($response->json())->keyBy('id');
+        $ids = array_column($response->json(), 'id');
+
+        expect(array_search($services->id, $ids, true))->toBeGreaterThan(array_search($content->id, $ids, true))
+            ->and($rows[$services->id]['isPinned'])->toBeTrue()
+            ->and($rows[$content->id]['isPinned'])->toBeFalse();
+    }
+
+    /**
+     * A second services content section is refused, as core allows one per channel.
+     */
+    public function test_create_rejects_a_second_services_content_section(): void
+    {
+        $admin = $this->createAdmin();
+        $channelId = $this->channelId();
+
+        \DB::table('theme_sections')->where('channel_id', $channelId)->delete();
+
+        $this->makeSection(['type' => Section::SERVICES_CONTENT]);
+
+        $response = $this->adminPost($admin, '/api/admin/appearance/themes/default/sections?channel='.$channelId, [
+            'name' => 'Second services',
+            'type' => Section::SERVICES_CONTENT,
+        ]);
+
+        expect($response->getStatusCode())->toBe(422);
+    }
+
+    /**
      * Test list unknown theme returns 404.
      */
     public function test_list_unknown_theme_returns_404(): void

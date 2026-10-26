@@ -141,8 +141,6 @@ trait HandlesCartItems
                 }
             }
 
-            Event::dispatch('cart.before.add', ['cartItem' => null]);
-
             CartFacade::setCart($cart);
 
             $bundleOptions = $this->normalizeJsonFieldToArray($data->bundleOptions, 'bundleOptions');
@@ -203,8 +201,6 @@ trait HandlesCartItems
             CartFacade::collectTotals();
 
             $updatedCart = CartFacade::getCart();
-
-            Event::dispatch('cart.after.add', ['cart' => $updatedCart]);
         } catch (HttpExceptionInterface $exception) {
             throw $exception;
         } catch (\Exception $exception) {

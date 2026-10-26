@@ -8,6 +8,7 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\CompareItem;
+use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
 use Webkul\BagistoApi\Support\CurrentCustomer;
@@ -40,7 +41,7 @@ class CompareItemProvider implements ProviderInterface
         $limit = $requested > 0 ? $this->clampPageSize($requested) : 0;
 
         $query = CompareItem::where('customer_id', $customer->id)
-            ->with(['product', 'customer'])
+            ->with(['product' => fn ($query) => Product::withReviewSummary($query), 'customer'])
             ->orderBy('id', 'asc');
 
         return new Paginator($this->paginateCursorWindow($query, $args, $limit));

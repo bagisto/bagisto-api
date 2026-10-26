@@ -5,9 +5,10 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\Operation;
+use DateTimeInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
-use Webkul\Attribute\Models\Attribute;
+use Webkul\Attribute\Repositories\AttributeRepository;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProduct;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
@@ -141,10 +142,8 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         $dto->type = $product->type;
         $dto->status = null;
 
-        $statusValue = $product->attribute_values
-            ->where('attribute_id', $this->resolveAttributeId($product, 'status'))
-            ->first();
-        $dto->status = $statusValue ? (int) $statusValue->boolean_value : null;
+        $status = $this->attributeValue($product, 'status');
+        $dto->status = $status !== null ? (int) $status : null;
 
         $dto->name = $this->resolveFlatName($product);
 
@@ -185,15 +184,16 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         $dto->featured = $flatRow ? (bool) ($flatRow->featured ?? false) : null;
         $dto->new = $flatRow ? (bool) ($flatRow->new ?? false) : null;
 
-        $taxAttr = $product->attribute_values
-            ->where('attribute_id', $this->resolveAttributeId($product, 'tax_category_id'))
-            ->first();
-        $dto->taxCategoryId = $taxAttr ? (int) $taxAttr->integer_value : null;
+        $taxCategoryId = $this->attributeValue($product, 'tax_category_id');
+        $dto->taxCategoryId = $taxCategoryId !== null ? (int) $taxCategoryId : null;
 
-        $manageStockAttr = $product->attribute_values
-            ->where('attribute_id', $this->resolveAttributeId($product, 'manage_stock'))
-            ->first();
-        $dto->manageStock = $manageStockAttr ? (bool) $manageStockAttr->boolean_value : false;
+        $dto->manageStock = (bool) $this->attributeValue($product, 'manage_stock');
+
+        $specialPrice = $this->attributeValue($product, 'special_price');
+        $dto->specialPrice = $specialPrice !== null && $specialPrice !== '' ? (string) (float) $specialPrice : null;
+        $dto->formattedSpecialPrice = $specialPrice !== null && $specialPrice !== '' ? core()->formatPrice((float) $specialPrice) : null;
+        $dto->specialPriceFrom = $this->dateValue($this->attributeValue($product, 'special_price_from'));
+        $dto->specialPriceTo = $this->dateValue($this->attributeValue($product, 'special_price_to'));
 
         try {
             $dto->inStock = (bool) $product->getTypeInstance()->isSaleable();
@@ -840,25 +840,35 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
     }
 
     /**
-     * Resolve the integer attribute_id for a given attribute code from the
-     * product's loaded attribute_family. Falls back to 0 (no match) if the.
+     * Resolve the integer attribute_id for a given attribute code, or 0 when there is none.
      */
     private function resolveAttributeId(Product $product, string $code): int
     {
-        static $codeToIdCache = [];
+        return (int) ($this->attributeByCode($code)?->id ?? 0);
+    }
 
-        if (isset($codeToIdCache[$code])) {
-            return $codeToIdCache[$code];
+    /**
+     * The attribute with the given code, looked up once per request.
+     */
+    private function attributeByCode(string $code): ?object
+    {
+        static $attributes = [];
+
+        if (! array_key_exists($code, $attributes)) {
+            $attributes[$code] = app(AttributeRepository::class)->findOneByField('code', $code);
         }
 
-        try {
-            $id = Attribute::where('code', $code)->value('id');
-            $codeToIdCache[$code] = (int) ($id ?? 0);
-        } catch (\Throwable) {
-            $codeToIdCache[$code] = 0;
-        }
+        return $attributes[$code];
+    }
 
-        return $codeToIdCache[$code];
+    /**
+     * The product's value of an attribute in the requested channel and locale, as the edit form reads it.
+     */
+    private function attributeValue(Product $product, string $code): mixed
+    {
+        $attribute = $this->attributeByCode($code);
+
+        return $attribute ? $product->getCustomAttributeValue($attribute) : null;
     }
 
     /**
@@ -890,12 +900,26 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
     }
 
     /**
-     * The product's flat row in the admin's locale, else its first flat row.
+     * A date attribute value as a Y-m-d string, or null when it is empty.
+     */
+    private function dateValue(mixed $value): ?string
+    {
+        if ($value instanceof DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+
+        return $value ? (string) $value : null;
+    }
+
+    /**
+     * The product's flat row in the requested channel and locale, else in the locale, else its first flat row.
      */
     private function localeFlatRow(mixed $product): mixed
     {
         $flats = $product->product_flats;
 
-        return $flats->firstWhere('locale', app()->getLocale()) ?? $flats->first();
+        return $flats->where('channel', core()->getRequestedChannelCode())->firstWhere('locale', core()->getRequestedLocaleCode())
+            ?? $flats->firstWhere('locale', core()->getRequestedLocaleCode())
+            ?? $flats->first();
     }
 }

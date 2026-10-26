@@ -15142,6 +15142,7 @@
                                             "customerName": "Jane Doe",
                                             "email": "jane@example.com",
                                             "type": "delete",
+                                            "typeLabel": "Delete",
                                             "status": "pending",
                                             "message": "Please remove my account.",
                                             "revokedAt": null,
@@ -15404,6 +15405,7 @@
                                     "customerName": "Jane Doe",
                                     "email": "jane@example.com",
                                     "type": "delete",
+                                    "typeLabel": "Delete",
                                     "status": "pending",
                                     "message": "Please remove my account.",
                                     "revokedAt": null,
@@ -15534,6 +15536,7 @@
                                     "customerName": "Jane Doe",
                                     "email": "jane@example.com",
                                     "type": "delete",
+                                    "typeLabel": "Delete",
                                     "status": "processing",
                                     "message": "Reviewing the request.",
                                     "revokedAt": null,
@@ -61091,6 +61094,83 @@
                             "null"
                         ]
                     },
+                    "subTotalInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubTotalInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubTotalInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmount": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingAmountInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmountInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmountInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotalInvoiced": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotalRefunded": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
                     "taxAmount": {
                         "readOnly": true,
                         "type": [
@@ -61443,6 +61523,83 @@
                         "readOnly": true,
                         "type": [
                             "string",
+                            "null"
+                        ]
+                    },
+                    "subTotalInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubTotalInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubTotalInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmount": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingAmountInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmountInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmountInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotalInvoiced": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotalRefunded": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
                             "null"
                         ]
                     },
@@ -63587,6 +63744,83 @@
                             "null"
                         ]
                     },
+                    "subTotalInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubTotalInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubTotalInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmount": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingAmountInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmountInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmountInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotalInvoiced": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotalRefunded": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
                     "taxAmount": {
                         "readOnly": true,
                         "type": [
@@ -63939,6 +64173,83 @@
                         "readOnly": true,
                         "type": [
                             "string",
+                            "null"
+                        ]
+                    },
+                    "subTotalInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubTotalInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubTotalInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmount": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingAmountInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmountInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmountInclTax": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotalInvoiced": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotalRefunded": {
+                        "readOnly": true,
+                        "type": [
+                            "number",
                             "null"
                         ]
                     },

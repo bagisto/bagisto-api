@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Section introuvable.',
                 'invalid-payload' => 'Contenu de section non pris en charge.',
-                'footer-links-exists' => 'Ce canal possède déjà une section de liens de pied de page.',
                 'options-required' => 'Les options sont requises.',
                 'status-required' => 'Le statut est requis.',
                 'section-ids-required' => 'Au moins une section est requise.',

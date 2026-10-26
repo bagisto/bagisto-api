@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Bölüm bulunamadı.',
                 'invalid-payload' => 'Desteklenmeyen bölüm verisi.',
-                'footer-links-exists' => 'Bu kanalda zaten bir alt bilgi bağlantıları bölümü var.',
                 'options-required' => 'Seçenekler gereklidir.',
                 'status-required' => 'Durum gereklidir.',
                 'section-ids-required' => 'En az bir bölüm gereklidir.',

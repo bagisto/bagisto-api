@@ -6,14 +6,18 @@ use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerCartItem;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
+use Webkul\BagistoApi\Admin\State\Concerns\MapsCustomerItemProduct;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Checkout\Models\Cart;
 use Webkul\Customer\Models\Customer;
 
 class AdminCustomerCartItemProvider implements ProviderInterface
 {
+    use MapsCustomerItemProduct;
+
     /**
      * Provide.
      */
@@ -43,6 +47,7 @@ class AdminCustomerCartItemProvider implements ProviderInterface
 
         if ($cart) {
             $rows = $cart->items()
+                ->with(['product.images', 'product.inventories'])
                 ->whereNull('parent_id')
                 ->get()
                 ->map(fn ($item) => $this->toDto($item))
@@ -72,6 +77,17 @@ class AdminCustomerCartItemProvider implements ProviderInterface
         $dto->total = (float) $item->total;
         $dto->formattedTotal = core()->formatPrice($item->total);
         $dto->additional = is_array($item->additional) ? $item->additional : null;
+        $dto->cartId = (int) $item->cart_id;
+        $dto->priceInclTax = (float) $item->price_incl_tax;
+        $dto->formattedPriceInclTax = core()->formatPrice($item->price_incl_tax);
+        $dto->totalInclTax = (float) $item->total_incl_tax;
+        $dto->formattedTotalInclTax = core()->formatPrice($item->total_incl_tax);
+        $dto->options = array_values($item->additional['attributes'] ?? []);
+
+        $image = $item->product?->images?->first();
+        $dto->productImage = $image ? Storage::url($image->path) : null;
+
+        $this->fillProductSummary($dto, $item->product);
 
         return $dto;
     }

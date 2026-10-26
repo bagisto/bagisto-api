@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Sectie niet gevonden.',
                 'invalid-payload' => 'Niet-ondersteunde sectiepayload.',
-                'footer-links-exists' => 'Dit kanaal heeft al een sectie met footerlinks.',
                 'options-required' => 'Opties zijn vereist.',
                 'status-required' => 'Status is vereist.',
                 'section-ids-required' => 'Ten minste één sectie is vereist.',

@@ -120,6 +120,31 @@ class ReturnableItem
     public ?int $qty_ordered = null;
 
     /**
+     * The quantity shipped.
+     */
+    public ?int $qty_shipped = null;
+
+    /**
+     * The quantity invoiced.
+     */
+    public ?int $qty_invoiced = null;
+
+    /**
+     * The quantity refunded.
+     */
+    public ?int $qty_refunded = null;
+
+    /**
+     * The quantity canceled.
+     */
+    public ?int $qty_canceled = null;
+
+    /**
+     * The status of the order the item belongs to.
+     */
+    public ?string $order_status = null;
+
+    /**
      * The current quantity.
      */
     public ?int $current_quantity = null;

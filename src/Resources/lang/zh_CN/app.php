@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => '未找到版块。',
                 'invalid-payload' => '不支持的版块数据。',
-                'footer-links-exists' => '此渠道已有页脚链接版块。',
                 'options-required' => '需要选项。',
                 'status-required' => '需要状态。',
                 'section-ids-required' => '至少需要一个版块。',

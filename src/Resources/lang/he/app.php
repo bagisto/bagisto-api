@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'המקטע לא נמצא.',
                 'invalid-payload' => 'מטען מקטע שאינו נתמך.',
-                'footer-links-exists' => 'לערוץ זה כבר יש מקטע קישורי כותרת תחתונה.',
                 'options-required' => 'האפשרויות נדרשות.',
                 'status-required' => 'הסטטוס נדרש.',
                 'section-ids-required' => 'נדרש לפחות מקטע אחד.',

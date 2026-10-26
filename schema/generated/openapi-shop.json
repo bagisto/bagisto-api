@@ -35449,6 +35449,10 @@
                         "readOnly": true,
                         "type": "string"
                     },
+                    "orderNumber": {
+                        "readOnly": true,
+                        "type": "string"
+                    },
                     "downloadUrl": {
                         "readOnly": true,
                         "type": "string"
@@ -35541,6 +35545,10 @@
                         "format": "date-time"
                     },
                     "remainingDownloads": {
+                        "readOnly": true,
+                        "type": "string"
+                    },
+                    "orderNumber": {
                         "readOnly": true,
                         "type": "string"
                     },

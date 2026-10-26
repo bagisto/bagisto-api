@@ -3259,15 +3259,25 @@ type AdminCustomerCartItemEdge {
 type AdminCustomerCartItem implements Node {
   _id: Int
   additional: Iterable
+  cartId: Int
   formattedPrice: String
+  formattedPriceInclTax: String
   formattedTotal: String
+  formattedTotalInclTax: String
   id: ID!
+  isOptionsRequired: Boolean
+  isSaleable: Boolean
   name: String
+  options: Iterable
   price: Float
+  priceInclTax: Float
   productId: Int
+  productImage: String
+  qtyAvailable: Int
   quantity: Int
   sku: String
   total: Float
+  totalInclTax: Float
   type: String
 }
 
@@ -3297,11 +3307,15 @@ type AdminCustomerCompareItem implements Node {
   _id: Int
   formattedPrice: String
   id: ID!
+  isOptionsRequired: Boolean
+  isSaleable: Boolean
   name: String
   price: Float
   productId: Int
   productImage: String
+  qtyAvailable: Int
   sku: String
+  type: String
 }
 
 "Information about the current page."
@@ -3337,6 +3351,7 @@ type AdminCustomerGdprRequest implements Node {
   revokedAt: String
   status: String
   type: String
+  typeLabel: String
   updatedAt: String
 }
 
@@ -3582,11 +3597,15 @@ type AdminCustomerWishlistItem implements Node {
   additional: Iterable
   formattedPrice: String
   id: ID!
+  isOptionsRequired: Boolean
+  isSaleable: Boolean
   name: String
   price: Float
   productId: Int
   productImage: String
+  qtyAvailable: Int
   sku: String
+  type: String
 }
 
 "Information about the current page."
@@ -3859,7 +3878,9 @@ type AdminOrderDetail implements Node {
   formattedGrandTotalInvoiced: String
   formattedGrandTotalRefunded: String
   formattedShippingAmount: String
+  formattedShippingAmountInclTax: String
   formattedSubTotal: String
+  formattedSubTotalInclTax: String
   formattedTaxAmount: String
   formattedTotalDue: String
   grandTotal: Float

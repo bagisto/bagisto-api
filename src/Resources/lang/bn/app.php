@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'সেকশন পাওয়া যায়নি।',
                 'invalid-payload' => 'অসমর্থিত সেকশন পেলোড।',
-                'footer-links-exists' => 'এই চ্যানেলে ইতিমধ্যে একটি ফুটার লিংক সেকশন রয়েছে।',
                 'options-required' => 'অপশন প্রয়োজন।',
                 'status-required' => 'অবস্থা প্রয়োজন।',
                 'section-ids-required' => 'অন্তত একটি সেকশন প্রয়োজন।',

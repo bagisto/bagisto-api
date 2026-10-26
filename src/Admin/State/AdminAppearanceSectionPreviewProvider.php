@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Admin\Models\AdminAppearanceSectionPreview;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
-use Webkul\Theme\Models\Section;
 use Webkul\Theme\Repositories\SectionRepository;
 
 class AdminAppearanceSectionPreviewProvider implements ProviderInterface
@@ -45,7 +44,7 @@ class AdminAppearanceSectionPreviewProvider implements ProviderInterface
         $result->locale = $locale;
 
         $result->sections = collect($sections)
-            ->sortBy(fn ($section) => $section->type === Section::FOOTER_LINKS ? 1 : 0)
+            ->sortBy(fn ($section) => $this->scope->isPinned($section) ? 1 : 0)
             ->map(fn ($section) => [
                 'id' => (int) $section->id,
                 'name' => $section->name,

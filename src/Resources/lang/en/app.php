@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Section not found.',
                 'invalid-payload' => 'Unsupported section payload.',
-                'footer-links-exists' => 'This channel already has a footer links section.',
                 'options-required' => 'Options are required.',
                 'status-required' => 'Status is required.',
                 'section-ids-required' => 'At least one section is required.',

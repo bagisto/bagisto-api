@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Admin\Dto\AdminAppearanceSectionDuplicateInput;
 use Webkul\BagistoApi\Admin\Models\AdminAppearanceSectionDuplicate;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
-use Webkul\BagistoApi\Exception\InvalidInputException;
-use Webkul\Theme\Models\Section;
 use Webkul\Theme\Repositories\SectionRepository;
 
 class AdminAppearanceSectionDuplicateProcessor implements ProcessorInterface
@@ -39,9 +37,7 @@ class AdminAppearanceSectionDuplicateProcessor implements ProcessorInterface
 
         $section = $this->scope->sectionOrFail($id ? (int) basename((string) $id) : null);
 
-        if ($section->type === Section::FOOTER_LINKS) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.appearance.section.footer-links-exists'), 422);
-        }
+        $this->scope->guardSingleton($section->type, $section->theme_code, (int) $section->channel_id);
 
         Event::dispatch('section.create.before');
 

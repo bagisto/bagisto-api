@@ -34,6 +34,26 @@ class WishlistTest extends RestApiTestCase
     }
 
     /**
+     * Each wishlist item carries the product card, so the wishlist page needs no further call.
+     */
+    public function test_wishlist_items_embed_the_product_card(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet($testData['customer'], $this->baseUrl);
+
+        $response->assertOk();
+
+        $item = collect($response->json())->firstWhere('id', $testData['wishlistItem1']->id);
+
+        expect($item['product'])->toBeArray()
+            ->and($item['product']['id'])->toBe($testData['product1']->id)
+            ->and($item['product']['sku'])->toBe($testData['product1']->sku)
+            ->and($item['product'])->toHaveKeys(['name', 'price', 'formattedPrice', 'isSaleable', 'averageRating'])
+            ->and($item)->toHaveKeys(['createdAt', 'updatedAt']);
+    }
+
+    /**
      * Test get wishlist collection requires auth.
      */
     public function test_get_wishlist_collection_requires_auth(): void

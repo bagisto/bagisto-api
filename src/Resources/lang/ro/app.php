@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Secțiunea nu a fost găsită.',
                 'invalid-payload' => 'Conținut de secțiune neacceptat.',
-                'footer-links-exists' => 'Acest canal are deja o secțiune de linkuri în subsol.',
                 'options-required' => 'Opțiunile sunt obligatorii.',
                 'status-required' => 'Starea este obligatorie.',
                 'section-ids-required' => 'Este necesară cel puțin o secțiune.',

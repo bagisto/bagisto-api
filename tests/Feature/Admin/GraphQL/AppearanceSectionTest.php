@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Theme\Models\Section;
+use Webkul\Theme\SectionSchema;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
@@ -565,7 +566,9 @@ class AppearanceSectionTest extends AdminApiTestCase
 
         $response = $this->runDuplicate($section->id, $admin);
 
-        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.appearance.section.footer-links-exists'));
+        expect($response->json('errors.0.message'))->toBe(trans('admin::app.appearance.sections.create.singleton-exists', [
+            'type' => app(SectionSchema::class)->type('default', Section::FOOTER_LINKS)->getTitle(),
+        ]));
         expect(\DB::table('theme_sections')->count())->toBe($before);
     }
 

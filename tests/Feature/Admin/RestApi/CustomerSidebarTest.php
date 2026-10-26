@@ -42,7 +42,7 @@ class CustomerSidebarTest extends AdminApiTestCase
         $response->assertOk();
         expect($response->json())->toHaveKeys(['data', 'meta']);
         expect($response->json('data'))->toBeArray()->not->toBeEmpty();
-        expect($response->json('data.0'))->toHaveKeys(['id', 'productId', 'sku', 'type', 'name', 'quantity', 'price']);
+        expect($response->json('data.0'))->toHaveKeys(['id', 'productId', 'sku', 'type', 'name', 'quantity', 'price', 'cartId', 'priceInclTax', 'formattedPriceInclTax', 'totalInclTax', 'formattedTotalInclTax', 'options', 'productImage', 'isSaleable', 'qtyAvailable', 'isOptionsRequired']);
     }
 
     /**
@@ -84,7 +84,7 @@ class CustomerSidebarTest extends AdminApiTestCase
         $response->assertOk();
         expect($response->json())->toHaveKeys(['data', 'meta']);
         expect($response->json('data'))->toBeArray()->not->toBeEmpty();
-        expect($response->json('data.0'))->toHaveKeys(['id', 'productId', 'sku', 'name', 'price', 'productImage']);
+        expect($response->json('data.0'))->toHaveKeys(['id', 'productId', 'sku', 'name', 'price', 'productImage', 'type', 'isSaleable', 'qtyAvailable', 'isOptionsRequired']);
     }
 
     /**
@@ -144,7 +144,8 @@ class CustomerSidebarTest extends AdminApiTestCase
         $response->assertOk();
         expect($response->json())->toHaveKeys(['data', 'meta']);
         expect($response->json('data'))->toHaveCount(1);
-        expect($response->json('data.0'))->toHaveKeys(['id', 'productId', 'sku', 'name', 'price', 'formattedPrice', 'productImage']);
+        expect($response->json('data.0'))->toHaveKeys(['id', 'productId', 'sku', 'name', 'price', 'formattedPrice', 'productImage', 'type', 'isSaleable', 'qtyAvailable', 'isOptionsRequired']);
+        expect($response->json('data.0.type'))->toBe($product->type);
         expect($response->json('data.0.id'))->toBe($compareItem->id);
         expect($response->json('data.0.productId'))->toBe($product->id);
         expect($response->json('data.0.sku'))->toBe($product->sku);

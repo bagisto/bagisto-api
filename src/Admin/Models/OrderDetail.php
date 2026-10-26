@@ -70,6 +70,7 @@ class OrderDetail extends EloquentModel
         'formatted_grand_total', 'formatted_sub_total', 'formatted_tax_amount',
         'formatted_discount_amount', 'formatted_shipping_amount', 'formatted_total_due',
         'formatted_grand_total_invoiced', 'formatted_grand_total_refunded',
+        'formatted_sub_total_incl_tax', 'formatted_shipping_amount_incl_tax',
     ];
 
     /**
@@ -213,7 +214,7 @@ class OrderDetail extends EloquentModel
     #[ApiProperty(writable: false)]
     public function getTotalDueAttribute(): float
     {
-        return (float) $this->grand_total - (float) $this->grand_total_invoiced;
+        return round((float) $this->grand_total - (float) $this->grand_total_invoiced, 2) + 0.0;
     }
 
     /**
@@ -222,7 +223,7 @@ class OrderDetail extends EloquentModel
     #[ApiProperty(writable: false)]
     public function getBaseTotalDueAttribute(): float
     {
-        return (float) $this->base_grand_total - (float) $this->base_grand_total_invoiced;
+        return round((float) $this->base_grand_total - (float) $this->base_grand_total_invoiced, 2) + 0.0;
     }
 
     /**
@@ -286,6 +287,24 @@ class OrderDetail extends EloquentModel
     public function getFormattedGrandTotalInvoicedAttribute(): ?string
     {
         return $this->fmt($this->grand_total_invoiced);
+    }
+
+    /**
+     * Get formatted sub total incl tax attribute.
+     */
+    #[ApiProperty(writable: false)]
+    public function getFormattedSubTotalInclTaxAttribute(): ?string
+    {
+        return $this->fmt($this->sub_total_incl_tax);
+    }
+
+    /**
+     * Get formatted shipping amount incl tax attribute.
+     */
+    #[ApiProperty(writable: false)]
+    public function getFormattedShippingAmountInclTaxAttribute(): ?string
+    {
+        return $this->fmt($this->shipping_amount_incl_tax);
     }
 
     /**

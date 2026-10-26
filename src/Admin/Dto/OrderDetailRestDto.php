@@ -198,6 +198,72 @@ class OrderDetailRestDto
     public ?string $formatted_sub_total = null;
 
     /**
+     * The sub total including tax.
+     */
+    #[ApiProperty(writable: false)]
+    public ?float $sub_total_incl_tax = null;
+
+    /**
+     * The base sub total including tax.
+     */
+    #[ApiProperty(writable: false)]
+    public ?float $base_sub_total_incl_tax = null;
+
+    /**
+     * The sub total including tax, formatted.
+     */
+    #[ApiProperty(writable: false)]
+    public ?string $formatted_sub_total_incl_tax = null;
+
+    /**
+     * The base shipping amount.
+     */
+    #[ApiProperty(writable: false)]
+    public ?float $base_shipping_amount = null;
+
+    /**
+     * The shipping amount including tax.
+     */
+    #[ApiProperty(writable: false)]
+    public ?float $shipping_amount_incl_tax = null;
+
+    /**
+     * The base shipping amount including tax.
+     */
+    #[ApiProperty(writable: false)]
+    public ?float $base_shipping_amount_incl_tax = null;
+
+    /**
+     * The shipping amount including tax, formatted.
+     */
+    #[ApiProperty(writable: false)]
+    public ?string $formatted_shipping_amount_incl_tax = null;
+
+    /**
+     * The base tax amount.
+     */
+    #[ApiProperty(writable: false)]
+    public ?float $base_tax_amount = null;
+
+    /**
+     * The base discount amount.
+     */
+    #[ApiProperty(writable: false)]
+    public ?float $base_discount_amount = null;
+
+    /**
+     * The base grand total invoiced.
+     */
+    #[ApiProperty(writable: false)]
+    public ?float $base_grand_total_invoiced = null;
+
+    /**
+     * The base grand total refunded.
+     */
+    #[ApiProperty(writable: false)]
+    public ?float $base_grand_total_refunded = null;
+
+    /**
      * The tax amount.
      */
     #[ApiProperty(writable: false)]

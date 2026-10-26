@@ -15,7 +15,9 @@ use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Webkul\BagistoApi\Dto\CreateWishlistInput;
 use Webkul\BagistoApi\Dto\DeleteWishlistInput;
 use Webkul\BagistoApi\Resolver\WishlistQueryResolver;
@@ -28,6 +30,7 @@ use Webkul\BagistoApi\State\WishlistProvider;
     operations: [
         new Get(
             provider: WishlistItemProvider::class,
+            normalizationContext: ['groups' => ['wishlist:read', 'product:list'], 'skip_null_values' => false],
             openapi: new Operation(
                 tags: ['Wishlist'],
                 summary: 'Get a wishlist item by ID',
@@ -54,6 +57,7 @@ use Webkul\BagistoApi\State\WishlistProvider;
         ),
         new GetCollection(
             provider: WishlistProvider::class,
+            normalizationContext: ['groups' => ['wishlist:read', 'product:list'], 'skip_null_values' => false],
             openapi: new Operation(
                 tags: ['Wishlist'],
                 summary: 'List the customer\'s wishlist items',
@@ -280,9 +284,28 @@ class Wishlist extends \Webkul\Customer\Models\Wishlist
      * Get id.
      */
     #[ApiProperty(identifier: true, writable: false)]
+    #[Groups(['wishlist:read'])]
     public function getId(): int
     {
         return $this->id;
+    }
+
+    /**
+     * When the item was added, kept in the REST read group.
+     */
+    #[Groups(['wishlist:read'])]
+    public function getCreated_at(): ?CarbonInterface
+    {
+        return $this->created_at;
+    }
+
+    /**
+     * When the item was last changed, kept in the REST read group.
+     */
+    #[Groups(['wishlist:read'])]
+    public function getUpdated_at(): ?CarbonInterface
+    {
+        return $this->updated_at;
     }
 
     /**
@@ -307,6 +330,7 @@ class Wishlist extends \Webkul\Customer\Models\Wishlist
      * Product relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Associated product')]
+    #[Groups(['wishlist:read'])]
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
@@ -316,6 +340,7 @@ class Wishlist extends \Webkul\Customer\Models\Wishlist
      * Customer relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Customer who added the item')]
+    #[Groups(['wishlist:read'])]
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id');
@@ -325,6 +350,7 @@ class Wishlist extends \Webkul\Customer\Models\Wishlist
      * Channel relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Channel where item was added')]
+    #[Groups(['wishlist:read'])]
     public function channel(): BelongsTo
     {
         return $this->belongsTo(Channel::class, 'channel_id');

@@ -147,6 +147,10 @@ class CustomerDownloadableProductTest extends RestApiTestCase
         expect($json['name'])->toBe('Download Link 1');
         expect($json['type'])->toBe('file');
         expect($json['status'])->toBe('available');
+        expect($json)->toHaveKey('orderNumber');
+
+        $incrementId = \DB::table('orders')->where('id', $testData['purchase1']->order_id)->value('increment_id');
+        expect($json['orderNumber'])->toBe($incrementId !== null ? (string) $incrementId : null);
     }
 
     /**

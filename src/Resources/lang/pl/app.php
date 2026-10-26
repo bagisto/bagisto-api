@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Sekcja nie znaleziona.',
                 'invalid-payload' => 'Nieobsługiwane dane sekcji.',
-                'footer-links-exists' => 'Ten kanał ma już sekcję linków stopki.',
                 'options-required' => 'Opcje są wymagane.',
                 'status-required' => 'Status jest wymagany.',
                 'section-ids-required' => 'Wymagana jest co najmniej jedna sekcja.',

@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
+use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\Wishlist;
 use Webkul\BagistoApi\Support\CurrentCustomer;
 
@@ -38,7 +39,7 @@ class WishlistItemProvider implements ProviderInterface
         $wishlist = Wishlist::where('id', (int) $id)
             ->where('customer_id', $customer->id)
             ->where('channel_id', core()->getCurrentChannel()->id)
-            ->with(['product', 'customer', 'channel'])
+            ->with(['product' => fn ($query) => Product::withReviewSummary($query), 'customer', 'channel'])
             ->first();
 
         if (! $wishlist) {

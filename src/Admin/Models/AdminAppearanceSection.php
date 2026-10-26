@@ -23,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionProcessor;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionWriteProvider;
 use Webkul\Theme\Models\Section;
+use Webkul\Theme\SectionSchema;
 
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -431,7 +432,7 @@ class AdminAppearanceSection extends EloquentModel
     }
 
     /**
-     * Footer links are drawn at the bottom, so they cannot be reordered away from it.
+     * Whether the section's type is fixed to the bottom of the page, so it cannot be reordered away from it.
      */
     #[ApiProperty(writable: false, schema: [
         'type' => 'integer',
@@ -439,7 +440,7 @@ class AdminAppearanceSection extends EloquentModel
     ])]
     public function getIsPinnedAttribute(): int
     {
-        return $this->type === Section::FOOTER_LINKS ? 1 : 0;
+        return app(SectionSchema::class)->type($this->theme_code, $this->type)?->isPinned() ? 1 : 0;
     }
 
     /**

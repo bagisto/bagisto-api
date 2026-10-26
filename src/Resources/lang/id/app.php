@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Bagian tidak ditemukan.',
                 'invalid-payload' => 'Payload bagian tidak didukung.',
-                'footer-links-exists' => 'Channel ini sudah memiliki bagian tautan footer.',
                 'options-required' => 'Opsi diperlukan.',
                 'status-required' => 'Status diperlukan.',
                 'section-ids-required' => 'Setidaknya satu bagian diperlukan.',

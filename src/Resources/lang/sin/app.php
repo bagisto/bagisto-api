@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'කොටස හමු නොවිණි.',
                 'invalid-payload' => 'සහාය නොදක්වන කොටස් දත්ත.',
-                'footer-links-exists' => 'මෙම නාලිකාවට දැනටමත් පාදක සබැඳි කොටසක් ඇත.',
                 'options-required' => 'විකල්ප අවශ්‍ය වේ.',
                 'status-required' => 'තත්ත්වය අවශ්‍ය වේ.',
                 'section-ids-required' => 'අවම වශයෙන් එක් කොටසක් අවශ්‍ය වේ.',

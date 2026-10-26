@@ -41,7 +41,7 @@ trait MapsAppearanceSection
         $dto->draft_status = is_null($section->draft_status) ? null : (bool) $section->draft_status;
         $dto->draft_sort_order = is_null($section->draft_sort_order) ? null : (int) $section->draft_sort_order;
         $dto->has_draft = $this->sectionHasDraft($section);
-        $dto->is_pinned = $section->type === Section::FOOTER_LINKS;
+        $dto->is_pinned = (bool) $section->getTypeInstance()?->isPinned();
         $dto->created_at = $section->created_at?->toIso8601String();
         $dto->updated_at = $section->updated_at?->toIso8601String();
 

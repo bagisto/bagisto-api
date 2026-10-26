@@ -123,6 +123,17 @@ class CustomerDownloadableProduct extends DownloadableLinkPurchased
     }
 
     /**
+     * The number of the order the product was bought with, as the downloadable products grid shows it.
+     */
+    #[ApiProperty(writable: false, readable: true, description: 'Increment ID of the order the product was bought with')]
+    public function getOrderNumberAttribute(): ?string
+    {
+        $incrementId = $this->order?->increment_id;
+
+        return $incrementId !== null ? (string) $incrementId : null;
+    }
+
+    /**
      * Download URL for the purchased product file.
      */
     #[ApiProperty(writable: false, readable: true, description: 'URL to download the purchased file (requires Authorization header)')]

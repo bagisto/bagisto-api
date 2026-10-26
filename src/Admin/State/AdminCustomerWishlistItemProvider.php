@@ -9,12 +9,15 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerWishlistItem;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
+use Webkul\BagistoApi\Admin\State\Concerns\MapsCustomerItemProduct;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\Wishlist;
 
 class AdminCustomerWishlistItemProvider implements ProviderInterface
 {
+    use MapsCustomerItemProduct;
+
     /**
      * Provide.
      */
@@ -36,7 +39,7 @@ class AdminCustomerWishlistItemProvider implements ProviderInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.not-found'));
         }
 
-        $rows = Wishlist::with('product.images')
+        $rows = Wishlist::with(['product.images', 'product.inventories'])
             ->where('customer_id', $customerId)
             ->get()
             ->map(fn ($item) => $this->toDto($item))
@@ -63,6 +66,8 @@ class AdminCustomerWishlistItemProvider implements ProviderInterface
         $dto->price = $product ? (float) $product->price : null;
         $dto->formattedPrice = $product ? core()->formatPrice($product->price) : null;
         $dto->productImage = $image ? Storage::url($image->path) : null;
+
+        $this->fillProductSummary($dto, $product);
         $dto->additional = is_array($wishlist->additional) ? $wishlist->additional : null;
 
         return $dto;

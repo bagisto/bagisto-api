@@ -14,6 +14,7 @@ use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\ProductDetail\ProductDetailDto;
+use Webkul\BagistoApi\Models\Concerns\ProductCardSummary;
 use Webkul\BagistoApi\Models\Concerns\ProductPricing;
 use Webkul\BagistoApi\Models\Concerns\ProductRelations;
 use Webkul\BagistoApi\Models\Concerns\ProductSystemAttributes;
@@ -436,6 +437,7 @@ use Webkul\Product\Models\Product as BaseProduct;
 )]
 class Product extends BaseProduct
 {
+    use ProductCardSummary;
     use ProductPricing;
     use ProductRelations;
     use ProductSystemAttributes;

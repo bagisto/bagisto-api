@@ -58,6 +58,20 @@ class CustomerProfileHelper
         $profile->is_suspended = (string) $customer->is_suspended;
         $profile->image = $imageUrl;
 
+        return self::withCustomerGroup($profile, $customer);
+    }
+
+    /**
+     * Fill in the customer's group on a profile.
+     */
+    public static function withCustomerGroup(CustomerProfileModel $profile, Customer $customer): CustomerProfileModel
+    {
+        $group = $customer->group;
+
+        $profile->customer_group_id = $group ? (int) $group->id : null;
+        $profile->customer_group_code = $group?->code;
+        $profile->customer_group_name = $group?->name;
+
         return $profile;
     }
 

@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\TestResponse;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
@@ -43,6 +44,26 @@ class AddProductInCartTest extends RestApiTestCase
         expect((bool) ($data['isGuest'] ?? false))->toBeTrue();
         expect((int) ($data['items'][0]['productId'] ?? 0))->toBe($product->id);
         expect((string) ($data['items'][0]['type'] ?? ''))->toBe('simple');
+    }
+
+    /**
+     * Adding to the cart fires core's cart events only, as the storefront does.
+     */
+    public function test_add_to_cart_fires_only_core_cart_events(): void
+    {
+        $token = $this->createGuestCartToken();
+        $product = $this->createSimpleProduct();
+
+        Event::fake(['checkout.cart.add.after', 'cart.before.add', 'cart.after.add']);
+
+        $this->guestPostWithToken($this->addProductUrl, $token, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ])->assertSuccessful();
+
+        Event::assertDispatched('checkout.cart.add.after');
+        Event::assertNotDispatched('cart.before.add');
+        Event::assertNotDispatched('cart.after.add');
     }
 
     /**

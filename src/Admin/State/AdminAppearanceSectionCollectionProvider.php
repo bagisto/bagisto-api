@@ -45,7 +45,7 @@ class AdminAppearanceSectionCollectionProvider implements ProviderInterface
             ->where('channel_id', $channel->id)
             ->orderBy('sort_order')
             ->get()
-            ->sortBy(fn ($section) => $section->type === Section::FOOTER_LINKS ? 1 : 0)
+            ->sortBy(fn ($section) => $this->scope->isPinned($section) ? 1 : 0)
             ->values();
 
         if ($this->isGraphQL($context)) {

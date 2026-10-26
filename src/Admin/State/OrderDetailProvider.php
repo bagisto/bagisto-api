@@ -127,15 +127,28 @@ class OrderDetailProvider implements ProviderInterface
         $dto->subTotal = (float) $order->sub_total;
         $dto->baseSubTotal = (float) $order->base_sub_total;
         $dto->formattedSubTotal = core()->formatPrice($order->sub_total, $currency);
+        $dto->subTotalInclTax = (float) $order->sub_total_incl_tax;
+        $dto->baseSubTotalInclTax = (float) $order->base_sub_total_incl_tax;
+        $dto->formattedSubTotalInclTax = core()->formatPrice($order->sub_total_incl_tax, $currency);
+        $dto->baseShippingAmount = (float) $order->base_shipping_amount;
+        $dto->shippingAmountInclTax = (float) $order->shipping_amount_incl_tax;
+        $dto->baseShippingAmountInclTax = (float) $order->base_shipping_amount_incl_tax;
+        $dto->formattedShippingAmountInclTax = core()->formatPrice($order->shipping_amount_incl_tax, $currency);
+        $dto->baseTaxAmount = (float) $order->base_tax_amount;
+        $dto->baseDiscountAmount = (float) $order->base_discount_amount;
+        $dto->baseGrandTotalInvoiced = (float) $order->base_grand_total_invoiced;
+        $dto->baseGrandTotalRefunded = (float) $order->base_grand_total_refunded;
         $dto->taxAmount = (float) $order->tax_amount;
         $dto->formattedTaxAmount = core()->formatPrice($order->tax_amount, $currency);
         $dto->discountAmount = (float) $order->discount_amount;
         $dto->formattedDiscountAmount = core()->formatPrice($order->discount_amount, $currency);
         $dto->shippingAmount = (float) $order->shipping_amount;
         $dto->formattedShippingAmount = core()->formatPrice($order->shipping_amount, $currency);
-        $dto->totalDue = (float) $order->total_due;
-        $dto->baseTotalDue = (float) $order->base_total_due;
-        $dto->formattedTotalDue = core()->formatPrice($order->total_due, $currency);
+        $totalDue = round((float) $order->total_due, 2) + 0.0;
+
+        $dto->totalDue = $totalDue;
+        $dto->baseTotalDue = round((float) $order->base_total_due, 2) + 0.0;
+        $dto->formattedTotalDue = core()->formatPrice($totalDue, $currency);
 
         $dto->createdAt = (string) $order->created_at;
         $dto->updatedAt = (string) $order->updated_at;

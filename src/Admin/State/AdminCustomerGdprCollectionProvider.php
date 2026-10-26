@@ -106,6 +106,7 @@ class AdminCustomerGdprCollectionProvider extends AbstractAdminCollectionProvide
         $dto->customerName = trim((string) ($row->customer_name ?? '')) !== '' ? trim((string) $row->customer_name) : null;
         $dto->email = $row->email;
         $dto->type = $row->type;
+        $dto->typeLabel = AdminCustomerGdprRequest::labelForType($row->type);
         $dto->status = $row->status;
         $dto->message = $row->message;
         $dto->revokedAt = $row->revoked_at ? Carbon::parse($row->revoked_at)->toIso8601String() : null;

@@ -7,6 +7,7 @@ use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Models\Product as ApiProduct;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\BookingProduct\Models\BookingProduct;
+use Webkul\Product\Models\ProductReview;
 
 class ProductQueryTest extends GraphQLTestCase
 {
@@ -734,6 +735,41 @@ class ProductQueryTest extends GraphQLTestCase
         $response->assertSuccessful();
 
         expect($response->json('data.product.sku'))->toBe($product->sku);
+    }
+
+    /**
+     * A product resolves its sale badge and review summary over GraphQL, on the item and in the list.
+     */
+    public function test_product_resolves_the_sale_badge_and_review_summary(): void
+    {
+        $product = $this->createBaseProduct('simple');
+        $customer = $this->createCustomer();
+
+        foreach ([4, 5] as $rating) {
+            ProductReview::factory()->create([
+                'product_id' => $product->id,
+                'customer_id' => $customer->id,
+                'name' => 'Reviewer',
+                'status' => 'approved',
+                'rating' => $rating,
+            ]);
+        }
+
+        $response = $this->graphQL('query($id: ID!) { product(id: $id) { _id onSale averageRating totalRating reviewsCount } products(first: 50) { edges { node { _id averageRating reviewsCount } } } }', [
+            'id' => '/api/shop/products/'.$product->id,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull()
+            ->and((float) $response->json('data.product.averageRating'))->toBe(4.5)
+            ->and((int) $response->json('data.product.totalRating'))->toBe(9)
+            ->and((int) $response->json('data.product.reviewsCount'))->toBe(2)
+            ->and((int) $response->json('data.product.onSale'))->toBe(0);
+
+        $node = collect($response->json('data.products.edges'))->firstWhere('node._id', $product->id);
+
+        expect($node)->not->toBeNull()
+            ->and((int) $node['node']['reviewsCount'])->toBe(2);
     }
 
     /**

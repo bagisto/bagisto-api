@@ -7,6 +7,7 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\Request;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
+use Webkul\BagistoApi\Helper\CustomerProfileHelper;
 use Webkul\BagistoApi\Models\CustomerProfile;
 use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\BagistoApi\Support\DateOfBirth;
@@ -47,7 +48,7 @@ class CustomerProfileCollectionProvider implements ProviderInterface
         $profile->is_suspended = (string) $authenticatedCustomer->is_suspended;
         $profile->image = $authenticatedCustomer->image;
 
-        return [$profile];
+        return [CustomerProfileHelper::withCustomerGroup($profile, $authenticatedCustomer)];
     }
 
     /**

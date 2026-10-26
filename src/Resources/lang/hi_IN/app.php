@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'सेक्शन नहीं मिला।',
                 'invalid-payload' => 'असमर्थित सेक्शन पेलोड।',
-                'footer-links-exists' => 'इस चैनल में पहले से एक फ़ुटर लिंक सेक्शन है।',
                 'options-required' => 'विकल्प आवश्यक हैं।',
                 'status-required' => 'स्थिति आवश्यक है।',
                 'section-ids-required' => 'कम से कम एक सेक्शन आवश्यक है।',

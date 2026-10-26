@@ -45,6 +45,7 @@ class AdminCustomerGdprItemProvider extends AbstractAdminItemProvider
             : null;
         $dto->email = $gDPRDataRequest->email;
         $dto->type = $gDPRDataRequest->type;
+        $dto->typeLabel = AdminCustomerGdprRequest::labelForType($gDPRDataRequest->type);
         $dto->status = $gDPRDataRequest->status;
         $dto->message = $gDPRDataRequest->message;
         $dto->revokedAt = $gDPRDataRequest->revoked_at?->toIso8601String();

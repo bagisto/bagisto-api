@@ -190,8 +190,8 @@ class CustomerOrderProvider implements ProviderInterface
 
         $coreOrder = $this->orderRepository->with('items.product')->find($order->id);
 
-        $dto->total_due = (float) $coreOrder->total_due;
-        $dto->base_total_due = (float) $coreOrder->base_total_due;
+        $dto->total_due = round((float) $coreOrder->total_due, 2) + 0.0;
+        $dto->base_total_due = round((float) $coreOrder->base_total_due, 2) + 0.0;
         $dto->can_cancel = $coreOrder->canCancel();
         $dto->can_reorder = $coreOrder->canReorder();
         $dto->have_stockable_items = $coreOrder->haveStockableItems();

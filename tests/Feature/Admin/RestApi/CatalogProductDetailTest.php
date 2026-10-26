@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Product\Helpers\Indexers\Flat;
+use Webkul\Product\Repositories\ProductRepository;
 
 class CatalogProductDetailTest extends AdminApiTestCase
 {
@@ -68,6 +69,33 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/catalog/products/999999');
 
         $this->assertSame(404, $response->getStatusCode());
+    }
+
+    /**
+     * The special price, its dates and the stock flag are read for the requested channel, as the edit form reads them.
+     */
+    public function test_detail_reads_special_price_and_manage_stock_for_the_channel(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+
+        app(ProductRepository::class)->update([
+            'channel' => core()->getDefaultChannelCode(),
+            'locale' => 'en',
+            'special_price' => 7,
+            'special_price_from' => '2026-01-01',
+            'special_price_to' => '2026-12-31',
+            'manage_stock' => 1,
+        ], $product->id, ['special_price', 'special_price_from', 'special_price_to', 'manage_stock']);
+
+        $response = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
+
+        $response->assertOk();
+        expect((float) $response->json('specialPrice'))->toBe(7.0)
+            ->and($response->json('formattedSpecialPrice'))->toBe(core()->formatPrice(7))
+            ->and($response->json('specialPriceFrom'))->toBe('2026-01-01')
+            ->and($response->json('specialPriceTo'))->toBe('2026-12-31')
+            ->and($response->json('manageStock'))->toBeTrue();
     }
 
     /**

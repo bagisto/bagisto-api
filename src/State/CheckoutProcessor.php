@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Dto\CartData;
@@ -452,8 +451,6 @@ class CheckoutProcessor implements ProcessorInterface
             }
 
             Cart::deActivateCart($cart);
-
-            Event::dispatch('order.created.after', $order);
 
             return $this->orderOutput([
                 'id' => $cart->id,

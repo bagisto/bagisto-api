@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Abschnitt nicht gefunden.',
                 'invalid-payload' => 'Nicht unterstützte Abschnittsdaten.',
-                'footer-links-exists' => 'Dieser Kanal hat bereits einen Abschnitt für Footer-Links.',
                 'options-required' => 'Optionen sind erforderlich.',
                 'status-required' => 'Der Status ist erforderlich.',
                 'section-ids-required' => 'Mindestens ein Abschnitt ist erforderlich.',

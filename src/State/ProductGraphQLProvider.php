@@ -94,6 +94,8 @@ class ProductGraphQLProvider implements ProviderInterface
         [$offset, $limit] = $this->resolveCursorWindow($args, $total, $this->requestedPageSize($args));
         $isFirstPage = $offset === 0;
 
+        Product::withReviewSummary($query);
+
         $items = $limit > 0
             ? $query->distinct()->offset($offset)->limit($limit)->get()
             : $query->getModel()->newCollection();
@@ -161,7 +163,7 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Match the search term against the SKU and the product name.
+     * Match the search term against the SKU and the name of the product or of one of its variants, as core does.
      */
     private function applySearch($query, mixed $searchTerm): void
     {
@@ -169,12 +171,15 @@ class ProductGraphQLProvider implements ProviderInterface
             return;
         }
 
-        $query->where(function ($query) use ($searchTerm) {
+        $matchesName = function ($attribute) use ($searchTerm) {
+            $attribute->where('attribute_id', 2)
+                ->where('text_value', db_grammar()->caseInsensitiveLike(), "%{$searchTerm}%");
+        };
+
+        $query->where(function ($query) use ($searchTerm, $matchesName) {
             $query->where('sku', db_grammar()->caseInsensitiveLike(), "%{$searchTerm}%")
-                ->orWhereHas('attribute_values', function ($attribute) use ($searchTerm) {
-                    $attribute->where('attribute_id', 2)
-                        ->where('text_value', db_grammar()->caseInsensitiveLike(), "%{$searchTerm}%");
-                });
+                ->orWhereHas('attribute_values', $matchesName)
+                ->orWhereHas('variants.attribute_values', $matchesName);
         });
     }
 

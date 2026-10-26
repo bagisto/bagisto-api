@@ -8,6 +8,7 @@ use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Core\Core;
 use Webkul\Product\Models\Product;
+use Webkul\Product\Models\ProductReview;
 
 class ProductTest extends RestApiTestCase
 {
@@ -901,6 +902,69 @@ class ProductTest extends RestApiTestCase
     }
 
     /**
+     * The product card carries the saleable flag, the sale badge and the review summary, as the storefront card does.
+     */
+    public function test_product_card_carries_the_sale_badge_and_review_summary(): void
+    {
+        $product = $this->seedSaleableProduct();
+        $this->seedApprovedReviews($product, [4, 5]);
+
+        $response = $this->publicGet($this->collectionUrl.'?per_page=50');
+
+        $response->assertOk();
+
+        $card = collect($response->json())->firstWhere('id', $product->id);
+
+        expect($card['isSaleable'])->toBeTrue()
+            ->and($card['onSale'])->toBe(0)
+            ->and((float) $card['averageRating'])->toBe(4.5)
+            ->and($card['totalRating'])->toBe(9)
+            ->and($card['reviewsCount'])->toBe(2);
+    }
+
+    /**
+     * The product detail carries the review summary, the guest checkout flag and the specification table.
+     */
+    public function test_product_detail_carries_the_review_summary_and_specification(): void
+    {
+        $product = $this->seedSaleableProduct();
+        $this->seedApprovedReviews($product, [3]);
+
+        $response = $this->publicGet($this->collectionUrl.'/'.$product->id);
+
+        $response->assertOk();
+
+        expect((float) $response->json('averageRating'))->toBe(3.0)
+            ->and($response->json('reviewsCount'))->toBe(1)
+            ->and($response->json('onSale'))->toBe(0)
+            ->and($response->json())->toHaveKeys(['guestCheckout', 'visibleIndividually', 'additionalAttributes', 'customerGroupOffers', 'configurableConfig'])
+            ->and($response->json('additionalAttributes'))->toBeArray();
+    }
+
+    /**
+     * Searching finds a configurable product through the name of one of its variants, as core's search does.
+     */
+    public function test_search_matches_a_configurable_product_by_its_variant_name(): void
+    {
+        $parent = $this->seedSaleableProduct('configurable');
+        $variant = $this->seedSaleableProduct('simple');
+
+        $variant->forceFill(['parent_id' => $parent->id])->save();
+
+        $term = 'variantonly'.uniqid();
+
+        DB::table('product_attribute_values')
+            ->where('product_id', $variant->id)
+            ->where('attribute_id', Attribute::query()->where('code', 'name')->value('id'))
+            ->update(['text_value' => 'Shirt '.$term]);
+
+        $response = $this->publicGet($this->collectionUrl.'?query='.$term.'&per_page=50');
+
+        $response->assertOk();
+        expect($this->productIds($response))->toContain($parent->id);
+    }
+
+    /**
      * Test configurable price reports the regular price from the price index.
      */
     public function test_configurable_price_reports_the_regular_price_from_the_price_index(): void
@@ -970,6 +1034,24 @@ class ProductTest extends RestApiTestCase
                 'updated_at' => now(),
             ]
         );
+    }
+
+    /**
+     * Seed approved reviews with the given ratings.
+     */
+    private function seedApprovedReviews(Product $product, array $ratings): void
+    {
+        $customer = $this->createCustomer();
+
+        foreach ($ratings as $rating) {
+            ProductReview::factory()->create([
+                'product_id' => $product->id,
+                'customer_id' => $customer->id,
+                'name' => 'Reviewer',
+                'status' => 'approved',
+                'rating' => $rating,
+            ]);
+        }
     }
 
     /**

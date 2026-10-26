@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Secció no trobada.',
                 'invalid-payload' => 'Contingut de la secció no admès.',
-                'footer-links-exists' => 'Aquest canal ja té una secció d\'enllaços del peu de pàgina.',
                 'options-required' => 'Calen les opcions.',
                 'status-required' => 'Cal l\'estat.',
                 'section-ids-required' => 'Cal almenys una secció.',

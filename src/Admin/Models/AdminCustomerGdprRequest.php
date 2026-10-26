@@ -72,7 +72,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                             'application/json' => [
                                 'example' => [
                                     'id' => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
-                                    'email' => 'jane@example.com', 'type' => 'delete', 'status' => 'processing',
+                                    'email' => 'jane@example.com', 'type' => 'delete', 'typeLabel' => 'Delete', 'status' => 'processing',
                                     'message' => 'Reviewing the request.', 'revokedAt' => null,
                                     'createdAt' => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
                                 ],
@@ -127,7 +127,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                             'application/json' => [
                                 'example' => [
                                     'id' => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
-                                    'email' => 'jane@example.com', 'type' => 'delete', 'status' => 'pending',
+                                    'email' => 'jane@example.com', 'type' => 'delete', 'typeLabel' => 'Delete', 'status' => 'pending',
                                     'message' => 'Please remove my account.', 'revokedAt' => null,
                                     'createdAt' => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-10T09:00:00+00:00',
                                 ],
@@ -174,7 +174,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                                     'data' => [
                                         [
                                             'id' => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
-                                            'email' => 'jane@example.com', 'type' => 'delete', 'status' => 'pending',
+                                            'email' => 'jane@example.com', 'type' => 'delete', 'typeLabel' => 'Delete', 'status' => 'pending',
                                             'message' => 'Please remove my account.', 'revokedAt' => null,
                                             'createdAt' => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-10T09:00:00+00:00',
                                         ],
@@ -266,6 +266,12 @@ class AdminCustomerGdprRequest
     public ?string $type = null;
 
     /**
+     * The type as the admin GDPR grid shows it (Delete or Edit).
+     */
+    #[ApiProperty(writable: false)]
+    public ?string $type_label = null;
+
+    /**
      * The status.
      */
     #[ApiProperty(writable: false)]
@@ -294,4 +300,16 @@ class AdminCustomerGdprRequest
      */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
+
+    /**
+     * The label core's GDPR grid shows for a request type.
+     */
+    public static function labelForType(?string $type): ?string
+    {
+        return match ($type) {
+            'delete' => trans('admin::app.customers.gdpr.index.datagrid.delete'),
+            'update' => trans('admin::app.customers.gdpr.index.datagrid.edit'),
+            default => null,
+        };
+    }
 }

@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Sezione non trovata.',
                 'invalid-payload' => 'Payload della sezione non supportato.',
-                'footer-links-exists' => 'Questo canale ha già una sezione di link del footer.',
                 'options-required' => 'Le opzioni sono obbligatorie.',
                 'status-required' => 'Lo stato è obbligatorio.',
                 'section-ids-required' => 'È richiesta almeno una sezione.',

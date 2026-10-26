@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'بخش یافت نشد.',
                 'invalid-payload' => 'محتوای بخش پشتیبانی نمی‌شود.',
-                'footer-links-exists' => 'این کانال قبلاً یک بخش پیوندهای پاورقی دارد.',
                 'options-required' => 'گزینه‌ها الزامی هستند.',
                 'status-required' => 'وضعیت الزامی است.',
                 'section-ids-required' => 'حداقل یک بخش الزامی است.',

@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'لم يتم العثور على القسم.',
                 'invalid-payload' => 'حمولة قسم غير مدعومة.',
-                'footer-links-exists' => 'تحتوي هذه القناة بالفعل على قسم روابط التذييل.',
                 'options-required' => 'الخيارات مطلوبة.',
                 'status-required' => 'الحالة مطلوبة.',
                 'section-ids-required' => 'مطلوب قسم واحد على الأقل.',

@@ -983,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'セクションが見つかりません。',
                 'invalid-payload' => 'サポートされていないセクションのペイロードです。',
-                'footer-links-exists' => 'このチャネルには既にフッターリンクのセクションがあります。',
                 'options-required' => 'オプションは必須です。',
                 'status-required' => 'ステータスは必須です。',
                 'section-ids-required' => '少なくとも1つのセクションが必要です。',

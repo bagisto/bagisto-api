@@ -153,6 +153,27 @@ class CustomerProfile
     public ?string $is_suspended = null;
 
     /**
+     * The id of the customer's group.
+     */
+    #[ApiProperty(readable: true, writable: false)]
+    #[Groups(['query', 'mutation'])]
+    public ?int $customer_group_id = null;
+
+    /**
+     * The code of the customer's group.
+     */
+    #[ApiProperty(readable: true, writable: false)]
+    #[Groups(['query', 'mutation'])]
+    public ?string $customer_group_code = null;
+
+    /**
+     * The name of the customer's group.
+     */
+    #[ApiProperty(readable: true, writable: false)]
+    #[Groups(['query', 'mutation'])]
+    public ?string $customer_group_name = null;
+
+    /**
      * The image.
      */
     #[ApiProperty(readable: true, writable: false)]

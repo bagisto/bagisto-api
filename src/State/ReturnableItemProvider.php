@@ -67,6 +67,11 @@ class ReturnableItemProvider implements ProviderInterface
                 $row->price = $item->price !== null ? (float) $item->price : null;
                 $row->base_image_url = $item->base_image ? Storage::url($item->base_image) : null;
                 $row->qty_ordered = (int) $item->qty_ordered;
+                $row->qty_shipped = (int) $item->qty_shipped;
+                $row->qty_invoiced = (int) $item->qty_invoiced;
+                $row->qty_refunded = (int) $item->qty_refunded;
+                $row->qty_canceled = (int) $item->qty_canceled;
+                $row->order_status = $item->order_status;
                 $row->current_quantity = (int) $item->currentQuantity;
                 $row->for_return_quantity = (int) $item->forReturnQuantity;
                 $row->for_cancel_quantity = (int) $item->forCancelQuantity;

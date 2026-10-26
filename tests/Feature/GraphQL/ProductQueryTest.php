@@ -807,7 +807,10 @@ class ProductQueryTest extends GraphQLTestCase
 
         $color = Attribute::query()->where('code', 'color')->with('options')->first();
 
-        if (! $color || $color->options->isEmpty()) {
+        if (
+            ! $color
+            || $color->options->isEmpty()
+        ) {
             $this->markTestSkipped('The color attribute has no options.');
         }
 

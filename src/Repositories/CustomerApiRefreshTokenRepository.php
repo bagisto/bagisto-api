@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Repositories;
 
 use Carbon\CarbonInterface;
+use Closure;
 use Webkul\BagistoApi\Contracts\CustomerApiRefreshToken as CustomerApiRefreshTokenContract;
 use Webkul\BagistoApi\Models\CustomerApiRefreshToken;
 use Webkul\Core\Eloquent\Repository;
@@ -25,6 +26,14 @@ class CustomerApiRefreshTokenRepository extends Repository
         return $this->model->newQuery()
             ->with('session.customer')
             ->find($id);
+    }
+
+    /**
+     * Run a callback in one database transaction, so a failure part way leaves nothing behind.
+     */
+    public function transaction(Closure $callback): mixed
+    {
+        return $this->model->getConnection()->transaction($callback);
     }
 
     /**

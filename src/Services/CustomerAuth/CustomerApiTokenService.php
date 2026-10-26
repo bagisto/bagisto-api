@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Services\CustomerAuth;
 
 use Carbon\CarbonInterface;
+use Closure;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
@@ -92,27 +93,13 @@ class CustomerApiTokenService
             throw new InvalidCustomerRefreshTokenException(session: $session);
         }
 
-        if (! $this->refreshTokenRepository->claim($token->id)) {
+        $pair = $this->refreshTokenRepository->transaction(fn () => $this->claimAndReplace($token, $session, $client));
+
+        if (! $pair) {
             $this->revokeForReuse($session);
         }
 
-        Event::dispatch('bagistoapi.customer.api-session.refresh.before', $session);
-
-        $now = Carbon::now();
-
-        $session = $this->sessionRepository->touchUsage($session, [
-            'refresh_expires_at' => $this->refreshExpiry($now, $session->expires_at),
-            'last_ip_address' => $client['ip_address'] ?? $session->last_ip_address,
-            'last_user_agent' => $this->limit($client['user_agent'] ?? $session->last_user_agent, 1023),
-            'last_used_at' => $now,
-            'last_channel' => $this->channel($client['channel'] ?? $session->last_channel),
-        ]);
-
-        $pair = $this->issuePair($session, $now);
-
-        $this->refreshTokenRepository->markReplacedBy($token->id, $pair->refreshTokenId);
-
-        Event::dispatch('bagistoapi.customer.api-session.refresh.after', $session);
+        Event::dispatch('bagistoapi.customer.api-session.refresh.after', $pair->session);
 
         return $pair;
     }
@@ -169,6 +156,26 @@ class CustomerApiTokenService
                 $now->copy()->subDays($this->settings->pruneAfterDays())
             ),
         ];
+    }
+
+    /**
+     * Run a callback in the same transaction as the session's writes.
+     */
+    public function transaction(Closure $callback): mixed
+    {
+        return $this->sessionRepository->transaction($callback);
+    }
+
+    /**
+     * The session a plain refresh token belongs to, or null when it names no token or its secret does not match.
+     */
+    public function sessionIdFor(string $plainRefreshToken): ?int
+    {
+        try {
+            return (int) $this->findRefreshToken($plainRefreshToken)->session_id;
+        } catch (InvalidCustomerRefreshTokenException) {
+            return null;
+        }
     }
 
     /**
@@ -265,6 +272,36 @@ class CustomerApiTokenService
         }
 
         return $token;
+    }
+
+    /**
+     * Claim a refresh token and issue the pair that replaces it, or return null when another request claimed it first.
+     *
+     * @param  array{ip_address?: ?string, user_agent?: ?string, channel?: ?string}  $client
+     */
+    protected function claimAndReplace(CustomerApiRefreshToken $token, CustomerApiSession $session, array $client): ?CustomerApiTokenPair
+    {
+        if (! $this->refreshTokenRepository->claim($token->id)) {
+            return null;
+        }
+
+        Event::dispatch('bagistoapi.customer.api-session.refresh.before', $session);
+
+        $now = Carbon::now();
+
+        $session = $this->sessionRepository->touchUsage($session, [
+            'refresh_expires_at' => $this->refreshExpiry($now, $session->expires_at),
+            'last_ip_address' => $client['ip_address'] ?? $session->last_ip_address,
+            'last_user_agent' => $this->limit($client['user_agent'] ?? $session->last_user_agent, 1023),
+            'last_used_at' => $now,
+            'last_channel' => $this->channel($client['channel'] ?? $session->last_channel),
+        ]);
+
+        $pair = $this->issuePair($session, $now);
+
+        $this->refreshTokenRepository->markReplacedBy($token->id, $pair->refreshTokenId);
+
+        return $pair;
     }
 
     /**

@@ -85,24 +85,6 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                                         'example' => '1990-01-15',
                                     ],
 
-                                    'status' => [
-                                        'type' => 'integer',
-                                        'example' => 1,
-                                        'description' => 'Customer status (1 = active, 0 = inactive)',
-                                    ],
-
-                                    'isVerified' => [
-                                        'type' => 'integer',
-                                        'example' => 1,
-                                        'description' => 'Whether the customer is verified (1 = verified, 0 = not verified)',
-                                    ],
-
-                                    'isSuspended' => [
-                                        'type' => 'integer',
-                                        'example' => 0,
-                                        'description' => 'Whether the customer is suspended (1 = suspended, 0 = active)',
-                                    ],
-
                                     'subscribedToNewsLetter' => [
                                         'type' => 'boolean',
                                         'example' => true,
@@ -127,7 +109,7 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                 ),
                 responses: [
                     '201' => new Model\Response(
-                        description: 'Customer registered. `token` is the Bearer token for subsequent calls.',
+                        description: 'Customer registered with a token pair: send `accessToken` as the Bearer token and keep `refreshToken` for `POST /api/shop/customer/refresh`. Unlike login, the answer has no `tokenType` and no `session`. When email verification is on, the tokens are null and `message` asks the customer to verify the email.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
@@ -143,11 +125,16 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                                     'customerGroupId' => 2,
                                     'channelId' => 1,
                                     'subscribedToNewsLetter' => false,
-                                    'isVerified' => 0,
+                                    'isVerified' => 1,
                                     'isSuspended' => 0,
-                                    'token' => '3761|0aJpoW6dIBsKLWocWJFo0tp8gmakvQbIJe8LBZLz6847d9ab',
+                                    'token' => 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...',
                                     'rememberToken' => null,
-                                    'deviceToken' => null,
+                                    'message' => null,
+                                    'accessToken' => 'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...',
+                                    'expiresIn' => 900,
+                                    'accessTokenExpiresAt' => '2026-10-23T10:15:00+00:00',
+                                    'refreshToken' => '90|5c48eaa15b597db3...',
+                                    'refreshTokenExpiresAt' => '2026-11-22T10:00:00+00:00',
                                     'name' => 'John Doe',
                                 ],
                             ],

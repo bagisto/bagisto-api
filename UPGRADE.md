@@ -102,7 +102,7 @@ These `?type=` values were removed: dashboard `total-visitors`, customer report 
 
 ### Storefront authentication and cart
 
-- A customer is identified by the Sanctum bearer token from login only. The `customers.token` and `api_token` values are no longer accepted as a bearer token. `customers.token` is core's email-verification token.
+- A customer is identified by the access token from login only (see [§7b](#7b-storefront-customer-tokens-unreleased)). The `customers.token` and `api_token` values are no longer accepted as a bearer token. `customers.token` is core's email-verification token.
 - Merging a guest cart needs the guest's `guestCartToken`. A bare `cartId` is not enough.
 - Reading a cart uses the cart of the bearer token. A `cartId` without a matching token returns no other cart.
 - When email verification is on, registration returns `token: null` and a `message` asking the customer to verify the email.

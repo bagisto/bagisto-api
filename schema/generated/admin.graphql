@@ -305,13 +305,13 @@ type Query {
     channel_id: Int
   ): AdminCustomerApiSessionCursorConnection
 
-  "Top-level items in the active cart of customer `customerId`, all in one page (no pagination arguments); empty when the customer has no active cart. Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
+  "Top-level items in the active cart of customer `customerId`, all in one page (no pagination arguments); empty when the customer has no active cart. It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error."
   adminCustomerCartItems(
     "Customer ID"
     customerId: Int!
   ): AdminCustomerCartItemCursorConnection
 
-  "Every product in the compare list of customer `customerId`, all in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
+  "Every product in the compare list of customer `customerId`, all in one page (no pagination arguments). It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error."
   adminCustomerCompareItems(
     "Customer ID"
     customerId: Int!
@@ -375,7 +375,7 @@ type Query {
     customerId: Int!
   ): AdminCustomerNoteCursorConnection
 
-  "Up to 5 top-level items from the most recent orders of customer `customerId`, one per product, newest first, in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
+  "Up to 5 top-level items from the most recent orders of customer `customerId`, one per product, newest first, in one page (no pagination arguments). It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error."
   adminCustomerRecentOrderItems(
     "Customer ID"
     customerId: Int!
@@ -408,7 +408,7 @@ type Query {
     order: String
   ): AdminCustomerReviewCursorConnection
 
-  "Every product in the wishlist of customer `customerId`, all in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
+  "Every product in the wishlist of customer `customerId`, all in one page (no pagination arguments). It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error."
   adminCustomerWishlistItems(
     "Customer ID"
     customerId: Int!
@@ -3255,7 +3255,7 @@ type AdminCustomerCartItemEdge {
   node: AdminCustomerCartItem
 }
 
-"Top-level items in the active cart of customer `customerId`, all in one page (no pagination arguments); empty when the customer has no active cart. Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
+"Top-level items in the active cart of customer `customerId`, all in one page (no pagination arguments); empty when the customer has no active cart. It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error."
 type AdminCustomerCartItem implements Node {
   _id: Int
   additional: Iterable
@@ -3302,7 +3302,7 @@ type AdminCustomerCompareItemEdge {
   node: AdminCustomerCompareItem
 }
 
-"Every product in the compare list of customer `customerId`, all in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
+"Every product in the compare list of customer `customerId`, all in one page (no pagination arguments). It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error."
 type AdminCustomerCompareItem implements Node {
   _id: Int
   formattedPrice: String
@@ -3441,7 +3441,7 @@ type AdminCustomerRecentOrderItemEdge {
   node: AdminCustomerRecentOrderItem
 }
 
-"Up to 5 top-level items from the most recent orders of customer `customerId`, one per product, newest first, in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
+"Up to 5 top-level items from the most recent orders of customer `customerId`, one per product, newest first, in one page (no pagination arguments). It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error."
 type AdminCustomerRecentOrderItem implements Node {
   _id: Int
   additional: Iterable
@@ -3591,7 +3591,7 @@ type AdminCustomerWishlistItemEdge {
   node: AdminCustomerWishlistItem
 }
 
-"Every product in the wishlist of customer `customerId`, all in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error."
+"Every product in the wishlist of customer `customerId`, all in one page (no pagination arguments). It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error."
 type AdminCustomerWishlistItem implements Node {
   _id: Int
   additional: Iterable

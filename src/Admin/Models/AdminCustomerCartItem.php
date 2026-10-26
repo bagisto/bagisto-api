@@ -62,7 +62,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
         new QueryCollection(
             provider: AdminCustomerCartItemProvider::class,
             paginationType: 'cursor',
-            description: 'Top-level items in the active cart of customer `customerId`, all in one page (no pagination arguments); empty when the customer has no active cart. Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error.',
+            description: 'Top-level items in the active cart of customer `customerId`, all in one page (no pagination arguments); empty when the customer has no active cart. It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error.',
             args: [
                 'customerId' => [
                     'type' => 'Int!',

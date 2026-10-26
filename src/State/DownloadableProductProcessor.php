@@ -150,7 +150,7 @@ class DownloadableProductProcessor implements ProcessorInterface
     }
 
     /**
-     * Retrieve the customer authenticated through the Sanctum guard.
+     * Retrieve the customer behind the customer access token.
      */
     private function getAuthenticatedCustomer(): ?Customer
     {

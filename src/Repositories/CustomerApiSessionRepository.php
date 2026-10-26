@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Repositories;
 
 use Carbon\CarbonInterface;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -18,6 +19,14 @@ class CustomerApiSessionRepository extends Repository
     public function model(): string
     {
         return CustomerApiSessionContract::class;
+    }
+
+    /**
+     * Run a callback in one database transaction, so a failure part way leaves nothing behind.
+     */
+    public function transaction(Closure $callback): mixed
+    {
+        return $this->model->getConnection()->transaction($callback);
     }
 
     /**

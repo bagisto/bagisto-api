@@ -117,7 +117,7 @@ the matching one (`bagistoapi-config`).
 
 The shop and admin GraphQL endpoints are **physically separate** — separate middleware, auth and a
 scoped schema (`QueryScopedSchemaBuilder` / `ScopedSchemaBuilder`). A change to one surface must not
-leak types into the other. Storefront auth is Laravel Sanctum; admin auth is the custom
+leak types into the other. Storefront auth is ES256 JWT customer access tokens (`CustomerApiGuard`); admin auth is the custom
 **`admin-api` guard** (`src/Admin/Auth/AdminApiGuard.php`), which accepts ES256 JWT access tokens
 and API tokens.
 

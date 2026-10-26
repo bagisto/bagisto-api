@@ -92,7 +92,13 @@ trait HandlesCartLifecycle
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.guest-cart-not-found'));
         }
 
-        $cartData = CartData::fromModel($this->guestCartMerger->merge($guestCart, $customer));
+        $mergedCart = $this->guestCartMerger->merge($guestCart, $customer);
+
+        if (! $mergedCart) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.guest-cart-not-found'));
+        }
+
+        $cartData = CartData::fromModel($mergedCart);
         $cartData->success = true;
         $cartData->message = __('bagistoapi::app.graphql.cart.guest-cart-merged');
 

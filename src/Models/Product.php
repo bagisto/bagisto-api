@@ -613,7 +613,8 @@ class Product extends BaseProduct
      */
     public function availableForSaleAttribute(): bool
     {
-        return $this->status && $this->isSaleable();
+        return $this->status
+            && $this->isSaleable();
     }
 
     /**
@@ -625,7 +626,8 @@ class Product extends BaseProduct
     )]
     public function availableForSale(): bool
     {
-        return $this->status && $this->isSaleable();
+        return $this->status
+            && $this->isSaleable();
     }
 
     /**

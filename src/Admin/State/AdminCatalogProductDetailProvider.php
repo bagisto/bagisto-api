@@ -86,7 +86,14 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
      */
     protected function readPermission(Operation $operation): ?string
     {
-        return $operation instanceof Get || $operation instanceof Query ? 'catalog.products.edit' : null;
+        if (
+            $operation instanceof Get
+            || $operation instanceof Query
+        ) {
+            return 'catalog.products.edit';
+        }
+
+        return null;
     }
 
     /**

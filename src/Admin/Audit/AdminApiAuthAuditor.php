@@ -179,7 +179,7 @@ class AdminApiAuthAuditor
             'auditable_type' => $session ? CustomerApiSession::class : null,
             'auditable_id' => $session?->getKey(),
             'old_values' => null,
-            'new_values' => ($details + array_filter(['customer_id' => $customer?->id])) ?: null,
+            'new_values' => ($details + array_filter(['customer_id' => $customer?->id, 'admin_id' => $actor?->id])) ?: null,
             'user_type' => $customer ? Customer::class : null,
             'user_id' => $customer?->id,
             'admin_name' => $actor?->name,

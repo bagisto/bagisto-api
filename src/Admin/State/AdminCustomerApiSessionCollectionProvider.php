@@ -101,8 +101,13 @@ class AdminCustomerApiSessionCollectionProvider implements ProviderInterface
      */
     protected function positiveInt(mixed $value): ?int
     {
-        return is_numeric($value) && (int) $value > 0
-            ? (int) $value
-            : null;
+        if (
+            ! is_numeric($value)
+            || (int) $value <= 0
+        ) {
+            return null;
+        }
+
+        return (int) $value;
     }
 }

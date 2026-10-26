@@ -62,7 +62,8 @@ class SecurityHeaders
      */
     private function shouldUseHSTS(): bool
     {
-        return app()->environment('production') || config('api-platform.security_headers.force_https', false);
+        return app()->environment('production')
+            || config('api-platform.security_headers.force_https', false);
     }
 
     /**

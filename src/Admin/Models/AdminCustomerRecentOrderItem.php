@@ -62,7 +62,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerRecentOrderItemProvider;
         new QueryCollection(
             provider: AdminCustomerRecentOrderItemProvider::class,
             paginationType: 'cursor',
-            description: 'Up to 5 top-level items from the most recent orders of customer `customerId`, one per product, newest first, in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error.',
+            description: 'Up to 5 top-level items from the most recent orders of customer `customerId`, one per product, newest first, in one page (no pagination arguments). It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error.',
 
             args: ['customerId' => [
                 'type' => 'Int!',

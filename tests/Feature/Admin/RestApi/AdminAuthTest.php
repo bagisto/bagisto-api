@@ -580,6 +580,23 @@ class AdminAuthTest extends AdminApiTestCase
     // ========================================================================
 
     /**
+     * Test a logout sent without a JSON body, as a bare curl POST sends it, still ends the session.
+     */
+    public function test_logout_needs_no_json_body(): void
+    {
+        $pair = $this->adminTokenPair($this->createAdmin());
+
+        $this->call('POST', '/api/admin/auth/logout', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$pair->accessToken,
+            'HTTP_ACCEPT' => 'application/json',
+        ])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->withBearer('GET', self::PROFILE, $pair->accessToken)->assertStatus(401);
+    }
+
+    /**
      * Test logout ends the current session only.
      */
     public function test_logout_ends_the_current_session_only(): void

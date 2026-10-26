@@ -45,22 +45,49 @@ class GuestCartMerger
     }
 
     /**
-     * Merge the guest cart into the customer's active cart, adopting it when the customer has none.
+     * Merge the guest cart into the customer's active cart, adopting it when the customer has none, with the
+     * guest cart locked; returns null when a concurrent request merged it first.
      */
-    public function merge(CartModel $guestCart, Customer $customer): CartModel
+    public function merge(CartModel $guestCart, Customer $customer): ?CartModel
     {
-        $customerCart = $this->cartRepository->findOneWhere([
-            'customer_id' => $customer->id,
-            'is_active' => 1,
-        ]);
+        return $this->cartRepository->getConnection()->transaction(function () use ($guestCart, $customer) {
+            $guestCart = $this->lockMergeable((int) $guestCart->id);
 
-        if ($customerCart) {
-            $this->mergeIntoCustomerCart($customerCart, $guestCart);
-        } else {
-            $customerCart = $this->adoptGuestCart($guestCart, $customer);
+            if (! $guestCart) {
+                return null;
+            }
+
+            $customerCart = $this->cartRepository->findOneWhere([
+                'customer_id' => $customer->id,
+                'is_active' => 1,
+            ]);
+
+            if ($customerCart) {
+                $this->mergeIntoCustomerCart($customerCart, $guestCart);
+            } else {
+                $customerCart = $this->adoptGuestCart($guestCart, $customer);
+            }
+
+            return $this->cartRepository->find($customerCart->id);
+        });
+    }
+
+    /**
+     * The guest cart locked for this transaction, or null when it is no longer an active guest cart.
+     */
+    protected function lockMergeable(int $cartId): ?CartModel
+    {
+        $guestCart = $this->cartRepository->lockForUpdate()->find($cartId);
+
+        if (
+            ! $guestCart
+            || ! $guestCart->is_active
+            || $guestCart->customer_id
+        ) {
+            return null;
         }
 
-        return CartModel::find($customerCart->id);
+        return $guestCart;
     }
 
     /**
@@ -80,7 +107,7 @@ class GuestCartMerger
 
         $this->forgetSessionCart($guestCart);
 
-        $customerCart = CartModel::find($guestCart->id);
+        $customerCart = $this->cartRepository->find($guestCart->id);
 
         CartFacade::setCart($customerCart);
 
@@ -97,16 +124,27 @@ class GuestCartMerger
         CartFacade::setCart($customerCart);
 
         foreach ($guestCart->items as $guestCartItem) {
-            try {
-                CartFacade::addProduct($guestCartItem->product, $guestCartItem->additional ?? []);
-            } catch (\Exception) {
-                continue;
-            }
+            $this->addGuestItem($guestCartItem);
         }
 
         CartFacade::collectTotals();
 
         CartFacade::removeCart($guestCart);
+    }
+
+    /**
+     * Add one guest cart item in its own savepoint, skipping it as core does when it cannot be added, so a failed
+     * item rolls back alone and leaves the surrounding transaction usable on PostgreSQL.
+     */
+    protected function addGuestItem($guestCartItem): void
+    {
+        try {
+            $this->cartRepository->getConnection()->transaction(
+                fn () => CartFacade::addProduct($guestCartItem->product, $guestCartItem->additional ?? [])
+            );
+        } catch (\Exception) {
+            return;
+        }
     }
 
     /**

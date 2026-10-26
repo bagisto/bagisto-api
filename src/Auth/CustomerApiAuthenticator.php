@@ -10,6 +10,7 @@ use Webkul\BagistoApi\Admin\Services\Jwt\JwtVerifier;
 use Webkul\BagistoApi\Exception\CustomerAuthException;
 use Webkul\BagistoApi\Models\CustomerApiSession;
 use Webkul\BagistoApi\Repositories\CustomerApiSessionRepository;
+use Webkul\BagistoApi\Support\RequestChannel;
 
 class CustomerApiAuthenticator
 {
@@ -47,7 +48,7 @@ class CustomerApiAuthenticator
             || ! $session->isActive()
             || ! $session->customer
             || ! $session->customer->status
-            || $session->channel_id !== (int) core()->getCurrentChannel()->id
+            || $session->channel_id !== (int) RequestChannel::resolve($request)?->id
         ) {
             throw new CustomerAuthException(
                 trans('bagistoapi::app.graphql.auth.invalid-or-expired-token'),
@@ -58,6 +59,16 @@ class CustomerApiAuthenticator
         $this->recordUsage($session, $request);
 
         return $session;
+    }
+
+    /**
+     * The transport of a request: GraphQL for the GraphQL endpoint, REST otherwise.
+     */
+    public static function channel(Request $request): string
+    {
+        return str_ends_with(rtrim($request->getPathInfo(), '/'), '/graphql')
+            ? CustomerApiSession::CHANNEL_GRAPHQL
+            : CustomerApiSession::CHANNEL_REST;
     }
 
     /**
@@ -81,15 +92,5 @@ class CustomerApiAuthenticator
             'last_user_agent' => Str::limit((string) $request->userAgent(), 1023, '') ?: null,
             'last_channel' => static::channel($request),
         ]);
-    }
-
-    /**
-     * The transport of a request: GraphQL for the GraphQL endpoint, REST otherwise.
-     */
-    public static function channel(Request $request): string
-    {
-        return str_ends_with(rtrim($request->getPathInfo(), '/'), '/graphql')
-            ? CustomerApiSession::CHANNEL_GRAPHQL
-            : CustomerApiSession::CHANNEL_REST;
     }
 }

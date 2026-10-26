@@ -337,22 +337,6 @@ class CustomerReviewTest extends AdminApiTestCase
     }
 
     /**
-     * Admin put.
-     */
-    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    /**
-     * Admin delete.
-     */
-    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
-    /**
      * Test the nested product name follows the admin's locale, not the first flat row stored.
      */
     public function test_review_product_name_follows_the_admin_locale(): void
@@ -380,6 +364,22 @@ class CustomerReviewTest extends AdminApiTestCase
         $this->adminGet($admin, '/api/admin/customers/reviews/'.$review->id)
             ->assertOk()
             ->assertJsonPath('product.name', 'Admin locale name');
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
     /**

@@ -111,6 +111,7 @@ class CustomerApiSessionTest extends AdminApiTestCase
 
         $this->assertNotNull($audit);
         $this->assertSame($admin->name, $audit->admin_name);
+        $this->assertSame($admin->id, $audit->new_values['admin_id'] ?? null);
 
         $this->deleteJson('/api/admin/customers/api-sessions/'.$lost->session->id, [], $this->adminHeaders($admin))->assertNotFound();
     }

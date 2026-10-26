@@ -12,6 +12,11 @@ class NormalizeEmptyJsonBody
      */
     public function handle(Request $request, Closure $next)
     {
+        if ($this->isEmptyFormBody($request)) {
+            $request->server->set('CONTENT_TYPE', 'application/json');
+            $request->headers->set('Content-Type', 'application/json');
+        }
+
         $contentType = (string) $request->headers->get('Content-Type', '');
 
         if (
@@ -48,5 +53,22 @@ class NormalizeEmptyJsonBody
         }
 
         return $next($request);
+    }
+
+    /**
+     * Whether a write request has no body and no JSON type, as a bare POST from curl or a form client sends it.
+     */
+    protected function isEmptyFormBody(Request $request): bool
+    {
+        $contentType = (string) $request->headers->get('Content-Type', '');
+
+        return in_array($request->getMethod(), ['POST', 'PUT', 'PATCH'], true)
+            && trim($request->getContent()) === ''
+            && $request->request->count() === 0
+            && $request->files->count() === 0
+            && (
+                $contentType === ''
+                || stripos($contentType, 'application/x-www-form-urlencoded') === 0
+            );
     }
 }

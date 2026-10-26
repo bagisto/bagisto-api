@@ -337,7 +337,14 @@ class ProductGraphQLProvider implements ProviderInterface
 
         $decoded = json_decode($filter, true);
 
-        return json_last_error() === JSON_ERROR_NONE && is_array($decoded) ? $decoded : [];
+        if (
+            json_last_error() !== JSON_ERROR_NONE
+            || ! is_array($decoded)
+        ) {
+            return [];
+        }
+
+        return $decoded;
     }
 
     /**

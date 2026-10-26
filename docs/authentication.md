@@ -244,6 +244,13 @@ The same happens to an honest client that sends two refreshes with the same refr
 | List my live sessions | `GET /api/admin/auth/sessions` (`page`, `per_page` up to 50, `client_type`) | `adminSessions(first: 10) { edges { node { _id name clientType isCurrent lastUsedAt lastIpAddress expiresAt } } }` | `{ data, meta }`; `isCurrent` marks the session of the token sent |
 | Revoke one of my sessions (a lost phone) | `DELETE /api/admin/auth/sessions/{id}` → `204` | `deleteAdminSession(input: { id: "12" })` | an id that is not one of the caller's live sessions answers `404` |
 
+Logout and logout-all take no body. A request with no body is accepted whatever its `Content-Type`, so a bare `curl -X POST` works:
+
+```bash
+curl -X POST https://shop.example.com/api/admin/auth/logout \
+  -H "Authorization: Bearer $ACCESS_TOKEN" -H 'Accept: application/json'
+```
+
 Revoking a session stops its access token and refresh token at once: the access token's next request answers `401 unauthenticated`.
 
 Each session records its last address, user agent, channel (`rest` or `graphql`) and use; these are written at most once a minute unless the address changes.
@@ -298,7 +305,7 @@ An API token acts as one admin user, with that admin's role permissions, and is 
 4. Send it as `Authorization: Bearer <api token>`. There is no login and no refresh.
 
 ```bash
-curl https://shop.example.com/api/admin/sales/orders \
+curl https://shop.example.com/api/admin/orders \
   -H "Authorization: Bearer $BAGISTO_API_TOKEN" -H 'Accept: application/json'
 ```
 
@@ -422,6 +429,14 @@ The admin panel's **Configuration → API → Admin Authentication** sets:
 Lifetime changes apply to tokens issued afterwards. The defaults, used when the configuration has no value, live in the package's `src/Admin/Config/admin-auth.php` (`bagistoapi.admin_auth`), which also holds settings with no admin field: the DNS cache time (300 seconds) and the JWT settings (audience, the 30-second leeway and the key location). An empty audit retention falls back to `BAGISTO_API_AUDIT_RETENTION_DAYS`; `php artisan bagisto-api:prune-audits` applies it and is scheduled daily.
 
 **Signing keys.** `php artisan bagisto-api-platform:install` creates the ES256 key pair with `php artisan bagisto-api:jwt-keys` under `storage/app/private/bagisto-api/jwt/`. On several servers, give every node the same keys through `BAGISTO_API_JWT_PRIVATE_KEY` and `BAGISTO_API_JWT_PUBLIC_KEY` (PEM or base64-encoded PEM, P-256). `bagisto-api:jwt-keys --rotate` makes a new signing key and keeps the old public key, so issued tokens keep working; `--reissue-api-tokens` signs the API tokens that use an older key again and prints each new token once. `php artisan bagisto-api:prune-admin-tokens`, scheduled hourly, deletes expired refresh tokens and two-factor challenges, long-ended sessions and retired keys nothing uses.
+
+**Scheduler.** The prune commands (`bagisto-api:prune-admin-tokens` and `bagisto-api:prune-customer-tokens` hourly, `bagisto-api:prune-audits` daily, `bagisto-api:prune-cart-uploads` every two hours) run only when Laravel's scheduler runs. Add one cron entry on the server, or run `php artisan schedule:work` in a supervised process:
+
+```bash
+* * * * * cd /path/to/bagisto && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Without it, expired refresh tokens, ended sessions and audit rows are never deleted.
 
 ### Client implementation notes
 
@@ -562,7 +577,56 @@ The answer (`201`):
 
 - `token` repeats `accessToken` for clients of the old flow and will be removed; read `accessToken`.
 - `apiToken` is the device push token, **not** a bearer credential.
-- Registration (`POST /api/shop/customers`, GraphQL `createCustomer`) and social login (`POST /api/shop/customers/social-login`, `createSocialLogin`) return the same pair. When email verification is on, registration returns no tokens and asks the customer to verify the email first.
+- Social login (`POST /api/shop/customers/social-login`, `createSocialLogin`) returns the same answer as login.
+
+**Registration** is `POST /api/shop/customers` (GraphQL `createCustomer`):
+
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@example.com",
+  "password": "Password123!",
+  "confirmPassword": "Password123!",
+  "phone": "1234567890",
+  "gender": "Male",
+  "dateOfBirth": "1990-01-15",
+  "subscribedToNewsLetter": true,
+  "deviceToken": "fcm-device-token"
+}
+```
+
+`firstName`, `lastName`, `email`, `password` and `confirmPassword` are required. The account is always created active, unsuspended and in the default customer group; it is verified unless email verification is on. The answer is `201` with the customer and a token pair, but, unlike login, no `tokenType` and no `session`:
+
+```json
+{
+  "id": 1530,
+  "firstName": "John",
+  "lastName": "Doe",
+  "gender": "Male",
+  "dateOfBirth": "1990-01-15",
+  "email": "john@example.com",
+  "phone": "1234567890",
+  "status": 1,
+  "apiToken": "cwTQyjCkGitVi4Z2mqzkHUgz...",
+  "customerGroupId": 2,
+  "channelId": 1,
+  "subscribedToNewsLetter": true,
+  "isVerified": 1,
+  "isSuspended": 0,
+  "token": "eyJhbGciOiJFUzI1NiIs...",
+  "rememberToken": null,
+  "message": null,
+  "accessToken": "eyJhbGciOiJFUzI1NiIs...",
+  "expiresIn": 900,
+  "accessTokenExpiresAt": "2026-10-23T10:15:00+00:00",
+  "refreshToken": "90|5c48eaa15b597db3...",
+  "refreshTokenExpiresAt": "2026-11-22T10:00:00+00:00",
+  "name": "John Doe"
+}
+```
+
+When email verification is on, `token`, `accessToken` and `refreshToken` are `null` and `message` asks the customer to verify the email first.
 
 ```graphql
 mutation {

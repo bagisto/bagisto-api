@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\Repositories;
 
 use Carbon\CarbonInterface;
+use Closure;
 use Webkul\BagistoApi\Admin\Contracts\AdminApiRefreshToken as AdminApiRefreshTokenContract;
 use Webkul\BagistoApi\Admin\Models\AdminApiRefreshToken;
 use Webkul\Core\Eloquent\Repository;
@@ -25,6 +26,14 @@ class AdminApiRefreshTokenRepository extends Repository
         return $this->model->newQuery()
             ->with('session.admin.role')
             ->find($id);
+    }
+
+    /**
+     * Run a callback in one database transaction, so a failure part way leaves nothing behind.
+     */
+    public function transaction(Closure $callback): mixed
+    {
+        return $this->model->getConnection()->transaction($callback);
     }
 
     /**

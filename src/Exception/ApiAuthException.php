@@ -97,6 +97,11 @@ class ApiAuthException extends \Exception implements ClientAware, HttpExceptionI
     }
 
     /**
+     * Keep an expected authentication failure out of the error log; it is answered, not reported.
+     */
+    public function report(): void {}
+
+    /**
      * The machine-readable error code returned to the client.
      */
     public function errorCode(): string

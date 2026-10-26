@@ -14,7 +14,7 @@ use Webkul\Customer\Models\Customer;
 class AuthenticatedCustomerProvider implements ProviderInterface
 {
     /**
-     * Fetch authenticated customer from Sanctum token.
+     * Fetch the customer behind the customer access token.
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?Customer
     {
@@ -52,6 +52,6 @@ class AuthenticatedCustomerProvider implements ProviderInterface
     {
         $customer = CurrentCustomer::fromToken($token);
 
-        return $customer ? ApiCustomer::find($customer->id) : null;
+        return $customer ? (new ApiCustomer)->newFromBuilder($customer->getAttributes()) : null;
     }
 }

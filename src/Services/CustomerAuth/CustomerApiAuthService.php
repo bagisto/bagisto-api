@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\Services\CustomerAuth;
 
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -12,7 +11,6 @@ use Webkul\BagistoApi\Admin\Audit\AdminApiAuthAuditor;
 use Webkul\BagistoApi\Auth\CustomerApiAuthenticator;
 use Webkul\BagistoApi\Exception\CustomerAuthException;
 use Webkul\BagistoApi\Models\CustomerApiSession;
-use Webkul\BagistoApi\Repositories\CustomerApiRefreshTokenRepository;
 use Webkul\BagistoApi\Services\Cart\GuestCartMerger;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Repositories\CustomerRepository;
@@ -27,17 +25,14 @@ class CustomerApiAuthService
         protected CustomerApiTokenService $tokenService,
         protected CustomerApiAuthSettings $settings,
         protected CustomerRepository $customerRepository,
-        protected CustomerApiRefreshTokenRepository $refreshTokenRepository,
         protected RateLimiter $limiter,
         protected AdminApiAuthAuditor $auditor,
         protected GuestCartMerger $guestCartMerger,
     ) {}
 
     /**
-     * Check a customer's email and password on the current channel, as core's storefront login does, and start a session.
-     *
-     * A guest cart token, when it names a guest cart that can still be merged, merges that cart into the customer's
-     * cart in the same transaction as the session; any other token is ignored, so a stale cart never blocks a login.
+     * Check a customer's email and password on the current channel and start a session, merging a mergeable guest
+     * cart in the same transaction; any other guest cart token is ignored.
      *
      * @param  array{name?: ?string, client_type?: ?string}  $client
      *
@@ -76,14 +71,14 @@ class CustomerApiAuthService
 
         $this->assertCanLogIn($customer, $request);
 
-        $pair = DB::transaction(function () use ($customer, $request, $client, $guestCartToken) {
+        $pair = $this->tokenService->transaction(function () use ($customer, $request, $client, $guestCartToken) {
             $pair = $this->startSession($customer, $request, $client);
 
             $guestCart = $this->guestCartMerger->findMergeable($guestCartToken);
 
-            if ($guestCart) {
-                $pair->mergedCartId = (int) $this->guestCartMerger->merge($guestCart, $customer)->id;
-            }
+            $mergedCart = $guestCart ? $this->guestCartMerger->merge($guestCart, $customer) : null;
+
+            $pair->mergedCartId = $mergedCart ? (int) $mergedCart->id : null;
 
             return $pair;
         });
@@ -281,15 +276,11 @@ class CustomerApiAuthService
     }
 
     /**
-     * The session a refresh token belongs to, or the client address when the token names none.
+     * The session a refresh token belongs to when its secret matches, or the client address otherwise.
      */
     protected function refreshThrottleScope(string $refreshToken, Request $request): string
     {
-        $id = explode('|', $refreshToken, 2)[0];
-
-        $sessionId = ctype_digit($id)
-            ? $this->refreshTokenRepository->find((int) $id)?->session_id
-            : null;
+        $sessionId = $this->tokenService->sessionIdFor($refreshToken);
 
         return $sessionId !== null
             ? 'session:'.$sessionId

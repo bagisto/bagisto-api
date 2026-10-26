@@ -61,7 +61,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCompareItemProvider;
         new QueryCollection(
             provider: AdminCustomerCompareItemProvider::class,
             paginationType: 'cursor',
-            description: 'Every product in the compare list of customer `customerId`, all in one page (no pagination arguments). Part of the Create-Order flow, so it needs the `sales.orders.create` permission; an unknown customer is an error.',
+            description: 'Every product in the compare list of customer `customerId`, all in one page (no pagination arguments). It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error.',
 
             args: ['customerId' => [
                 'type' => 'Int!',

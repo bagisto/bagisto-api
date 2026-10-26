@@ -4,11 +4,13 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Admin\Services\Jwt\JwtSigner;
 use Webkul\BagistoApi\Models\CustomerApiSession;
 use Webkul\BagistoApi\Services\CustomerAuth\CustomerApiAuthSettings;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
+use Webkul\Core\Models\Channel;
 use Webkul\Core\Models\CoreConfig;
 use Webkul\Customer\Models\Customer;
 
@@ -178,6 +180,33 @@ class CustomerSessionAuthTest extends RestApiTestCase
     }
 
     /**
+     * Test a customer who signed in on another channel through X-Channel stays signed in there.
+     */
+    public function test_a_session_started_through_x_channel_authenticates_on_that_channel(): void
+    {
+        $channel = $this->secondChannel();
+
+        $customer = $this->customerWithPassword(['channel_id' => $channel->id]);
+
+        $login = $this->postJson('/api/shop/customer/login', [
+            'email' => $customer->email,
+            'password' => self::PASSWORD,
+        ], array_merge($this->storefrontHeaders(), ['X-Channel' => $channel->code]));
+
+        $login->assertCreated();
+
+        $this->forgetCurrentChannel();
+
+        $headers = array_merge($this->bearer($login->json('accessToken')), ['X-Channel' => $channel->code]);
+
+        $this->getJson('/api/shop/customer-profile', $headers)->assertOk();
+
+        $this->forgetCurrentChannel();
+
+        $this->assertContains($this->profileWith($login->json('accessToken'))->getStatusCode(), [401, 403]);
+    }
+
+    /**
      * Test an admin access token is refused on the storefront and a customer token on the admin API.
      */
     public function test_tokens_are_refused_on_the_other_surface(): void
@@ -253,6 +282,63 @@ class CustomerSessionAuthTest extends RestApiTestCase
     }
 
     /**
+     * Test a refresh token with a wrong secret cannot use up its session's refresh budget.
+     */
+    public function test_a_forged_refresh_token_does_not_throttle_the_real_session(): void
+    {
+        $this->configure(['login_protection.refresh_requests_per_minute' => 1]);
+
+        $pair = $this->customerTokenPair($this->createCustomer());
+
+        $forged = explode('|', $pair->refreshToken, 2)[0].'|'.str_repeat('0', 64);
+
+        $this->postJson('/api/shop/customer/refresh', ['refresh_token' => $forged], $this->storefrontHeaders())
+            ->assertStatus(401);
+
+        $this->postJson('/api/shop/customer/refresh', ['refresh_token' => $pair->refreshToken], $this->storefrontHeaders())
+            ->assertOk();
+    }
+
+    /**
+     * Test a refused refresh token is answered with 401 and not written to the error log.
+     */
+    public function test_a_refused_refresh_token_is_not_logged_as_an_error(): void
+    {
+        Log::spy();
+
+        $this->postJson('/api/shop/customer/refresh', ['refresh_token' => '999999|'.str_repeat('a', 64)], $this->storefrontHeaders())
+            ->assertStatus(401);
+
+        Log::shouldNotHaveReceived('error');
+    }
+
+    /**
+     * Test a refresh that fails part way leaves the refresh token unused, so a retry still works.
+     */
+    public function test_a_failed_refresh_can_be_retried_with_the_same_token(): void
+    {
+        $pair = $this->customerTokenPair($this->createCustomer());
+
+        $fail = true;
+
+        Event::listen('bagistoapi.customer.api-session.refresh.before', function () use (&$fail) {
+            if ($fail) {
+                throw new \RuntimeException('Simulated failure while issuing the new pair.');
+            }
+        });
+
+        $this->postJson('/api/shop/customer/refresh', ['refresh_token' => $pair->refreshToken], $this->storefrontHeaders())
+            ->assertStatus(500);
+
+        $fail = false;
+
+        $this->postJson('/api/shop/customer/refresh', ['refresh_token' => $pair->refreshToken], $this->storefrontHeaders())
+            ->assertOk();
+
+        $this->assertNull($pair->session->fresh()->revoked_at);
+    }
+
+    /**
      * Test a refresh without a refresh token is refused.
      */
     public function test_a_refresh_needs_a_refresh_token(): void
@@ -278,6 +364,20 @@ class CustomerSessionAuthTest extends RestApiTestCase
 
         $this->assertSame(CustomerApiSession::REVOKED_LOGOUT, $current->session->fresh()->revoked_reason);
         $this->assertNull($other->session->fresh()->revoked_at);
+    }
+
+    /**
+     * Test a logout sent without a JSON body, as a bare curl POST sends it, still ends the session.
+     */
+    public function test_logout_needs_no_json_body(): void
+    {
+        $pair = $this->customerTokenPair($this->createCustomer());
+
+        $this->call('POST', '/api/shop/customer/logout', server: $this->serverHeaders($this->bearer($pair->accessToken)))
+            ->assertSuccessful()
+            ->assertJsonPath('success', true);
+
+        $this->assertSame(CustomerApiSession::REVOKED_LOGOUT, $pair->session->fresh()->revoked_reason);
     }
 
     /**
@@ -450,11 +550,53 @@ class CustomerSessionAuthTest extends RestApiTestCase
     }
 
     /**
+     * Request headers as server variables, for a request sent without the JSON helpers.
+     */
+    protected function serverHeaders(array $headers): array
+    {
+        $server = ['HTTP_ACCEPT' => 'application/json'];
+
+        foreach ($headers as $name => $value) {
+            $server['HTTP_'.strtoupper(str_replace('-', '_', $name))] = $value;
+        }
+
+        return $server;
+    }
+
+    /**
      * The storefront headers with a bearer token.
      */
     protected function bearer(string $token): array
     {
         return array_merge($this->storefrontHeaders(), ['Authorization' => 'Bearer '.$token]);
+    }
+
+    /**
+     * Forget the channel the previous request resolved, as a new request on a real server starts without one.
+     */
+    protected function forgetCurrentChannel(): void
+    {
+        (fn () => $this->currentChannel = null)->call(core());
+    }
+
+    /**
+     * A second channel that shares the default channel's locales and currencies.
+     */
+    protected function secondChannel(): Channel
+    {
+        $default = core()->getDefaultChannel();
+
+        $channel = Channel::factory()->create([
+            'code' => 'second'.uniqid(),
+            'root_category_id' => $default->root_category_id,
+            'default_locale_id' => $default->default_locale_id,
+            'base_currency_id' => $default->base_currency_id,
+        ]);
+
+        $channel->locales()->sync($default->locales->pluck('id'));
+        $channel->currencies()->sync($default->currencies->pluck('id'));
+
+        return $channel;
     }
 
     /**

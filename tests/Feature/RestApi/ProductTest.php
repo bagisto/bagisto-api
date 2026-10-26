@@ -901,6 +901,47 @@ class ProductTest extends RestApiTestCase
     }
 
     /**
+     * Test configurable price reports the regular price from the price index.
+     */
+    public function test_configurable_price_reports_the_regular_price_from_the_price_index(): void
+    {
+        $product = $this->seedSaleableProduct('configurable');
+
+        $this->seedGuestPriceIndexColumns($product, [
+            'min_price' => 20.0,
+            'regular_min_price' => 24.99,
+            'max_price' => 30.0,
+            'regular_max_price' => 30.0,
+        ]);
+
+        $response = $this->publicGet($this->collectionUrl.'/'.$product->id);
+
+        $response->assertOk();
+        expect((float) $response->json('price'))->toBe(24.99)
+            ->and($response->json('formattedPrice'))->not->toBe(core()->currency(0));
+    }
+
+    /**
+     * Test maximum price never falls below the regular price.
+     */
+    public function test_maximum_price_never_falls_below_the_regular_price(): void
+    {
+        $product = $this->seedSaleableProduct();
+
+        $this->seedGuestPriceIndexColumns($product, [
+            'min_price' => 8.0,
+            'regular_min_price' => 10.0,
+            'max_price' => 8.0,
+            'regular_max_price' => 10.0,
+        ]);
+
+        $response = $this->publicGet($this->collectionUrl.'/'.$product->id);
+
+        $response->assertOk();
+        expect((float) $response->json('maximumPrice'))->toBe(10.0);
+    }
+
+    /**
      * Seed saleable product.
      */
     private function seedSaleableProduct(string $type = 'simple', ?string $sku = null): Product
@@ -928,6 +969,23 @@ class ProductTest extends RestApiTestCase
                 'created_at' => now(),
                 'updated_at' => now(),
             ]
+        );
+    }
+
+    /**
+     * Seed the guest price index row with a value per column.
+     */
+    private function seedGuestPriceIndexColumns(Product $product, array $prices): void
+    {
+        DB::table('product_price_indices')->updateOrInsert(
+            [
+                'product_id' => $product->id,
+                'customer_group_id' => core()->getGuestCustomerGroup()->id,
+                'channel_id' => core()->getCurrentChannel()->id,
+            ], array_merge($prices, [
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])
         );
     }
 

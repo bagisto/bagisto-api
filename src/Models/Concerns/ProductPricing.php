@@ -50,12 +50,11 @@ trait ProductPricing
     }
 
     /**
-     * Laravel accessor for maximum_price attribute.
-     * Get product maximum price based on price index.
+     * Get the highest price the product sells at, never below its regular price.
      */
     public function getMaximumPriceAttribute(): float
     {
-        return $this->priceFromIndex('max_price');
+        return max($this->priceFromIndex('max_price'), $this->priceFromIndex('regular_max_price'));
     }
 
     /**

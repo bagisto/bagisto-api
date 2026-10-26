@@ -180,6 +180,10 @@ trait ProductSystemAttributes
      */
     public function getPriceAttribute(): ?float
     {
+        if (in_array($this->type, ['configurable', 'bundle'], true)) {
+            return $this->priceFromIndex('regular_min_price');
+        }
+
         return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price')));
     }
 

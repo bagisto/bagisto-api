@@ -679,10 +679,120 @@ MD;
             $this->insert($tree, explode("\0", (string) $key), $requests);
         }
 
+        if ($surface === 'shop') {
+            $this->insert($tree, ['Theme'], [$this->homePageSectionsFolder($url)]);
+        }
+
         return [
             'name' => 'GraphQL',
             'description' => 'Every root query and mutation, grouped by the same tags as the REST folder. Optional arguments are omitted from `variables` — the full argument list is in `schema/generated/'.$surface.'.graphql` and in the GraphiQL playground.',
             'item' => $this->toItems($tree),
+        ];
+    }
+
+    /**
+     * The home page flow: read the store defaults, read the sections, then load each product
+     * carousel with the `products` query built from that section's `options.filters`.
+     *
+     * @return array<string, mixed>
+     */
+    private function homePageSectionsFolder(string $url): array
+    {
+        $products = <<<'GQL'
+query SectionProducts($first: Int, $sortKey: String, $reverse: Boolean, $filter: String) {
+  products(first: $first, sortKey: $sortKey, reverse: $reverse, filter: $filter) {
+    totalCount
+    edges {
+      node {
+        id
+        _id
+        sku
+        type
+        name
+        urlKey
+        price
+        formattedPrice
+        specialPrice
+        formattedSpecialPrice
+        minimumPrice
+        formattedMinimumPrice
+        new
+        featured
+        isSaleable
+        isInWishlist
+        isInCompare
+        baseImageUrl
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+GQL;
+
+        $mapping = "Build the variables from the section's `options.filters`:\n"
+            ."- `limit` -> `first` (missing: the first value of `storeConfig.productsPerPage`, else 12).\n"
+            ."- `sort` -> `sortKey` + `reverse`: split at the last `-`, uppercase the field (`name` -> `NAME`, `price` -> `PRICE`, `created_at` -> `CREATED_AT`), `desc` -> `reverse: true`, `asc` -> `reverse: false`.\n"
+            .'- Every other key (`new`, `featured`, `category_id`, ...) -> one object passed as `filter`, encoded as a JSON string. Leave `filter` out when there is none.';
+
+        $request = fn (string $name, string $query, array $variables, string $description): array => [
+            'name' => $name,
+            'request' => [
+                'method' => 'POST',
+                'header' => [
+                    ['key' => 'Content-Type', 'value' => 'application/json'],
+                    ['key' => 'X-STOREFRONT-KEY', 'value' => '{{storefrontKey}}'],
+                ],
+                'url' => $this->graphQlUrl($url),
+                'body' => [
+                    'mode' => 'graphql',
+                    'graphql' => [
+                        'query' => $query,
+                        'variables' => json_encode($variables === [] ? new stdClass : $variables, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+                    ],
+                ],
+                'description' => $description,
+            ],
+        ];
+
+        return [
+            'name' => 'Home Page Sections',
+            'description' => 'How an app builds the home page the admin designed under Appearance: read the store defaults, read the sections, then load each product carousel with the `products` query. Run the requests in order.',
+            'item' => [
+                $request(
+                    '1. Store defaults (sort + page size)',
+                    "query StoreDefaults {\n  storeConfig {\n    defaultSortBy\n    productsPerPage\n  }\n}\n",
+                    [],
+                    'Step 1. The defaults a product carousel falls back on when its section sets no `sort` or `limit`: `defaultSortBy` (for example `price-desc`) and `productsPerPage` (the first value is the default page size). Fetch once at app start.',
+                ),
+                $request(
+                    '2. Home page sections',
+                    "query HomeSections {\n  sections {\n    edges {\n      node {\n        id\n        _id\n        type\n        name\n        sortOrder\n        status\n        translation {\n          locale\n          options\n        }\n      }\n    }\n  }\n}\n",
+                    [],
+                    'Step 2. The sections of the current channel, in display order (`sortOrder`). `translation.options` is a JSON string; for a `product_carousel` it holds `title` and `filters`, for example {"title":"New Products","filters":{"new":"1","sort":"name-desc","limit":"12"}}. Run one of the requests below for each `product_carousel`.',
+                ),
+                $request(
+                    '3. Product carousel — New Products',
+                    $products,
+                    ['first' => 12, 'sortKey' => 'NAME', 'reverse' => true, 'filter' => '{"new":"1"}'],
+                    "Step 3. A section with `filters` {\"new\":\"1\",\"sort\":\"name-desc\",\"limit\":\"12\"}.\n\n".$mapping,
+                ),
+                $request(
+                    '4. Product carousel — Featured Products',
+                    $products,
+                    ['first' => 12, 'sortKey' => 'NAME', 'reverse' => false, 'filter' => '{"featured":"1"}'],
+                    "Step 3. A section with `filters` {\"sort\":\"name-asc\",\"featured\":\"1\"}; it sets no `limit`, so `first` is the default page size.\n\n".$mapping,
+                ),
+                $request(
+                    '5. Product carousel — no filters (store defaults)',
+                    $products,
+                    ['first' => 12, 'sortKey' => 'PRICE', 'reverse' => true],
+                    "Step 3. A section whose `filters` is empty. Use the defaults from step 1 instead: with the admin settings empty that is `price-desc` and 12 products, so `sortKey: PRICE`, `reverse: true`, `first: 12` and no `filter`.\n\n".$mapping,
+                ),
+            ],
         ];
     }
 

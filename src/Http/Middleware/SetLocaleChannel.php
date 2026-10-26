@@ -5,7 +5,9 @@ namespace Webkul\BagistoApi\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use NumberFormatter;
 use Symfony\Component\HttpFoundation\Response;
+use ValueError;
 use Webkul\Core\Repositories\ChannelRepository;
 use Webkul\Customer\Contracts\Customer;
 
@@ -51,7 +53,7 @@ class SetLocaleChannel
         $availableLocales = $channel->locales ? $channel->locales->pluck('code')->toArray() : [];
         $defaultLocale = $channel->default_locale?->code;
 
-        if ($locale && in_array($locale, $availableLocales)) {
+        if ($locale && in_array($locale, $availableLocales) && $this->isUsableLocale($locale)) {
             app()->setLocale($locale);
             $request->attributes->set('bagisto_locale', $locale);
         } elseif ($defaultLocale) {
@@ -72,6 +74,24 @@ class SetLocaleChannel
         }
 
         return $next($request);
+    }
+
+    /**
+     * Whether PHP's intl can format numbers and prices in this locale.
+     *
+     * Core accepts any letters as a locale code, but it formats every price with NumberFormatter,
+     * which throws on a code ICU does not know (for example `Jp`, where `ja` is meant). Such a
+     * locale is treated like one the channel does not offer: the default locale is used instead.
+     */
+    protected function isUsableLocale(string $locale): bool
+    {
+        try {
+            new NumberFormatter($locale, NumberFormatter::CURRENCY);
+        } catch (ValueError) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

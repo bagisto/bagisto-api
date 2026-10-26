@@ -184,33 +184,6 @@ test.describe('shop category attribute filters graphql', () => {
   });
 });
 
-test.describe('shop category trees graphql', () => {
-  test('should return the same root categories as the rest category tree', async ({ request }) => {
-    const body = await shopQuery(request, SHOP_CATALOG_QUERIES.categoryTrees);
-    expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
-
-    const trees = body.data.categoryTrees;
-    expect(Array.isArray(trees)).toBe(true);
-    expect(trees.length).toBeGreaterThan(0);
-
-    const rest = await sendRestRequest(request, SHOP_CATALOG.CATEGORY_TREES);
-    expect(rest.status()).toBe(200);
-    const restTrees = await rest.json();
-
-    expect(trees.map((tree: any) => Number(String(tree.id).split('/').pop()))).toEqual(
-      restTrees.map((tree: any) => Number(tree.id))
-    );
-  });
-
-  test('should refuse a field the category tree does not expose', async ({ request }) => {
-    const response = await sendGraphQLRequest(request, SHOP_CATALOG_QUERIES.categoryTreesWithUnknownField);
-    const body = await response.json();
-
-    expect(graphQLErrorMessages(body).join(' ')).toContain('Cannot query field "notAField" on type "CategoryTree"');
-    expect(body.data?.categoryTrees ?? null).toBeNull();
-  });
-});
-
 test.describe('shop theme graphql', () => {
   test('should return the active theme of the channel matching the rest resource', async ({ request }) => {
     const body = await shopQuery(request, SHOP_CATALOG_QUERIES.theme);
@@ -282,7 +255,6 @@ test.describe('shop catalog attributes graphql without a storefront key', () => 
     { label: 'the attribute translation connection', query: SHOP_CATALOG_QUERIES.attributeTranslations, variables: { first: 1 } },
     { label: 'a single attribute translation', query: SHOP_CATALOG_QUERIES.attributeTranslation, variables: { id: '/api/shop/attribute_translations/1' } },
     { label: 'the category attribute filters', query: SHOP_CATALOG_QUERIES.categoryAttributeFilters, variables: { first: 1 } },
-    { label: 'the category trees', query: SHOP_CATALOG_QUERIES.categoryTrees, variables: {} },
     { label: 'the active theme', query: SHOP_CATALOG_QUERIES.theme, variables: {} },
     { label: 'a product attribute file', query: SHOP_CATALOG_QUERIES.productAttributeFile, variables: { productId: 1, attributeId: 1 } },
   ];

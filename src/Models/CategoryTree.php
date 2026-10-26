@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
@@ -95,18 +94,6 @@ use Webkul\BagistoApi\State\CategoryTreeProvider;
             ),
         ),
     ],
-    graphQlOperations: [
-        new QueryCollection(
-            provider: CategoryTreeProvider::class,
-            paginationEnabled: false,
-            description: 'The current channel\'s root category and its active descendants as a nested tree (up to four levels by default), ordered by position, as a plain list (not paginated). Takes no arguments. Needs the X-STOREFRONT-KEY header.',
-        ),
-    ],
+    graphQlOperations: [],
 )]
-class CategoryTree
-{
-    /**
-     * This class doesn't need any properties as it's just a DTO
-     * The data is provided by the CategoryTreeProvider.
-     */
-}
+class CategoryTree {}

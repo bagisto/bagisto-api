@@ -33,6 +33,26 @@ class CompareItemTest extends RestApiTestCase
     }
 
     /**
+     * Each compare item carries the product card, so the compare page needs no further call.
+     */
+    public function test_compare_items_embed_the_product_card(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet($testData['customer'], $this->baseUrl);
+
+        $response->assertOk();
+
+        $item = collect($response->json())->firstWhere('id', $testData['compareItem1']->id);
+
+        expect($item['product'])->toBeArray()
+            ->and($item['product']['id'])->toBe($testData['product1']->id)
+            ->and($item['product']['sku'])->toBe($testData['product1']->sku)
+            ->and($item['product'])->toHaveKeys(['name', 'price', 'formattedPrice', 'baseImageUrl'])
+            ->and($item)->toHaveKeys(['createdAt', 'updatedAt']);
+    }
+
+    /**
      * Test get compare items collection requires auth.
      */
     public function test_get_compare_items_collection_requires_auth(): void

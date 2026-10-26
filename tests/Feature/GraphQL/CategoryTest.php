@@ -1227,27 +1227,6 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
-     * The categoryTrees query returns the current channel's root category.
-     */
-    public function test_category_trees_returns_the_channel_root_category(): void
-    {
-        $response = $this->graphQL(<<<'GQL'
-            query {
-              categoryTrees {
-                id
-              }
-            }
-        GQL);
-
-        $response->assertOk();
-
-        $ids = collect($response->json('data.categoryTrees'))->pluck('id')->map(fn ($id) => (int) $id)->all();
-
-        expect($response->json('errors'))->toBeNull()
-            ->and($ids)->toBe([(int) core()->getCurrentChannel()->root_category_id]);
-    }
-
-    /**
      * The categoryAttributeFilters query lists every filterable attribute when no category is given.
      */
     public function test_category_attribute_filters_lists_filterable_attributes(): void

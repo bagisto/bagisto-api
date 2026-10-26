@@ -136,7 +136,7 @@ use Webkul\Category\Models\Category as BaseCategory;
         ),
         new QueryCollection(
             provider: CursorAwareCollectionProvider::class,
-            description: 'Active categories as a flat list ordered by ID; disabled categories are never returned. Use `treeCategories` or `categoryTrees` for a nested tree. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
+            description: 'Active categories as a flat list ordered by ID; disabled categories are never returned. Use `treeCategories` for a nested tree. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
         ),
         new QueryCollection(
             name: 'tree',

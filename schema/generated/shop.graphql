@@ -77,7 +77,7 @@ type Query {
     after: String
   ): CartCrossSellCursorConnection
 
-  "Active categories as a flat list ordered by ID; disabled categories are never returned. Use `treeCategories` or `categoryTrees` for a nested tree. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
+  "Active categories as a flat list ordered by ID; disabled categories are never returned. Use `treeCategories` for a nested tree. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   categories(
     "Returns the first n elements from the list."
     first: Int
@@ -111,9 +111,6 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): CategoryAttributeFilterCursorConnection
-
-  "The current channel's root category and its active descendants as a nested tree (up to four levels by default), ordered by position, as a plain list (not paginated). Takes no arguments. Needs the X-STOREFRONT-KEY header."
-  categoryTrees: [CategoryTree]
 
   "One storefront channel. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   channel(id: ID!): Channel
@@ -1176,11 +1173,6 @@ type CategoryPageInfo {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
   startCursor: String
-}
-
-"The current channel's root category and its active descendants as a nested tree (up to four levels by default), ordered by position, as a plain list (not paginated). Takes no arguments. Needs the X-STOREFRONT-KEY header."
-type CategoryTree implements Node {
-  id: ID!
 }
 
 "One storefront channel. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."

@@ -14,7 +14,9 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Webkul\BagistoApi\Dto\CreateCompareItemInput;
 use Webkul\BagistoApi\Dto\DeleteCompareItemInput;
 use Webkul\BagistoApi\Resolver\CompareItemQueryResolver;
@@ -27,6 +29,7 @@ use Webkul\BagistoApi\State\CompareItemProvider;
     operations: [
         new Get(
             provider: CompareItemItemProvider::class,
+            normalizationContext: ['groups' => ['compare:read', 'product:list'], 'skip_null_values' => false],
             openapi: new Operation(
                 tags: ['CompareItem'],
                 summary: 'Get a compare item',
@@ -54,6 +57,7 @@ use Webkul\BagistoApi\State\CompareItemProvider;
         ),
         new GetCollection(
             provider: CompareItemProvider::class,
+            normalizationContext: ['groups' => ['compare:read', 'product:list'], 'skip_null_values' => false],
             openapi: new Operation(
                 tags: ['CompareItem'],
                 summary: 'List compare items',
@@ -175,15 +179,35 @@ class CompareItem extends \Webkul\Customer\Models\CompareItem
      * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
+    #[Groups(['compare:read'])]
     public function getId(): int
     {
         return $this->id;
     }
 
     /**
+     * When the item was added, kept in the REST read group.
+     */
+    #[Groups(['compare:read'])]
+    public function getCreated_at(): ?CarbonInterface
+    {
+        return $this->created_at;
+    }
+
+    /**
+     * When the item was last changed, kept in the REST read group.
+     */
+    #[Groups(['compare:read'])]
+    public function getUpdated_at(): ?CarbonInterface
+    {
+        return $this->updated_at;
+    }
+
+    /**
      * Product relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Associated product')]
+    #[Groups(['compare:read'])]
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
@@ -193,6 +217,7 @@ class CompareItem extends \Webkul\Customer\Models\CompareItem
      * Customer relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Customer who added the item')]
+    #[Groups(['compare:read'])]
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id');

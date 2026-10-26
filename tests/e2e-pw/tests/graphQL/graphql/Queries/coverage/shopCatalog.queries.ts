@@ -61,23 +61,6 @@ export const SHOP_CATALOG_QUERIES = {
     }
   `,
 
-  categoryTrees: `
-    query categoryTrees {
-      categoryTrees {
-        id
-      }
-    }
-  `,
-
-  categoryTreesWithUnknownField: `
-    query categoryTrees {
-      categoryTrees {
-        id
-        notAField
-      }
-    }
-  `,
-
   theme: `
     query theme {
       theme {

@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'Falha ao adicionar o produto ao carrinho',
             'update-item-failed' => 'Falha ao atualizar o item do carrinho',
             'remove-item-failed' => 'Falha ao remover o item do carrinho',
-            'apply-coupon-failed' => 'Falha ao aplicar o cupom',
             'remove-coupon-failed' => 'Falha ao remover o cupom',
             'coupon-applied' => 'Cupom aplicado com sucesso',
             'coupon-removed' => 'Cupom removido com sucesso',

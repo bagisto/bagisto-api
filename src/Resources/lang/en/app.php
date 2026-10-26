@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'Failed to add product to cart',
             'update-item-failed' => 'Failed to update cart item',
             'remove-item-failed' => 'Failed to remove cart item',
-            'apply-coupon-failed' => 'Failed to apply coupon',
             'remove-coupon-failed' => 'Failed to remove coupon',
             'coupon-applied' => 'Coupon applied successfully',
             'coupon-removed' => 'Coupon removed successfully',

@@ -401,9 +401,9 @@ class GuestCartTest extends GraphQLTestCase
     }
 
     /**
-     * Apply Coupon (Guest).
+     * Applying an unknown coupon as a guest is reported as an error.
      */
-    public function test_apply_coupon_as_guest(): void
+    public function test_apply_unknown_coupon_as_guest_returns_error(): void
     {
         $token = $this->getGuestCartToken();
         $headers = $this->guestHeaders($token);
@@ -439,13 +439,13 @@ class GuestCartTest extends GraphQLTestCase
         GQL;
 
         $response = $this->graphQL($couponMutation, [
-            'couponCode' => 'SAVE10',
+            'couponCode' => 'UNKNOWN_'.uniqid(),
         ], $headers);
 
         $response->assertSuccessful();
 
-        $data = $response->json('data.createApplyCoupon.applyCoupon');
-        $this->assertNotNull($data);
+        $this->assertNull($response->json('data.createApplyCoupon'));
+        $this->assertSame(__('shop::app.checkout.coupon.invalid'), $response->json('errors.0.message'));
     }
 
     /**

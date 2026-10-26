@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'Échec de l\'ajout du produit au panier',
             'update-item-failed' => 'Échec de la mise à jour de l\'article du panier',
             'remove-item-failed' => 'Échec de la suppression de l\'article du panier',
-            'apply-coupon-failed' => 'Échec de l\'application du coupon',
             'remove-coupon-failed' => 'Échec de la suppression du coupon',
             'coupon-applied' => 'Coupon appliqué avec succès',
             'coupon-removed' => 'Coupon supprimé avec succès',

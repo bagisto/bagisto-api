@@ -8,6 +8,7 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\OperationFailedException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\CartRule\Repositories\CartRuleCouponRepository;
 use Webkul\Checkout\Facades\Cart as CartFacade;
 use Webkul\Checkout\Models\Cart as CartModel;
 use Webkul\Checkout\Models\CartAddress;
@@ -38,29 +39,33 @@ trait HandlesCartCouponsAndExtras
 
         CartFacade::setCart($cart);
 
-        try {
-            CartFacade::setCouponCode($data->couponCode)->collectTotals();
-        } catch (\Exception $exception) {
-            throw new OperationFailedException($exception->getMessage(), 0, $exception);
+        $coupon = app(CartRuleCouponRepository::class)->findOneByField('code', $data->couponCode);
+
+        if (! $coupon) {
+            throw new InvalidInputException(__('shop::app.checkout.coupon.invalid'), 422);
+        }
+
+        if ($cart->coupon_code === $coupon->code) {
+            throw new InvalidInputException(__('shop::app.checkout.coupon.already-applied'), 422);
+        }
+
+        if ($coupon->cart_rule?->status) {
+            try {
+                CartFacade::setCouponCode($coupon->code)->collectTotals();
+            } catch (\Exception $exception) {
+                throw new OperationFailedException($exception->getMessage(), 0, $exception);
+            }
         }
 
         $cart = CartFacade::getCart();
 
-        $cartData = CartData::fromModel($cart);
-        $applied = ! empty($cart->coupon_code)
-            && $cart->coupon_code === $data->couponCode
-            && \DB::table('cart_rule_coupons')->where('code', $data->couponCode)->exists();
-
-        if (! $applied) {
-            $cart->coupon_code = null;
-            $cart->save();
-            $cartData->couponCode = null;
+        if ($cart?->coupon_code !== $coupon->code) {
+            throw new InvalidInputException(__('shop::app.checkout.coupon.apply-issue'), 422);
         }
 
-        $cartData->success = $applied;
-        $cartData->message = $applied
-            ? __('bagistoapi::app.graphql.cart.coupon-applied')
-            : __('bagistoapi::app.graphql.cart.apply-coupon-failed');
+        $cartData = CartData::fromModel($cart);
+        $cartData->success = true;
+        $cartData->message = __('bagistoapi::app.graphql.cart.coupon-applied');
 
         return (array) $cartData;
     }

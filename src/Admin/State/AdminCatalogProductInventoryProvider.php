@@ -19,7 +19,7 @@ class AdminCatalogProductInventoryProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        AdminReadPermissions::authorize($operation, AdminCatalogProductInventory::class);
+        AdminReadPermissions::authorize($operation, AdminCatalogProductInventory::class, 'catalog.products.edit');
 
         $productId = $this->resolveProductId($uriVariables, $context);
 

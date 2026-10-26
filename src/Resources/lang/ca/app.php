@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'No s\'ha pogut afegir el producte al carretó',
             'update-item-failed' => 'No s\'ha pogut actualitzar l\'element del carretó',
             'remove-item-failed' => 'No s\'ha pogut eliminar l\'element del carretó',
-            'apply-coupon-failed' => 'No s\'ha pogut aplicar el cupó',
             'remove-coupon-failed' => 'No s\'ha pogut eliminar el cupó',
             'coupon-applied' => 'Cupó aplicat correctament',
             'coupon-removed' => 'Cupó eliminat correctament',

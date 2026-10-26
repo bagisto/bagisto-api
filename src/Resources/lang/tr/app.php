@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'Ürün sepete eklenemedi',
             'update-item-failed' => 'Sepet öğesi güncellenemedi',
             'remove-item-failed' => 'Sepet öğesi kaldırılamadı',
-            'apply-coupon-failed' => 'Kupon uygulanamadı',
             'remove-coupon-failed' => 'Kupon kaldırılamadı',
             'coupon-applied' => 'Kupon başarıyla uygulandı',
             'coupon-removed' => 'Kupon başarıyla kaldırıldı',

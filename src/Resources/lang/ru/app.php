@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'Не удалось добавить продукт в корзину',
             'update-item-failed' => 'Не удалось обновить товар в корзине',
             'remove-item-failed' => 'Не удалось удалить товар из корзины',
-            'apply-coupon-failed' => 'Не удалось применить купон',
             'remove-coupon-failed' => 'Не удалось удалить купон',
             'coupon-applied' => 'Купон успешно применен',
             'coupon-removed' => 'Купон успешно удален',

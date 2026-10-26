@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'فشل إضافة المنتج إلى السلة',
             'update-item-failed' => 'فشل تحديث عنصر السلة',
             'remove-item-failed' => 'فشل إزالة عنصر السلة',
-            'apply-coupon-failed' => 'فشل تطبيق القسيمة',
             'remove-coupon-failed' => 'فشل إزالة القسيمة',
             'coupon-applied' => 'تم تطبيق القسيمة بنجاح',
             'coupon-removed' => 'تمت إزالة القسيمة بنجاح',

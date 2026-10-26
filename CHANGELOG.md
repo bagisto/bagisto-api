@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docs/authentication.md` documents the customer flow: login, refresh and reuse detection, logout and sessions, the guest cart merge, the error codes, the configuration fields, client notes, and the steps for apps that used the Sanctum token. The README summarises it.
 
 ### Changed
+- **Breaking:** applying a coupon (REST `POST /api/shop/apply-coupon`, GraphQL `createApplyCoupon`) answers as the storefront does: an unknown code, the code the cart already carries, and a code that does not apply to the cart are refused with `422` and core's coupon message (GraphQL reports them in `errors[]`), instead of `201` with `success: false`.
+- **Breaking:** reading one admin product, its inventories, one category or one review (REST `GET /api/admin/catalog/products/{id}`, `/catalog/products/{productId}/inventories`, `/catalog/categories/{id}`, `/customers/reviews/{id}`, GraphQL `adminCatalogProduct`, `adminCatalogProductInventories`, `adminCategory`, `adminCustomerReview`) needs `catalog.products.edit`, `catalog.categories.edit` or `customers.reviews.edit`, as core opens them only on the edit screen. The listings keep the list permission. The GraphQL product detail checked no permission at all before.
 - **Breaking:** cart and checkout client errors answer with a 4xx instead of `500` (the REST status; GraphQL reports them in `errors[]` as before):
   - a refused add-to-cart or quantity update (missing options, not enough stock) answers `400`, as the storefront's cart does;
   - a missing or invalid checkout address, shipping method or payment method, an empty cart, an unmet minimum order amount and a missing email answer `422`;

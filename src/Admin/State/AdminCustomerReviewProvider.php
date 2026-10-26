@@ -37,9 +37,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        AdminReadPermissions::authorize($operation, AdminCustomerReview::class);
-
         $isCollection = $operation instanceof GetCollection || $operation instanceof QueryCollection;
+
+        AdminReadPermissions::authorize($operation, AdminCustomerReview::class, $isCollection ? null : 'customers.reviews.edit');
 
         return $isCollection
             ? $this->provideCollection($context)

@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'Gagal menambahkan produk ke keranjang',
             'update-item-failed' => 'Gagal memperbarui item keranjang',
             'remove-item-failed' => 'Gagal menghapus item keranjang',
-            'apply-coupon-failed' => 'Gagal menerapkan kupon',
             'remove-coupon-failed' => 'Gagal menghapus kupon',
             'coupon-applied' => 'Kupon berhasil diterapkan',
             'coupon-removed' => 'Kupon berhasil dihapus',

@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'কার্টে পণ্য যোগ করতে ব্যর্থ',
             'update-item-failed' => 'কার্ট আইটেম আপডেট করতে ব্যর্থ',
             'remove-item-failed' => 'কার্ট আইটেম সরাতে ব্যর্থ',
-            'apply-coupon-failed' => 'কুপন প্রয়োগ করতে ব্যর্থ',
             'remove-coupon-failed' => 'কুপন সরাতে ব্যর্থ',
             'coupon-applied' => 'কুপন সফলভাবে প্রয়োগ করা হয়েছে',
             'coupon-removed' => 'কুপন সফলভাবে সরানো হয়েছে',

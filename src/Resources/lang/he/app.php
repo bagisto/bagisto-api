@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'הוספת המוצר לעגלה נכשלה',
             'update-item-failed' => 'עדכון פריט העגלה נכשל',
             'remove-item-failed' => 'הסרת פריט העגלה נכשלה',
-            'apply-coupon-failed' => 'החלת הקופון נכשלה',
             'remove-coupon-failed' => 'הסרת הקופון נכשלה',
             'coupon-applied' => 'הקופון הוחל בהצלחה',
             'coupon-removed' => 'הקופון הוסר בהצלחה',

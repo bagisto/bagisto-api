@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'Adăugarea produsului în coș a eșuat',
             'update-item-failed' => 'Actualizarea articolului din coș a eșuat',
             'remove-item-failed' => 'Eliminarea articolului din coș a eșuat',
-            'apply-coupon-failed' => 'Aplicarea cuponului a eșuat',
             'remove-coupon-failed' => 'Eliminarea cuponului a eșuat',
             'coupon-applied' => 'Cuponul a fost aplicat cu succes',
             'coupon-removed' => 'Cuponul a fost eliminat cu succes',

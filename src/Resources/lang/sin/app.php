@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'නිෂ්පාදනය කරත්තයට එකතු කිරීමට අසමත් විය',
             'update-item-failed' => 'කරත්ත අයිතමය යාවත්කාලීන කිරීමට අසමත් විය',
             'remove-item-failed' => 'කරත්ත අයිතමය ඉවත් කිරීමට අසමත් විය',
-            'apply-coupon-failed' => 'කූපනය යෙදීමට අසමත් විය',
             'remove-coupon-failed' => 'කූපනය ඉවත් කිරීමට අසමත් විය',
             'coupon-applied' => 'කූපනය සාර්ථකව යොදන ලදී',
             'coupon-removed' => 'කූපනය සාර්ථකව ඉවත් කරන ලදී',

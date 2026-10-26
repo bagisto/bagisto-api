@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'Nie udało się dodać produktu do koszyka',
             'update-item-failed' => 'Nie udało się zaktualizować pozycji koszyka',
             'remove-item-failed' => 'Nie udało się usunąć pozycji koszyka',
-            'apply-coupon-failed' => 'Nie udało się zastosować kuponu',
             'remove-coupon-failed' => 'Nie udało się usunąć kuponu',
             'coupon-applied' => 'Kupon pomyślnie zastosowany',
             'coupon-removed' => 'Kupon pomyślnie usunięty',

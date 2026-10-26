@@ -31,7 +31,7 @@ abstract class AbstractAdminItemProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
-        AdminReadPermissions::authorize($operation, null, $this->readPermission());
+        AdminReadPermissions::authorize($operation, null, $this->readPermission($operation));
 
         $id = (int) ($uriVariables['id'] ?? $context['args']['id'] ?? 0);
 
@@ -49,9 +49,9 @@ abstract class AbstractAdminItemProvider implements ProviderInterface
     }
 
     /**
-     * Override to require a specific ACL key instead of the resource map entry.
+     * Override to require a specific ACL key for the operation instead of the resource map entry.
      */
-    protected function readPermission(): ?string
+    protected function readPermission(Operation $operation): ?string
     {
         return null;
     }

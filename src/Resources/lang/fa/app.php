@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'افزودن محصول به سبد خرید ناموفق بود',
             'update-item-failed' => 'به‌روزرسانی آیتم سبد خرید ناموفق بود',
             'remove-item-failed' => 'حذف آیتم سبد خرید ناموفق بود',
-            'apply-coupon-failed' => 'اعمال کوپن ناموفق بود',
             'remove-coupon-failed' => 'حذف کوپن ناموفق بود',
             'coupon-applied' => 'کوپن با موفقیت اعمال شد',
             'coupon-removed' => 'کوپن با موفقیت حذف شد',

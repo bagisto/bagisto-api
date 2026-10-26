@@ -46,7 +46,6 @@ return [
             'add-product-failed' => '未能将产品添加到购物车',
             'update-item-failed' => '未能更新购物车项目',
             'remove-item-failed' => '未能移除购物车项目',
-            'apply-coupon-failed' => '未能应用优惠券',
             'remove-coupon-failed' => '未能移除优惠券',
             'coupon-applied' => '优惠券已成功应用',
             'coupon-removed' => '优惠券已成功移除',

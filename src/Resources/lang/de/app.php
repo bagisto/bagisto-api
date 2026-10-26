@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'Produkt konnte nicht zum Warenkorb hinzugefügt werden',
             'update-item-failed' => 'Warenkorbartikel konnte nicht aktualisiert werden',
             'remove-item-failed' => 'Warenkorbartikel konnte nicht entfernt werden',
-            'apply-coupon-failed' => 'Gutschein konnte nicht angewendet werden',
             'remove-coupon-failed' => 'Gutschein konnte nicht entfernt werden',
             'coupon-applied' => 'Gutschein erfolgreich angewendet',
             'coupon-removed' => 'Gutschein erfolgreich entfernt',

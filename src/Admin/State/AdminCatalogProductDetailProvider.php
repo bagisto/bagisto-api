@@ -2,15 +2,16 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductRestDto;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProduct;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
-use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Product\Models\Product;
 
@@ -36,9 +37,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
             return parent::provide($operation, $uriVariables, $context);
         }
 
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, null, $this->readPermission($operation));
 
         $id = (int) ($uriVariables['id'] ?? $context['args']['id'] ?? 0);
 
@@ -79,6 +78,14 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
     public function loadEloquentForGraphQL(int $id): ?AdminCatalogProduct
     {
         return AdminCatalogProduct::with(self::GRAPHQL_RELATIONS)->find($id);
+    }
+
+    /**
+     * Require the edit permission to read one product, as core opens a product only on its edit screen.
+     */
+    protected function readPermission(Operation $operation): ?string
+    {
+        return $operation instanceof Get || $operation instanceof Query ? 'catalog.products.edit' : null;
     }
 
     /**

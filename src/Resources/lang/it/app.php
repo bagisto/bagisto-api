@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'Impossibile aggiungere il prodotto al carrello',
             'update-item-failed' => 'Impossibile aggiornare l\'articolo del carrello',
             'remove-item-failed' => 'Impossibile rimuovere l\'articolo dal carrello',
-            'apply-coupon-failed' => 'Impossibile applicare il coupon',
             'remove-coupon-failed' => 'Impossibile rimuovere il coupon',
             'coupon-applied' => 'Coupon applicato con successo',
             'coupon-removed' => 'Coupon rimosso con successo',

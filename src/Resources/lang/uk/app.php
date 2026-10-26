@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'Не вдалося додати продукт до кошика',
             'update-item-failed' => 'Не вдалося оновити елемент кошика',
             'remove-item-failed' => 'Не вдалося видалити елемент кошика',
-            'apply-coupon-failed' => 'Не вдалося застосувати купон',
             'remove-coupon-failed' => 'Не вдалося видалити купон',
             'coupon-applied' => 'Купон успішно застосовано',
             'coupon-removed' => 'Купон успішно видалено',

@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'उत्पाद को कार्ट में जोड़ने में विफल',
             'update-item-failed' => 'कार्ट आइटम अपडेट करने में विफल',
             'remove-item-failed' => 'कार्ट आइटम हटाने में विफल',
-            'apply-coupon-failed' => 'कूपन लागू करने में विफल',
             'remove-coupon-failed' => 'कूपन हटाने में विफल',
             'coupon-applied' => 'कूपन सफलतापूर्वक लागू किया गया',
             'coupon-removed' => 'कूपन सफलतापूर्वक हटाया गया',

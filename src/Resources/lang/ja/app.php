@@ -46,7 +46,6 @@ return [
             'add-product-failed' => '商品をカートに追加できませんでした',
             'update-item-failed' => 'カートアイテムを更新できませんでした',
             'remove-item-failed' => 'カートアイテムを削除できませんでした',
-            'apply-coupon-failed' => 'クーポンを適用できませんでした',
             'remove-coupon-failed' => 'クーポンを削除できませんでした',
             'coupon-applied' => 'クーポンが正常に適用されました',
             'coupon-removed' => 'クーポンが正常に削除されました',

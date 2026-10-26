@@ -46,7 +46,6 @@ return [
             'add-product-failed' => 'Kan product niet aan winkelwagen toevoegen',
             'update-item-failed' => 'Kan winkelwagenitem niet bijwerken',
             'remove-item-failed' => 'Kan winkelwagenitem niet verwijderen',
-            'apply-coupon-failed' => 'Kan coupon niet toepassen',
             'remove-coupon-failed' => 'Kan coupon niet verwijderen',
             'coupon-applied' => 'Coupon succesvol toegepast',
             'coupon-removed' => 'Coupon succesvol verwijderd',

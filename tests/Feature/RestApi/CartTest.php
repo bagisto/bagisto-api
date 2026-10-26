@@ -202,9 +202,9 @@ class CartTest extends RestApiTestCase
     }
 
     /**
-     * Applying an unknown coupon code returns an error or an unsuccessful response.
+     * Applying an unknown coupon code is refused with 422, as the storefront does.
      */
-    public function test_apply_invalid_coupon_code_returns_error_or_failure(): void
+    public function test_apply_invalid_coupon_code_returns_422(): void
     {
         $this->seedRequiredData();
         $cart = $this->createGuestCartWithProduct();
@@ -213,11 +213,25 @@ class CartTest extends RestApiTestCase
             'couponCode' => 'INVALID_COUPON_'.uniqid(),
         ]);
 
-        if ($response->getStatusCode() === 201) {
-            expect((bool) $response->json('success'))->toBeFalse();
-        } else {
-            expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
-        }
+        $response->assertStatus(422);
+        expect($response->json('message') ?? $response->json('detail'))->toBe(__('shop::app.checkout.coupon.invalid'));
+    }
+
+    /**
+     * Applying the coupon the cart already carries is refused with 422.
+     */
+    public function test_apply_already_applied_coupon_returns_422(): void
+    {
+        $this->seedRequiredData();
+        $code = $this->seedActiveCoupon();
+        $cart = $this->createGuestCartWithProduct();
+
+        $this->postWithToken($this->applyCouponUrl, $cart['token'], ['couponCode' => $code])->assertSuccessful();
+
+        $response = $this->postWithToken($this->applyCouponUrl, $cart['token'], ['couponCode' => $code]);
+
+        $response->assertStatus(422);
+        expect($response->json('message') ?? $response->json('detail'))->toBe(__('shop::app.checkout.coupon.already-applied'));
     }
 
     /**

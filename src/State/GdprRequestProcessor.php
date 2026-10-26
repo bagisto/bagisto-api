@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Webkul\BagistoApi\Dto\CreateGdprRequestInput;
@@ -19,6 +18,7 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\GdprRequest;
 use Webkul\BagistoApi\State\Concerns\GdprFeatureGate;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class GdprRequestProcessor implements ProcessorInterface
 {
@@ -257,7 +257,7 @@ class GdprRequestProcessor implements ProcessorInterface
      */
     private function resolveCustomer(): object
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.gdpr.unauthenticated'));

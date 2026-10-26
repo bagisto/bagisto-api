@@ -57,7 +57,8 @@ return [
     ],
 
     /**
-     * Days `bagisto-api:prune-audits` keeps audit rows for, or null to keep them forever.
+     * Days `bagisto-api:prune-audits` keeps audit rows for, or null to keep them forever. Used when
+     * Configuration → API → Admin Authentication → Data Retention leaves the field empty.
      */
     'retention_days' => env('BAGISTO_API_AUDIT_RETENTION_DAYS', null),
 ];

@@ -26,7 +26,7 @@ use Webkul\BagistoApi\OpenApi\ApiSchemas;
             openapi: new Model\Operation(
                 tags: ['Admin Authentication'],
                 summary: 'Log in with email and password',
-                description: 'Starts a session and returns a short-lived JWT access token and a refresh token. Send the access token as `Authorization: Bearer <accessToken>` and exchange the refresh token at `/api/admin/auth/refresh` before or after the access token expires. When the admin has two-factor authentication enabled, the response is `202` with `twoFactorRequired: true` and a single-use `challengeToken` valid for 5 minutes, and no tokens: send it with the code to `/api/admin/auth/two-factor`. Five failed attempts per email and address in a minute lock the login for that minute.',
+                description: 'Starts a session and returns a short-lived JWT access token and a refresh token. Send the access token as `Authorization: Bearer <accessToken>` and exchange the refresh token at `/api/admin/auth/refresh` before or after the access token expires. When the admin has two-factor authentication enabled, the response is `202` with `twoFactorRequired: true` and a single-use `challengeToken` valid for 5 minutes by default, and no tokens: send it with the code to `/api/admin/auth/two-factor`. Five failed attempts per email and address lock the login for 60 seconds by default; both are configurable under Configuration → API → Admin Authentication → Login Protection.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([

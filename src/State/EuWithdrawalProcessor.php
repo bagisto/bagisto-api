@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Dto\CreateEuWithdrawalInput;
@@ -15,6 +14,7 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\EuWithdrawal;
 use Webkul\BagistoApi\Models\GuestEuWithdrawal;
 use Webkul\BagistoApi\State\Concerns\BuildsEuWithdrawal;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\EUWithdrawal\Services\WithdrawalService;
 use Webkul\Sales\Repositories\OrderRepository;
 
@@ -72,7 +72,7 @@ class EuWithdrawalProcessor implements ProcessorInterface
      */
     private function handleCustomer(int $orderId, ?string $reasonText): EuWithdrawal
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

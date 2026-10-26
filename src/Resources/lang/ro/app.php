@@ -275,6 +275,14 @@ return [
             'token-required' => 'Tokenul de autentificare este obligatoriu. Vă rugăm să furnizați tokenul în antetul Authorization ca "Bearer <token>"',
             'unknown-resource' => 'Resursă necunoscută',
             'cannot-update-other-profile' => 'Neautorizat: nu puteți actualiza profilul altui client',
+            'refresh-token-invalid' => 'Tokenul de reîmprospătare este invalid sau a expirat. Autentifică-te din nou.',
+            'too-many-login-attempts' => 'Prea multe încercări de autentificare. Încercați din nou peste :seconds secunde.',
+            'too-many-refresh-requests' => 'Prea multe reîmprospătări de token. Încercați din nou peste :seconds secunde.',
+            'rate-limit-exceeded' => 'Prea multe încercări.',
+            'access-token-expired' => 'Tokenul de acces a expirat. Reîmprospătează-l pentru a continua.',
+            'logged-out-all' => 'Ați fost deconectat din toate sesiunile.',
+            'session-not-found' => 'Sesiunea nu a fost găsită.',
+            'session-revoked' => 'Sesiunea a fost revocată.',
         ],
 
         'upload' => [
@@ -842,10 +850,6 @@ return [
             'note' => [
                 'empty' => 'Textul notei este obligatoriu.',
                 'created' => 'Nota a fost adăugată cu succes.',
-            ],
-
-            'impersonate' => [
-                'success' => 'Tokenul de impersonare a fost emis.',
             ],
 
             'review' => [
@@ -1625,6 +1629,91 @@ return [
                 'no-permission' => 'Nu aveți permisiunea de a gestiona termenii de căutare.',
             ],
         ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'Sesiuni API',
+            ],
+
+            'acl' => [
+                'title' => 'Sesiuni API',
+                'delete' => 'Revocă',
+            ],
+
+            'index' => [
+                'title' => 'Sesiuni API ale clienților',
+                'info' => 'Clienți autentificați în API-ul magazinului din aplicații web, mobile, POS sau desktop. Revocarea unei sesiuni deconectează imediat acel dispozitiv.',
+            ],
+
+            'fields' => [
+                'customer' => 'Client',
+                'email' => 'E-mail',
+                'channel' => 'Canal',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'Revocă toate sesiunile clientului',
+            ],
+
+            'card' => [
+                'title' => 'Sesiuni API (:count)',
+                'empty' => 'Acest client nu are sesiuni API active.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Nu aveți permisiunea de a gestiona sesiunile API ale clienților.',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'Autentificarea clienților',
+                'info' => 'Durata tokenurilor, limitele și regulile de sesiune pentru autentificările clienților magazinului.',
+
+                'tokens' => [
+                    'title' => 'Durata tokenurilor',
+                    'info' => 'Cât timp rămân valide tokenurile de acces, tokenurile de reîmprospătare și sesiunile. Modificările se aplică tokenurilor emise ulterior.',
+                    'access-token-ttl' => 'Durata tokenului de acces (minute)',
+                    'access-token-ttl-info' => 'Între 5 și 60 de minute. Implicit 15.',
+                    'refresh-token-ttl' => 'Durata tokenului de reîmprospătare (zile)',
+                    'refresh-token-ttl-info' => 'Între 1 și 90 de zile. Implicit 30.',
+                    'session-lifetime' => 'Durata maximă a sesiunii (zile)',
+                    'session-lifetime-info' => 'Între 1 și 365 de zile. Implicit 90. După aceea administratorul trebuie să se autentifice din nou, indiferent de câte ori a fost reîmprospătată sesiunea.',
+                    'max-sessions' => 'Numărul maxim de sesiuni active per client',
+                    'max-sessions-info' => 'Când limita este atinsă, cea mai veche sesiune este încheiată. Între 0 și 100. 0 înseamnă fără limită.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Limite de cereri',
+                    'info' => 'Numărul maxim de cereri API ale magazinului pe minut pentru fiecare client autentificat.',
+                    'requests-per-minute' => 'Cereri pe minut per client autentificat',
+                    'requests-per-minute-info' => 'Între 1 și 100000. Implicit 120.',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Protecția autentificării',
+                    'info' => 'Câte autentificări eșuate și reîmprospătări de token sunt permise înainte ca clientul să aștepte.',
+                    'login-max-attempts' => 'Autentificări eșuate înainte de blocare',
+                    'login-max-attempts-info' => 'Per e-mail și adresă IP. Între 3 și 20. Implicit 5.',
+                    'login-lockout-seconds' => 'Blocarea autentificării (secunde)',
+                    'login-lockout-seconds-info' => 'Între 60 și 3600. Implicit 60.',
+                    'refresh-requests-per-minute' => 'Reîmprospătări de token pe minut per sesiune',
+                    'refresh-requests-per-minute-info' => 'Între 1 și 60. Implicit 10.',
+                ],
+
+                'security' => [
+                    'title' => 'Securitate',
+                    'info' => 'Ce încheie celelalte sesiuni ale unui client.',
+                    'revoke-sessions-on-password-change' => 'Revocă sesiunile la schimbarea parolei',
+                ],
+
+                'retention' => [
+                    'title' => 'Păstrarea datelor',
+                    'info' => 'Cât timp sunt păstrate sesiunile încheiate ale clienților.',
+                    'session-prune-days' => 'Păstrează sesiunile încheiate (zile)',
+                    'session-prune-days-info' => 'Sesiunile revocate sau expirate sunt șterse după acest număr de zile. Între 1 și 365. Implicit 30.',
+                ],
+            ],
+        ],
         'auth' => [
             'configuration' => [
                 'title' => 'Autentificare administrator',
@@ -1646,6 +1735,10 @@ return [
                     'info' => 'Numărul maxim de cereri către API-ul de administrare pe minut.',
                     'session-requests-per-minute' => 'Cereri pe minut per administrator autentificat',
                     'api-token-requests-per-minute' => 'Cereri pe minut per token API',
+                    'session-requests-per-minute-info' => 'Între 1 și 100000. Implicit 60.',
+                    'api-token-requests-per-minute-info' => 'Între 1 și 100000. Implicit 60.',
+                    'unauthenticated-requests-per-minute' => 'Cereri pe minut fără token, per adresă IP',
+                    'unauthenticated-requests-per-minute-info' => 'Între 10 și 1000. Implicit 60. Include cererile de autentificare, doi factori, reîmprospătare și parolă.',
                 ],
 
                 'security' => [
@@ -1658,6 +1751,30 @@ return [
                     'domain-binding-mode-info' => 'DNS verifică dacă cererea vine de la o adresă IP la care se rezolvă domeniul tokenului. Origin verifică antetul Origin sau Referer și este potrivit doar pentru browsere.',
                     'domain-binding-dns' => 'DNS (adresa IP a clientului)',
                     'domain-binding-origin' => 'Antetul Origin',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Protecția autentificării',
+                    'info' => 'Câte autentificări eșuate, coduri în doi factori greșite și cereri de parolă sunt permise înainte ca clientul să aștepte.',
+                    'login-max-attempts' => 'Autentificări eșuate înainte de blocare',
+                    'login-max-attempts-info' => 'Per e-mail și adresă IP. Între 3 și 20. Implicit 5.',
+                    'login-lockout-seconds' => 'Blocarea autentificării (secunde)',
+                    'login-lockout-seconds-info' => 'Între 60 și 3600. Implicit 60.',
+                    'two-factor-challenge-lifetime' => 'Durata provocării în doi factori (minute)',
+                    'two-factor-challenge-lifetime-info' => 'Între 1 și 15. Implicit 5.',
+                    'two-factor-max-failures' => 'Coduri în doi factori greșite pe minut',
+                    'two-factor-max-failures-info' => 'Per administrator, în toate provocările. Între 3 și 20. Implicit 5.',
+                    'password-requests-per-minute' => 'Cereri de parolă pe minut',
+                    'password-requests-per-minute-info' => 'Cereri de parolă uitată și resetare per adresă IP. Între 1 și 20. Implicit 5.',
+                ],
+
+                'retention' => [
+                    'title' => 'Păstrarea datelor',
+                    'info' => 'Cât timp sunt păstrate sesiunile încheiate și istoricul de audit al API-ului.',
+                    'session-prune-days' => 'Păstrează sesiunile încheiate (zile)',
+                    'session-prune-days-info' => 'Sesiunile revocate sau expirate sunt șterse după acest număr de zile. Între 1 și 365. Implicit 30.',
+                    'audit-retention-days' => 'Păstrează istoricul de audit al API-ului (zile)',
+                    'audit-retention-days-info' => 'Intrările mai vechi sunt șterse zilnic. Între 0 și 3650. Gol sau 0 le păstrează pentru totdeauna.',
                 ],
             ],
 
@@ -1917,6 +2034,7 @@ return [
                 'session' => 'Sesiune de autentificare',
                 'api-token' => 'Token API',
                 'integration' => 'Token de integrare (eliminat)',
+                'customer-session' => 'Sesiune de autentificare a clientului',
             ],
 
             'channels' => [

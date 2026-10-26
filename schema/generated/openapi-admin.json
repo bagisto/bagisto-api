@@ -3050,7 +3050,7 @@
                         "links": []
                     },
                     "429": {
-                        "description": "More than five forgot-password requests from this address in a minute (`too_many_password_requests`), or more than 60 requests a minute (`rate_limit_exceeded`). Wait for `Retry-After` seconds.",
+                        "description": "More than the forgot-password requests allowed from this address in a minute, five by default (`too_many_password_requests`), or more than the requests allowed a minute, 60 by default (`rate_limit_exceeded`). Wait for `Retry-After` seconds.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3088,7 +3088,7 @@
                     }
                 },
                 "summary": "Email a password reset link",
-                "description": "Sends core's admin password reset email when the address belongs to an admin. The answer is the same whether or not it does. Five requests a minute per client address are allowed.",
+                "description": "Sends core's admin password reset email when the address belongs to an admin. The answer is the same whether or not it does. Five requests a minute per client address are allowed by default (configurable).",
                 "parameters": [],
                 "requestBody": {
                     "description": "The new AdminForgotPassword resource",
@@ -3363,7 +3363,7 @@
                     }
                 },
                 "summary": "Log in with email and password",
-                "description": "Starts a session and returns a short-lived JWT access token and a refresh token. Send the access token as `Authorization: Bearer <accessToken>` and exchange the refresh token at `/api/admin/auth/refresh` before or after the access token expires. When the admin has two-factor authentication enabled, the response is `202` with `twoFactorRequired: true` and a single-use `challengeToken` valid for 5 minutes, and no tokens: send it with the code to `/api/admin/auth/two-factor`. Five failed attempts per email and address in a minute lock the login for that minute.",
+                "description": "Starts a session and returns a short-lived JWT access token and a refresh token. Send the access token as `Authorization: Bearer <accessToken>` and exchange the refresh token at `/api/admin/auth/refresh` before or after the access token expires. When the admin has two-factor authentication enabled, the response is `202` with `twoFactorRequired: true` and a single-use `challengeToken` valid for 5 minutes by default, and no tokens: send it with the code to `/api/admin/auth/two-factor`. Five failed attempts per email and address lock the login for 60 seconds by default; both are configurable under Configuration → API → Admin Authentication → Login Protection.",
                 "parameters": [],
                 "requestBody": {
                     "description": "The new AdminLogin resource",
@@ -3725,7 +3725,7 @@
                         "links": []
                     },
                     "429": {
-                        "description": "More than 60 requests a minute from this address (`rate_limit_exceeded`). Wait for `Retry-After` seconds.",
+                        "description": "More than the requests allowed a minute from this address, 60 by default (`rate_limit_exceeded`). Wait for `Retry-After` seconds.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3854,7 +3854,7 @@
                         "links": []
                     },
                     "429": {
-                        "description": "More than five reset-password requests from this address in a minute (`too_many_password_requests`), or more than 60 requests a minute (`rate_limit_exceeded`). Wait for `Retry-After` seconds.",
+                        "description": "More than the reset-password requests allowed from this address in a minute, five by default (`too_many_password_requests`), or more than the requests allowed a minute, 60 by default (`rate_limit_exceeded`). Wait for `Retry-After` seconds.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3892,7 +3892,7 @@
                     }
                 },
                 "summary": "Reset a password with the emailed token",
-                "description": "Sets a new password with the token from the reset email, through core's admin password broker. Every API session of the admin is revoked, and every API token too when *Revoke API Tokens on Password Change* is on; log in again afterwards. Five requests a minute per client address are allowed.",
+                "description": "Sets a new password with the token from the reset email, through core's admin password broker. Every API session of the admin is revoked, and every API token too when *Revoke API Tokens on Password Change* is on; log in again afterwards. Five requests a minute per client address are allowed by default (configurable).",
                 "parameters": [],
                 "requestBody": {
                     "description": "The new AdminResetPassword resource",
@@ -4301,7 +4301,7 @@
                         "links": []
                     },
                     "429": {
-                        "description": "Five wrong codes for this admin in a minute (`too_many_login_attempts`), or more than 60 requests a minute from this address (`rate_limit_exceeded`). Wait for `Retry-After` seconds.",
+                        "description": "Too many wrong codes for this admin in a minute, five by default (`too_many_login_attempts`), or more than the requests allowed a minute from this address, 60 by default (`rate_limit_exceeded`). Wait for `Retry-After` seconds.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -4339,7 +4339,7 @@
                     }
                 },
                 "summary": "Finish a login with a two-factor code",
-                "description": "Exchanges the `challengeToken` of a `202` login, with the 6-digit authenticator `code` or a `backupCode`, for the access and refresh token pair. A challenge works once and for 5 minutes; five wrong codes revoke it, and five wrong codes a minute for the same admin lock further codes for that minute. A code from an already used time window is refused, and a backup code is used up.",
+                "description": "Exchanges the `challengeToken` of a `202` login, with the 6-digit authenticator `code` or a `backupCode`, for the access and refresh token pair. A challenge works once and for 5 minutes by default; five wrong codes revoke it, and five wrong codes a minute for the same admin (configurable) lock further codes for that minute. A code from an already used time window is refused, and a backup code is used up.",
                 "parameters": [],
                 "requestBody": {
                     "description": "The new AdminTwoFactorVerify resource",
@@ -20090,133 +20090,6 @@
                 ]
             }
         },
-        "/customers/{customerId}/impersonate": {
-            "post": {
-                "operationId": "api_apiadmincustomers_customerIdimpersonate_post",
-                "tags": [
-                    "Admin Customers"
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Impersonation token issued.",
-                        "content": {
-                            "application/json": {
-                                "example": {
-                                    "token": "42|q7Xz9aB3cD5eF7gH9iJ1kL3mN5oP7qR9sT1uV3w",
-                                    "customerId": 14,
-                                    "customerEmail": "jane@example.com",
-                                    "customerName": "Jane Doe",
-                                    "impersonatedByAdminId": 1,
-                                    "expiresAt": "2026-06-24T11:15:00+00:00"
-                                }
-                            }
-                        },
-                        "links": []
-                    },
-                    "400": {
-                        "description": "Invalid input",
-                        "links": []
-                    },
-                    "401": {
-                        "description": "The bearer token is missing or invalid, its session was revoked or its admin is inactive (`unauthenticated`), the access token expired (`access_token_expired`: refresh and retry), or the API token expired or was revoked (`api_token_expired`, `api_token_revoked`).",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AuthError"
-                                },
-                                "examples": {
-                                    "unauthenticated": {
-                                        "value": {
-                                            "message": "Unauthenticated.",
-                                            "error": "unauthenticated"
-                                        }
-                                    },
-                                    "access_token_expired": {
-                                        "value": {
-                                            "message": "The access token has expired. Refresh it to continue.",
-                                            "error": "access_token_expired"
-                                        }
-                                    },
-                                    "api_token_revoked": {
-                                        "value": {
-                                            "message": "The API token has been revoked.",
-                                            "error": "api_token_revoked"
-                                        }
-                                    },
-                                    "api_token_expired": {
-                                        "value": {
-                                            "message": "The API token has expired.",
-                                            "error": "api_token_expired"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "The admin's role lacks a permission this operation checks (a problem document), or an API token was used from a domain it is not bound to (`api_token_domain_mismatch`).",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/ApiProblem"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/AuthError"
-                                        }
-                                    ]
-                                },
-                                "examples": {
-                                    "no_permission": {
-                                        "value": {
-                                            "type": "/errors/403",
-                                            "title": "Forbidden",
-                                            "status": 403,
-                                            "detail": "You do not have permission to perform this action."
-                                        }
-                                    },
-                                    "api_token_domain_mismatch": {
-                                        "value": {
-                                            "message": "The API token cannot be used from this domain.",
-                                            "error": "api_token_domain_mismatch"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "links": []
-                    }
-                },
-                "summary": "Issue an impersonation token for a customer",
-                "description": "Returns a Sanctum customer token that the admin can use to act as the customer. The token expires in 1 hour and is audited as having been issued by the calling admin. No request body — the customer is identified by the path.",
-                "parameters": [
-                    {
-                        "name": "customerId",
-                        "in": "path",
-                        "description": "Customer ID",
-                        "required": true,
-                        "deprecated": false,
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "style": "simple",
-                        "explode": false
-                    }
-                ],
-                "security": [
-                    {
-                        "adminAccessToken": []
-                    },
-                    {
-                        "adminApiToken": []
-                    }
-                ]
-            }
-        },
         "/customers/{customerId}/notes": {
             "get": {
                 "operationId": "api_apiadmincustomers_customerIdnotes_get_collection",
@@ -21243,6 +21116,629 @@
                         "explode": false
                     }
                 ],
+                "security": [
+                    {
+                        "adminAccessToken": []
+                    },
+                    {
+                        "adminApiToken": []
+                    }
+                ]
+            }
+        },
+        "/customers/api-sessions": {
+            "get": {
+                "operationId": "api_apiadmincustomersapi-sessions_get_collection",
+                "tags": [
+                    "Admin Customers: API Sessions"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list in { data, meta } envelope.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AdminCustomerApiSession"
+                                    }
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AdminCustomerApiSession.html"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The bearer token is missing or invalid, its session was revoked or its admin is inactive (`unauthenticated`), the access token expired (`access_token_expired`: refresh and retry), or the API token expired or was revoked (`api_token_expired`, `api_token_revoked`).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                },
+                                "examples": {
+                                    "unauthenticated": {
+                                        "value": {
+                                            "message": "Unauthenticated.",
+                                            "error": "unauthenticated"
+                                        }
+                                    },
+                                    "access_token_expired": {
+                                        "value": {
+                                            "message": "The access token has expired. Refresh it to continue.",
+                                            "error": "access_token_expired"
+                                        }
+                                    },
+                                    "api_token_revoked": {
+                                        "value": {
+                                            "message": "The API token has been revoked.",
+                                            "error": "api_token_revoked"
+                                        }
+                                    },
+                                    "api_token_expired": {
+                                        "value": {
+                                            "message": "The API token has expired.",
+                                            "error": "api_token_expired"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The role lacks `customers.api_sessions`.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ApiProblem"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/AuthError"
+                                        }
+                                    ]
+                                },
+                                "examples": {
+                                    "no_permission": {
+                                        "value": {
+                                            "type": "/errors/403",
+                                            "title": "Forbidden",
+                                            "status": 403,
+                                            "detail": "You do not have permission to perform this action."
+                                        }
+                                    },
+                                    "api_token_domain_mismatch": {
+                                        "value": {
+                                            "message": "The API token cannot be used from this domain.",
+                                            "error": "api_token_domain_mismatch"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "summary": "List every active storefront customer session",
+                "description": "Every live storefront login session of every customer, newest first, with where each was last used from. Requires `customers.api_sessions`.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page (1-based).",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page (default 10, max 50).",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "customer_id",
+                        "in": "query",
+                        "description": "Filter by customer ID.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "client_type",
+                        "in": "query",
+                        "description": "Filter by client type.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "web",
+                                "mobile",
+                                "pos",
+                                "desktop",
+                                "other"
+                            ]
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "channel_id",
+                        "in": "query",
+                        "description": "Filter by the channel the session was created on.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "style": "form",
+                        "explode": true
+                    }
+                ],
+                "security": [
+                    {
+                        "adminAccessToken": []
+                    },
+                    {
+                        "adminApiToken": []
+                    }
+                ]
+            }
+        },
+        "/customers/api-sessions/{id}": {
+            "delete": {
+                "operationId": "api_apiadmincustomersapi-sessions_id_delete",
+                "tags": [
+                    "Admin Customers: API Sessions"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Session ended."
+                    },
+                    "401": {
+                        "description": "The bearer token is missing or invalid, its session was revoked or its admin is inactive (`unauthenticated`), the access token expired (`access_token_expired`: refresh and retry), or the API token expired or was revoked (`api_token_expired`, `api_token_revoked`).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                },
+                                "examples": {
+                                    "unauthenticated": {
+                                        "value": {
+                                            "message": "Unauthenticated.",
+                                            "error": "unauthenticated"
+                                        }
+                                    },
+                                    "access_token_expired": {
+                                        "value": {
+                                            "message": "The access token has expired. Refresh it to continue.",
+                                            "error": "access_token_expired"
+                                        }
+                                    },
+                                    "api_token_revoked": {
+                                        "value": {
+                                            "message": "The API token has been revoked.",
+                                            "error": "api_token_revoked"
+                                        }
+                                    },
+                                    "api_token_expired": {
+                                        "value": {
+                                            "message": "The API token has expired.",
+                                            "error": "api_token_expired"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The role lacks `customers.api_sessions.delete`.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ApiProblem"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/AuthError"
+                                        }
+                                    ]
+                                },
+                                "examples": {
+                                    "no_permission": {
+                                        "value": {
+                                            "type": "/errors/403",
+                                            "title": "Forbidden",
+                                            "status": 403,
+                                            "detail": "You do not have permission to perform this action."
+                                        }
+                                    },
+                                    "api_token_domain_mismatch": {
+                                        "value": {
+                                            "message": "The API token cannot be used from this domain.",
+                                            "error": "api_token_domain_mismatch"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No live customer session has this id.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiProblem"
+                                }
+                            }
+                        }
+                    }
+                },
+                "summary": "Revoke a customer session",
+                "description": "Ends one live storefront session of a customer; its access and refresh tokens stop working at once. Requires `customers.api_sessions.delete`.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Session ID.",
+                        "required": true,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 41
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "security": [
+                    {
+                        "adminAccessToken": []
+                    },
+                    {
+                        "adminApiToken": []
+                    }
+                ]
+            }
+        },
+        "/customers/{customerId}/api-sessions": {
+            "get": {
+                "operationId": "api_apiadmincustomers_customerIdapi-sessions_get_collection",
+                "tags": [
+                    "Admin Customers: API Sessions"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list in { data, meta } envelope.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AdminCustomerApiSession"
+                                    }
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AdminCustomerApiSession.html"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The bearer token is missing or invalid, its session was revoked or its admin is inactive (`unauthenticated`), the access token expired (`access_token_expired`: refresh and retry), or the API token expired or was revoked (`api_token_expired`, `api_token_revoked`).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                },
+                                "examples": {
+                                    "unauthenticated": {
+                                        "value": {
+                                            "message": "Unauthenticated.",
+                                            "error": "unauthenticated"
+                                        }
+                                    },
+                                    "access_token_expired": {
+                                        "value": {
+                                            "message": "The access token has expired. Refresh it to continue.",
+                                            "error": "access_token_expired"
+                                        }
+                                    },
+                                    "api_token_revoked": {
+                                        "value": {
+                                            "message": "The API token has been revoked.",
+                                            "error": "api_token_revoked"
+                                        }
+                                    },
+                                    "api_token_expired": {
+                                        "value": {
+                                            "message": "The API token has expired.",
+                                            "error": "api_token_expired"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The role lacks `customers.api_sessions`.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ApiProblem"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/AuthError"
+                                        }
+                                    ]
+                                },
+                                "examples": {
+                                    "no_permission": {
+                                        "value": {
+                                            "type": "/errors/403",
+                                            "title": "Forbidden",
+                                            "status": 403,
+                                            "detail": "You do not have permission to perform this action."
+                                        }
+                                    },
+                                    "api_token_domain_mismatch": {
+                                        "value": {
+                                            "message": "The API token cannot be used from this domain.",
+                                            "error": "api_token_domain_mismatch"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No customer has this id."
+                    }
+                },
+                "summary": "List a customer's active storefront sessions",
+                "description": "The live storefront login sessions of one customer, newest first. Requires `customers.api_sessions`.",
+                "parameters": [
+                    {
+                        "name": "customerId",
+                        "in": "path",
+                        "description": "Customer ID.",
+                        "required": true,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1529
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page (1-based).",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page (default 10, max 50).",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "client_type",
+                        "in": "query",
+                        "description": "Filter by client type.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "web",
+                                "mobile",
+                                "pos",
+                                "desktop",
+                                "other"
+                            ]
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "channel_id",
+                        "in": "query",
+                        "description": "Filter by the channel the session was created on.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "style": "form",
+                        "explode": true
+                    }
+                ],
+                "security": [
+                    {
+                        "adminAccessToken": []
+                    },
+                    {
+                        "adminApiToken": []
+                    }
+                ]
+            }
+        },
+        "/customers/{customerId}/revoke-api-sessions": {
+            "post": {
+                "operationId": "api_apiadmincustomers_customerIdrevoke-api-sessions_post",
+                "tags": [
+                    "Admin Customers: API Sessions"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`revoked` is how many sessions were ended.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "customerId": 1529,
+                                    "revoked": 2,
+                                    "message": "Sessions revoked: 2."
+                                }
+                            }
+                        },
+                        "links": []
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "links": []
+                    },
+                    "401": {
+                        "description": "The bearer token is missing or invalid, its session was revoked or its admin is inactive (`unauthenticated`), the access token expired (`access_token_expired`: refresh and retry), or the API token expired or was revoked (`api_token_expired`, `api_token_revoked`).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                },
+                                "examples": {
+                                    "unauthenticated": {
+                                        "value": {
+                                            "message": "Unauthenticated.",
+                                            "error": "unauthenticated"
+                                        }
+                                    },
+                                    "access_token_expired": {
+                                        "value": {
+                                            "message": "The access token has expired. Refresh it to continue.",
+                                            "error": "access_token_expired"
+                                        }
+                                    },
+                                    "api_token_revoked": {
+                                        "value": {
+                                            "message": "The API token has been revoked.",
+                                            "error": "api_token_revoked"
+                                        }
+                                    },
+                                    "api_token_expired": {
+                                        "value": {
+                                            "message": "The API token has expired.",
+                                            "error": "api_token_expired"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The role lacks `customers.api_sessions.delete`.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ApiProblem"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/AuthError"
+                                        }
+                                    ]
+                                },
+                                "examples": {
+                                    "no_permission": {
+                                        "value": {
+                                            "type": "/errors/403",
+                                            "title": "Forbidden",
+                                            "status": 403,
+                                            "detail": "You do not have permission to perform this action."
+                                        }
+                                    },
+                                    "api_token_domain_mismatch": {
+                                        "value": {
+                                            "message": "The API token cannot be used from this domain.",
+                                            "error": "api_token_domain_mismatch"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No customer has this id."
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "links": []
+                    }
+                },
+                "summary": "End every storefront session of a customer",
+                "description": "Ends every live storefront session of the customer, on every device; their access and refresh tokens stop working at once and the customer has to log in again. Requires `customers.api_sessions.delete`.",
+                "parameters": [
+                    {
+                        "name": "customerId",
+                        "in": "path",
+                        "description": "Customer ID.",
+                        "required": true,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1529
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "requestBody": {
+                    "description": "The new AdminCustomerApiSessionRevoke resource",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            },
+                            "example": []
+                        }
+                    },
+                    "required": false
+                },
                 "security": [
                     {
                         "adminAccessToken": []
@@ -61717,6 +62213,282 @@
                     }
                 }
             },
+            "AdminCustomerApiSession": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "readOnly": true,
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "customerId": {
+                        "readOnly": true,
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "customerName": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "customerEmail": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "channelId": {
+                        "readOnly": true,
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "name": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "clientType": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "ipAddress": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "userAgent": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lastIpAddress": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lastUserAgent": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lastUsedAt": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lastChannel": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "refreshExpiresAt": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "expiresAt": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "revokedAt": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "revokedReason": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdAt": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "message": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            },
+            "AdminCustomerApiSession.html": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "readOnly": true,
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "customerId": {
+                        "readOnly": true,
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "customerName": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "customerEmail": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "channelId": {
+                        "readOnly": true,
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "name": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "clientType": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "ipAddress": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "userAgent": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lastIpAddress": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lastUserAgent": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lastUsedAt": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lastChannel": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "refreshExpiresAt": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "expiresAt": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "revokedAt": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "revokedReason": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdAt": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "message": {
+                        "readOnly": true,
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            },
             "AdminInvoice.AdminInvoiceRestDto": {
                 "type": "object",
                 "properties": {
@@ -71611,6 +72383,9 @@
         },
         {
             "name": "Admin Customers"
+        },
+        {
+            "name": "Admin Customers: API Sessions"
         },
         {
             "name": "Admin Customer GDPR"

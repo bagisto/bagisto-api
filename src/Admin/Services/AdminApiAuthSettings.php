@@ -40,6 +40,86 @@ class AdminApiAuthSettings
     public const SESSION_LIFETIME_MAX = 365;
 
     /**
+     * The highest per-minute request limit an admin or API token can be given.
+     */
+    public const REQUESTS_PER_MINUTE_MAX = 100000;
+
+    /**
+     * The fewest per-minute requests allowed without a token, per client address.
+     */
+    public const UNAUTHENTICATED_REQUESTS_PER_MINUTE_MIN = 10;
+
+    /**
+     * The most per-minute requests allowed without a token, per client address.
+     */
+    public const UNAUTHENTICATED_REQUESTS_PER_MINUTE_MAX = 1000;
+
+    /**
+     * The fewest failed logins allowed before a lockout.
+     */
+    public const LOGIN_MAX_ATTEMPTS_MIN = 3;
+
+    /**
+     * The most failed logins allowed before a lockout.
+     */
+    public const LOGIN_MAX_ATTEMPTS_MAX = 20;
+
+    /**
+     * The shortest login lockout, in seconds.
+     */
+    public const LOGIN_LOCKOUT_SECONDS_MIN = 60;
+
+    /**
+     * The longest login lockout, in seconds.
+     */
+    public const LOGIN_LOCKOUT_SECONDS_MAX = 3600;
+
+    /**
+     * The shortest two-factor challenge lifetime, in minutes.
+     */
+    public const TWO_FACTOR_CHALLENGE_LIFETIME_MIN = 1;
+
+    /**
+     * The longest two-factor challenge lifetime, in minutes.
+     */
+    public const TWO_FACTOR_CHALLENGE_LIFETIME_MAX = 15;
+
+    /**
+     * The fewest wrong two-factor codes allowed per admin per minute.
+     */
+    public const TWO_FACTOR_MAX_FAILURES_MIN = 3;
+
+    /**
+     * The most wrong two-factor codes allowed per admin per minute.
+     */
+    public const TWO_FACTOR_MAX_FAILURES_MAX = 20;
+
+    /**
+     * The fewest forgot and reset password requests allowed per client address per minute.
+     */
+    public const PASSWORD_REQUESTS_PER_MINUTE_MIN = 1;
+
+    /**
+     * The most forgot and reset password requests allowed per client address per minute.
+     */
+    public const PASSWORD_REQUESTS_PER_MINUTE_MAX = 20;
+
+    /**
+     * The fewest days a revoked or expired session is kept.
+     */
+    public const SESSION_PRUNE_DAYS_MIN = 1;
+
+    /**
+     * The most days a revoked or expired session is kept.
+     */
+    public const SESSION_PRUNE_DAYS_MAX = 365;
+
+    /**
+     * The most days the API audit history can be kept; 0 keeps it forever.
+     */
+    public const AUDIT_RETENTION_DAYS_MAX = 3650;
+
+    /**
      * The domain binding mode that matches the client IP against the domain's DNS records.
      */
     public const BINDING_DNS = 'dns';
@@ -90,7 +170,11 @@ class AdminApiAuthSettings
      */
     public function sessionRequestsPerMinute(): int
     {
-        return max(1, (int) $this->value('rate_limits.session_requests_per_minute', 'session_requests_per_minute'));
+        return $this->clamp(
+            $this->value('rate_limits.session_requests_per_minute', 'session_requests_per_minute'),
+            1,
+            self::REQUESTS_PER_MINUTE_MAX,
+        );
     }
 
     /**
@@ -98,7 +182,83 @@ class AdminApiAuthSettings
      */
     public function apiTokenRequestsPerMinute(): int
     {
-        return max(1, (int) $this->value('rate_limits.api_token_requests_per_minute', 'api_token_requests_per_minute'));
+        return $this->clamp(
+            $this->value('rate_limits.api_token_requests_per_minute', 'api_token_requests_per_minute'),
+            1,
+            self::REQUESTS_PER_MINUTE_MAX,
+        );
+    }
+
+    /**
+     * The requests per minute allowed without a token, for each client address.
+     */
+    public function unauthenticatedRequestsPerMinute(): int
+    {
+        return $this->clamp(
+            $this->value('rate_limits.unauthenticated_requests_per_minute', 'unauthenticated_requests_per_minute'),
+            self::UNAUTHENTICATED_REQUESTS_PER_MINUTE_MIN,
+            self::UNAUTHENTICATED_REQUESTS_PER_MINUTE_MAX,
+        );
+    }
+
+    /**
+     * The failed logins an email address and client address may make before the lockout.
+     */
+    public function loginMaxAttempts(): int
+    {
+        return $this->clamp(
+            $this->value('login_protection.login_max_attempts', 'login_max_attempts'),
+            self::LOGIN_MAX_ATTEMPTS_MIN,
+            self::LOGIN_MAX_ATTEMPTS_MAX,
+        );
+    }
+
+    /**
+     * Seconds failed logins are remembered for, and so how long a lockout lasts.
+     */
+    public function loginLockoutSeconds(): int
+    {
+        return $this->clamp(
+            $this->value('login_protection.login_lockout_seconds', 'login_lockout_seconds'),
+            self::LOGIN_LOCKOUT_SECONDS_MIN,
+            self::LOGIN_LOCKOUT_SECONDS_MAX,
+        );
+    }
+
+    /**
+     * Minutes a two-factor challenge stays usable.
+     */
+    public function twoFactorChallengeLifetime(): int
+    {
+        return $this->clamp(
+            $this->value('login_protection.two_factor_challenge_lifetime', 'two_factor_challenge_lifetime'),
+            self::TWO_FACTOR_CHALLENGE_LIFETIME_MIN,
+            self::TWO_FACTOR_CHALLENGE_LIFETIME_MAX,
+        );
+    }
+
+    /**
+     * The wrong two-factor codes an admin may enter in a minute, across all challenges.
+     */
+    public function twoFactorMaxFailures(): int
+    {
+        return $this->clamp(
+            $this->value('login_protection.two_factor_max_failures', 'two_factor_max_failures'),
+            self::TWO_FACTOR_MAX_FAILURES_MIN,
+            self::TWO_FACTOR_MAX_FAILURES_MAX,
+        );
+    }
+
+    /**
+     * The forgot and reset password requests a client address may make in a minute.
+     */
+    public function passwordRequestsPerMinute(): int
+    {
+        return $this->clamp(
+            $this->value('login_protection.password_requests_per_minute', 'password_requests_per_minute'),
+            self::PASSWORD_REQUESTS_PER_MINUTE_MIN,
+            self::PASSWORD_REQUESTS_PER_MINUTE_MAX,
+        );
     }
 
     /**
@@ -148,7 +308,42 @@ class AdminApiAuthSettings
      */
     public function pruneAfterDays(): int
     {
-        return max(0, (int) config('bagistoapi.admin_auth.prune_after_days', 30));
+        return $this->clamp(
+            $this->value('retention.session_prune_days', 'prune_after_days'),
+            self::SESSION_PRUNE_DAYS_MIN,
+            self::SESSION_PRUNE_DAYS_MAX,
+        );
+    }
+
+    /**
+     * Days the API audit history is kept, or null to keep it forever.
+     */
+    public function auditRetentionDays(): ?int
+    {
+        try {
+            $value = core()->getConfigData(self::CONFIG_PREFIX.'.retention.audit_retention_days');
+        } catch (\Throwable $exception) {
+            $value = null;
+        }
+
+        if (
+            $value === null
+            || $value === ''
+        ) {
+            $value = config('bagistoapi.audit.retention_days');
+        }
+
+        if (
+            $value === null
+            || $value === ''
+            || ! is_numeric($value)
+        ) {
+            return null;
+        }
+
+        $days = $this->clamp($value, 0, self::AUDIT_RETENTION_DAYS_MAX);
+
+        return $days === 0 ? null : $days;
     }
 
     /**

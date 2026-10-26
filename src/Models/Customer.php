@@ -29,7 +29,7 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                 'skip_null_values' => false,
             ],
             openapi: new Model\Operation(
-                tags: ['Customer'],
+                tags: ['Customer Authentication'],
                 summary: 'Register a new customer',
                 description: 'Register a new customer account',
                 requestBody: new Model\RequestBody(
@@ -181,6 +181,11 @@ class Customer extends \Webkul\Customer\Models\Customer
     protected $appends = [
         'confirm_password',
         'message',
+        'access_token',
+        'expires_in',
+        'access_token_expires_at',
+        'refresh_token',
+        'refresh_token_expires_at',
     ];
 
     /**
@@ -231,6 +236,11 @@ class Customer extends \Webkul\Customer\Models\Customer
         'phone',
         'token',
         'message',
+        'access_token',
+        'expires_in',
+        'access_token_expires_at',
+        'refresh_token',
+        'refresh_token_expires_at',
         'customer_group_id',
         'channel_id',
         'subscribed_to_news_letter',
@@ -581,6 +591,61 @@ class Customer extends \Webkul\Customer\Models\Customer
     public function getMessageAttribute(): ?string
     {
         return $this->attributes['message'] ?? null;
+    }
+
+    /**
+     * The JWT access token issued at registration.
+     */
+    #[ApiProperty(writable: false, readable: true)]
+    public function getAccessTokenAttribute(): ?string
+    {
+        $value = $this->attributes['access_token'] ?? null;
+
+        return $value === null ? null : $value;
+    }
+
+    /**
+     * Seconds until the access token issued at registration expires.
+     */
+    #[ApiProperty(writable: false, readable: true)]
+    public function getExpiresInAttribute(): ?int
+    {
+        $value = $this->attributes['expires_in'] ?? null;
+
+        return $value === null ? null : (int) $value;
+    }
+
+    /**
+     * When the access token issued at registration expires.
+     */
+    #[ApiProperty(writable: false, readable: true)]
+    public function getAccessTokenExpiresAtAttribute(): ?string
+    {
+        $value = $this->attributes['access_token_expires_at'] ?? null;
+
+        return $value === null ? null : $value;
+    }
+
+    /**
+     * The refresh token issued at registration.
+     */
+    #[ApiProperty(writable: false, readable: true)]
+    public function getRefreshTokenAttribute(): ?string
+    {
+        $value = $this->attributes['refresh_token'] ?? null;
+
+        return $value === null ? null : $value;
+    }
+
+    /**
+     * When the refresh token issued at registration expires.
+     */
+    #[ApiProperty(writable: false, readable: true)]
+    public function getRefreshTokenExpiresAtAttribute(): ?string
+    {
+        $value = $this->attributes['refresh_token_expires_at'] ?? null;
+
+        return $value === null ? null : $value;
     }
 
     /**

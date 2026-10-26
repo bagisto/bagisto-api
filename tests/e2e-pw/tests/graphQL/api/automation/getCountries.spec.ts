@@ -39,7 +39,7 @@ const SEEDED_COUNTRY_TOTAL = 254;
 
 const DEFAULT_PAGE_SIZE = 10;
 
-const MAXIMUM_PAGE_SIZE = 50;
+const MAXIMUM_PAGE_SIZE = 300;
 
 const INVALID_COUNTRY_ID_MESSAGE = 'Invalid ID format. Expected IRI format like "/api/shop/countries/1" or numeric ID';
 
@@ -367,14 +367,14 @@ test.describe('countries graphql api - complete test suite', () => {
     expect(body.data.countries.totalCount).toBe(SEEDED_COUNTRY_TOTAL);
   });
 
-  test('should clamp a large first value to the maximum page size', async ({ request }) => {
+  test('should return every country on one page when first is above the maximum page size', async ({ request }) => {
     const response = await sendGraphQLRequest(request, GET_COUNTRIES_WITH_PAGINATION, { first: 1000 });
     expect(response.status()).toBe(200);
     const body = await response.json();
     assertNoGraphQLErrors(body);
 
-    expect(body.data.countries.edges).toHaveLength(MAXIMUM_PAGE_SIZE);
-    expect(body.data.countries.pageInfo.hasNextPage).toBe(true);
+    expect(body.data.countries.edges).toHaveLength(Math.min(MAXIMUM_PAGE_SIZE, SEEDED_COUNTRY_TOTAL));
+    expect(body.data.countries.pageInfo.hasNextPage).toBe(SEEDED_COUNTRY_TOTAL > MAXIMUM_PAGE_SIZE);
     expect(body.data.countries.totalCount).toBe(SEEDED_COUNTRY_TOTAL);
   });
 

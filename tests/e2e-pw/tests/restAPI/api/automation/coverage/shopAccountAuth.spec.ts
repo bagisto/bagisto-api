@@ -58,7 +58,8 @@ async function expectTokenRejected(request: APIRequestContext, token: string): P
   const response = await sendRestRequest(request, SHOP_ACCOUNT.CUSTOMER_PROFILE, { headers: bearer(token) });
   expect(response.status()).toBe(401);
   const body = await response.json();
-  expect(body.detail).toBe(MSG.PROFILE_INVALID_TOKEN);
+  expect(body.error).toBe('unauthenticated');
+  expect(body.message).toBe(MSG.PROFILE_INVALID_TOKEN);
 }
 
 test.describe('shop account logout rest api', () => {
@@ -104,8 +105,13 @@ test.describe('shop account profile delete rest api', () => {
 
     await expectTokenRejected(request, customer.token);
 
-    const loginBody = await login(request, customer.email, customer.password);
-    expect(loginBody.success).toBe(false);
+    const loginResponse = await sendRestRequest(request, SHOP_ACCOUNT.CUSTOMER_LOGIN, {
+      method: 'POST',
+      data: { email: customer.email, password: customer.password },
+    });
+    expect(loginResponse.status()).toBe(401);
+    const loginBody = await loginResponse.json();
+    expect(loginBody.error).toBe('invalid_credentials');
     expect(loginBody.message).toBe(MSG.INVALID_CREDENTIALS);
   });
 

@@ -275,6 +275,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
             'unknown-resource' => 'Onbekende bron',
             'cannot-update-other-profile' => 'Niet geautoriseerd: kan het profiel van een andere klant niet bijwerken',
+            'refresh-token-invalid' => 'Het vernieuwingstoken is ongeldig of verlopen. Log opnieuw in.',
+            'too-many-login-attempts' => 'Te veel inlogpogingen. Probeer het over :seconds seconden opnieuw.',
+            'too-many-refresh-requests' => 'Te veel tokenvernieuwingen. Probeer het over :seconds seconden opnieuw.',
+            'rate-limit-exceeded' => 'Te veel pogingen.',
+            'access-token-expired' => 'Het toegangstoken is verlopen. Vernieuw het om door te gaan.',
+            'logged-out-all' => 'U bent uitgelogd van alle sessies.',
+            'session-not-found' => 'Sessie niet gevonden.',
+            'session-revoked' => 'De sessie is ingetrokken.',
         ],
 
         'upload' => [
@@ -842,10 +850,6 @@ return [
             'note' => [
                 'empty' => 'Notitietekst is vereist.',
                 'created' => 'Notitie succesvol toegevoegd.',
-            ],
-
-            'impersonate' => [
-                'success' => 'Token voor imitatie uitgegeven.',
             ],
 
             'review' => [
@@ -1625,6 +1629,91 @@ return [
                 'no-permission' => 'U hebt geen toestemming om zoektermen te beheren.',
             ],
         ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'API-sessies',
+            ],
+
+            'acl' => [
+                'title' => 'API-sessies',
+                'delete' => 'Intrekken',
+            ],
+
+            'index' => [
+                'title' => 'API-sessies van klanten',
+                'info' => 'Klanten die via apps zoals web, mobiel, kassa of desktop zijn ingelogd op de winkel-API. Een sessie intrekken meldt dat apparaat direct af.',
+            ],
+
+            'fields' => [
+                'customer' => 'Klant',
+                'email' => 'E-mail',
+                'channel' => 'Kanaal',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'Alle sessies van de klant intrekken',
+            ],
+
+            'card' => [
+                'title' => 'API-sessies (:count)',
+                'empty' => 'Deze klant heeft geen actieve API-sessies.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'U hebt geen toestemming om API-sessies van klanten te beheren.',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'Klantauthenticatie',
+                'info' => 'Tokenduur, limieten en sessieregels voor klantlogins in de winkel.',
+
+                'tokens' => [
+                    'title' => 'Tokenlooptijden',
+                    'info' => 'Hoe lang toegangstokens, vernieuwingstokens en sessies geldig blijven. Wijzigingen gelden voor tokens die daarna worden uitgegeven.',
+                    'access-token-ttl' => 'Looptijd toegangstoken (minuten)',
+                    'access-token-ttl-info' => 'Tussen 5 en 60 minuten. Standaard 15.',
+                    'refresh-token-ttl' => 'Looptijd vernieuwingstoken (dagen)',
+                    'refresh-token-ttl-info' => 'Tussen 1 en 90 dagen. Standaard 30.',
+                    'session-lifetime' => 'Maximale sessieduur (dagen)',
+                    'session-lifetime-info' => 'Tussen 1 en 365 dagen. Standaard 90. Daarna moet de beheerder opnieuw inloggen, hoe vaak de sessie ook is vernieuwd.',
+                    'max-sessions' => 'Maximaal aantal actieve sessies per klant',
+                    'max-sessions-info' => 'Als de limiet is bereikt, wordt de oudste sessie beëindigd. Tussen 0 en 100. 0 betekent geen limiet.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Verzoeklimieten',
+                    'info' => 'Maximaal aantal winkel-API-verzoeken per minuut per ingelogde klant.',
+                    'requests-per-minute' => 'Verzoeken per minuut per ingelogde klant',
+                    'requests-per-minute-info' => 'Tussen 1 en 100000. Standaard 120.',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Inlogbeveiliging',
+                    'info' => 'Hoeveel mislukte inlogpogingen en tokenvernieuwingen zijn toegestaan voordat de client moet wachten.',
+                    'login-max-attempts' => 'Mislukte inlogpogingen vóór blokkering',
+                    'login-max-attempts-info' => 'Per e-mailadres en IP-adres. Tussen 3 en 20. Standaard 5.',
+                    'login-lockout-seconds' => 'Inlogblokkering (seconden)',
+                    'login-lockout-seconds-info' => 'Tussen 60 en 3600. Standaard 60.',
+                    'refresh-requests-per-minute' => 'Tokenvernieuwingen per minuut per sessie',
+                    'refresh-requests-per-minute-info' => 'Tussen 1 en 60. Standaard 10.',
+                ],
+
+                'security' => [
+                    'title' => 'Beveiliging',
+                    'info' => 'Wat de andere sessies van een klant beëindigt.',
+                    'revoke-sessions-on-password-change' => 'Sessies intrekken bij wachtwoordwijziging',
+                ],
+
+                'retention' => [
+                    'title' => 'Gegevensbewaring',
+                    'info' => 'Hoe lang beëindigde klantsessies worden bewaard.',
+                    'session-prune-days' => 'Beëindigde sessies bewaren (dagen)',
+                    'session-prune-days-info' => 'Ingetrokken of verlopen sessies worden na dit aantal dagen verwijderd. Tussen 1 en 365. Standaard 30.',
+                ],
+            ],
+        ],
         'auth' => [
             'configuration' => [
                 'title' => 'Beheerdersauthenticatie',
@@ -1646,6 +1735,10 @@ return [
                     'info' => 'Maximaal aantal admin-API-verzoeken per minuut.',
                     'session-requests-per-minute' => 'Verzoeken per minuut per ingelogde beheerder',
                     'api-token-requests-per-minute' => 'Verzoeken per minuut per API-token',
+                    'session-requests-per-minute-info' => 'Tussen 1 en 100000. Standaard 60.',
+                    'api-token-requests-per-minute-info' => 'Tussen 1 en 100000. Standaard 60.',
+                    'unauthenticated-requests-per-minute' => 'Verzoeken per minuut zonder token, per IP-adres',
+                    'unauthenticated-requests-per-minute-info' => 'Tussen 10 en 1000. Standaard 60. Omvat inlog-, tweestaps-, vernieuwings- en wachtwoordverzoeken.',
                 ],
 
                 'security' => [
@@ -1658,6 +1751,30 @@ return [
                     'domain-binding-mode-info' => 'DNS controleert of het verzoek komt van een IP-adres waarnaar het domein van het token verwijst. Origin controleert de Origin- of Referer-header en is alleen geschikt voor browsers.',
                     'domain-binding-dns' => 'DNS (IP-adres van de client)',
                     'domain-binding-origin' => 'Origin-header',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Inlogbeveiliging',
+                    'info' => 'Hoeveel mislukte inlogpogingen, onjuiste tweestapscodes en wachtwoordverzoeken zijn toegestaan voordat de client moet wachten.',
+                    'login-max-attempts' => 'Mislukte inlogpogingen vóór blokkering',
+                    'login-max-attempts-info' => 'Per e-mailadres en IP-adres. Tussen 3 en 20. Standaard 5.',
+                    'login-lockout-seconds' => 'Inlogblokkering (seconden)',
+                    'login-lockout-seconds-info' => 'Tussen 60 en 3600. Standaard 60.',
+                    'two-factor-challenge-lifetime' => 'Geldigheid van de tweestapsverificatie (minuten)',
+                    'two-factor-challenge-lifetime-info' => 'Tussen 1 en 15. Standaard 5.',
+                    'two-factor-max-failures' => 'Onjuiste tweestapscodes per minuut',
+                    'two-factor-max-failures-info' => 'Per beheerder, over alle verificaties. Tussen 3 en 20. Standaard 5.',
+                    'password-requests-per-minute' => 'Wachtwoordverzoeken per minuut',
+                    'password-requests-per-minute-info' => 'Verzoeken om een wachtwoord te vergeten en opnieuw in te stellen per IP-adres. Tussen 1 en 20. Standaard 5.',
+                ],
+
+                'retention' => [
+                    'title' => 'Gegevensbewaring',
+                    'info' => 'Hoe lang beëindigde sessies en de API-auditgeschiedenis worden bewaard.',
+                    'session-prune-days' => 'Beëindigde sessies bewaren (dagen)',
+                    'session-prune-days-info' => 'Ingetrokken of verlopen sessies worden na dit aantal dagen verwijderd. Tussen 1 en 365. Standaard 30.',
+                    'audit-retention-days' => 'API-auditgeschiedenis bewaren (dagen)',
+                    'audit-retention-days-info' => 'Oudere vermeldingen worden dagelijks verwijderd. Tussen 0 en 3650. Leeg of 0 bewaart ze voor altijd.',
                 ],
             ],
 
@@ -1917,6 +2034,7 @@ return [
                 'session' => 'Inlogsessie',
                 'api-token' => 'API-token',
                 'integration' => 'Integratietoken (verwijderd)',
+                'customer-session' => 'Inlogsessie van klant',
             ],
 
             'channels' => [

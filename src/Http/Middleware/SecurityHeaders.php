@@ -14,7 +14,10 @@ class SecurityHeaders
     {
         $response = $next($request);
 
-        if (! $this->isApiRequest($request)) {
+        if (
+            ! config('api-platform.security_headers.enabled', true)
+            || ! $this->isApiRequest($request)
+        ) {
             return $response;
         }
 
@@ -59,7 +62,7 @@ class SecurityHeaders
      */
     private function shouldUseHSTS(): bool
     {
-        return app()->environment('production') || config('api-platform.force_https', false);
+        return app()->environment('production') || config('api-platform.security_headers.force_https', false);
     }
 
     /**
@@ -77,6 +80,6 @@ class SecurityHeaders
             ."base-uri 'self'; "
             ."form-action 'self'";
 
-        return config('api-platform.csp_header', $defaultCSP);
+        return config('api-platform.security_headers.csp_header', $defaultCSP);
     }
 }

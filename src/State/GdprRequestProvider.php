@@ -6,13 +6,13 @@ use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\GdprRequest;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\GdprFeatureGate;
 use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
 use Webkul\BagistoApi\State\Concerns\ResolvesListSort;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class GdprRequestProvider implements ProviderInterface
 {
@@ -35,7 +35,7 @@ class GdprRequestProvider implements ProviderInterface
     {
         $this->assertGdprEnabled();
 
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.gdpr.unauthenticated'));

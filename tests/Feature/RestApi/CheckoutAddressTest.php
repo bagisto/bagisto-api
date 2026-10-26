@@ -118,6 +118,22 @@ class CheckoutAddressTest extends RestApiTestCase
     }
 
     /**
+     * Test an empty checkout address is refused with 422, not a server error.
+     */
+    public function test_empty_checkout_address_is_a_422(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer([
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+        $this->addProductToCart($customer);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/checkout-addresses', []);
+
+        expect($response->getStatusCode())->toBe(422);
+    }
+
+    /**
      * Test set checkout address with different shipping address.
      */
     public function test_set_checkout_address_with_different_shipping_address(): void

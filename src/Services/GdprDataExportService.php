@@ -4,9 +4,9 @@ namespace Webkul\BagistoApi\Services;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Customer\Repositories\CustomerAddressRepository;
 use Webkul\Sales\Repositories\OrderRepository;
 
@@ -108,7 +108,7 @@ class GdprDataExportService
      */
     private function currentCustomer(): object
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthenticationException(__('bagistoapi::app.graphql.cart.authentication-required'));

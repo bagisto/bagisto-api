@@ -21,7 +21,7 @@ async function loginToken(request: APIRequestContext, customer: E2eCustomerFixtu
   expect(response.status(), JSON.stringify(body)).toBe(201);
   expect(body.success).toBe(true);
 
-  return body.token;
+  return body.accessToken;
 }
 
 test.describe('customer order detail rest api without a token', () => {

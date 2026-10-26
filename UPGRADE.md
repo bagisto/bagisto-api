@@ -144,6 +144,26 @@ On Bagisto v2.5.0 the theme endpoints are `/api/admin/appearance/themes`, `/api/
 - HTML sent to the admin API for CMS pages, email templates, category descriptions and WYSIWYG product attributes is now cleaned with core's `clean_content()` before it is saved. Content that was saved through the API before this change keeps its markup until it is next saved; open and save it again, through the API or the admin panel, to clean it.
 - Product images uploaded through the admin API are stored as webp under a generated name in `products/{id}/`, as the admin panel stores them. Images uploaded earlier stay where they are.
 
+## 7a. Configuration clean-up (unreleased)
+
+- The `rate_limit` block of `config/api-platform.php` and the `RATE_LIMIT_*` environment variables are gone. They were read only by a middleware that no route used, so removing them changes no limit. If you set them, delete them from `.env`; the published `config/api-platform.php` may keep the block, which is now ignored.
+- The `security_headers` values of `config/api-platform.php` now apply. Check `csp_header` in your published copy: a custom value replaces the default Content-Security-Policy, and `enabled => false` stops the API's own headers (Bagisto core still sends its `X-Frame-Options`, `Referrer-Policy` and `Strict-Transport-Security`).
+- The audit retention moved to *Configuration → API → Admin Authentication → Data Retention*. `BAGISTO_API_AUDIT_RETENTION_DAYS` is still used while that field is empty, and `bagisto-api:prune-audits` now runs daily through the scheduler.
+
+## 7b. Storefront customer tokens (unreleased)
+
+Customers no longer authenticate with Laravel Sanctum tokens. The installer's `migrate` deletes the customers' rows from `personal_access_tokens`, so every signed-in customer has to log in again.
+
+- Login, registration and social login return `accessToken` (a JWT, 15 minutes by default) and `refreshToken` (30 days by default). Send the access token as `Authorization: Bearer <accessToken>`; before it expires, or when a request answers `401 access_token_expired`, call `POST /api/shop/customer/refresh` with the refresh token and store both new tokens. A refresh token works once: sending a used one ends the session.
+- `token` in the login answer is the access token, kept for one release so old clients keep working until they refresh; switch to `accessToken`.
+- A refused login is now an HTTP error (`401 invalid_credentials`, `403 account_inactive` or `account_unverified`, `429 too_many_login_attempts`) instead of `201` with `success: false`.
+- An access token is tied to the channel it was issued on.
+- A request with an expired access token answers `401 access_token_expired` on every storefront operation, and one with a revoked session or another channel's token `401 unauthenticated`, before the operation runs. Refresh on the first, log in again on the second.
+- To keep a guest's cart, send its cart token as `guest_cart_token` on the login; the answer's `cartId` is the customer's cart. `POST /api/shop/merge-carts` still works.
+- Re-import the Postman environment: `customerToken` is now `customerAccessToken`, with `customerRefreshToken` and `customerAccessTokenExpiresAt`.
+- The lifetimes and limits are set under *Configuration → API → Customer Authentication*.
+- `POST /api/admin/customers/{id}/impersonate` and `createAdminCustomerImpersonate` are removed. An admin views and ends a customer's sessions under *Customers → API Sessions*, or through `/api/admin/customers/api-sessions`; grant roles `customers.api_sessions` and `customers.api_sessions.delete` for it.
+
 ## 8. Admin RMA message attachments
 
 Earlier versions saved the files an admin attached to an RMA message through `POST /api/admin/rma/messages` on the default disk, which is `public` on a standard store, under `rma-conversation/{message id}/`. Anyone with the link can download those files from `/storage/rma-conversation/...`. New uploads go to the `private` disk under `rmas/{rma id}/conversations/{message id}/`, as the admin panel stores them.

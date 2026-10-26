@@ -5,11 +5,10 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\Request;
-use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
-use Webkul\BagistoApi\Models\Customer as ApiCustomer;
 use Webkul\BagistoApi\Models\CustomerProfile;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\BagistoApi\Support\DateOfBirth;
 use Webkul\Customer\Models\Customer;
 
@@ -52,27 +51,10 @@ class CustomerProfileCollectionProvider implements ProviderInterface
     }
 
     /**
-     * Get customer from token.
+     * Resolve the customer behind a customer access token.
      */
     private function getCustomerFromToken(string $token): ?Customer
     {
-        try {
-            $personalAccessToken = PersonalAccessToken::findToken($token);
-
-            if (
-                ! $personalAccessToken
-                || ! in_array($personalAccessToken->tokenable_type, [Customer::class, ApiCustomer::class], true)
-                || (
-                    $personalAccessToken->expires_at
-                    && $personalAccessToken->expires_at->isPast()
-                )
-            ) {
-                return null;
-            }
-
-            return Customer::find($personalAccessToken->tokenable_id);
-        } catch (\Exception $exception) {
-            return null;
-        }
+        return CurrentCustomer::fromToken($token);
     }
 }

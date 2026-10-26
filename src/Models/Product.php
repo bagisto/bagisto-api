@@ -959,10 +959,12 @@ class Product extends BaseProduct
 
         if (
             $attributeValue
-            && $attributeValue?->integer_value
-            && in_array($attributeValue?->attribute?->type, ['select', 'multiselect', 'checkbox'])
+            && $attributeValue->integer_value
+            && in_array($attributeValue->attribute?->type, ['select', 'multiselect', 'checkbox'])
         ) {
-            $attributeValue->setValue($attributeValue->attribute->options()->where('id', $attributeValue->value)->first()?->label);
+            return $this->attributeValueCache[$attributeCode] = (string) $attributeValue->attribute->options()
+                ->where('id', $attributeValue->integer_value)
+                ->first()?->label;
         }
 
         return $this->attributeValueCache[$attributeCode] = ($attributeValue ? $attributeValue->value : '');

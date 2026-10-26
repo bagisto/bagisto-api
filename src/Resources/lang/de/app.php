@@ -275,6 +275,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
             'unknown-resource' => 'Unbekannte Ressource',
             'cannot-update-other-profile' => 'Nicht autorisiert: Das Profil eines anderen Kunden kann nicht aktualisiert werden',
+            'refresh-token-invalid' => 'Das Aktualisierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an.',
+            'too-many-login-attempts' => 'Zu viele Anmeldeversuche. Bitte versuchen Sie es in :seconds Sekunden erneut.',
+            'too-many-refresh-requests' => 'Zu viele Token-Aktualisierungen. Bitte versuchen Sie es in :seconds Sekunden erneut.',
+            'rate-limit-exceeded' => 'Zu viele Versuche.',
+            'access-token-expired' => 'Das Zugriffstoken ist abgelaufen. Aktualisieren Sie es, um fortzufahren.',
+            'logged-out-all' => 'Sie wurden von allen Sitzungen abgemeldet.',
+            'session-not-found' => 'Sitzung nicht gefunden.',
+            'session-revoked' => 'Die Sitzung wurde widerrufen.',
         ],
 
         'upload' => [
@@ -842,10 +850,6 @@ return [
             'note' => [
                 'empty' => 'Der Notiztext ist erforderlich.',
                 'created' => 'Notiz erfolgreich hinzugefügt.',
-            ],
-
-            'impersonate' => [
-                'success' => 'Token für den Identitätswechsel ausgestellt.',
             ],
 
             'review' => [
@@ -1625,6 +1629,91 @@ return [
                 'no-permission' => 'Sie haben keine Berechtigung, Suchbegriffe zu verwalten.',
             ],
         ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'API-Sitzungen',
+            ],
+
+            'acl' => [
+                'title' => 'API-Sitzungen',
+                'delete' => 'Widerrufen',
+            ],
+
+            'index' => [
+                'title' => 'Kunden-API-Sitzungen',
+                'info' => 'Kunden, die über Apps wie Web-, Mobil-, Kassen- oder Desktop-Apps an der Shop-API angemeldet sind. Das Widerrufen einer Sitzung meldet das Gerät sofort ab.',
+            ],
+
+            'fields' => [
+                'customer' => 'Kunde',
+                'email' => 'E-Mail',
+                'channel' => 'Kanal',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'Alle Sitzungen des Kunden widerrufen',
+            ],
+
+            'card' => [
+                'title' => 'API-Sitzungen (:count)',
+                'empty' => 'Dieser Kunde hat keine aktiven API-Sitzungen.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Sie haben keine Berechtigung, Kunden-API-Sitzungen zu verwalten.',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'Kundenauthentifizierung',
+                'info' => 'Token-Laufzeiten, Grenzwerte und Sitzungsregeln für Kundenanmeldungen im Shop.',
+
+                'tokens' => [
+                    'title' => 'Token-Laufzeiten',
+                    'info' => 'Wie lange Zugriffstokens, Aktualisierungstokens und Sitzungen gültig bleiben. Änderungen gelten für danach ausgestellte Tokens.',
+                    'access-token-ttl' => 'Laufzeit des Zugriffstokens (Minuten)',
+                    'access-token-ttl-info' => 'Zwischen 5 und 60 Minuten. Standard 15.',
+                    'refresh-token-ttl' => 'Laufzeit des Aktualisierungstokens (Tage)',
+                    'refresh-token-ttl-info' => 'Zwischen 1 und 90 Tagen. Standard 30.',
+                    'session-lifetime' => 'Maximale Sitzungsdauer (Tage)',
+                    'session-lifetime-info' => 'Zwischen 1 und 365 Tagen. Standard 90. Danach muss sich der Admin erneut anmelden, egal wie oft die Sitzung aktualisiert wurde.',
+                    'max-sessions' => 'Maximale aktive Sitzungen je Kunde',
+                    'max-sessions-info' => 'Wird das Limit erreicht, wird die älteste Sitzung beendet. Zwischen 0 und 100. 0 bedeutet kein Limit.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Ratenbegrenzungen',
+                    'info' => 'Maximale Shop-API-Anfragen pro Minute je angemeldetem Kunden.',
+                    'requests-per-minute' => 'Anfragen pro Minute je angemeldetem Kunden',
+                    'requests-per-minute-info' => 'Zwischen 1 und 100000. Standard 120.',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Anmeldeschutz',
+                    'info' => 'Wie viele fehlgeschlagene Anmeldungen und Token-Aktualisierungen erlaubt sind, bevor der Client warten muss.',
+                    'login-max-attempts' => 'Fehlgeschlagene Anmeldungen bis zur Sperre',
+                    'login-max-attempts-info' => 'Je E-Mail-Adresse und IP-Adresse. Zwischen 3 und 20. Standard 5.',
+                    'login-lockout-seconds' => 'Anmeldesperre (Sekunden)',
+                    'login-lockout-seconds-info' => 'Zwischen 60 und 3600. Standard 60.',
+                    'refresh-requests-per-minute' => 'Token-Aktualisierungen pro Minute je Sitzung',
+                    'refresh-requests-per-minute-info' => 'Zwischen 1 und 60. Standard 10.',
+                ],
+
+                'security' => [
+                    'title' => 'Sicherheit',
+                    'info' => 'Was die anderen Sitzungen eines Kunden beendet.',
+                    'revoke-sessions-on-password-change' => 'Sitzungen bei Passwortänderung widerrufen',
+                ],
+
+                'retention' => [
+                    'title' => 'Datenaufbewahrung',
+                    'info' => 'Wie lange beendete Kundensitzungen aufbewahrt werden.',
+                    'session-prune-days' => 'Beendete Sitzungen aufbewahren (Tage)',
+                    'session-prune-days-info' => 'Widerrufene oder abgelaufene Sitzungen werden nach so vielen Tagen gelöscht. Zwischen 1 und 365. Standard 30.',
+                ],
+            ],
+        ],
         'auth' => [
             'configuration' => [
                 'title' => 'Admin-Authentifizierung',
@@ -1646,6 +1735,10 @@ return [
                     'info' => 'Maximale Admin-API-Anfragen pro Minute.',
                     'session-requests-per-minute' => 'Anfragen pro Minute je angemeldetem Admin',
                     'api-token-requests-per-minute' => 'Anfragen pro Minute je API-Token',
+                    'session-requests-per-minute-info' => 'Zwischen 1 und 100000. Standard 60.',
+                    'api-token-requests-per-minute-info' => 'Zwischen 1 und 100000. Standard 60.',
+                    'unauthenticated-requests-per-minute' => 'Anfragen pro Minute ohne Token je IP-Adresse',
+                    'unauthenticated-requests-per-minute-info' => 'Zwischen 10 und 1000. Standard 60. Umfasst Anmelde-, Zwei-Faktor-, Aktualisierungs- und Passwortanfragen.',
                 ],
 
                 'security' => [
@@ -1658,6 +1751,30 @@ return [
                     'domain-binding-mode-info' => 'DNS prüft, dass die Anfrage von einer IP-Adresse kommt, auf die die Domain des Tokens auflöst. Origin prüft den Origin- oder Referer-Header und eignet sich nur für Browser.',
                     'domain-binding-dns' => 'DNS (IP-Adresse des Clients)',
                     'domain-binding-origin' => 'Origin-Header',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Anmeldeschutz',
+                    'info' => 'Wie viele fehlgeschlagene Anmeldungen, falsche Zwei-Faktor-Codes und Passwortanfragen erlaubt sind, bevor der Client warten muss.',
+                    'login-max-attempts' => 'Fehlgeschlagene Anmeldungen bis zur Sperre',
+                    'login-max-attempts-info' => 'Je E-Mail-Adresse und IP-Adresse. Zwischen 3 und 20. Standard 5.',
+                    'login-lockout-seconds' => 'Anmeldesperre (Sekunden)',
+                    'login-lockout-seconds-info' => 'Zwischen 60 und 3600. Standard 60.',
+                    'two-factor-challenge-lifetime' => 'Gültigkeit der Zwei-Faktor-Abfrage (Minuten)',
+                    'two-factor-challenge-lifetime-info' => 'Zwischen 1 und 15. Standard 5.',
+                    'two-factor-max-failures' => 'Falsche Zwei-Faktor-Codes pro Minute',
+                    'two-factor-max-failures-info' => 'Je Admin, über alle Abfragen hinweg. Zwischen 3 und 20. Standard 5.',
+                    'password-requests-per-minute' => 'Passwortanfragen pro Minute',
+                    'password-requests-per-minute-info' => 'Anfragen zum Vergessen und Zurücksetzen des Passworts je IP-Adresse. Zwischen 1 und 20. Standard 5.',
+                ],
+
+                'retention' => [
+                    'title' => 'Datenaufbewahrung',
+                    'info' => 'Wie lange beendete Sitzungen und der API-Prüfverlauf aufbewahrt werden.',
+                    'session-prune-days' => 'Beendete Sitzungen aufbewahren (Tage)',
+                    'session-prune-days-info' => 'Widerrufene oder abgelaufene Sitzungen werden nach so vielen Tagen gelöscht. Zwischen 1 und 365. Standard 30.',
+                    'audit-retention-days' => 'API-Prüfverlauf aufbewahren (Tage)',
+                    'audit-retention-days-info' => 'Ältere Einträge werden täglich gelöscht. Zwischen 0 und 3650. Leer oder 0 bewahrt sie dauerhaft auf.',
                 ],
             ],
 
@@ -1917,6 +2034,7 @@ return [
                 'session' => 'Anmeldesitzung',
                 'api-token' => 'API-Token',
                 'integration' => 'Integrations-Token (entfernt)',
+                'customer-session' => 'Kunden-Anmeldesitzung',
             ],
 
             'channels' => [

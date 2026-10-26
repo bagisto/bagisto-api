@@ -4,13 +4,13 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use Webkul\BagistoApi\Dto\ReorderInput;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\ReorderOrder;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Checkout\Facades\Cart;
 
 class ReorderProcessor implements ProcessorInterface
@@ -42,7 +42,7 @@ class ReorderProcessor implements ProcessorInterface
      */
     private function handleReorder(ReorderInput $input): ReorderOrder
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

@@ -72,10 +72,12 @@ class OperationAccess
     ];
 
     /**
-     * Storefront paths, with every path below them, whose state classes resolve the customer from the Sanctum token.
+     * Storefront paths, with every path below them, whose state classes resolve the customer from the access token.
      */
     public const SHOP_CUSTOMER_PATHS = [
         '/customer/logout',
+        '/customer/logout-all',
+        '/customer/sessions',
         '/verify-tokens',
         '/customer-profile',
         '/customer-profile-deletes',
@@ -244,8 +246,9 @@ class OperationAccess
 
             'customerToken' => new SecurityScheme(
                 type: 'http',
-                description: 'A customer\'s Laravel Sanctum personal access token, returned as `token` by `POST /customer/login`, `POST /customers` and `POST /customers/social-login`. Send it as `Authorization: Bearer <token>`. There is no refresh token: it stays valid until `POST /customer/logout` revokes it, or until Sanctum\'s `expiration` setting passes (none by default).',
+                description: 'A customer access token: an ES256 JWT returned as `accessToken` by `POST /customer/login`, `POST /customers` and `POST /customers/social-login`, and by every `POST /customer/refresh`. Send it as `Authorization: Bearer <accessToken>`. It lasts 15 minutes by default (`expiresIn`): refresh it before then, or when a request answers `401` with `access_token_expired`, with the refresh token, which lasts 30 days by default and works once. It is tied to the channel it was issued on. The lifetimes are set under Configuration → API → Customer Authentication.',
                 scheme: 'bearer',
+                bearerFormat: 'JWT',
             ),
 
             'guestCartToken' => new SecurityScheme(

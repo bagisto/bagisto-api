@@ -190,7 +190,7 @@ export async function registerShopCustomer(request: APIRequestContext): Promise<
 
   expect(response.status(), `customer registration failed: ${JSON.stringify(body)}`).toBe(201);
 
-  let token = typeof body?.token === 'string' ? body.token : '';
+  let token = typeof body?.accessToken === 'string' ? body.accessToken : '';
 
   if (!token) {
     const login = await sendRestRequest(request, SHOP_CART_ENDPOINTS.CUSTOMER_LOGIN, {
@@ -199,10 +199,10 @@ export async function registerShopCustomer(request: APIRequestContext): Promise<
     });
     const loginBody = await readJson(login);
 
-    token = typeof loginBody?.token === 'string' ? loginBody.token : '';
+    token = typeof loginBody?.accessToken === 'string' ? loginBody.accessToken : '';
   }
 
-  expect(token, `no customer token after registering ${email}: ${JSON.stringify(body)}`).toContain('|');
+  expect(token.split('.'), `no customer access token after registering ${email}: ${JSON.stringify(body)}`).toHaveLength(3);
 
   return { id: Number(body.id), email, firstName, lastName, token };
 }

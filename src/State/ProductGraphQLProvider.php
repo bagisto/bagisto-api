@@ -7,11 +7,11 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator as LaravelPaginator;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Marketing\Jobs\UpdateCreateSearchTerm;
 
 class ProductGraphQLProvider implements ProviderInterface
@@ -51,10 +51,14 @@ class ProductGraphQLProvider implements ProviderInterface
 
         $this->applySearch($query, $args['query'] ?? null);
 
+        [$sortKey, $reverse] = isset($args['sortKey'])
+            ? [strtoupper($args['sortKey']), (bool) ($args['reverse'] ?? false)]
+            : $this->defaultSort();
+
         $sortSelects = $this->applySort(
             $query,
-            strtoupper($args['sortKey'] ?? 'ID'),
-            ($args['reverse'] ?? false) ? 'desc' : 'asc',
+            $sortKey,
+            $reverse ? 'desc' : 'asc',
             $locale,
             $channel,
         );
@@ -191,6 +195,28 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
+     * Resolve the storefront's configured default sort as a (sortKey, reverse) pair.
+     */
+    private function defaultSort(): array
+    {
+        $value = (string) (core()->getConfigData('catalog.products.storefront.sort_by') ?: 'price-desc');
+
+        $position = strrpos($value, '-');
+
+        $sort = $position === false ? $value : substr($value, 0, $position);
+
+        $order = $position === false ? 'desc' : substr($value, $position + 1);
+
+        $sortKey = match ($sort) {
+            'name' => 'NAME',
+            'created_at' => 'CREATED_AT',
+            default => 'PRICE',
+        };
+
+        return [$sortKey, $order !== 'asc'];
+    }
+
+    /**
      * Sort by the product name for the requested scope, falling back to the unscoped value.
      *
      * @return string[]
@@ -265,7 +291,7 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Sort by the minimal price of the customer's group.
+     * Sort by the minimal price of the customer's group on the current channel, one index row per product.
      *
      * @return string[]
      */
@@ -273,9 +299,12 @@ class ProductGraphQLProvider implements ProviderInterface
     {
         $customerGroup = $this->currentCustomerGroup();
 
-        $query->leftJoin('product_price_indices', function ($join) use ($customerGroup) {
+        $channelId = (int) core()->getCurrentChannel()->id;
+
+        $query->leftJoin('product_price_indices', function ($join) use ($customerGroup, $channelId) {
             $join->on('products.id', '=', 'product_price_indices.product_id')
-                ->where('product_price_indices.customer_group_id', $customerGroup->id);
+                ->where('product_price_indices.customer_group_id', $customerGroup->id)
+                ->where('product_price_indices.channel_id', $channelId);
         })
             ->orderBy('sort_price', $direction)
             ->orderBy('products.id', $direction)
@@ -547,7 +576,7 @@ class ProductGraphQLProvider implements ProviderInterface
      */
     private function currentCustomerGroup(): object
     {
-        return Auth::guard('sanctum')->user()?->group ?? core()->getGuestCustomerGroup();
+        return CurrentCustomer::user()?->group ?? core()->getGuestCustomerGroup();
     }
 
     /**

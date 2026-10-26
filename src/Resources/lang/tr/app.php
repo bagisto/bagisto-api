@@ -275,6 +275,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
             'unknown-resource' => 'Bilinmeyen kaynak',
             'cannot-update-other-profile' => 'Yetkisiz: Başka bir müşteri profili güncellenemez',
+            'refresh-token-invalid' => 'Yenileme belirteci geçersiz veya süresi dolmuş. Lütfen yeniden giriş yapın.',
+            'too-many-login-attempts' => 'Çok fazla giriş denemesi. Lütfen :seconds saniye sonra tekrar deneyin.',
+            'too-many-refresh-requests' => 'Çok fazla belirteç yenilemesi. Lütfen :seconds saniye sonra tekrar deneyin.',
+            'rate-limit-exceeded' => 'Çok fazla deneme.',
+            'access-token-expired' => 'Erişim belirtecinin süresi doldu. Devam etmek için yenileyin.',
+            'logged-out-all' => 'Tüm oturumlarınız kapatıldı.',
+            'session-not-found' => 'Oturum bulunamadı.',
+            'session-revoked' => 'Oturum iptal edildi.',
         ],
 
         'upload' => [
@@ -842,10 +850,6 @@ return [
             'note' => [
                 'empty' => 'Not metni gereklidir.',
                 'created' => 'Not başarıyla eklendi.',
-            ],
-
-            'impersonate' => [
-                'success' => 'Kimliğine bürünme jetonu oluşturuldu.',
             ],
 
             'review' => [
@@ -1625,6 +1629,91 @@ return [
                 'no-permission' => 'Arama terimlerini yönetme izniniz yok.',
             ],
         ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'API Oturumları',
+            ],
+
+            'acl' => [
+                'title' => 'API Oturumları',
+                'delete' => 'İptal Et',
+            ],
+
+            'index' => [
+                'title' => 'Müşteri API Oturumları',
+                'info' => 'Web, mobil, POS veya masaüstü gibi uygulamalardan mağaza API\'sine giriş yapmış müşteriler. Bir oturumu iptal etmek o cihazın oturumunu hemen kapatır.',
+            ],
+
+            'fields' => [
+                'customer' => 'Müşteri',
+                'email' => 'E-posta',
+                'channel' => 'Kanal',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'Müşterinin Tüm Oturumlarını İptal Et',
+            ],
+
+            'card' => [
+                'title' => 'API Oturumları (:count)',
+                'empty' => 'Bu müşterinin etkin API oturumu yok.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Müşteri API oturumlarını yönetme izniniz yok.',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'Müşteri Kimlik Doğrulaması',
+                'info' => 'Mağaza müşteri girişleri için belirteç süreleri, sınırlar ve oturum kuralları.',
+
+                'tokens' => [
+                    'title' => 'Belirteç Süreleri',
+                    'info' => 'Erişim belirteçlerinin, yenileme belirteçlerinin ve oturumların ne kadar geçerli kalacağı. Değişiklikler sonradan verilen belirteçlere uygulanır.',
+                    'access-token-ttl' => 'Erişim Belirteci Süresi (dakika)',
+                    'access-token-ttl-info' => '5 ile 60 dakika arası. Varsayılan 15.',
+                    'refresh-token-ttl' => 'Yenileme Belirteci Süresi (gün)',
+                    'refresh-token-ttl-info' => '1 ile 90 gün arası. Varsayılan 30.',
+                    'session-lifetime' => 'En Uzun Oturum Süresi (gün)',
+                    'session-lifetime-info' => '1 ile 365 gün arası. Varsayılan 90. Bundan sonra oturum kaç kez yenilenmiş olursa olsun yönetici yeniden giriş yapmalıdır.',
+                    'max-sessions' => 'Müşteri Başına En Fazla Etkin Oturum',
+                    'max-sessions-info' => 'Sınıra ulaşıldığında en eski oturum sonlandırılır. 0 ile 100 arası. 0 sınır yok demektir.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'İstek Sınırları',
+                    'info' => 'Giriş yapmış müşteri başına dakikada en fazla mağaza API isteği.',
+                    'requests-per-minute' => 'Giriş Yapmış Müşteri Başına Dakikalık İstek',
+                    'requests-per-minute-info' => '1 ile 100000 arası. Varsayılan 120.',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Giriş Koruması',
+                    'info' => 'İstemci beklemek zorunda kalmadan önce kaç başarısız giriş ve belirteç yenilemesine izin verildiği.',
+                    'login-max-attempts' => 'Kilitlenmeden Önce Başarısız Giriş',
+                    'login-max-attempts-info' => 'E-posta ve IP adresi başına. 3 ile 20 arası. Varsayılan 5.',
+                    'login-lockout-seconds' => 'Giriş Kilidi (saniye)',
+                    'login-lockout-seconds-info' => '60 ile 3600 arası. Varsayılan 60.',
+                    'refresh-requests-per-minute' => 'Oturum Başına Dakikalık Belirteç Yenileme',
+                    'refresh-requests-per-minute-info' => '1 ile 60 arası. Varsayılan 10.',
+                ],
+
+                'security' => [
+                    'title' => 'Güvenlik',
+                    'info' => 'Bir müşterinin diğer oturumlarını neyin sonlandırdığı.',
+                    'revoke-sessions-on-password-change' => 'Parola Değişince Oturumları İptal Et',
+                ],
+
+                'retention' => [
+                    'title' => 'Veri Saklama',
+                    'info' => 'Sona eren müşteri oturumlarının ne kadar süre saklanacağı.',
+                    'session-prune-days' => 'Sona Eren Oturumları Sakla (gün)',
+                    'session-prune-days-info' => 'İptal edilen veya süresi dolan oturumlar bu kadar gün sonra silinir. 1 ile 365 arası. Varsayılan 30.',
+                ],
+            ],
+        ],
         'auth' => [
             'configuration' => [
                 'title' => 'Yönetici Kimlik Doğrulaması',
@@ -1646,6 +1735,10 @@ return [
                     'info' => 'Dakika başına en fazla yönetici API isteği.',
                     'session-requests-per-minute' => 'Giriş Yapmış Yönetici Başına Dakikalık İstek',
                     'api-token-requests-per-minute' => 'API Belirteci Başına Dakikalık İstek',
+                    'session-requests-per-minute-info' => '1 ile 100000 arası. Varsayılan 60.',
+                    'api-token-requests-per-minute-info' => '1 ile 100000 arası. Varsayılan 60.',
+                    'unauthenticated-requests-per-minute' => 'Belirteç Olmadan IP Adresi Başına Dakikalık İstek',
+                    'unauthenticated-requests-per-minute-info' => '10 ile 1000 arası. Varsayılan 60. Giriş, iki faktörlü doğrulama, yenileme ve parola isteklerini kapsar.',
                 ],
 
                 'security' => [
@@ -1658,6 +1751,30 @@ return [
                     'domain-binding-mode-info' => 'DNS, isteğin belirtecin alan adının çözümlendiği bir IP adresinden geldiğini denetler. Origin, Origin veya Referer başlığını denetler ve yalnızca tarayıcılar için uygundur.',
                     'domain-binding-dns' => 'DNS (istemci IP adresi)',
                     'domain-binding-origin' => 'Origin başlığı',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Giriş Koruması',
+                    'info' => 'İstemci beklemek zorunda kalmadan önce kaç başarısız giriş, yanlış iki faktörlü kod ve parola isteğine izin verildiği.',
+                    'login-max-attempts' => 'Kilitlenmeden Önce Başarısız Giriş',
+                    'login-max-attempts-info' => 'E-posta ve IP adresi başına. 3 ile 20 arası. Varsayılan 5.',
+                    'login-lockout-seconds' => 'Giriş Kilidi (saniye)',
+                    'login-lockout-seconds-info' => '60 ile 3600 arası. Varsayılan 60.',
+                    'two-factor-challenge-lifetime' => 'İki Faktörlü Doğrulama Süresi (dakika)',
+                    'two-factor-challenge-lifetime-info' => '1 ile 15 arası. Varsayılan 5.',
+                    'two-factor-max-failures' => 'Dakika Başına Yanlış İki Faktörlü Kod',
+                    'two-factor-max-failures-info' => 'Yönetici başına, tüm doğrulamalarda. 3 ile 20 arası. Varsayılan 5.',
+                    'password-requests-per-minute' => 'Dakika Başına Parola İsteği',
+                    'password-requests-per-minute-info' => 'IP adresi başına parolamı unuttum ve sıfırlama istekleri. 1 ile 20 arası. Varsayılan 5.',
+                ],
+
+                'retention' => [
+                    'title' => 'Veri Saklama',
+                    'info' => 'Sona eren oturumların ve API denetim geçmişinin ne kadar süre saklanacağı.',
+                    'session-prune-days' => 'Sona Eren Oturumları Sakla (gün)',
+                    'session-prune-days-info' => 'İptal edilen veya süresi dolan oturumlar bu kadar gün sonra silinir. 1 ile 365 arası. Varsayılan 30.',
+                    'audit-retention-days' => 'API Denetim Geçmişini Sakla (gün)',
+                    'audit-retention-days-info' => 'Daha eski kayıtlar her gün silinir. 0 ile 3650 arası. Boş veya 0 bunları süresiz saklar.',
                 ],
             ],
 
@@ -1917,6 +2034,7 @@ return [
                 'session' => 'Oturum Açma Oturumu',
                 'api-token' => 'API Belirteci',
                 'integration' => 'Entegrasyon Belirteci (kaldırıldı)',
+                'customer-session' => 'Müşteri Giriş Oturumu',
             ],
 
             'channels' => [

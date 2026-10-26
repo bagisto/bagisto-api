@@ -7,6 +7,8 @@ use Jose\Component\Core\AlgorithmManager;
 use Jose\Component\Signature\Algorithm\ES256;
 use Jose\Component\Signature\JWSBuilder;
 use Jose\Component\Signature\Serializer\CompactSerializer;
+use Webkul\BagistoApi\Admin\Services\AdminApiAuthSettings;
+use Webkul\BagistoApi\Services\CustomerAuth\CustomerApiAuthSettings;
 
 class JwtSigner
 {
@@ -26,6 +28,11 @@ class JwtSigner
     public const TYPE_API = 'api';
 
     /**
+     * The `typ` claim of a storefront customer access token.
+     */
+    public const TYPE_CUSTOMER_ACCESS = 'customer_access';
+
+    /**
      * Create a new signer.
      */
     public function __construct(protected JwtKeyStore $keys) {}
@@ -40,6 +47,32 @@ class JwtSigner
             'aud' => $this->audience(),
             'sub' => $adminId,
             'typ' => self::TYPE_ACCESS,
+            'sid' => $sessionId,
+            'jti' => bin2hex(random_bytes(16)),
+            'iat' => $issuedAt->getTimestamp(),
+            'nbf' => $issuedAt->getTimestamp(),
+            'exp' => $expiresAt->getTimestamp(),
+        ]);
+    }
+
+    /**
+     * The longest lifetime any access token can have, in minutes, so a retired key outlives every token it signed.
+     */
+    public static function longestAccessTokenMinutes(): int
+    {
+        return max(AdminApiAuthSettings::ACCESS_TOKEN_TTL_MAX, CustomerApiAuthSettings::ACCESS_TOKEN_TTL_MAX);
+    }
+
+    /**
+     * Sign a storefront customer access token for a session.
+     */
+    public function signCustomerAccessToken(int $customerId, int $sessionId, CarbonInterface $issuedAt, CarbonInterface $expiresAt): string
+    {
+        return $this->sign([
+            'iss' => $this->issuer(),
+            'aud' => $this->customerAudience(),
+            'sub' => $customerId,
+            'typ' => self::TYPE_CUSTOMER_ACCESS,
             'sid' => $sessionId,
             'jti' => bin2hex(random_bytes(16)),
             'iat' => $issuedAt->getTimestamp(),
@@ -112,5 +145,13 @@ class JwtSigner
     public function audience(): string
     {
         return (string) config('bagistoapi.admin_auth.jwt.audience', 'bagisto-admin-api');
+    }
+
+    /**
+     * The `aud` claim of a storefront customer access token.
+     */
+    public function customerAudience(): string
+    {
+        return (string) config('bagistoapi.customer_auth.jwt.audience', 'bagisto-shop-api');
     }
 }

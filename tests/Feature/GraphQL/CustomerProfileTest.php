@@ -2,8 +2,8 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Webkul\BagistoApi\Models\CustomerApiSession;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Customer\Models\Customer;
 
@@ -281,6 +281,31 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
+     * Test: An invalid email is refused and the email is unchanged.
+     */
+    public function test_update_customer_email_rejects_an_invalid_address(): void
+    {
+        $customer = $this->createCustomer([
+            'email' => 'kept-'.uniqid().'@example.com',
+        ]);
+
+        $mutation = <<<'GQL'
+            mutation updateProfile($input: createCustomerProfileUpdateInput!) {
+              createCustomerProfileUpdate(input: $input) {
+                clientMutationId
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $mutation, [
+            'input' => ['email' => 'not-an-email'],
+        ]);
+
+        expect($response->json('errors'))->not->toBeNull();
+        expect($customer->fresh()->email)->not->toBe('not-an-email');
+    }
+
+    /**
      * Test: Update customer date of birth.
      */
     public function test_update_customer_date_of_birth(): void
@@ -444,7 +469,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete profile also removes access tokens.
+     * Test: Delete profile also ends the customer's API sessions.
      */
     public function test_delete_profile_removes_tokens(): void
     {
@@ -453,15 +478,12 @@ class CustomerProfileTest extends GraphQLTestCase
             'password' => bcrypt('Password123!'),
         ]);
 
-        $customer->createToken('token-1');
-        $customer->createToken('token-2');
+        $this->customerAccessToken($customer);
+        $this->customerAccessToken($customer);
 
-        $tokenCount = DB::table('personal_access_tokens')
-            ->where('tokenable_id', $customer->id)
-            ->where('tokenable_type', Customer::class)
-            ->count();
+        expect(CustomerApiSession::query()->where('customer_id', $customer->id)->count())->toBe(2);
 
-        expect($tokenCount)->toBeGreaterThanOrEqual(2);
+        $this->setForeignKeyChecks(true);
 
         $mutation = <<<'GQL'
             mutation deleteProfile($input: createCustomerProfileDeleteInput!) {
@@ -475,12 +497,7 @@ class CustomerProfileTest extends GraphQLTestCase
             'input' => ['password' => 'Password123!'],
         ]);
 
-        $remainingTokens = DB::table('personal_access_tokens')
-            ->where('tokenable_id', $customer->id)
-            ->where('tokenable_type', Customer::class)
-            ->count();
-
-        expect($remainingTokens)->toBe(0);
+        expect(CustomerApiSession::query()->where('customer_id', $customer->id)->count())->toBe(0);
     }
 
     /**

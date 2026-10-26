@@ -467,49 +467,6 @@ class CustomerTest extends AdminApiTestCase
     }
 
     /**
-     * Test impersonate mutation.
-     */
-    public function test_impersonate_mutation(): void
-    {
-        $admin = $this->createAdmin();
-        $c = $this->seedCustomer();
-
-        $mutation = <<<'GQL'
-            mutation($input: createAdminCustomerImpersonateInput!) {
-              createAdminCustomerImpersonate(input: $input) {
-                adminCustomerImpersonate {
-                  _id
-                  token
-                  customerId
-                  customerEmail
-                  customerName
-                  impersonatedByAdminId
-                  expiresAt
-                }
-              }
-            }
-        GQL;
-        $resp = $this->adminGraphQL($mutation, [
-            'input' => ['customerId' => $c->id],
-        ], $admin);
-        $resp->assertOk();
-        expect($resp->json('errors'))->toBeNull();
-
-        $node = $resp->json('data.createAdminCustomerImpersonate.adminCustomerImpersonate');
-        expect($node['customerId'])->not()->toBeNull();
-        expect($node['customerEmail'])->not()->toBeNull();
-        expect($node['customerName'])->not()->toBeNull();
-        expect($node['impersonatedByAdminId'])->not()->toBeNull();
-        expect($node['expiresAt'])->not()->toBeNull();
-
-        $tokenRow = \DB::table('personal_access_tokens')
-            ->where('tokenable_type', Customer::class)
-            ->where('tokenable_id', $c->id)
-            ->orderByDesc('id')->first();
-        expect($tokenRow)->not()->toBeNull();
-    }
-
-    /**
      * Test address update without customer id is rejected.
      */
     public function test_address_update_without_customer_id_is_rejected(): void

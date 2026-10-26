@@ -190,7 +190,7 @@ type Query {
     after: String
   ): CompareItemCursorConnection
 
-  "Every country with its states, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
+  "Every country with its states, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 300, so every country fits in one request, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
   countries(
     "Returns the first n elements from the list."
     first: Int
@@ -402,6 +402,9 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): CustomerReviewCursorConnection
+
+  "The signed-in customer's active sessions, newest first."
+  customerSessions: [CustomerSession]
 
   "One EU withdrawal declaration on an order of the authenticated customer; any other declaration is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   euWithdrawal(id: ID!): EuWithdrawal
@@ -2077,7 +2080,7 @@ type BookingProduct implements Node {
   qty: Int
   rentalSlot: BookingProductRentalSlot
   showLocation: Boolean!
-  slots: String
+  slots: Iterable
   startingPrice: String
   startingRegularPrice: String
   tableSlot: BookingProductTableSlot
@@ -2508,11 +2511,14 @@ type ProductBundleOptionPageInfo {
 "The authenticated customer's profile. The schema requires `id`, but it is ignored: the customer is always the owner of the Bearer token. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type Customer implements Node {
   _id: Int!
+  accessToken: String
+  accessTokenExpiresAt: String
   apiToken: String
   channelId: Int
   customerGroupId: Int
   dateOfBirth: String
   email: String
+  expiresIn: String
   firstName: String!
   gender: String
   id: ID!
@@ -2522,6 +2528,8 @@ type Customer implements Node {
   message: String
   name: String
   phone: String
+  refreshToken: String
+  refreshTokenExpiresAt: String
   rememberToken: String
   status: String
   subscribedToNewsLetter: Boolean
@@ -3555,6 +3563,25 @@ type CustomerReviewPageInfo {
   startCursor: String
 }
 
+"The signed-in customer's active sessions, newest first."
+type CustomerSession implements Node {
+  _id: Int
+  clientType: String
+  createdAt: String
+  expiresAt: String
+  id: ID!
+  ipAddress: String
+  isCurrent: Boolean
+  lastChannel: String
+  lastIpAddress: String
+  lastUsedAt: String
+  lastUserAgent: String
+  message: String
+  name: String
+  refreshExpiresAt: String
+  userAgent: String
+}
+
 "Cursor connection for DefaultChannel."
 type DefaultChannelCursorConnection {
   edges: [DefaultChannelEdge]
@@ -4295,8 +4322,11 @@ type Mutation {
   "Add new or update existing customer address using token"
   createCustomerAddressToken(input: createCustomerAddressTokenInput!): createCustomerAddressTokenPayload
 
-  "Creates a CustomerLogin."
+  "Sign a customer in on the current channel and return an access and refresh token pair. An optional guestCartToken merges that guest cart into the customer cart and returns its id in cartId. Errors carry extensions.code: invalid_credentials, account_inactive, account_unverified or too_many_login_attempts."
   createCustomerLogin(input: createCustomerLoginInput!): createCustomerLoginPayload
+
+  "End every session of the signed-in customer. Becomes createCustomerLogoutAll; needs a customer access token."
+  createCustomerLogoutAll(input: createCustomerLogoutAllInput!): createCustomerLogoutAllPayload
 
   "Delete authenticated customer profile (requires token and the current password in the `password` input)"
   createCustomerProfileDelete(input: createCustomerProfileDeleteInput!): createCustomerProfileDeletePayload
@@ -4309,6 +4339,9 @@ type Mutation {
 
   "Creates a CustomerReturnMessage."
   createCustomerReturnMessage(input: createCustomerReturnMessageInput!): createCustomerReturnMessagePayload
+
+  "Exchange a customer refresh token for a new access and refresh token. Becomes createCustomerTokenRefresh; needs the storefront key only."
+  createCustomerTokenRefresh(input: createCustomerTokenRefreshInput!): createCustomerTokenRefreshPayload
 
   "Stage a file for a file-type customizable option and return the token. Send the file base64-encoded (raw or a data: URI) in `file`. Send the token on add-to-cart as customizableOptions: { \"<optionId>\": [\"<token>\"] }."
   createCustomizableOptionFile(input: createCustomizableOptionFileInput!): createCustomizableOptionFilePayload
@@ -4405,6 +4438,9 @@ type Mutation {
 
   "Deletes a CompareItem."
   deleteCompareItem(input: deleteCompareItemInput!): deleteCompareItemPayload
+
+  "End one of the signed-in customer's sessions. Becomes deleteCustomerSession."
+  deleteCustomerSession(input: deleteCustomerSessionInput!): deleteCustomerSessionPayload
 
   "Deletes a GdprRequest."
   deleteGdprRequest(input: deleteGdprRequestInput!): deleteGdprRequestPayload
@@ -5591,11 +5627,14 @@ type createCompareItemPayloadData implements Node {
 "Creates a Customer."
 type createCustomerNestedPayload implements Node {
   _id: Int!
+  accessToken: String
+  accessTokenExpiresAt: String
   apiToken: String
   channelId: Int
   customerGroupId: Int
   dateOfBirth: String
   email: String
+  expiresIn: String
   firstName: String!
   gender: String
   id: ID!
@@ -5605,6 +5644,8 @@ type createCustomerNestedPayload implements Node {
   message: String
   name: String
   phone: String
+  refreshToken: String
+  refreshTokenExpiresAt: String
   rememberToken: String
   status: String
   subscribedToNewsLetter: Boolean
@@ -5854,28 +5895,58 @@ type createDeleteCustomerAddressTokenPayloadData implements Node {
   vatId: String
 }
 
-"Creates a CustomerLogin."
+"Sign a customer in on the current channel and return an access and refresh token pair. An optional guestCartToken merges that guest cart into the customer cart and returns its id in cartId. Errors carry extensions.code: invalid_credentials, account_inactive, account_unverified or too_many_login_attempts."
 input createCustomerLoginInput {
   clientMutationId: String
+  clientType: String
+  deviceName: String
   deviceToken: String
   email: String!
+  guestCartToken: String
   password: String!
 }
 
-"Creates a CustomerLogin."
+"Sign a customer in on the current channel and return an access and refresh token pair. An optional guestCartToken merges that guest cart into the customer cart and returns its id in cartId. Errors carry extensions.code: invalid_credentials, account_inactive, account_unverified or too_many_login_attempts."
 type createCustomerLoginPayload {
   clientMutationId: String
   customerLogin: createCustomerLoginPayloadData
 }
 
-"Creates a CustomerLogin."
+"Sign a customer in on the current channel and return an access and refresh token pair. An optional guestCartToken merges that guest cart into the customer cart and returns its id in cartId. Errors carry extensions.code: invalid_credentials, account_inactive, account_unverified or too_many_login_attempts."
 type createCustomerLoginPayloadData implements Node {
   _id: Int
+
+  "Send as `Authorization: Bearer <accessToken>` on every customer request."
+  accessToken: String
+
+  accessTokenExpiresAt: String
   apiToken: String
+
+  "The id of the customer cart a `guestCartToken` was merged into; null when no guest cart was merged."
+  cartId: Int
+
+  "The customer: id, firstName, lastName, email."
+  customer: Iterable
+
+  expiresIn: Int
   id: ID!
   message: String
+
+  "Exchange at `/api/shop/customer/refresh` for a new pair; it works once."
+  refreshToken: String
+
+  refreshTokenExpiresAt: String
+
+  "The session: id, name, clientType, expiresAt."
+  session: Iterable
+
   success: Boolean
+
+  "Deprecated: the same value as `accessToken`."
   token: String
+
+  "Always `Bearer`."
+  tokenType: String
 }
 
 "Creates a Logout."
@@ -5894,6 +5965,26 @@ type createLogoutPayload {
 type createLogoutPayloadData implements Node {
   id: ID!
   message: String
+  success: Boolean
+}
+
+"End every session of the signed-in customer. Becomes createCustomerLogoutAll; needs a customer access token."
+input createCustomerLogoutAllInput {
+  clientMutationId: String
+  deviceToken: String
+}
+
+"End every session of the signed-in customer. Becomes createCustomerLogoutAll; needs a customer access token."
+type createCustomerLogoutAllPayload {
+  clientMutationId: String
+  customerLogoutAll: createCustomerLogoutAllPayloadData
+}
+
+"End every session of the signed-in customer. Becomes createCustomerLogoutAll; needs a customer access token."
+type createCustomerLogoutAllPayloadData implements Node {
+  id: ID!
+  message: String
+  revoked: Int
   success: Boolean
 }
 
@@ -6089,6 +6180,57 @@ input createCustomerReturnMessageInput {
 type createCustomerReturnMessagePayload {
   clientMutationId: String
   customerReturnMessage: CustomerReturnMessage
+}
+
+"End one of the signed-in customer's sessions. Becomes deleteCustomerSession."
+input deleteCustomerSessionInput {
+  clientMutationId: String
+  id: ID!
+}
+
+"End one of the signed-in customer's sessions. Becomes deleteCustomerSession."
+type deleteCustomerSessionPayload {
+  clientMutationId: String
+  customerSession: CustomerSession
+}
+
+"Exchange a customer refresh token for a new access and refresh token. Becomes createCustomerTokenRefresh; needs the storefront key only."
+input createCustomerTokenRefreshInput {
+  clientMutationId: String
+
+  "The refresh token from the last login or refresh."
+  refreshToken: String
+}
+
+"Exchange a customer refresh token for a new access and refresh token. Becomes createCustomerTokenRefresh; needs the storefront key only."
+type createCustomerTokenRefreshPayload {
+  clientMutationId: String
+  customerTokenRefresh: createCustomerTokenRefreshPayloadData
+}
+
+"Exchange a customer refresh token for a new access and refresh token. Becomes createCustomerTokenRefresh; needs the storefront key only."
+type createCustomerTokenRefreshPayloadData implements Node {
+  "Send as `Authorization: Bearer <accessToken>` on every customer request."
+  accessToken: String
+
+  accessTokenExpiresAt: String
+
+  "The customer: id, firstName, lastName, email."
+  customer: Iterable
+
+  expiresIn: Int
+  id: ID!
+
+  "Exchange at `/api/shop/customer/refresh` for a new pair; it works once."
+  refreshToken: String
+
+  refreshTokenExpiresAt: String
+
+  "The session: id, name, clientType, expiresAt."
+  session: Iterable
+
+  "Always `Bearer`."
+  tokenType: String
 }
 
 "Stage a file for a file-type customizable option and return the token. Send the file base64-encoded (raw or a data: URI) in `file`. Send the token on add-to-cart as customizableOptions: { \"<optionId>\": [\"<token>\"] }."
@@ -8626,17 +8768,39 @@ type createSocialLoginPayload {
 "Creates a SocialLogin."
 type createSocialLoginPayloadData implements Node {
   _id: Int
+
+  "Send as `Authorization: Bearer <accessToken>` on every customer request."
+  accessToken: String
+
+  accessTokenExpiresAt: String
   apiToken: String
   code: String
+
+  "The customer: id, firstName, lastName, email."
+  customer: Iterable
+
   email: String
+  expiresIn: Int
   firstName: String
   id: ID!
   isNewCustomer: Boolean
   lastName: String
   message: String
   phone: String
+
+  "Exchange at `/api/shop/customer/refresh` for a new pair; it works once."
+  refreshToken: String
+
+  refreshTokenExpiresAt: String
+
+  "The session: id, name, clientType, expiresAt."
+  session: Iterable
+
   success: Boolean
   token: String
+
+  "Always `Bearer`."
+  tokenType: String
 }
 
 "Update cart item quantity. Use token, cartItemId, and quantity."
@@ -8913,6 +9077,8 @@ type createVerifyTokenPayloadData implements Node {
   isValid: Boolean
   lastName: String
   message: String
+  sessionExpiresAt: String
+  sessionId: Int
 }
 
 "Creates a Wishlist."

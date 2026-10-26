@@ -26,7 +26,7 @@ use Webkul\BagistoApi\OpenApi\ApiSchemas;
             openapi: new Model\Operation(
                 tags: ['Admin Authentication'],
                 summary: 'Email a password reset link',
-                description: "Sends core's admin password reset email when the address belongs to an admin. The answer is the same whether or not it does. Five requests a minute per client address are allowed.",
+                description: "Sends core's admin password reset email when the address belongs to an admin. The answer is the same whether or not it does. Five requests a minute per client address are allowed by default (configurable).",
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -80,7 +80,7 @@ use Webkul\BagistoApi\OpenApi\ApiSchemas;
                         ]),
                     ),
                     '429' => new Model\Response(
-                        description: 'More than five forgot-password requests from this address in a minute (`too_many_password_requests`), or more than 60 requests a minute (`rate_limit_exceeded`). Wait for `Retry-After` seconds.',
+                        description: 'More than the forgot-password requests allowed from this address in a minute, five by default (`too_many_password_requests`), or more than the requests allowed a minute, 60 by default (`rate_limit_exceeded`). Wait for `Retry-After` seconds.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'schema' => ['$ref' => ApiSchemas::AUTH_ERROR_REF],

@@ -70,6 +70,7 @@ final class CollectionBuilder
             'GdprDataPdf' => 'GDPR',
             'MoveToWishlist' => 'Wishlist',
             'NewsletterUnsubscription' => 'Newsletter',
+            'Customer Authentication' => 'Customer Auth',
         ],
 
         'admin' => [
@@ -85,7 +86,7 @@ final class CollectionBuilder
             'id' => 'e7c1a940-6b2d-4f18-9a35-1d8c05b7e240',
             'name' => 'Bagisto Shop API',
             'file' => 'Bagisto-Shop-API.postman_collection.json',
-            'token' => '{{customerToken}}',
+            'token' => '{{customerAccessToken}}',
             'graphql' => '{{url}}/api/graphql',
         ],
 
@@ -110,7 +111,19 @@ final class CollectionBuilder
     ];
 
     /**
-     * The admin sign-in requests, REST as "METHOD path" and GraphQL by field, in the order a client uses them.
+     * The storefront REST paths that exchange credentials for tokens, which the refresh script leaves alone.
+     */
+    private const CUSTOMER_TOKEN_PATHS = [
+        '/customer/login',
+        '/customer/refresh',
+        '/customers',
+        '/customers/social-login',
+        '/forgot-passwords',
+        '/reset-passwords',
+    ];
+
+    /**
+     * The sign-in requests, REST as "METHOD path" and GraphQL by field, in the order a client uses them.
      */
     private const CLIENT_ORDER = [
         'POST /auth/login',
@@ -135,6 +148,32 @@ final class CollectionBuilder
         'createAdminForgotPassword',
         'createAdminResetPassword',
         'createAdminAccountUpdate',
+        'POST /customers',
+        'POST /customer/login',
+        'POST /customers/social-login',
+        'POST /customer/refresh',
+        'POST /verify-tokens',
+        'GET /customer/sessions',
+        'DELETE /customer/sessions/:id',
+        'POST /customer/logout',
+        'POST /customer/logout-all',
+        'POST /forgot-passwords',
+        'POST /reset-passwords',
+        'POST /verification-emails',
+        'POST /verify-accounts',
+        'createCustomer',
+        'createCustomerLogin',
+        'createSocialLogin',
+        'createCustomerTokenRefresh',
+        'createVerifyToken',
+        'customerSessions',
+        'deleteCustomerSession',
+        'createLogout',
+        'createCustomerLogoutAll',
+        'createForgotPassword',
+        'createResetPassword',
+        'createResendVerificationEmail',
+        'createVerifyAccount',
     ];
 
     /**
@@ -217,15 +256,15 @@ Storefront endpoints for the [Bagisto](https://bagisto.com) e-commerce platform 
 | `storefrontKey` | `STOREFRONT_PLAYGROUND_KEY` in `.env` (written by the installer), or `php artisan bagisto-api:generate-key` |
 | `customerEmail` / `customerPassword` | Any storefront customer account |
 
-3. Run **REST → Customer → Customer login**. It saves `customerToken` to the environment, and every other request sends it as the bearer automatically. A failed login is not an HTTP error: the answer is `201` with `success: false`, a `message` and an empty `token`.
+3. Run **REST → Customer Auth → Customer login**. It saves `customerAccessToken`, `customerRefreshToken` and `customerAccessTokenExpiresAt` to the environment, and every other request sends the access token as the bearer. Registration and social login save the pair the same way.
 
-The customer token is a Laravel Sanctum token: it has no refresh token, does not expire unless Sanctum's `expiration` is set, and **Customer logout** revokes it. The full authentication guide is [docs/authentication.md](https://github.com/bagisto/bagisto-api/blob/main/docs/authentication.md).
+The access token is a JWT that lasts 15 minutes by default. Before each request the collection renews it through `POST /api/shop/customer/refresh` when it expires within 60 seconds, so you only log in again once the refresh token (30 days by default) or the session (90 days) ends. A refresh token works once: presenting a used one ends the whole session. A refused login is an HTTP error with a code: `401 invalid_credentials`, `403 account_inactive` or `account_unverified`, `429 too_many_login_attempts`. **Customer Auth** lists its requests in the order a client uses them. The full authentication guide is [docs/authentication.md](https://github.com/bagisto/bagisto-api/blob/main/docs/authentication.md).
 
 ## Shopping as a guest
 
-Guest carts authenticate with a cart token instead of a customer token. Run **Create cart token** with `customerToken` empty (or the request's **Authorization** set to *No Auth*) — it saves `cartToken` to the environment. Called with a customer token, it returns the customer's own cart instead.
+Guest carts authenticate with a cart token instead of a customer token. Run **Create cart token** with `customerAccessToken` empty (or the request's **Authorization** set to *No Auth*) — it saves `cartToken` to the environment. Called with a customer token, it returns the customer's own cart instead.
 
-To act as that guest, send `{{cartToken}}` as the bearer: change it on the collection's **Authorization** tab, or override it on the individual request. Leave it as `{{customerToken}}` for logged-in flows. The cart and checkout endpoints serve both, so which token you send is what decides whose cart you are working on.
+To act as that guest, send `{{cartToken}}` as the bearer: change it on the collection's **Authorization** tab, or override it on the individual request. Leave it as `{{customerAccessToken}}` for logged-in flows. The cart and checkout endpoints serve both, so which token you send is what decides whose cart you are working on. To keep the guest cart when the guest logs in, put `{{cartToken}}` into the login's `guest_cart_token`: the answer's `cartId` is the customer's cart the guest cart was merged into.
 
 ## Layout
 
@@ -392,7 +431,7 @@ MD;
 
                 $segments = $this->folderSegments($operation['tags'][0] ?? 'Uncategorised', $surface);
 
-                $grouped[implode("\0", $segments)][] = $this->request($path, $method, $operation, $spec);
+                $grouped[implode("\0", $segments)][] = $this->request($path, $method, $operation, $spec, $surface);
             }
         }
 
@@ -479,7 +518,7 @@ MD;
     }
 
     /**
-     * Order two requests of a folder: the admin sign-in requests in client order first, then by name.
+     * Order two requests of a folder: the sign-in requests in client order first, then by name.
      *
      * @param  array<string, mixed>  $a
      * @param  array<string, mixed>  $b
@@ -520,7 +559,7 @@ MD;
      * @param  array<string, mixed>  $spec
      * @return array<string, mixed>
      */
-    private function request(string $path, string $method, array $operation, array $spec): array
+    private function request(string $path, string $method, array $operation, array $spec, string $surface): array
     {
         $request = [
             'method' => strtoupper($method),
@@ -543,7 +582,7 @@ MD;
             }
         }
 
-        if ($override = $this->bodyOverride($path, $method)) {
+        if ($override = $this->bodyOverride($path, $method, $surface)) {
             $request['body'] = [
                 'mode' => 'raw',
                 'raw' => json_encode($override, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
@@ -556,7 +595,7 @@ MD;
             'request' => $request,
         ];
 
-        if ($event = $this->tokenCaptureScript($path, $method)) {
+        if ($event = $this->tokenCaptureScript($path, $method, $surface)) {
             $item['event'] = $event;
         }
 
@@ -810,34 +849,32 @@ MD;
      *
      * @return list<array<string, mixed>>|null
      */
-    private function tokenCaptureScript(string $path, string $method): ?array
+    private function tokenCaptureScript(string $path, string $method, string $surface): ?array
     {
         if (strtolower($method) !== 'post') {
             return null;
         }
 
-        if (in_array($path, ['/auth/login', '/auth/two-factor', '/auth/refresh'], true)) {
-            return [$this->adminTokenScript('pm.response.json()')];
+        if ($surface === 'admin') {
+            return in_array($path, ['/auth/login', '/auth/two-factor', '/auth/refresh'], true)
+                ? [$this->adminTokenScript('pm.response.json()')]
+                : null;
         }
 
-        $capture = match ($path) {
-            '/customer/login' => ['customerToken', 'token'],
-            '/cart-tokens' => ['cartToken', 'cartToken'],
-            default => null,
-        };
+        if (in_array($path, ['/customer/login', '/customer/refresh', '/customers', '/customers/social-login'], true)) {
+            return [$this->customerTokenScript('pm.response.json()')];
+        }
 
-        if ($capture === null) {
+        if ($path !== '/cart-tokens') {
             return null;
         }
 
-        [$variable, $field] = $capture;
-
         return [$this->script([
             'const body = pm.response.json();',
-            "const value = body?.{$field} ?? body?.data?.{$field};",
+            'const value = body?.cartToken ?? body?.data?.cartToken;',
             '',
             'if (value) {',
-            "    pm.environment.set('{$variable}', value);",
+            "    pm.environment.set('cartToken', value);",
             '}',
         ])];
     }
@@ -847,10 +884,27 @@ MD;
      *
      * @return array<string, string>|null
      */
-    private function bodyOverride(string $path, string $method): ?array
+    private function bodyOverride(string $path, string $method, string $surface): ?array
     {
         if (strtolower($method) !== 'post') {
             return null;
+        }
+
+        if ($surface === 'shop') {
+            return match ($path) {
+                '/customer/login' => [
+                    'email' => '{{customerEmail}}',
+                    'password' => '{{customerPassword}}',
+                    'device_name' => 'Postman',
+                    'client_type' => 'other',
+                ],
+
+                '/customer/refresh' => [
+                    'refresh_token' => '{{customerRefreshToken}}',
+                ],
+
+                default => null,
+            };
         }
 
         return match ($path) {
@@ -897,14 +951,32 @@ MD;
     }
 
     /**
-     * The collection-level scripts: the admin collection renews its access token before a request needs it.
+     * A test script storing the customer token pair of an answer.
+     *
+     * @return array<string, mixed>
+     */
+    private function customerTokenScript(string $pairExpression): array
+    {
+        return $this->script([
+            "const pair = {$pairExpression};",
+            '',
+            'if (pair?.accessToken && pair?.refreshToken) {',
+            "    pm.environment.set('customerAccessToken', pair.accessToken);",
+            "    pm.environment.set('customerRefreshToken', pair.refreshToken);",
+            "    pm.environment.set('customerAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+            '}',
+        ]);
+    }
+
+    /**
+     * The collection-level scripts: each collection renews its access token before a request needs it.
      *
      * @return list<array<string, mixed>>
      */
     private function collectionEvents(string $surface): array
     {
-        if ($surface !== 'admin') {
-            return [];
+        if ($surface === 'shop') {
+            return [$this->customerRefreshEvent()];
         }
 
         $tokenPaths = json_encode(self::ADMIN_TOKEN_PATHS, JSON_UNESCAPED_SLASHES);
@@ -963,6 +1035,68 @@ MD;
                 ],
             ],
         ]];
+    }
+
+    /**
+     * The storefront pre-request script renewing the customer access token when it expires within a minute.
+     *
+     * @return array<string, mixed>
+     */
+    private function customerRefreshEvent(): array
+    {
+        $tokenPaths = json_encode(self::CUSTOMER_TOKEN_PATHS, JSON_UNESCAPED_SLASHES);
+
+        return [
+            'listen' => 'prerequest',
+
+            'script' => [
+                'type' => 'text/javascript',
+
+                'exec' => [
+                    "const path = '/' + pm.request.url.getPath().replace(/^\\/+/, '');",
+                    "const isTokenRequest = {$tokenPaths}.some(tokenPath => path.endsWith('/api/shop' + tokenPath));",
+                    "const graphQlQuery = String(pm.request.body?.graphql?.query || pm.request.body?.raw || '');",
+                    'const isPublicMutation = /create(CustomerLogin|CustomerTokenRefresh|Customer|SocialLogin|ForgotPassword|ResetPassword)\\b/.test(graphQlQuery);',
+                    '',
+                    'function expiresAt(token) {',
+                    '    try {',
+                    "        const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+                    "        return JSON.parse(atob(part + '='.repeat((4 - part.length % 4) % 4))).exp * 1000;",
+                    '    } catch (error) {',
+                    "        return Date.parse(pm.environment.get('customerAccessTokenExpiresAt') || '') || 0;",
+                    '    }',
+                    '}',
+                    '',
+                    'if (',
+                    '    !isTokenRequest',
+                    '    && !isPublicMutation',
+                    "    && pm.environment.get('customerRefreshToken')",
+                    "    && expiresAt(pm.environment.get('customerAccessToken') || '') - Date.now() < 60000",
+                    ') {',
+                    '    pm.sendRequest({',
+                    "        url: pm.environment.get('url') + '/api/shop/customer/refresh',",
+                    "        method: 'POST',",
+                    "        header: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-STOREFRONT-KEY': pm.environment.get('storefrontKey') },",
+                    "        body: { mode: 'raw', raw: JSON.stringify({ refresh_token: pm.environment.get('customerRefreshToken') }) },",
+                    '    }, (error, response) => {',
+                    '        if (',
+                    '            !error',
+                    '            && response.code < 300',
+                    '        ) {',
+                    '            const pair = response.json();',
+                    '',
+                    "            pm.environment.set('customerAccessToken', pair.accessToken);",
+                    "            pm.environment.set('customerRefreshToken', pair.refreshToken);",
+                    "            pm.environment.set('customerAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+                    "            pm.variables.set('customerAccessToken', pair.accessToken);",
+                    '        } else {',
+                    "            console.warn('The customer refresh token was refused; run Customer Auth → Customer login again.');",
+                    '        }',
+                    '    });',
+                    '}',
+                ],
+            ],
+        ];
     }
 
     /**
@@ -1206,6 +1340,12 @@ MD;
             'createCustomerLogin' => ['input' => [
                 'email' => '{{customerEmail}}',
                 'password' => '{{customerPassword}}',
+                'deviceName' => 'Postman',
+                'clientType' => 'other',
+            ]] + $variables,
+
+            'createCustomerTokenRefresh' => ['input' => [
+                'refreshToken' => '{{customerRefreshToken}}',
             ]] + $variables,
 
             'createAdminLogin' => ['input' => [
@@ -1418,13 +1558,10 @@ MD;
     private function graphQlTokenScript(string $field): ?array
     {
         return match ($field) {
-            'createCustomerLogin' => [$this->script([
-                'const data = pm.response.json()?.data?.createCustomerLogin?.customerLogin;',
-                '',
-                'if (data?.token) {',
-                "    pm.environment.set('customerToken', data.token);",
-                '}',
-            ])],
+            'createCustomerLogin' => [$this->customerTokenScript('pm.response.json()?.data?.createCustomerLogin?.customerLogin')],
+            'createCustomerTokenRefresh' => [$this->customerTokenScript('pm.response.json()?.data?.createCustomerTokenRefresh?.customerTokenRefresh')],
+            'createCustomer' => [$this->customerTokenScript('pm.response.json()?.data?.createCustomer?.customer')],
+            'createSocialLogin' => [$this->customerTokenScript('pm.response.json()?.data?.createSocialLogin?.socialLogin')],
             'createCartToken' => [$this->script([
                 'const data = pm.response.json()?.data?.createCartToken?.cartToken;',
                 '',

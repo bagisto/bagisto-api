@@ -287,7 +287,7 @@ class AdminApiTokenService
         $inUse = $this->apiTokenRepository->signingKidsInUse();
 
         $cutoff = $now->copy()
-            ->subMinutes(AdminApiAuthSettings::ACCESS_TOKEN_TTL_MAX)
+            ->subMinutes(JwtSigner::longestAccessTokenMinutes())
             ->subSeconds((int) config('bagistoapi.admin_auth.jwt.leeway', 30) + self::RETIRED_KEY_GRACE_SECONDS);
 
         $dropped = [];

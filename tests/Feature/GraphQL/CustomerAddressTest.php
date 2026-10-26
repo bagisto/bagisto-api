@@ -805,7 +805,7 @@ class CustomerAddressTest extends GraphQLTestCase
     private function authCustomer(): array
     {
         $customer = $this->createCustomer();
-        $token = $customer->createToken('test-token')->plainTextToken;
+        $token = $this->customerAccessToken($customer);
 
         return [
             'customer' => $customer,

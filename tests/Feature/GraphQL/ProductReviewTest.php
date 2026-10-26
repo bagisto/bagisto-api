@@ -311,6 +311,80 @@ class ProductReviewTest extends GraphQLTestCase
     }
 
     /**
+     * The reviewer name is censored for other readers and shown in full to its author.
+     */
+    public function test_product_reviews_censor_the_reviewer_name(): void
+    {
+        $customer = $this->createCustomer(['first_name' => 'John', 'last_name' => 'Doe']);
+        $product = $this->createBaseProduct('simple');
+
+        $this->createReviewFor($customer, 'approved', $product->id);
+
+        $query = <<<'GQL'
+            query productReviews($productId: Int) {
+              productReviews(product_id: $productId, first: 5) {
+                edges {
+                  node {
+                    name
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $guest = $this->graphQL($query, ['productId' => $product->id]);
+
+        expect($guest->json('errors'))->toBeNull();
+        expect($guest->json('data.productReviews.edges.0.node.name'))->toBe('J*** D**');
+
+        $author = $this->authenticatedGraphQL($customer, $query, ['productId' => $product->id]);
+
+        expect($author->json('data.productReviews.edges.0.node.name'))->toBe('John Doe');
+    }
+
+    /**
+     * A product's nested approvedReviews and bundleOptions list only that product's records.
+     */
+    public function test_product_nested_reviews_and_bundle_options_are_scoped_to_the_product(): void
+    {
+        $customer = $this->createCustomer();
+        $product = $this->createBaseProduct('simple');
+        $other = $this->createBaseProduct('simple');
+
+        $own = $this->createReviewFor($customer, 'approved', $product->id);
+        $foreign = $this->createReviewFor($customer, 'approved', $other->id);
+
+        $response = $this->graphQL(<<<GQL
+            query {
+              product(id: "/api/shop/products/{$product->id}") {
+                approvedReviews {
+                  edges {
+                    node {
+                      _id
+                    }
+                  }
+                }
+                bundleOptions {
+                  edges {
+                    node {
+                      _id
+                    }
+                  }
+                }
+              }
+            }
+        GQL);
+
+        expect($response->json('errors'))->toBeNull();
+
+        $reviewIds = array_map('intval', array_column(array_column($response->json('data.product.approvedReviews.edges') ?? [], 'node'), '_id'));
+
+        expect($reviewIds)->toBe([(int) $own->id]);
+        expect($reviewIds)->not->toContain((int) $foreign->id);
+        expect($response->json('data.product.bundleOptions.edges'))->toBe([]);
+    }
+
+    /**
      * Last without before returns the final approved reviews of a product.
      */
     public function test_product_reviews_last_returns_the_final_reviews(): void

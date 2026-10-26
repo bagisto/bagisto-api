@@ -26,7 +26,7 @@ use Webkul\BagistoApi\OpenApi\ApiSchemas;
             openapi: new Model\Operation(
                 tags: ['Admin Authentication'],
                 summary: 'Reset a password with the emailed token',
-                description: "Sets a new password with the token from the reset email, through core's admin password broker. Every API session of the admin is revoked, and every API token too when *Revoke API Tokens on Password Change* is on; log in again afterwards. Five requests a minute per client address are allowed.",
+                description: "Sets a new password with the token from the reset email, through core's admin password broker. Every API session of the admin is revoked, and every API token too when *Revoke API Tokens on Password Change* is on; log in again afterwards. Five requests a minute per client address are allowed by default (configurable).",
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -116,7 +116,7 @@ use Webkul\BagistoApi\OpenApi\ApiSchemas;
                         ]),
                     ),
                     '429' => new Model\Response(
-                        description: 'More than five reset-password requests from this address in a minute (`too_many_password_requests`), or more than 60 requests a minute (`rate_limit_exceeded`). Wait for `Retry-After` seconds.',
+                        description: 'More than the reset-password requests allowed from this address in a minute, five by default (`too_many_password_requests`), or more than the requests allowed a minute, 60 by default (`rate_limit_exceeded`). Wait for `Retry-After` seconds.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'schema' => ['$ref' => ApiSchemas::AUTH_ERROR_REF],

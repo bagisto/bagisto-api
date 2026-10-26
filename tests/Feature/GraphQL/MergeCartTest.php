@@ -295,6 +295,42 @@ class MergeCartTest extends GraphQLTestCase
     }
 
     /**
+     * Login with a guest cart token merges the guest cart and returns the customer's cart id.
+     */
+    public function test_login_with_guest_cart_token_merges_the_guest_cart(): void
+    {
+        $guestToken = $this->createGuestCartToken();
+        $product = $this->createTestProduct()['product'];
+
+        $guestCartId = (int) $this->addProductToGuestCart($guestToken, $product->id, 2)['_id'];
+
+        $customer = $this->createCustomer([
+            'email' => 'merge-login-'.uniqid().'@example.com',
+            'password' => bcrypt('password123'),
+            'status' => 1,
+            'is_verified' => 1,
+        ]);
+
+        $response = $this->graphQL(<<<'GQL'
+            mutation login($input: createCustomerLoginInput!) {
+              createCustomerLogin(input: $input) {
+                customerLogin { accessToken cartId }
+              }
+            }
+        GQL, [
+            'input' => [
+                'email' => $customer->email,
+                'password' => 'password123',
+                'guestCartToken' => $guestToken,
+            ],
+        ], $this->storefrontHeaders());
+
+        $this->assertNull($response->json('errors'));
+        $this->assertSame($guestCartId, $response->json('data.createCustomerLogin.customerLogin.cartId'));
+        $this->assertSame($customer->id, (int) DB::table('cart')->where('id', $guestCartId)->value('customer_id'));
+    }
+
+    /**
      * Create guest cart token.
      */
     private function createGuestCartToken(): string
@@ -391,7 +427,7 @@ class MergeCartTest extends GraphQLTestCase
             'token' => md5(uniqid(rand(), true)),
         ]);
 
-        $token = $customer->createToken('test-token')->plainTextToken;
+        $token = $this->customerAccessToken($customer);
 
         return compact('customer', 'token');
     }

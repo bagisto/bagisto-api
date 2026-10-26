@@ -152,6 +152,41 @@ class OrderDetailTest extends AdminApiTestCase
     }
 
     /**
+     * Test order detail items resolve their JSON child and downloadable links.
+     */
+    public function test_order_detail_items_resolve_child_and_downloadable_links(): void
+    {
+        $id = $this->anOrderId();
+
+        $admin = $this->createAdmin();
+
+        $query = <<<'GQL'
+            query orderDetail($id: ID!) {
+              adminOrderDetail(id: $id) {
+                items {
+                  edges {
+                    node {
+                      sku
+                      child
+                      downloadableLinks
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['id' => '/api/admin/orders/'.$id], $admin);
+
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.adminOrderDetail.items.edges.0.node');
+
+        expect($node)->toHaveKeys(['child', 'downloadableLinks']);
+        expect($node['downloadableLinks'])->toBeArray();
+    }
+
+    /**
      * Test order detail embeds comments and refunds connections.
      */
     public function test_order_detail_embeds_comments_and_refunds_connections(): void

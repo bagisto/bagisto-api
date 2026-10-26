@@ -275,6 +275,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
             'unknown-resource' => 'منبع ناشناخته',
             'cannot-update-other-profile' => 'غیرمجاز: نمی‌توان پروفایل مشتری دیگری را به‌روزرسانی کرد',
+            'refresh-token-invalid' => 'توکن تازه‌سازی نامعتبر یا منقضی است. لطفاً دوباره وارد شوید.',
+            'too-many-login-attempts' => 'تلاش‌های ورود بیش از حد. لطفاً پس از :seconds ثانیه دوباره تلاش کنید.',
+            'too-many-refresh-requests' => 'تمدید توکن بیش از حد. لطفاً پس از :seconds ثانیه دوباره تلاش کنید.',
+            'rate-limit-exceeded' => 'تلاش‌های بیش از حد.',
+            'access-token-expired' => 'توکن دسترسی منقضی شده است. برای ادامه آن را تازه‌سازی کنید.',
+            'logged-out-all' => 'از همه نشست‌ها خارج شدید.',
+            'session-not-found' => 'نشست یافت نشد.',
+            'session-revoked' => 'نشست باطل شد.',
         ],
 
         'upload' => [
@@ -842,10 +850,6 @@ return [
             'note' => [
                 'empty' => 'متن یادداشت الزامی است.',
                 'created' => 'یادداشت با موفقیت اضافه شد.',
-            ],
-
-            'impersonate' => [
-                'success' => 'توکن جعل هویت صادر شد.',
             ],
 
             'review' => [
@@ -1625,6 +1629,91 @@ return [
                 'no-permission' => 'شما مجوز مدیریت عبارت‌های جستجو را ندارید.',
             ],
         ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'نشست‌های API',
+            ],
+
+            'acl' => [
+                'title' => 'نشست‌های API',
+                'delete' => 'ابطال',
+            ],
+
+            'index' => [
+                'title' => 'نشست‌های API مشتریان',
+                'info' => 'مشتریانی که از برنامه‌هایی مانند وب، موبایل، صندوق فروش یا دسکتاپ وارد API فروشگاه شده‌اند. لغو یک نشست آن دستگاه را بی‌درنگ خارج می‌کند.',
+            ],
+
+            'fields' => [
+                'customer' => 'مشتری',
+                'email' => 'ایمیل',
+                'channel' => 'کانال',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'لغو همه نشست‌های مشتری',
+            ],
+
+            'card' => [
+                'title' => 'نشست‌های API (:count)',
+                'empty' => 'این مشتری هیچ نشست API فعالی ندارد.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'شما اجازه مدیریت نشست‌های API مشتریان را ندارید.',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'احراز هویت مشتریان',
+                'info' => 'مدت اعتبار توکن‌ها، محدودیت‌ها و قواعد نشست برای ورود مشتریان فروشگاه.',
+
+                'tokens' => [
+                    'title' => 'مدت اعتبار توکن‌ها',
+                    'info' => 'مدت اعتبار توکن‌های دسترسی، توکن‌های تازه‌سازی و نشست‌ها. تغییرات برای توکن‌های صادرشده پس از آن اعمال می‌شود.',
+                    'access-token-ttl' => 'مدت اعتبار توکن دسترسی (دقیقه)',
+                    'access-token-ttl-info' => 'بین ۵ تا ۶۰ دقیقه. پیش‌فرض ۱۵.',
+                    'refresh-token-ttl' => 'مدت اعتبار توکن تازه‌سازی (روز)',
+                    'refresh-token-ttl-info' => 'بین ۱ تا ۹۰ روز. پیش‌فرض ۳۰.',
+                    'session-lifetime' => 'حداکثر مدت نشست (روز)',
+                    'session-lifetime-info' => 'بین ۱ تا ۳۶۵ روز. پیش‌فرض ۹۰. پس از آن مدیر باید دوباره وارد شود، هر چند بار که نشست تازه‌سازی شده باشد.',
+                    'max-sessions' => 'حداکثر نشست‌های فعال برای هر مشتری',
+                    'max-sessions-info' => 'با رسیدن به حد، قدیمی‌ترین نشست پایان می‌یابد. بین ۰ تا ۱۰۰. ۰ یعنی بدون محدودیت.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'محدودیت نرخ',
+                    'info' => 'حداکثر درخواست‌های API فروشگاه در دقیقه برای هر مشتری واردشده.',
+                    'requests-per-minute' => 'درخواست در دقیقه برای هر مشتری واردشده',
+                    'requests-per-minute-info' => 'بین ۱ تا ۱۰۰۰۰۰. پیش‌فرض ۱۲۰.',
+                ],
+
+                'login-protection' => [
+                    'title' => 'محافظت از ورود',
+                    'info' => 'چه تعداد ورود ناموفق و تمدید توکن مجاز است تا کلاینت مجبور به انتظار شود.',
+                    'login-max-attempts' => 'ورودهای ناموفق پیش از قفل شدن',
+                    'login-max-attempts-info' => 'برای هر ایمیل و نشانی IP. بین ۳ تا ۲۰. پیش‌فرض ۵.',
+                    'login-lockout-seconds' => 'قفل ورود (ثانیه)',
+                    'login-lockout-seconds-info' => 'بین ۶۰ تا ۳۶۰۰. پیش‌فرض ۶۰.',
+                    'refresh-requests-per-minute' => 'تمدید توکن در دقیقه برای هر نشست',
+                    'refresh-requests-per-minute-info' => 'بین ۱ تا ۶۰. پیش‌فرض ۱۰.',
+                ],
+
+                'security' => [
+                    'title' => 'امنیت',
+                    'info' => 'چه چیزی نشست‌های دیگر مشتری را پایان می‌دهد.',
+                    'revoke-sessions-on-password-change' => 'لغو نشست‌ها هنگام تغییر رمز عبور',
+                ],
+
+                'retention' => [
+                    'title' => 'نگهداری داده‌ها',
+                    'info' => 'نشست‌های پایان‌یافته مشتریان چه مدت نگهداری می‌شوند.',
+                    'session-prune-days' => 'نگهداری نشست‌های پایان‌یافته (روز)',
+                    'session-prune-days-info' => 'نشست‌های لغوشده یا منقضی پس از این تعداد روز حذف می‌شوند. بین ۱ تا ۳۶۵. پیش‌فرض ۳۰.',
+                ],
+            ],
+        ],
         'auth' => [
             'configuration' => [
                 'title' => 'احراز هویت مدیر',
@@ -1646,6 +1735,10 @@ return [
                     'info' => 'حداکثر درخواست‌های API مدیر در دقیقه.',
                     'session-requests-per-minute' => 'درخواست در دقیقه برای هر مدیر واردشده',
                     'api-token-requests-per-minute' => 'درخواست در دقیقه برای هر توکن API',
+                    'session-requests-per-minute-info' => 'بین ۱ تا ۱۰۰۰۰۰. پیش‌فرض ۶۰.',
+                    'api-token-requests-per-minute-info' => 'بین ۱ تا ۱۰۰۰۰۰. پیش‌فرض ۶۰.',
+                    'unauthenticated-requests-per-minute' => 'درخواست در دقیقه بدون توکن برای هر نشانی IP',
+                    'unauthenticated-requests-per-minute-info' => 'بین ۱۰ تا ۱۰۰۰. پیش‌فرض ۶۰. شامل درخواست‌های ورود، تأیید دومرحله‌ای، تمدید و رمز عبور است.',
                 ],
 
                 'security' => [
@@ -1658,6 +1751,30 @@ return [
                     'domain-binding-mode-info' => 'DNS بررسی می‌کند که درخواست از نشانی IP‌ای باشد که دامنه توکن به آن اشاره می‌کند. Origin سرآیند Origin یا Referer را بررسی می‌کند و فقط برای مرورگرها مناسب است.',
                     'domain-binding-dns' => 'DNS (نشانی IP کلاینت)',
                     'domain-binding-origin' => 'سرآیند Origin',
+                ],
+
+                'login-protection' => [
+                    'title' => 'محافظت از ورود',
+                    'info' => 'چه تعداد ورود ناموفق، کد دومرحله‌ای نادرست و درخواست رمز عبور مجاز است تا کلاینت مجبور به انتظار شود.',
+                    'login-max-attempts' => 'ورودهای ناموفق پیش از قفل شدن',
+                    'login-max-attempts-info' => 'برای هر ایمیل و نشانی IP. بین ۳ تا ۲۰. پیش‌فرض ۵.',
+                    'login-lockout-seconds' => 'قفل ورود (ثانیه)',
+                    'login-lockout-seconds-info' => 'بین ۶۰ تا ۳۶۰۰. پیش‌فرض ۶۰.',
+                    'two-factor-challenge-lifetime' => 'مدت اعتبار چالش دومرحله‌ای (دقیقه)',
+                    'two-factor-challenge-lifetime-info' => 'بین ۱ تا ۱۵. پیش‌فرض ۵.',
+                    'two-factor-max-failures' => 'کدهای دومرحله‌ای نادرست در دقیقه',
+                    'two-factor-max-failures-info' => 'برای هر مدیر، در همه چالش‌ها. بین ۳ تا ۲۰. پیش‌فرض ۵.',
+                    'password-requests-per-minute' => 'درخواست رمز عبور در دقیقه',
+                    'password-requests-per-minute-info' => 'درخواست‌های فراموشی و بازنشانی رمز عبور برای هر نشانی IP. بین ۱ تا ۲۰. پیش‌فرض ۵.',
+                ],
+
+                'retention' => [
+                    'title' => 'نگهداری داده‌ها',
+                    'info' => 'نشست‌های پایان‌یافته و تاریخچه حسابرسی API چه مدت نگهداری می‌شوند.',
+                    'session-prune-days' => 'نگهداری نشست‌های پایان‌یافته (روز)',
+                    'session-prune-days-info' => 'نشست‌های لغوشده یا منقضی پس از این تعداد روز حذف می‌شوند. بین ۱ تا ۳۶۵. پیش‌فرض ۳۰.',
+                    'audit-retention-days' => 'نگهداری تاریخچه حسابرسی API (روز)',
+                    'audit-retention-days-info' => 'ورودی‌های قدیمی‌تر هر روز حذف می‌شوند. بین ۰ تا ۳۶۵۰. خالی یا ۰ آن‌ها را برای همیشه نگه می‌دارد.',
                 ],
             ],
 
@@ -1917,6 +2034,7 @@ return [
                 'session' => 'نشست ورود',
                 'api-token' => 'توکن API',
                 'integration' => 'توکن یکپارچه‌سازی (حذف‌شده)',
+                'customer-session' => 'نشست ورود مشتری',
             ],
 
             'channels' => [

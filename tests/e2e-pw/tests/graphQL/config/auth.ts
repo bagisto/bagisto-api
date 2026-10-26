@@ -6,7 +6,7 @@ const CUSTOMER_LOGIN = `
   mutation createCustomerLogin($email: String!, $password: String!) {
     createCustomerLogin(input: { email: $email, password: $password }) {
       customerLogin {
-        token
+        accessToken
         success
         message
       }
@@ -20,7 +20,7 @@ const REGISTER_CUSTOMER = `
       customer {
         id
         _id
-        token
+        accessToken
         email
       }
     }
@@ -61,7 +61,7 @@ async function registerAndLoginCustomer(request: APIRequestContext): Promise<str
   expect(registerResponse.status()).toBe(200);
 
   const registerBody = await registerResponse.json();
-  const registerToken = registerBody.data?.createCustomer?.customer?.token;
+  const registerToken = registerBody.data?.createCustomer?.customer?.accessToken;
   if (typeof registerToken === 'string' && registerToken.length > 0) {
     return registerToken;
   }
@@ -70,7 +70,7 @@ async function registerAndLoginCustomer(request: APIRequestContext): Promise<str
   expect(loginResponse.status()).toBe(200);
 
   const loginBody = await loginResponse.json();
-  const loginToken = loginBody.data?.createCustomerLogin?.customerLogin?.token;
+  const loginToken = loginBody.data?.createCustomerLogin?.customerLogin?.accessToken;
   expect(loginToken, `failed to obtain customer token: ${JSON.stringify(registerBody)}`).toBeTruthy();
   return loginToken as string;
 }

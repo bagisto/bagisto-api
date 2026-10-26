@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use finfo;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Dto\CreateProductReviewInput;
 use Webkul\BagistoApi\Dto\UpdateProductReviewInput;
@@ -18,6 +17,7 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\ProductReview;
 use Webkul\BagistoApi\Models\ProductReviewAttachment;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class ProductReviewProcessor implements ProcessorInterface
 {
@@ -110,7 +110,7 @@ class ProductReviewProcessor implements ProcessorInterface
         }
 
         if ($operation instanceof Post) {
-            $customer = Auth::guard('sanctum')->user();
+            $customer = CurrentCustomer::user();
 
             $this->assertReviewsAllowed($customer !== null);
             $this->assertTitleAndComment($data->getAttribute('title'), $data->getAttribute('comment'));
@@ -133,7 +133,7 @@ class ProductReviewProcessor implements ProcessorInterface
      */
     private function handleCreate(CreateProductReviewInput $data)
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         $this->assertReviewsAllowed($customer !== null);
 
@@ -289,7 +289,7 @@ class ProductReviewProcessor implements ProcessorInterface
      */
     private function assertOwnedReview(ProductReview $review): void
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.product-review.owner-required'));

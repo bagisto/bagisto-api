@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\QueryItemResolverInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
@@ -18,6 +17,7 @@ use Webkul\BagistoApi\Models\CustomerReview;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\ProductReview;
 use Webkul\BagistoApi\Service\GenericIdNormalizer;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Customer\Models\Customer;
 
 class BaseQueryItemResolver implements QueryItemResolverInterface
@@ -96,7 +96,7 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
      */
     protected function findOwnedResource(string $modelClass, int $numericId, mixed $id): object
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer instanceof Customer) {
             throw new AuthenticationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

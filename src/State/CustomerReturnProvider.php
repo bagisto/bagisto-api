@@ -8,11 +8,11 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerReturn;
 use Webkul\BagistoApi\State\Concerns\BuildsCustomerReturn;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\RMA\Repositories\RMARepository;
 
 class CustomerReturnProvider implements ProviderInterface
@@ -31,7 +31,7 @@ class CustomerReturnProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

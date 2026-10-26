@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Core\Models\Country;
 use Webkul\Core\Models\CountryState;
@@ -101,6 +102,21 @@ class CountryTest extends RestApiTestCase
 
         $response->assertOk();
         expect(count($response->json()))->toBe(5);
+    }
+
+    /**
+     * Test every country fits in one request, as the storefront returns them all at once.
+     */
+    public function test_every_country_fits_in_one_request(): void
+    {
+        $this->seedRequiredData();
+
+        $total = DB::table('countries')->count();
+
+        $response = $this->publicGet($this->countriesUrl.'?per_page=300');
+
+        $response->assertOk();
+        expect(count($response->json()))->toBe(min($total, 300));
     }
 
     /**

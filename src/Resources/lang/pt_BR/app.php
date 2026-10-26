@@ -275,6 +275,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
             'unknown-resource' => 'Recurso desconhecido',
             'cannot-update-other-profile' => 'Não autorizado: não é possível atualizar o perfil de outro cliente',
+            'refresh-token-invalid' => 'O token de atualização é inválido ou expirou. Entre novamente.',
+            'too-many-login-attempts' => 'Muitas tentativas de login. Tente novamente em :seconds segundos.',
+            'too-many-refresh-requests' => 'Muitas renovações de token. Tente novamente em :seconds segundos.',
+            'rate-limit-exceeded' => 'Muitas tentativas.',
+            'access-token-expired' => 'O token de acesso expirou. Atualize-o para continuar.',
+            'logged-out-all' => 'Você saiu de todas as sessões.',
+            'session-not-found' => 'Sessão não encontrada.',
+            'session-revoked' => 'A sessão foi revogada.',
         ],
 
         'upload' => [
@@ -842,10 +850,6 @@ return [
             'note' => [
                 'empty' => 'O texto da observação é obrigatório.',
                 'created' => 'Observação adicionada com sucesso.',
-            ],
-
-            'impersonate' => [
-                'success' => 'Token de personificação emitido.',
             ],
 
             'review' => [
@@ -1625,6 +1629,91 @@ return [
                 'no-permission' => 'Você não tem permissão para gerenciar termos de pesquisa.',
             ],
         ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'Sessões de API',
+            ],
+
+            'acl' => [
+                'title' => 'Sessões de API',
+                'delete' => 'Revogar',
+            ],
+
+            'index' => [
+                'title' => 'Sessões de API dos clientes',
+                'info' => 'Clientes conectados à API da loja por aplicativos web, móveis, de PDV ou de desktop. Revogar uma sessão desconecta esse dispositivo na hora.',
+            ],
+
+            'fields' => [
+                'customer' => 'Cliente',
+                'email' => 'E-mail',
+                'channel' => 'Canal',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'Revogar todas as sessões do cliente',
+            ],
+
+            'card' => [
+                'title' => 'Sessões de API (:count)',
+                'empty' => 'Este cliente não tem sessões de API ativas.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Você não tem permissão para gerenciar as sessões de API dos clientes.',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'Autenticação de clientes',
+                'info' => 'Duração dos tokens, limites e regras de sessão para os logins dos clientes da loja.',
+
+                'tokens' => [
+                    'title' => 'Duração dos tokens',
+                    'info' => 'Por quanto tempo tokens de acesso, tokens de atualização e sessões permanecem válidos. As alterações valem para tokens emitidos depois.',
+                    'access-token-ttl' => 'Duração do token de acesso (minutos)',
+                    'access-token-ttl-info' => 'Entre 5 e 60 minutos. Padrão 15.',
+                    'refresh-token-ttl' => 'Duração do token de atualização (dias)',
+                    'refresh-token-ttl-info' => 'Entre 1 e 90 dias. Padrão 30.',
+                    'session-lifetime' => 'Duração máxima da sessão (dias)',
+                    'session-lifetime-info' => 'Entre 1 e 365 dias. Padrão 90. Depois disso o administrador precisa entrar novamente, não importa quantas vezes a sessão foi atualizada.',
+                    'max-sessions' => 'Máximo de sessões ativas por cliente',
+                    'max-sessions-info' => 'Ao atingir o limite, a sessão mais antiga é encerrada. Entre 0 e 100. 0 significa sem limite.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Limites de requisições',
+                    'info' => 'Máximo de requisições à API da loja por minuto para cada cliente conectado.',
+                    'requests-per-minute' => 'Requisições por minuto por cliente conectado',
+                    'requests-per-minute-info' => 'Entre 1 e 100000. Padrão 120.',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Proteção de login',
+                    'info' => 'Quantos logins com falha e renovações de token são permitidos antes que o cliente precise esperar.',
+                    'login-max-attempts' => 'Logins com falha antes do bloqueio',
+                    'login-max-attempts-info' => 'Por e-mail e endereço IP. Entre 3 e 20. Padrão 5.',
+                    'login-lockout-seconds' => 'Bloqueio de login (segundos)',
+                    'login-lockout-seconds-info' => 'Entre 60 e 3600. Padrão 60.',
+                    'refresh-requests-per-minute' => 'Renovações de token por minuto por sessão',
+                    'refresh-requests-per-minute-info' => 'Entre 1 e 60. Padrão 10.',
+                ],
+
+                'security' => [
+                    'title' => 'Segurança',
+                    'info' => 'O que encerra as outras sessões de um cliente.',
+                    'revoke-sessions-on-password-change' => 'Revogar sessões ao alterar a senha',
+                ],
+
+                'retention' => [
+                    'title' => 'Retenção de dados',
+                    'info' => 'Por quanto tempo as sessões encerradas dos clientes são mantidas.',
+                    'session-prune-days' => 'Manter sessões encerradas (dias)',
+                    'session-prune-days-info' => 'Sessões revogadas ou expiradas são excluídas após esse número de dias. Entre 1 e 365. Padrão 30.',
+                ],
+            ],
+        ],
         'auth' => [
             'configuration' => [
                 'title' => 'Autenticação de administrador',
@@ -1646,6 +1735,10 @@ return [
                     'info' => 'Máximo de requisições à API de administração por minuto.',
                     'session-requests-per-minute' => 'Requisições por minuto por administrador conectado',
                     'api-token-requests-per-minute' => 'Requisições por minuto por token de API',
+                    'session-requests-per-minute-info' => 'Entre 1 e 100000. Padrão 60.',
+                    'api-token-requests-per-minute-info' => 'Entre 1 e 100000. Padrão 60.',
+                    'unauthenticated-requests-per-minute' => 'Requisições por minuto sem token, por endereço IP',
+                    'unauthenticated-requests-per-minute-info' => 'Entre 10 e 1000. Padrão 60. Inclui as requisições de login, dois fatores, renovação e senha.',
                 ],
 
                 'security' => [
@@ -1658,6 +1751,30 @@ return [
                     'domain-binding-mode-info' => 'DNS verifica se a requisição vem de um endereço IP para o qual o domínio do token aponta. Origin verifica o cabeçalho Origin ou Referer e serve apenas para navegadores.',
                     'domain-binding-dns' => 'DNS (endereço IP do cliente)',
                     'domain-binding-origin' => 'Cabeçalho Origin',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Proteção de login',
+                    'info' => 'Quantos logins com falha, códigos de dois fatores incorretos e requisições de senha são permitidos antes que o cliente precise esperar.',
+                    'login-max-attempts' => 'Logins com falha antes do bloqueio',
+                    'login-max-attempts-info' => 'Por e-mail e endereço IP. Entre 3 e 20. Padrão 5.',
+                    'login-lockout-seconds' => 'Bloqueio de login (segundos)',
+                    'login-lockout-seconds-info' => 'Entre 60 e 3600. Padrão 60.',
+                    'two-factor-challenge-lifetime' => 'Duração do desafio de dois fatores (minutos)',
+                    'two-factor-challenge-lifetime-info' => 'Entre 1 e 15. Padrão 5.',
+                    'two-factor-max-failures' => 'Códigos de dois fatores incorretos por minuto',
+                    'two-factor-max-failures-info' => 'Por administrador, em todos os desafios. Entre 3 e 20. Padrão 5.',
+                    'password-requests-per-minute' => 'Requisições de senha por minuto',
+                    'password-requests-per-minute-info' => 'Requisições de esqueci a senha e redefinição por endereço IP. Entre 1 e 20. Padrão 5.',
+                ],
+
+                'retention' => [
+                    'title' => 'Retenção de dados',
+                    'info' => 'Por quanto tempo as sessões encerradas e o histórico de auditoria da API são mantidos.',
+                    'session-prune-days' => 'Manter sessões encerradas (dias)',
+                    'session-prune-days-info' => 'Sessões revogadas ou expiradas são excluídas após esse número de dias. Entre 1 e 365. Padrão 30.',
+                    'audit-retention-days' => 'Manter histórico de auditoria da API (dias)',
+                    'audit-retention-days-info' => 'Entradas mais antigas são excluídas diariamente. Entre 0 e 3650. Vazio ou 0 as mantém para sempre.',
                 ],
             ],
 
@@ -1917,6 +2034,7 @@ return [
                 'session' => 'Sessão de login',
                 'api-token' => 'Token de API',
                 'integration' => 'Token de integração (removido)',
+                'customer-session' => 'Sessão de login do cliente',
             ],
 
             'channels' => [

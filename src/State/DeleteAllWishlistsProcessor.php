@@ -4,12 +4,12 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Dto\DeleteAllWishlistsInput;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\DeleteAllWishlists;
 use Webkul\BagistoApi\Models\Wishlist;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class DeleteAllWishlistsProcessor implements ProcessorInterface
 {
@@ -37,7 +37,7 @@ class DeleteAllWishlistsProcessor implements ProcessorInterface
      */
     private function handleDeleteAll(): DeleteAllWishlists
     {
-        $user = Auth::guard('sanctum')->user();
+        $user = CurrentCustomer::user();
 
         if (! $user) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

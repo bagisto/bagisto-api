@@ -275,6 +275,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
             'unknown-resource' => 'Risorsa sconosciuta',
             'cannot-update-other-profile' => 'Non autorizzato: impossibile aggiornare il profilo di un altro cliente',
+            'refresh-token-invalid' => 'Il token di aggiornamento non è valido o è scaduto. Accedi di nuovo.',
+            'too-many-login-attempts' => 'Troppi tentativi di accesso. Riprova tra :seconds secondi.',
+            'too-many-refresh-requests' => 'Troppi rinnovi del token. Riprova tra :seconds secondi.',
+            'rate-limit-exceeded' => 'Troppi tentativi.',
+            'access-token-expired' => 'Il token di accesso è scaduto. Aggiornalo per continuare.',
+            'logged-out-all' => 'Sei stato disconnesso da tutte le sessioni.',
+            'session-not-found' => 'Sessione non trovata.',
+            'session-revoked' => 'La sessione è stata revocata.',
         ],
 
         'upload' => [
@@ -842,10 +850,6 @@ return [
             'note' => [
                 'empty' => 'Il testo della nota è obbligatorio.',
                 'created' => 'Nota aggiunta con successo.',
-            ],
-
-            'impersonate' => [
-                'success' => 'Token di impersonificazione emesso.',
             ],
 
             'review' => [
@@ -1625,6 +1629,91 @@ return [
                 'no-permission' => 'Non hai l\'autorizzazione per gestire i termini di ricerca.',
             ],
         ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'Sessioni API',
+            ],
+
+            'acl' => [
+                'title' => 'Sessioni API',
+                'delete' => 'Revoca',
+            ],
+
+            'index' => [
+                'title' => 'Sessioni API dei clienti',
+                'info' => 'Clienti connessi all\'API del negozio da app web, mobili, POS o desktop. Revocare una sessione disconnette subito quel dispositivo.',
+            ],
+
+            'fields' => [
+                'customer' => 'Cliente',
+                'email' => 'Email',
+                'channel' => 'Canale',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'Revoca tutte le sessioni del cliente',
+            ],
+
+            'card' => [
+                'title' => 'Sessioni API (:count)',
+                'empty' => 'Questo cliente non ha sessioni API attive.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Non hai l\'autorizzazione per gestire le sessioni API dei clienti.',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'Autenticazione dei clienti',
+                'info' => 'Durata dei token, limiti e regole di sessione per gli accessi dei clienti del negozio.',
+
+                'tokens' => [
+                    'title' => 'Durata dei token',
+                    'info' => 'Per quanto tempo restano validi i token di accesso, i token di aggiornamento e le sessioni. Le modifiche si applicano ai token emessi in seguito.',
+                    'access-token-ttl' => 'Durata del token di accesso (minuti)',
+                    'access-token-ttl-info' => 'Tra 5 e 60 minuti. Predefinito 15.',
+                    'refresh-token-ttl' => 'Durata del token di aggiornamento (giorni)',
+                    'refresh-token-ttl-info' => 'Tra 1 e 90 giorni. Predefinito 30.',
+                    'session-lifetime' => 'Durata massima della sessione (giorni)',
+                    'session-lifetime-info' => 'Tra 1 e 365 giorni. Predefinito 90. Dopo, l\'amministratore deve accedere di nuovo, indipendentemente da quante volte la sessione è stata aggiornata.',
+                    'max-sessions' => 'Sessioni attive massime per cliente',
+                    'max-sessions-info' => 'Raggiunto il limite, la sessione più vecchia viene chiusa. Tra 0 e 100. 0 significa nessun limite.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Limiti di richieste',
+                    'info' => 'Richieste massime all\'API del negozio al minuto per ogni cliente connesso.',
+                    'requests-per-minute' => 'Richieste al minuto per cliente connesso',
+                    'requests-per-minute-info' => 'Tra 1 e 100000. Predefinito 120.',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Protezione dell\'accesso',
+                    'info' => 'Quanti accessi non riusciti e rinnovi del token sono consentiti prima che il client debba attendere.',
+                    'login-max-attempts' => 'Accessi non riusciti prima del blocco',
+                    'login-max-attempts-info' => 'Per email e indirizzo IP. Tra 3 e 20. Predefinito 5.',
+                    'login-lockout-seconds' => 'Blocco dell\'accesso (secondi)',
+                    'login-lockout-seconds-info' => 'Tra 60 e 3600. Predefinito 60.',
+                    'refresh-requests-per-minute' => 'Rinnovi del token al minuto per sessione',
+                    'refresh-requests-per-minute-info' => 'Tra 1 e 60. Predefinito 10.',
+                ],
+
+                'security' => [
+                    'title' => 'Sicurezza',
+                    'info' => 'Cosa chiude le altre sessioni di un cliente.',
+                    'revoke-sessions-on-password-change' => 'Revoca le sessioni al cambio password',
+                ],
+
+                'retention' => [
+                    'title' => 'Conservazione dei dati',
+                    'info' => 'Per quanto tempo vengono conservate le sessioni terminate dei clienti.',
+                    'session-prune-days' => 'Conserva le sessioni terminate (giorni)',
+                    'session-prune-days-info' => 'Le sessioni revocate o scadute vengono eliminate dopo questo numero di giorni. Tra 1 e 365. Predefinito 30.',
+                ],
+            ],
+        ],
         'auth' => [
             'configuration' => [
                 'title' => 'Autenticazione amministratore',
@@ -1646,6 +1735,10 @@ return [
                     'info' => 'Numero massimo di richieste all\'API di amministrazione al minuto.',
                     'session-requests-per-minute' => 'Richieste al minuto per amministratore connesso',
                     'api-token-requests-per-minute' => 'Richieste al minuto per token API',
+                    'session-requests-per-minute-info' => 'Tra 1 e 100000. Predefinito 60.',
+                    'api-token-requests-per-minute-info' => 'Tra 1 e 100000. Predefinito 60.',
+                    'unauthenticated-requests-per-minute' => 'Richieste al minuto senza token, per indirizzo IP',
+                    'unauthenticated-requests-per-minute-info' => 'Tra 10 e 1000. Predefinito 60. Comprende le richieste di accesso, doppio fattore, rinnovo e password.',
                 ],
 
                 'security' => [
@@ -1658,6 +1751,30 @@ return [
                     'domain-binding-mode-info' => 'DNS verifica che la richiesta provenga da un indirizzo IP a cui punta il dominio del token. Origin verifica l\'intestazione Origin o Referer ed è adatto solo ai browser.',
                     'domain-binding-dns' => 'DNS (indirizzo IP del client)',
                     'domain-binding-origin' => 'Intestazione Origin',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Protezione dell\'accesso',
+                    'info' => 'Quanti accessi non riusciti, codici a doppio fattore errati e richieste di password sono consentiti prima che il client debba attendere.',
+                    'login-max-attempts' => 'Accessi non riusciti prima del blocco',
+                    'login-max-attempts-info' => 'Per email e indirizzo IP. Tra 3 e 20. Predefinito 5.',
+                    'login-lockout-seconds' => 'Blocco dell\'accesso (secondi)',
+                    'login-lockout-seconds-info' => 'Tra 60 e 3600. Predefinito 60.',
+                    'two-factor-challenge-lifetime' => 'Durata della verifica a doppio fattore (minuti)',
+                    'two-factor-challenge-lifetime-info' => 'Tra 1 e 15. Predefinito 5.',
+                    'two-factor-max-failures' => 'Codici a doppio fattore errati al minuto',
+                    'two-factor-max-failures-info' => 'Per amministratore, su tutte le verifiche. Tra 3 e 20. Predefinito 5.',
+                    'password-requests-per-minute' => 'Richieste di password al minuto',
+                    'password-requests-per-minute-info' => 'Richieste di recupero e reimpostazione della password per indirizzo IP. Tra 1 e 20. Predefinito 5.',
+                ],
+
+                'retention' => [
+                    'title' => 'Conservazione dei dati',
+                    'info' => 'Per quanto tempo vengono conservate le sessioni terminate e la cronologia di audit dell\'API.',
+                    'session-prune-days' => 'Conserva le sessioni terminate (giorni)',
+                    'session-prune-days-info' => 'Le sessioni revocate o scadute vengono eliminate dopo questo numero di giorni. Tra 1 e 365. Predefinito 30.',
+                    'audit-retention-days' => 'Conserva la cronologia di audit dell\'API (giorni)',
+                    'audit-retention-days-info' => 'Le voci più vecchie vengono eliminate ogni giorno. Tra 0 e 3650. Vuoto o 0 le conserva per sempre.',
                 ],
             ],
 
@@ -1917,6 +2034,7 @@ return [
                 'session' => 'Sessione di accesso',
                 'api-token' => 'Token API',
                 'integration' => 'Token di integrazione (rimosso)',
+                'customer-session' => 'Sessione di accesso del cliente',
             ],
 
             'channels' => [

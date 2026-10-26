@@ -33,6 +33,8 @@ const CUSTOMER_LOGIN = `
     createCustomerLogin(input: { email: $email, password: $password }) {
       customerLogin {
         token
+        accessToken
+        refreshToken
         success
         message
       }
@@ -91,12 +93,17 @@ async function gql(
   request: APIRequestContext,
   query: string,
   variables: Record<string, any> = {},
-  headers: Record<string, string> = {}
+  headers: Record<string, string> = {},
+  status = 200
 ): Promise<any> {
   const response = await sendGraphQLRequest(request, query, variables, headers);
-  expect(response.status()).toBe(200);
+  expect(response.status()).toBe(status);
 
   return response.json();
+}
+
+function errorCode(body: any): string | undefined {
+  return body?.errors?.[0]?.extensions?.code;
 }
 
 async function registerCustomer(request: APIRequestContext, firstName = 'Graph', lastName = 'Customer'): Promise<RegisteredCustomer> {
@@ -255,11 +262,9 @@ test.describe('customer graphql api', () => {
       password: 'SecurePass@123',
     });
 
-    expect(body.errors).toBeUndefined();
-    const login = body.data.createCustomerLogin.customerLogin;
-    expect(login.success).toBe(false);
-    expect(login.message).toBe(MSG.INVALID_CREDENTIALS);
-    expect(login.token).toBe('');
+    expect(errorCode(body)).toBe('invalid_credentials');
+    expect(graphQLErrorMessages(body)).toEqual([MSG.INVALID_CREDENTIALS]);
+    expect(body.data?.createCustomerLogin ?? null).toBeNull();
   });
 
   test('should log a registered customer in and verify the issued token', async ({ request }) => {
@@ -270,6 +275,9 @@ test.describe('customer graphql api', () => {
     const login = loginBody.data.createCustomerLogin.customerLogin;
     expect(login.success).toBe(true);
     expect(login.message).toBe(MSG.LOGIN_SUCCESS);
+    expect(login.token).toBe(login.accessToken);
+    expect(String(login.accessToken).split('.')).toHaveLength(3);
+    expect(typeof login.refreshToken).toBe('string');
 
     const verifyBody = await gql(request, CREATE_VERIFY_TOKEN, {}, { Authorization: `Bearer ${login.token}` });
     expect(verifyBody.errors).toBeUndefined();
@@ -348,9 +356,9 @@ test.describe('customer graphql api', () => {
     expect(logoutBody.data.createLogout.logout.success).toBe(true);
     expect(logoutBody.data.createLogout.logout.message).toBe(MSG.LOGGED_OUT);
 
-    const profile = await gql(request, SHOP_DOCS_QUERIES.getCustomerProfile, {}, customer.headers);
+    const profile = await gql(request, SHOP_DOCS_QUERIES.getCustomerProfile, {}, customer.headers, 401);
     expect(profile.data?.readCustomerProfile ?? null).toBeNull();
-    expect(graphQLErrorMessages(profile)).toEqual([MSG.UNAUTHENTICATED]);
+    expect(errorCode(profile)).toBe('unauthenticated');
   });
 
   test('should refuse to delete a profile without a customer token', async ({ request }) => {
@@ -419,8 +427,7 @@ test.describe('customer profile update current password regression', () => {
     ).toBeTruthy();
 
     const oldLoginBody = await gql(request, CUSTOMER_LOGIN, { email, password: oldPassword });
-    expect(oldLoginBody.data.createCustomerLogin.customerLogin.success).toBe(false);
-    expect(oldLoginBody.data.createCustomerLogin.customerLogin.message).toBe(MSG.INVALID_CREDENTIALS);
+    expect(errorCode(oldLoginBody)).toBe('invalid_credentials');
   });
 
   test('should reject a password change when the current password is wrong and keep the old password', async ({ request }) => {

@@ -284,6 +284,34 @@ class ProductTest extends RestApiTestCase
     }
 
     /**
+     * Test sorting by price lists a product once when it has a price index row on another channel.
+     */
+    public function test_price_sort_lists_a_product_once_across_channels(): void
+    {
+        $product = $this->seedSaleableProduct();
+        $this->seedGuestPriceIndex($product, 50.0);
+
+        DB::table('product_price_indices')->insert([
+            'product_id' => $product->id,
+            'customer_group_id' => core()->getGuestCustomerGroup()->id,
+            'channel_id' => 999,
+            'min_price' => 10.0,
+            'regular_min_price' => 10.0,
+            'max_price' => 10.0,
+            'regular_max_price' => 10.0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        foreach (['price-asc', 'price-desc'] as $sort) {
+            $ids = $this->productIds($this->publicGet($this->collectionUrl.'?sort='.$sort.'&per_page=50')->assertOk());
+
+            expect(count(array_keys($ids, $product->id)))->toBeLessThanOrEqual(1);
+            expect(count($ids))->toBe(count(array_unique($ids)));
+        }
+    }
+
+    /**
      * Test sort most expensive first.
      */
     public function test_sort_most_expensive_first(): void
@@ -307,6 +335,34 @@ class ProductTest extends RestApiTestCase
 
         $response->assertOk();
         expect($response->json())->toBeArray();
+    }
+
+    /**
+     * Test the listing without a sort follows the storefront default sort configuration.
+     */
+    public function test_default_sort_follows_storefront_configuration(): void
+    {
+        $tag = 'srtdef'.uniqid();
+        $a = $this->seedSaleableProduct('simple', 'REST-DEF-A-'.$tag);
+        $b = $this->seedSaleableProduct('simple', 'REST-DEF-B-'.$tag);
+        $c = $this->seedSaleableProduct('simple', 'REST-DEF-C-'.$tag);
+        $this->upsertProductAttributeValue($a->id, 'name', 'ZZZ Last', 'en', 'default');
+        $this->upsertProductAttributeValue($b->id, 'name', 'AAA First', 'en', 'default');
+        $this->upsertProductAttributeValue($c->id, 'name', 'MMM Middle', 'en', 'default');
+
+        $this->storeDefaultSort('name-asc');
+
+        $names = array_column($this->publicGet($this->collectionUrl.'?query='.$tag.'&per_page=50')->assertOk()->json(), 'name');
+
+        expect(array_values(array_intersect($names, ['AAA First', 'MMM Middle', 'ZZZ Last'])))
+            ->toBe(['AAA First', 'MMM Middle', 'ZZZ Last']);
+
+        $this->storeDefaultSort('name-desc');
+
+        $names = array_column($this->publicGet($this->collectionUrl.'?query='.$tag.'&per_page=50')->assertOk()->json(), 'name');
+
+        expect(array_values(array_intersect($names, ['AAA First', 'MMM Middle', 'ZZZ Last'])))
+            ->toBe(['ZZZ Last', 'MMM Middle', 'AAA First']);
     }
 
     // ============================================================================
@@ -916,5 +972,24 @@ class ProductTest extends RestApiTestCase
     private function productIds($response): array
     {
         return collect($response->json())->pluck('id')->map(fn ($id) => (int) $id)->all();
+    }
+
+    /**
+     * Store the storefront default sort for the requested channel and clear the config cache.
+     */
+    private function storeDefaultSort(string $value): void
+    {
+        DB::table('core_config')->where('code', 'catalog.products.storefront.sort_by')->delete();
+
+        DB::table('core_config')->insert([
+            'code' => 'catalog.products.storefront.sort_by',
+            'value' => $value,
+            'channel_code' => core()->getRequestedChannelCode(),
+            'locale_code' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->forgetCoreConfigCache();
     }
 }

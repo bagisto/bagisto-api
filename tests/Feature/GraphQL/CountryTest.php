@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Core\Models\CountryState;
 
@@ -1149,5 +1150,16 @@ class CountryTest extends GraphQLTestCase
                 ->and($response->json('data.countryStates.edges'))->toBe([])
                 ->and($response->json('data.countryStates.totalCount'))->toBeGreaterThan(0);
         }
+    }
+
+    /**
+     * Every country fits in one countries query.
+     */
+    public function test_every_country_fits_in_one_query(): void
+    {
+        $response = $this->graphQL('{ countries(first: 300) { edges { node { _id } } } }');
+
+        expect($response->json('errors'))->toBeNull();
+        expect(count($response->json('data.countries.edges')))->toBe(min(DB::table('countries')->count(), 300));
     }
 }

@@ -48,6 +48,21 @@ return [
 
         'sort' => 1,
     ], [
+        'key' => 'customers.api_sessions',
+        'name' => 'bagistoapi::app.admin.customer-api-sessions.acl.title',
+        'route' => 'admin.customers.api_sessions.index',
+        'sort' => 8,
+    ], [
+        'key' => 'customers.api_sessions.delete',
+        'name' => 'bagistoapi::app.admin.customer-api-sessions.acl.delete',
+
+        'route' => [
+            'admin.customers.api_sessions.delete',
+            'admin.customers.api_sessions.revoke_all',
+        ],
+
+        'sort' => 1,
+    ], [
         'key' => 'settings.api_audit',
         'name' => 'bagistoapi::app.admin.api-audit.acl.title',
 

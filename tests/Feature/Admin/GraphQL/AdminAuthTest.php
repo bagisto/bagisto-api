@@ -12,7 +12,9 @@ use PragmaRX\Google2FA\Google2FA;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuthAuditor;
 use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
 use Webkul\BagistoApi\Admin\Models\AdminApiSession;
+use Webkul\BagistoApi\Admin\Services\AdminApiAuthSettings;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Core\Models\CoreConfig;
 use Webkul\User\Models\Admin;
 
 class AdminAuthTest extends AdminApiTestCase
@@ -141,6 +143,32 @@ class AdminAuthTest extends AdminApiTestCase
 
         $this->assertSame('too_many_login_attempts', $response->json('errors.0.extensions.code'));
         $this->assertGreaterThan(0, (int) $response->json('errors.0.extensions.retryAfter'));
+    }
+
+    /**
+     * Test the login lockout follows the configured number of attempts.
+     */
+    public function test_the_login_lockout_follows_the_configured_attempts(): void
+    {
+        foreach (['login_max_attempts' => '3', 'login_lockout_seconds' => '120'] as $field => $value) {
+            CoreConfig::query()->create([
+                'code' => AdminApiAuthSettings::CONFIG_PREFIX.'.login_protection.'.$field,
+                'value' => $value,
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+
+        $admin = $this->createAdmin();
+
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            $this->login($admin->email, 'wrong-'.$attempt);
+        }
+
+        $response = $this->login($admin->email, $this->adminPassword);
+
+        $this->assertSame('too_many_login_attempts', $response->json('errors.0.extensions.code'));
+        $this->assertGreaterThan(60, (int) $response->json('errors.0.extensions.retryAfter'));
     }
 
     // ========================================================================
@@ -645,7 +673,8 @@ class AdminAuthTest extends AdminApiTestCase
         Mail::fake();
 
         $admin = $this->createAdmin();
-        $token = $this->adminAccessToken($admin);
+        $pair = $this->adminTokenPair($admin);
+        $token = $pair->accessToken;
 
         $forgot = 'mutation ($input: createAdminForgotPasswordInput!) { createAdminForgotPassword(input: $input) { adminForgotPassword { success message } } }';
 
@@ -667,6 +696,7 @@ class AdminAuthTest extends AdminApiTestCase
         $this->assertTrue($reset->json('data.createAdminResetPassword.adminResetPassword.success'), $reset->getContent());
         $this->adminEndpointGraphQL(self::PROFILE, [], $token)->assertStatus(401);
         $this->assertTrue(Hash::check('reset-secret-1', $admin->fresh()->password));
+        $this->assertSame(AdminApiSession::REVOKED_PASSWORD_RESET, $pair->session->fresh()->revoked_reason);
     }
 
     /**

@@ -25,7 +25,7 @@ use Webkul\BagistoApi\State\ResetPasswordProcessor;
                 'groups' => ['mutation'],
             ],
             openapi: new Operation(
-                tags: ['Customer'],
+                tags: ['Customer Authentication'],
                 summary: 'Reset customer password using token',
                 description: 'Resets the password for a customer using the token received via email.',
                 requestBody: new RequestBody(

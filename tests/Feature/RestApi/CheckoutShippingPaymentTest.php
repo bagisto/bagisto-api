@@ -69,7 +69,7 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
             'shippingMethod' => 'nope_nope',
         ]);
 
-        expect(in_array($response->getStatusCode(), [400, 422, 500]))->toBeTrue();
+        expect($response->getStatusCode())->toBe(422);
     }
 
     /**
@@ -199,7 +199,7 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
             'paymentMethod' => 'nope',
         ]);
 
-        expect(in_array($response->getStatusCode(), [400, 422, 500]))->toBeTrue();
+        expect($response->getStatusCode())->toBe(422);
     }
 
     /**

@@ -275,6 +275,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
             'unknown-resource' => '不明なリソースです',
             'cannot-update-other-profile' => '権限がありません: 他の顧客のプロフィールは更新できません',
+            'refresh-token-invalid' => 'リフレッシュトークンが無効か期限切れです。再度ログインしてください。',
+            'too-many-login-attempts' => 'ログイン試行回数が多すぎます。:seconds 秒後にもう一度お試しください。',
+            'too-many-refresh-requests' => 'トークンの更新が多すぎます。:seconds 秒後にもう一度お試しください。',
+            'rate-limit-exceeded' => '試行回数が多すぎます。',
+            'access-token-expired' => 'アクセストークンの有効期限が切れました。続行するにはリフレッシュしてください。',
+            'logged-out-all' => 'すべてのセッションからログアウトしました。',
+            'session-not-found' => 'セッションが見つかりません。',
+            'session-revoked' => 'セッションは取り消されました。',
         ],
 
         'upload' => [
@@ -842,10 +850,6 @@ return [
             'note' => [
                 'empty' => 'メモのテキストは必須です。',
                 'created' => 'メモが正常に追加されました。',
-            ],
-
-            'impersonate' => [
-                'success' => 'なりすましトークンが発行されました。',
             ],
 
             'review' => [
@@ -1625,6 +1629,91 @@ return [
                 'no-permission' => '検索語を管理する権限がありません。',
             ],
         ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'APIセッション',
+            ],
+
+            'acl' => [
+                'title' => 'APIセッション',
+                'delete' => '失効',
+            ],
+
+            'index' => [
+                'title' => '顧客 API セッション',
+                'info' => 'Web、モバイル、POS、デスクトップなどのアプリからストアフロント API にサインインしている顧客。セッションを取り消すと、そのデバイスはすぐにサインアウトされます。',
+            ],
+
+            'fields' => [
+                'customer' => '顧客',
+                'email' => 'メールアドレス',
+                'channel' => 'チャネル',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => '顧客のすべてのセッションを取り消す',
+            ],
+
+            'card' => [
+                'title' => 'API セッション (:count)',
+                'empty' => 'この顧客にアクティブな API セッションはありません。',
+            ],
+
+            'errors' => [
+                'no-permission' => '顧客 API セッションを管理する権限がありません。',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => '顧客認証',
+                'info' => 'ストアフロント顧客ログインのトークン有効期間、制限、セッションルール。',
+
+                'tokens' => [
+                    'title' => 'トークンの有効期間',
+                    'info' => 'アクセストークン、リフレッシュトークン、セッションの有効期間。変更はその後に発行されるトークンに適用されます。',
+                    'access-token-ttl' => 'アクセストークンの有効期間（分）',
+                    'access-token-ttl-info' => '5～60 分。既定値 15。',
+                    'refresh-token-ttl' => 'リフレッシュトークンの有効期間（日）',
+                    'refresh-token-ttl-info' => '1～90 日。既定値 30。',
+                    'session-lifetime' => 'セッションの最大有効期間（日）',
+                    'session-lifetime-info' => '1～365 日。既定値 90。この期間を過ぎると、何度リフレッシュしても管理者は再ログインが必要です。',
+                    'max-sessions' => '顧客ごとの最大アクティブセッション数',
+                    'max-sessions-info' => '上限に達すると、最も古いセッションが終了します。0～100。0 は無制限を意味します。',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'レート制限',
+                    'info' => 'ログイン中の顧客ごとの 1 分あたりのストアフロント API リクエストの上限。',
+                    'requests-per-minute' => 'ログイン中の顧客ごとの 1 分あたりのリクエスト数',
+                    'requests-per-minute-info' => '1～100000。既定値 120。',
+                ],
+
+                'login-protection' => [
+                    'title' => 'ログイン保護',
+                    'info' => 'クライアントが待機を求められるまでに許可される、ログイン失敗とトークン更新の回数。',
+                    'login-max-attempts' => 'ロックアウトまでのログイン失敗回数',
+                    'login-max-attempts-info' => 'メールアドレスと IP アドレスごと。3～20。既定値 5。',
+                    'login-lockout-seconds' => 'ログインのロックアウト (秒)',
+                    'login-lockout-seconds-info' => '60～3600。既定値 60。',
+                    'refresh-requests-per-minute' => 'セッションごとの 1 分あたりのトークン更新数',
+                    'refresh-requests-per-minute-info' => '1～60。既定値 10。',
+                ],
+
+                'security' => [
+                    'title' => 'セキュリティ',
+                    'info' => '顧客の他のセッションを終了させる条件。',
+                    'revoke-sessions-on-password-change' => 'パスワード変更時にセッションを失効させる',
+                ],
+
+                'retention' => [
+                    'title' => 'データ保持',
+                    'info' => '終了した顧客セッションを保持する期間。',
+                    'session-prune-days' => '終了したセッションを保持 (日)',
+                    'session-prune-days-info' => '取り消された、または期限切れのセッションはこの日数後に削除されます。1～365。既定値 30。',
+                ],
+            ],
+        ],
         'auth' => [
             'configuration' => [
                 'title' => '管理者認証',
@@ -1646,6 +1735,10 @@ return [
                     'info' => '1 分あたりの管理者 API リクエストの上限。',
                     'session-requests-per-minute' => 'ログイン中の管理者ごとの 1 分あたりのリクエスト数',
                     'api-token-requests-per-minute' => 'API トークンごとの 1 分あたりのリクエスト数',
+                    'session-requests-per-minute-info' => '1～100000。既定値 60。',
+                    'api-token-requests-per-minute-info' => '1～100000。既定値 60。',
+                    'unauthenticated-requests-per-minute' => 'トークンなしの IP アドレスごとの 1 分あたりのリクエスト数',
+                    'unauthenticated-requests-per-minute-info' => '10～1000。既定値 60。ログイン、二要素認証、更新、パスワードのリクエストが対象です。',
                 ],
 
                 'security' => [
@@ -1658,6 +1751,30 @@ return [
                     'domain-binding-mode-info' => 'DNS は、トークンのドメインが解決される IP アドレスからのリクエストかを確認します。Origin は Origin または Referer ヘッダーを確認し、ブラウザーからの呼び出しにのみ適しています。',
                     'domain-binding-dns' => 'DNS（クライアントの IP アドレス）',
                     'domain-binding-origin' => 'Origin ヘッダー',
+                ],
+
+                'login-protection' => [
+                    'title' => 'ログイン保護',
+                    'info' => 'クライアントが待機を求められるまでに許可される、ログイン失敗、誤った二要素コード、パスワードリクエストの回数。',
+                    'login-max-attempts' => 'ロックアウトまでのログイン失敗回数',
+                    'login-max-attempts-info' => 'メールアドレスと IP アドレスごと。3～20。既定値 5。',
+                    'login-lockout-seconds' => 'ログインのロックアウト (秒)',
+                    'login-lockout-seconds-info' => '60～3600。既定値 60。',
+                    'two-factor-challenge-lifetime' => '二要素認証チャレンジの有効期間 (分)',
+                    'two-factor-challenge-lifetime-info' => '1～15。既定値 5。',
+                    'two-factor-max-failures' => '1 分あたりの誤った二要素コード数',
+                    'two-factor-max-failures-info' => '管理者ごと、すべてのチャレンジの合計。3～20。既定値 5。',
+                    'password-requests-per-minute' => '1 分あたりのパスワードリクエスト数',
+                    'password-requests-per-minute-info' => 'IP アドレスごとのパスワード忘れ・再設定リクエスト。1～20。既定値 5。',
+                ],
+
+                'retention' => [
+                    'title' => 'データ保持',
+                    'info' => '終了したセッションと API 監査履歴を保持する期間。',
+                    'session-prune-days' => '終了したセッションを保持 (日)',
+                    'session-prune-days-info' => '取り消された、または期限切れのセッションはこの日数後に削除されます。1～365。既定値 30。',
+                    'audit-retention-days' => 'API 監査履歴を保持 (日)',
+                    'audit-retention-days-info' => '古いエントリは毎日削除されます。0～3650。空または 0 の場合は無期限に保持されます。',
                 ],
             ],
 
@@ -1917,6 +2034,7 @@ return [
                 'session' => 'ログインセッション',
                 'api-token' => 'APIトークン',
                 'integration' => '連携トークン(削除済み)',
+                'customer-session' => '顧客ログインセッション',
             ],
 
             'channels' => [

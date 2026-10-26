@@ -208,10 +208,8 @@ class CustomerAuthTest extends GraphQLTestCase
             ],
         ]);
 
-        $data = $response->json('data.createCustomerLogin.customerLogin');
-        $this->assertNotNull($data);
-        $this->assertFalse($data['success'], 'Login should fail with wrong password');
-        $this->assertEmpty($data['token'], 'No token should be returned on failure');
+        $this->assertSame('invalid_credentials', $response->json('errors.0.extensions.code'));
+        $this->assertNull($response->json('data.createCustomerLogin'));
     }
 
     /**
@@ -263,7 +261,7 @@ class CustomerAuthTest extends GraphQLTestCase
         }
 
         $customer = $this->createCustomer();
-        $token = $customer->createToken('test-token')->plainTextToken;
+        $token = $this->customerAccessToken($customer);
 
         $mutation = <<<'GQL'
             mutation logout($input: createLogoutInput!) {
@@ -382,7 +380,7 @@ class CustomerAuthTest extends GraphQLTestCase
     public function test_verify_token_with_valid_token(): void
     {
         $customer = $this->createCustomer();
-        $token = $customer->createToken('test-token')->plainTextToken;
+        $token = $this->customerAccessToken($customer);
 
         $mutation = <<<'GQL'
             mutation verify($input: createVerifyTokenInput!) {
@@ -434,7 +432,7 @@ class CustomerAuthTest extends GraphQLTestCase
     public function test_verify_token_fails_for_suspended_customer(): void
     {
         $customer = $this->createCustomer(['is_suspended' => 1]);
-        $token = $customer->createToken('test-token')->plainTextToken;
+        $token = $this->customerAccessToken($customer);
 
         $mutation = <<<'GQL'
             mutation verify($input: createVerifyTokenInput!) {

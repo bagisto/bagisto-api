@@ -3,6 +3,8 @@
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
@@ -160,6 +162,72 @@ class MergeCartTest extends RestApiTestCase
     }
 
     /**
+     * Test login with a guest cart token adopts the guest cart when the customer has none.
+     */
+    public function test_login_with_guest_cart_token_adopts_the_guest_cart(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->createSimpleProduct();
+        $guest = $this->createGuestCartWithProduct($product, 2);
+
+        $customer = $this->customerWithPassword();
+
+        $response = $this->login($customer, ['guest_cart_token' => $guest['token']])->assertSuccessful();
+
+        $this->assertSame($guest['cartId'], $response->json('cartId'));
+
+        $cart = DB::table('cart')->where('id', $guest['cartId'])->first();
+
+        $this->assertSame($customer->id, (int) $cart->customer_id);
+        $this->assertSame(0, DB::table('guest_cart_tokens')->where('cart_id', $guest['cartId'])->count());
+    }
+
+    /**
+     * Test login with a guest cart token merges it into the customer's cart once, firing the login event once.
+     */
+    public function test_login_with_guest_cart_token_merges_into_the_customer_cart_once(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->createSimpleProduct();
+        $customer = $this->customerWithPassword();
+
+        $this->authenticatedPost($customer, $this->addProductUrl, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ])->assertSuccessful();
+
+        $customerCartId = (int) DB::table('cart')->where('customer_id', $customer->id)->where('is_active', 1)->value('id');
+
+        $guest = $this->createGuestCartWithProduct($product, 3);
+
+        $logins = 0;
+
+        Event::listen('customer.after.login', function () use (&$logins) {
+            $logins++;
+        });
+
+        $response = $this->login($customer, ['guest_cart_token' => $guest['token']])->assertSuccessful();
+
+        $this->assertSame($customerCartId, $response->json('cartId'));
+        $this->assertSame(1, $logins);
+        $this->assertSame(4, (int) DB::table('cart_items')->where('cart_id', $customerCartId)->where('product_id', $product->id)->sum('quantity'));
+        $this->assertSame(0, DB::table('cart')->where('id', $guest['cartId'])->where('is_active', 1)->count());
+    }
+
+    /**
+     * Test login ignores a guest cart token that names no mergeable cart.
+     */
+    public function test_login_ignores_an_unknown_guest_cart_token(): void
+    {
+        $customer = $this->customerWithPassword();
+
+        $response = $this->login($customer, ['guest_cart_token' => 'no-such-token'])->assertSuccessful();
+
+        $this->assertNull($response->json('cartId'));
+        $this->assertNotEmpty($response->json('accessToken'));
+    }
+
+    /**
      * Post with token.
      */
     private function postWithToken(string $url, string $token, array $payload = []): TestResponse
@@ -220,5 +288,31 @@ class MergeCartTest extends RestApiTestCase
         return $this->createCustomer([
             'token' => md5(uniqid((string) rand(), true)),
         ]);
+    }
+
+    /**
+     * Create a customer whose password is known.
+     */
+    private function customerWithPassword(): Customer
+    {
+        return $this->createCustomer([
+            'email' => 'merge-login-'.uniqid().'@example.com',
+            'password' => Hash::make('Password123!'),
+            'status' => 1,
+            'is_verified' => 1,
+        ]);
+    }
+
+    /**
+     * Log the customer in through REST.
+     */
+    private function login(Customer $customer, array $extra = []): TestResponse
+    {
+        $this->flushHeaders();
+
+        return $this->postJson('/api/shop/customer/login', array_merge([
+            'email' => $customer->email,
+            'password' => 'Password123!',
+        ], $extra), $this->storefrontHeaders());
     }
 }

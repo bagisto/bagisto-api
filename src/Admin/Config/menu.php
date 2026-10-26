@@ -14,6 +14,12 @@ return [
         'sort' => 12,
         'icon' => '',
     ], [
+        'key' => 'customers.api_sessions',
+        'name' => 'bagistoapi::app.admin.customer-api-sessions.menu.title',
+        'route' => 'admin.customers.api_sessions.index',
+        'sort' => 8,
+        'icon' => '',
+    ], [
         'key' => 'settings.api_audit',
         'name' => 'bagistoapi::app.admin.api-audit.menu.title',
         'route' => 'admin.settings.api_audit.index',

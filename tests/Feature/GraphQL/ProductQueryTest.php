@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
 use Illuminate\Support\Facades\DB;
 use Webkul\Attribute\Models\Attribute;
+use Webkul\BagistoApi\Models\Product as ApiProduct;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\BookingProduct\Models\BookingProduct;
 
@@ -733,5 +734,36 @@ class ProductQueryTest extends GraphQLTestCase
         $response->assertSuccessful();
 
         expect($response->json('data.product.sku'))->toBe($product->sku);
+    }
+
+    /**
+     * Reading a select attribute returns the option label without writing it back over the stored option id.
+     */
+    public function test_select_attribute_read_does_not_overwrite_the_stored_option(): void
+    {
+        $this->seedRequiredData();
+
+        $color = Attribute::query()->where('code', 'color')->with('options')->first();
+
+        if (! $color || $color->options->isEmpty()) {
+            $this->markTestSkipped('The color attribute has no options.');
+        }
+
+        $option = $color->options->first();
+        $product = $this->createBaseProduct('simple');
+
+        $this->upsertProductAttributeValue($product->id, 'color', $option->id, null, null);
+
+        $model = ApiProduct::query()->with('attribute_values.attribute')->find($product->id);
+
+        $stored = $model->attribute_values->firstWhere('attribute_id', $color->id);
+
+        expect($model->color)->toBe((string) $option->label);
+        expect((int) $stored->integer_value)->toBe((int) $option->id);
+        expect((int) $stored->value)->toBe((int) $option->id);
+
+        $again = ApiProduct::query()->find($product->id);
+
+        expect($again->color)->toBe((string) $option->label);
     }
 }

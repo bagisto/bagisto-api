@@ -10,11 +10,6 @@ use Webkul\User\Models\AdminProxy;
 class AdminApiTwoFactorChallenge extends Model implements AdminApiTwoFactorChallengeContract
 {
     /**
-     * Minutes a challenge stays valid after the password was accepted.
-     */
-    public const LIFETIME_MINUTES = 5;
-
-    /**
      * Wrong codes a challenge accepts before it is revoked.
      */
     public const MAX_FAILED_ATTEMPTS = 5;

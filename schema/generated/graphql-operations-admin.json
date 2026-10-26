@@ -163,6 +163,11 @@
         "tag": "Admin Customers",
         "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerAddress"
     },
+    "adminCustomerApiSessions": {
+        "kind": "query",
+        "tag": "Admin Customers: API Sessions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerApiSession"
+    },
     "adminCustomerCartItems": {
         "kind": "query",
         "tag": "Admin Customers",
@@ -877,6 +882,11 @@
             "default_address": true
         }
     },
+    "createAdminCustomerApiSessionRevoke": {
+        "kind": "mutation",
+        "tag": "Admin Customers: API Sessions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerApiSessionRevoke"
+    },
     "createAdminCustomerGdprDownloadData": {
         "kind": "mutation",
         "tag": "Admin Customer GDPR",
@@ -910,11 +920,6 @@
                 7
             ]
         }
-    },
-    "createAdminCustomerImpersonate": {
-        "kind": "mutation",
-        "tag": "Admin Customers",
-        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerImpersonate"
     },
     "createAdminCustomerMassDelete": {
         "kind": "mutation",
@@ -1588,6 +1593,11 @@
             "email": "jane@example.com",
             "default_address": true
         }
+    },
+    "deleteAdminCustomerApiSession": {
+        "kind": "mutation",
+        "tag": "Admin Customers: API Sessions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerApiSession"
     },
     "deleteAdminCustomerGdprRequest": {
         "kind": "mutation",

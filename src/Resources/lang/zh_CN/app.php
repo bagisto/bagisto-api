@@ -275,6 +275,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
             'unknown-resource' => '未知资源',
             'cannot-update-other-profile' => '未授权：无法更新其他客户的个人资料',
+            'refresh-token-invalid' => '刷新令牌无效或已过期。请重新登录。',
+            'too-many-login-attempts' => '登录尝试次数过多。请在 :seconds 秒后重试。',
+            'too-many-refresh-requests' => '令牌刷新过于频繁。请在 :seconds 秒后重试。',
+            'rate-limit-exceeded' => '尝试次数过多。',
+            'access-token-expired' => '访问令牌已过期。请刷新后继续。',
+            'logged-out-all' => '您已退出所有会话。',
+            'session-not-found' => '未找到会话。',
+            'session-revoked' => '会话已被撤销。',
         ],
 
         'upload' => [
@@ -842,10 +850,6 @@ return [
             'note' => [
                 'empty' => '需要备注内容。',
                 'created' => '备注已成功添加。',
-            ],
-
-            'impersonate' => [
-                'success' => '已签发模拟登录令牌。',
             ],
 
             'review' => [
@@ -1625,6 +1629,91 @@ return [
                 'no-permission' => '您没有管理搜索词的权限。',
             ],
         ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'API 会话',
+            ],
+
+            'acl' => [
+                'title' => 'API 会话',
+                'delete' => '撤销',
+            ],
+
+            'index' => [
+                'title' => '客户 API 会话',
+                'info' => '通过网页、移动、POS 或桌面等应用登录店面 API 的客户。撤销会话会立即让该设备退出登录。',
+            ],
+
+            'fields' => [
+                'customer' => '客户',
+                'email' => '邮箱',
+                'channel' => '渠道',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => '撤销该客户的所有会话',
+            ],
+
+            'card' => [
+                'title' => 'API 会话（:count）',
+                'empty' => '该客户没有活跃的 API 会话。',
+            ],
+
+            'errors' => [
+                'no-permission' => '您没有管理客户 API 会话的权限。',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => '客户认证',
+                'info' => '店面客户登录的令牌有效期、限制和会话规则。',
+
+                'tokens' => [
+                    'title' => '令牌有效期',
+                    'info' => '访问令牌、刷新令牌和会话的有效时长。更改适用于之后签发的令牌。',
+                    'access-token-ttl' => '访问令牌有效期（分钟）',
+                    'access-token-ttl-info' => '5 到 60 分钟。默认 15。',
+                    'refresh-token-ttl' => '刷新令牌有效期（天）',
+                    'refresh-token-ttl-info' => '1 到 90 天。默认 30。',
+                    'session-lifetime' => '会话最长有效期（天）',
+                    'session-lifetime-info' => '1 到 365 天。默认 90。之后无论会话刷新多少次，管理员都必须重新登录。',
+                    'max-sessions' => '每个客户最大活跃会话数',
+                    'max-sessions-info' => '达到上限时，最早的会话将被结束。0 到 100。0 表示不限制。',
+                ],
+
+                'rate-limits' => [
+                    'title' => '速率限制',
+                    'info' => '每个已登录客户每分钟的店面 API 请求上限。',
+                    'requests-per-minute' => '每个已登录客户每分钟请求数',
+                    'requests-per-minute-info' => '1 到 100000。默认 120。',
+                ],
+
+                'login-protection' => [
+                    'title' => '登录保护',
+                    'info' => '在客户端必须等待之前允许的登录失败次数和令牌刷新次数。',
+                    'login-max-attempts' => '锁定前的登录失败次数',
+                    'login-max-attempts-info' => '按邮箱和 IP 地址计算。3 到 20。默认 5。',
+                    'login-lockout-seconds' => '登录锁定时长（秒）',
+                    'login-lockout-seconds-info' => '60 到 3600。默认 60。',
+                    'refresh-requests-per-minute' => '每个会话每分钟令牌刷新次数',
+                    'refresh-requests-per-minute-info' => '1 到 60。默认 10。',
+                ],
+
+                'security' => [
+                    'title' => '安全',
+                    'info' => '哪些情况会结束客户的其他会话。',
+                    'revoke-sessions-on-password-change' => '修改密码时撤销会话',
+                ],
+
+                'retention' => [
+                    'title' => '数据保留',
+                    'info' => '已结束客户会话的保留时长。',
+                    'session-prune-days' => '保留已结束会话（天）',
+                    'session-prune-days-info' => '已撤销或已过期的会话在此天数后删除。1 到 365。默认 30。',
+                ],
+            ],
+        ],
         'auth' => [
             'configuration' => [
                 'title' => '管理员认证',
@@ -1646,6 +1735,10 @@ return [
                     'info' => '每分钟管理员 API 请求的最大次数。',
                     'session-requests-per-minute' => '每个已登录管理员每分钟请求数',
                     'api-token-requests-per-minute' => '每个 API 令牌每分钟请求数',
+                    'session-requests-per-minute-info' => '1 到 100000。默认 60。',
+                    'api-token-requests-per-minute-info' => '1 到 100000。默认 60。',
+                    'unauthenticated-requests-per-minute' => '无令牌时每个 IP 地址每分钟请求数',
+                    'unauthenticated-requests-per-minute-info' => '10 到 1000。默认 60。包括登录、双因素验证、刷新和密码请求。',
                 ],
 
                 'security' => [
@@ -1658,6 +1751,30 @@ return [
                     'domain-binding-mode-info' => 'DNS 检查请求是否来自令牌域名解析到的 IP 地址。Origin 检查 Origin 或 Referer 请求头，仅适用于浏览器调用。',
                     'domain-binding-dns' => 'DNS（客户端 IP 地址）',
                     'domain-binding-origin' => 'Origin 请求头',
+                ],
+
+                'login-protection' => [
+                    'title' => '登录保护',
+                    'info' => '在客户端必须等待之前允许的登录失败次数、错误双因素验证码次数和密码请求次数。',
+                    'login-max-attempts' => '锁定前的登录失败次数',
+                    'login-max-attempts-info' => '按邮箱和 IP 地址计算。3 到 20。默认 5。',
+                    'login-lockout-seconds' => '登录锁定时长（秒）',
+                    'login-lockout-seconds-info' => '60 到 3600。默认 60。',
+                    'two-factor-challenge-lifetime' => '双因素验证挑战有效期（分钟）',
+                    'two-factor-challenge-lifetime-info' => '1 到 15。默认 5。',
+                    'two-factor-max-failures' => '每分钟错误双因素验证码次数',
+                    'two-factor-max-failures-info' => '按管理员计算，涵盖所有挑战。3 到 20。默认 5。',
+                    'password-requests-per-minute' => '每分钟密码请求数',
+                    'password-requests-per-minute-info' => '每个 IP 地址的忘记密码和重置密码请求。1 到 20。默认 5。',
+                ],
+
+                'retention' => [
+                    'title' => '数据保留',
+                    'info' => '已结束会话和 API 审计历史的保留时长。',
+                    'session-prune-days' => '保留已结束会话（天）',
+                    'session-prune-days-info' => '已撤销或已过期的会话在此天数后删除。1 到 365。默认 30。',
+                    'audit-retention-days' => '保留 API 审计历史（天）',
+                    'audit-retention-days-info' => '较旧的记录每天删除。0 到 3650。留空或 0 表示永久保留。',
                 ],
             ],
 
@@ -1917,6 +2034,7 @@ return [
                 'session' => '登录会话',
                 'api-token' => 'API 令牌',
                 'integration' => '集成令牌(已移除)',
+                'customer-session' => '客户登录会话',
             ],
 
             'channels' => [

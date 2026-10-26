@@ -5,10 +5,10 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\Request;
-use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Models\Customer as ApiCustomer;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Customer\Models\Customer;
 
 class AuthenticatedCustomerProvider implements ProviderInterface
@@ -46,27 +46,12 @@ class AuthenticatedCustomerProvider implements ProviderInterface
     }
 
     /**
-     * Retrieve customer from Sanctum personal access token.
+     * Resolve the customer behind a customer access token.
      */
     private function getCustomerFromToken(string $token): ?Customer
     {
-        try {
-            $personalAccessToken = PersonalAccessToken::findToken($token);
+        $customer = CurrentCustomer::fromToken($token);
 
-            if (
-                ! $personalAccessToken
-                || ! in_array($personalAccessToken->tokenable_type, [Customer::class, ApiCustomer::class], true)
-                || (
-                    $personalAccessToken->expires_at
-                    && $personalAccessToken->expires_at->isPast()
-                )
-            ) {
-                return null;
-            }
-
-            return ApiCustomer::find($personalAccessToken->tokenable_id);
-        } catch (\Exception $exception) {
-            return null;
-        }
+        return $customer ? ApiCustomer::find($customer->id) : null;
     }
 }

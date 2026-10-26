@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\State;
 
+use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
@@ -12,6 +13,7 @@ use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\Dto\CheckoutAddressOutput;
 use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\OperationFailedException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
@@ -81,7 +83,7 @@ class CheckoutProcessor implements ProcessorInterface
         }
 
         if (! $data instanceof CheckoutAddressInput) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.invalid-input'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.invalid-input'));
         }
 
         $token = null;
@@ -104,7 +106,7 @@ class CheckoutProcessor implements ProcessorInterface
             'saveShippingMethod' => $this->saveShippingMethod($cart, $data),
             'savePaymentMethod' => $this->savePaymentMethod($cart, $data),
             'createOrder' => $this->createOrder($cart, $data),
-            default => throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.unknown-operation', ['operation' => $operationName])),
+            default => throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.unknown-operation', ['operation' => $operationName])),
         };
     }
 
@@ -143,7 +145,7 @@ class CheckoutProcessor implements ProcessorInterface
                 ! $input->billingFirstName
                 && ! $input->billingAddress
             ) {
-                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.billing-address-required'));
+                throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.billing-address-required'), 422);
             }
 
             $useForShipping = (bool) $input->useForShipping;
@@ -155,7 +157,7 @@ class CheckoutProcessor implements ProcessorInterface
                 && ! $input->shippingFirstName
                 && ! $input->shippingAddress
             ) {
-                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.shipping-address-required'));
+                throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.shipping-address-required'), 422);
             }
 
             $params = [
@@ -182,7 +184,7 @@ class CheckoutProcessor implements ProcessorInterface
             }
 
             return $this->buildAddressOutput($cart->billing_address, $cart->shipping_address);
-        } catch (InvalidInputException $exception) {
+        } catch (HttpExceptionInterface $exception) {
             throw $exception;
         } catch (\Exception $exception) {
             throw new OperationFailedException($exception->getMessage(), 0, $exception);
@@ -265,17 +267,17 @@ class CheckoutProcessor implements ProcessorInterface
             $this->assertCartHasNoErrors();
 
             if (! $input->shippingMethod) {
-                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.shipping-method-required'));
+                throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.shipping-method-required'), 422);
             }
 
             Shipping::collectRates();
 
             if (! Shipping::isMethodCodeExists($input->shippingMethod)) {
-                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.invalid-shipping-method'));
+                throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.invalid-shipping-method'), 422);
             }
 
             if (! Cart::saveShippingMethod($input->shippingMethod)) {
-                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.shipping-method-save-failed'));
+                throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.shipping-method-save-failed'), 422);
             }
 
             Cart::collectTotals();
@@ -287,6 +289,8 @@ class CheckoutProcessor implements ProcessorInterface
                 'cartToken' => $this->resolveCartToken($cart),
                 'shippingMethod' => (string) ($cart->shipping_method ?? ''),
             ]);
+        } catch (HttpExceptionInterface $exception) {
+            throw $exception;
         } catch (\Exception $exception) {
             throw new OperationFailedException($exception->getMessage(), 0, $exception);
         }
@@ -300,7 +304,7 @@ class CheckoutProcessor implements ProcessorInterface
         cart()->setCart($cart);
 
         if (! $input->paymentMethod) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.payment-method-required'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.payment-method-required'), 422);
         }
 
         $this->assertCartHasNoErrors();
@@ -311,11 +315,11 @@ class CheckoutProcessor implements ProcessorInterface
             || ! isset($paymentMethodConfig['class'])
             || ! $this->isPaymentMethodAvailable($input->paymentMethod)
         ) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.invalid-payment-method'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.invalid-payment-method'), 422);
         }
 
         if (! Cart::savePaymentMethod(['method' => $input->paymentMethod])) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.payment-method-save-failed'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.payment-method-save-failed'), 422);
         }
 
         try {
@@ -332,6 +336,8 @@ class CheckoutProcessor implements ProcessorInterface
                 'paymentGatewayUrl' => $paymentGatewayUrl,
                 'paymentData' => $paymentData,
             ]);
+        } catch (HttpExceptionInterface $exception) {
+            throw $exception;
         } catch (\Exception $exception) {
             throw new OperationFailedException($exception->getMessage(), 0, $exception);
         }
@@ -458,7 +464,7 @@ class CheckoutProcessor implements ProcessorInterface
                 'success' => true,
                 'message' => __('bagistoapi::app.graphql.checkout.order-placed'),
             ]);
-        } catch (InvalidInputException $exception) {
+        } catch (HttpExceptionInterface $exception) {
             throw $exception;
         } catch (\Exception $exception) {
             throw new OperationFailedException($exception->getMessage(), 0, $exception);
@@ -484,32 +490,32 @@ class CheckoutProcessor implements ProcessorInterface
             ! $cart
             || $cart->items()->count() === 0
         ) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.cart-empty'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.cart-empty'), 422);
         }
 
         $customer = $cart->customer;
 
         if ($customer?->is_suspended) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.account-suspended'));
+            throw new AuthorizationException(__('bagistoapi::app.graphql.checkout.account-suspended'));
         }
 
         if (
             $customer
             && ! $customer->status
         ) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.account-inactive'));
+            throw new AuthorizationException(__('bagistoapi::app.graphql.checkout.account-inactive'));
         }
 
         $this->assertGuestCheckoutAllowed($cart);
 
         $minimumOrderAmount = core()->getConfigData('sales.order_settings.minimum_order.minimum_order_amount') ?: 0;
         if (! Cart::haveMinimumOrderAmount()) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.minimum-order-not-met', ['amount' => core()->currency($minimumOrderAmount)]));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.minimum-order-not-met', ['amount' => core()->currency($minimumOrderAmount)]), 422);
         }
 
         $hasBillingAddress = $input->billingAddress || $cart->billing_address()->exists();
         if (! $hasBillingAddress) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.billing-address-required'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.billing-address-required'), 422);
         }
 
         $hasShippingAddress = $input->shippingAddress || $input->useForShipping || $cart->shipping_address()->exists();
@@ -517,32 +523,32 @@ class CheckoutProcessor implements ProcessorInterface
             ! $hasShippingAddress
             && $cart->haveStockableItems()
         ) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.shipping-address-required'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.shipping-address-required'), 422);
         }
 
         $hasEmail = $cart->customer_email || $input->billingEmail || ($cart->billing_address && $cart->billing_address->email);
         if (! $hasEmail) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.email-required'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.email-required'), 422);
         }
 
         if ($cart->haveStockableItems()) {
             $hasShippingMethod = $input->shippingMethod || $cart->shipping_method;
             if (! $hasShippingMethod) {
-                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.shipping-method-required'));
+                throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.shipping-method-required'), 422);
             }
 
             if (! $cart->selected_shipping_rate) {
-                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.invalid-shipping-method'));
+                throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.invalid-shipping-method'), 422);
             }
         }
 
         $hasPaymentMethod = $input->paymentMethod || $cart->payment()->exists();
         if (! $hasPaymentMethod) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.payment-method-required'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.payment-method-required'), 422);
         }
 
         if (! $this->isPaymentMethodAvailable($cart->payment?->method)) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.invalid-payment-method'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.invalid-payment-method'), 422);
         }
     }
 
@@ -552,7 +558,7 @@ class CheckoutProcessor implements ProcessorInterface
     private function assertCartHasNoErrors(): void
     {
         if (Cart::hasError()) {
-            throw new OperationFailedException(Cart::getErrors()['message'] ?? __('bagistoapi::app.graphql.checkout.cart-empty'));
+            throw new InvalidInputException(Cart::getErrors()['message'] ?? __('bagistoapi::app.graphql.checkout.cart-empty'), 422);
         }
     }
 
@@ -570,7 +576,7 @@ class CheckoutProcessor implements ProcessorInterface
             || $cart->hasDownloadableItems()
             || ! $cart->hasGuestCheckoutItems()
         ) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.guest-checkout-not-allowed'));
+            throw new AuthorizationException(__('bagistoapi::app.graphql.checkout.guest-checkout-not-allowed'));
         }
     }
 
@@ -729,6 +735,8 @@ class CheckoutProcessor implements ProcessorInterface
             $output->message = __('bagistoapi::app.graphql.address.retrieved');
 
             return $output;
+        } catch (HttpExceptionInterface $exception) {
+            throw $exception;
         } catch (\Exception $exception) {
             throw new OperationFailedException($exception->getMessage(), 0, $exception);
         }

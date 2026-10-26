@@ -342,6 +342,65 @@ class GuestCartTest extends GraphQLTestCase
     }
 
     /**
+     * Removing the last item keeps the guest token on an empty cart that can be read and refilled.
+     */
+    public function test_guest_token_keeps_working_after_the_cart_is_emptied(): void
+    {
+        $token = $this->getGuestCartToken();
+        $headers = $this->guestHeaders($token);
+
+        $product = $this->createTestProduct()['product'];
+
+        $add = <<<'GQL'
+            mutation createAddProductInCart($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
+                addProductInCart {
+                  itemsCount
+                  items {
+                    edges {
+                      node {
+                        id
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $cartItemId = $this->graphQL($add, ['productId' => $product->id, 'quantity' => 1], $headers)
+            ->json('data.createAddProductInCart.addProductInCart.items.edges.0.node.id');
+
+        $this->graphQL(<<<'GQL'
+            mutation createRemoveCartItem($cartItemId: Int!) {
+              createRemoveCartItem(input: {cartItemId: $cartItemId}) {
+                removeCartItem {
+                  id
+                }
+              }
+            }
+        GQL, ['cartItemId' => (int) $cartItemId], $headers)->assertSuccessful();
+
+        $read = $this->graphQL(<<<'GQL'
+            mutation {
+              createReadCart(input: {}) {
+                readCart {
+                  itemsCount
+                }
+              }
+            }
+        GQL, [], $headers);
+
+        $this->assertNull($read->json('errors'), json_encode($read->json('errors')));
+        $this->assertSame(0, (int) $read->json('data.createReadCart.readCart.itemsCount'));
+
+        $again = $this->graphQL($add, ['productId' => $product->id, 'quantity' => 1], $headers);
+
+        $this->assertNull($again->json('errors'), json_encode($again->json('errors')));
+        $this->assertSame(1, (int) $again->json('data.createAddProductInCart.addProductInCart.itemsCount'));
+    }
+
+    /**
      * Apply Coupon (Guest).
      */
     public function test_apply_coupon_as_guest(): void

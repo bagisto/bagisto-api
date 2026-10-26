@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\MoveWishlistToCartInput;
@@ -13,6 +12,7 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Models\Wishlist;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Checkout\Facades\Cart;
 
 class MoveWishlistToCartProcessor implements ProcessorInterface
@@ -87,7 +87,7 @@ class MoveWishlistToCartProcessor implements ProcessorInterface
      */
     private function handleMoveToCart(MoveWishlistToCartInput $input): array
     {
-        $user = Auth::guard('sanctum')->user();
+        $user = CurrentCustomer::user();
 
         if (! $user) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

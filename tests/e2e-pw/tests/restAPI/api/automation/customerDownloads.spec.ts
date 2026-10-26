@@ -30,7 +30,7 @@ async function registerCustomerToken(request: APIRequestContext): Promise<string
   });
   expect([200, 201]).toContain(loginResp.status());
 
-  const token = (await loginResp.json()).token;
+  const token = (await loginResp.json()).accessToken;
   expect(typeof token === 'string' && token.length > 0, 'customer login returned no token').toBeTruthy();
   return token as string;
 }

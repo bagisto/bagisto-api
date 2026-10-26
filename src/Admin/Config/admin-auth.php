@@ -17,14 +17,44 @@ return [
     'session_lifetime' => 90,
 
     /**
-     * Requests per minute allowed for each signed-in admin.
+     * Requests per minute allowed for each signed-in admin (1 to 100000).
      */
     'session_requests_per_minute' => 60,
 
     /**
-     * Requests per minute allowed for each API token.
+     * Requests per minute allowed for each API token (1 to 100000).
      */
     'api_token_requests_per_minute' => 60,
+
+    /**
+     * Requests per minute allowed without a token, for each client address (10 to 1000).
+     */
+    'unauthenticated_requests_per_minute' => 60,
+
+    /**
+     * Failed logins an email and client address may make before the lockout (3 to 20).
+     */
+    'login_max_attempts' => 5,
+
+    /**
+     * Seconds failed logins are remembered for, and so how long a lockout lasts (60 to 3600).
+     */
+    'login_lockout_seconds' => 60,
+
+    /**
+     * Minutes a two-factor challenge stays usable (1 to 15).
+     */
+    'two_factor_challenge_lifetime' => 5,
+
+    /**
+     * Wrong two-factor codes an admin may enter in a minute, across all challenges (3 to 20).
+     */
+    'two_factor_max_failures' => 5,
+
+    /**
+     * Forgot and reset password requests a client address may make in a minute (1 to 20).
+     */
+    'password_requests_per_minute' => 5,
 
     /**
      * Whether a password change revokes the admin's sessions.
@@ -52,7 +82,7 @@ return [
     'domain_dns_cache_seconds' => 300,
 
     /**
-     * Days a revoked or expired session is kept before the prune command deletes it.
+     * Days a revoked or expired session is kept before the prune command deletes it (1 to 365).
      */
     'prune_after_days' => 30,
 

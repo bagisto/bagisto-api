@@ -30,7 +30,7 @@ use Webkul\Sales\Models\RefundProxy;
             openapi: new Operation(
                 tags: ['Customer Order'],
                 summary: 'List the customer\'s orders',
-                description: 'Orders placed by the authenticated customer, newest first; `status` filters by exact order status. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+                description: 'Orders placed by the authenticated customer, newest first; `status` filters by exact order status. `per_page` (default 10, at most 50) and `page` select the page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             ),
         ),
         new Get(

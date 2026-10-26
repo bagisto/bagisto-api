@@ -23,6 +23,7 @@ use Webkul\BagistoApi\State\ProductReviewItemProvider;
 use Webkul\BagistoApi\State\ProductReviewProcessor;
 use Webkul\BagistoApi\State\ProductReviewProvider;
 use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -513,6 +514,27 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         } else {
             parent::__set($key, $value);
         }
+    }
+
+    /**
+     * The reviewer name, censored as the storefront censors it when the store asks to, except for the review's author.
+     */
+    public function getNameAttribute(?string $value): ?string
+    {
+        if (
+            $value === null
+            || ! core()->getConfigData('catalog.products.review.censoring_reviewer_name')
+            || (
+                $this->customer_id
+                && (int) CurrentCustomer::user()?->id === (int) $this->customer_id
+            )
+        ) {
+            return $value;
+        }
+
+        return collect(explode(' ', $value))
+            ->map(fn ($part) => mb_substr($part, 0, 1).str_repeat('*', max(mb_strlen($part) - 1, 0)))
+            ->join(' ');
     }
 
     /**

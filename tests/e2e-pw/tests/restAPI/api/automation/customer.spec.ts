@@ -47,21 +47,35 @@ async function registerCustomer(request: APIRequestContext): Promise<RegisteredC
   const body = await readJson(response);
 
   expect(response.status(), JSON.stringify(body)).toBe(201);
-  expect(typeof body.token).toBe('string');
+  expectAccessToken(body);
 
-  return { id: Number(body.id), ...credentials, token: body.token };
+  return { id: Number(body.id), ...credentials, token: body.accessToken };
 }
 
-async function login(request: APIRequestContext, email: string, password: string): Promise<any> {
+async function login(request: APIRequestContext, email: string, password: string, status = 201): Promise<any> {
   const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
     method: 'POST',
     data: { email, password },
   });
   const body = await readJson(response);
 
-  expect(response.status(), JSON.stringify(body)).toBe(201);
+  expect(response.status(), JSON.stringify(body)).toBe(status);
 
   return body;
+}
+
+function expectAccessToken(body: any): void {
+  expect(String(body.accessToken).split('.'), JSON.stringify(body)).toHaveLength(3);
+  expect(typeof body.refreshToken).toBe('string');
+  expect(Number(body.expiresIn)).toBeGreaterThan(0);
+}
+
+function expectTokenPair(body: any): void {
+  expect(body.tokenType, JSON.stringify(body)).toBe('Bearer');
+  expect(String(body.accessToken).split('.')).toHaveLength(3);
+  expect(typeof body.refreshToken).toBe('string');
+  expect(Number(body.expiresIn)).toBeGreaterThan(0);
+  expect(Number(body.session?.id)).toBeGreaterThan(0);
 }
 
 async function readProfile(request: APIRequestContext, token: string): Promise<any> {
@@ -92,10 +106,9 @@ test.describe('customer registration rest api', () => {
     expect(body.firstName).toBe(credentials.firstName);
     expect(body.lastName).toBe(credentials.lastName);
     expect(body.phone).toBe(phone);
-    expect(typeof body.token).toBe('string');
-    expect(body.token).toContain('|');
+    expectAccessToken(body);
 
-    const profile = await readProfile(request, body.token);
+    const profile = await readProfile(request, body.accessToken);
     expect(profile.email).toBe(credentials.email);
     expect(profile.phone).toBe(phone);
   });
@@ -110,20 +123,19 @@ test.describe('customer login rest api', () => {
     expect(body.success).toBe(true);
     expect(body.message).toBe(MSG.LOGIN_SUCCESS);
     expect(Number(body.id)).toBe(customer.id);
-    expect(typeof body.token).toBe('string');
-    expect(body.token).toContain('|');
+    expectTokenPair(body);
+    expect(body.token).toBe(body.accessToken);
 
-    const profile = await readProfile(request, body.token);
+    const profile = await readProfile(request, body.accessToken);
     expect(profile.email).toBe(customer.email);
   });
 
   test('refuses credentials that match no customer without issuing a token', async ({ request }) => {
-    const body = await login(request, `nobody.${uniqueSuffix()}@example.com`, 'WrongPassword123!');
+    const body = await login(request, `nobody.${uniqueSuffix()}@example.com`, 'WrongPassword123!', 401);
 
-    expect(body.success).toBe(false);
+    expect(body.error).toBe('invalid_credentials');
     expect(body.message).toBe(MSG.INVALID_CREDENTIALS);
-    expect(body.token).toBe('');
-    expect(body.id).toBe(0);
+    expect(body.accessToken).toBeUndefined();
   });
 
   test('rejects empty credentials', async ({ request }) => {
@@ -293,11 +305,10 @@ test.describe('customer password change rest api', () => {
 
     const withNew = await login(request, customer.email, newPassword);
     expect(withNew.success).toBe(true);
-    expect(typeof withNew.token).toBe('string');
-    expect(withNew.token).toContain('|');
+    expectTokenPair(withNew);
 
-    const withOld = await login(request, customer.email, customer.password);
-    expect(withOld.success).toBe(false);
+    const withOld = await login(request, customer.email, customer.password, 401);
+    expect(withOld.error).toBe('invalid_credentials');
     expect(withOld.message).toBe(MSG.INVALID_CREDENTIALS);
   });
 
@@ -319,7 +330,7 @@ test.describe('customer password change rest api', () => {
     const withOld = await login(request, customer.email, customer.password);
     expect(withOld.success).toBe(true);
 
-    const withBogus = await login(request, customer.email, 'BogusPass1234!');
-    expect(withBogus.success).toBe(false);
+    const withBogus = await login(request, customer.email, 'BogusPass1234!', 401);
+    expect(withBogus.error).toBe('invalid_credentials');
   });
 });

@@ -24,8 +24,9 @@ class CategoryRestProvider implements ProviderInterface
             ->where('status', 1)
             ->with([
                 'translations',
-                'filterable_attributes.translations',
-                'filterable_attributes.options.translations',
+                'parent',
+                'children',
+                'filterableAttributes',
             ]);
 
         $request = request();
@@ -43,6 +44,10 @@ class CategoryRestProvider implements ProviderInterface
         $perPage = $this->pagination->getLimit($operation, $context);
         $page = $this->pagination->getPage($context);
 
-        return new Paginator($query->paginate($perPage, ['*'], 'page', $page));
+        $categories = $query->paginate($perPage, ['*'], 'page', $page);
+
+        Category::preloadCollection($categories->getCollection());
+
+        return new Paginator($categories);
     }
 }

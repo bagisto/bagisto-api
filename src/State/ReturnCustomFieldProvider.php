@@ -4,10 +4,10 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\ReturnCustomField;
 use Webkul\BagistoApi\State\Concerns\ResolvesReturnCustomFields;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\RMA\Repositories\RMACustomFieldRepository;
 
 class ReturnCustomFieldProvider implements ProviderInterface
@@ -26,7 +26,7 @@ class ReturnCustomFieldProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): iterable
     {
-        if (! Auth::guard('sanctum')->user()) {
+        if (! CurrentCustomer::user()) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
 

@@ -9,7 +9,6 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderDetailDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderListDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\OrderAddressDto;
@@ -24,6 +23,7 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerOrder;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Customer\Models\Customer;
 use Webkul\Sales\Repositories\OrderRepository;
 
@@ -45,7 +45,7 @@ class CustomerOrderProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -440,7 +440,9 @@ class CustomerOrderProvider implements ProviderInterface
      */
     private function provideCollection(object $customer, array $context, Operation $operation): Paginator
     {
-        $args = $context['args'] ?? [];
+        $isGraphQL = ! empty($context['graphql_operation_name']);
+
+        $args = $isGraphQL ? ($context['args'] ?? []) : $this->restPagingArgs();
         $filters = $context['filters'] ?? [];
 
         $query = CustomerOrder::with(['items', 'addresses', 'payment', 'shipments.items', 'shipments.shippingAddress'])
@@ -459,8 +461,6 @@ class CustomerOrderProvider implements ProviderInterface
 
         $page = $this->paginateCursorWindow($query, $args, $limit);
 
-        $isGraphQL = ! empty($context['graphql_operation_name']);
-
         if (
             $operation instanceof GetCollection
             && ! $isGraphQL
@@ -469,5 +469,26 @@ class CustomerOrderProvider implements ProviderInterface
         }
 
         return new Paginator($page);
+    }
+
+    /**
+     * The cursor window a REST `page` and `per_page` select, with the `status` filter.
+     */
+    private function restPagingArgs(): array
+    {
+        $perPage = max(1, (int) request()->query('per_page', 10));
+        $page = max(1, (int) request()->query('page', 1));
+
+        $args = ['first' => $perPage];
+
+        if ($page > 1) {
+            $args['after'] = base64_encode((string) (($page - 1) * $this->clampPageSize($perPage) - 1));
+        }
+
+        if (request()->filled('status')) {
+            $args['status'] = (string) request()->query('status');
+        }
+
+        return $args;
     }
 }

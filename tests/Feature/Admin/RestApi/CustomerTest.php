@@ -7,7 +7,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerAddress;
 use Webkul\Customer\Models\CustomerGroup;
-use Webkul\User\Models\Role;
 
 class CustomerTest extends AdminApiTestCase
 {
@@ -635,98 +634,6 @@ class CustomerTest extends AdminApiTestCase
         $rows = \DB::table('customer_notes')->where('customer_id', $c->id)->orderBy('id')->pluck('note')->all();
         expect($rows)->toContain('First');
         expect($rows)->toContain('Second');
-    }
-
-    /**
-     * Test impersonate returns token.
-     */
-    public function test_impersonate_returns_token(): void
-    {
-        $admin = $this->createAdmin();
-        $c = $this->seedCustomer();
-
-        $resp = $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/impersonate', []);
-        $resp->assertStatus(201);
-        expect($resp->json('token'))->toBeString()->not()->toBeEmpty();
-        expect($resp->json('customerId'))->toBe($c->id);
-        expect($resp->json('impersonatedByAdminId'))->toBe($admin->id);
-        expect($resp->json('expiresAt'))->not()->toBeNull();
-    }
-
-    /**
-     * Test impersonate token authenticates as customer.
-     */
-    public function test_impersonate_token_authenticates_as_customer(): void
-    {
-        $admin = $this->createAdmin();
-        $c = $this->seedCustomer();
-
-        $resp = $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/impersonate', []);
-        $resp->assertStatus(201);
-        $token = $resp->json('token');
-
-        $tokenRow = \DB::table('personal_access_tokens')
-            ->where('tokenable_type', Customer::class)
-            ->where('tokenable_id', $c->id)
-            ->orderByDesc('id')
-            ->first();
-        expect($tokenRow)->not()->toBeNull();
-        expect((string) $tokenRow->name)->toContain('admin-impersonate:'.$admin->id);
-        expect($tokenRow->expires_at)->not()->toBeNull();
-    }
-
-    /**
-     * Test impersonate unknown customer 404.
-     */
-    public function test_impersonate_unknown_customer_404(): void
-    {
-        $admin = $this->createAdmin();
-        $this->adminPost($admin, '/api/admin/customers/99999999/impersonate', [])->assertStatus(404);
-    }
-
-    /**
-     * Test impersonate requires auth.
-     */
-    public function test_impersonate_requires_auth(): void
-    {
-        $c = $this->seedCustomer();
-        $this->postJson('/api/admin/customers/'.$c->id.'/impersonate')->assertStatus(401);
-    }
-
-    /**
-     * Test impersonate requires login as customer permission.
-     */
-    public function test_impersonate_requires_login_as_customer_permission(): void
-    {
-        $role = Role::create([
-            'name' => 'edit-only-'.uniqid(),
-            'description' => 'test',
-            'permission_type' => 'custom',
-            'permissions' => ['customers', 'customers.customers', 'customers.customers.edit'],
-        ]);
-        $admin = $this->createAdmin(['role_id' => $role->id]);
-        $c = $this->seedCustomer();
-
-        $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/impersonate', [], $this->adminAccessToken($admin))
-            ->assertStatus(403);
-    }
-
-    /**
-     * Test impersonate allowed with login as customer permission.
-     */
-    public function test_impersonate_allowed_with_login_as_customer_permission(): void
-    {
-        $role = Role::create([
-            'name' => 'login-as-'.uniqid(),
-            'description' => 'test',
-            'permission_type' => 'custom',
-            'permissions' => ['customers', 'customers.customers', 'customers.customers.login_as_customer'],
-        ]);
-        $admin = $this->createAdmin(['role_id' => $role->id]);
-        $c = $this->seedCustomer();
-
-        $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/impersonate', [], $this->adminAccessToken($admin))
-            ->assertStatus(201);
     }
 
     /**

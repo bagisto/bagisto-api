@@ -9,17 +9,22 @@ use Illuminate\Support\Str;
 use Webkul\BagistoApi\Dto\SocialLoginInput;
 use Webkul\BagistoApi\Exception\SocialLoginException;
 use Webkul\BagistoApi\Models\SocialLogin;
+use Webkul\BagistoApi\Services\CustomerAuth\CustomerApiAuthService;
 use Webkul\BagistoApi\Services\SocialLoginService;
 use Webkul\BagistoApi\Services\SocialLoginTokenVerifier;
+use Webkul\BagistoApi\State\Concerns\MapsCustomerTokenPair;
 
 class SocialLoginProcessor implements ProcessorInterface
 {
+    use MapsCustomerTokenPair;
+
     /**
      * Create a new instance.
      */
     public function __construct(
         protected SocialLoginTokenVerifier $verifier,
         protected SocialLoginService $socialLogin,
+        protected CustomerApiAuthService $authService,
     ) {}
 
     /**
@@ -108,11 +113,13 @@ class SocialLoginProcessor implements ProcessorInterface
             ]);
         }
 
-        $output = new SocialLogin;
+        $pair = $this->authService->startSession($customer, request());
+
+        $output = $this->mapTokenPair($pair, new SocialLogin);
 
         $output->id = (int) $customer->id;
         $output->_id = (int) $customer->id;
-        $output->token = $customer->createToken('customer-login')->plainTextToken;
+        $output->token = $pair->accessToken;
         $output->api_token = $customer->api_token;
         $output->first_name = $customer->first_name;
         $output->last_name = $customer->last_name;

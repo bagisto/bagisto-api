@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Webkul\BagistoApi\Admin\Http\Controllers\ApiAuditController;
 use Webkul\BagistoApi\Admin\Http\Controllers\ApiSessionController;
 use Webkul\BagistoApi\Admin\Http\Controllers\ApiTokenController;
+use Webkul\BagistoApi\Admin\Http\Controllers\CustomerApiSessionController;
 use Webkul\Core\Http\Middleware\NoCacheMiddleware;
 
 Route::prefix(config('app.admin_url'))
@@ -32,6 +33,16 @@ Route::prefix(config('app.admin_url'))
                 Route::delete('{id}', 'destroy')->whereNumber('id')->name('admin.settings.api_sessions.delete');
 
                 Route::post('revoke-all/{adminId}', 'revokeAll')->whereNumber('adminId')->name('admin.settings.api_sessions.revoke_all');
+            });
+
+        Route::controller(CustomerApiSessionController::class)
+            ->prefix('customers/api-sessions')
+            ->group(function () {
+                Route::get('', 'index')->name('admin.customers.api_sessions.index');
+
+                Route::delete('{id}', 'destroy')->whereNumber('id')->name('admin.customers.api_sessions.delete');
+
+                Route::post('revoke-all/{customerId}', 'revokeAll')->whereNumber('customerId')->name('admin.customers.api_sessions.revoke_all');
             });
 
         Route::controller(ApiAuditController::class)

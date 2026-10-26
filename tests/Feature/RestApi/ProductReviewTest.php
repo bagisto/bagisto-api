@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Product\Models\ProductReview;
 
@@ -425,6 +426,72 @@ class ProductReviewTest extends RestApiTestCase
         $statuses = $this->statuses($response);
         expect($statuses)->not()->toBeEmpty();
         expect($statuses)->not()->toContain('pending');
+    }
+
+    /**
+     * Test the reviewer name is censored as the storefront censors it, by default.
+     */
+    public function test_reviewer_name_is_censored_by_default(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
+
+        $review = ProductReview::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product->id,
+            'name' => 'John Doe',
+            'status' => 'approved',
+        ]);
+
+        $this->publicGet('/api/shop/reviews/'.$review->id)->assertOk()->assertJsonPath('name', 'J*** D**');
+
+        $names = array_column($this->publicGet('/api/shop/products/'.$product->id.'/reviews')->json(), 'name');
+
+        expect($names)->toBe(['J*** D**']);
+    }
+
+    /**
+     * Test the author reads their own name uncensored.
+     */
+    public function test_reviewer_name_is_not_censored_for_its_author(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
+
+        $review = ProductReview::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product->id,
+            'name' => 'John Doe',
+            'status' => 'approved',
+        ]);
+
+        $this->authenticatedGet($customer, '/api/shop/reviews/'.$review->id)->assertOk()->assertJsonPath('name', 'John Doe');
+    }
+
+    /**
+     * Test the reviewer name is shown in full when the store turns censoring off.
+     */
+    public function test_reviewer_name_is_shown_when_censoring_is_off(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
+
+        DB::table('core_config')->where('code', 'catalog.products.review.censoring_reviewer_name')->delete();
+
+        DB::table('core_config')->insert([
+            'code' => 'catalog.products.review.censoring_reviewer_name',
+            'value' => '0',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->forgetCoreConfigCache();
+
+        $review = ProductReview::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product->id,
+            'name' => 'John Doe',
+            'status' => 'approved',
+        ]);
+
+        $this->publicGet('/api/shop/reviews/'.$review->id)->assertOk()->assertJsonPath('name', 'John Doe');
     }
 
     /**

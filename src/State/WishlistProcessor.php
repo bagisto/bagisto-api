@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request as RequestFacade;
@@ -20,6 +19,7 @@ use Webkul\BagistoApi\Exception\OperationFailedException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\Wishlist;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class WishlistProcessor implements ProcessorInterface
 {
@@ -192,7 +192,7 @@ class WishlistProcessor implements ProcessorInterface
      */
     private function authenticatedCustomer(): object
     {
-        $user = Auth::guard('sanctum')->user();
+        $user = CurrentCustomer::user();
 
         if (! $user) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

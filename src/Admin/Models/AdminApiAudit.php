@@ -23,6 +23,11 @@ class AdminApiAudit extends Model implements AdminApiAuditContract
     public const TOKEN_KIND_INTEGRATION = 'integration';
 
     /**
+     * The token kind of a storefront customer login session.
+     */
+    public const TOKEN_KIND_CUSTOMER_SESSION = 'customer_session';
+
+    /**
      * The channel of a REST request.
      */
     public const CHANNEL_REST = 'rest';
@@ -49,6 +54,7 @@ class AdminApiAudit extends Model implements AdminApiAuditContract
         self::TOKEN_KIND_SESSION,
         self::TOKEN_KIND_API_TOKEN,
         self::TOKEN_KIND_INTEGRATION,
+        self::TOKEN_KIND_CUSTOMER_SESSION,
     ];
 
     /**

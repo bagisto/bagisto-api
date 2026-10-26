@@ -275,6 +275,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
             'unknown-resource' => 'अज्ञात संसाधन',
             'cannot-update-other-profile' => 'अनधिकृत: किसी अन्य ग्राहक प्रोफ़ाइल को अपडेट नहीं कर सकते',
+            'refresh-token-invalid' => 'रिफ्रेश टोकन अमान्य है या उसकी अवधि समाप्त हो गई है। कृपया फिर से लॉगिन करें।',
+            'too-many-login-attempts' => 'बहुत अधिक लॉगिन प्रयास। कृपया :seconds सेकंड बाद पुनः प्रयास करें।',
+            'too-many-refresh-requests' => 'बहुत अधिक टोकन रिफ़्रेश। कृपया :seconds सेकंड बाद पुनः प्रयास करें।',
+            'rate-limit-exceeded' => 'बहुत अधिक प्रयास।',
+            'access-token-expired' => 'एक्सेस टोकन की अवधि समाप्त हो गई है। जारी रखने के लिए इसे रिफ्रेश करें।',
+            'logged-out-all' => 'आप सभी सत्रों से लॉग आउट हो गए हैं।',
+            'session-not-found' => 'सत्र नहीं मिला।',
+            'session-revoked' => 'सत्र रद्द कर दिया गया है।',
         ],
 
         'upload' => [
@@ -842,10 +850,6 @@ return [
             'note' => [
                 'empty' => 'नोट का पाठ आवश्यक है।',
                 'created' => 'नोट सफलतापूर्वक जोड़ा गया।',
-            ],
-
-            'impersonate' => [
-                'success' => 'प्रतिरूपण टोकन जारी किया गया।',
             ],
 
             'review' => [
@@ -1625,6 +1629,91 @@ return [
                 'no-permission' => 'आपको खोज शब्द प्रबंधित करने की अनुमति नहीं है।',
             ],
         ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'API सत्र',
+            ],
+
+            'acl' => [
+                'title' => 'API सत्र',
+                'delete' => 'रद्द करें',
+            ],
+
+            'index' => [
+                'title' => 'ग्राहक API सेशन',
+                'info' => 'वेब, मोबाइल, POS या डेस्कटॉप ऐप से स्टोरफ़्रंट API में साइन इन किए हुए ग्राहक। सेशन रद्द करने पर वह डिवाइस तुरंत साइन आउट हो जाता है।',
+            ],
+
+            'fields' => [
+                'customer' => 'ग्राहक',
+                'email' => 'ईमेल',
+                'channel' => 'चैनल',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'ग्राहक के सभी सेशन रद्द करें',
+            ],
+
+            'card' => [
+                'title' => 'API सेशन (:count)',
+                'empty' => 'इस ग्राहक का कोई सक्रिय API सेशन नहीं है।',
+            ],
+
+            'errors' => [
+                'no-permission' => 'आपको ग्राहक API सेशन प्रबंधित करने की अनुमति नहीं है।',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'ग्राहक प्रमाणीकरण',
+                'info' => 'स्टोरफ़्रंट ग्राहक लॉगिन के लिए टोकन अवधि, सीमाएँ और सेशन नियम।',
+
+                'tokens' => [
+                    'title' => 'टोकन की अवधि',
+                    'info' => 'एक्सेस टोकन, रिफ्रेश टोकन और सेशन कितने समय तक मान्य रहते हैं। बदलाव बाद में जारी होने वाले टोकन पर लागू होते हैं।',
+                    'access-token-ttl' => 'एक्सेस टोकन की अवधि (मिनट)',
+                    'access-token-ttl-info' => '5 से 60 मिनट के बीच। डिफ़ॉल्ट 15।',
+                    'refresh-token-ttl' => 'रिफ्रेश टोकन की अवधि (दिन)',
+                    'refresh-token-ttl-info' => '1 से 90 दिन के बीच। डिफ़ॉल्ट 30।',
+                    'session-lifetime' => 'सेशन की अधिकतम अवधि (दिन)',
+                    'session-lifetime-info' => '1 से 365 दिन के बीच। डिफ़ॉल्ट 90। इसके बाद एडमिन को फिर से लॉगिन करना होगा, चाहे सेशन कितनी भी बार रिफ्रेश हुआ हो।',
+                    'max-sessions' => 'प्रति ग्राहक अधिकतम सक्रिय सेशन',
+                    'max-sessions-info' => 'सीमा पूरी होने पर सबसे पुराना सेशन समाप्त हो जाता है। 0 से 100 के बीच। 0 का अर्थ है कोई सीमा नहीं।',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'रेट लिमिट',
+                    'info' => 'प्रति लॉग-इन ग्राहक प्रति मिनट अधिकतम स्टोरफ़्रंट API अनुरोध।',
+                    'requests-per-minute' => 'प्रति लॉग-इन ग्राहक प्रति मिनट अनुरोध',
+                    'requests-per-minute-info' => '1 से 100000 के बीच। डिफ़ॉल्ट 120।',
+                ],
+
+                'login-protection' => [
+                    'title' => 'लॉगिन सुरक्षा',
+                    'info' => 'क्लाइंट को प्रतीक्षा कराने से पहले कितने विफल लॉगिन और टोकन रिफ़्रेश अनुमत हैं।',
+                    'login-max-attempts' => 'लॉकआउट से पहले विफल लॉगिन',
+                    'login-max-attempts-info' => 'प्रति ईमेल और IP पता। 3 से 20 के बीच। डिफ़ॉल्ट 5।',
+                    'login-lockout-seconds' => 'लॉगिन लॉकआउट (सेकंड)',
+                    'login-lockout-seconds-info' => '60 से 3600 के बीच। डिफ़ॉल्ट 60।',
+                    'refresh-requests-per-minute' => 'प्रति सेशन प्रति मिनट टोकन रिफ़्रेश',
+                    'refresh-requests-per-minute-info' => '1 से 60 के बीच। डिफ़ॉल्ट 10।',
+                ],
+
+                'security' => [
+                    'title' => 'सुरक्षा',
+                    'info' => 'ग्राहक के अन्य सेशन किससे समाप्त होते हैं।',
+                    'revoke-sessions-on-password-change' => 'पासवर्ड बदलने पर सेशन रद्द करें',
+                ],
+
+                'retention' => [
+                    'title' => 'डेटा प्रतिधारण',
+                    'info' => 'समाप्त ग्राहक सेशन कितने समय तक रखे जाते हैं।',
+                    'session-prune-days' => 'समाप्त सेशन रखें (दिन)',
+                    'session-prune-days-info' => 'रद्द या समाप्त सेशन इतने दिनों बाद हटा दिए जाते हैं। 1 से 365 के बीच। डिफ़ॉल्ट 30।',
+                ],
+            ],
+        ],
         'auth' => [
             'configuration' => [
                 'title' => 'एडमिन प्रमाणीकरण',
@@ -1646,6 +1735,10 @@ return [
                     'info' => 'प्रति मिनट अधिकतम एडमिन API अनुरोध।',
                     'session-requests-per-minute' => 'प्रति लॉग-इन एडमिन प्रति मिनट अनुरोध',
                     'api-token-requests-per-minute' => 'प्रति API टोकन प्रति मिनट अनुरोध',
+                    'session-requests-per-minute-info' => '1 से 100000 के बीच। डिफ़ॉल्ट 60।',
+                    'api-token-requests-per-minute-info' => '1 से 100000 के बीच। डिफ़ॉल्ट 60।',
+                    'unauthenticated-requests-per-minute' => 'बिना टोकन प्रति IP पता प्रति मिनट अनुरोध',
+                    'unauthenticated-requests-per-minute-info' => '10 से 1000 के बीच। डिफ़ॉल्ट 60। इसमें लॉगिन, टू-फ़ैक्टर, रिफ़्रेश और पासवर्ड अनुरोध शामिल हैं।',
                 ],
 
                 'security' => [
@@ -1658,6 +1751,30 @@ return [
                     'domain-binding-mode-info' => 'DNS जाँचता है कि अनुरोध उस IP पते से आया है जिस पर टोकन का डोमेन रिज़ॉल्व होता है। Origin, Origin या Referer हेडर जाँचता है और केवल ब्राउज़र के लिए उपयुक्त है।',
                     'domain-binding-dns' => 'DNS (क्लाइंट का IP पता)',
                     'domain-binding-origin' => 'Origin हेडर',
+                ],
+
+                'login-protection' => [
+                    'title' => 'लॉगिन सुरक्षा',
+                    'info' => 'क्लाइंट को प्रतीक्षा कराने से पहले कितने विफल लॉगिन, गलत टू-फ़ैक्टर कोड और पासवर्ड अनुरोध अनुमत हैं।',
+                    'login-max-attempts' => 'लॉकआउट से पहले विफल लॉगिन',
+                    'login-max-attempts-info' => 'प्रति ईमेल और IP पता। 3 से 20 के बीच। डिफ़ॉल्ट 5।',
+                    'login-lockout-seconds' => 'लॉगिन लॉकआउट (सेकंड)',
+                    'login-lockout-seconds-info' => '60 से 3600 के बीच। डिफ़ॉल्ट 60।',
+                    'two-factor-challenge-lifetime' => 'टू-फ़ैक्टर चुनौती की अवधि (मिनट)',
+                    'two-factor-challenge-lifetime-info' => '1 से 15 के बीच। डिफ़ॉल्ट 5।',
+                    'two-factor-max-failures' => 'प्रति मिनट गलत टू-फ़ैक्टर कोड',
+                    'two-factor-max-failures-info' => 'प्रति एडमिन, सभी चुनौतियों में। 3 से 20 के बीच। डिफ़ॉल्ट 5।',
+                    'password-requests-per-minute' => 'प्रति मिनट पासवर्ड अनुरोध',
+                    'password-requests-per-minute-info' => 'प्रति IP पता पासवर्ड भूलने और रीसेट करने के अनुरोध। 1 से 20 के बीच। डिफ़ॉल्ट 5।',
+                ],
+
+                'retention' => [
+                    'title' => 'डेटा प्रतिधारण',
+                    'info' => 'समाप्त सेशन और API ऑडिट इतिहास कितने समय तक रखे जाते हैं।',
+                    'session-prune-days' => 'समाप्त सेशन रखें (दिन)',
+                    'session-prune-days-info' => 'रद्द या समाप्त सेशन इतने दिनों बाद हटा दिए जाते हैं। 1 से 365 के बीच। डिफ़ॉल्ट 30।',
+                    'audit-retention-days' => 'API ऑडिट इतिहास रखें (दिन)',
+                    'audit-retention-days-info' => 'पुरानी प्रविष्टियाँ प्रतिदिन हटाई जाती हैं। 0 से 3650 के बीच। खाली या 0 उन्हें हमेशा रखता है।',
                 ],
             ],
 
@@ -1917,6 +2034,7 @@ return [
                 'session' => 'लॉगिन सत्र',
                 'api-token' => 'API टोकन',
                 'integration' => 'इंटीग्रेशन टोकन (हटाया गया)',
+                'customer-session' => 'ग्राहक लॉगिन सेशन',
             ],
 
             'channels' => [

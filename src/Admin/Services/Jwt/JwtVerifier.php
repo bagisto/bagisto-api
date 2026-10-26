@@ -7,7 +7,6 @@ use Jose\Component\Signature\Algorithm\ES256;
 use Jose\Component\Signature\JWS;
 use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
-use Webkul\BagistoApi\Admin\Services\AdminApiAuthSettings;
 
 class JwtVerifier
 {
@@ -35,26 +34,18 @@ class JwtVerifier
      */
     public function verify(string $token): array
     {
-        if (! $this->looksLikeJwt($token)) {
-            throw new InvalidJwtException;
-        }
+        return $this->verifyWith($token, fn (array $claims) => $this->assertClaims($claims));
+    }
 
-        $jws = $this->decode($token);
-
-        $header = $jws->getSignature(0)->getProtectedHeader();
-
-        $this->assertHeader($jws, $header);
-        $this->assertSignature($jws, (string) $header['kid']);
-
-        $claims = $this->claims($jws);
-
-        $this->assertClaims($claims);
-        $this->assertKeyServesAccessTokens((string) $header['kid'], $claims['typ']);
-        $this->assertTimes($claims);
-
-        $claims['kid'] = (string) $header['kid'];
-
-        return $claims;
+    /**
+     * Verify a storefront customer access token and return its claims, with the header's key id as kid.
+     *
+     * @throws InvalidJwtException
+     * @throws ExpiredJwtException
+     */
+    public function verifyCustomerAccessToken(string $token): array
+    {
+        return $this->verifyWith($token, fn (array $claims) => $this->assertCustomerAccessClaims($claims));
     }
 
     /**
@@ -81,6 +72,36 @@ class JwtVerifier
         if ($claims['typ'] !== JwtSigner::TYPE_API) {
             throw new InvalidJwtException;
         }
+
+        return $claims;
+    }
+
+    /**
+     * Check a token's header and signature, run the claims check for its kind, then its key and times.
+     *
+     * @throws InvalidJwtException
+     * @throws ExpiredJwtException
+     */
+    protected function verifyWith(string $token, callable $assertClaims): array
+    {
+        if (! $this->looksLikeJwt($token)) {
+            throw new InvalidJwtException;
+        }
+
+        $jws = $this->decode($token);
+
+        $header = $jws->getSignature(0)->getProtectedHeader();
+
+        $this->assertHeader($jws, $header);
+        $this->assertSignature($jws, (string) $header['kid']);
+
+        $claims = $this->claims($jws);
+
+        $assertClaims($claims);
+        $this->assertKeyServesAccessTokens((string) $header['kid'], $claims['typ']);
+        $this->assertTimes($claims);
+
+        $claims['kid'] = (string) $header['kid'];
 
         return $claims;
     }
@@ -150,7 +171,7 @@ class JwtVerifier
     protected function assertKeyServesAccessTokens(string $kid, string $type): void
     {
         if (
-            $type !== JwtSigner::TYPE_ACCESS
+            ! in_array($type, [JwtSigner::TYPE_ACCESS, JwtSigner::TYPE_CUSTOMER_ACCESS], true)
             || $kid === $this->keys->signingKid()
         ) {
             return;
@@ -159,7 +180,7 @@ class JwtVerifier
         $retiredAt = $this->keys->retiredKeys()[$kid] ?? null;
 
         $cutoff = now()
-            ->subMinutes(AdminApiAuthSettings::ACCESS_TOKEN_TTL_MAX)
+            ->subMinutes(JwtSigner::longestAccessTokenMinutes())
             ->subSeconds(max(0, (int) config('bagistoapi.admin_auth.jwt.leeway', 30)));
 
         if (
@@ -218,6 +239,27 @@ class JwtVerifier
         }
 
         $this->assertApiClaims($claims);
+    }
+
+    /**
+     * Require the customer access type and audience, a customer, a session id and an expiry.
+     */
+    protected function assertCustomerAccessClaims(array $claims): void
+    {
+        if (
+            ($claims['iss'] ?? null) !== $this->signer->issuer()
+            || ($claims['typ'] ?? null) !== JwtSigner::TYPE_CUSTOMER_ACCESS
+            || ($claims['aud'] ?? null) !== $this->signer->customerAudience()
+            || ! $this->isPositiveInt($claims['sub'] ?? null)
+            || ! $this->isPositiveInt($claims['sid'] ?? null)
+            || ! is_string($claims['jti'] ?? null)
+            || $claims['jti'] === ''
+            || ! is_int($claims['iat'] ?? null)
+            || ! is_int($claims['nbf'] ?? null)
+            || ! is_int($claims['exp'] ?? null)
+        ) {
+            throw new InvalidJwtException;
+        }
     }
 
     /**

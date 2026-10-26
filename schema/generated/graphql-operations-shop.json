@@ -226,7 +226,7 @@
     },
     "createCustomer": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\Customer",
         "example": {
             "firstName": "John",
@@ -243,12 +243,19 @@
     },
     "createCustomerLogin": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\CustomerLogin",
         "example": {
             "email": "john@example.com",
-            "password": "Password123!"
+            "password": "Password123!",
+            "device_name": "iPhone 15",
+            "client_type": "mobile"
         }
+    },
+    "createCustomerLogoutAll": {
+        "kind": "mutation",
+        "tag": "Customer Authentication",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerLogoutAll"
     },
     "createCustomerProfileDelete": {
         "kind": "mutation",
@@ -277,6 +284,14 @@
         "kind": "mutation",
         "tag": "Customer Return",
         "resource": "Webkul\\BagistoApi\\Models\\CustomerReturnMessage"
+    },
+    "createCustomerTokenRefresh": {
+        "kind": "mutation",
+        "tag": "Customer Authentication",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerTokenRefresh",
+        "example": {
+            "refresh_token": "88|7c1f4e2a9b..."
+        }
     },
     "createCustomizableOptionFile": {
         "kind": "mutation",
@@ -320,7 +335,7 @@
     },
     "createForgotPassword": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\ForgotPassword",
         "example": {
             "email": "john@example.com"
@@ -347,7 +362,7 @@
     },
     "createLogout": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\CustomerLogout"
     },
     "createMergeCart": {
@@ -423,7 +438,7 @@
     },
     "createResendVerificationEmail": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\ResendVerificationEmail",
         "example": {
             "email": "john@example.com"
@@ -431,7 +446,7 @@
     },
     "createResetPassword": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\ResetPassword",
         "example": {
             "token": "a1b2c3d4e5...",
@@ -442,7 +457,7 @@
     },
     "createSocialLogin": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\SocialLogin",
         "example": {
             "provider": "google",
@@ -456,7 +471,7 @@
     },
     "createVerifyAccount": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\VerifyAccount",
         "example": {
             "token": "64-char-token-here"
@@ -464,7 +479,7 @@
     },
     "createVerifyToken": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\VerifyToken"
     },
     "createWishlist": {
@@ -487,7 +502,7 @@
     },
     "customer": {
         "kind": "query",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\Customer"
     },
     "customerAddress": {
@@ -570,6 +585,11 @@
         "tag": "Customer Review",
         "resource": "Webkul\\BagistoApi\\Models\\CustomerReview"
     },
+    "customerSessions": {
+        "kind": "query",
+        "tag": "Customer Authentication",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerSession"
+    },
     "deleteCompareItem": {
         "kind": "mutation",
         "tag": "CompareItem",
@@ -577,6 +597,11 @@
         "example": {
             "product_id": 1
         }
+    },
+    "deleteCustomerSession": {
+        "kind": "mutation",
+        "tag": "Customer Authentication",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerSession"
     },
     "deleteGdprRequest": {
         "kind": "mutation",

@@ -71,6 +71,26 @@ class CustomerOrderTest extends RestApiTestCase
     }
 
     /**
+     * Test: The order list honours per_page and page.
+     */
+    public function test_order_list_honours_per_page_and_page(): void
+    {
+        $testData = $this->createTestData();
+
+        $customer = $testData['customer'];
+
+        $ids = Order::query()->where('customer_id', $customer->id)->orderByDesc('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        $first = $this->authenticatedGet($customer, '/api/shop/customer-orders?per_page=1&page=1')->assertOk()->json();
+        $second = $this->authenticatedGet($customer, '/api/shop/customer-orders?per_page=1&page=2')->assertOk()->json();
+        $beyond = $this->authenticatedGet($customer, '/api/shop/customer-orders?per_page=1&page=3')->assertOk()->json();
+
+        expect(array_map('intval', array_column($first, 'id')))->toBe([$ids[0]]);
+        expect(array_map('intval', array_column($second, 'id')))->toBe([$ids[1]]);
+        expect($beyond)->toBe([]);
+    }
+
+    /**
      * Test: Customer with no orders returns empty collection.
      */
     public function test_customer_with_no_orders_returns_empty(): void

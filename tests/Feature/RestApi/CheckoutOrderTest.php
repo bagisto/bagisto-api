@@ -36,7 +36,7 @@ class CheckoutOrderTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, $this->url);
 
-        expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
+        expect($response->getStatusCode())->toBeIn([404, 422]);
     }
 
     /**

@@ -4,11 +4,11 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Models\GdprRequest;
 use Webkul\BagistoApi\State\Concerns\GdprFeatureGate;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class GdprRequestItemProvider implements ProviderInterface
 {
@@ -21,7 +21,7 @@ class GdprRequestItemProvider implements ProviderInterface
     {
         $this->assertGdprEnabled();
 
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.gdpr.unauthenticated'));

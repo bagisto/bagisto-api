@@ -20,11 +20,6 @@ class ThrottleAdminApi extends ThrottleRequests
     public const LIMITER = 'admin-api';
 
     /**
-     * Requests per minute allowed from one address before it authenticates.
-     */
-    public const UNAUTHENTICATED_REQUESTS_PER_MINUTE = 60;
-
-    /**
      * Throttle an admin API request by the limits of its session's admin or its API token.
      */
     public function handle($request, Closure $next, $maxAttempts = 60, $decayMinutes = 1, $prefix = ''): Response
@@ -53,7 +48,7 @@ class ThrottleAdminApi extends ThrottleRequests
         if ($credential === null) {
             return app()->environment('testing')
                 ? Limit::none()
-                : Limit::perMinute(self::UNAUTHENTICATED_REQUESTS_PER_MINUTE)->by('admin-api-unauthenticated:'.$request->ip());
+                : Limit::perMinute($settings->unauthenticatedRequestsPerMinute())->by('admin-api-unauthenticated:'.$request->ip());
         }
 
         if ($credential->isApiToken()) {

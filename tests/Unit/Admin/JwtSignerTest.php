@@ -77,6 +77,95 @@ class JwtSignerTest extends BagistoApiTest
     }
 
     // ========================================================================
+    // Customer Access Tokens
+    // ========================================================================
+
+    /**
+     * Test a customer access token carries the storefront audience, its own type and the session.
+     */
+    public function test_a_customer_access_token_has_the_documented_claims(): void
+    {
+        $now = Carbon::now();
+
+        $token = $this->signer()->signCustomerAccessToken(21, 34, $now, $now->copy()->addMinutes(15));
+
+        $this->assertSame(['alg' => 'ES256', 'typ' => 'JWT', 'kid' => $this->fixtureKid()], $this->jwtHeader($token));
+
+        $claims = $this->verifier()->verifyCustomerAccessToken($token);
+
+        $this->assertSame('https://store.test', $claims['iss']);
+        $this->assertSame('bagisto-shop-api', $claims['aud']);
+        $this->assertSame('customer_access', $claims['typ']);
+        $this->assertSame(21, $claims['sub']);
+        $this->assertSame(34, $claims['sid']);
+        $this->assertSame($now->getTimestamp() + 900, $claims['exp']);
+    }
+
+    /**
+     * Test a customer token never passes as an admin token, nor an admin token as a customer token.
+     */
+    public function test_customer_and_admin_tokens_are_refused_on_each_others_surface(): void
+    {
+        $now = Carbon::now();
+
+        $customer = $this->signer()->signCustomerAccessToken(21, 34, $now, $now->copy()->addMinutes(15));
+        $access = $this->signer()->signAccessToken(7, 12, $now, $now->copy()->addMinutes(15));
+        $api = $this->signer()->signApiToken(3, 'abc123', 'erp.example.com', $now, null);
+        $shopDomainApi = $this->signer()->signApiToken(3, 'abc124', 'bagisto-shop-api', $now, null);
+        $accessForShop = $this->signJwt(array_merge($this->jwtClaims($access), ['aud' => 'bagisto-shop-api']));
+
+        $this->assertRejected(fn () => $this->verifier()->verify($customer), 'customer token as admin');
+        $this->assertRejected(fn () => $this->verifier()->verifyAccessToken($customer), 'customer token as admin access');
+        $this->assertRejected(fn () => $this->verifier()->verifyApiToken($customer), 'customer token as API token');
+
+        $this->assertRejected(fn () => $this->verifier()->verifyCustomerAccessToken($access), 'admin access token');
+        $this->assertRejected(fn () => $this->verifier()->verifyCustomerAccessToken($api), 'admin API token');
+        $this->assertRejected(fn () => $this->verifier()->verifyCustomerAccessToken($shopDomainApi), 'API token bound to the shop audience');
+        $this->assertRejected(fn () => $this->verifier()->verifyCustomerAccessToken($accessForShop), 'admin access token with the shop audience');
+    }
+
+    /**
+     * Test a customer token with a missing or wrong claim is rejected.
+     */
+    public function test_a_customer_token_with_a_bad_claim_is_rejected(): void
+    {
+        $now = Carbon::now();
+
+        $claims = $this->jwtClaims($this->signer()->signCustomerAccessToken(21, 34, $now, $now->copy()->addMinutes(15)));
+
+        $cases = [
+            'the admin audience' => array_merge($claims, ['aud' => 'bagisto-admin-api']),
+            'a wrong issuer' => array_merge($claims, ['iss' => 'https://evil.test']),
+            'no session' => array_diff_key($claims, ['sid' => true]),
+            'no expiry' => array_diff_key($claims, ['exp' => true]),
+            'a string subject' => array_merge($claims, ['sub' => '21']),
+            'an empty jti' => array_merge($claims, ['jti' => '']),
+        ];
+
+        foreach ($cases as $case => $value) {
+            $this->assertRejected(fn () => $this->verifier()->verifyCustomerAccessToken($this->signJwt($value)), $case);
+        }
+    }
+
+    /**
+     * Test an expired customer token reports the access token expiry after the leeway.
+     */
+    public function test_an_expired_customer_token_reports_access_token_expired(): void
+    {
+        $now = Carbon::now();
+
+        $token = $this->signer()->signCustomerAccessToken(21, 34, $now, $now->copy()->addMinutes(15));
+
+        $this->travel(15 * 60 + 25)->seconds();
+
+        $this->verifier()->verifyCustomerAccessToken($token);
+
+        $this->travel(10)->seconds();
+
+        $this->assertExpired(fn () => $this->verifier()->verifyCustomerAccessToken($token), 'access_token_expired');
+    }
+
+    // ========================================================================
     // Verification
     // ========================================================================
 

@@ -8,11 +8,11 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\EuWithdrawal;
 use Webkul\BagistoApi\State\Concerns\BuildsEuWithdrawal;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\EUWithdrawal\Repositories\WithdrawalRepository;
 
 class EuWithdrawalProvider implements ProviderInterface
@@ -29,7 +29,7 @@ class EuWithdrawalProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Webkul\BagistoApi\Models\CustomerApiSession;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
 use Webkul\Sales\Models\Order;
@@ -43,7 +44,8 @@ class CustomerTest extends RestApiTestCase
 
         $response->assertCreated();
         expect($response->json('apiToken'))->toBeString()->not()->toBeEmpty();
-        expect($response->json('token'))->toContain('|');
+        expect($response->json('token'))->toBe($response->json('accessToken'));
+        expect(substr_count((string) $response->json('accessToken'), '.'))->toBe(2);
     }
 
     /**
@@ -59,9 +61,9 @@ class CustomerTest extends RestApiTestCase
             'password' => 'WrongPassword!',
         ]);
 
-        $response->assertCreated();
-        expect($response->json('success'))->toBeFalse();
-        expect($response->json('token'))->toBeEmpty();
+        $response->assertStatus(401);
+        expect($response->json('error'))->toBe('invalid_credentials');
+        expect($response->json('accessToken'))->toBeNull();
     }
 
     /**
@@ -76,8 +78,8 @@ class CustomerTest extends RestApiTestCase
             'password' => 'Password123!',
         ]);
 
-        $response->assertCreated();
-        expect($response->json('success'))->toBeFalse();
+        $response->assertStatus(401);
+        expect($response->json('error'))->toBe('invalid_credentials');
     }
 
     /**
@@ -154,7 +156,7 @@ class CustomerTest extends RestApiTestCase
         $this->authenticatedPost($customer, '/api/shop/customer/logout');
 
         expect(
-            $customer->tokens()->count()
+            CustomerApiSession::query()->where('customer_id', $customer->id)->whereNull('revoked_at')->count()
         )->toBe(0);
     }
 
@@ -193,10 +195,12 @@ class CustomerTest extends RestApiTestCase
     {
         $this->seedRequiredData();
         $customer = $this->createCustomer();
-        $token = $customer->createToken('test-token')->accessToken;
+        $token = $this->customerAccessToken($customer);
+
+        $forged = $this->withTamperedPayload($token, ['sub' => $customer->id + 1]);
 
         $response = $this->getJson('/api/shop/customer-profile', array_merge($this->storefrontHeaders(), [
-            'Authorization' => "Bearer {$token->id}|not-the-real-secret",
+            'Authorization' => "Bearer {$forged}",
         ]));
 
         expect($response->getStatusCode())->toBeIn([401, 403]);
@@ -298,6 +302,42 @@ class CustomerTest extends RestApiTestCase
 
         expect($response->getStatusCode())->toBe(400);
         expect($customer->fresh()->email)->not()->toBe($other->email);
+    }
+
+    /**
+     * Test update profile with an invalid email is rejected and leaves the email unchanged.
+     */
+    public function test_update_profile_with_invalid_email_is_rejected(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedPut(
+            $customer,
+            '/api/shop/customer-profile-updates/'.$customer->id,
+            ['email' => 'not-an-email']
+        );
+
+        expect($response->getStatusCode())->toBe(400);
+        expect($customer->fresh()->email)->not()->toBe('not-an-email');
+    }
+
+    /**
+     * Test update profile accepts an email another channel's customer uses, as core does.
+     */
+    public function test_update_profile_with_email_used_on_another_channel_is_accepted(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $other = $this->createCustomer(['channel_id' => 999]);
+
+        $this->authenticatedPut(
+            $customer,
+            '/api/shop/customer-profile-updates/'.$customer->id,
+            ['email' => $other->email]
+        )->assertOk();
+
+        expect($customer->fresh()->email)->toBe($other->email);
     }
 
     /**
@@ -580,7 +620,8 @@ class CustomerTest extends RestApiTestCase
         ]);
 
         $response->assertCreated();
-        expect($response->json('token'))->toBeString()->toContain('|');
+        expect($response->json('token'))->toBeString()->toBe($response->json('accessToken'));
+        expect($response->json('refreshToken'))->toBeString()->toContain('|');
     }
 
     /**

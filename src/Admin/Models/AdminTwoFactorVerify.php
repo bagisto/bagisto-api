@@ -25,7 +25,7 @@ use Webkul\BagistoApi\OpenApi\ApiSchemas;
             openapi: new Model\Operation(
                 tags: ['Admin Authentication'],
                 summary: 'Finish a login with a two-factor code',
-                description: 'Exchanges the `challengeToken` of a `202` login, with the 6-digit authenticator `code` or a `backupCode`, for the access and refresh token pair. A challenge works once and for 5 minutes; five wrong codes revoke it, and five wrong codes a minute for the same admin lock further codes for that minute. A code from an already used time window is refused, and a backup code is used up.',
+                description: 'Exchanges the `challengeToken` of a `202` login, with the 6-digit authenticator `code` or a `backupCode`, for the access and refresh token pair. A challenge works once and for 5 minutes by default; five wrong codes revoke it, and five wrong codes a minute for the same admin (configurable) lock further codes for that minute. A code from an already used time window is refused, and a backup code is used up.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -109,7 +109,7 @@ use Webkul\BagistoApi\OpenApi\ApiSchemas;
                         ]),
                     ),
                     '429' => new Model\Response(
-                        description: 'Five wrong codes for this admin in a minute (`too_many_login_attempts`), or more than 60 requests a minute from this address (`rate_limit_exceeded`). Wait for `Retry-After` seconds.',
+                        description: 'Too many wrong codes for this admin in a minute, five by default (`too_many_login_attempts`), or more than the requests allowed a minute from this address, 60 by default (`rate_limit_exceeded`). Wait for `Retry-After` seconds.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'schema' => ['$ref' => ApiSchemas::AUTH_ERROR_REF],

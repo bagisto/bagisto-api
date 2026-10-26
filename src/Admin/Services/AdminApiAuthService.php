@@ -27,16 +27,6 @@ class AdminApiAuthService
     public const GUARD = 'admin-api';
 
     /**
-     * The failed logins an email address and client address may make before waiting, as core allows.
-     */
-    public const MAX_LOGIN_ATTEMPTS = 5;
-
-    /**
-     * Seconds failed logins are remembered for.
-     */
-    public const LOGIN_DECAY_SECONDS = 60;
-
-    /**
      * Create a new admin API authentication service.
      */
     public function __construct(
@@ -45,6 +35,7 @@ class AdminApiAuthService
         protected AdminApiAuthAuditor $auditor,
         protected RateLimiter $limiter,
         protected AuthManager $auth,
+        protected AdminApiAuthSettings $settings,
     ) {}
 
     /**
@@ -63,7 +54,7 @@ class AdminApiAuthService
 
         $throttleKey = $this->throttleKey($credentials['email'], $request);
 
-        if ($this->limiter->tooManyAttempts($throttleKey, self::MAX_LOGIN_ATTEMPTS)) {
+        if ($this->limiter->tooManyAttempts($throttleKey, $this->settings->loginMaxAttempts())) {
             $this->rejectLockout($throttleKey, $credentials['email'], $request);
         }
 
@@ -275,7 +266,7 @@ class AdminApiAuthService
      */
     protected function rejectCredentials(string $throttleKey, ?Admin $admin, array $credentials, Request $request): never
     {
-        $this->limiter->hit($throttleKey, self::LOGIN_DECAY_SECONDS);
+        $this->limiter->hit($throttleKey, $this->settings->loginLockoutSeconds());
 
         Event::dispatch(new Failed(self::GUARD, $admin, $credentials));
 

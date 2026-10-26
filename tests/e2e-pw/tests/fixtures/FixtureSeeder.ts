@@ -115,9 +115,9 @@ export class FixtureSeeder {
       data: { email, password },
     });
 
-    FixtureSeeder.require(login?.token && login?.id, `login returned no token for ${email}`);
+    FixtureSeeder.require(login?.accessToken && login?.id, `login returned no access token for ${email}`);
 
-    return { id: Number(login.id), email, password, token: login.token };
+    return { id: Number(login.id), email, password, token: login.accessToken };
   }
 
   private async seedShippedOrder(customer: SeededCustomer): Promise<E2eOrderFixture> {

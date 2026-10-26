@@ -81,7 +81,9 @@ Both transports are covered: requests are foldered `REST/` and `GraphQL/` under 
 | `storefrontKey` | Shop | Storefront API key: `STOREFRONT_PLAYGROUND_KEY` in `.env` (written by the installer), or a key from `php artisan bagisto-api:generate-key` |
 | `customerEmail` | Shop | A storefront customer's email |
 | `customerPassword` | Shop | That customer's password |
-| `customerToken` | Shop | Filled in by the Customer login request (the response's `token`) |
+| `customerAccessToken` | Shop | Filled in by the customer login, registration, social login and refresh requests |
+| `customerRefreshToken` | Shop | Filled in by the same requests |
+| `customerAccessTokenExpiresAt` | Shop | Filled in by the same requests |
 | `cartToken` | Shop | Filled in by the Create cart token request |
 | `adminEmail` | Admin | An admin user's email, for the login request |
 | `adminPassword` | Admin | That admin's password |
@@ -101,7 +103,7 @@ Fill in only what the collection you are using needs.
 
 Both flows are explained step by step, with diagrams and curl and GraphQL examples, in [`docs/authentication.md`](docs/authentication.md).
 
-**Shop** — run **REST → Customer → Customer login**. It stores `customerToken`, which every other request sends as the bearer. For a guest cart, run **Create cart token** instead and set the collection's **Authorization** tab to `{{cartToken}}`; the cart and checkout endpoints serve guests and logged-in customers alike, so the token you send decides whose cart you are working on.
+**Shop** — fill in `customerEmail` and `customerPassword` and run **REST → Customer Auth → Customer login**. It stores `customerAccessToken`, `customerRefreshToken` and `customerAccessTokenExpiresAt`, every other request sends the access token as the bearer, and before each request the collection refreshes it when it expires within 60 seconds. For a guest cart, run **Create cart token** instead and set the collection's **Authorization** tab to `{{cartToken}}`; the cart and checkout endpoints serve guests and logged-in customers alike, so the token you send decides whose cart you are working on.
 
 **Admin** — fill in `adminEmail` and `adminPassword` and run **REST → Auth → Log in with email and password**. It stores `adminAccessToken`, `adminRefreshToken` and `adminAccessTokenExpiresAt`, and before each request the collection refreshes the access token when it expires within 60 seconds. For an admin with two-factor authentication the login stores a challenge token instead: enter the code in **REST → Auth → Finish a login with a two-factor code** and send it. The **Auth** folder lists its requests in the order a client uses them. To call the API as a server integration instead, paste an API token into `adminApiToken`; it is then sent on every request and nothing is refreshed. See [Admin API Authentication](#admin-api-authentication).
 
@@ -126,7 +128,7 @@ Values in the requests are placeholders — replace them with records that exist
 
 ## Admin API Authentication
 
-The complete guide to both surfaces — the admin login, two-factor, refresh and reuse detection, sessions, API tokens, the storefront key, the customer token and the guest cart token — is [`docs/authentication.md`](docs/authentication.md). This section is the summary.
+The complete guide to both surfaces — the admin login, two-factor, refresh and reuse detection, sessions, API tokens, the storefront key, the customer access and refresh tokens and the guest cart token — is [`docs/authentication.md`](docs/authentication.md). This section is the summary.
 
 Admin endpoints (`/api/admin/*` and `/api/admin/graphql`) take a Bearer token, and every request is allowed or refused by the admin user's **role permissions**, the same permissions the admin panel uses, read on every request. There are two kinds of token, and both work over REST and GraphQL alike.
 
@@ -182,7 +184,7 @@ async function adminFetch(path, options = {}) {
 }
 ```
 
-An admin with two-factor authentication enabled gets `202` with `twoFactorRequired: true` and a `challengeToken` instead of tokens; send it with the 6-digit `code` (or a `backup_code`) to `POST /api/admin/auth/two-factor` within 5 minutes to receive the pair. `POST /api/admin/auth/logout` ends the current session, `POST /api/admin/auth/logout-all` every session of the admin, `GET /api/admin/auth/sessions` lists them and `DELETE /api/admin/auth/sessions/{id}` revokes one. `PUT /api/admin/account` updates the admin's own name, email and password. These five need a login session's access token; an API token gets `403` with `access_token_required`. Forgotten passwords go through `POST /api/admin/auth/forgot-password` and `POST /api/admin/auth/reset-password`, which, like login, two-factor and refresh, need no token. The GraphQL equivalents are `createAdminLogin`, `createAdminTwoFactorVerify`, `createAdminTokenRefresh`, `createAdminLogout`, `createAdminLogoutAll`, `adminSessions`, `deleteAdminSession`, `createAdminAccountUpdate`, `createAdminForgotPassword` and `createAdminResetPassword`, on `/api/admin/graphql`.
+An admin with two-factor authentication enabled gets `202` with `twoFactorRequired: true` and a `challengeToken` instead of tokens; send it with the 6-digit `code` (or a `backup_code`) to `POST /api/admin/auth/two-factor` within 5 minutes (configurable) to receive the pair. `POST /api/admin/auth/logout` ends the current session, `POST /api/admin/auth/logout-all` every session of the admin, `GET /api/admin/auth/sessions` lists them and `DELETE /api/admin/auth/sessions/{id}` revokes one. `PUT /api/admin/account` updates the admin's own name, email and password. These five need a login session's access token; an API token gets `403` with `access_token_required`. Forgotten passwords go through `POST /api/admin/auth/forgot-password` and `POST /api/admin/auth/reset-password`, which, like login, two-factor and refresh, need no token. The GraphQL equivalents are `createAdminLogin`, `createAdminTwoFactorVerify`, `createAdminTokenRefresh`, `createAdminLogout`, `createAdminLogoutAll`, `adminSessions`, `deleteAdminSession`, `createAdminAccountUpdate`, `createAdminForgotPassword` and `createAdminResetPassword`, on `/api/admin/graphql`.
 
 ### Server integrations: API tokens
 
@@ -212,6 +214,10 @@ API tokens can be listed, read and revoked through `GET`/`DELETE /api/admin/sett
 | `429 too_many_login_attempts` / `too_many_password_requests` / `rate_limit_exceeded` | Too many failed logins or codes, password requests, or requests | Wait for the `Retry-After` seconds |
 
 REST bodies carry the code in `error`; GraphQL errors carry it in `extensions.code`. The full table, with the body shapes, is in [`docs/authentication.md`](docs/authentication.md#errors).
+
+### Customers
+
+Storefront customers follow the same model through `/api/shop`: `POST /api/shop/customer/login` (GraphQL `createCustomerLogin`), registration and social login return an access token and a refresh token, `POST /api/shop/customer/refresh` renews them, and `logout`, `logout-all` and `GET`/`DELETE /api/shop/customer/sessions` end and list sessions. Login takes an optional `guest_cart_token` that merges the guest's cart into the customer's. Every request also carries the storefront key (`X-STOREFRONT-KEY`). Lifetimes and limits are set in **Configuration → API → Customer Authentication**; administrators list and end customer sessions under **Customers → API Sessions**. See [`docs/authentication.md`](docs/authentication.md#customer-login).
 
 ### Signing keys
 

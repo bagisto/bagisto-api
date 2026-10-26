@@ -10,7 +10,7 @@ use Illuminate\Support\ServiceProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface as SymfonyHttpExceptionInterface;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException as SerializerUnexpectedValueException;
-use Webkul\BagistoApi\Exception\AdminAuthException;
+use Webkul\BagistoApi\Exception\ApiAuthException;
 
 class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
 {
@@ -72,7 +72,7 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
                                 'detail' => $exception->getDetail(),
                             ];
 
-                            if ($exception instanceof AdminAuthException) {
+                            if ($exception instanceof ApiAuthException) {
                                 $body += $exception->toResponseBody();
                             }
 

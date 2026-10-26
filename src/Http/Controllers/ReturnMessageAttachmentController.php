@@ -3,11 +3,11 @@
 namespace Webkul\BagistoApi\Http\Controllers;
 
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\RMA\Helpers\Attachment;
 use Webkul\RMA\Repositories\RMAMessageRepository;
 
@@ -26,7 +26,7 @@ class ReturnMessageAttachmentController extends Controller
      */
     public function __invoke(int $id): StreamedResponse
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

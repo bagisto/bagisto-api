@@ -8,18 +8,20 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerOrderShipment;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
+use Webkul\BagistoApi\State\Concerns\ScopesNestedConnections;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Customer\Models\Customer;
 
 class CustomerOrderShipmentProvider implements ProviderInterface
 {
     use ClampsPageSize;
     use ResolvesCursorWindow;
+    use ScopesNestedConnections;
 
     /**
      * Create a new instance.
@@ -33,7 +35,7 @@ class CustomerOrderShipmentProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -87,6 +89,8 @@ class CustomerOrderShipmentProvider implements ProviderInterface
             $query->where('customer_id', $customer->id)
                 ->where('customer_type', Customer::class);
         })->with(['items', 'shippingAddress', 'order']);
+
+        $this->scopeToParent($query, $context);
 
         $orderId = $args['orderId']
             ?? $filters['orderId']

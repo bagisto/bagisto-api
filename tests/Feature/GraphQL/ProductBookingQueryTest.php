@@ -83,6 +83,36 @@ class ProductBookingQueryTest extends GraphQLTestCase
         $this->assertNotNull($slot['slots']);
     }
 
+    /**
+     * Test the booking product node resolves its slot configuration as JSON.
+     */
+    public function test_booking_product_slots_resolve(): void
+    {
+        $bookingData = $this->createBookingProductFixture('appointment');
+
+        $response = $this->graphQL(<<<'GQL'
+            query getProduct($id: ID!) {
+              product(id: $id) {
+                bookingProducts {
+                  edges {
+                    node {
+                      _id
+                      type
+                      slots
+                    }
+                  }
+                }
+              }
+            }
+        GQL, ['id' => (string) $bookingData['product']->id]);
+
+        $this->assertNull($response->json('errors'), json_encode($response->json('errors')));
+
+        $node = $this->extractBookingNode($response->json('data.product'), 'appointment');
+
+        $this->assertIsArray($node['slots']);
+    }
+
     // ============================================================================
     // Rental
     // ============================================================================

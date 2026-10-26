@@ -84,7 +84,7 @@ use Webkul\BagistoApi\OpenApi\ApiSchemas;
                         ]),
                     ),
                     '429' => new Model\Response(
-                        description: 'More than 60 requests a minute from this address (`rate_limit_exceeded`). Wait for `Retry-After` seconds.',
+                        description: 'More than the requests allowed a minute from this address, 60 by default (`rate_limit_exceeded`). Wait for `Retry-After` seconds.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'schema' => ['$ref' => ApiSchemas::AUTH_ERROR_REF],

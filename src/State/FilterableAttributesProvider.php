@@ -6,12 +6,12 @@ use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Models\Filter\Attribute;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class FilterableAttributesProvider implements ProviderInterface
 {
@@ -58,7 +58,7 @@ class FilterableAttributesProvider implements ProviderInterface
         $query->with(['options', 'translations', 'options.translations']);
         $query->orderBy('attributes.id', 'asc');
 
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
         $customerGroup = ($customer && $customer->group)
             ? $customer->group
             : core()->getGuestCustomerGroup();

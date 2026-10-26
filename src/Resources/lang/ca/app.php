@@ -275,6 +275,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
             'unknown-resource' => 'Recurs desconegut',
             'cannot-update-other-profile' => 'No autoritzat: No es pot actualitzar el perfil d\'un altre client',
+            'refresh-token-invalid' => 'El token de refresc no és vàlid o ha caducat. Torna a iniciar sessió.',
+            'too-many-login-attempts' => 'Massa intents d\'inici de sessió. Torneu-ho a provar d\'aquí a :seconds segons.',
+            'too-many-refresh-requests' => 'Massa renovacions de token. Torneu-ho a provar d\'aquí a :seconds segons.',
+            'rate-limit-exceeded' => 'Massa intents.',
+            'access-token-expired' => 'El token d\'accés ha caducat. Refresca\'l per continuar.',
+            'logged-out-all' => 'Heu tancat totes les sessions.',
+            'session-not-found' => 'No s\'ha trobat la sessió.',
+            'session-revoked' => 'S\'ha revocat la sessió.',
         ],
 
         'upload' => [
@@ -842,10 +850,6 @@ return [
             'note' => [
                 'empty' => 'Cal el text de la nota.',
                 'created' => 'Nota afegida correctament.',
-            ],
-
-            'impersonate' => [
-                'success' => 'S\'ha emès el testimoni de suplantació.',
             ],
 
             'review' => [
@@ -1625,6 +1629,91 @@ return [
                 'no-permission' => 'No teniu permís per gestionar els termes de cerca.',
             ],
         ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'Sessions d\'API',
+            ],
+
+            'acl' => [
+                'title' => 'Sessions d\'API',
+                'delete' => 'Revoca',
+            ],
+
+            'index' => [
+                'title' => 'Sessions d\'API dels clients',
+                'info' => 'Clients connectats a l\'API de la botiga des d\'aplicacions web, mòbils, de TPV o d\'escriptori. Revocar una sessió desconnecta aquell dispositiu a l\'instant.',
+            ],
+
+            'fields' => [
+                'customer' => 'Client',
+                'email' => 'Correu electrònic',
+                'channel' => 'Canal',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'Revoca totes les sessions del client',
+            ],
+
+            'card' => [
+                'title' => 'Sessions d\'API (:count)',
+                'empty' => 'Aquest client no té cap sessió d\'API activa.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'No teniu permís per gestionar les sessions d\'API dels clients.',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'Autenticació de clients',
+                'info' => 'Durades dels tokens, límits i regles de sessió per als inicis de sessió dels clients de la botiga.',
+
+                'tokens' => [
+                    'title' => 'Durada dels tokens',
+                    'info' => 'Quant de temps són vàlids els tokens d\'accés, els tokens de refresc i les sessions. Els canvis s\'apliquen als tokens emesos després.',
+                    'access-token-ttl' => 'Durada del token d\'accés (minuts)',
+                    'access-token-ttl-info' => 'Entre 5 i 60 minuts. Per defecte 15.',
+                    'refresh-token-ttl' => 'Durada del token de refresc (dies)',
+                    'refresh-token-ttl-info' => 'Entre 1 i 90 dies. Per defecte 30.',
+                    'session-lifetime' => 'Durada màxima de la sessió (dies)',
+                    'session-lifetime-info' => 'Entre 1 i 365 dies. Per defecte 90. Després, l\'administrador ha de tornar a iniciar sessió, per molt que s\'hagi refrescat la sessió.',
+                    'max-sessions' => 'Màxim de sessions actives per client',
+                    'max-sessions-info' => 'En arribar al límit, es tanca la sessió més antiga. Entre 0 i 100. 0 vol dir sense límit.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Límits de peticions',
+                    'info' => 'Màxim de peticions a l\'API de la botiga per minut per a cada client connectat.',
+                    'requests-per-minute' => 'Peticions per minut per client connectat',
+                    'requests-per-minute-info' => 'Entre 1 i 100000. Per defecte 120.',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Protecció de l\'inici de sessió',
+                    'info' => 'Quants inicis de sessió fallits i renovacions de token es permeten abans que el client hagi d\'esperar.',
+                    'login-max-attempts' => 'Inicis de sessió fallits abans del bloqueig',
+                    'login-max-attempts-info' => 'Per correu electrònic i adreça IP. Entre 3 i 20. Per defecte 5.',
+                    'login-lockout-seconds' => 'Bloqueig de l\'inici de sessió (segons)',
+                    'login-lockout-seconds-info' => 'Entre 60 i 3600. Per defecte 60.',
+                    'refresh-requests-per-minute' => 'Renovacions de token per minut per sessió',
+                    'refresh-requests-per-minute-info' => 'Entre 1 i 60. Per defecte 10.',
+                ],
+
+                'security' => [
+                    'title' => 'Seguretat',
+                    'info' => 'Què tanca les altres sessions d\'un client.',
+                    'revoke-sessions-on-password-change' => 'Revocar les sessions en canviar la contrasenya',
+                ],
+
+                'retention' => [
+                    'title' => 'Conservació de dades',
+                    'info' => 'Quant de temps es conserven les sessions acabades dels clients.',
+                    'session-prune-days' => 'Conservar les sessions acabades (dies)',
+                    'session-prune-days-info' => 'Les sessions revocades o caducades s\'eliminen després d\'aquests dies. Entre 1 i 365. Per defecte 30.',
+                ],
+            ],
+        ],
         'auth' => [
             'configuration' => [
                 'title' => 'Autenticació d\'administrador',
@@ -1646,6 +1735,10 @@ return [
                     'info' => 'Màxim de peticions a l\'API d\'administració per minut.',
                     'session-requests-per-minute' => 'Peticions per minut per administrador connectat',
                     'api-token-requests-per-minute' => 'Peticions per minut per token d\'API',
+                    'session-requests-per-minute-info' => 'Entre 1 i 100000. Per defecte 60.',
+                    'api-token-requests-per-minute-info' => 'Entre 1 i 100000. Per defecte 60.',
+                    'unauthenticated-requests-per-minute' => 'Peticions per minut sense token, per adreça IP',
+                    'unauthenticated-requests-per-minute-info' => 'Entre 10 i 1000. Per defecte 60. Inclou les peticions d\'inici de sessió, doble factor, renovació i contrasenya.',
                 ],
 
                 'security' => [
@@ -1658,6 +1751,30 @@ return [
                     'domain-binding-mode-info' => 'DNS comprova que la petició ve d\'una adreça IP a la qual resol el domini del token. Origin comprova la capçalera Origin o Referer i només és adequat per a navegadors.',
                     'domain-binding-dns' => 'DNS (adreça IP del client)',
                     'domain-binding-origin' => 'Capçalera Origin',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Protecció de l\'inici de sessió',
+                    'info' => 'Quants inicis de sessió fallits, codis de doble factor erronis i peticions de contrasenya es permeten abans que el client hagi d\'esperar.',
+                    'login-max-attempts' => 'Inicis de sessió fallits abans del bloqueig',
+                    'login-max-attempts-info' => 'Per correu electrònic i adreça IP. Entre 3 i 20. Per defecte 5.',
+                    'login-lockout-seconds' => 'Bloqueig de l\'inici de sessió (segons)',
+                    'login-lockout-seconds-info' => 'Entre 60 i 3600. Per defecte 60.',
+                    'two-factor-challenge-lifetime' => 'Durada del repte de doble factor (minuts)',
+                    'two-factor-challenge-lifetime-info' => 'Entre 1 i 15. Per defecte 5.',
+                    'two-factor-max-failures' => 'Codis de doble factor erronis per minut',
+                    'two-factor-max-failures-info' => 'Per administrador, en tots els reptes. Entre 3 i 20. Per defecte 5.',
+                    'password-requests-per-minute' => 'Peticions de contrasenya per minut',
+                    'password-requests-per-minute-info' => 'Peticions d\'oblit i restabliment de contrasenya per adreça IP. Entre 1 i 20. Per defecte 5.',
+                ],
+
+                'retention' => [
+                    'title' => 'Conservació de dades',
+                    'info' => 'Quant de temps es conserven les sessions acabades i l\'historial d\'auditoria de l\'API.',
+                    'session-prune-days' => 'Conservar les sessions acabades (dies)',
+                    'session-prune-days-info' => 'Les sessions revocades o caducades s\'eliminen després d\'aquests dies. Entre 1 i 365. Per defecte 30.',
+                    'audit-retention-days' => 'Conservar l\'historial d\'auditoria de l\'API (dies)',
+                    'audit-retention-days-info' => 'Les entrades més antigues s\'eliminen cada dia. Entre 0 i 3650. Buit o 0 les conserva per sempre.',
                 ],
             ],
 
@@ -1917,6 +2034,7 @@ return [
                 'session' => 'Sessió d\'inici de sessió',
                 'api-token' => 'Token d\'API',
                 'integration' => 'Token d\'integració (eliminat)',
+                'customer-session' => 'Sessió d\'inici de sessió del client',
             ],
 
             'channels' => [

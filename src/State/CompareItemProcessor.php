@@ -7,7 +7,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request as RequestFacade;
 use Webkul\BagistoApi\Dto\CreateCompareItemInput;
 use Webkul\BagistoApi\Dto\DeleteCompareItemInput;
@@ -16,6 +15,7 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CompareItem;
 use Webkul\BagistoApi\Models\Product;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class CompareItemProcessor implements ProcessorInterface
 {
@@ -88,7 +88,7 @@ class CompareItemProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.compare-item.product-not-found'));
         }
 
-        $user = Auth::guard('sanctum')->user();
+        $user = CurrentCustomer::user();
 
         if (! $user) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -117,7 +117,7 @@ class CompareItemProcessor implements ProcessorInterface
      */
     private function handleDelete(DeleteCompareItemInput $input): CompareItem
     {
-        $user = Auth::guard('sanctum')->user();
+        $user = CurrentCustomer::user();
 
         if (! $user) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

@@ -5,7 +5,6 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Webkul\BagistoApi\Dto\CreateCustomerReturnInput;
@@ -18,6 +17,7 @@ use Webkul\BagistoApi\State\Concerns\BuildsCustomerReturn;
 use Webkul\BagistoApi\State\Concerns\ReadsReturnImages;
 use Webkul\BagistoApi\State\Concerns\ResolvesReturnableItems;
 use Webkul\BagistoApi\State\Concerns\ResolvesReturnCustomFields;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\RMA\Enums\DefaultRMAResolution;
 use Webkul\RMA\Enums\DefaultRMAStatusEnum;
 use Webkul\RMA\Helpers\Helper as RMAHelper;
@@ -115,7 +115,7 @@ class CustomerReturnProcessor implements ProcessorInterface
      */
     private function handleCreate(CreateCustomerReturnInput $input, array $images): CustomerReturn
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -236,7 +236,7 @@ class CustomerReturnProcessor implements ProcessorInterface
      */
     private function handleAction(?string $action, mixed $id): CustomerReturn
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

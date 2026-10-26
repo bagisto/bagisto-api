@@ -2,7 +2,7 @@
     "info": {
         "_postman_id": "e7c1a940-6b2d-4f18-9a35-1d8c05b7e240",
         "name": "Bagisto Shop API",
-        "description": "Storefront endpoints for the [Bagisto](https://bagisto.com) e-commerce platform — products, cart, checkout, orders, returns, reviews, wishlist and more. Both transports are covered: `REST/` and `GraphQL/`.\n\n## Setup\n\n1. Select the **Bagisto** environment (top right). Import it first if it is not in your workspace. One environment serves both the storefront and the admin collection.\n2. Fill in these values:\n\n| Variable | Where it comes from |\n| --- | --- |\n| `url` | Your store, e.g. `http://localhost:8000` |\n| `storefrontKey` | `STOREFRONT_PLAYGROUND_KEY` in `.env` (written by the installer), or `php artisan bagisto-api:generate-key` |\n| `customerEmail` / `customerPassword` | Any storefront customer account |\n\n3. Run **REST → Customer → Customer login**. It saves `customerToken` to the environment, and every other request sends it as the bearer automatically. A failed login is not an HTTP error: the answer is `201` with `success: false`, a `message` and an empty `token`.\n\nThe customer token is a Laravel Sanctum token: it has no refresh token, does not expire unless Sanctum's `expiration` is set, and **Customer logout** revokes it. The full authentication guide is [docs/authentication.md](https://github.com/bagisto/bagisto-api/blob/main/docs/authentication.md).\n\n## Shopping as a guest\n\nGuest carts authenticate with a cart token instead of a customer token. Run **Create cart token** with `customerToken` empty (or the request's **Authorization** set to *No Auth*) — it saves `cartToken` to the environment. Called with a customer token, it returns the customer's own cart instead.\n\nTo act as that guest, send `{{cartToken}}` as the bearer: change it on the collection's **Authorization** tab, or override it on the individual request. Leave it as `{{customerToken}}` for logged-in flows. The cart and checkout endpoints serve both, so which token you send is what decides whose cart you are working on.\n\n## Layout\n\n`REST/` and `GraphQL/` share one folder tree, grouped by feature, so `Cart` holds the cart endpoints on either transport. GraphQL is split into `Queries/` and `Mutations/` under each feature.\n\n## Worth knowing\n\n- `X-STOREFRONT-KEY` is sent on every request and is required by all storefront endpoints.\n- `X-Locale`, `X-Channel` and `X-Currency` are optional; omit them to use the channel defaults.\n- GraphQL requests declare only the arguments an operation **requires**, plus `first` where it paginates. The complete argument list for any operation is in the GraphiQL playground at `/api/graphiql`.\n- Postman's **Auto Fetch** runs a schema introspection query, which costs far more than a normal request. If things feel slow, switch it off and fetch the schema when you need it.\n\nFull reference: [api-docs.bagisto.com](https://api-docs.bagisto.com/)",
+        "description": "Storefront endpoints for the [Bagisto](https://bagisto.com) e-commerce platform — products, cart, checkout, orders, returns, reviews, wishlist and more. Both transports are covered: `REST/` and `GraphQL/`.\n\n## Setup\n\n1. Select the **Bagisto** environment (top right). Import it first if it is not in your workspace. One environment serves both the storefront and the admin collection.\n2. Fill in these values:\n\n| Variable | Where it comes from |\n| --- | --- |\n| `url` | Your store, e.g. `http://localhost:8000` |\n| `storefrontKey` | `STOREFRONT_PLAYGROUND_KEY` in `.env` (written by the installer), or `php artisan bagisto-api:generate-key` |\n| `customerEmail` / `customerPassword` | Any storefront customer account |\n\n3. Run **REST → Customer Auth → Customer login**. It saves `customerAccessToken`, `customerRefreshToken` and `customerAccessTokenExpiresAt` to the environment, and every other request sends the access token as the bearer. Registration and social login save the pair the same way.\n\nThe access token is a JWT that lasts 15 minutes by default. Before each request the collection renews it through `POST /api/shop/customer/refresh` when it expires within 60 seconds, so you only log in again once the refresh token (30 days by default) or the session (90 days) ends. A refresh token works once: presenting a used one ends the whole session. A refused login is an HTTP error with a code: `401 invalid_credentials`, `403 account_inactive` or `account_unverified`, `429 too_many_login_attempts`. **Customer Auth** lists its requests in the order a client uses them. The full authentication guide is [docs/authentication.md](https://github.com/bagisto/bagisto-api/blob/main/docs/authentication.md).\n\n## Shopping as a guest\n\nGuest carts authenticate with a cart token instead of a customer token. Run **Create cart token** with `customerAccessToken` empty (or the request's **Authorization** set to *No Auth*) — it saves `cartToken` to the environment. Called with a customer token, it returns the customer's own cart instead.\n\nTo act as that guest, send `{{cartToken}}` as the bearer: change it on the collection's **Authorization** tab, or override it on the individual request. Leave it as `{{customerAccessToken}}` for logged-in flows. The cart and checkout endpoints serve both, so which token you send is what decides whose cart you are working on. To keep the guest cart when the guest logs in, put `{{cartToken}}` into the login's `guest_cart_token`: the answer's `cartId` is the customer's cart the guest cart was merged into.\n\n## Layout\n\n`REST/` and `GraphQL/` share one folder tree, grouped by feature, so `Cart` holds the cart endpoints on either transport. GraphQL is split into `Queries/` and `Mutations/` under each feature.\n\n## Worth knowing\n\n- `X-STOREFRONT-KEY` is sent on every request and is required by all storefront endpoints.\n- `X-Locale`, `X-Channel` and `X-Currency` are optional; omit them to use the channel defaults.\n- GraphQL requests declare only the arguments an operation **requires**, plus `first` where it paginates. The complete argument list for any operation is in the GraphiQL playground at `/api/graphiql`.\n- Postman's **Auto Fetch** runs a schema introspection query, which costs far more than a normal request. If things feel slow, switch it off and fetch the schema when you need it.\n\nFull reference: [api-docs.bagisto.com](https://api-docs.bagisto.com/)",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "auth": {
@@ -10,7 +10,7 @@
         "bearer": [
             {
                 "key": "token",
-                "value": "{{customerToken}}",
+                "value": "{{customerAccessToken}}",
                 "type": "string"
             }
         ]
@@ -2447,7 +2447,7 @@
                                         }
                                     ]
                                 },
-                                "description": "Returns all countries with their `states` and per-locale `translations`. Public endpoint."
+                                "description": "Returns the countries with their `states` and per-locale `translations`, 10 per page by default; `per_page` takes up to 300, so every country fits in one request. Public endpoint."
                             }
                         }
                     ]
@@ -2776,126 +2776,6 @@
                     "name": "Customer",
                     "item": [
                         {
-                            "name": "Customer login",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer/login",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer",
-                                        "login"
-                                    ]
-                                },
-                                "description": "Authenticate a customer with email and password. Returns a Bearer token for subsequent API calls.",
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"Password123!\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                }
-                            },
-                            "event": [
-                                {
-                                    "listen": "test",
-                                    "script": {
-                                        "type": "text/javascript",
-                                        "exec": [
-                                            "const body = pm.response.json();",
-                                            "const value = body?.token ?? body?.data?.token;",
-                                            "",
-                                            "if (value) {",
-                                            "    pm.environment.set('customerToken', value);",
-                                            "}"
-                                        ]
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "name": "Customer logout",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customer/logout",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customer",
-                                        "logout"
-                                    ]
-                                },
-                                "description": "Logout the authenticated customer and revoke the Bearer token.",
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "[]",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        {
                             "name": "Delete customer profile",
                             "request": {
                                 "method": "POST",
@@ -2993,262 +2873,6 @@
                             }
                         },
                         {
-                            "name": "Register a new customer",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customers",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customers"
-                                    ]
-                                },
-                                "description": "Register a new customer account",
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"Password123!\",\n    \"confirmPassword\": \"Password123!\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            "name": "Request password reset link",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/forgot-passwords",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "forgot-passwords"
-                                    ]
-                                },
-                                "description": "Sends a password reset email to the given customer email if the account exists.",
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n    \"email\": \"john@example.com\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            "name": "Resend customer verification email",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/verification-emails",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "verification-emails"
-                                    ]
-                                },
-                                "description": "Issues a fresh email verification token and re-sends the verification email for the given address. The response is the same whether or not the address exists, so it cannot be used to discover registered emails.",
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n    \"email\": \"john@example.com\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            "name": "Reset customer password using token",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/reset-passwords",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "reset-passwords"
-                                    ]
-                                },
-                                "description": "Resets the password for a customer using the token received via email.",
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n    \"token\": \"a1b2c3d4e5...\",\n    \"email\": \"john@example.com\",\n    \"password\": \"NewPassword123!\",\n    \"password_confirmation\": \"NewPassword123!\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            "name": "Social login",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/customers/social-login",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "customers",
-                                        "social-login"
-                                    ]
-                                },
-                                "description": "Verify a provider token the app/web already obtained (Google Identity Services or a native SDK — no redirect), then sign the customer in, creating and linking the account on first sight. Returns a Bearer `token` for subsequent calls. Providers: `google`, `facebook`, `linkedin`.",
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n    \"provider\": \"google\",\n    \"idToken\": \"eyJhbGciOi\\u2026\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        {
                             "name": "Update customer profile",
                             "request": {
                                 "method": "PUT",
@@ -3299,108 +2923,6 @@
                                 "body": {
                                     "mode": "raw",
                                     "raw": "{\n    \"first_name\": \"Api\",\n    \"last_name\": \"DocUpdated\",\n    \"phone\": \"9998887777\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            "name": "Verify customer account with email token",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/verify-accounts",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "verify-accounts"
-                                    ]
-                                },
-                                "description": "Verifies customer registration using the email verification token sent upon sign-up.",
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "{\n    \"token\": \"64-char-token-here\"\n}",
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            "name": "Verify customer bearer token",
-                            "request": {
-                                "method": "POST",
-                                "header": [
-                                    {
-                                        "key": "X-STOREFRONT-KEY",
-                                        "value": "{{storefrontKey}}",
-                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
-                                    },
-                                    {
-                                        "key": "X-Locale",
-                                        "value": "{{locale}}",
-                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
-                                    },
-                                    {
-                                        "key": "X-Channel",
-                                        "value": "{{channel}}",
-                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
-                                    },
-                                    {
-                                        "key": "X-Currency",
-                                        "value": "{{currency}}",
-                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
-                                    },
-                                    {
-                                        "key": "Content-Type",
-                                        "value": "application/json"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/verify-tokens",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "verify-tokens"
-                                    ]
-                                },
-                                "description": "Validates the customer bearer token from the Authorization header and returns the customer details if valid.",
-                                "body": {
-                                    "mode": "raw",
-                                    "raw": "[]",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -3672,6 +3194,731 @@
                                 "body": {
                                     "mode": "raw",
                                     "raw": "{\n    \"city\": \"Boston\",\n    \"phone\": \"5551112222\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Customer Auth",
+                    "item": [
+                        {
+                            "name": "Register a new customer",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customers",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customers"
+                                    ]
+                                },
+                                "description": "Register a new customer account",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"Password123!\",\n    \"confirmPassword\": \"Password123!\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "const pair = pm.response.json();",
+                                            "",
+                                            "if (pair?.accessToken && pair?.refreshToken) {",
+                                            "    pm.environment.set('customerAccessToken', pair.accessToken);",
+                                            "    pm.environment.set('customerRefreshToken', pair.refreshToken);",
+                                            "    pm.environment.set('customerAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Customer login",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer/login",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer",
+                                        "login"
+                                    ]
+                                },
+                                "description": "Signs a customer in on the current channel with email and password, as the storefront does, and starts a session. Returns a short-lived JWT access token and a refresh token. Optional `device_name` and `client_type` (web, mobile, pos, desktop, other) label the session in the session list. An optional `guest_cart_token` merges that guest cart into the customer's cart in the same step and returns the cart in `cartId`; a token that no longer names a guest cart is ignored. An inactive or unverified customer is refused.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"email\": \"{{customerEmail}}\",\n    \"password\": \"{{customerPassword}}\",\n    \"device_name\": \"Postman\",\n    \"client_type\": \"other\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "const pair = pm.response.json();",
+                                            "",
+                                            "if (pair?.accessToken && pair?.refreshToken) {",
+                                            "    pm.environment.set('customerAccessToken', pair.accessToken);",
+                                            "    pm.environment.set('customerRefreshToken', pair.refreshToken);",
+                                            "    pm.environment.set('customerAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Social login",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customers/social-login",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customers",
+                                        "social-login"
+                                    ]
+                                },
+                                "description": "Verify a provider token the app/web already obtained (Google Identity Services or a native SDK — no redirect), then sign the customer in, creating and linking the account on first sight. Returns a Bearer `token` for subsequent calls. Providers: `google`, `facebook`, `linkedin`.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"provider\": \"google\",\n    \"idToken\": \"eyJhbGciOi\\u2026\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "const pair = pm.response.json();",
+                                            "",
+                                            "if (pair?.accessToken && pair?.refreshToken) {",
+                                            "    pm.environment.set('customerAccessToken', pair.accessToken);",
+                                            "    pm.environment.set('customerRefreshToken', pair.refreshToken);",
+                                            "    pm.environment.set('customerAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Exchange a customer refresh token for a new token pair",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer/refresh",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer",
+                                        "refresh"
+                                    ]
+                                },
+                                "description": "Returns a new access token and a new refresh token in the same session; the refresh token sent stops working. Presenting a refresh token that was already used revokes the whole session. Once the refresh token expires, or the session reaches its absolute lifetime, log in again. Needs the storefront key only.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"refresh_token\": \"{{customerRefreshToken}}\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "const pair = pm.response.json();",
+                                            "",
+                                            "if (pair?.accessToken && pair?.refreshToken) {",
+                                            "    pm.environment.set('customerAccessToken', pair.accessToken);",
+                                            "    pm.environment.set('customerRefreshToken', pair.refreshToken);",
+                                            "    pm.environment.set('customerAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Verify customer bearer token",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/verify-tokens",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "verify-tokens"
+                                    ]
+                                },
+                                "description": "Validates the customer bearer token from the Authorization header and returns the customer details if valid.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "[]",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "List the signed-in customer's active sessions",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer/sessions",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer",
+                                        "sessions"
+                                    ]
+                                },
+                                "description": "Every live session of the signed-in customer, newest first, with where each was last used from. `isCurrent` marks the session of the access token sent. Needs a customer access token."
+                            }
+                        },
+                        {
+                            "name": "Revoke one of my sessions",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer/sessions/:id",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer",
+                                        "sessions",
+                                        ":id"
+                                    ],
+                                    "variable": [
+                                        {
+                                            "key": "id",
+                                            "value": "41",
+                                            "description": "Session ID."
+                                        }
+                                    ]
+                                },
+                                "description": "Ends one live session of the signed-in customer, for example on a lost phone; its access and refresh tokens stop working at once. Revoking the current session logs it out."
+                            }
+                        },
+                        {
+                            "name": "Customer logout",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer/logout",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer",
+                                        "logout"
+                                    ]
+                                },
+                                "description": "Logout the authenticated customer and revoke the Bearer token.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "[]",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Log out of every session",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer/logout-all",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer",
+                                        "logout-all"
+                                    ]
+                                },
+                                "description": "Ends every session of the signed-in customer, this one included, on every device; their access and refresh tokens stop working at once. Needs a customer access token.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "[]",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Request password reset link",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/forgot-passwords",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "forgot-passwords"
+                                    ]
+                                },
+                                "description": "Sends a password reset email to the given customer email if the account exists.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"email\": \"john@example.com\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Reset customer password using token",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/reset-passwords",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "reset-passwords"
+                                    ]
+                                },
+                                "description": "Resets the password for a customer using the token received via email.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"token\": \"a1b2c3d4e5...\",\n    \"email\": \"john@example.com\",\n    \"password\": \"NewPassword123!\",\n    \"password_confirmation\": \"NewPassword123!\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Resend customer verification email",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/verification-emails",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "verification-emails"
+                                    ]
+                                },
+                                "description": "Issues a fresh email verification token and re-sends the verification email for the given address. The response is the same whether or not the address exists, so it cannot be used to discover registered emails.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"email\": \"john@example.com\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Verify customer account with email token",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/verify-accounts",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "verify-accounts"
+                                    ]
+                                },
+                                "description": "Verifies customer registration using the email verification token sent upon sign-up.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"token\": \"64-char-token-here\"\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -4289,7 +4536,7 @@
                                         }
                                     ]
                                 },
-                                "description": "Orders placed by the authenticated customer, newest first; `status` filters by exact order status. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
+                                "description": "Orders placed by the authenticated customer, newest first; `status` filters by exact order status. `per_page` (default 10, at most 50) and `page` select the page. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
                             }
                         },
                         {
@@ -11487,7 +11734,7 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "query CompareItem($id: ID!) {\n  compareItem(id: $id) {\n    _id\n    createdAt\n    customer {\n      _id\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    id\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    updatedAt\n  }\n}\n",
+                                                "query": "query CompareItem($id: ID!) {\n  compareItem(id: $id) {\n    _id\n    createdAt\n    customer {\n      _id\n      accessToken\n      accessTokenExpiresAt\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      expiresIn\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      refreshToken\n      refreshTokenExpiresAt\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    id\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
                                         },
@@ -11613,7 +11860,7 @@
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
                                         },
-                                        "description": "Every country with its states, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
+                                        "description": "Every country with its states, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 300, so every country fits in one request, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
                                     }
                                 },
                                 {
@@ -11817,89 +12064,6 @@
                             "name": "Mutations",
                             "item": [
                                 {
-                                    "name": "createCustomer",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "mutation CreateCustomer($input: createCustomerInput!) {\n  createCustomer(input: $input) {\n    clientMutationId\n    customer {\n      _id\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"firstName\": \"John\",\n        \"lastName\": \"Doe\",\n        \"email\": \"john@example.com\",\n        \"password\": \"Password123!\",\n        \"confirmPassword\": \"Password123!\"\n    }\n}"
-                                            }
-                                        },
-                                        "description": "Creates a Customer."
-                                    }
-                                },
-                                {
-                                    "name": "createCustomerLogin",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "mutation CreateCustomerLogin($input: createCustomerLoginInput!) {\n  createCustomerLogin(input: $input) {\n    clientMutationId\n    customerLogin {\n      _id\n      apiToken\n      id\n      message\n      success\n      token\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"email\": \"{{customerEmail}}\",\n        \"password\": \"{{customerPassword}}\"\n    }\n}"
-                                            }
-                                        },
-                                        "description": "Creates a CustomerLogin."
-                                    },
-                                    "event": [
-                                        {
-                                            "listen": "test",
-                                            "script": {
-                                                "type": "text/javascript",
-                                                "exec": [
-                                                    "const data = pm.response.json()?.data?.createCustomerLogin?.customerLogin;",
-                                                    "",
-                                                    "if (data?.token) {",
-                                                    "    pm.environment.set('customerToken', data.token);",
-                                                    "}"
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                },
-                                {
                                     "name": "createCustomerProfileDelete",
                                     "request": {
                                         "method": "POST",
@@ -11966,284 +12130,12 @@
                                         },
                                         "description": "Update authenticated customer profile (requires token and at least one field). Re-query readCustomerProfile for updated data."
                                     }
-                                },
-                                {
-                                    "name": "createForgotPassword",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "mutation CreateForgotPassword($input: createForgotPasswordInput!) {\n  createForgotPassword(input: $input) {\n    clientMutationId\n    forgotPassword {\n      id\n      message\n      success\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"email\": \"john@example.com\"\n    }\n}"
-                                            }
-                                        },
-                                        "description": "Creates a ForgotPassword."
-                                    }
-                                },
-                                {
-                                    "name": "createLogout",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "mutation CreateLogout($input: createLogoutInput!) {\n  createLogout(input: $input) {\n    clientMutationId\n    logout {\n      id\n      message\n      success\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"deviceToken\": \"sample\"\n    }\n}"
-                                            }
-                                        },
-                                        "description": "Creates a Logout."
-                                    }
-                                },
-                                {
-                                    "name": "createResendVerificationEmail",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "mutation CreateResendVerificationEmail($input: createResendVerificationEmailInput!) {\n  createResendVerificationEmail(input: $input) {\n    clientMutationId\n    resendVerificationEmail {\n      id\n      message\n      success\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"email\": \"john@example.com\"\n    }\n}"
-                                            }
-                                        },
-                                        "description": "Creates a ResendVerificationEmail."
-                                    }
-                                },
-                                {
-                                    "name": "createResetPassword",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "mutation CreateResetPassword($input: createResetPasswordInput!) {\n  createResetPassword(input: $input) {\n    clientMutationId\n    resetPassword {\n      id\n      message\n      success\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"token\": \"a1b2c3d4e5...\",\n        \"email\": \"john@example.com\",\n        \"password\": \"NewPassword123!\",\n        \"passwordConfirmation\": \"NewPassword123!\"\n    }\n}"
-                                            }
-                                        },
-                                        "description": "Creates a ResetPassword."
-                                    }
-                                },
-                                {
-                                    "name": "createSocialLogin",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "mutation CreateSocialLogin($input: createSocialLoginInput!) {\n  createSocialLogin(input: $input) {\n    clientMutationId\n    socialLogin {\n      _id\n      apiToken\n      code\n      email\n      firstName\n      id\n      isNewCustomer\n      lastName\n      message\n      phone\n      success\n      token\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"provider\": \"google\",\n        \"idToken\": \"eyJhbGciOi\\u2026\"\n    }\n}"
-                                            }
-                                        },
-                                        "description": "Creates a SocialLogin."
-                                    }
-                                },
-                                {
-                                    "name": "createVerifyAccount",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "mutation CreateVerifyAccount($input: createVerifyAccountInput!) {\n  createVerifyAccount(input: $input) {\n    clientMutationId\n    verifyAccount {\n      id\n      message\n      success\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"token\": \"64-char-token-here\"\n    }\n}"
-                                            }
-                                        },
-                                        "description": "Creates a VerifyAccount."
-                                    }
-                                },
-                                {
-                                    "name": "createVerifyToken",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "mutation CreateVerifyToken($input: createVerifyTokenInput!) {\n  createVerifyToken(input: $input) {\n    clientMutationId\n    verifyToken {\n      _id\n      email\n      firstName\n      id\n      isValid\n      lastName\n      message\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {}\n}"
-                                            }
-                                        },
-                                        "description": "Creates a VerifyToken."
-                                    }
                                 }
                             ]
                         },
                         {
                             "name": "Queries",
                             "item": [
-                                {
-                                    "name": "customer",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "query Customer($id: ID!) {\n  customer(id: $id) {\n    _id\n    apiToken\n    channelId\n    customerGroupId\n    dateOfBirth\n    email\n    firstName\n    gender\n    id\n    isSuspended\n    isVerified\n    lastName\n    message\n    name\n    phone\n    rememberToken\n    status\n    subscribedToNewsLetter\n    token\n  }\n}\n",
-                                                "variables": "{\n    \"id\": \"1\"\n}"
-                                            }
-                                        },
-                                        "description": "The authenticated customer's profile. The schema requires `id`, but it is ignored: the customer is always the owner of the Bearer token. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
-                                    }
-                                },
                                 {
                                     "name": "readCustomerProfile",
                                     "request": {
@@ -12570,6 +12462,565 @@
                     ]
                 },
                 {
+                    "name": "Customer Auth",
+                    "item": [
+                        {
+                            "name": "Mutations",
+                            "item": [
+                                {
+                                    "name": "createCustomer",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateCustomer($input: createCustomerInput!) {\n  createCustomer(input: $input) {\n    clientMutationId\n    customer {\n      _id\n      accessToken\n      accessTokenExpiresAt\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      expiresIn\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      refreshToken\n      refreshTokenExpiresAt\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"firstName\": \"John\",\n        \"lastName\": \"Doe\",\n        \"email\": \"john@example.com\",\n        \"password\": \"Password123!\",\n        \"confirmPassword\": \"Password123!\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "Creates a Customer."
+                                    },
+                                    "event": [
+                                        {
+                                            "listen": "test",
+                                            "script": {
+                                                "type": "text/javascript",
+                                                "exec": [
+                                                    "const pair = pm.response.json()?.data?.createCustomer?.customer;",
+                                                    "",
+                                                    "if (pair?.accessToken && pair?.refreshToken) {",
+                                                    "    pm.environment.set('customerAccessToken', pair.accessToken);",
+                                                    "    pm.environment.set('customerRefreshToken', pair.refreshToken);",
+                                                    "    pm.environment.set('customerAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+                                                    "}"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "createCustomerLogin",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateCustomerLogin($input: createCustomerLoginInput!) {\n  createCustomerLogin(input: $input) {\n    clientMutationId\n    customerLogin {\n      _id\n      accessToken\n      accessTokenExpiresAt\n      apiToken\n      cartId\n      customer\n      expiresIn\n      id\n      message\n      refreshToken\n      refreshTokenExpiresAt\n      session\n      success\n      token\n      tokenType\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"email\": \"{{customerEmail}}\",\n        \"password\": \"{{customerPassword}}\",\n        \"deviceName\": \"Postman\",\n        \"clientType\": \"other\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "Sign a customer in on the current channel and return an access and refresh token pair. An optional guestCartToken merges that guest cart into the customer cart and returns its id in cartId. Errors carry extensions.code: invalid_credentials, account_inactive, account_unverified or too_many_login_attempts."
+                                    },
+                                    "event": [
+                                        {
+                                            "listen": "test",
+                                            "script": {
+                                                "type": "text/javascript",
+                                                "exec": [
+                                                    "const pair = pm.response.json()?.data?.createCustomerLogin?.customerLogin;",
+                                                    "",
+                                                    "if (pair?.accessToken && pair?.refreshToken) {",
+                                                    "    pm.environment.set('customerAccessToken', pair.accessToken);",
+                                                    "    pm.environment.set('customerRefreshToken', pair.refreshToken);",
+                                                    "    pm.environment.set('customerAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+                                                    "}"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "createSocialLogin",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateSocialLogin($input: createSocialLoginInput!) {\n  createSocialLogin(input: $input) {\n    clientMutationId\n    socialLogin {\n      _id\n      accessToken\n      accessTokenExpiresAt\n      apiToken\n      code\n      customer\n      email\n      expiresIn\n      firstName\n      id\n      isNewCustomer\n      lastName\n      message\n      phone\n      refreshToken\n      refreshTokenExpiresAt\n      session\n      success\n      token\n      tokenType\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"provider\": \"google\",\n        \"idToken\": \"eyJhbGciOi\\u2026\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "Creates a SocialLogin."
+                                    },
+                                    "event": [
+                                        {
+                                            "listen": "test",
+                                            "script": {
+                                                "type": "text/javascript",
+                                                "exec": [
+                                                    "const pair = pm.response.json()?.data?.createSocialLogin?.socialLogin;",
+                                                    "",
+                                                    "if (pair?.accessToken && pair?.refreshToken) {",
+                                                    "    pm.environment.set('customerAccessToken', pair.accessToken);",
+                                                    "    pm.environment.set('customerRefreshToken', pair.refreshToken);",
+                                                    "    pm.environment.set('customerAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+                                                    "}"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "createCustomerTokenRefresh",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateCustomerTokenRefresh($input: createCustomerTokenRefreshInput!) {\n  createCustomerTokenRefresh(input: $input) {\n    clientMutationId\n    customerTokenRefresh {\n      accessToken\n      accessTokenExpiresAt\n      customer\n      expiresIn\n      id\n      refreshToken\n      refreshTokenExpiresAt\n      session\n      tokenType\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"refreshToken\": \"{{customerRefreshToken}}\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "Exchange a customer refresh token for a new access and refresh token. Becomes createCustomerTokenRefresh; needs the storefront key only."
+                                    },
+                                    "event": [
+                                        {
+                                            "listen": "test",
+                                            "script": {
+                                                "type": "text/javascript",
+                                                "exec": [
+                                                    "const pair = pm.response.json()?.data?.createCustomerTokenRefresh?.customerTokenRefresh;",
+                                                    "",
+                                                    "if (pair?.accessToken && pair?.refreshToken) {",
+                                                    "    pm.environment.set('customerAccessToken', pair.accessToken);",
+                                                    "    pm.environment.set('customerRefreshToken', pair.refreshToken);",
+                                                    "    pm.environment.set('customerAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+                                                    "}"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "createVerifyToken",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateVerifyToken($input: createVerifyTokenInput!) {\n  createVerifyToken(input: $input) {\n    clientMutationId\n    verifyToken {\n      _id\n      email\n      firstName\n      id\n      isValid\n      lastName\n      message\n      sessionExpiresAt\n      sessionId\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {}\n}"
+                                            }
+                                        },
+                                        "description": "Creates a VerifyToken."
+                                    }
+                                },
+                                {
+                                    "name": "deleteCustomerSession",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation DeleteCustomerSession($input: deleteCustomerSessionInput!) {\n  deleteCustomerSession(input: $input) {\n    clientMutationId\n    customerSession {\n      _id\n      clientType\n      createdAt\n      expiresAt\n      id\n      ipAddress\n      isCurrent\n      lastChannel\n      lastIpAddress\n      lastUsedAt\n      lastUserAgent\n      message\n      name\n      refreshExpiresAt\n      userAgent\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"id\": \"1\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "End one of the signed-in customer's sessions. Becomes deleteCustomerSession."
+                                    }
+                                },
+                                {
+                                    "name": "createLogout",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateLogout($input: createLogoutInput!) {\n  createLogout(input: $input) {\n    clientMutationId\n    logout {\n      id\n      message\n      success\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"deviceToken\": \"sample\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "Creates a Logout."
+                                    }
+                                },
+                                {
+                                    "name": "createCustomerLogoutAll",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateCustomerLogoutAll($input: createCustomerLogoutAllInput!) {\n  createCustomerLogoutAll(input: $input) {\n    clientMutationId\n    customerLogoutAll {\n      id\n      message\n      revoked\n      success\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"deviceToken\": \"sample\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "End every session of the signed-in customer. Becomes createCustomerLogoutAll; needs a customer access token."
+                                    }
+                                },
+                                {
+                                    "name": "createForgotPassword",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateForgotPassword($input: createForgotPasswordInput!) {\n  createForgotPassword(input: $input) {\n    clientMutationId\n    forgotPassword {\n      id\n      message\n      success\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"email\": \"john@example.com\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "Creates a ForgotPassword."
+                                    }
+                                },
+                                {
+                                    "name": "createResetPassword",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateResetPassword($input: createResetPasswordInput!) {\n  createResetPassword(input: $input) {\n    clientMutationId\n    resetPassword {\n      id\n      message\n      success\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"token\": \"a1b2c3d4e5...\",\n        \"email\": \"john@example.com\",\n        \"password\": \"NewPassword123!\",\n        \"passwordConfirmation\": \"NewPassword123!\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "Creates a ResetPassword."
+                                    }
+                                },
+                                {
+                                    "name": "createResendVerificationEmail",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateResendVerificationEmail($input: createResendVerificationEmailInput!) {\n  createResendVerificationEmail(input: $input) {\n    clientMutationId\n    resendVerificationEmail {\n      id\n      message\n      success\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"email\": \"john@example.com\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "Creates a ResendVerificationEmail."
+                                    }
+                                },
+                                {
+                                    "name": "createVerifyAccount",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateVerifyAccount($input: createVerifyAccountInput!) {\n  createVerifyAccount(input: $input) {\n    clientMutationId\n    verifyAccount {\n      id\n      message\n      success\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"token\": \"64-char-token-here\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "Creates a VerifyAccount."
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Queries",
+                            "item": [
+                                {
+                                    "name": "customerSessions",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query CustomerSessions {\n  customerSessions {\n    _id\n    clientType\n    createdAt\n    expiresAt\n    id\n    ipAddress\n    isCurrent\n    lastChannel\n    lastIpAddress\n    lastUsedAt\n    lastUserAgent\n    message\n    name\n    refreshExpiresAt\n    userAgent\n  }\n}\n",
+                                                "variables": "{}"
+                                            }
+                                        },
+                                        "description": "The signed-in customer's active sessions, newest first."
+                                    }
+                                },
+                                {
+                                    "name": "customer",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query Customer($id: ID!) {\n  customer(id: $id) {\n    _id\n    accessToken\n    accessTokenExpiresAt\n    apiToken\n    channelId\n    customerGroupId\n    dateOfBirth\n    email\n    expiresIn\n    firstName\n    gender\n    id\n    isSuspended\n    isVerified\n    lastName\n    message\n    name\n    phone\n    refreshToken\n    refreshTokenExpiresAt\n    rememberToken\n    status\n    subscribedToNewsLetter\n    token\n  }\n}\n",
+                                                "variables": "{\n    \"id\": \"1\"\n}"
+                                            }
+                                        },
+                                        "description": "The authenticated customer's profile. The schema requires `id`, but it is ignored: the customer is always the owner of the Bearer token. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
                     "name": "Customer Order",
                     "item": [
                         {
@@ -12709,7 +13160,7 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "query CustomerDownloadableProduct($id: ID!) {\n  customerDownloadableProduct(id: $id) {\n    _id\n    createdAt\n    customer {\n      _id\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    downloadBought\n    downloadCanceled\n    downloadUrl\n    downloadUsed\n    file\n    fileName\n    id\n    name\n    order {\n      _id\n      appliedCartRuleIds\n      baseCurrencyCode\n      baseDiscountAmount\n      baseDiscountInvoiced\n      baseDiscountRefunded\n      baseGrandTotal\n      baseGrandTotalInvoiced\n      baseGrandTotalRefunded\n      baseShippingAmount\n      baseShippingAmountInclTax\n      baseShippingDiscountAmount\n      baseShippingInvoiced\n      baseShippingRefunded\n      baseShippingTaxAmount\n      baseShippingTaxRefunded\n      baseSubTotal\n      baseSubTotalInclTax\n      baseSubTotalInvoiced\n      baseSubTotalRefunded\n      baseTaxAmount\n      baseTaxAmountInvoiced\n      baseTaxAmountRefunded\n      cartId\n      channelCurrencyCode\n      channelId\n      channelName\n      channelType\n      couponCode\n      createdAt\n      customerEmail\n      customerFirstName\n      customerFullName\n      customerId\n      customerLastName\n      customerType\n      discountAmount\n      discountInvoiced\n      discountPercent\n      discountRefunded\n      grandTotal\n      grandTotalInvoiced\n      grandTotalRefunded\n      id\n      incrementId\n      isGift\n      isGuest\n      orderCurrencyCode\n      shippingAmount\n      shippingAmountInclTax\n      shippingDescription\n      shippingDiscountAmount\n      shippingInvoiced\n      shippingMethod\n      shippingRefunded\n      shippingTaxAmount\n      shippingTaxRefunded\n      shippingTitle\n      status\n      subTotal\n      subTotalInclTax\n      subTotalInvoiced\n      subTotalRefunded\n      taxAmount\n      taxAmountInvoiced\n      taxAmountRefunded\n      totalItemCount\n      totalQtyOrdered\n      updatedAt\n    }\n    productName\n    remainingDownloads\n    status\n    type\n    updatedAt\n    url\n  }\n}\n",
+                                                "query": "query CustomerDownloadableProduct($id: ID!) {\n  customerDownloadableProduct(id: $id) {\n    _id\n    createdAt\n    customer {\n      _id\n      accessToken\n      accessTokenExpiresAt\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      expiresIn\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      refreshToken\n      refreshTokenExpiresAt\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    downloadBought\n    downloadCanceled\n    downloadUrl\n    downloadUsed\n    file\n    fileName\n    id\n    name\n    order {\n      _id\n      appliedCartRuleIds\n      baseCurrencyCode\n      baseDiscountAmount\n      baseDiscountInvoiced\n      baseDiscountRefunded\n      baseGrandTotal\n      baseGrandTotalInvoiced\n      baseGrandTotalRefunded\n      baseShippingAmount\n      baseShippingAmountInclTax\n      baseShippingDiscountAmount\n      baseShippingInvoiced\n      baseShippingRefunded\n      baseShippingTaxAmount\n      baseShippingTaxRefunded\n      baseSubTotal\n      baseSubTotalInclTax\n      baseSubTotalInvoiced\n      baseSubTotalRefunded\n      baseTaxAmount\n      baseTaxAmountInvoiced\n      baseTaxAmountRefunded\n      cartId\n      channelCurrencyCode\n      channelId\n      channelName\n      channelType\n      couponCode\n      createdAt\n      customerEmail\n      customerFirstName\n      customerFullName\n      customerId\n      customerLastName\n      customerType\n      discountAmount\n      discountInvoiced\n      discountPercent\n      discountRefunded\n      grandTotal\n      grandTotalInvoiced\n      grandTotalRefunded\n      id\n      incrementId\n      isGift\n      isGuest\n      orderCurrencyCode\n      shippingAmount\n      shippingAmountInclTax\n      shippingDescription\n      shippingDiscountAmount\n      shippingInvoiced\n      shippingMethod\n      shippingRefunded\n      shippingTaxAmount\n      shippingTaxRefunded\n      shippingTitle\n      status\n      subTotal\n      subTotalInclTax\n      subTotalInvoiced\n      subTotalRefunded\n      taxAmount\n      taxAmountInvoiced\n      taxAmountRefunded\n      totalItemCount\n      totalQtyOrdered\n      updatedAt\n    }\n    productName\n    remainingDownloads\n    status\n    type\n    updatedAt\n    url\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
                                         },
@@ -13482,7 +13933,7 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "query CustomerReview($id: ID!) {\n  customerReview(id: $id) {\n    _id\n    comment\n    createdAt\n    customer {\n      _id\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    id\n    name\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    rating\n    status\n    title\n    updatedAt\n  }\n}\n",
+                                                "query": "query CustomerReview($id: ID!) {\n  customerReview(id: $id) {\n    _id\n    comment\n    createdAt\n    customer {\n      _id\n      accessToken\n      accessTokenExpiresAt\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      expiresIn\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      refreshToken\n      refreshTokenExpiresAt\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    id\n    name\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    rating\n    status\n    title\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
                                         },
@@ -13964,7 +14415,7 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "query GdprRequest($id: ID!) {\n  gdprRequest(id: $id) {\n    _id\n    createdAt\n    customer {\n      _id\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    email\n    id\n    message\n    revokedAt\n    status\n    successMessage\n    type\n    updatedAt\n  }\n}\n",
+                                                "query": "query GdprRequest($id: ID!) {\n  gdprRequest(id: $id) {\n    _id\n    createdAt\n    customer {\n      _id\n      accessToken\n      accessTokenExpiresAt\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      expiresIn\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      refreshToken\n      refreshTokenExpiresAt\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    email\n    id\n    message\n    revokedAt\n    status\n    successMessage\n    type\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
                                         },
@@ -15424,7 +15875,7 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "query Wishlist($id: ID!) {\n  wishlist(id: $id) {\n    _id\n    additional\n    channel {\n      _id\n      code\n      createdAt\n      favicon\n      faviconFileName\n      faviconUrl\n      homeSeo\n      hostname\n      id\n      isMaintenanceOn\n      logo\n      logoFileName\n      logoUrl\n      theme\n      timezone\n      updatedAt\n    }\n    createdAt\n    customer {\n      _id\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    id\n    message\n    movedToCart\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    shared\n    updatedAt\n  }\n}\n",
+                                                "query": "query Wishlist($id: ID!) {\n  wishlist(id: $id) {\n    _id\n    additional\n    channel {\n      _id\n      code\n      createdAt\n      favicon\n      faviconFileName\n      faviconUrl\n      homeSeo\n      hostname\n      id\n      isMaintenanceOn\n      logo\n      logoFileName\n      logoUrl\n      theme\n      timezone\n      updatedAt\n    }\n    createdAt\n    customer {\n      _id\n      accessToken\n      accessTokenExpiresAt\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      expiresIn\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      refreshToken\n      refreshTokenExpiresAt\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    id\n    message\n    movedToCart\n    product {\n      _id\n      additional\n      baseImageUrl\n      bookingType\n      brand\n      channel\n      color\n      combinations\n      createdAt\n      description\n      descriptionHtml\n      featured\n      formattedMaximumPrice\n      formattedMinimumPrice\n      formattedPrice\n      formattedRegularMaximumPrice\n      formattedRegularMinimumPrice\n      formattedSpecialPrice\n      guestCheckout\n      height\n      id\n      index\n      isInCompare\n      isInWishlist\n      isSaleable\n      length\n      locale\n      manageStock\n      maximumPrice\n      metaDescription\n      metaKeywords\n      metaTitle\n      minimumPrice\n      name\n      new\n      price\n      productNumber\n      regularMaximumPrice\n      regularMinimumPrice\n      shortDescription\n      size\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      superAttributeOptions\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      weight\n      width\n    }\n    shared\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
                                         },
@@ -15470,6 +15921,57 @@
                     ]
                 }
             ]
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "const path = '/' + pm.request.url.getPath().replace(/^\\/+/, '');",
+                    "const isTokenRequest = [\"/customer/login\",\"/customer/refresh\",\"/customers\",\"/customers/social-login\",\"/forgot-passwords\",\"/reset-passwords\"].some(tokenPath => path.endsWith('/api/shop' + tokenPath));",
+                    "const graphQlQuery = String(pm.request.body?.graphql?.query || pm.request.body?.raw || '');",
+                    "const isPublicMutation = /create(CustomerLogin|CustomerTokenRefresh|Customer|SocialLogin|ForgotPassword|ResetPassword)\\b/.test(graphQlQuery);",
+                    "",
+                    "function expiresAt(token) {",
+                    "    try {",
+                    "        const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+                    "        return JSON.parse(atob(part + '='.repeat((4 - part.length % 4) % 4))).exp * 1000;",
+                    "    } catch (error) {",
+                    "        return Date.parse(pm.environment.get('customerAccessTokenExpiresAt') || '') || 0;",
+                    "    }",
+                    "}",
+                    "",
+                    "if (",
+                    "    !isTokenRequest",
+                    "    && !isPublicMutation",
+                    "    && pm.environment.get('customerRefreshToken')",
+                    "    && expiresAt(pm.environment.get('customerAccessToken') || '') - Date.now() < 60000",
+                    ") {",
+                    "    pm.sendRequest({",
+                    "        url: pm.environment.get('url') + '/api/shop/customer/refresh',",
+                    "        method: 'POST',",
+                    "        header: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-STOREFRONT-KEY': pm.environment.get('storefrontKey') },",
+                    "        body: { mode: 'raw', raw: JSON.stringify({ refresh_token: pm.environment.get('customerRefreshToken') }) },",
+                    "    }, (error, response) => {",
+                    "        if (",
+                    "            !error",
+                    "            && response.code < 300",
+                    "        ) {",
+                    "            const pair = response.json();",
+                    "",
+                    "            pm.environment.set('customerAccessToken', pair.accessToken);",
+                    "            pm.environment.set('customerRefreshToken', pair.refreshToken);",
+                    "            pm.environment.set('customerAccessTokenExpiresAt', pair.accessTokenExpiresAt || '');",
+                    "            pm.variables.set('customerAccessToken', pair.accessToken);",
+                    "        } else {",
+                    "            console.warn('The customer refresh token was refused; run Customer Auth → Customer login again.');",
+                    "        }",
+                    "    });",
+                    "}"
+                ]
+            }
         }
     ]
 }

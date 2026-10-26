@@ -24,11 +24,6 @@ class AdminApiTwoFactorService
     public const CHALLENGE_SECRET_BYTES = 32;
 
     /**
-     * Wrong codes an admin may enter across all challenges before waiting.
-     */
-    public const MAX_FAILURES_PER_ADMIN = 5;
-
-    /**
      * Seconds an admin's wrong codes are remembered for.
      */
     public const FAILURE_DECAY_SECONDS = 60;
@@ -57,6 +52,7 @@ class AdminApiTwoFactorService
         protected AdminCredentialRepository $credentialRepository,
         protected AdminApiAuthAuditor $auditor,
         protected RateLimiter $limiter,
+        protected AdminApiAuthSettings $settings,
     ) {}
 
     /**
@@ -86,7 +82,7 @@ class AdminApiTwoFactorService
             'client_type' => $client['client_type'] ?? null,
             'ip_address' => $client['ip_address'] ?? null,
             'user_agent' => $this->limit($client['user_agent'] ?? null, 1023),
-            'expires_at' => Carbon::now()->addMinutes(AdminApiTwoFactorChallenge::LIFETIME_MINUTES),
+            'expires_at' => Carbon::now()->addMinutes($this->settings->twoFactorChallengeLifetime()),
         ]);
 
         Event::dispatch('bagistoapi.admin.api-two-factor-challenge.create.after', $challenge);
@@ -266,7 +262,7 @@ class AdminApiTwoFactorService
     {
         $key = $this->throttleKey($admin);
 
-        if (! $this->limiter->tooManyAttempts($key, self::MAX_FAILURES_PER_ADMIN)) {
+        if (! $this->limiter->tooManyAttempts($key, $this->settings->twoFactorMaxFailures())) {
             return;
         }
 

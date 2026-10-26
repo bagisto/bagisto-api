@@ -8,6 +8,8 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
 use Webkul\BagistoApi\Admin\Models\AdminApiSession;
 use Webkul\BagistoApi\Admin\Models\AdminApiToken;
+use Webkul\BagistoApi\Models\CustomerApiSession;
+use Webkul\Customer\Models\Customer;
 use Webkul\User\Models\Admin;
 
 class AdminApiAuthAuditor
@@ -147,6 +149,43 @@ class AdminApiAuthAuditor
             'token_id' => $subject?->getKey(),
             'token_name' => $subject?->name,
             'token_kind' => $this->tokenKind($subject),
+            'channel' => $this->channel($request),
+            'method' => $request->method(),
+            'url' => $request->url(),
+            'ip_address' => $request->ip(),
+            'user_agent' => Str::limit((string) $request->userAgent(), 1000, ''),
+            'tags' => self::TAG,
+        ]);
+    }
+
+    /**
+     * Write an audit row for an authentication event about a storefront customer session.
+     */
+    public function recordForCustomer(
+        string $event,
+        ?Customer $customer,
+        ?CustomerApiSession $session,
+        Request $request,
+        array $details = [],
+        ?Admin $actor = null,
+    ): void {
+        if (! config('bagistoapi.audit.enabled', true)) {
+            return;
+        }
+
+        $this->recorder->writeEvent([
+            'history_id' => $this->context->historyId ?? (string) Str::uuid(),
+            'event' => $event,
+            'auditable_type' => $session ? CustomerApiSession::class : null,
+            'auditable_id' => $session?->getKey(),
+            'old_values' => null,
+            'new_values' => ($details + array_filter(['customer_id' => $customer?->id])) ?: null,
+            'user_type' => $customer ? Customer::class : null,
+            'user_id' => $customer?->id,
+            'admin_name' => $actor?->name,
+            'token_id' => $session?->getKey(),
+            'token_name' => $session?->name,
+            'token_kind' => AdminApiAudit::TOKEN_KIND_CUSTOMER_SESSION,
             'channel' => $this->channel($request),
             'method' => $request->method(),
             'url' => $request->url(),

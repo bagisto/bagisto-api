@@ -4,9 +4,9 @@ namespace Webkul\BagistoApi\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Sales\Repositories\DownloadableLinkPurchasedRepository;
 use Webkul\Shop\Traits\ValidatesExternalUrl;
 
@@ -26,7 +26,7 @@ class DownloadablePurchasedController extends Controller
      */
     public function __invoke(int $id): Response
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             return $this->refuse('unauthenticated', 'unauthenticated', 401);

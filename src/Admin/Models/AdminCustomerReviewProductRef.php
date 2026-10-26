@@ -49,11 +49,14 @@ class AdminCustomerReviewProductRef extends Model
     }
 
     /**
-     * Get name attribute.
+     * The product name in the admin's locale, else in any locale.
      */
     #[ApiProperty(writable: false)]
     public function getNameAttribute(): ?string
     {
-        return DB::table('product_flat')->where('product_id', $this->id)->value('name');
+        $flat = DB::table('product_flat')->where('product_id', $this->id);
+
+        return (clone $flat)->where('locale', app()->getLocale())->value('name')
+            ?? $flat->value('name');
     }
 }

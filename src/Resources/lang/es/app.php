@@ -275,6 +275,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
             'unknown-resource' => 'Recurso desconocido',
             'cannot-update-other-profile' => 'No autorizado: No se puede actualizar el perfil de otro cliente',
+            'refresh-token-invalid' => 'El token de actualización no es válido o ha caducado. Vuelve a iniciar sesión.',
+            'too-many-login-attempts' => 'Demasiados intentos de inicio de sesión. Vuelva a intentarlo en :seconds segundos.',
+            'too-many-refresh-requests' => 'Demasiadas renovaciones de token. Inténtelo de nuevo en :seconds segundos.',
+            'rate-limit-exceeded' => 'Demasiados intentos.',
+            'access-token-expired' => 'El token de acceso ha caducado. Actualízalo para continuar.',
+            'logged-out-all' => 'Ha cerrado todas las sesiones.',
+            'session-not-found' => 'Sesión no encontrada.',
+            'session-revoked' => 'La sesión ha sido revocada.',
         ],
 
         'upload' => [
@@ -842,10 +850,6 @@ return [
             'note' => [
                 'empty' => 'El texto de la nota es obligatorio.',
                 'created' => 'Nota agregada correctamente.',
-            ],
-
-            'impersonate' => [
-                'success' => 'Token de suplantación emitido.',
             ],
 
             'review' => [
@@ -1625,6 +1629,91 @@ return [
                 'no-permission' => 'No tiene permiso para gestionar los términos de búsqueda.',
             ],
         ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'Sesiones de API',
+            ],
+
+            'acl' => [
+                'title' => 'Sesiones de API',
+                'delete' => 'Revocar',
+            ],
+
+            'index' => [
+                'title' => 'Sesiones de API de clientes',
+                'info' => 'Clientes conectados a la API de la tienda desde aplicaciones web, móviles, de TPV o de escritorio. Revocar una sesión desconecta ese dispositivo al instante.',
+            ],
+
+            'fields' => [
+                'customer' => 'Cliente',
+                'email' => 'Correo electrónico',
+                'channel' => 'Canal',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'Revocar todas las sesiones del cliente',
+            ],
+
+            'card' => [
+                'title' => 'Sesiones de API (:count)',
+                'empty' => 'Este cliente no tiene sesiones de API activas.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'No tiene permiso para gestionar las sesiones de API de los clientes.',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'Autenticación de clientes',
+                'info' => 'Duración de los tokens, límites y reglas de sesión para los inicios de sesión de clientes de la tienda.',
+
+                'tokens' => [
+                    'title' => 'Duración de los tokens',
+                    'info' => 'Cuánto tiempo son válidos los tokens de acceso, los tokens de actualización y las sesiones. Los cambios se aplican a los tokens emitidos después.',
+                    'access-token-ttl' => 'Duración del token de acceso (minutos)',
+                    'access-token-ttl-info' => 'Entre 5 y 60 minutos. Por defecto 15.',
+                    'refresh-token-ttl' => 'Duración del token de actualización (días)',
+                    'refresh-token-ttl-info' => 'Entre 1 y 90 días. Por defecto 30.',
+                    'session-lifetime' => 'Duración máxima de la sesión (días)',
+                    'session-lifetime-info' => 'Entre 1 y 365 días. Por defecto 90. Después, el administrador debe iniciar sesión de nuevo, sin importar cuántas veces se haya actualizado la sesión.',
+                    'max-sessions' => 'Máximo de sesiones activas por cliente',
+                    'max-sessions-info' => 'Al alcanzar el límite, se cierra la sesión más antigua. Entre 0 y 100. 0 significa sin límite.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Límites de solicitudes',
+                    'info' => 'Máximo de solicitudes a la API de la tienda por minuto para cada cliente conectado.',
+                    'requests-per-minute' => 'Solicitudes por minuto por cliente conectado',
+                    'requests-per-minute-info' => 'Entre 1 y 100000. Por defecto 120.',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Protección del inicio de sesión',
+                    'info' => 'Cuántos inicios de sesión fallidos y renovaciones de token se permiten antes de que el cliente deba esperar.',
+                    'login-max-attempts' => 'Inicios de sesión fallidos antes del bloqueo',
+                    'login-max-attempts-info' => 'Por correo electrónico y dirección IP. Entre 3 y 20. Por defecto 5.',
+                    'login-lockout-seconds' => 'Bloqueo del inicio de sesión (segundos)',
+                    'login-lockout-seconds-info' => 'Entre 60 y 3600. Por defecto 60.',
+                    'refresh-requests-per-minute' => 'Renovaciones de token por minuto por sesión',
+                    'refresh-requests-per-minute-info' => 'Entre 1 y 60. Por defecto 10.',
+                ],
+
+                'security' => [
+                    'title' => 'Seguridad',
+                    'info' => 'Qué cierra las demás sesiones de un cliente.',
+                    'revoke-sessions-on-password-change' => 'Revocar las sesiones al cambiar la contraseña',
+                ],
+
+                'retention' => [
+                    'title' => 'Conservación de datos',
+                    'info' => 'Cuánto tiempo se conservan las sesiones finalizadas de los clientes.',
+                    'session-prune-days' => 'Conservar sesiones finalizadas (días)',
+                    'session-prune-days-info' => 'Las sesiones revocadas o caducadas se eliminan después de estos días. Entre 1 y 365. Por defecto 30.',
+                ],
+            ],
+        ],
         'auth' => [
             'configuration' => [
                 'title' => 'Autenticación de administrador',
@@ -1646,6 +1735,10 @@ return [
                     'info' => 'Máximo de solicitudes a la API de administración por minuto.',
                     'session-requests-per-minute' => 'Solicitudes por minuto por administrador conectado',
                     'api-token-requests-per-minute' => 'Solicitudes por minuto por token de API',
+                    'session-requests-per-minute-info' => 'Entre 1 y 100000. Por defecto 60.',
+                    'api-token-requests-per-minute-info' => 'Entre 1 y 100000. Por defecto 60.',
+                    'unauthenticated-requests-per-minute' => 'Solicitudes por minuto sin token, por dirección IP',
+                    'unauthenticated-requests-per-minute-info' => 'Entre 10 y 1000. Por defecto 60. Incluye las solicitudes de inicio de sesión, doble factor, renovación y contraseña.',
                 ],
 
                 'security' => [
@@ -1658,6 +1751,30 @@ return [
                     'domain-binding-mode-info' => 'DNS comprueba que la solicitud procede de una dirección IP a la que resuelve el dominio del token. Origin comprueba la cabecera Origin o Referer y solo sirve para navegadores.',
                     'domain-binding-dns' => 'DNS (dirección IP del cliente)',
                     'domain-binding-origin' => 'Cabecera Origin',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Protección del inicio de sesión',
+                    'info' => 'Cuántos inicios de sesión fallidos, códigos de doble factor erróneos y solicitudes de contraseña se permiten antes de que el cliente deba esperar.',
+                    'login-max-attempts' => 'Inicios de sesión fallidos antes del bloqueo',
+                    'login-max-attempts-info' => 'Por correo electrónico y dirección IP. Entre 3 y 20. Por defecto 5.',
+                    'login-lockout-seconds' => 'Bloqueo del inicio de sesión (segundos)',
+                    'login-lockout-seconds-info' => 'Entre 60 y 3600. Por defecto 60.',
+                    'two-factor-challenge-lifetime' => 'Duración del desafío de doble factor (minutos)',
+                    'two-factor-challenge-lifetime-info' => 'Entre 1 y 15. Por defecto 5.',
+                    'two-factor-max-failures' => 'Códigos de doble factor erróneos por minuto',
+                    'two-factor-max-failures-info' => 'Por administrador, en todos los desafíos. Entre 3 y 20. Por defecto 5.',
+                    'password-requests-per-minute' => 'Solicitudes de contraseña por minuto',
+                    'password-requests-per-minute-info' => 'Solicitudes de olvido y restablecimiento de contraseña por dirección IP. Entre 1 y 20. Por defecto 5.',
+                ],
+
+                'retention' => [
+                    'title' => 'Conservación de datos',
+                    'info' => 'Cuánto tiempo se conservan las sesiones finalizadas y el historial de auditoría de la API.',
+                    'session-prune-days' => 'Conservar sesiones finalizadas (días)',
+                    'session-prune-days-info' => 'Las sesiones revocadas o caducadas se eliminan después de estos días. Entre 1 y 365. Por defecto 30.',
+                    'audit-retention-days' => 'Conservar el historial de auditoría de la API (días)',
+                    'audit-retention-days-info' => 'Las entradas más antiguas se eliminan a diario. Entre 0 y 3650. Vacío o 0 las conserva para siempre.',
                 ],
             ],
 
@@ -1917,6 +2034,7 @@ return [
                 'session' => 'Sesión de inicio de sesión',
                 'api-token' => 'Token de API',
                 'integration' => 'Token de integración (eliminado)',
+                'customer-session' => 'Sesión de inicio de sesión del cliente',
             ],
 
             'channels' => [

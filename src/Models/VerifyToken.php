@@ -25,7 +25,7 @@ use Webkul\BagistoApi\State\VerifyTokenProcessor;
                 'groups' => ['mutation'],
             ],
             openapi: new Operation(
-                tags: ['Customer'],
+                tags: ['Customer Authentication'],
                 summary: 'Verify customer bearer token',
                 description: 'Validates the customer bearer token from the Authorization header and returns the customer details if valid.',
                 requestBody: new RequestBody(
@@ -105,6 +105,18 @@ class VerifyToken
      */
     #[ApiProperty(writable: false, readable: true)]
     public ?bool $isValid = null;
+
+    /**
+     * The id of the session the access token belongs to.
+     */
+    #[ApiProperty(writable: false, readable: true)]
+    public ?int $sessionId = null;
+
+    /**
+     * When the session reaches its absolute lifetime.
+     */
+    #[ApiProperty(writable: false, readable: true)]
+    public ?string $sessionExpiresAt = null;
 
     /**
      * The message.

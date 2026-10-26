@@ -25,7 +25,7 @@ use Webkul\BagistoApi\State\VerifyAccountProcessor;
                 'groups' => ['mutation'],
             ],
             openapi: new Operation(
-                tags: ['Customer'],
+                tags: ['Customer Authentication'],
                 summary: 'Verify customer account with email token',
                 description: 'Verifies customer registration using the email verification token sent upon sign-up.',
                 requestBody: new RequestBody(

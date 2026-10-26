@@ -12,6 +12,7 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Repositories\GuestCartTokensRepository;
+use Webkul\BagistoApi\Services\Cart\GuestCartMerger;
 use Webkul\BagistoApi\State\Concerns\HandlesBookingCartItems;
 use Webkul\BagistoApi\State\Concerns\HandlesCartCouponsAndExtras;
 use Webkul\BagistoApi\State\Concerns\HandlesCartItems;
@@ -37,6 +38,7 @@ class CartTokenProcessor implements ProcessorInterface
     public function __construct(
         protected CartRepository $cartRepository,
         protected GuestCartTokensRepository $guestCartTokensRepository,
+        protected GuestCartMerger $guestCartMerger,
         protected CartOptionFileStaging $optionFileStaging
     ) {}
 
@@ -66,7 +68,17 @@ class CartTokenProcessor implements ProcessorInterface
 
         $cart = $this->resolveCart($operationName, $data, $customer, $token);
 
-        $result = $this->executeOperation($operationName, $cart, $customer, $data);
+        $guestToken = ! $customer
+            && $cart
+            && $operationName !== 'mergeGuest'
+            ? $token
+            : null;
+
+        try {
+            $result = $this->executeOperation($operationName, $cart, $customer, $data);
+        } finally {
+            $this->keepGuestTokenBound($guestToken);
+        }
 
         if (
             $operation instanceof Post
@@ -81,6 +93,26 @@ class CartTokenProcessor implements ProcessorInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Give a guest token a new empty cart when core deleted its cart for being empty, so the token keeps working.
+     */
+    private function keepGuestTokenBound(?string $guestToken): void
+    {
+        if (
+            ! $guestToken
+            || $this->guestCartTokensRepository->findCartByToken($guestToken)
+        ) {
+            return;
+        }
+
+        $cart = CartTokenFacade::createCart();
+
+        $this->guestCartTokensRepository->updateOrCreate(
+            ['token' => $guestToken],
+            ['cart_id' => $cart->id],
+        );
     }
 
     /**
@@ -394,25 +426,7 @@ class CartTokenProcessor implements ProcessorInterface
      */
     private function resolveGuestCartForMerge(CartInput $data): ?CartModel
     {
-        if (! $data->guestCartToken) {
-            return null;
-        }
-
-        $guestCart = $this->guestCartTokensRepository->findCartByToken($data->guestCartToken);
-
-        if (
-            ! $guestCart
-            || ! $guestCart->is_active
-            || $guestCart->customer_id
-            || (
-                $data->cartId
-                && (int) $data->cartId !== (int) $guestCart->id
-            )
-        ) {
-            return null;
-        }
-
-        return $guestCart;
+        return $this->guestCartMerger->findMergeable($data->guestCartToken, $data->cartId ? (int) $data->cartId : null);
     }
 
     /**

@@ -7,13 +7,13 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\Request;
-use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Models\CustomerAddress;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
 use Webkul\BagistoApi\State\Concerns\ResolvesListSort;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Customer\Models\Customer;
 
 class CustomerAddressProvider implements ProviderInterface
@@ -64,34 +64,19 @@ class CustomerAddressProvider implements ProviderInterface
     }
 
     /**
-     * Validate token and extract customer ID.
+     * The id of the non-suspended customer behind a customer access token.
      */
     private function getCustomerIdFromToken(string $token): ?int
     {
-        try {
-            if (strpos($token, '|') === false) {
-                return null;
-            }
+        $customer = CurrentCustomer::fromToken($token);
 
-            $personalAccessToken = PersonalAccessToken::findToken($token);
-
-            if (! $personalAccessToken) {
-                return null;
-            }
-
-            if (! $personalAccessToken->tokenable instanceof Customer) {
-                return null;
-            }
-
-            $customer = $personalAccessToken->tokenable;
-
-            if ($customer->is_suspended) {
-                return null;
-            }
-
-            return $customer->id;
-        } catch (\Exception) {
+        if (
+            ! $customer
+            || $customer->is_suspended
+        ) {
             return null;
         }
+
+        return $customer->id;
     }
 }

@@ -3,7 +3,7 @@
 This guide explains how a client authenticates against both surfaces of the Bagisto API, as the code behaves today:
 
 - [Admin API](#admin-api) — `/api/admin/*` and `POST /api/admin/graphql`: JWT access tokens from a login, renewed with refresh tokens, and API tokens for server integrations.
-- [Shop API](#shop-api) — `/api/shop/*` and `POST /api/graphql`: a storefront key on every request, plus a customer token or a guest cart token where a customer or a cart is involved.
+- [Shop API](#shop-api) — `/api/shop/*` and `POST /api/graphql`: a storefront key on every request, plus a customer access token (renewed with a refresh token) or a guest cart token where a customer or a cart is involved.
 
 Swagger UI (`/api/admin/docs`, `/api/shop/docs`) lists, on every operation, the credentials it accepts, and the Postman collections in `collections/` run the flows below end to end. Exact request and response shapes are in `schema/generated/`.
 
@@ -118,7 +118,7 @@ mutation {
 }
 ```
 
-A wrong email or password answers `401 invalid_credentials` with the same message whether or not the email exists. An inactive admin gets `403 account_inactive`. Five failed logins for the same email and client address within a minute lock that pair for the rest of the minute (`429 too_many_login_attempts` with `Retry-After`).
+A wrong email or password answers `401 invalid_credentials` with the same message whether or not the email exists. An inactive admin gets `403 account_inactive`. Five failed logins for the same email and client address lock that pair for 60 seconds by default (`429 too_many_login_attempts` with `Retry-After`); both numbers are set under *Login Protection* (see [Configuration](#configuration)).
 
 ### Two-factor authentication
 
@@ -170,8 +170,8 @@ curl -X POST https://shop.example.com/api/admin/auth/two-factor \
 ```
 
 - Send either `code` (6 digits) or `backup_code`, not both. A backup code works once; a code from an already used time window is refused.
-- The challenge token is single-use and valid for **5 minutes**.
-- Five wrong codes revoke the challenge. Five wrong codes within a minute for the same admin, across challenges, answer `429 too_many_login_attempts` with `Retry-After`.
+- The challenge token is single-use and valid for **5 minutes** by default (*Two-Factor Challenge Lifetime*).
+- Five wrong codes revoke the challenge. Five wrong codes within a minute for the same admin, across challenges, answer `429 too_many_login_attempts` with `Retry-After`; that second number is *Wrong Two-Factor Codes per Minute*.
 - Over GraphQL the login returns `twoFactorRequired: true` in a normal GraphQL answer (there is no `202`), and the second step is `createAdminTwoFactorVerify(input: { challengeToken, code })` (or `backupCode`), selecting `adminTwoFactorVerify { accessToken refreshToken ... }`.
 
 ### Refreshing the access token
@@ -262,7 +262,7 @@ The admin panel's *Settings → API Sessions* screen does the same, and can revo
 
 ### Password reset and account update
 
-`POST /api/admin/auth/forgot-password` with `{ "email": "..." }` sends core's admin reset email and answers `200` the same way whether or not the email belongs to an admin. `POST /api/admin/auth/reset-password` with `token` (from the emailed link), `email`, `password` (at least 6 characters) and `password_confirmation` sets the new password through core's `admins` password broker. A token that does not match answers `422 password_reset_token_invalid`. Each of the two allows five requests a minute per client address (`429 too_many_password_requests` with `Retry-After`). Both are public, and their GraphQL forms are `createAdminForgotPassword` and `createAdminResetPassword`.
+`POST /api/admin/auth/forgot-password` with `{ "email": "..." }` sends core's admin reset email and answers `200` the same way whether or not the email belongs to an admin. `POST /api/admin/auth/reset-password` with `token` (from the emailed link), `email`, `password` (at least 6 characters) and `password_confirmation` sets the new password through core's `admins` password broker. A token that does not match answers `422 password_reset_token_invalid`. Each of the two allows five requests a minute per client address by default, set by *Password Requests per Minute* (`429 too_many_password_requests` with `Retry-After`). Both are public, and their GraphQL forms are `createAdminForgotPassword` and `createAdminResetPassword`.
 
 A successful reset logs the admin out of the admin panel, as core does, and **revokes every API session** of the admin, whatever the configuration — and every API token too when *Revoke API Tokens on Password Change* is on.
 
@@ -381,7 +381,7 @@ Over GraphQL these come back as `errors[]` entries with `extensions.code`, `exte
 | 422 | `invalid_current_password` | Wrong current password on an account update | Correct the input |
 | 422 | `password_reset_token_invalid` | The reset token or email does not match a reset request | Request a new reset link |
 | 422 | — | Validation failure (problem document; `detail` holds the first message) | Correct the input |
-| 429 | `too_many_login_attempts` | Five failed logins for an email and address, or five wrong codes for an admin, in a minute | Wait for `Retry-After` seconds |
+| 429 | `too_many_login_attempts` | Too many failed logins for an email and address, or wrong codes for an admin (five each by default) | Wait for `Retry-After` seconds |
 | 429 | `too_many_password_requests` | Five forgot or reset requests from an address in a minute | Wait for `Retry-After` seconds |
 | 429 | `rate_limit_exceeded` | Over the request rate limit (see below) | Wait for `Retry-After` seconds |
 
@@ -391,7 +391,7 @@ Admin API requests are counted per minute:
 
 - per **admin** for requests with a login session's access token — *Requests per Minute per Signed-in Admin*, 60 by default;
 - per **API token** — *Requests per Minute per API Token*, 60 by default;
-- per **client address**, 60 a minute, for requests without a valid token, the public sign-in operations included.
+- per **client address** for requests without a valid token, the public sign-in operations included — *Requests per Minute without a Token, per IP Address*, 60 by default.
 
 Over the limit, a request answers `429` with `{ "message": "Too Many Attempts.", "error": "rate_limit_exceeded" }` and a `Retry-After` header.
 
@@ -404,14 +404,22 @@ The admin panel's **Configuration → API → Admin Authentication** sets:
 | Token Lifetimes | Access Token Lifetime (minutes) | 15 | 5–60 |
 | Token Lifetimes | Refresh Token Lifetime (days) | 30 | 1–90 |
 | Token Lifetimes | Absolute Session Lifetime (days) | 90 | 1–365 |
-| Rate Limits | Requests per Minute per Signed-in Admin | 60 | 1 or more |
-| Rate Limits | Requests per Minute per API Token | 60 | 1 or more |
+| Rate Limits | Requests per Minute per Signed-in Admin | 60 | 1–100000 |
+| Rate Limits | Requests per Minute per API Token | 60 | 1–100000 |
+| Rate Limits | Requests per Minute without a Token, per IP Address | 60 | 10–1000 |
 | Security | Revoke Sessions on Password Change | Yes | Yes / No |
 | Security | Revoke API Tokens on Password Change | No | Yes / No |
 | Security | Allow API Tokens Without Expiry | Yes | Yes / No |
 | Security | Domain Binding Mode | DNS (client IP address) | DNS / Origin header |
+| Login Protection | Failed Logins Before Lockout | 5 | 3–20 |
+| Login Protection | Login Lockout (seconds) | 60 | 60–3600 |
+| Login Protection | Two-Factor Challenge Lifetime (minutes) | 5 | 1–15 |
+| Login Protection | Wrong Two-Factor Codes per Minute | 5 | 3–20 |
+| Login Protection | Password Requests per Minute | 5 | 1–20 |
+| Data Retention | Keep Ended Sessions (days) | 30 | 1–365 |
+| Data Retention | Keep API Audit History (days) | empty (keep forever) | 0–3650, 0 or empty keeps it forever |
 
-Lifetime changes apply to tokens issued afterwards. The defaults, used when the configuration has no value, live in the package's `src/Admin/Config/admin-auth.php` (`bagistoapi.admin_auth`), which also holds settings with no admin field: the DNS cache time (300 seconds), how long ended sessions are kept before they are pruned (30 days) and the JWT settings (audience, the 30-second leeway and the key location).
+Lifetime changes apply to tokens issued afterwards. The defaults, used when the configuration has no value, live in the package's `src/Admin/Config/admin-auth.php` (`bagistoapi.admin_auth`), which also holds settings with no admin field: the DNS cache time (300 seconds) and the JWT settings (audience, the 30-second leeway and the key location). An empty audit retention falls back to `BAGISTO_API_AUDIT_RETENTION_DAYS`; `php artisan bagisto-api:prune-audits` applies it and is scheduled daily.
 
 **Signing keys.** `php artisan bagisto-api-platform:install` creates the ES256 key pair with `php artisan bagisto-api:jwt-keys` under `storage/app/private/bagisto-api/jwt/`. On several servers, give every node the same keys through `BAGISTO_API_JWT_PRIVATE_KEY` and `BAGISTO_API_JWT_PUBLIC_KEY` (PEM or base64-encoded PEM, P-256). `bagisto-api:jwt-keys --rotate` makes a new signing key and keeps the old public key, so issued tokens keep working; `--reissue-api-tokens` signs the API tokens that use an older key again and prints each new token once. `php artisan bagisto-api:prune-admin-tokens`, scheduled hourly, deletes expired refresh tokens and two-factor challenges, long-ended sessions and retired keys nothing uses.
 
@@ -481,7 +489,7 @@ async function adminFetch(path, options = {}) {
 
 **Use `client_type` and `device_name`.** They label the session in *My sessions* and *Settings → API Sessions*, so the admin can tell their phone from their laptop and revoke the right one.
 
-**Handle `202` on login.** An app that may be used by an admin with two-factor authentication must show a code screen when the login answers `202`, and send the code within 5 minutes.
+**Handle `202` on login.** An app that may be used by an admin with two-factor authentication must show a code screen when the login answers `202`, and send the code within the challenge lifetime (5 minutes by default).
 
 ---
 
@@ -500,45 +508,188 @@ X-STOREFRONT-KEY: pk_storefront_...
 - A missing key answers `401` with `error: missing_key`; an invalid or inactive key, or one used from an address it does not allow, `403` with `error: invalid_key`; a key over its rate limit, `429` with `error: rate_limit_exceeded` and `Retry-After`. The limit is counted per key and per client address (100 a minute by default).
 - In Swagger the scheme is `storefrontKey`.
 
-### Customer login (Sanctum token)
+### Customer login
+
+Customers authenticate like admin apps: a short-lived JWT **access token** sent on every request, renewed with a **refresh token** that works once.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant App as Storefront app
+    participant API as Bagisto Shop API
+    App->>API: POST /api/shop/customer/login {email, password, device_name, client_type, guest_cart_token?}
+    API->>API: check the customer on the current channel, start a session, merge the guest cart
+    API-->>App: 201 {accessToken, expiresIn, refreshToken, session, customer, cartId}
+    App->>App: keep the access token in memory, the refresh token in secure storage
+    App->>API: GET /api/shop/customer-profile  Authorization: Bearer accessToken
+    API-->>App: 200
+```
 
 ```bash
 curl -X POST https://shop.example.com/api/shop/customer/login \
   -H "X-STOREFRONT-KEY: $STOREFRONT_KEY" \
   -H 'Content-Type: application/json' -H 'Accept: application/json' \
-  -d '{"email":"john@example.com","password":"Password123!"}'
+  -d '{"email":"john@example.com","password":"Password123!","device_name":"iPhone 15","client_type":"mobile"}'
 ```
 
-The answer is `201`:
+- `email` and `password` are required. `device_name` labels the session in the session list; `client_type` is one of `web`, `mobile`, `pos`, `desktop` or `other`.
+- `guest_cart_token` (GraphQL `guestCartToken`) is the token of the guest's cart. When it still names an open guest cart, login merges that cart into the customer's cart in the same step and returns the customer's cart id in `cartId`. A token that names no open guest cart is ignored and `cartId` is `null`, so a stale cart never blocks a login.
+- The customer is looked up on the **current channel**, as the storefront does: an account exists per channel, and an access token works only on the channel it was issued on.
+- Field names are accepted in snake_case or camelCase; answers are camelCase.
+- Each login is its own session, so a customer can be signed in on several devices at once. *Maximum Active Sessions per Customer* (see [Customer configuration](#customer-configuration)) ends the oldest one when the limit is reached.
+
+The answer (`201`):
 
 ```json
 {
+  "tokenType": "Bearer",
+  "accessToken": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ii4uLiJ9.eyJ0eXAiOiJjdXN0b21lcl9hY2Nlc3MiLCJzdWIiOjE1Mjl9.c2lnbmF0dXJl",
+  "expiresIn": 900,
+  "accessTokenExpiresAt": "2026-10-23T10:15:00+00:00",
+  "refreshToken": "88|7c1f4e2a9b...",
+  "refreshTokenExpiresAt": "2026-11-22T10:00:00+00:00",
+  "session": { "id": 41, "name": "iPhone 15", "clientType": "mobile", "expiresAt": "2027-01-21T10:00:00+00:00" },
+  "customer": { "id": 1529, "firstName": "John", "lastName": "Doe", "email": "john@example.com" },
   "id": 1529,
   "_id": 1529,
   "apiToken": "PPKI0VNiX5qehio2q1cMeMd6TCaIKofwQ4mb7y2zcy0japYwsyc",
-  "token": "3762|wT7yGIo82N7T3r2YFc3iEcugycFjPQgG338DKnPXeaa96bad",
+  "token": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ii4uLiJ9...",
+  "cartId": null,
   "success": true,
   "message": "You have logged in successfully"
 }
 ```
 
+- `token` repeats `accessToken` for clients of the old flow and will be removed; read `accessToken`.
+- `apiToken` is the device push token, **not** a bearer credential.
+- Registration (`POST /api/shop/customers`, GraphQL `createCustomer`) and social login (`POST /api/shop/customers/social-login`, `createSocialLogin`) return the same pair. When email verification is on, registration returns no tokens and asks the customer to verify the email first.
+
 ```graphql
 mutation {
-  createCustomerLogin(input: { email: "john@example.com", password: "Password123!" }) {
-    customerLogin { id token success message }
+  createCustomerLogin(input: {
+    email: "john@example.com"
+    password: "Password123!"
+    deviceName: "iPhone 15"
+    clientType: "mobile"
+    guestCartToken: "2f1c6f7e-5a0b-4c1e-9d0a-1b2c3d4e5f60"
+  }) {
+    customerLogin {
+      accessToken
+      expiresIn
+      accessTokenExpiresAt
+      refreshToken
+      refreshTokenExpiresAt
+      session
+      customer
+      cartId
+    }
   }
 }
 ```
 
-- Send `token` as `Authorization: Bearer <token>`. It is a Laravel Sanctum personal access token. `apiToken` is **not** a bearer credential and is not accepted as one.
-- The token has **no refresh token**. It does not expire unless Sanctum's `expiration` is set in the application's `config/sanctum.php` (Bagisto leaves it unset). Each login creates a new token.
-- `POST /api/shop/customer/logout` (GraphQL `createLogout`) revokes the token sent.
-- `POST /api/shop/verify-tokens` (GraphQL `createVerifyToken`) checks the token and returns the customer.
-- A failed login is **not** an HTTP error: wrong credentials, an inactive account or an unverified email all answer `201` with `success: false`, an empty `token` and a `message`. Check `success`, not the status. Missing or malformed input answers with a validation error instead.
-- Registration (`POST /api/shop/customers`) and social login (`POST /api/shop/customers/social-login`) also return a token. When email verification is on, registration returns `token: null` and asks the customer to verify the email.
-- In Swagger the scheme is `customerToken`.
+A refused login is an HTTP error, not `success: false`:
 
-Store the customer token as you would a refresh token: secure storage on mobile, never `localStorage` in a browser.
+| Status | `error` | Meaning |
+|---|---|---|
+| 401 | `invalid_credentials` | Wrong email or password; the message never says which, nor whether the email exists |
+| 403 | `account_inactive` | The customer is deactivated |
+| 403 | `account_unverified` | The customer has not verified the email address |
+| 429 | `too_many_login_attempts` | Too many failed logins for the email and address (five a minute by default), with `Retry-After` |
+
+### Customer refresh
+
+```bash
+curl -X POST https://shop.example.com/api/shop/customer/refresh \
+  -H "X-STOREFRONT-KEY: $STOREFRONT_KEY" \
+  -H 'Content-Type: application/json' -H 'Accept: application/json' \
+  -d '{"refresh_token":"88|7c1f4e2a9b..."}'
+```
+
+```graphql
+mutation {
+  createCustomerTokenRefresh(input: { refreshToken: "88|7c1f4e2a9b..." }) {
+    customerTokenRefresh { accessToken expiresIn accessTokenExpiresAt refreshToken refreshTokenExpiresAt session }
+  }
+}
+```
+
+- The answer is a **new pair** with the login's token fields. Store both; the old refresh token stops working.
+- Refresh before `expiresIn` runs out, or when a request answers `401 access_token_expired`.
+- **A refresh token works once.** Presenting a used one is treated as theft: the whole session ends, and the next refresh answers `401 refresh_token_invalid`. Two refreshes sent in parallel with the same refresh token count as reuse, so let only one run at a time, exactly as for the admin API ([Refresh token reuse detection](#refresh-token-reuse-detection), [Client implementation notes](#client-implementation-notes)).
+- On `401 refresh_token_invalid` — the refresh token is expired, used or revoked, the session was revoked or reached its absolute lifetime (90 days by default), or the customer was deactivated — log in again.
+- Refreshes are limited per session (ten a minute by default, `429 too_many_refresh_requests`).
+
+### Customer logout and sessions
+
+| Operation | REST | GraphQL | Answer |
+|---|---|---|---|
+| End this session | `POST /api/shop/customer/logout` | `createLogout` | ends only the session of the access token sent |
+| End every session | `POST /api/shop/customer/logout-all` | `createCustomerLogoutAll(input: {})` → `customerLogoutAll { revoked success message }` | `revoked` is how many sessions ended |
+| List my live sessions | `GET /api/shop/customer/sessions` | `customerSessions { _id name clientType lastChannel lastUsedAt expiresAt isCurrent }` | `isCurrent` marks the session of the token sent |
+| End one of my sessions | `DELETE /api/shop/customer/sessions/{id}` → `204` | `deleteCustomerSession(input: { id: "/api/shop/customer/sessions/41" })` | another customer's session answers `404` |
+| Check a token | `POST /api/shop/verify-tokens` | `createVerifyToken` | the customer, `sessionId` and `sessionExpiresAt` |
+
+Sessions also end on their own:
+
+- **Password change** through the profile ends the customer's other sessions, unless *Revoke Sessions on Password Change* is off.
+- **Password reset** ends every session.
+- **Deactivating or deleting** the customer, from the API or the admin panel, ends every session.
+- **An administrator** ends one session or every session of a customer under *Customers → API Sessions*, or with `DELETE /api/admin/customers/api-sessions/{id}` and `POST /api/admin/customers/{id}/revoke-api-sessions`.
+
+Every customer login, failed login, lockout, refresh, refresh token reuse, logout and session ending is recorded in the admin panel under *Settings → API Audit*, with the token kind `customer_session`.
+
+### Customer errors
+
+A request whose customer access token is refused **before the operation runs** gets a short body, on every storefront operation:
+
+```json
+{ "message": "The access token has expired. Refresh it to continue.", "error": "access_token_expired" }
+```
+
+On `POST /api/graphql` the same body also carries `errors[0].extensions.code`, with the HTTP status still `401`. The login, registration, social login, refresh and password operations never refuse a request for a stale bearer, so a client can always sign in again.
+
+| Status | `error` | Meaning | What to do |
+|---|---|---|---|
+| 401 | `access_token_expired` | The access token passed its expiry | Refresh, then retry the request once |
+| 401 | `unauthenticated` | A forged or unknown customer token, a token of another channel, a revoked session or a deactivated customer | Log in again |
+| 401 | `refresh_token_invalid` | The refresh token is expired, used or revoked, or the session ended | Log in again |
+| 401 | `invalid_credentials` | Wrong email or password | Ask again |
+| 403 | `account_inactive` / `account_unverified` | The account is deactivated / not verified | Contact the store / verify the email |
+| 429 | `too_many_login_attempts` / `too_many_refresh_requests` / `rate_limit_exceeded` | Too many failed logins, refreshes, or requests | Wait for `Retry-After` seconds |
+
+REST bodies carry the code in `error`; GraphQL errors carry it in `extensions.code`.
+
+### Customer configuration
+
+The admin panel's **Configuration → API → Customer Authentication** sets:
+
+| Group | Field | Default | Allowed |
+|---|---|---|---|
+| Token Lifetimes | Access Token Lifetime (minutes) | 15 | 5–60 |
+| Token Lifetimes | Refresh Token Lifetime (days) | 30 | 1–90 |
+| Token Lifetimes | Absolute Session Lifetime (days) | 90 | 1–365 |
+| Token Lifetimes | Maximum Active Sessions per Customer | 0 (no limit) | 0–100 |
+| Rate Limits | Requests per Minute per Signed-in Customer | 120 | 1–100000 |
+| Login Protection | Failed Logins Before Lockout | 5 | 3–20 |
+| Login Protection | Login Lockout (seconds) | 60 | 60–3600 |
+| Login Protection | Token Refreshes per Minute per Session | 10 | 1–60 |
+| Security | Revoke Sessions on Password Change | Yes | Yes / No |
+| Data Retention | Keep Ended Sessions (days) | 30 | 1–365 |
+
+Customer tokens are signed with the same keys as the admin API's ([Signing keys](#configuration)), but with a different type and audience, so an admin token is refused on the storefront and a customer token on the admin API. `php artisan bagisto-api:prune-customer-tokens`, scheduled hourly, deletes expired refresh tokens and long-ended sessions.
+
+### Customer client notes
+
+The admin [client implementation notes](#client-implementation-notes) apply unchanged: keep the refresh token in secure storage (the Keychain or Keystore on mobile; on the web, a backend that holds it in an `HttpOnly` cookie, never `localStorage`), refresh ahead of `accessTokenExpiresAt` with only one refresh in flight, and retry a request once on `access_token_expired`. The single-flight client there works for customers with `/api/shop/customer/refresh` and the `X-STOREFRONT-KEY` header added.
+
+**Moving from the Sanctum token.** Apps built for earlier versions sent `token` from the login as a long-lived bearer. After the upgrade:
+
+1. Every customer logs in again: the upgrade deletes the old tokens.
+2. Read `accessToken` and `refreshToken` from the login, registration and social login answers, and store the refresh token securely.
+3. Refresh before the access token expires, or on `401 access_token_expired`, and replace both stored tokens.
+4. Treat `401 refresh_token_invalid` and `unauthenticated` as "log in again".
+5. Check the status code of a login instead of `success`.
+6. Send the guest's cart token in the login's `guest_cart_token` instead of calling `POST /api/shop/merge-carts` afterwards (that endpoint still works).
 
 ### Guest cart token
 
@@ -553,7 +704,7 @@ curl -X POST https://shop.example.com/api/shop/cart-tokens \
 
 The answer carries `cartToken` (a UUID). Send it as `Authorization: Bearer <cartToken>` on the cart and checkout operations. Called with a customer token instead, `POST /api/shop/cart-tokens` returns that customer's active cart.
 
-After the guest logs in, move the guest cart into the customer's with `POST /api/shop/merge-carts`, sending the **customer** token as the bearer and the guest's cart token in the body as `guest_cart_token` (GraphQL `guestCartToken`); a bare cart id is not enough. In Swagger the scheme is `guestCartToken`.
+When the guest logs in, send the cart token in the login's `guest_cart_token` (GraphQL `guestCartToken`) to merge the guest cart into the customer's in the same step. `POST /api/shop/merge-carts` does the same afterwards, with the **customer** token as the bearer and the guest's cart token in the body as `guest_cart_token`; a bare cart id is not enough. In Swagger the scheme is `guestCartToken`.
 
 ### Which operations need what
 
@@ -564,10 +715,4 @@ After the guest logs in, move the guest cart into the customer's with `POST /api
 | Creating a cart token, creating a review | required | optional: with a customer token they act as that customer |
 | The customer account: profile, addresses, orders, invoices, shipments, downloadable products, reviews of your own, returns, wishlist, compare list, GDPR, EU withdrawals, cart merge, logout | required | a customer token |
 
-Each operation in Swagger (`/api/shop/docs`) lists exactly which of `storefrontKey`, `customerToken` and `guestCartToken` it accepts. A customer operation called without a customer token answers `401`, or `403` for some account operations; a record of another customer answers `404`.
-
----
-
-## Upcoming: customer access and refresh tokens
-
-> **Not yet implemented.** The storefront still uses the Sanctum token described above. A planned change moves customers to the same model as the admin API: short-lived JWT access tokens, rotating refresh tokens with reuse detection, listed and revocable sessions, and configurable lifetimes. Until it ships, build storefront clients against the Sanctum flow in this guide; the release notes in `CHANGELOG.md` and the steps in `UPGRADE.md` will describe the move when it lands.
+Each operation in Swagger (`/api/shop/docs`) lists exactly which of `storefrontKey`, `customerToken` and `guestCartToken` it accepts; `customerToken` is the customer access token. A customer operation called without a customer token answers `401`, or `403` for some account operations; a record of another customer answers `404`.

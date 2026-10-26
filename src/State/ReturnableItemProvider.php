@@ -4,12 +4,12 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\ReturnableItem;
 use Webkul\BagistoApi\State\Concerns\ResolvesReturnableItems;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\RMA\Helpers\Helper as RMAHelper;
 use Webkul\RMA\Repositories\RMAItemRepository;
 use Webkul\Sales\Repositories\OrderRepository;
@@ -32,7 +32,7 @@ class ReturnableItemProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): iterable
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

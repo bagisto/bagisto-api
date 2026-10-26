@@ -4,13 +4,13 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 use Webkul\BagistoApi\Dto\CancelOrderInput;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CancelOrder;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Sales\Repositories\OrderRepository;
 
 class CancelOrderProcessor implements ProcessorInterface
@@ -42,7 +42,7 @@ class CancelOrderProcessor implements ProcessorInterface
      */
     private function handleCancel(CancelOrderInput $input): CancelOrder
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

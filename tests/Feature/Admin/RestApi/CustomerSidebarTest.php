@@ -46,6 +46,24 @@ class CustomerSidebarTest extends AdminApiTestCase
     }
 
     /**
+     * Test the customer item lists need customers.customers, as core's routes do, not sales.orders.create.
+     */
+    public function test_customer_item_lists_need_the_customers_permission(): void
+    {
+        $customerId = $this->createCustomer()->id;
+
+        $orderCreator = $this->createAdminWithRolePermissions(['sales', 'sales.orders', 'sales.orders.create']);
+        $customerViewer = $this->createAdminWithRolePermissions(['customers', 'customers.customers']);
+
+        foreach (['cart-items', 'compare-items', 'wishlist-items', 'recent-order-items'] as $list) {
+            $url = '/api/admin/customers/'.$customerId.'/'.$list;
+
+            $this->adminGet($orderCreator, $url)->assertForbidden();
+            $this->adminGet($customerViewer, $url)->assertOk();
+        }
+    }
+
+    /**
      * Test wishlist requires authentication.
      */
     public function test_wishlist_requires_authentication(): void
@@ -140,10 +158,10 @@ class CustomerSidebarTest extends AdminApiTestCase
         [$customer] = $this->aCustomerWithCompareItem();
 
         $role = Role::create([
-            'name' => 'NoOrderCreate '.uniqid(),
-            'description' => 'no order create',
+            'name' => 'NoCustomers '.uniqid(),
+            'description' => 'no customers permission',
             'permission_type' => 'custom',
-            'permissions' => ['customers', 'customers.customers'],
+            'permissions' => ['sales', 'sales.orders', 'sales.orders.create'],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
 

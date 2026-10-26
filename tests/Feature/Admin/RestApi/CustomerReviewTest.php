@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Customer\Models\Customer;
@@ -349,6 +350,36 @@ class CustomerReviewTest extends AdminApiTestCase
     protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Test the nested product name follows the admin's locale, not the first flat row stored.
+     */
+    public function test_review_product_name_follows_the_admin_locale(): void
+    {
+        $review = $this->seedReview(['status' => 'approved']);
+
+        $product = Product::query()->findOrFail($review->product_id);
+
+        $flat = [
+            'product_id' => $product->id,
+            'channel' => 'default',
+            'sku' => $product->sku,
+            'type' => 'simple',
+            'status' => 1,
+            'attribute_family_id' => (int) (DB::table('attribute_families')->value('id') ?? 1),
+        ];
+
+        DB::table('product_flat')->where('product_id', $product->id)->delete();
+
+        DB::table('product_flat')->insert(array_merge($flat, ['locale' => 'ar', 'name' => '[AR] Arabic name']));
+        DB::table('product_flat')->insert(array_merge($flat, ['locale' => app()->getLocale(), 'name' => 'Admin locale name']));
+
+        $admin = $this->createAdmin();
+
+        $this->adminGet($admin, '/api/admin/customers/reviews/'.$review->id)
+            ->assertOk()
+            ->assertJsonPath('product.name', 'Admin locale name');
     }
 
     /**

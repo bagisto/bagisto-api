@@ -10,11 +10,13 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Models\ProductReview;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
+use Webkul\BagistoApi\State\Concerns\ScopesNestedConnections;
 
 class ProductReviewProvider implements ProviderInterface
 {
     use ClampsPageSize;
     use ResolvesCursorWindow;
+    use ScopesNestedConnections;
 
     /**
      * The default per page constant.
@@ -43,6 +45,10 @@ class ProductReviewProvider implements ProviderInterface
         $args = $this->resolveArgs($uriVariables, $context, $isGraphQL);
 
         $query = ProductReview::query();
+
+        if ($isGraphQL) {
+            $this->scopeToParent($query, $context);
+        }
 
         if (! empty($args['product_id'])) {
             $query->where('product_id', (int) $args['product_id']);

@@ -158,8 +158,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
                ?? $firstCategory->translations->first()?->name)
             : null;
 
-        $flatRow = $product->product_flats->where('locale', app()->getLocale())->first()
-            ?? $product->product_flats->first();
+        $flatRow = $this->localeFlatRow($product);
         $dto->channel = $flatRow?->channel ?? core()->getCurrentChannel()->code;
         $dto->locale = $flatRow?->locale ?? app()->getLocale();
 
@@ -327,7 +326,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         $dto->variants = $product->variants->map(function ($variant) use ($superAttrMap) {
             $price = null;
             try {
-                $flatRow = $variant->product_flats->first();
+                $flatRow = $this->localeFlatRow($variant);
                 $price = $flatRow?->price ?? null;
                 if ($price === null) {
                     $price = $variant->attribute_values
@@ -357,7 +356,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
             return [
                 'id' => (int) $variant->id,
                 'sku' => $variant->sku,
-                'name' => $variant->product_flats->first()?->name,
+                'name' => $this->localeFlatRow($variant)?->name,
                 'status' => null,
                 'price' => $price !== null ? (string) $price : null,
                 'formattedPrice' => $price !== null ? core()->formatPrice((float) $price) : null,
@@ -438,7 +437,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
     private function linkedProductName(mixed $linkedProduct): ?string
     {
         try {
-            return $linkedProduct?->product_flats->first()?->name;
+            return $linkedProduct ? $this->localeFlatRow($linkedProduct)?->name : null;
         } catch (\Throwable) {
             return null;
         }
@@ -453,7 +452,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
             $associated = $groupedProduct->associated_product;
             $name = null;
             try {
-                $name = $associated?->product_flats->first()?->name;
+                $name = $associated ? $this->localeFlatRow($associated)?->name : null;
             } catch (\Throwable) {
             }
 
@@ -820,8 +819,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         return $products->map(function ($product) {
             $name = null;
             try {
-                $name = $product->product_flats->first()?->name
-                    ?? $product->product_flats->where('locale', app()->getLocale())->first()?->name;
+                $name = $this->localeFlatRow($product)?->name;
             } catch (\Throwable) {
             }
 
@@ -861,10 +859,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
      */
     private function resolveFlatName(Product $product): ?string
     {
-        $flatRow = $product->product_flats->where('locale', app()->getLocale())->first()
-            ?? $product->product_flats->first();
-
-        return $flatRow?->name;
+        return $this->localeFlatRow($product)?->name;
     }
 
     /**
@@ -872,8 +867,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
      */
     private function resolvePrice(Product $product): ?float
     {
-        $flatRow = $product->product_flats->where('locale', app()->getLocale())->first()
-            ?? $product->product_flats->first();
+        $flatRow = $this->localeFlatRow($product);
 
         if (
             $flatRow
@@ -886,5 +880,15 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         $attributeValue = $product->attribute_values->where('attribute_id', $priceAttrId)->first();
 
         return $attributeValue ? (float) $attributeValue->float_value : null;
+    }
+
+    /**
+     * The product's flat row in the admin's locale, else its first flat row.
+     */
+    private function localeFlatRow(mixed $product): mixed
+    {
+        $flats = $product->product_flats;
+
+        return $flats->firstWhere('locale', app()->getLocale()) ?? $flats->first();
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\State\Concerns;
 
+use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
 use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CartInput;
@@ -204,8 +205,10 @@ trait HandlesCartItems
             $updatedCart = CartFacade::getCart();
 
             Event::dispatch('cart.after.add', ['cart' => $updatedCart]);
+        } catch (HttpExceptionInterface $exception) {
+            throw $exception;
         } catch (\Exception $exception) {
-            throw new OperationFailedException($exception->getMessage(), 0, $exception);
+            throw new InvalidInputException($exception->getMessage(), 400);
         }
 
         if (! $updatedCart) {
@@ -476,8 +479,10 @@ trait HandlesCartItems
             CartFacade::collectTotals();
 
             Event::dispatch('cart.item.after.update', ['cartItem' => $data->cartItemId]);
+        } catch (HttpExceptionInterface $exception) {
+            throw $exception;
         } catch (\Exception $exception) {
-            throw new OperationFailedException($exception->getMessage(), 0, $exception);
+            throw new InvalidInputException($exception->getMessage(), 400);
         }
 
         $cart = CartFacade::getCart();

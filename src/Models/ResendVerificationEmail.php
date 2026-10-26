@@ -25,7 +25,7 @@ use Webkul\BagistoApi\State\ResendVerificationEmailProcessor;
                 'groups' => ['mutation'],
             ],
             openapi: new Operation(
-                tags: ['Customer'],
+                tags: ['Customer Authentication'],
                 summary: 'Resend customer verification email',
                 description: 'Issues a fresh email verification token and re-sends the verification email for the given address. The response is the same whether or not the address exists, so it cannot be used to discover registered emails.',
                 requestBody: new RequestBody(

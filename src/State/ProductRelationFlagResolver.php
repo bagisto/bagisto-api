@@ -2,7 +2,7 @@
 
 namespace Webkul\BagistoApi\State;
 
-use Illuminate\Support\Facades\Auth;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Customer\Models\CompareItem;
 use Webkul\Customer\Models\Wishlist;
 
@@ -58,7 +58,7 @@ class ProductRelationFlagResolver
      */
     private function ensureLoaded(): void
     {
-        $customerId = Auth::guard('sanctum')->user()?->id;
+        $customerId = CurrentCustomer::user()?->id;
 
         if (
             $this->loaded

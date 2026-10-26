@@ -13,6 +13,8 @@ use Webkul\BagistoApi\Admin\Models\AdminInvoice;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCampaign;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSearchTerm;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSubscriber;
+use Webkul\BagistoApi\Admin\Models\AdminOrderDetailItem;
+use Webkul\BagistoApi\Models\BookingProduct;
 use Webkul\BagistoApi\Models\Customer;
 
 class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInterface
@@ -41,6 +43,16 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
     ];
 
     /**
+     * Computed properties that hold JSON, typed as arrays so GraphQL serves them as `Iterable` instead of `String`.
+     *
+     * @var array<class-string, string[]>
+     */
+    private array $jsonProperties = [
+        AdminOrderDetailItem::class => ['child', 'downloadable_links'],
+        BookingProduct::class => ['slots'],
+    ];
+
+    /**
      * The table columns already read for each model class.
      *
      * @var array<class-string, string[]>
@@ -61,6 +73,10 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
 
         if (in_array($property, $this->stringProperties[$resourceClass] ?? [], true)) {
             $metadata = $metadata->withNativeType(NativeType::nullable(NativeType::string()));
+        }
+
+        if (in_array($property, $this->jsonProperties[$resourceClass] ?? [], true)) {
+            return $metadata->withNativeType(NativeType::nullable(NativeType::array()));
         }
 
         if (! $this->shouldBeNullable($resourceClass, $property)) {

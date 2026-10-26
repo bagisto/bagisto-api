@@ -4,11 +4,11 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Dto\DeleteAllCompareItemsInput;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\CompareItem;
 use Webkul\BagistoApi\Models\DeleteAllCompareItems;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class DeleteAllCompareItemsProcessor implements ProcessorInterface
 {
@@ -36,7 +36,7 @@ class DeleteAllCompareItemsProcessor implements ProcessorInterface
      */
     private function handleDeleteAll(): DeleteAllCompareItems
     {
-        $user = Auth::guard('sanctum')->user();
+        $user = CurrentCustomer::user();
 
         if (! $user) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

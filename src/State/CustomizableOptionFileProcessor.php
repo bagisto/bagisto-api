@@ -7,13 +7,13 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Dto\CustomizableOptionFileInput;
 use Webkul\BagistoApi\Dto\CustomizableOptionFileOutput;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Support\CartOptionFileStaging;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Product\Repositories\ProductRepository;
 
 class CustomizableOptionFileProcessor implements ProcessorInterface
@@ -159,7 +159,7 @@ class CustomizableOptionFileProcessor implements ProcessorInterface
      */
     private function resolveOwnerId(): string
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if ($customer) {
             return 'customer:'.$customer->id;

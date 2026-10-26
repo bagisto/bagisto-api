@@ -24,11 +24,6 @@ class AdminApiPasswordService
     public const BROKER = 'admins';
 
     /**
-     * The forgot or reset requests a client address may make before waiting.
-     */
-    public const MAX_REQUESTS = 5;
-
-    /**
      * Seconds forgot and reset requests are counted for.
      */
     public const DECAY_SECONDS = 60;
@@ -42,6 +37,7 @@ class AdminApiPasswordService
         protected AdminApiAuthAuditor $auditor,
         protected RateLimiter $limiter,
         protected SessionPurger $sessionPurger,
+        protected AdminApiAuthSettings $settings,
     ) {}
 
     /**
@@ -112,11 +108,11 @@ class AdminApiPasswordService
      */
     protected function resetPassword(Admin $admin, string $password): Admin
     {
+        $this->revoker->passwordReset($admin);
+
         $admin = $this->credentialRepository->resetPassword($admin->id, Hash::make($password), Str::random(60));
 
         $this->sessionPurger->forget('admin', $admin->id);
-
-        $this->revoker->passwordReset($admin);
 
         Event::dispatch(new PasswordReset($admin));
 
@@ -132,7 +128,7 @@ class AdminApiPasswordService
     {
         $key = 'bagistoapi-admin-password-'.$action.':'.$request->ip();
 
-        if ($this->limiter->tooManyAttempts($key, self::MAX_REQUESTS)) {
+        if ($this->limiter->tooManyAttempts($key, $this->settings->passwordRequestsPerMinute())) {
             $seconds = max(1, $this->limiter->availableIn($key));
 
             throw new AdminAuthException(

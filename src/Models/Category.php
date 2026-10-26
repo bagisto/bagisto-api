@@ -13,12 +13,14 @@ use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Webkul\BagistoApi\Contracts\PreloadsCollection;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\CategoryCollectionResolver;
 use Webkul\BagistoApi\State\CategoryRestProvider;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Category\Models\Category as BaseCategory;
 
 #[ApiResource(
@@ -150,7 +152,7 @@ use Webkul\Category\Models\Category as BaseCategory;
         ),
     ],
 )]
-class Category extends BaseCategory
+class Category extends BaseCategory implements PreloadsCollection
 {
     /**
      * The status and position are cast so the value is typed identically on every database engine.
@@ -189,12 +191,27 @@ class Category extends BaseCategory
     }
 
     /**
+     * Resolve the translation relation from the loaded translations instead of a query per category.
+     */
+    public function getAttribute($key)
+    {
+        if (
+            $key === 'translation'
+            && ! $this->relationLoaded('translation')
+        ) {
+            $this->setRelation('translation', $this->getTranslation());
+        }
+
+        return parent::getAttribute($key);
+    }
+
+    /**
      * Get category translation for the current locale.
      */
     #[ApiProperty(readableLink: true, description: 'Current locale translation')]
     public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
     {
-        return $this->translation;
+        return parent::getTranslation($locale, $withFallback);
     }
 
     /**
@@ -229,7 +246,7 @@ class Category extends BaseCategory
     public function getChildren(): array
     {
         try {
-            return $this->children()->pluck('id')->all();
+            return $this->children->pluck('id')->all();
         } catch (\Throwable $exception) {
             return [];
         }
@@ -258,6 +275,22 @@ class Category extends BaseCategory
     }
 
     /**
+     * Load the price range of every given category in one query.
+     */
+    public static function preloadCollection(Collection $categories): void
+    {
+        if ($categories->isEmpty()) {
+            return;
+        }
+
+        $ranges = self::priceRanges($categories->pluck('id')->all());
+
+        foreach ($categories as $category) {
+            $category->categoryPriceRange = $ranges[$category->id] ?? ['min' => 0.0, 'max' => 0.0];
+        }
+    }
+
+    /**
      * Resolve price range.
      */
     private function resolvePriceRange(): array
@@ -266,22 +299,33 @@ class Category extends BaseCategory
             return $this->categoryPriceRange;
         }
 
-        $customer = Auth::guard('sanctum')->user();
+        return $this->categoryPriceRange = self::priceRanges([$this->id])[$this->id] ?? ['min' => 0.0, 'max' => 0.0];
+    }
+
+    /**
+     * Price ranges keyed by category id, for the requesting customer's group.
+     */
+    private static function priceRanges(array $categoryIds): array
+    {
+        $customer = CurrentCustomer::user();
 
         $customerGroup = ($customer && $customer->group)
             ? $customer->group
             : core()->getGuestCustomerGroup();
 
-        $range = DB::table('product_price_indices')
+        return DB::table('product_price_indices')
             ->join('product_categories', 'product_categories.product_id', '=', 'product_price_indices.product_id')
             ->where('product_price_indices.customer_group_id', $customerGroup->id)
-            ->where('product_categories.category_id', $this->id)
-            ->selectRaw('MIN(min_price) as min_price, MAX(min_price) as max_price')
-            ->first();
-
-        return $this->categoryPriceRange = [
-            'min' => (float) ($range->min_price ?? 0),
-            'max' => (float) ($range->max_price ?? 0),
-        ];
+            ->whereIn('product_categories.category_id', $categoryIds)
+            ->groupBy('product_categories.category_id')
+            ->selectRaw('product_categories.category_id, MIN(min_price) as min_price, MAX(min_price) as max_price')
+            ->get()
+            ->mapWithKeys(fn ($range) => [
+                $range->category_id => [
+                    'min' => (float) ($range->min_price ?? 0),
+                    'max' => (float) ($range->max_price ?? 0),
+                ],
+            ])
+            ->all();
     }
 }

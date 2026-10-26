@@ -12,6 +12,7 @@ class StoreConfigTest extends RestApiTestCase
         'id', 'channel', 'locale',
         'guestCheckoutEnabled', 'cartCrossSellEnabled', 'estimateShippingEnabled', 'reorderEnabled', 'cartSummary',
         'minimumOrderEnabled', 'minimumOrderAmount', 'minimumOrderIncludesDiscount', 'minimumOrderIncludesTax', 'minimumOrderMessage',
+        'orderNumberPrefix', 'orderNumberLength', 'orderNumberSuffix', 'orderNumberGenerator', 'orderMaxRetryAttempts', 'adminReorderEnabled',
         'customerReviewEnabled', 'guestReviewEnabled', 'reviewerNameCensored', 'reviewSummary',
         'compareEnabled', 'wishlistEnabled', 'imageSearchEnabled', 'socialShareEnabled', 'productsPerPage', 'listingMode', 'defaultSortBy', 'buyNowButtonEnabled',
         'emailVerificationRequired', 'newsletterEnabled', 'captchaEnabled', 'socialLoginProviders',
@@ -114,6 +115,53 @@ class StoreConfigTest extends RestApiTestCase
         expect((float) $config['minimumOrderAmount'])->toBe(50.0);
         expect($config['minimumOrderIncludesTax'])->toBeTrue();
         expect($config['minimumOrderMessage'])->toBe('Orders must be at least 50.');
+    }
+
+    public function test_order_number_format_is_returned(): void
+    {
+        $this->seedRequiredData();
+
+        $this->setConfig('sales.order_settings.order_number.order_number_prefix', 'ORD-');
+        $this->setConfig('sales.order_settings.order_number.order_number_length', '6');
+        $this->setConfig('sales.order_settings.order_number.order_number_suffix', '-EU');
+        $this->setConfig('sales.order_settings.order_number.order_number_generator', 'App\\Generators\\OrderNumber');
+
+        $config = $this->storeConfig();
+
+        expect($config['orderNumberPrefix'])->toBe('ORD-');
+        expect($config['orderNumberLength'])->toBe(6);
+        expect($config['orderNumberSuffix'])->toBe('-EU');
+        expect($config['orderNumberGenerator'])->toBe('App\\Generators\\OrderNumber');
+    }
+
+    public function test_order_creation_and_admin_reorder_settings_are_returned(): void
+    {
+        $this->seedRequiredData();
+
+        $this->setConfig('sales.order_settings.order_creation.max_retry_attempts', '5');
+        $this->setConfig('sales.order_settings.reorder.admin', '0');
+
+        $config = $this->storeConfig();
+
+        expect($config['orderMaxRetryAttempts'])->toBe(5);
+        expect($config['adminReorderEnabled'])->toBeFalse();
+    }
+
+    public function test_order_number_format_is_null_when_not_set(): void
+    {
+        $this->seedRequiredData();
+
+        $this->setConfig('sales.order_settings.order_number.order_number_prefix', null);
+        $this->setConfig('sales.order_settings.order_number.order_number_length', null);
+        $this->setConfig('sales.order_settings.order_number.order_number_suffix', null);
+        $this->setConfig('sales.order_settings.order_number.order_number_generator', null);
+
+        $config = $this->storeConfig();
+
+        expect($config['orderNumberPrefix'])->toBeNull();
+        expect($config['orderNumberLength'])->toBeNull();
+        expect($config['orderNumberSuffix'])->toBeNull();
+        expect($config['orderNumberGenerator'])->toBeNull();
     }
 
     public function test_review_settings_are_returned(): void

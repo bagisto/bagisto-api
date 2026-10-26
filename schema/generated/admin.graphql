@@ -1,5 +1,9 @@
 type Query {
   node(id: ID!): Node
+
+  "The ACL permission tree the admin role screen renders."
+  getAdminAcl: AdminAcl
+
   adminAppearanceSection(id: ID!): AdminAppearanceSection
   adminAppearanceSections(code: String!, channel: Int, locale: String): [AdminAppearanceSection]
 
@@ -111,6 +115,15 @@ type Query {
     order: String
   ): AdminBookingCursorConnection
 
+  "Bookings overlapping a date window for the admin bookings calendar."
+  getAdminBookingCalendar(start: String, end: String): AdminBookingCalendar
+
+  "Booking configuration for the admin Create Order drawer."
+  configAdminBookingProduct(productId: Int!): AdminBookingProduct
+
+  "Bookable slots of a booking product on one date."
+  adminBookingProductSlots(productId: Int!, date: String!): AdminBookingProductSlotsItem
+
   "Get a draft cart by ID. Use `adminCart(id: ...)` where `id` is the resource IRI `/api/admin/carts/{id}`."
   adminCart(id: ID!): AdminCart
 
@@ -156,6 +169,9 @@ type Query {
     sort: String
     order: String
   ): AdminCatalogProductCursorConnection
+
+  "Cart options for the admin Create Order product drawer."
+  adminCatalogProductCartOptions(productId: Int!): AdminCatalogProductCartOptionsItem
 
   """
   Admin sub-resource for product customer-group (tier) prices.
@@ -260,6 +276,9 @@ type Query {
   "Returns the configuration menu tree. Optional `slug` scope and `include_values` flag."
   menuAdminConfigurationMenu(slug: String, include_values: Boolean, channel: String, locale: String): AdminConfigurationMenu
 
+  "Search the configuration tree. Becomes searchAdminConfiguration."
+  searchAdminConfiguration(query: String!): AdminConfiguration
+
   "Lists every registered configuration slug for discovery."
   listAdminConfigurationSlug: AdminConfigurationSlug
 
@@ -280,6 +299,7 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
 
+    query: String
     name: String
     email: String
     phone: String
@@ -450,6 +470,7 @@ type Query {
     after: String
 
     id: String
+    customerId: Int
     order_id: String
     state: String
     base_grand_total_from: Float
@@ -519,6 +540,9 @@ type Query {
   "Admin marketing cart rule detail by id. Sub-select channels { edges { node } } and customerGroups { edges { node } }."
   adminMarketingCartRule(id: ID!): AdminMarketingCartRule
 
+  "The attributes and operators a cart rule condition can use."
+  adminMarketingCartRuleConditionAttributes: AdminMarketingCartRuleConditionAttributesItem
+
   "List coupons for a cart rule."
   adminMarketingCartRuleCoupons(
     "Returns the first n elements from the list."
@@ -565,6 +589,9 @@ type Query {
 
   "Admin catalog rule detail by id. Sub-select channels { edges { node } } and customerGroups { edges { node } }."
   adminMarketingCatalogRule(id: ID!): AdminMarketingCatalogRule
+
+  "The attributes and operators a catalog rule condition can use."
+  adminMarketingCatalogRuleConditionAttributes: AdminMarketingCatalogRuleConditionAttributesItem
 
   "Admin marketing events listing (cursor pagination)."
   adminMarketingEvents(
@@ -734,6 +761,33 @@ type Query {
 
   getAdminMenu: AdminMenu
 
+  "Order notifications, newest first."
+  adminNotifications(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+
+    "Order status filter; `All` or omitted means every status."
+    status: String
+
+    "0 for unread only, 1 for read only."
+    read: Int
+  ): AdminNotificationCursorConnection
+
+  "One notification by id."
+  adminNotification(id: ID!): AdminNotification
+
+  "Unread total and per-order-status notification counts for the bell badge."
+  summaryAdminNotification: AdminNotification
+
   "Paginated list of all orders (cursor pagination)."
   adminOrders(
     "Returns the first n elements from the list."
@@ -748,6 +802,8 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
 
+    query: String
+    customerId: Int
     order_id: String
     status: String
     grand_total: Float
@@ -782,7 +838,7 @@ type Query {
 
   getAdminPermissions: AdminPermissions
 
-  "Admin product search (cursor pagination). Args: first, after, query, sku, type, status, categoryId, channel, locale."
+  "Admin product search (cursor pagination). Args: first, after, query, sku, type, status, categoryId, excludeCustomizableProducts, customerId, channel, locale."
   adminProducts(
     "Returns the first n elements from the list."
     first: Int
@@ -801,6 +857,8 @@ type Query {
     type: String
     status: Int
     categoryId: Int
+    excludeCustomizableProducts: Boolean
+    customerId: Int
     channel: String
     locale: String
   ): AdminProductCursorConnection
@@ -956,8 +1014,14 @@ type Query {
   "Admin import detail by id."
   adminSettingsDataTransferImport(id: ID!): AdminSettingsDataTransferImport
 
+  "Queued image download progress."
+  adminSettingsDataTransferImportImages(importId: Int!): AdminSettingsDataTransferImportImagesItem
+
   "Import stats by id."
   adminSettingsDataTransferImportStats(id: ID!): AdminSettingsDataTransferImportStats
+
+  "Queued validation progress."
+  adminSettingsDataTransferImportValidation(importId: Int!): AdminSettingsDataTransferImportValidationItem
 
   "Admin settings exchange-rates listing (cursor pagination)."
   adminSettingsExchangeRates(
@@ -1187,6 +1251,9 @@ type Query {
     order: String
   ): AdminTransactionCursorConnection
 
+  "Two-factor setup QR code for the authenticated admin."
+  setupAdminTwoFactor: AdminTwoFactor
+
   "Full detail of a single order. Nested collections are connections — query items { edges { node { sku qtyOrdered } } }; to-one objects are typed — query customer { name email } and billingAddress { city }."
   adminOrderDetail(id: ID!): AdminOrderDetail
 }
@@ -1196,6 +1263,18 @@ interface Node {
   "The id of this node."
   id: ID!
 }
+
+"The ACL permission tree the admin role screen renders."
+type AdminAcl implements Node {
+  id: ID!
+  _id: String
+
+  "Nested ACL nodes: key, name, route, sort, children."
+  tree: Iterable
+}
+
+"The `Iterable` scalar type represents an array or a Traversable with any kind of data."
+scalar Iterable
 
 type AdminAppearanceSection implements Node {
   id: ID!
@@ -1249,9 +1328,6 @@ type AdminAppearanceSectionTranslation implements Node {
   options: Iterable
   draftOptions: Iterable
 }
-
-"The `Iterable` scalar type represents an array or a Traversable with any kind of data."
-scalar Iterable
 
 "Information about the current page."
 type AdminAppearanceSectionTranslationPageInfo {
@@ -1444,6 +1520,55 @@ type AdminBookingPageInfo {
   startCursor: String
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
+}
+
+"Bookings overlapping a date window for the admin bookings calendar."
+type AdminBookingCalendar implements Node {
+  id: ID!
+  _id: String
+
+  "Window start (Y-m-d)."
+  start: String
+
+  "Window end (Y-m-d)."
+  end: String
+
+  "Bookings overlapping the window."
+  bookings: Iterable!
+}
+
+"Booking configuration for the admin Create Order drawer."
+type AdminBookingProduct implements Node {
+  id: ID!
+  productId: Int
+  bookingProductId: Int
+
+  "default, appointment, event, rental or table."
+  type: String
+
+  availableEveryWeek: Boolean
+  availableFrom: String
+  availableTo: String
+
+  "Valid weekdays, availability window and disabled dates for the date picker."
+  calendar: Iterable
+
+  "Rental products only: renting type and daily or hourly price."
+  rentalSlot: Iterable
+
+  "Table products only: guest capacity, guest limit and price type."
+  tableSlot: Iterable
+
+  "Event products only: the tickets with their prices."
+  eventTickets: Iterable
+}
+
+"Bookable slots of a booking product on one date."
+type AdminBookingProductSlotsItem implements Node {
+  id: ID!
+  productId: Int
+  date: String
+  slots: Iterable
 }
 
 "Get a draft cart by ID. Use `adminCart(id: ...)` where `id` is the resource IRI `/api/admin/carts/{id}`."
@@ -2776,6 +2901,21 @@ type AdminCatalogProductPageInfo {
   hasPreviousPage: Boolean!
 }
 
+"Cart options for the admin Create Order product drawer."
+type AdminCatalogProductCartOptionsItem implements Node {
+  id: ID!
+  productId: Int
+
+  "Product type the options are shaped for."
+  type: String
+
+  "Simple and virtual products only: the minimal price before customizable options."
+  initialPrice: Float
+
+  "Type-specific option set (plain JSON)."
+  options: Iterable
+}
+
 """
 Admin sub-resource for product customer-group (tier) prices.
 
@@ -2871,6 +3011,13 @@ type AdminCategory implements Node {
   displayMode: String
   logoUrl: String
   bannerUrl: String
+
+  "Logo alt text for the current locale."
+  logoAlt: String
+
+  "Banner alt text for the current locale."
+  bannerAlt: String
+
   name: String
   slug: String
   description: String
@@ -3070,6 +3217,16 @@ type AdminConfigurationMenu implements Node {
   _id: String
   slug: String
   tree: [Iterable]
+}
+
+"Search the configuration tree. Becomes searchAdminConfiguration."
+type AdminConfiguration implements Node {
+  id: ID!
+  _id: String
+  query: String
+
+  "Matches: title (breadcrumb), url (admin panel) and slug."
+  results: Iterable
 }
 
 "Lists every registered configuration slug for discovery."
@@ -4455,6 +4612,7 @@ type AdminMarketingCartRuleEdge {
 type AdminMarketingCartRule implements Node {
   id: ID!
   _id: Int!
+  createdBy: String!
   name: String
   description: String
   startsFrom: String
@@ -4557,6 +4715,17 @@ type AdminMarketingCartRulePageInfo {
   hasPreviousPage: Boolean!
 }
 
+"The attributes and operators a cart rule condition can use."
+type AdminMarketingCartRuleConditionAttributesItem implements Node {
+  id: ID!
+
+  "Attribute groups, each with children of { key, type, label, options }."
+  attributes: Iterable
+
+  "Operators allowed for each attribute type."
+  operators: Iterable
+}
+
 "Cursor connection for AdminMarketingCartRuleCoupon."
 type AdminMarketingCartRuleCouponCursorConnection {
   edges: [AdminMarketingCartRuleCouponEdge]
@@ -4613,6 +4782,7 @@ type AdminMarketingCatalogRuleEdge {
 type AdminMarketingCatalogRule implements Node {
   id: ID!
   _id: Int!
+  createdBy: String!
   name: String
   description: String
   startsFrom: String
@@ -4661,6 +4831,17 @@ type AdminMarketingCatalogRulePageInfo {
   startCursor: String
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
+}
+
+"The attributes and operators a catalog rule condition can use."
+type AdminMarketingCatalogRuleConditionAttributesItem implements Node {
+  id: ID!
+
+  "Attribute groups, each with children of { key, type, label, options }."
+  attributes: Iterable
+
+  "Operators allowed for each attribute type."
+  operators: Iterable
 }
 
 "Cursor connection for AdminMarketingEvent."
@@ -4919,6 +5100,49 @@ type AdminMenu implements Node {
   tree: Iterable
 }
 
+"Cursor connection for AdminNotification."
+type AdminNotificationCursorConnection {
+  edges: [AdminNotificationEdge]
+  pageInfo: AdminNotificationPageInfo!
+  totalCount: Int!
+}
+
+"Edge of AdminNotification."
+type AdminNotificationEdge {
+  node: AdminNotification
+  cursor: String!
+}
+
+"Order notifications, newest first."
+type AdminNotification implements Node {
+  id: ID!
+  _id: Int
+  orderId: Int
+  type: String
+  read: Boolean
+  orderIncrementId: String
+  orderStatus: String
+  orderStatusLabel: String
+  createdAt: String
+  updatedAt: String
+
+  "Unread total; set on the summary query and the read-all result only."
+  totalUnread: Int
+
+  "Notification count per order status, `[{ status, statusCount }]`; summary query only."
+  statusCounts: Iterable
+
+  message: String
+}
+
+"Information about the current page."
+type AdminNotificationPageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
 "Cursor connection for AdminOrder."
 type AdminOrderCursorConnection {
   edges: [AdminOrderEdge]
@@ -5162,7 +5386,7 @@ type AdminProductEdge {
   cursor: String!
 }
 
-"Admin product search (cursor pagination). Args: first, after, query, sku, type, status, categoryId, channel, locale."
+"Admin product search (cursor pagination). Args: first, after, query, sku, type, status, categoryId, excludeCustomizableProducts, customerId, channel, locale."
 type AdminProduct implements Node {
   id: ID!
   _id: Int
@@ -5191,6 +5415,7 @@ type AdminProfile implements Node {
   name: String
   email: String
   image: String
+  imageUrl: String
   status: String
   roleId: Int
   roleName: String
@@ -5799,6 +6024,7 @@ type AdminSettingsChannelInventorySourceRef implements Node {
   latitude: Float
   longitude: Float
   status: Int!
+  vendorId: String
   createdAt: String
   updatedAt: String
 }
@@ -5913,6 +6139,25 @@ type AdminSettingsDataTransferImportPageInfo {
   hasPreviousPage: Boolean!
 }
 
+"Queued image download progress."
+type AdminSettingsDataTransferImportImagesItem implements Node {
+  id: ID!
+  _id: Int
+  state: String
+
+  "Number of image URLs in the import."
+  total: Int
+
+  "Images fetched or given up on so far."
+  processed: Int
+
+  "Percentage done, 0 to 100."
+  progress: Int
+
+  "True once the download phase is finished and start can be called."
+  done: Boolean
+}
+
 "Import stats by id."
 type AdminSettingsDataTransferImportStats implements Node {
   id: ID!
@@ -5947,6 +6192,34 @@ type AdminSettingsDataTransferImportStats implements Node {
   isValid: Boolean
   stats: Iterable
   message: String
+}
+
+"Queued validation progress."
+type AdminSettingsDataTransferImportValidationItem implements Node {
+  id: ID!
+  _id: Int
+  state: String
+
+  "Number of data rows in the file."
+  total: Int
+
+  "Rows validated so far."
+  processed: Int
+
+  "Invalid rows found so far; windowed validation only."
+  invalid: Int
+
+  "Percentage done, 0 to 100."
+  progress: Int
+
+  "True once validation is finished."
+  done: Boolean
+
+  "Whether the import can be started; set once done."
+  isValid: Boolean
+
+  "The finalised import record; set once done."
+  import: Iterable
 }
 
 "Cursor connection for AdminSettingsExchangeRate."
@@ -6359,6 +6632,26 @@ type AdminTransactionPageInfo {
   hasPreviousPage: Boolean!
 }
 
+"Two-factor setup QR code for the authenticated admin."
+type AdminTwoFactor implements Node {
+  id: ID!
+  _id: Int
+
+  "Whether two-factor authentication is on."
+  enabled: Boolean
+
+  "QR code as an inline SVG (setup only)."
+  qrCodeSvg: String
+
+  "otpauth:// URL encoded in the QR code (setup only)."
+  qrCodeUrl: String
+
+  "One-time backup codes, returned only when two-factor authentication is enabled."
+  backupCodes: Iterable
+
+  message: String
+}
+
 type Mutation {
   "Creates a AdminAppearanceSection."
   createAdminAppearanceSection(input: createAdminAppearanceSectionInput!): createAdminAppearanceSectionPayload
@@ -6492,6 +6785,9 @@ type Mutation {
   "Placeholder for createAdminCatalogProductVideo — binary upload is REST-only. Use POST /api/admin/catalog/products/{productId}/videos."
   createAdminCatalogProductVideo(input: createAdminCatalogProductVideoInput!): createAdminCatalogProductVideoPayload
 
+  "Reorder product videos. Becomes reorderAdminCatalogProductVideo."
+  reorderAdminCatalogProductVideo(input: reorderAdminCatalogProductVideoInput!): reorderAdminCatalogProductVideoPayload
+
   "Delete a product video. Becomes deleteAdminCatalogProductVideo."
   deleteAdminCatalogProductVideo(input: deleteAdminCatalogProductVideoInput!): deleteAdminCatalogProductVideoPayload
 
@@ -6522,6 +6818,9 @@ type Mutation {
   "Mass-delete a batch of CMS pages. Becomes createAdminCmsPageMassDelete."
   createAdminCmsPageMassDelete(input: createAdminCmsPageMassDeleteInput!): createAdminCmsPageMassDeletePayload
 
+  "Run a cache management action. Becomes createAdminConfigurationCache."
+  createAdminConfigurationCache(input: createAdminConfigurationCacheInput!): createAdminConfigurationCachePayload
+
   "Bulk-update configuration. Becomes createAdminConfigurationUpdate. File/image-type fields are REST-only."
   createAdminConfigurationUpdate(input: createAdminConfigurationUpdateInput!): createAdminConfigurationUpdatePayload
 
@@ -6545,6 +6844,12 @@ type Mutation {
 
   "Set a customer address as the default. Becomes setDefaultAdminCustomerAddress."
   setDefaultAdminCustomerAddress(input: setDefaultAdminCustomerAddressInput!): setDefaultAdminCustomerAddressPayload
+
+  "Remove a cart item of the customer. Pass `id` as /api/admin/customers/{customerId}/cart-items/{itemId}."
+  removeAdminCustomerCartItem(input: removeAdminCustomerCartItemInput!): removeAdminCustomerCartItemPayload
+
+  "Remove a compare item of the customer. Pass `id` as /api/admin/customers/{customerId}/compare-items/{itemId}."
+  removeAdminCustomerCompareItem(input: removeAdminCustomerCompareItemInput!): removeAdminCustomerCompareItemPayload
 
   "Download GDPR data dump. Becomes createAdminCustomerGdprDownloadData."
   createAdminCustomerGdprDownloadData(input: createAdminCustomerGdprDownloadDataInput!): createAdminCustomerGdprDownloadDataPayload
@@ -6594,6 +6899,9 @@ type Mutation {
   "Creates a AdminCustomerReviewMassUpdateStatus."
   createAdminCustomerReviewMassUpdateStatus(input: createAdminCustomerReviewMassUpdateStatusInput!): createAdminCustomerReviewMassUpdateStatusPayload
 
+  "Remove a wishlist item of the customer. Pass `id` as /api/admin/customers/{customerId}/wishlist-items/{itemId}."
+  removeAdminCustomerWishlistItem(input: removeAdminCustomerWishlistItemInput!): removeAdminCustomerWishlistItemPayload
+
   "Create an empty admin draft cart for the given customer."
   createAdminDraftCart(input: createAdminDraftCartInput!): createAdminDraftCartPayload
 
@@ -6614,6 +6922,12 @@ type Mutation {
 
   "Send a duplicate invoice email. Becomes createAdminInvoiceSendDuplicate."
   createAdminInvoiceSendDuplicate(input: createAdminInvoiceSendDuplicateInput!): createAdminInvoiceSendDuplicatePayload
+
+  "Generate text content with Magic AI."
+  createAdminMagicAiContent(input: createAdminMagicAiContentInput!): createAdminMagicAiContentPayload
+
+  "Generate images with Magic AI."
+  createAdminMagicAiImage(input: createAdminMagicAiImageInput!): createAdminMagicAiImagePayload
 
   "Create a marketing campaign. Becomes createAdminMarketingCampaign."
   createAdminMarketingCampaign(input: createAdminMarketingCampaignInput!): createAdminMarketingCampaignPayload
@@ -6738,11 +7052,20 @@ type Mutation {
   "Mass-delete a batch of URL rewrites. Becomes createAdminMarketingUrlRewriteMassDelete."
   createAdminMarketingUrlRewriteMassDelete(input: createAdminMarketingUrlRewriteMassDeleteInput!): createAdminMarketingUrlRewriteMassDeletePayload
 
+  "Mark the notification of an order as read. The `id` input is ignored; pass orderId."
+  readAdminNotification(input: readAdminNotificationInput!): readAdminNotificationPayload
+
+  "Mark every notification as read. The `id` input is ignored."
+  readAllAdminNotification(input: readAllAdminNotificationInput!): readAllAdminNotificationPayload
+
   "Add a comment to an order."
   createAdminOrderComment(input: createAdminOrderCommentInput!): createAdminOrderCommentPayload
 
   "Finalise a draft cart into an order."
   createAdminPlaceOrder(input: createAdminPlaceOrderInput!): createAdminPlaceOrderPayload
+
+  "Update the authenticated admin's name, email and password. The `id` input is ignored; currentPassword is required."
+  updateAdminProfile(input: updateAdminProfileInput!): updateAdminProfilePayload
 
   "Creates a AdminRefund."
   createAdminRefund(input: createAdminRefundInput!): createAdminRefundPayload
@@ -6855,6 +7178,12 @@ type Mutation {
   "Cancel a pending/processing import. Becomes cancelAdminSettingsDataTransferImportCancel via API Platform GraphQL naming — clients typically alias the field as `cancelAdminSettingsDataTransferImport`."
   cancelAdminSettingsDataTransferImportCancel(input: cancelAdminSettingsDataTransferImportCancelInput!): cancelAdminSettingsDataTransferImportCancelPayload
 
+  "Download the next wave of import images."
+  downloadAdminSettingsDataTransferImportImages(input: downloadAdminSettingsDataTransferImportImagesInput!): downloadAdminSettingsDataTransferImportImagesPayload
+
+  "Queue the import image download."
+  queueAdminSettingsDataTransferImportImages(input: queueAdminSettingsDataTransferImportImagesInput!): queueAdminSettingsDataTransferImportImagesPayload
+
   "Index an import batch."
   indexAdminSettingsDataTransferImportIndex(input: indexAdminSettingsDataTransferImportIndexInput!): indexAdminSettingsDataTransferImportIndexPayload
 
@@ -6866,6 +7195,12 @@ type Mutation {
 
   "Validate an import."
   validateAdminSettingsDataTransferImportValidate(input: validateAdminSettingsDataTransferImportValidateInput!): validateAdminSettingsDataTransferImportValidatePayload
+
+  "Validate the next window of an import file."
+  chunkAdminSettingsDataTransferImportValidation(input: chunkAdminSettingsDataTransferImportValidationInput!): chunkAdminSettingsDataTransferImportValidationPayload
+
+  "Queue the validation of an import."
+  queueAdminSettingsDataTransferImportValidation(input: queueAdminSettingsDataTransferImportValidationInput!): queueAdminSettingsDataTransferImportValidationPayload
 
   "Create a new exchange rate. Becomes createAdminSettingsExchangeRate."
   createAdminSettingsExchangeRate(input: createAdminSettingsExchangeRateInput!): createAdminSettingsExchangeRatePayload
@@ -6950,6 +7285,12 @@ type Mutation {
 
   "Record a payment against an invoice (create transaction)."
   createAdminTransaction(input: createAdminTransactionInput!): createAdminTransactionPayload
+
+  "Enable two-factor authentication with a code from the authenticator app. The `id` input is ignored."
+  enableAdminTwoFactor(input: enableAdminTwoFactorInput!): enableAdminTwoFactorPayload
+
+  "Disable two-factor authentication. While enabled, pass a current code or a backup code. The `id` input is ignored."
+  disableAdminTwoFactor(input: disableAdminTwoFactorInput!): disableAdminTwoFactorPayload
 }
 
 "Creates a AdminAppearanceSection."
@@ -7479,6 +7820,15 @@ input createAdminAttributeOptionInput {
   "Swatch value (hex color, image path, or text label depending on parent swatch_type)."
   swatchValue: String
 
+  "Swatch image alt text, saved for the requested locale."
+  swatchAlt: String
+
+  "Renames the stored swatch image (without extension). Image swatches only."
+  swatchFileName: String
+
+  "Locale the swatch alt text is saved for (\"all\" for every locale). Defaults to the default locale."
+  locale: String
+
   "Locale-keyed label translations."
   translations: Iterable
   clientMutationId: String
@@ -7516,6 +7866,12 @@ type AdminAttributeOption implements Node {
   adminName: String
   sortOrder: Int
   swatchValue: String
+
+  "Swatch image alt text for the current locale."
+  swatchAlt: String
+
+  "Stored swatch image name without directory or extension; empty for color/text swatches."
+  swatchFileName: String
 }
 
 "Update an attribute option. Becomes updateAdminAttributeOption in GraphQL. Returns the updated AdminAttributeOption."
@@ -7530,6 +7886,15 @@ input updateAdminAttributeOptionInput {
 
   "Swatch value (hex color, image path, or text label depending on parent swatch_type)."
   swatchValue: String
+
+  "Swatch image alt text, saved for the requested locale."
+  swatchAlt: String
+
+  "Renames the stored swatch image (without extension). Image swatches only."
+  swatchFileName: String
+
+  "Locale the swatch alt text is saved for (\"all\" for every locale). Defaults to the default locale."
+  locale: String
 
   "Locale-keyed label translations."
   translations: Iterable
@@ -7610,6 +7975,9 @@ input addItemAdminCartInput {
 
   "Bundle products: list of { optionId, productIds, quantity }."
   bundleOptions: Iterable
+
+  "Booking products: { type, date, slot } for default, appointment and table; { type, date_from, date_to } or { type, date, slot } for rental; { type, qty: { ticketId: qty } } for event. Table bookings also take note."
+  booking: Iterable
   clientMutationId: String
 }
 
@@ -8504,6 +8872,7 @@ type createAdminCatalogProductVideoPayload {
 Admin Catalog Product videos sub-resource (mirrors AdminCatalogProductImage).
 
   POST   /api/admin/catalog/products/{productId}/videos       upload (multipart `video`)
+  PUT    /api/admin/catalog/products/{productId}/videos/reorder  reorder positions
   DELETE /api/admin/catalog/products/{productId}/videos/{id}  remove DB row + file
 
 Binary upload is REST-only; the GraphQL create mutation is a placeholder that
@@ -8516,8 +8885,27 @@ type AdminCatalogProductVideo implements Node {
   path: String
   position: Int
   url: String
+  videos: Iterable
   success: Boolean
   message: String
+}
+
+"Reorder product videos. Becomes reorderAdminCatalogProductVideo."
+input reorderAdminCatalogProductVideoInput {
+  id: ID!
+
+  "Parent product id."
+  productId: Int
+
+  "Video id and position rows."
+  order: Iterable
+  clientMutationId: String
+}
+
+"Reorder product videos. Becomes reorderAdminCatalogProductVideo."
+type reorderAdminCatalogProductVideoPayload {
+  adminCatalogProductVideo: AdminCatalogProductVideo
+  clientMutationId: String
 }
 
 "Delete a product video. Becomes deleteAdminCatalogProductVideo."
@@ -8570,11 +8958,17 @@ input createAdminCategoryInput {
   "SEO meta keywords."
   metaKeywords: String
 
-  "Optional logo path(s). File-upload is not supported in v1 — accepts pre-uploaded storage paths."
+  "Not stored. Upload images with POST /catalog/categories/{id}/media."
   logoPath: Iterable
 
-  "Optional banner path(s). File-upload is not supported in v1 — accepts pre-uploaded storage paths."
+  "Not stored. Upload images with POST /catalog/categories/{id}/media."
   bannerPath: Iterable
+
+  "Logo alt text for the requested locale. Kept only while the category has a logo."
+  logoAlt: String
+
+  "Banner alt text for the requested locale. Kept only while the category has a banner."
+  bannerAlt: String
   clientMutationId: String
 }
 
@@ -8609,11 +9003,17 @@ input updateAdminCategoryInput {
   "Status (1 = enabled, 0 = disabled)."
   status: Int
 
-  "Optional logo path(s). File-upload is not supported in v1."
+  "Not stored. Upload the logo with POST /catalog/categories/{id}/media; the current logo is kept."
   logoPath: Iterable
 
-  "Optional banner path(s). File-upload is not supported in v1."
+  "Not stored. Upload the banner with POST /catalog/categories/{id}/media; the current banner is kept."
   bannerPath: Iterable
+
+  "Logo alt text for the requested locale. Kept only while the category has a logo."
+  logoAlt: String
+
+  "Banner alt text for the requested locale. Kept only while the category has a banner."
+  bannerAlt: String
 
   "Per-locale translation block: { en: { slug, name, description, ... } }."
   en: Iterable
@@ -8800,6 +9200,36 @@ type AdminCmsPageMassDelete implements Node {
   _id: Int
   deleted: Iterable
   message: String
+}
+
+"Run a cache management action. Becomes createAdminConfigurationCache."
+input createAdminConfigurationCacheInput {
+  "Cache action key, e.g. `clear-config` or `build-routes`."
+  action: String
+  clientMutationId: String
+}
+
+"Run a cache management action. Becomes createAdminConfigurationCache."
+type createAdminConfigurationCachePayload {
+  adminConfigurationCache: AdminConfigurationCache
+  clientMutationId: String
+}
+
+"""
+Runs one of the cache actions from Configuration > Cache Management, mirroring the
+admin cache-management execute action and its fixed action allow-list.
+"""
+type AdminConfigurationCache implements Node {
+  id: ID!
+  action: String
+  success: Boolean
+  message: String
+
+  "Console output of the command."
+  output: String
+
+  "The artisan command that ran."
+  command: String
 }
 
 "Bulk-update configuration. Becomes createAdminConfigurationUpdate. File/image-type fields are REST-only."
@@ -9001,6 +9431,36 @@ input setDefaultAdminCustomerAddressInput {
 "Set a customer address as the default. Becomes setDefaultAdminCustomerAddress."
 type setDefaultAdminCustomerAddressPayload {
   adminCustomerAddress: AdminCustomerAddress
+  clientMutationId: String
+}
+
+"Remove a cart item of the customer. Pass `id` as /api/admin/customers/{customerId}/cart-items/{itemId}."
+input removeAdminCustomerCartItemInput {
+  id: ID!
+
+  "The item path, e.g. /api/admin/customers/5/cart-items/1701."
+  _id: String
+  clientMutationId: String
+}
+
+"Remove a cart item of the customer. Pass `id` as /api/admin/customers/{customerId}/cart-items/{itemId}."
+type removeAdminCustomerCartItemPayload {
+  adminCustomerCartItem: AdminCustomerCartItem
+  clientMutationId: String
+}
+
+"Remove a compare item of the customer. Pass `id` as /api/admin/customers/{customerId}/compare-items/{itemId}."
+input removeAdminCustomerCompareItemInput {
+  id: ID!
+
+  "The item path, e.g. /api/admin/customers/5/cart-items/1701."
+  _id: String
+  clientMutationId: String
+}
+
+"Remove a compare item of the customer. Pass `id` as /api/admin/customers/{customerId}/compare-items/{itemId}."
+type removeAdminCustomerCompareItemPayload {
+  adminCustomerCompareItem: AdminCustomerCompareItem
   clientMutationId: String
 }
 
@@ -9342,6 +9802,21 @@ type AdminCustomerReviewMassUpdateStatus implements Node {
   message: String
 }
 
+"Remove a wishlist item of the customer. Pass `id` as /api/admin/customers/{customerId}/wishlist-items/{itemId}."
+input removeAdminCustomerWishlistItemInput {
+  id: ID!
+
+  "The item path, e.g. /api/admin/customers/5/cart-items/1701."
+  _id: String
+  clientMutationId: String
+}
+
+"Remove a wishlist item of the customer. Pass `id` as /api/admin/customers/{customerId}/wishlist-items/{itemId}."
+type removeAdminCustomerWishlistItemPayload {
+  adminCustomerWishlistItem: AdminCustomerWishlistItem
+  clientMutationId: String
+}
+
 "Create an empty admin draft cart for the given customer."
 input createAdminDraftCartInput {
   "Customer ID the draft cart will belong to."
@@ -9476,6 +9951,65 @@ type AdminInvoiceSendDuplicate implements Node {
   email: String
   success: Boolean
   message: String
+}
+
+"Generate text content with Magic AI."
+input createAdminMagicAiContentInput {
+  "Prompt describing the text to generate."
+  prompt: String
+
+  "AI model to use, e.g. gpt-4o-mini. Omit to use the default model."
+  model: String
+  clientMutationId: String
+}
+
+"Generate text content with Magic AI."
+type createAdminMagicAiContentPayload {
+  adminMagicAiContent: AdminMagicAiContent
+  clientMutationId: String
+}
+
+"Magic AI text generation for admin editors: product and category descriptions, meta fields."
+type AdminMagicAiContent implements Node {
+  id: ID!
+  _id: Int
+
+  "The generated text."
+  content: String
+}
+
+"Generate images with Magic AI."
+input createAdminMagicAiImageInput {
+  "Prompt describing the image to generate."
+  prompt: String
+
+  "AI image model to use. Omit to use the default model."
+  model: String
+
+  "Number of images, 1 to 10."
+  n: Int
+
+  "Aspect ratio: 1:1, 2:3 or 3:2."
+  size: String
+
+  "Quality: high, medium or low."
+  quality: String
+  clientMutationId: String
+}
+
+"Generate images with Magic AI."
+type createAdminMagicAiImagePayload {
+  adminMagicAiImage: AdminMagicAiImage
+  clientMutationId: String
+}
+
+"Magic AI image generation for admin product media."
+type AdminMagicAiImage implements Node {
+  id: ID!
+  _id: Int
+
+  "Generated images, each `{ url }` with a base64 data URL."
+  images: Iterable
 }
 
 "Create a marketing campaign. Becomes createAdminMarketingCampaign."
@@ -10418,6 +10952,33 @@ type AdminMarketingUrlRewriteMassDelete implements Node {
   message: String
 }
 
+"Mark the notification of an order as read. The `id` input is ignored; pass orderId."
+input readAdminNotificationInput {
+  id: ID!
+
+  "Order id the notification belongs to."
+  orderId: Int
+  clientMutationId: String
+}
+
+"Mark the notification of an order as read. The `id` input is ignored; pass orderId."
+type readAdminNotificationPayload {
+  adminNotification: AdminNotification
+  clientMutationId: String
+}
+
+"Mark every notification as read. The `id` input is ignored."
+input readAllAdminNotificationInput {
+  id: ID!
+  clientMutationId: String
+}
+
+"Mark every notification as read. The `id` input is ignored."
+type readAllAdminNotificationPayload {
+  adminNotification: AdminNotification
+  clientMutationId: String
+}
+
 "Add a comment to an order."
 input createAdminOrderCommentInput {
   "Order id (only used over GraphQL — REST takes it from the URL)."
@@ -10457,6 +11018,48 @@ type createAdminPlaceOrderPayloadData implements Node {
   incrementId: String
   customerId: Int
   grandTotal: Float
+  success: Boolean
+  message: String
+}
+
+"Update the authenticated admin's name, email and password. The `id` input is ignored; currentPassword is required."
+input updateAdminProfileInput {
+  id: ID!
+
+  "Display name."
+  name: String
+
+  "Login email, unique across admins."
+  email: String
+
+  "New password, at least 6 characters. Omit to keep the current one."
+  password: String
+
+  "Must match password when a new password is sent."
+  passwordConfirmation: String
+
+  "The admin's current password. Required for every change."
+  currentPassword: String
+  clientMutationId: String
+}
+
+"Update the authenticated admin's name, email and password. The `id` input is ignored; currentPassword is required."
+type updateAdminProfilePayload {
+  adminProfile: updateAdminProfilePayloadData
+  clientMutationId: String
+}
+
+"Update the authenticated admin's name, email and password. The `id` input is ignored; currentPassword is required."
+type updateAdminProfilePayloadData implements Node {
+  id: ID!
+  _id: String
+  name: String
+  email: String
+  image: String
+  imageUrl: String
+  status: String
+  roleId: Int
+  roleName: String
   success: Boolean
   message: String
 }
@@ -10574,6 +11177,9 @@ input createAdminReturnInput {
 
   "Variant product id for configurable products"
   variant: Int
+
+  "RMA custom field values keyed by custom field id, e.g. {\"3\": \"Blue\", \"4\": [\"a\", \"b\"]}"
+  customAttributes: Iterable
   clientMutationId: String
 }
 
@@ -11069,10 +11675,10 @@ input createAdminSettingsChannelInput {
   "Allowed IPs (free-form)."
   allowedIps: String
 
-  "Optional storage path of an already-uploaded logo (binary upload deferred)."
+  "Not stored: image upload is not supported yet."
   logo: String
 
-  "Optional storage path of an already-uploaded favicon (binary upload deferred)."
+  "Not stored: image upload is not supported yet."
   favicon: String
 
   "Optional locale-nested overrides: { \"<locale>\": { name, description, home_page_content, footer_content, seo_title, seo_description, seo_keywords, maintenance_mode_text } }. Top-level fields are broadcast to every locale unless overridden here."
@@ -11147,10 +11753,10 @@ input updateAdminSettingsChannelInput {
   "Allowed IPs (free-form)."
   allowedIps: String
 
-  "Storage path of an already-uploaded logo (binary upload deferred)."
+  "Not stored: image upload is not supported yet. The current logo is kept."
   logo: String
 
-  "Storage path of an already-uploaded favicon (binary upload deferred)."
+  "Not stored: image upload is not supported yet. The current favicon is kept."
   favicon: String
 
   "Locale-nested overrides — see Create DTO."
@@ -11363,6 +11969,36 @@ type AdminSettingsDataTransferImportCancel implements Node {
   state: String
   success: Boolean
   message: String
+}
+
+"Download the next wave of import images."
+input downloadAdminSettingsDataTransferImportImagesInput {
+  id: ID!
+
+  "ID of the import to act on."
+  importId: Int
+  clientMutationId: String
+}
+
+"Download the next wave of import images."
+type downloadAdminSettingsDataTransferImportImagesPayload {
+  adminSettingsDataTransferImportImages: AdminSettingsDataTransferImportImagesItem
+  clientMutationId: String
+}
+
+"Queue the import image download."
+input queueAdminSettingsDataTransferImportImagesInput {
+  id: ID!
+
+  "ID of the import to act on."
+  importId: Int
+  clientMutationId: String
+}
+
+"Queue the import image download."
+type queueAdminSettingsDataTransferImportImagesPayload {
+  adminSettingsDataTransferImportImages: AdminSettingsDataTransferImportImagesItem
+  clientMutationId: String
 }
 
 "Index an import batch."
@@ -11592,6 +12228,36 @@ type AdminSettingsDataTransferImportValidate implements Node {
   isValid: Boolean
   stats: Iterable
   message: String
+}
+
+"Validate the next window of an import file."
+input chunkAdminSettingsDataTransferImportValidationInput {
+  id: ID!
+
+  "ID of the import to act on."
+  importId: Int
+  clientMutationId: String
+}
+
+"Validate the next window of an import file."
+type chunkAdminSettingsDataTransferImportValidationPayload {
+  adminSettingsDataTransferImportValidation: AdminSettingsDataTransferImportValidationItem
+  clientMutationId: String
+}
+
+"Queue the validation of an import."
+input queueAdminSettingsDataTransferImportValidationInput {
+  id: ID!
+
+  "ID of the import to act on."
+  importId: Int
+  clientMutationId: String
+}
+
+"Queue the validation of an import."
+type queueAdminSettingsDataTransferImportValidationPayload {
+  adminSettingsDataTransferImportValidation: AdminSettingsDataTransferImportValidationItem
+  clientMutationId: String
 }
 
 "Create a new exchange rate. Becomes createAdminSettingsExchangeRate."
@@ -12233,4 +12899,74 @@ input createAdminTransactionInput {
 type createAdminTransactionPayload {
   adminTransaction: AdminTransaction
   clientMutationId: String
+}
+
+"Enable two-factor authentication with a code from the authenticator app. The `id` input is ignored."
+input enableAdminTwoFactorInput {
+  id: ID!
+
+  "Six-digit code from the authenticator app (disable also accepts a backup code)."
+  code: String
+  clientMutationId: String
+}
+
+"Enable two-factor authentication with a code from the authenticator app. The `id` input is ignored."
+type enableAdminTwoFactorPayload {
+  adminTwoFactor: enableAdminTwoFactorPayloadData
+  clientMutationId: String
+}
+
+"Enable two-factor authentication with a code from the authenticator app. The `id` input is ignored."
+type enableAdminTwoFactorPayloadData implements Node {
+  id: ID!
+  _id: Int
+
+  "Whether two-factor authentication is on."
+  enabled: Boolean
+
+  "QR code as an inline SVG (setup only)."
+  qrCodeSvg: String
+
+  "otpauth:// URL encoded in the QR code (setup only)."
+  qrCodeUrl: String
+
+  "One-time backup codes, returned only when two-factor authentication is enabled."
+  backupCodes: Iterable
+
+  message: String
+}
+
+"Disable two-factor authentication. While enabled, pass a current code or a backup code. The `id` input is ignored."
+input disableAdminTwoFactorInput {
+  id: ID!
+
+  "Six-digit code from the authenticator app (disable also accepts a backup code)."
+  code: String
+  clientMutationId: String
+}
+
+"Disable two-factor authentication. While enabled, pass a current code or a backup code. The `id` input is ignored."
+type disableAdminTwoFactorPayload {
+  adminTwoFactor: disableAdminTwoFactorPayloadData
+  clientMutationId: String
+}
+
+"Disable two-factor authentication. While enabled, pass a current code or a backup code. The `id` input is ignored."
+type disableAdminTwoFactorPayloadData implements Node {
+  id: ID!
+  _id: Int
+
+  "Whether two-factor authentication is on."
+  enabled: Boolean
+
+  "QR code as an inline SVG (setup only)."
+  qrCodeSvg: String
+
+  "otpauth:// URL encoded in the QR code (setup only)."
+  qrCodeUrl: String
+
+  "One-time backup codes, returned only when two-factor authentication is enabled."
+  backupCodes: Iterable
+
+  message: String
 }

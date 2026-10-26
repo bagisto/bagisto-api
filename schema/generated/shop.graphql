@@ -32,6 +32,12 @@ type Query {
 
     "Returns the elements in the list that come after the specified cursor."
     after: String
+
+    "Only the options of this attribute; a boolean attribute returns its No (0) and Yes (1) options"
+    attributeId: Int
+
+    "Partial match on the option label (current locale) or admin name"
+    search: String
   ): AttributeOptionCursorConnection
 
   "Attribute option resource"
@@ -94,6 +100,9 @@ type Query {
 
   "Get billing and shipping addresses for a cart by token"
   readCheckoutAddress(id: ID!): CheckoutAddress
+
+  "List the attributes the storefront compare page renders as comparison rows."
+  compareAttributes: [CompareAttribute]
 
   """
   Compare Item API Resource
@@ -398,6 +407,33 @@ type Query {
   "Read authenticated customer profile using Bearer token in Authorization header. Returns the authenticated customer's profile data."
   readCustomerProfile: CustomerProfile
 
+  """
+  Refund documents issued against the authenticated customer's orders, as shown on the
+  storefront order view's refunds tab. Read-only and scoped to the order's customer.
+  """
+  customerRefund(id: ID!): CustomerRefund
+
+  """
+  Refund documents issued against the authenticated customer's orders, as shown on the
+  storefront order view's refunds tab. Read-only and scoped to the order's customer.
+  """
+  customerRefunds(
+    "Filter refunds by order ID"
+    orderId: Int
+
+    "Number of items to return from the start"
+    first: Int
+
+    "Number of items to return from the end"
+    last: Int
+
+    "Cursor to start pagination after"
+    after: String
+
+    "Cursor to start pagination before"
+    before: String
+  ): CustomerRefundCursorConnection
+
   customerReturn(id: ID!): CustomerReturn
   customerReturns(
     "Filter by RMA status id"
@@ -466,6 +502,9 @@ type Query {
 
   "Attribute Filters for the category or product grid page"
   categoryAttributeFilters(
+    "Category ID; takes precedence over categorySlug"
+    categoryId: Int
+
     categorySlug: String
 
     "Number of items to return from the start"
@@ -480,6 +519,9 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): CategoryAttributeFilterCursorConnection
+
+  "The personal data the store holds about the signed-in customer."
+  gdprData: GdprData
 
   gdprRequest(id: ID!): GdprRequest
   gdprRequests(
@@ -588,6 +630,9 @@ type Query {
     "Search query to filter products by SKU or name"
     query: String
 
+    "Elasticsearch only: pass false to search the exact query instead of the \"did you mean\" suggestion. Defaults to true."
+    suggest: Boolean
+
     "JSON filter object containing attribute filters (type, sku, category_id, price, color, name, etc.). Example: {\"type\":\"configurable\",\"sku\":\"ABC123\"}"
     filter: String
 
@@ -609,6 +654,10 @@ type Query {
     "Fetch data products by channel"
     channel: String
   ): ProductCursorConnection
+
+  "Cross-sell products for the cart of the Bearer token, without the products already in the cart. Empty when there is no cart."
+  cartCrossSellProducts: [Product]
+
   productBundleOptions(
     "Returns the first n elements from the list."
     first: Int
@@ -687,9 +736,6 @@ type Query {
     "Filter reviews by product ID"
     product_id: Int
 
-    "Filter reviews by status (pending, approved, rejected)"
-    status: String
-
     "Filter reviews by rating (1-5 stars)"
     rating: Int
 
@@ -732,6 +778,16 @@ type Query {
     "Sort direction — desc or asc."
     order: String
   ): [ReturnableOrder]
+
+  "The redirect URL set on a search term, or null, plus the Elasticsearch \"did you mean\" suggestion."
+  searchRedirect(
+    "The search term."
+    query: String!
+
+    "Pass false to skip the \"did you mean\" lookup."
+    suggest: Boolean
+  ): SearchRedirect
+
   section(id: ID!): Section
   sections(
     "Returns the first n elements from the list."
@@ -757,6 +813,9 @@ type Query {
 
   "The theme the current channel runs, and the section types it draws."
   theme: Theme
+
+  "Resolve a storefront path to a category, a product or a redirect."
+  urlResolver(path: String!): UrlResolverItem
 
   """
   Wishlist Item API Resource
@@ -1353,6 +1412,16 @@ type CheckoutAddress implements Node {
   shippingPhoneNumber: String
   success: Boolean
   message: String
+}
+
+"List the attributes the storefront compare page renders as comparison rows."
+type CompareAttribute implements Node {
+  id: ID!
+  _id: Int
+  code: String
+  adminName: String
+  name: String
+  type: String
 }
 
 """
@@ -2436,6 +2505,7 @@ type ProductReview implements Node {
   status: String!
   createdAt: String
   updatedAt: String
+  customerImageUrl: String
   attachments: String
 }
 
@@ -2891,6 +2961,9 @@ type CustomerOrder implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): CustomerOrderShipmentCursorConnection
+
+  "True when the order holds a booking item the customer may not cancel."
+  hasNonCancelableBooking: Boolean!
 }
 
 "Cursor connection for CustomerOrderItem."
@@ -3421,6 +3494,148 @@ type CustomerProfile implements Node {
   message: String
 }
 
+"""
+Refund documents issued against the authenticated customer's orders, as shown on the
+storefront order view's refunds tab. Read-only and scoped to the order's customer.
+"""
+type CustomerRefund implements Node {
+  id: ID!
+  _id: Int!
+  incrementId: String
+  state: String
+  emailSent: Boolean!
+  totalQty: Int
+  baseCurrencyCode: String
+  channelCurrencyCode: String
+  orderCurrencyCode: String
+  adjustmentRefund: Float
+  baseAdjustmentRefund: Float
+  adjustmentFee: Float
+  baseAdjustmentFee: Float
+  subTotal: Float
+  baseSubTotal: Float
+  grandTotal: Float
+  baseGrandTotal: Float
+  shippingAmount: Float
+  baseShippingAmount: Float
+  taxAmount: Float
+  baseTaxAmount: Float
+  discountPercent: Float
+  discountAmount: Float
+  baseDiscountAmount: Float
+  shippingTaxAmount: Float!
+  baseShippingTaxAmount: Float!
+  subTotalInclTax: Float!
+  baseSubTotalInclTax: Float!
+  shippingAmountInclTax: Float!
+  baseShippingAmountInclTax: Float!
+  orderId: Int
+  createdAt: String
+  updatedAt: String
+  orderIncrementId: String
+  formattedSubTotal: String
+  formattedSubTotalInclTax: String
+  formattedShippingAmount: String
+  formattedShippingAmountInclTax: String
+  formattedTaxAmount: String
+  formattedDiscountAmount: String
+  formattedAdjustmentRefund: String
+  formattedAdjustmentFee: String
+  formattedGrandTotal: String
+  formattedBaseGrandTotal: String
+  items(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): CustomerRefundItemCursorConnection
+}
+
+"Cursor connection for CustomerRefundItem."
+type CustomerRefundItemCursorConnection {
+  edges: [CustomerRefundItemEdge]
+  pageInfo: CustomerRefundItemPageInfo!
+  totalCount: Int!
+}
+
+"Edge of CustomerRefundItem."
+type CustomerRefundItemEdge {
+  node: CustomerRefundItem
+  cursor: String!
+}
+
+"A refunded line of a customer refund — exposed only through CustomerRefund.items."
+type CustomerRefundItem implements Node {
+  id: ID!
+  _id: Int!
+  parentId: Int
+  name: String
+  description: String
+  sku: String
+  qty: Int
+  price: Float!
+  basePrice: Float!
+  total: Float!
+  baseTotal: Float!
+  taxAmount: Float
+  baseTaxAmount: Float
+  discountPercent: Float
+  discountAmount: Float
+  baseDiscountAmount: Float
+  priceInclTax: Float!
+  basePriceInclTax: Float!
+  totalInclTax: Float!
+  baseTotalInclTax: Float!
+  productId: Int
+  orderItemId: Int
+  refundId: Int
+  additional: Iterable
+  createdAt: String
+  updatedAt: String
+  formattedPrice: String
+  formattedPriceInclTax: String
+  formattedTotal: String
+  formattedTotalInclTax: String
+  formattedTaxAmount: String
+  formattedDiscountAmount: String
+}
+
+"Information about the current page."
+type CustomerRefundItemPageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+"Cursor connection for CustomerRefund."
+type CustomerRefundCursorConnection {
+  edges: [CustomerRefundEdge]
+  pageInfo: CustomerRefundPageInfo!
+  totalCount: Int!
+}
+
+"Edge of CustomerRefund."
+type CustomerRefundEdge {
+  node: CustomerRefund
+  cursor: String!
+}
+
+"Information about the current page."
+type CustomerRefundPageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
 type CustomerReturn implements Node {
   id: ID!
   _id: Int
@@ -3724,6 +3939,15 @@ type CategoryAttributeFilterPageInfo {
   hasPreviousPage: Boolean!
 }
 
+"The personal data the store holds about the signed-in customer."
+type GdprData implements Node {
+  id: ID!
+  _id: Int
+  customer: Iterable
+  addresses: Iterable
+  orders: Iterable
+}
+
 type GdprRequest implements Node {
   id: ID!
   _id: Int!
@@ -3959,6 +4183,14 @@ type ReturnableOrder implements Node {
   createdAt: String
 }
 
+"The redirect URL set on a search term, or null, plus the Elasticsearch \"did you mean\" suggestion."
+type SearchRedirect implements Node {
+  id: ID!
+  query: String
+  redirectUrl: String
+  suggestion: String
+}
+
 type Section implements Node {
   id: ID!
   _id: Int!
@@ -4068,6 +4300,7 @@ type StoreConfig implements Node {
   cartCrossSellEnabled: Boolean
   estimateShippingEnabled: Boolean
   reorderEnabled: Boolean
+  adminReorderEnabled: Boolean
   cartSummary: String
   cartPageEnabled: Boolean
   miniCartEnabled: Boolean
@@ -4078,6 +4311,11 @@ type StoreConfig implements Node {
   minimumOrderIncludesDiscount: Boolean
   minimumOrderIncludesTax: Boolean
   minimumOrderMessage: String
+  orderNumberPrefix: String
+  orderNumberLength: Int
+  orderNumberSuffix: String
+  orderNumberGenerator: String
+  orderMaxRetryAttempts: Int
   customerReviewEnabled: Boolean
   guestReviewEnabled: Boolean
   reviewerNameCensored: Boolean
@@ -4166,6 +4404,24 @@ type Theme implements Node {
   sectionTypes: Iterable!
 }
 
+"Resolve a storefront path to a category, a product or a redirect."
+type UrlResolverItem implements Node {
+  id: ID!
+  path: String
+
+  "category, product, redirect or home."
+  type: String
+
+  "The category or product id, for those types."
+  entityId: Int
+
+  "Where to redirect, for the redirect type."
+  targetPath: String
+
+  "HTTP status of the redirect, 301 or 302."
+  redirectType: Int
+}
+
 """
 Wishlist Item API Resource
 
@@ -4231,6 +4487,12 @@ type Mutation {
   "Create order from cart. Validates all required fields and creates order. Returns order ID and redirect URL if payment redirect required."
   createCheckoutOrder(input: createCheckoutOrderInput!): createCheckoutOrderPayload
 
+  "Place the order after a Razorpay, PayPal Standard or PayPal Smart Button payment."
+  createCheckoutPaymentConfirmation(input: createCheckoutPaymentConfirmationInput!): createCheckoutPaymentConfirmationPayload
+
+  "Start payment for the selected online payment method of the cart of the Bearer token."
+  createCheckoutPaymentInitiation(input: createCheckoutPaymentInitiationInput!): createCheckoutPaymentInitiationPayload
+
   "Save selected payment method for checkout. Returns success status and message."
   createCheckoutPaymentMethod(input: createCheckoutPaymentMethodInput!): createCheckoutPaymentMethodPayload
 
@@ -4267,7 +4529,7 @@ type Mutation {
   "Creates a Logout."
   createLogout(input: createLogoutInput!): createLogoutPayload
 
-  "Delete authenticated customer profile (requires token)"
+  "Delete the authenticated customer profile. Requires the token and `password`."
   createCustomerProfileDelete(input: createCustomerProfileDeleteInput!): createCustomerProfileDeletePayload
 
   "Update authenticated customer profile (requires token and at least one field). Re-query readCustomerProfile for updated data."
@@ -4324,6 +4586,9 @@ type Mutation {
   "Creates a GuestEuWithdrawalLink."
   createGuestEuWithdrawalLink(input: createGuestEuWithdrawalLinkInput!): createGuestEuWithdrawalLinkPayload
 
+  "Search by image: send the image as a base64 data URI."
+  createImageSearch(input: createImageSearchInput!): createImageSearchPayload
+
   "Merge guest cart into authenticated customer cart. Requires the customer bearer token and the guest cart token in guestCartToken."
   createMergeCart(input: createMergeCartInput!): createMergeCartPayload
 
@@ -4338,6 +4603,9 @@ type Mutation {
 
   "Subscribe to newsletter"
   createNewsletter(input: createNewsletterInput!): createNewsletterPayload
+
+  "Creates a NewsletterUnsubscribe."
+  createNewsletterUnsubscribe(input: createNewsletterUnsubscribeInput!): createNewsletterUnsubscribePayload
 
   "Creates a ProductReview."
   createProductReview(input: createProductReviewInput!): createProductReviewPayload
@@ -5267,6 +5535,62 @@ type createCheckoutOrderPayloadData implements Node {
   message: String
 }
 
+"Place the order after a Razorpay, PayPal Standard or PayPal Smart Button payment."
+input createCheckoutPaymentConfirmationInput {
+  "Razorpay only: razorpay_order_id from the Razorpay checkout response."
+  razorpayOrderId: String
+
+  "Razorpay only: razorpay_payment_id from the Razorpay checkout response."
+  razorpayPaymentId: String
+
+  "Razorpay only: razorpay_signature from the Razorpay checkout response."
+  razorpaySignature: String
+
+  "PayPal Smart Button only: the PayPal order id the customer approved (the orderId returned by checkout-payments/initiate)."
+  paypalOrderId: String
+  clientMutationId: String
+}
+
+"Place the order after a Razorpay, PayPal Standard or PayPal Smart Button payment."
+type createCheckoutPaymentConfirmationPayload {
+  checkoutPaymentConfirmation: createCheckoutPaymentConfirmationPayloadData
+  clientMutationId: String
+}
+
+"Place the order after a Razorpay, PayPal Standard or PayPal Smart Button payment."
+type createCheckoutPaymentConfirmationPayloadData implements Node {
+  id: ID!
+  orderId: Int
+  orderIncrementId: String
+  status: String
+  success: Boolean
+  message: String
+}
+
+"Start payment for the selected online payment method of the cart of the Bearer token."
+input createCheckoutPaymentInitiationInput {
+  "Optional. When sent, it must match the payment method saved on the cart."
+  paymentMethod: String
+  clientMutationId: String
+}
+
+"Start payment for the selected online payment method of the cart of the Bearer token."
+type createCheckoutPaymentInitiationPayload {
+  checkoutPaymentInitiation: createCheckoutPaymentInitiationPayloadData
+  clientMutationId: String
+}
+
+"Start payment for the selected online payment method of the cart of the Bearer token."
+type createCheckoutPaymentInitiationPayloadData implements Node {
+  id: ID!
+  method: String
+  type: String
+  redirectUrl: String
+  formAction: String
+  formFields: Iterable
+  sdkData: Iterable
+}
+
 "Save selected payment method for checkout. Returns success status and message."
 input createCheckoutPaymentMethodInput {
   "Billing first name"
@@ -5533,6 +5857,9 @@ input createContactUsInput {
   email: String
   contact: String
   message: String
+
+  "reCAPTCHA Enterprise token, required when the store turns captcha on."
+  recaptchaToken: String
   clientMutationId: String
 }
 
@@ -5762,6 +6089,9 @@ input createCustomerLoginInput {
   email: String!
   password: String!
   deviceToken: String
+
+  "reCAPTCHA Enterprise token, required when the store turns captcha on."
+  recaptchaToken: String
   clientMutationId: String
 }
 
@@ -5800,7 +6130,7 @@ type createLogoutPayloadData implements Node {
   message: String
 }
 
-"Delete authenticated customer profile (requires token)"
+"Delete the authenticated customer profile. Requires the token and `password`."
 input createCustomerProfileDeleteInput {
   _id: String
   firstName: String
@@ -5823,7 +6153,7 @@ input createCustomerProfileDeleteInput {
   clientMutationId: String
 }
 
-"Delete authenticated customer profile (requires token)"
+"Delete the authenticated customer profile. Requires the token and `password`."
 type createCustomerProfileDeletePayload {
   customerProfileDelete: CustomerProfileDelete
   clientMutationId: String
@@ -5994,6 +6324,12 @@ input createCustomerReturnMessageInput {
 
   "Message body"
   message: String
+
+  "Attachment as a base64 data URI (data:image/png;base64,...), max 5 MB. Allowed types follow Configuration > Sales > RMA > Allowed file extension."
+  attachment: String
+
+  "File name shown for the attachment. Defaults to a generated name."
+  attachmentName: String
   clientMutationId: String
 }
 
@@ -6305,6 +6641,9 @@ type createEuWithdrawalPayload {
 "Creates a ForgotPassword."
 input createForgotPasswordInput {
   email: String!
+
+  "reCAPTCHA Enterprise token, required when the store turns captcha on."
+  recaptchaToken: String
   clientMutationId: String
 }
 
@@ -6676,6 +7015,27 @@ type createGuestEuWithdrawalLinkPayloadData implements Node {
   id: ID!
   success: Boolean
   message: String
+}
+
+"Search by image: send the image as a base64 data URI."
+input createImageSearchInput {
+  "The image as a base64 data URI (data:image/jpeg;base64,...), max 2 MB."
+  image: String
+  clientMutationId: String
+}
+
+"Search by image: send the image as a base64 data URI."
+type createImageSearchPayload {
+  imageSearch: createImageSearchPayloadData
+  clientMutationId: String
+}
+
+"Search by image: send the image as a base64 data URI."
+type createImageSearchPayloadData implements Node {
+  id: ID!
+  imageUrl: String
+  keywords: String
+  engine: String
 }
 
 "Merge guest cart into authenticated customer cart. Requires the customer bearer token and the guest cart token in guestCartToken."
@@ -7404,6 +7764,26 @@ type createNewsletterPayloadData implements Node {
   message: String!
 }
 
+"Creates a NewsletterUnsubscribe."
+input createNewsletterUnsubscribeInput {
+  "Unsubscribe token from the newsletter email link (/subscription/{token})."
+  token: String
+  clientMutationId: String
+}
+
+"Creates a NewsletterUnsubscribe."
+type createNewsletterUnsubscribePayload {
+  newsletterUnsubscribe: createNewsletterUnsubscribePayloadData
+  clientMutationId: String
+}
+
+"Creates a NewsletterUnsubscribe."
+type createNewsletterUnsubscribePayloadData implements Node {
+  id: ID!
+  success: Boolean
+  message: String
+}
+
 "Creates a ProductReview."
 input createProductReviewInput {
   productId: Int!
@@ -7434,6 +7814,7 @@ type createProductReviewPayloadData implements Node {
   status: String!
   createdAt: String
   updatedAt: String
+  customerImageUrl: String
   attachments: String
 }
 
@@ -7468,6 +7849,7 @@ type updateProductReviewPayloadData implements Node {
   status: String
   createdAt: String
   updatedAt: String
+  customerImageUrl: String
   attachments: String
 }
 

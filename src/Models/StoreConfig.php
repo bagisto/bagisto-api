@@ -28,7 +28,7 @@ use Webkul\BagistoApi\State\StoreConfigProvider;
             openapi: new Operation(
                 tags: ['Store Config'],
                 summary: 'Get the storefront settings of the current channel',
-                description: 'Returns the store settings a storefront needs before it renders a page: checkout and minimum order rules, review rules, product listing and product page options, header and footer content, custom CSS and JavaScript, speculation rules, rich snippets, customer account, login and address rules, tax display and calculation, store information, privacy and cookie consent, returns and optional features. Secrets such as API keys, client secrets and mail credentials are never returned. Only non-secret values are returned. Send `X-Channel` or `X-Locale` to read another channel or language. Public endpoint — the storefront key is enough.',
+                description: 'Returns the store settings a storefront needs before it renders a page: checkout and minimum order rules, the order number format and order creation retries, review rules, product listing and product page options, header and footer content, custom CSS and JavaScript, speculation rules, rich snippets, customer account, login and address rules, tax display and calculation, store information, privacy and cookie consent, returns and optional features. Secrets such as API keys, client secrets and mail credentials are never returned. Only non-secret values are returned. Send `X-Channel` or `X-Locale` to read another channel or language. Public endpoint — the storefront key is enough.',
                 parameters: [
                     new Parameter(
                         name: 'X-Channel',
@@ -59,6 +59,7 @@ use Webkul\BagistoApi\State\StoreConfigProvider;
                                         'cartCrossSellEnabled' => true,
                                         'estimateShippingEnabled' => true,
                                         'reorderEnabled' => true,
+                                        'adminReorderEnabled' => true,
                                         'cartSummary' => 'display_number_of_items_in_cart',
                                         'cartPageEnabled' => true,
                                         'miniCartEnabled' => true,
@@ -69,6 +70,11 @@ use Webkul\BagistoApi\State\StoreConfigProvider;
                                         'minimumOrderIncludesDiscount' => false,
                                         'minimumOrderIncludesTax' => false,
                                         'minimumOrderMessage' => 'Orders must be at least $50.',
+                                        'orderNumberPrefix' => 'ORD-',
+                                        'orderNumberLength' => 6,
+                                        'orderNumberSuffix' => null,
+                                        'orderNumberGenerator' => null,
+                                        'orderMaxRetryAttempts' => 3,
                                         'customerReviewEnabled' => true,
                                         'guestReviewEnabled' => false,
                                         'reviewerNameCensored' => true,
@@ -211,6 +217,8 @@ class StoreConfig
 
     public ?bool $reorder_enabled = null;
 
+    public ?bool $admin_reorder_enabled = null;
+
     #[ApiProperty(schema: ['type' => 'string', 'enum' => ['display_item_quantity', 'display_number_of_items_in_cart']])]
     public ?string $cart_summary = null;
 
@@ -231,6 +239,16 @@ class StoreConfig
     public ?bool $minimum_order_includes_tax = null;
 
     public ?string $minimum_order_message = null;
+
+    public ?string $order_number_prefix = null;
+
+    public ?int $order_number_length = null;
+
+    public ?string $order_number_suffix = null;
+
+    public ?string $order_number_generator = null;
+
+    public ?int $order_max_retry_attempts = null;
 
     public ?bool $customer_review_enabled = null;
 

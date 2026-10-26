@@ -29,6 +29,11 @@
         "tag": "Customer Return",
         "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn"
     },
+    "cartCrossSellProducts": {
+        "kind": "query",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\Product"
+    },
     "categories": {
         "kind": "query",
         "tag": "Category",
@@ -41,7 +46,7 @@
     },
     "categoryAttributeFilters": {
         "kind": "query",
-        "tag": "CategoryAttributeFilter",
+        "tag": "Category",
         "resource": "Webkul\\BagistoApi\\Models\\Filter\\Attribute"
     },
     "categoryTrees": {
@@ -88,6 +93,11 @@
         "kind": "query",
         "tag": "ShippingRates",
         "resource": "Webkul\\BagistoApi\\Models\\ShippingRates"
+    },
+    "compareAttributes": {
+        "kind": "query",
+        "tag": "CompareItem",
+        "resource": "Webkul\\BagistoApi\\Models\\CompareAttribute"
     },
     "compareItem": {
         "kind": "query",
@@ -164,6 +174,16 @@
         "tag": "Checkout",
         "resource": "Webkul\\BagistoApi\\Models\\CheckoutOrder"
     },
+    "createCheckoutPaymentConfirmation": {
+        "kind": "mutation",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutPaymentConfirmation"
+    },
+    "createCheckoutPaymentInitiation": {
+        "kind": "mutation",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutPaymentInitiation"
+    },
     "createCheckoutPaymentMethod": {
         "kind": "mutation",
         "tag": "Checkout",
@@ -228,7 +248,10 @@
     "createCustomerProfileDelete": {
         "kind": "mutation",
         "tag": "Customer",
-        "resource": "Webkul\\BagistoApi\\Models\\CustomerProfileDelete"
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerProfileDelete",
+        "example": {
+            "password": "Secret@123"
+        }
     },
     "createCustomerProfileUpdate": {
         "kind": "mutation",
@@ -325,6 +348,11 @@
             "email": "guest@example.com"
         }
     },
+    "createImageSearch": {
+        "kind": "mutation",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\ImageSearch"
+    },
     "createLogout": {
         "kind": "mutation",
         "tag": "Customer",
@@ -362,6 +390,14 @@
         "resource": "Webkul\\BagistoApi\\Models\\Newsletter",
         "example": {
             "customerEmail": "jane@example.com"
+        }
+    },
+    "createNewsletterUnsubscribe": {
+        "kind": "mutation",
+        "tag": "Newsletter",
+        "resource": "Webkul\\BagistoApi\\Models\\NewsletterUnsubscribe",
+        "example": {
+            "token": "6a1f0c9e2b7d4"
         }
     },
     "createProductReview": {
@@ -528,6 +564,16 @@
         "tag": "Customer Order",
         "resource": "Webkul\\BagistoApi\\Models\\CustomerOrder"
     },
+    "customerRefund": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerRefund"
+    },
+    "customerRefunds": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerRefund"
+    },
     "customerReturn": {
         "kind": "query",
         "tag": "Customer Return",
@@ -604,6 +650,11 @@
         "kind": "query",
         "tag": "EU Withdrawal",
         "resource": "Webkul\\BagistoApi\\Models\\EuWithdrawal"
+    },
+    "gdprData": {
+        "kind": "query",
+        "tag": "GDPR",
+        "resource": "Webkul\\BagistoApi\\Models\\GdprData"
     },
     "gdprRequest": {
         "kind": "query",
@@ -808,6 +859,11 @@
             "message": "Please delete my personal data."
         }
     },
+    "searchRedirect": {
+        "kind": "query",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\SearchRedirect"
+    },
     "section": {
         "kind": "query",
         "tag": "Theme",
@@ -852,6 +908,11 @@
             "rating": 5,
             "name": "John Doe"
         }
+    },
+    "urlResolver": {
+        "kind": "query",
+        "tag": "Catalog",
+        "resource": "Webkul\\BagistoApi\\Models\\UrlResolver"
     },
     "wishlist": {
         "kind": "query",

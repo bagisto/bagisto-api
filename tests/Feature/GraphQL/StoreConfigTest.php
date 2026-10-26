@@ -17,12 +17,18 @@ class StoreConfigTest extends GraphQLTestCase
             cartCrossSellEnabled
             estimateShippingEnabled
             reorderEnabled
+            adminReorderEnabled
             cartSummary
             minimumOrderEnabled
             minimumOrderAmount
             minimumOrderIncludesDiscount
             minimumOrderIncludesTax
             minimumOrderMessage
+            orderNumberPrefix
+            orderNumberLength
+            orderNumberSuffix
+            orderNumberGenerator
+            orderMaxRetryAttempts
             customerReviewEnabled
             guestReviewEnabled
             reviewerNameCensored
@@ -113,7 +119,7 @@ class StoreConfigTest extends GraphQLTestCase
      * Fields that are null when the store has not filled the setting in.
      */
     private const NULLABLE_FIELDS = [
-        'minimumOrderMessage', 'miniCartOfferInfo', 'relatedProductsLimit', 'upSellProductsLimit', 'crossSellProductsLimit',
+        'minimumOrderMessage', 'orderNumberPrefix', 'orderNumberLength', 'orderNumberSuffix', 'orderNumberGenerator', 'miniCartOfferInfo', 'relatedProductsLimit', 'upSellProductsLimit', 'crossSellProductsLimit',
         'socialShareMessage', 'headerOfferTitle', 'headerOfferLinkTitle', 'headerOfferLink', 'footerCopyright',
         'captchaSiteKey', 'gdprAgreementLabel', 'gdprAgreementContent', 'cookieConsentDescription', 'returnPolicy',
         'customCss', 'customJavascript', 'speculationRules', 'contactName', 'contactEmail', 'cookieConsentStaticBlockIdentifier',
@@ -154,7 +160,7 @@ class StoreConfigTest extends GraphQLTestCase
 
         $config = $this->storeConfig();
 
-        expect($config)->toHaveCount(95);
+        expect($config)->toHaveCount(101);
         expect($config['channel'])->toBe(core()->getCurrentChannel()->code);
         expect($config['locale'])->toBe(app()->getLocale());
 
@@ -172,6 +178,10 @@ class StoreConfigTest extends GraphQLTestCase
         $this->setConfig('sales.checkout.shopping_cart.allow_guest_checkout', '0');
         $this->setConfig('sales.order_settings.minimum_order.enable', '1');
         $this->setConfig('sales.order_settings.minimum_order.minimum_order_amount', '75');
+        $this->setConfig('sales.order_settings.order_number.order_number_prefix', 'ORD-');
+        $this->setConfig('sales.order_settings.order_number.order_number_length', '6');
+        $this->setConfig('sales.order_settings.order_creation.max_retry_attempts', '5');
+        $this->setConfig('sales.order_settings.reorder.admin', '0');
         $this->setConfig('catalog.products.review.guest_review', '1');
         $this->setConfig('sales.taxes.shopping_cart.display_subtotal', 'including_tax');
         $this->setConfig('catalog.products.storefront.buy_now_button_display', '1');
@@ -190,6 +200,10 @@ class StoreConfigTest extends GraphQLTestCase
         expect($config['guestCheckoutEnabled'])->toBeFalse();
         expect($config['minimumOrderEnabled'])->toBeTrue();
         expect((float) $config['minimumOrderAmount'])->toBe(75.0);
+        expect($config['orderNumberPrefix'])->toBe('ORD-');
+        expect($config['orderNumberLength'])->toBe(6);
+        expect($config['orderMaxRetryAttempts'])->toBe(5);
+        expect($config['adminReorderEnabled'])->toBeFalse();
         expect($config['guestReviewEnabled'])->toBeTrue();
         expect($config['taxCartDisplaySubtotal'])->toBe('including_tax');
         expect($config['buyNowButtonEnabled'])->toBeTrue();

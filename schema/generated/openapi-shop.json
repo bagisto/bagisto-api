@@ -12,7 +12,7 @@
             "name": "",
             "url": ""
         },
-        "version": "2.4.4"
+        "version": "2.4.10"
     },
     "servers": [
         {
@@ -69,9 +69,35 @@
                         }
                     }
                 },
-                "summary": "List all attribute options",
-                "description": "Returns all attribute options with their translations. Public endpoint.",
+                "summary": "List attribute options",
+                "description": "Returns attribute options with their translations, ordered by sort order. Pass `attribute_id` to list one attribute's options — a boolean attribute returns its No (id 0) and Yes (id 1) options — and `search` to match the option label in the current locale or its admin name. Public endpoint.",
                 "parameters": [
+                    {
+                        "name": "attribute_id",
+                        "in": "query",
+                        "description": "Only the options of this attribute. Returns 404 when the attribute does not exist.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 23
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Partial match on the option label (current locale) or admin name.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "red"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
                     {
                         "name": "page",
                         "in": "query",
@@ -785,8 +811,21 @@
                     }
                 },
                 "summary": "List CMS pages",
-                "description": "Returns CMS pages, each with its current-locale `translation` embedded. Public endpoint.",
+                "description": "Returns CMS pages, each with its current-locale `translation` embedded. Pass `url_key` to fetch the page the storefront shows at `/page/{url_key}`: it must be assigned to the current channel, and a CMS URL rewrite for an old key is followed. The result is then a list of one page, or empty. Public endpoint.",
                 "parameters": [
+                    {
+                        "name": "url_key",
+                        "in": "query",
+                        "description": "URL key (slug) of the page, as in the storefront URL.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "about-us"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
                     {
                         "name": "page",
                         "in": "query",
@@ -1939,6 +1978,98 @@
                 }
             }
         },
+        "/cart/cross-sells": {
+            "get": {
+                "operationId": "api_apishopcartcross-sells_get_collection",
+                "tags": [
+                    "Cart"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cross-sell products.",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": 12,
+                                        "sku": "COASTALBREEZEMENSHOODIE",
+                                        "type": "simple",
+                                        "name": "Coastal Breeze Men's Blue Zipper Hoodie",
+                                        "urlKey": "coastal-breeze-mens-blue-zipper-hoodie",
+                                        "price": 100,
+                                        "formattedPrice": "$100.00",
+                                        "baseImageUrl": "http://localhost/storage/product/12/hoodie.webp",
+                                        "isSaleable": true,
+                                        "isInWishlist": 0,
+                                        "isInCompare": 0
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "summary": "Cross-sell products for the cart",
+                "description": "The \"you may also like\" products the storefront cart page shows: cross-sells of the products in the cart of the Bearer token, without the products already in the cart, limited by Configuration > Catalog > Products > Cart View Page. Each item has the same fields as the product list. Empty when there is no cart.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ]
+            }
+        },
         "/customizable-option-files": {
             "post": {
                 "operationId": "api_apishopcustomizable-option-files_post",
@@ -2865,6 +2996,108 @@
                 }
             }
         },
+        "/url-resolver": {
+            "get": {
+                "operationId": "api_apishopurl-resolver_get_collection",
+                "tags": [
+                    "Catalog"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "What the path is.",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "path": "old-shoes",
+                                        "type": "redirect",
+                                        "entityId": null,
+                                        "targetPath": "nike-shoes",
+                                        "redirectType": 301
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Nothing matches the path."
+                    }
+                },
+                "summary": "Resolve a storefront URL",
+                "description": "Tells a headless storefront what a path is, in the order the storefront checks it: a category slug, a product URL key (only a visible, enabled product), the last segment of a nested category path (a 301), then a URL rewrite. `type` is `category`, `product`, `redirect` or `home`. A path nothing matches answers 404.",
+                "parameters": [
+                    {
+                        "name": "path",
+                        "in": "query",
+                        "description": "The path, without the domain, e.g. `men/shirts` or `/nike-shoes`.",
+                        "required": true,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "nike-shoes"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ]
+            }
+        },
         "/categories": {
             "get": {
                 "operationId": "api_apishopcategories_get_collection",
@@ -2937,6 +3170,132 @@
                         "schema": {
                             "type": "integer",
                             "default": 10
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ]
+            }
+        },
+        "/categories/attributes": {
+            "get": {
+                "operationId": "api_apishopcategoriesattributes_get_collection",
+                "tags": [
+                    "Category"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Filterable attributes.",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": 23,
+                                        "code": "color",
+                                        "adminName": "Color",
+                                        "type": "select",
+                                        "isFilterable": 1,
+                                        "swatchType": "color",
+                                        "minPrice": 0,
+                                        "maxPrice": 120,
+                                        "options": [
+                                            {
+                                                "id": 1,
+                                                "adminName": "Red",
+                                                "sortOrder": 1,
+                                                "swatchValue": "#ff0000"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category not found."
+                    }
+                },
+                "summary": "List the filterable attributes of a category",
+                "description": "Returns the filterable attributes for the layered navigation of a category, with their options and the price range of its products (converted to the requested currency). When the category has no filterable attributes of its own, or no category is given, every globally filterable attribute is returned. Public endpoint.",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Category ID. Returns 404 when the category does not exist.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "category_slug",
+                        "in": "query",
+                        "description": "Category slug, used when `category_id` is not sent.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "men"
                         },
                         "style": "form",
                         "explode": true
@@ -4353,6 +4712,265 @@
                 }
             }
         },
+        "/checkout-payments/confirm": {
+            "post": {
+                "operationId": "api_apishopcheckout-paymentsconfirm_post",
+                "tags": [
+                    "Checkout"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "The order was placed.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "orderId": 42,
+                                    "orderIncrementId": "42",
+                                    "status": "processing",
+                                    "success": true,
+                                    "message": "Payment confirmed and order placed."
+                                }
+                            }
+                        },
+                        "links": []
+                    },
+                    "401": {
+                        "description": "No cart token."
+                    },
+                    "422": {
+                        "description": "The method needs no confirmation, the payment could not be verified, or the cart is not ready.",
+                        "links": []
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "links": []
+                    }
+                },
+                "summary": "Confirm payment and place the order",
+                "description": "Places the order of the cart of the Bearer token after the customer paid, for Razorpay, PayPal Standard and PayPal Smart Button (the other gateways place the order on their own return). Razorpay: send the three values the Razorpay checkout returns; the signature is verified and the Razorpay order must belong to this cart and amount. PayPal Standard: send an empty body after PayPal returns the customer; as on the storefront the order is created pending and PayPal's IPN marks it paid. PayPal Smart Button: send `paypal_order_id` once the customer approved the payment in the PayPal SDK; the PayPal order must belong to this cart and total, it is captured, and the order is placed paid and invoiced.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "requestBody": {
+                    "description": "The new CheckoutPaymentConfirmation resource",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "razorpay_order_id": {
+                                        "type": "string",
+                                        "example": "order_P9xYz"
+                                    },
+                                    "razorpay_payment_id": {
+                                        "type": "string",
+                                        "example": "pay_P9xZa"
+                                    },
+                                    "razorpay_signature": {
+                                        "type": "string",
+                                        "example": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+                                    },
+                                    "paypal_order_id": {
+                                        "type": "string",
+                                        "example": "5O190127TN364715T"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": false
+                }
+            }
+        },
+        "/checkout-payments/initiate": {
+            "post": {
+                "operationId": "api_apishopcheckout-paymentsinitiate_post",
+                "tags": [
+                    "Checkout"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "What the client needs to start the payment.",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "redirect": {
+                                        "summary": "Stripe, PhonePe, PayGlocal",
+                                        "value": {
+                                            "method": "stripe",
+                                            "type": "redirect",
+                                            "redirectUrl": "https://checkout.stripe.com/c/pay/cs_test_a1b2c3",
+                                            "formAction": null,
+                                            "formFields": null,
+                                            "sdkData": null
+                                        }
+                                    },
+                                    "sdk": {
+                                        "summary": "Razorpay",
+                                        "value": {
+                                            "method": "razorpay",
+                                            "type": "sdk",
+                                            "redirectUrl": null,
+                                            "formAction": null,
+                                            "formFields": null,
+                                            "sdkData": {
+                                                "key": "rzp_test_xxxxx",
+                                                "amount": 10900,
+                                                "currency": "INR",
+                                                "order_id": "order_P9xYz"
+                                            }
+                                        }
+                                    },
+                                    "paypal_smart_button": {
+                                        "summary": "PayPal Smart Button",
+                                        "value": {
+                                            "method": "paypal_smart_button",
+                                            "type": "sdk",
+                                            "redirectUrl": null,
+                                            "formAction": null,
+                                            "formFields": null,
+                                            "sdkData": {
+                                                "order_id": "5O190127TN364715T",
+                                                "client_id": "AbCdEf-sandbox-client-id",
+                                                "currency": "USD",
+                                                "intent": "capture"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "links": []
+                    },
+                    "401": {
+                        "description": "No cart token."
+                    },
+                    "422": {
+                        "description": "The cart is not ready, the method is not an online gateway, or the gateway rejected the request.",
+                        "links": []
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "links": []
+                    }
+                },
+                "summary": "Start payment for an online payment method",
+                "description": "Call this instead of placing the order when the selected payment method is an online gateway (the place-order response then has `redirect: true`). Uses the cart of the Bearer token; addresses, shipping and payment method must already be saved. The response says how to hand the customer to the gateway: `redirect` (open `redirectUrl`: Stripe, PhonePe, PayGlocal), `form` (POST `formFields` to `formAction`: PayPal Standard, PayU) or `sdk` (open the gateway SDK with `sdkData`: Razorpay, PayPal Smart Button). PayPal Smart Button returns the PayPal `order_id` to hand to the PayPal JS SDK `createOrder` callback, with the `client_id` and `currency` to load the SDK with. Stripe, PhonePe, PayGlocal and PayU create the order on their own return. For Razorpay, PayPal Standard and PayPal Smart Button, call `POST /api/shop/checkout-payments/confirm` after payment.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ]
+            }
+        },
         "/checkout-shipping-methods": {
             "get": {
                 "operationId": "api_apishopcheckout-shipping-methods_get_collection",
@@ -4621,6 +5239,102 @@
                         "style": "form",
                         "explode": true
                     },
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ]
+            }
+        },
+        "/compare-attributes": {
+            "get": {
+                "operationId": "api_apishopcompare-attributes_get_collection",
+                "tags": [
+                    "CompareItem"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The comparable attributes.",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": 23,
+                                        "code": "color",
+                                        "adminName": "Color",
+                                        "name": "Color",
+                                        "type": "select"
+                                    },
+                                    {
+                                        "id": 24,
+                                        "code": "size",
+                                        "adminName": "Size",
+                                        "name": "Size",
+                                        "type": "select"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Product comparison is disabled for this store."
+                    }
+                },
+                "summary": "List the comparable attributes",
+                "description": "Returns the attributes marked comparable that belong to an attribute family, excluding name and price, in the requested locale. These are the rows of the storefront compare page; read each value from the matching product field. Refused when the store has switched product comparison off.",
+                "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
                         "in": "header",
@@ -6369,7 +7083,7 @@
                     }
                 },
                 "summary": "Delete customer profile",
-                "description": "Delete the authenticated customer's account. Requires Bearer token.",
+                "description": "Delete the authenticated customer's account. Requires the Bearer token and the account password, as the storefront does. An account with a pending or processing order cannot be deleted (422).",
                 "parameters": [
                     {
                         "name": "id",
@@ -6441,17 +7155,26 @@
                     }
                 ],
                 "requestBody": {
-                    "description": "No fields are required. The account is identified by the Bearer token.",
+                    "description": "The account password. The account itself is identified by the Bearer token.",
                     "content": {
                         "application/json": {
                             "schema": {
                                 "type": "object",
-                                "properties": []
+                                "required": [
+                                    "password"
+                                ],
+                                "properties": {
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                }
                             },
-                            "example": []
+                            "example": {
+                                "password": "Secret@123"
+                            }
                         }
                     },
-                    "required": false
+                    "required": true
                 }
             }
         },
@@ -7385,7 +8108,7 @@
                     }
                 },
                 "summary": "Reset password",
-                "description": "Sets a new password with the token from the forgot-password email. The token is the last segment of the reset link (`/customer/reset-password/{token}`). A token can be used once and expires after the time set in the auth config. No customer login is needed.",
+                "description": "Sets a new password with the token from the forgot-password email. The token is the last segment of the reset link (`/customer/reset-password/{token}`). A token can be used once and expires after the time set in the auth config. No customer login is needed. The emailed link opens the storefront reset page; an app that wants its own screen should open that link as a deep link and call this endpoint.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
@@ -7630,7 +8353,7 @@
                     }
                 },
                 "summary": "Verify account",
-                "description": "Verifies a customer account with the token from the verification email, so the customer can sign in. The token is the last segment of the link in that email (`/customer/verify-account/{token}`). Sent only when Configuration → Customer → Settings → Email Verification is on. No customer login is needed.",
+                "description": "Verifies a customer account with the token from the verification email, so the customer can sign in. The token is the last segment of the link in that email (`/customer/verify-account/{token}`). Sent only when Configuration → Customer → Settings → Email Verification is on. No customer login is needed. The emailed link opens the storefront verify page; an app that wants to verify in-app should open that link as a deep link and call this endpoint.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
@@ -10066,6 +10789,237 @@
                 ]
             }
         },
+        "/customer-refunds": {
+            "get": {
+                "operationId": "api_apishopcustomer-refunds_get_collection",
+                "tags": [
+                    "Customer Order"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "CustomerRefund collection",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CustomerRefund.CustomerRefundDto"
+                                    }
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CustomerRefund.CustomerRefundDto.html"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "summary": "List refunds for the authenticated customer",
+                "description": "Returns the refund documents issued against the authenticated customer's orders, newest first, each with its refunded items and totals. Use `?order_id=N` to scope to one order.",
+                "parameters": [
+                    {
+                        "name": "order_id",
+                        "in": "query",
+                        "description": "Return only refunds for this order ID. Accepts `orderId` as an alias.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (1-based).",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Refunds per page (default 10, maximum 50).",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ]
+            }
+        },
+        "/customer-refunds/{id}": {
+            "get": {
+                "operationId": "api_apishopcustomer-refunds_id_get",
+                "tags": [
+                    "Customer Order"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "CustomerRefund resource",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerRefund.CustomerRefundDto"
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerRefund.CustomerRefundDto.html"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "links": []
+                    }
+                },
+                "summary": "Get one refund of the authenticated customer",
+                "description": "Returns a single refund document with its refunded items and totals. A refund of another customer's order answers 404.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Customer refund ID",
+                        "required": true,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ]
+            }
+        },
         "/reorder": {
             "post": {
                 "operationId": "api_apishopreorder_post",
@@ -10344,6 +11298,32 @@
                         "explode": true
                     },
                     {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Messages per page, as the storefront's `limit`. Omit it to get every message.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number when `limit` is sent.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
                         "name": "X-STOREFRONT-KEY",
                         "in": "header",
                         "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
@@ -10434,7 +11414,7 @@
                     }
                 },
                 "summary": "Send a message on a return request",
-                "description": "Sends a message on a return. Attach a file in `file`.",
+                "description": "Sends a message on a return. Attach one file in `file` (multipart) or as a base64 data URI in `attachment` (JSON).",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
@@ -10535,6 +11515,16 @@
                                     "message": {
                                         "type": "string",
                                         "example": "Any update on my return?"
+                                    },
+                                    "attachment": {
+                                        "type": "string",
+                                        "description": "Attachment as a base64 data URI, max 5 MB.",
+                                        "example": "data:image/png;base64,iVBORw0KGgo..."
+                                    },
+                                    "attachment_name": {
+                                        "type": "string",
+                                        "description": "File name shown for the attachment.",
+                                        "example": "zipper.png"
                                     }
                                 }
                             }
@@ -10931,6 +11921,7 @@
                                             "order_item_id": 78,
                                             "sku": "COASTALBREEZEMENSHOODIE",
                                             "name": "Coastal Breeze Men's Blue Zipper Hoodie",
+                                            "product_image": "https://example.com/cache/medium/product/12/hoodie.webp",
                                             "quantity": 1,
                                             "resolution": "return",
                                             "reason_id": 2,
@@ -11063,6 +12054,7 @@
                                         "order_item_id": 78,
                                         "sku": "COASTALBREEZEMENSHOODIE",
                                         "name": "Coastal Breeze Men's Blue Zipper Hoodie",
+                                        "product_image": "https://example.com/cache/medium/product/12/hoodie.webp",
                                         "quantity": 1,
                                         "resolution": "return",
                                         "reason_id": 2,
@@ -11324,6 +12316,7 @@
                                         "order_item_id": 78,
                                         "sku": "COASTALBREEZEMENSHOODIE",
                                         "name": "Coastal Breeze Men's Blue Zipper Hoodie",
+                                        "product_image": "https://example.com/cache/medium/product/12/hoodie.webp",
                                         "quantity": 1,
                                         "resolution": "return",
                                         "reason_id": 2,
@@ -11350,7 +12343,7 @@
                     }
                 },
                 "summary": "Get one of the customer's return (RMA) requests",
-                "description": "Full detail of a single RMA owned by the authenticated customer — the returned item, images, status, and action flags (canClose / canReopen / isExpired). 404 if it is not the customer's.",
+                "description": "Full detail of a single RMA owned by the authenticated customer — the returned item, images, status, and action flags (canClose / canReopen / isExpired). `item.product_image` is the returned product's image, or the store's product placeholder when it has none; `images` are the photos the customer attached. 404 if it is not the customer's.",
                 "parameters": [
                     {
                         "name": "id",
@@ -12099,23 +13092,6 @@
                         "schema": {
                             "type": "integer",
                             "example": 1
-                        },
-                        "style": "form",
-                        "explode": true
-                    },
-                    {
-                        "name": "status",
-                        "in": "query",
-                        "description": "Filter by status. Defaults to `approved` when omitted.",
-                        "required": false,
-                        "deprecated": false,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "approved",
-                                "pending"
-                            ],
-                            "example": "approved"
                         },
                         "style": "form",
                         "explode": true
@@ -13418,6 +14394,127 @@
                 ]
             }
         },
+        "/gdpr-data": {
+            "get": {
+                "operationId": "api_apishopgdpr-data_get_collection",
+                "tags": [
+                    "GDPR"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The customer data.",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": 3,
+                                        "customer": {
+                                            "firstName": "Paul",
+                                            "lastName": "Doe",
+                                            "email": "pauldoe@example.com",
+                                            "gender": "Male",
+                                            "dateOfBirth": "1990-04-12",
+                                            "phone": "2125551234"
+                                        },
+                                        "addresses": [
+                                            {
+                                                "firstName": "Paul",
+                                                "lastName": "Doe",
+                                                "companyName": null,
+                                                "address": "123 Main St",
+                                                "city": "Los Angeles",
+                                                "state": "CA",
+                                                "country": "US",
+                                                "postcode": "90001",
+                                                "phone": "2125551234",
+                                                "vatId": null
+                                            }
+                                        ],
+                                        "orders": [
+                                            {
+                                                "id": 7,
+                                                "incrementId": "7",
+                                                "status": "completed",
+                                                "shippingTitle": "Flat Rate - Flat Rate",
+                                                "grandTotal": 109,
+                                                "formattedGrandTotal": "$109.00",
+                                                "createdAt": "2026-10-15 20:11:24"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "GDPR is switched off."
+                    },
+                    "401": {
+                        "description": "Not signed in."
+                    }
+                },
+                "summary": "Download my data",
+                "description": "The personal data the store holds about the signed-in customer, as on the storefront GDPR page: profile, saved addresses and orders. Returned as a list of one entry. For the same data as a PDF, call `GET /api/shop/gdpr-data/pdf` with `Accept: application/pdf`. Needs Configuration > General > GDPR enabled.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ]
+            }
+        },
         "/gdpr-requests": {
             "get": {
                 "operationId": "api_apishopgdpr-requests_get_collection",
@@ -13688,6 +14785,7 @@
                                     },
                                     "message": {
                                         "type": "string",
+                                        "maxLength": 500,
                                         "example": "Please delete all my personal data."
                                     }
                                 }
@@ -13920,7 +15018,7 @@
                         "links": []
                     },
                     "422": {
-                        "description": "Request is not pending/processing, so it cannot be revoked.",
+                        "description": "Request is not pending, so it cannot be revoked.",
                         "links": []
                     },
                     "400": {
@@ -13929,7 +15027,7 @@
                     }
                 },
                 "summary": "Revoke a GDPR data request",
-                "description": "Revoke one of the customer's own GDPR data requests. Allowed only while the request is pending or processing. Send an empty JSON body `{}`.",
+                "description": "Revoke one of the customer's own GDPR data requests. Allowed only while the request is pending. Send an empty JSON body `{}`.",
                 "parameters": [
                     {
                         "name": "id",
@@ -14585,6 +15683,244 @@
                             },
                             "example": {
                                 "customerEmail": "jane@example.com"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/newsletters/unsubscribe": {
+            "post": {
+                "operationId": "api_apishopnewslettersunsubscribe_post",
+                "tags": [
+                    "Newsletter"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Unsubscribed, or no subscription used that token.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "success": true,
+                                    "message": "You have been unsubscribed from the newsletter."
+                                }
+                            }
+                        },
+                        "links": []
+                    },
+                    "422": {
+                        "description": "The token is missing.",
+                        "links": []
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "links": []
+                    }
+                },
+                "summary": "Unsubscribe from the newsletter",
+                "description": "Removes the newsletter subscription with the token from the unsubscribe link in the newsletter email (`/subscription/{token}`), as the storefront does. The answer is the same whether or not the token matched. No login is needed.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "requestBody": {
+                    "description": "The new NewsletterUnsubscribe resource",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "token"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "type": "string",
+                                        "example": "6a1f0c9e2b7d4"
+                                    }
+                                }
+                            },
+                            "example": {
+                                "token": "6a1f0c9e2b7d4"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/image-searches": {
+            "post": {
+                "operationId": "api_apishopimage-searches_post",
+                "tags": [
+                    "Product"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "The stored image and the keywords.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "imageUrl": "http://localhost/storage/product-search/k3Jd9sQ.jpg",
+                                    "keywords": "red cotton t-shirt, casual wear, crew neck",
+                                    "engine": "ai"
+                                }
+                            }
+                        },
+                        "links": []
+                    },
+                    "422": {
+                        "description": "Missing image, or not an allowed image type or size.",
+                        "links": []
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "links": []
+                    }
+                },
+                "summary": "Search by image",
+                "description": "Uploads an image for product search, as the storefront camera search does (jpeg, png, jpg, gif, svg or webp, max 2 MB). Send it as a multipart `image` file, or as a base64 data URI in a JSON `image`. With Magic AI image search switched on, `keywords` holds search keywords and `engine` is `ai`; otherwise `keywords` is empty and `engine` is `tensorflow`, meaning the client derives the keywords from `imageUrl` itself, as the storefront does in the browser. Then search products with the keywords.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "requestBody": {
+                    "description": "The new ImageSearch resource",
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "image"
+                                ],
+                                "properties": {
+                                    "image": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        },
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "image"
+                                ],
+                                "properties": {
+                                    "image": {
+                                        "type": "string",
+                                        "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ..."
+                                    }
+                                }
                             }
                         }
                     },
@@ -15604,7 +16940,7 @@
                     }
                 },
                 "summary": "List products with search, filter, sort, and pagination",
-                "description": "Mirrors the GraphQL products query. Any query param outside the reserved set (query, sort, order, page, per_page, locale, channel, filter) is treated as a filterable attribute — so new attributes like material, pattern, etc. work automatically without schema changes.",
+                "description": "Mirrors the GraphQL products query. Any query param outside the reserved set (query, sort, order, page, per_page, locale, channel, filter, suggest) is treated as a filterable attribute — so new attributes like material, pattern, etc. work automatically without schema changes.",
                 "parameters": [
                     {
                         "name": "query",
@@ -15614,6 +16950,22 @@
                         "deprecated": false,
                         "schema": {
                             "type": "string"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "suggest",
+                        "in": "query",
+                        "description": "Elasticsearch only: when the store searches with Elasticsearch, the query is swapped for its \"did you mean\" suggestion (see `GET /api/shop/search-redirect`). Send `0` to search the exact query instead.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "0",
+                                "1"
+                            ]
                         },
                         "style": "form",
                         "explode": true
@@ -16558,23 +17910,6 @@
                 "description": "Returns reviews scoped to the given product ID. Defaults to `approved` reviews only; pass `status` to override. Supports filtering by `status` and `rating`, with `page` + `per_page` (alias `limit`, max 50) pagination.",
                 "parameters": [
                     {
-                        "name": "status",
-                        "in": "query",
-                        "description": "Filter by status. Defaults to `approved` when omitted.",
-                        "required": false,
-                        "deprecated": false,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "approved",
-                                "pending"
-                            ],
-                            "example": "approved"
-                        },
-                        "style": "form",
-                        "explode": true
-                    },
-                    {
                         "name": "rating",
                         "in": "query",
                         "description": "Filter by star rating (1-5)",
@@ -16753,6 +18088,119 @@
                             "default": 10,
                             "minimum": 0,
                             "maximum": 50
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ]
+            }
+        },
+        "/search-redirect": {
+            "get": {
+                "operationId": "api_apishopsearch-redirect_get_collection",
+                "tags": [
+                    "Product"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The redirect for the term.",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "query": "summer sale",
+                                        "redirectUrl": "https://shop.example.com/summer-sale",
+                                        "suggestion": null
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "summary": "Search-term redirect",
+                "description": "Call before searching. When the term has a redirect URL in Marketing > Search Terms for the current channel and locale, the storefront sends the shopper there instead of showing results; `redirectUrl` is that URL, or null. `suggestion` is the \"did you mean\" term when the store searches with Elasticsearch (the product listing searches with it unless `suggest=0`), otherwise null. Returned as a list of one entry.",
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "The search term.",
+                        "required": true,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "summer sale"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "suggest",
+                        "in": "query",
+                        "description": "Send `0` to skip the \"did you mean\" lookup; `suggestion` is then null.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "0",
+                                "1"
+                            ]
                         },
                         "style": "form",
                         "explode": true
@@ -20541,6 +21989,7 @@
                                         "cartCrossSellEnabled": true,
                                         "estimateShippingEnabled": true,
                                         "reorderEnabled": true,
+                                        "adminReorderEnabled": true,
                                         "cartSummary": "display_number_of_items_in_cart",
                                         "cartPageEnabled": true,
                                         "miniCartEnabled": true,
@@ -20551,6 +22000,11 @@
                                         "minimumOrderIncludesDiscount": false,
                                         "minimumOrderIncludesTax": false,
                                         "minimumOrderMessage": "Orders must be at least $50.",
+                                        "orderNumberPrefix": "ORD-",
+                                        "orderNumberLength": 6,
+                                        "orderNumberSuffix": null,
+                                        "orderNumberGenerator": null,
+                                        "orderMaxRetryAttempts": 3,
                                         "customerReviewEnabled": true,
                                         "guestReviewEnabled": false,
                                         "reviewerNameCensored": true,
@@ -20687,7 +22141,7 @@
                     }
                 },
                 "summary": "Get the storefront settings of the current channel",
-                "description": "Returns the store settings a storefront needs before it renders a page: checkout and minimum order rules, review rules, product listing and product page options, header and footer content, custom CSS and JavaScript, speculation rules, rich snippets, customer account, login and address rules, tax display and calculation, store information, privacy and cookie consent, returns and optional features. Secrets such as API keys, client secrets and mail credentials are never returned. Only non-secret values are returned. Send `X-Channel` or `X-Locale` to read another channel or language. Public endpoint — the storefront key is enough.",
+                "description": "Returns the store settings a storefront needs before it renders a page: checkout and minimum order rules, the order number format and order creation retries, review rules, product listing and product page options, header and footer content, custom CSS and JavaScript, speculation rules, rich snippets, customer account, login and address rules, tax display and calculation, store information, privacy and cookie consent, returns and optional features. Secrets such as API keys, client secrets and mail credentials are never returned. Only non-secret values are returned. Send `X-Channel` or `X-Locale` to read another channel or language. Public endpoint — the storefront key is enough.",
                 "parameters": [
                     {
                         "name": "X-Channel",
@@ -22021,12 +23475,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "type": {
                         "type": [
@@ -22194,12 +23643,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "type": {
                         "type": [
@@ -23244,7 +24688,8 @@
                         "items": {
                             "$ref": "#/components/schemas/OrderShipmentDto"
                         }
-                    }
+                    },
+                    "hasNonCancelableBooking": []
                 }
             },
             "CustomerOrder.CustomerOrderDetailDto.html": {
@@ -23674,7 +25119,8 @@
                         "items": {
                             "$ref": "#/components/schemas/OrderShipmentDto.html"
                         }
-                    }
+                    },
+                    "hasNonCancelableBooking": []
                 }
             },
             "CustomerOrder.CustomerOrderListDto": {
@@ -24409,6 +25855,534 @@
                     }
                 }
             },
+            "CustomerRefund.CustomerRefundDto": {
+                "type": "object",
+                "description": "Refund documents issued against the authenticated customer's orders, as shown on the\nstorefront order view's refunds tab. Read-only and scoped to the order's customer.",
+                "properties": {
+                    "id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "orderId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "orderIncrementId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "incrementId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "state": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "totalQty": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "baseCurrencyCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "channelCurrencyCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "orderCurrencyCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "subTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "subTotalInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubTotalInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingAmountInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmountInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "taxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountPercent": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "adjustmentRefund": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseAdjustmentRefund": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "adjustmentFee": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseAdjustmentFee": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "grandTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubTotal": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedSubTotalInclTax": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmount": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmountInclTax": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTaxAmount": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedDiscountAmount": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedAdjustmentRefund": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedAdjustmentFee": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedGrandTotal": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedBaseGrandTotal": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "updatedAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RefundItemDto"
+                        }
+                    }
+                }
+            },
+            "CustomerRefund.CustomerRefundDto.html": {
+                "type": "object",
+                "description": "Refund documents issued against the authenticated customer's orders, as shown on the\nstorefront order view's refunds tab. Read-only and scoped to the order's customer.",
+                "properties": {
+                    "id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "orderId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "orderIncrementId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "incrementId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "state": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "totalQty": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "baseCurrencyCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "channelCurrencyCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "orderCurrencyCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "subTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "subTotalInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubTotalInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingAmountInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmountInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "taxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountPercent": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "adjustmentRefund": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseAdjustmentRefund": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "adjustmentFee": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseAdjustmentFee": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "grandTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubTotal": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedSubTotalInclTax": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmount": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmountInclTax": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTaxAmount": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedDiscountAmount": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedAdjustmentRefund": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedAdjustmentFee": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedGrandTotal": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedBaseGrandTotal": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "updatedAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RefundItemDto.html"
+                        }
+                    }
+                }
+            },
             "CustomerReturn": {
                 "type": "object",
                 "properties": {
@@ -24805,12 +26779,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "sessionToken": {
                         "description": "Unique session token for guest cart",
@@ -24892,12 +26861,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "description": "Shipping address",
@@ -24905,12 +26869,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "appliedTaxes": {
                         "description": "Applied taxes",
@@ -24918,12 +26877,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "haveStockableItems": {
                         "description": "Has stockable items",
@@ -25206,12 +27160,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "sessionToken": {
                         "description": "Unique session token for guest cart",
@@ -25293,12 +27242,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "description": "Shipping address",
@@ -25306,12 +27250,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "appliedTaxes": {
                         "description": "Applied taxes",
@@ -25319,12 +27258,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "haveStockableItems": {
                         "description": "Has stockable items",
@@ -25607,12 +27541,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "sessionToken": {
                         "description": "Unique session token for guest cart",
@@ -25694,12 +27623,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "description": "Shipping address",
@@ -25707,12 +27631,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "appliedTaxes": {
                         "description": "Applied taxes",
@@ -25720,12 +27639,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "haveStockableItems": {
                         "description": "Has stockable items",
@@ -26008,12 +27922,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "sessionToken": {
                         "description": "Unique session token for guest cart",
@@ -26095,12 +28004,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "shippingAddress": {
                         "description": "Shipping address",
@@ -26108,12 +28012,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "appliedTaxes": {
                         "description": "Applied taxes",
@@ -26121,12 +28020,7 @@
                             "array",
                             "null"
                         ],
-                        "items": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
+                        "items": []
                     },
                     "haveStockableItems": {
                         "description": "Has stockable items",
@@ -26894,6 +28788,330 @@
                         ]
                     }
                 }
+            },
+            "RefundItemDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "orderItemId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "productId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "sku": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "qty": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "price": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "basePrice": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "priceInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "basePriceInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "total": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "totalInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTotalInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "taxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountPercent": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedPrice": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedPriceInclTax": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTotal": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTotalInclTax": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTaxAmount": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedDiscountAmount": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "additional": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": []
+                    }
+                }
+            },
+            "RefundItemDto.html": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "orderItemId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "productId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "sku": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "qty": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "price": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "basePrice": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "priceInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "basePriceInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "total": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "totalInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTotalInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "taxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountPercent": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedPrice": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedPriceInclTax": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTotal": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTotalInclTax": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTaxAmount": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedDiscountAmount": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "additional": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": []
+                    }
+                }
             }
         },
         "responses": [],
@@ -26980,6 +29198,9 @@
             "name": "EU Withdrawal"
         },
         {
+            "name": "GDPR"
+        },
+        {
             "name": "GDPR Requests"
         },
         {
@@ -27002,6 +29223,9 @@
         },
         {
             "name": "Store Config"
+        },
+        {
+            "name": "Catalog"
         }
     ],
     "webhooks": []

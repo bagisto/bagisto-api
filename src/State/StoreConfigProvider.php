@@ -64,6 +64,7 @@ class StoreConfigProvider implements ProviderInterface
         $config->cart_cross_sell_enabled = self::flag('sales.checkout.shopping_cart.cross_sell');
         $config->estimate_shipping_enabled = self::flag('sales.checkout.shopping_cart.estimate_shipping');
         $config->reorder_enabled = self::flag('sales.order_settings.reorder.shop');
+        $config->admin_reorder_enabled = self::flag('sales.order_settings.reorder.admin');
         $config->cart_summary = core()->getConfigData('sales.checkout.my_cart.summary') ?: 'display_number_of_items_in_cart';
         $config->cart_page_enabled = self::flag('sales.checkout.shopping_cart.cart_page');
         $config->mini_cart_enabled = self::flag('sales.checkout.mini_cart.display_mini_cart');
@@ -75,6 +76,12 @@ class StoreConfigProvider implements ProviderInterface
         $config->minimum_order_includes_discount = self::flag('sales.order_settings.minimum_order.include_discount_amount');
         $config->minimum_order_includes_tax = self::flag('sales.order_settings.minimum_order.include_tax_to_amount');
         $config->minimum_order_message = core()->getConfigData('sales.order_settings.minimum_order.description') ?: null;
+
+        $config->order_number_prefix = self::text('sales.order_settings.order_number.order_number_prefix');
+        $config->order_number_length = self::number('sales.order_settings.order_number.order_number_length');
+        $config->order_number_suffix = self::text('sales.order_settings.order_number.order_number_suffix');
+        $config->order_number_generator = self::text('sales.order_settings.order_number.order_number_generator');
+        $config->order_max_retry_attempts = self::number('sales.order_settings.order_creation.max_retry_attempts') ?? 3;
 
         $config->customer_review_enabled = self::flag('catalog.products.review.customer_review');
         $config->guest_review_enabled = self::flag('catalog.products.review.guest_review');

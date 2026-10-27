@@ -34,7 +34,8 @@ class AttributeOptionCollectionProvider implements ProviderInterface
         $isRest = $operation instanceof HttpOperation;
         $args = $isRest ? request()->query() : ($context['args'] ?? []);
 
-        $attributeId = $uriVariables['attribute_id'] ?? $uriVariables['attributeId']
+        $attributeId = $this->parentAttributeId($uriVariables, $context)
+            ?? $uriVariables['attribute_id'] ?? $uriVariables['attributeId']
             ?? $args['attributeId'] ?? $args['attribute_id'] ?? null;
 
         $search = trim((string) ($args['search'] ?? ''));
@@ -80,6 +81,29 @@ class AttributeOptionCollectionProvider implements ProviderInterface
         }
 
         return $this->paginate($query->offset($offset)->limit($perPage)->get(), $total, $perPage, $offset);
+    }
+
+    /**
+     * The attribute whose `options` connection is being resolved, when this runs nested under one.
+     *
+     * API Platform resolves `attribute { options }` and `categoryAttributeFilters { options }`
+     * through this provider, passing the parent's class as `linkClass` and its id as the `id`
+     * URI variable. Without it every attribute would list the options of all attributes.
+     */
+    private function parentAttributeId(array $uriVariables, array $context): ?int
+    {
+        $linkClass = $context['linkClass'] ?? null;
+
+        if (
+            ! $linkClass
+            || ! is_a($linkClass, Attribute::class, true)
+            || ($context['linkProperty'] ?? null) !== 'options'
+            || ! isset($uriVariables['id'])
+        ) {
+            return null;
+        }
+
+        return (int) $uriVariables['id'];
     }
 
     /**

@@ -106,6 +106,8 @@ class StoreConfigTest extends GraphQLTestCase
             taxCalculationBasedOn
             taxProductPrices
             taxShippingPrices
+            taxShippingCategoryId
+            taxProductCategoryId
             taxApplyOn
             taxDefaultCountry
             taxDefaultState
@@ -123,7 +125,7 @@ class StoreConfigTest extends GraphQLTestCase
         'socialShareMessage', 'headerOfferTitle', 'headerOfferLinkTitle', 'headerOfferLink', 'footerCopyright',
         'captchaSiteKey', 'gdprAgreementLabel', 'gdprAgreementContent', 'cookieConsentDescription', 'returnPolicy',
         'customCss', 'customJavascript', 'speculationRules', 'contactName', 'contactEmail', 'cookieConsentStaticBlockIdentifier',
-        'taxDefaultCountry', 'taxDefaultState', 'taxDefaultPostcode',
+        'taxDefaultCountry', 'taxDefaultState', 'taxDefaultPostcode', 'taxShippingCategoryId', 'taxProductCategoryId',
     ];
 
     private function setConfig(string $code, ?string $value): void
@@ -160,7 +162,7 @@ class StoreConfigTest extends GraphQLTestCase
 
         $config = $this->storeConfig();
 
-        expect($config)->toHaveCount(101);
+        expect($config)->toHaveCount(103);
         expect($config['channel'])->toBe(core()->getCurrentChannel()->code);
         expect($config['locale'])->toBe(app()->getLocale());
 

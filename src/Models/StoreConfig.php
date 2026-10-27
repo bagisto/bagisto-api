@@ -147,6 +147,8 @@ use Webkul\BagistoApi\State\StoreConfigProvider;
                                         'taxCalculationBasedOn' => 'shipping_address',
                                         'taxProductPrices' => 'excluding_tax',
                                         'taxShippingPrices' => 'excluding_tax',
+                                        'taxShippingCategoryId' => null,
+                                        'taxProductCategoryId' => 1,
                                         'taxApplyOn' => 'after_discount',
                                         'taxDefaultCountry' => 'US',
                                         'taxDefaultState' => 'CA',
@@ -397,6 +399,12 @@ class StoreConfig
 
     #[ApiProperty(schema: ['type' => 'string', 'enum' => ['excluding_tax', 'including_tax']])]
     public ?string $tax_shipping_prices = null;
+
+    #[ApiProperty(description: 'Tax category applied to shipping (Sales → Taxes → Tax Categories). Null when set to None.')]
+    public ?int $tax_shipping_category_id = null;
+
+    #[ApiProperty(description: 'Default tax category for products that have none of their own. Null when set to None.')]
+    public ?int $tax_product_category_id = null;
 
     #[ApiProperty(schema: ['type' => 'string', 'enum' => ['before_discount', 'after_discount']])]
     public ?string $tax_apply_on = null;

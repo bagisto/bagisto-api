@@ -29,7 +29,7 @@ Security and correctness release from the Bagisto v2.4.10 API audit. Tested agai
   - **Customer:** `emailVerificationRequired`, `newsletterEnabled`, `captchaEnabled`, `captchaSiteKey` (the public site key only), `signupNewsletterEnabled`, `loginRedirectTo` (`home` or `account`, the page a customer lands on after signing in), `socialLoginProviders` (the providers that are switched on and that social login accepts: `google`, `facebook`, `linkedin`).
   - **Addresses:** `addressCountryRequired`, `addressStateRequired`, `addressPostcodeRequired`, `addressStreetLines`.
   - **Tax display:** `taxCartDisplayPrices`, `taxCartDisplaySubtotal`, `taxCartDisplayShipping`, `taxCartShowBreakdown`, `taxOrderDisplayPrices`, `taxOrderDisplaySubtotal`, `taxOrderDisplayShipping`.
-  - **Tax calculation:** `taxCalculationBasedOn`, `taxProductPrices`, `taxShippingPrices`, `taxApplyOn`, `taxDefaultCountry`, `taxDefaultState`, `taxDefaultPostcode`.
+  - **Tax calculation:** `taxCalculationBasedOn`, `taxProductPrices`, `taxShippingPrices`, `taxApplyOn`, `taxDefaultCountry`, `taxDefaultState`, `taxDefaultPostcode`, and the tax categories `taxShippingCategoryId` and `taxProductCategoryId` (null when set to None).
   - **Store information:** `storeInformation` (store name, address, VAT number, contact and bank details, as printed on customer documents).
   - **Privacy:** `gdprEnabled`, `gdprAgreementEnabled`, `gdprAgreementLabel`, `gdprAgreementContent`, `cookieConsentEnabled`, `cookieConsentPosition`, `cookieConsentDescription`, `cookieConsentStaticBlockIdentifier`, `cookieConsentCategories`.
   - **Returns:** `returnWindowDays`, `returnPolicy`, `returnAllowedFileTypes`, `returnAllowedProductTypes`, `returnAfterCancelledAllowed`, `returnAfterDeclinedAllowed`.
@@ -107,6 +107,7 @@ Security and correctness release from the Bagisto v2.4.10 API audit. Tested agai
 
 ### Fixed
 
+- The `options` of an attribute over GraphQL — on `categoryAttributeFilters` (the layered-navigation filters) and on `attribute(id:)` — list that attribute's own options again, as the storefront filters do. Before, every attribute returned the same first options of all attributes, so Color, Size and Brand could not be filtered from an app. REST was not affected.
 - Return messages (`createCustomerReturnMessage`, `POST /api/shop/return-messages` with a JSON body) accept an attachment as a base64 data URI in `attachment`, with an optional `attachmentName`, so an app can attach a file as the storefront conversation does. Before, only a multipart REST request could attach a file.
 - Returns (RMA) now refuse what the storefront refuses: a solved, declined, received or item-canceled return can no longer be canceled, a return can only be closed while core's `canCloseRma` allows it, and closing or reopening is refused once the return window has passed. Before, the API canceled or closed a return in any state.
 - Updating the profile now applies the storefront rules to the fields sent: email unique within the channel (it was checked across all channels), the core phone format (a leading `+` is now accepted) and phone uniqueness, a birth date in the past, and a new password of at least 6 characters with `confirmPassword`. A password change now fires `customer.password.update.after`, so the "password changed" email is sent.

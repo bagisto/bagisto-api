@@ -29,7 +29,7 @@ class StoreConfigTest extends RestApiTestCase
         'returnWindowDays', 'returnPolicy', 'returnAllowedFileTypes', 'returnAllowedProductTypes', 'returnAfterCancelledAllowed', 'returnAfterDeclinedAllowed',
         'weightUnit', 'customCss', 'customJavascript', 'speculationRules', 'sitemapEnabled', 'contactName', 'contactEmail',
         'richSnippets', 'aiImageSearchEnabled', 'aiReviewTranslationEnabled', 'aiCheckoutMessageEnabled', 'cookieConsentStaticBlockIdentifier',
-        'taxCalculationBasedOn', 'taxProductPrices', 'taxShippingPrices', 'taxApplyOn', 'taxDefaultCountry', 'taxDefaultState', 'taxDefaultPostcode',
+        'taxCalculationBasedOn', 'taxProductPrices', 'taxShippingPrices', 'taxShippingCategoryId', 'taxProductCategoryId', 'taxApplyOn', 'taxDefaultCountry', 'taxDefaultState', 'taxDefaultPostcode',
         'storeInformation',
     ];
 
@@ -162,6 +162,27 @@ class StoreConfigTest extends RestApiTestCase
         expect($config['orderNumberLength'])->toBeNull();
         expect($config['orderNumberSuffix'])->toBeNull();
         expect($config['orderNumberGenerator'])->toBeNull();
+    }
+
+    public function test_tax_categories_are_returned(): void
+    {
+        $this->seedRequiredData();
+
+        $categoryId = DB::table('tax_categories')->insertGetId([
+            'code' => 'store-config-'.uniqid(),
+            'name' => 'Standard',
+            'description' => 'Standard rate',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->setConfig('sales.taxes.categories.shipping', '0');
+        $this->setConfig('sales.taxes.categories.product', (string) $categoryId);
+
+        $config = $this->storeConfig();
+
+        expect($config['taxShippingCategoryId'])->toBeNull();
+        expect($config['taxProductCategoryId'])->toBe($categoryId);
     }
 
     public function test_review_settings_are_returned(): void

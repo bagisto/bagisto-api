@@ -22090,6 +22090,8 @@
                                         "taxCalculationBasedOn": "shipping_address",
                                         "taxProductPrices": "excluding_tax",
                                         "taxShippingPrices": "excluding_tax",
+                                        "taxShippingCategoryId": null,
+                                        "taxProductCategoryId": 1,
                                         "taxApplyOn": "after_discount",
                                         "taxDefaultCountry": "US",
                                         "taxDefaultState": "CA",

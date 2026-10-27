@@ -53,6 +53,14 @@ final class CollectionBuilder
 
     private const MAX_SELECTION_DEPTH = 1;
 
+    /**
+     * Root fields whose request selects deeper than MAX_SELECTION_DEPTH, because the nested data is
+     * the point of the call: the layered-navigation filters are useless without their options.
+     */
+    private const SELECTION_DEPTH_OVERRIDES = [
+        'categoryAttributeFilters' => 4,
+    ];
+
     private const HEADER_VARS = [
         'X-STOREFRONT-KEY' => '{{storefrontKey}}',
         'X-Locale' => '{{locale}}',
@@ -807,7 +815,7 @@ GQL;
 
         [$arguments, $variables] = $this->arguments($definition, $field, $meta['example'] ?? null);
 
-        $tree = $this->selectionTree($definition->getType(), 0);
+        $tree = $this->selectionTree($definition->getType(), 0, self::SELECTION_DEPTH_OVERRIDES[$field] ?? self::MAX_SELECTION_DEPTH);
 
         $query = sprintf(
             "%s %s%s {\n  %s%s%s\n}\n",
@@ -1041,18 +1049,18 @@ GQL;
     /**
      * @return array<string, mixed>|null
      */
-    private function selectionTree(Type $type, int $depth): ?array
+    private function selectionTree(Type $type, int $depth, int $maxDepth = self::MAX_SELECTION_DEPTH): ?array
     {
         $named = Type::getNamedType($type);
 
-        if (! $named instanceof ObjectType || $depth > self::MAX_SELECTION_DEPTH) {
+        if (! $named instanceof ObjectType || $depth > $maxDepth) {
             return null;
         }
 
         $fields = $named->getFields();
 
         if (isset($fields['edges'])) {
-            $node = $this->selectionTree(Type::getNamedType($fields['edges']->getType())->getFields()['node']->getType(), $depth + 1);
+            $node = $this->selectionTree(Type::getNamedType($fields['edges']->getType())->getFields()['node']->getType(), $depth + 1, $maxDepth);
 
             return $node === null ? null : [
                 'edges' => ['node' => $node],
@@ -1069,7 +1077,7 @@ GQL;
                 }
             }
 
-            $subTree = $this->selectionTree($child->getType(), $depth + 1);
+            $subTree = $this->selectionTree($child->getType(), $depth + 1, $maxDepth);
 
             if ($subTree === null && Type::getNamedType($child->getType()) instanceof ObjectType) {
                 continue;

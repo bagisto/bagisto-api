@@ -143,6 +143,8 @@ class StoreConfigProvider implements ProviderInterface
         $config->tax_calculation_based_on = core()->getConfigData('sales.taxes.calculation.based_on') ?: 'shipping_address';
         $config->tax_product_prices = self::taxDisplay('sales.taxes.calculation.product_prices');
         $config->tax_shipping_prices = self::taxDisplay('sales.taxes.calculation.shipping_prices');
+        $config->tax_shipping_category_id = self::number('sales.taxes.categories.shipping') ?: null;
+        $config->tax_product_category_id = self::number('sales.taxes.categories.product') ?: null;
         $config->tax_apply_on = core()->getConfigData('sales.taxes.calculation.apply_tax_on') ?: 'after_discount';
         $config->tax_default_country = self::text('sales.taxes.default_destination_calculation.country');
         $config->tax_default_state = self::text('sales.taxes.default_destination_calculation.state');

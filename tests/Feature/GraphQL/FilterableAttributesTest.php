@@ -81,6 +81,46 @@ class FilterableAttributesTest extends GraphQLTestCase
             ->and($this->nodeIds($response, 'data.categoryAttributeFilters'))->toBe([$colorId]);
     }
 
+    public function test_each_filter_lists_only_its_own_options(): void
+    {
+        $this->seedRequiredData();
+
+        $category = $this->createCategory();
+
+        $attributeIds = Attribute::query()->whereIn('code', ['color', 'size'])->pluck('id', 'code');
+
+        foreach ($attributeIds as $code => $attributeId) {
+            $this->createAttributeOption($attributeId, 'Only '.$code);
+
+            DB::table('category_filterable_attributes')->insert([
+                'category_id' => $category->id,
+                'attribute_id' => $attributeId,
+            ]);
+        }
+
+        $response = $this->graphQL(<<<'GQL'
+            query filters($categoryId: Int) {
+              categoryAttributeFilters(categoryId: $categoryId, first: 50) {
+                edges { node { _id code options(first: 50) { edges { node { _id adminName } } } } }
+              }
+            }
+        GQL, ['categoryId' => $category->id]);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $filters = collect($response->json('data.categoryAttributeFilters.edges'))->keyBy('node.code');
+
+        foreach ($attributeIds as $code => $attributeId) {
+            $optionIds = collect($filters[$code]['node']['options']['edges'])->map(fn ($edge) => (int) $edge['node']['_id'])->sort()->values()->all();
+
+            $expected = DB::table('attribute_options')->where('attribute_id', $attributeId)->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+            expect($optionIds)->toBe($expected)
+                ->and(collect($filters[$code]['node']['options']['edges'])->pluck('node.adminName'))->toContain('Only '.$code);
+        }
+    }
+
     public function test_category_without_own_attributes_returns_none(): void
     {
         $this->seedRequiredData();

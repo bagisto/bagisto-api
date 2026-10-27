@@ -4373,6 +4373,13 @@ type StoreConfig implements Node {
   taxCalculationBasedOn: String
   taxProductPrices: String
   taxShippingPrices: String
+
+  "Tax category applied to shipping (Sales → Taxes → Tax Categories). Null when set to None."
+  taxShippingCategoryId: Int
+
+  "Default tax category for products that have none of their own. Null when set to None."
+  taxProductCategoryId: Int
+
   taxApplyOn: String
   taxDefaultCountry: String
   taxDefaultState: String

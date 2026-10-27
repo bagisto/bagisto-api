@@ -151,7 +151,7 @@ test.describe('Cart GraphQL API Tests', () => {
     expect(stillPresent).toBeFalsy();
   });
 
-  test('Should apply and remove a coupon on the cart', async ({ request }) => {
+  test('Should refuse an unknown coupon and remove the coupon from the cart', async ({ request }) => {
     const guestHeaders = await getGuestCartHeaders(request);
     await addProductAndGetItemId(request, guestHeaders);
 
@@ -164,8 +164,8 @@ test.describe('Cart GraphQL API Tests', () => {
     expect(applyResponse.status()).toBe(200);
 
     const applyBody = await applyResponse.json();
-    expect(applyBody.errors, `apply coupon errored: ${graphQLErrorMessages(applyBody).join(' | ')}`).toBeUndefined();
-    expect(applyBody.data?.createApplyCoupon?.applyCoupon).toBeTruthy();
+    expect(graphQLErrorMessages(applyBody)).toContain('Coupon code is invalid.');
+    expect(applyBody.data?.createApplyCoupon ?? null).toBeNull();
 
     const removeResponse = await sendGraphQLRequest(request, REMOVE_COUPON, {}, guestHeaders);
     expect(removeResponse.status()).toBe(200);
@@ -281,7 +281,7 @@ test.describe('Cart — coupon regressions (2026-05-25)', () => {
     expect(typeof removePayload.message === 'string' && removePayload.message.length > 0).toBe(true);
   });
 
-  test('Should set success=false and a non-empty message on applyCoupon (unknown code)', async ({ request }) => {
+  test('Should refuse an unknown code with the storefront message on applyCoupon', async ({ request }) => {
     const guestHeaders = await getGuestCartHeaders(request);
     await addProductAndGetItemId(request, guestHeaders);
 
@@ -294,9 +294,7 @@ test.describe('Cart — coupon regressions (2026-05-25)', () => {
     expect(response.status()).toBe(200);
 
     const body = await response.json();
-    const payload = body.data?.createApplyCoupon?.applyCoupon;
-    expect(payload, `applyCoupon returned no payload for invalid code: ${JSON.stringify(body)}`).toBeTruthy();
-    expect(payload.success).toBe(false);
-    expect(typeof payload.message === 'string' && payload.message.length > 0).toBe(true);
+    expect(graphQLErrorMessages(body)).toContain('Coupon code is invalid.');
+    expect(body.data?.createApplyCoupon ?? null).toBeNull();
   });
 });

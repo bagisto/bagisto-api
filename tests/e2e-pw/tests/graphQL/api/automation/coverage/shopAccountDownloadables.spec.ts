@@ -37,7 +37,7 @@ test.describe('shop account product downloadable links graphql api', () => {
     const link = body.data.productDownloadableLink;
     expect(link._id).toBe(linkIds[0]);
     expect(typeof link.type).toBe('string');
-    expect(typeof link.price).toBe('string');
+    expect(typeof link.price).toBe('number');
     expect(link.product._id).toBe(fx.downloadable!.productId);
   });
 

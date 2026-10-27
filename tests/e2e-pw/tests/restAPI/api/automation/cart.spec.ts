@@ -24,7 +24,7 @@ const MSG = {
   CART_ITEM_NOT_FOUND: 'Cart item not found',
   COUPON_APPLIED: 'Coupon applied successfully',
   COUPON_REMOVED: 'Coupon removed successfully',
-  APPLY_COUPON_FAILED: 'Failed to apply coupon',
+  COUPON_INVALID: 'Coupon code is invalid.',
 };
 
 const ALL_CUSTOMER_GROUP_IDS = [1, 2, 3];
@@ -267,18 +267,16 @@ test.describe('regression coupon flow returns coupon code success and message', 
     expect(after.couponCode).toBeNull();
   });
 
-  test('apply unknown coupon reports failure and leaves no coupon code', async ({ request }) => {
+  test('apply unknown coupon is refused with 422 and leaves no coupon code', async ({ request }) => {
     const { cart } = await guestCartWithLine(request);
     const bogus = `INVALIDCODE${uniqueSuffix().replace(/[^0-9]/g, '')}`;
 
     const body = await expectCartPayload(
       await postCart(request, ENDPOINTS.APPLY_COUPON, cart.token, { couponCode: bogus }),
-      201
+      422
     );
 
-    expect(body.success).toBe(false);
-    expect(body.message).toBe(MSG.APPLY_COUPON_FAILED);
-    expect(body.couponCode).toBeNull();
+    expect(body.detail ?? body.message).toBe(MSG.COUPON_INVALID);
 
     const after = await expectCartPayload(await readCart(request, cart.token), 201);
     expect(after.couponCode).toBeNull();

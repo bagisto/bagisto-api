@@ -429,6 +429,7 @@ class CheckoutProcessor implements ProcessorInterface
                 'id' => $cart->id,
                 'cartToken' => $this->resolveCartToken($cart),
                 'orderId' => (string) $order->id,
+                'incrementId' => (string) $order->increment_id,
                 'redirect' => false,
                 'redirectUrl' => null,
                 'success' => true,

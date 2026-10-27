@@ -5522,6 +5522,9 @@ type createCheckoutOrderPayloadData implements Node {
   cartToken: String
   orderId: String
 
+  "The order number shown to the shopper (with the configured prefix, length and suffix), as on the storefront order success page. Null when redirect is true, because no order exists yet."
+  incrementId: String
+
   "True when the selected payment method requires the shopper to be sent to a payment page before the order is created."
   redirect: Boolean
 

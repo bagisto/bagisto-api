@@ -138,6 +138,39 @@ class CheckoutOrderTest extends RestApiTestCase
         expect($json['orderId'])->not->toBeNull();
 
         $this->assertDatabaseHas('orders', ['id' => (int) $json['orderId']]);
+
+        expect($json['incrementId'])->toBe((string) Order::find((int) $json['orderId'])->increment_id);
+    }
+
+    public function test_place_order_returns_the_configured_order_number(): void
+    {
+        foreach (['order_number_prefix' => 'PRE', 'order_number_length' => '6', 'order_number_suffix' => 'SUF'] as $field => $value) {
+            $code = 'sales.order_settings.order_number.'.$field;
+
+            DB::table('core_config')->where('code', $code)->delete();
+
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+
+        $customer = $this->createAuthenticatedCustomer();
+        $this->addProductToCart($customer);
+        $this->setCheckoutAddress($customer);
+        $this->setShippingMethod($customer);
+        $this->setPaymentMethod($customer, 'cashondelivery');
+
+        $json = $this->authenticatedPost($customer, $this->url)->assertCreated()->json();
+
+        expect($json['incrementId'])->toMatch('/^PRE\d{6}SUF$/');
+        expect($json['incrementId'])->toBe((string) Order::find((int) $json['orderId'])->increment_id);
     }
 
     public function test_place_order_with_redirect_gateway_returns_redirect_and_creates_no_order(): void
@@ -160,6 +193,7 @@ class CheckoutOrderTest extends RestApiTestCase
         expect($json['redirect'])->toBeTrue();
         expect($json['redirectUrl'])->toContain('/stripe/redirect');
         expect($json['orderId'])->toBeNull();
+        expect($json['incrementId'])->toBeNull();
 
         expect(Order::count())->toBe($ordersBefore);
     }

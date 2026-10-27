@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
 class GuestCheckoutTest extends GraphQLTestCase
@@ -413,6 +414,7 @@ class GuestCheckoutTest extends GraphQLTestCase
                 checkoutOrder {
                   id
                   orderId
+                  incrementId
                 }
               }
             }
@@ -427,6 +429,14 @@ class GuestCheckoutTest extends GraphQLTestCase
         $this->assertNotNull($data, 'checkout order response is null');
         $this->assertArrayHasKey('id', $data);
         $this->assertArrayHasKey('orderId', $data);
+        $this->assertArrayHasKey('incrementId', $data);
+
+        if ($data['orderId'] !== null) {
+            $this->assertSame(
+                (string) DB::table('orders')->where('id', (int) $data['orderId'])->value('increment_id'),
+                $data['incrementId'],
+            );
+        }
     }
 
     /**

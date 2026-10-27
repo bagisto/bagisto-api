@@ -52,7 +52,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                 ),
                 responses: [
                     201 => new Response(
-                        description: 'Order placed, or a payment redirect is required. Check the `redirect` flag: when it is false the order exists and `orderId` is set; when it is true no order has been created yet and the shopper must be sent to `redirectUrl` to pay — the order is created once the gateway returns.',
+                        description: 'Order placed, or a payment redirect is required. Check the `redirect` flag: when it is false the order exists and `orderId` and `incrementId` (the order number to show the shopper) are set; when it is true no order has been created yet and the shopper must be sent to `redirectUrl` to pay — the order is created once the gateway returns.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'examples' => new \ArrayObject([
@@ -61,6 +61,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                                             'id' => 6887,
                                             'cartToken' => '1536',
                                             'orderId' => '2609',
+                                            'incrementId' => '2609',
                                             'redirect' => false,
                                             'redirectUrl' => null,
                                             'success' => true,
@@ -72,6 +73,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                                             'id' => 6887,
                                             'cartToken' => '1536',
                                             'orderId' => null,
+                                            'incrementId' => null,
                                             'redirect' => true,
                                             'redirectUrl' => 'https://example.com/stripe/redirect',
                                             'success' => true,
@@ -119,6 +121,10 @@ class CheckoutOrder
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $orderId = null;
+
+    #[ApiProperty(readable: true, writable: false, description: 'The order number shown to the shopper (with the configured prefix, length and suffix), as on the storefront order success page. Null when redirect is true, because no order exists yet.')]
+    #[Groups(['query', 'mutation'])]
+    public ?string $incrementId = null;
 
     #[ApiProperty(readable: true, writable: false, description: 'True when the selected payment method requires the shopper to be sent to a payment page before the order is created.')]
     #[Groups(['query', 'mutation'])]

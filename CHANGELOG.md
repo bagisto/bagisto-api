@@ -11,6 +11,7 @@ Security and correctness release from the Bagisto v2.4.10 API audit. Tested agai
 
 ### Added
 
+- `createCheckoutOrder` and `POST /api/shop/checkout-orders` return `incrementId`: the order number shown to the shopper, with the configured prefix, length and suffix, as on the storefront order success page. It is null when `redirect` is true, because no order exists yet.
 - Admin Create Order can add booking products, as the admin panel does in 2.4.10. `POST /api/admin/carts/{id}/items` and `addItemAdminCart` take a `booking` object (`type`, `date`, `slot`, and the rental, table or event fields).
 - `GET /api/admin/booking-products/{productId}/config` (`configAdminBookingProduct`): what the Create Order booking drawer shows — sub-type, availability window, calendar, and the rental, table or event-ticket data.
 - `GET /api/admin/booking-products/{productId}/slots?date=` (`adminBookingProductSlots`): the slots a booking product offers on one date.

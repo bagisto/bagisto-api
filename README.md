@@ -223,6 +223,19 @@ Storefront customers follow the same model through `/api/shop`: `POST /api/shop/
 
 Access tokens and API tokens are ES256-signed JWTs. `bagisto-api-platform:install` creates the key pair with `php artisan bagisto-api:jwt-keys` under `storage/app/private/bagisto-api/jwt/`. On several servers, every node needs the same keys: set `BAGISTO_API_JWT_PRIVATE_KEY` and `BAGISTO_API_JWT_PUBLIC_KEY` (PEM or base64-encoded PEM) instead. `bagisto-api:jwt-keys --rotate` makes a new signing key and keeps the old public key, so issued tokens keep working; API tokens signed by the old key are listed, and `--reissue-api-tokens` signs them again and prints each new token once.
 
+Keys set through the environment are rotated in the environment, not with `--rotate`:
+
+1. Run `php artisan bagisto-api:jwt-keys` and note the current key id it prints. That is `BAGISTO_API_JWT_KID` when you set one, otherwise the key's SHA-256 thumbprint.
+2. Set the new pair in `BAGISTO_API_JWT_PRIVATE_KEY` and `BAGISTO_API_JWT_PUBLIC_KEY`, and change `BAGISTO_API_JWT_KID` too if you use it.
+3. Move the old public key into `BAGISTO_API_JWT_PREVIOUS_PUBLIC_KEYS`, a JSON object of key id to PEM (or base64-encoded PEM). Several old keys can be listed.
+4. Clear and rebuild the config cache (`php artisan bagisto-api-platform:optimize`) on every node.
+
+```dotenv
+BAGISTO_API_JWT_PREVIOUS_PUBLIC_KEYS='{"3sKcJ9vV0yWq4mXo8hTzN2aLpE6rUbFd1gYiQ7cHk5s":"LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0K..."}'
+```
+
+API tokens signed by an old key keep verifying while its public key is listed there; run `bagisto-api:jwt-keys --reissue-api-tokens` to sign them with the new key, then remove the old entry. Access tokens signed by an old environment key are refused straight away, so admin and customer apps get `401` once and recover by calling refresh, because refresh tokens are not signed. Removing an entry stops every token signed by that key.
+
 ## Documentation
 - Authentication guide: [`docs/authentication.md`](docs/authentication.md)
 - Bagisto API: [Demo Page](https://api-demo.bagisto.com/api)

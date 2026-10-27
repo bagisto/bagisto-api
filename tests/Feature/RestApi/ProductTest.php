@@ -942,6 +942,39 @@ class ProductTest extends RestApiTestCase
     }
 
     /**
+     * The specification table looks an option attribute up by its option id, which PostgreSQL requires, and shows its label.
+     */
+    public function test_product_detail_specification_resolves_an_option_attribute_by_its_id(): void
+    {
+        $attribute = Attribute::query()->where('code', 'color')->first();
+
+        if (
+            ! $attribute
+            || ! ($option = $attribute->options()->first())
+        ) {
+            $this->markTestSkipped('Color attribute/options not seeded.');
+        }
+
+        $attribute->forceFill(['is_visible_on_front' => 1])->save();
+
+        $product = $this->seedSaleableProduct();
+        $this->upsertProductAttributeValue($product->id, 'color', $option->id, null, 'default');
+
+        DB::enableQueryLog();
+
+        $response = $this->publicGet($this->collectionUrl.'/'.$product->id);
+
+        $optionBindings = collect(DB::getQueryLog())
+            ->filter(fn (array $query) => str_contains($query['query'], 'attribute_options'))
+            ->flatMap(fn (array $query) => $query['bindings']);
+
+        $response->assertOk();
+
+        expect($optionBindings->reject(fn ($binding) => is_numeric($binding)))->toBeEmpty()
+            ->and(collect($response->json('additionalAttributes'))->firstWhere('code', 'color')['value'])->toBe($option->label);
+    }
+
+    /**
      * Searching finds a configurable product through the name of one of its variants, as core's search does.
      */
     public function test_search_matches_a_configurable_product_by_its_variant_name(): void

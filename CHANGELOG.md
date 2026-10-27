@@ -79,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** admin customer impersonation: REST `POST /api/admin/customers/{id}/impersonate` and GraphQL `createAdminCustomerImpersonate`, which issued a Sanctum token for the customer. Customer tokens are now login sessions bound to the customer's own credentials, and an admin acting with them would bypass the session, audit and revocation rules; there is no replacement.
 
 ### Fixed
+- REST `GET /api/shop/products/{id}` no longer answers `500` on PostgreSQL for a product with a select attribute shown in the specification table: the option was looked up by its label instead of its id, which MySQL coerced silently and PostgreSQL refused.
 - A token refresh (admin and customer) claims the refresh token and issues the new pair in one database transaction. A failure part way used to leave the token used with no replacement, so the client's retry was treated as reuse and ended the whole session; the retry now succeeds.
 - Merging a guest cart, at login (`guest_cart_token`) or through the merge-cart operation, locks the guest cart first, so two concurrent requests cannot merge it twice; the second finds it merged. Each guest cart item is added in its own savepoint and skipped when it cannot be added, as core does, so a failed item no longer aborts the login transaction on PostgreSQL.
 - A logout, logout-all or any other write sent with no body is accepted whatever its `Content-Type`; a bare `curl -X POST`, which sends `application/x-www-form-urlencoded`, got `415`.

@@ -26,6 +26,7 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\Product\Helpers\ConfigurableOption;
 use Webkul\Product\Helpers\View;
+use Webkul\Product\Models\Product as CoreProduct;
 
 class ProductDetailProvider implements ProviderInterface
 {
@@ -122,7 +123,7 @@ class ProductDetailProvider implements ProviderInterface
         $dto->average_rating = $product->average_rating;
         $dto->total_rating = $product->total_rating;
         $dto->reviews_count = $product->reviews_count;
-        $dto->additional_attributes = collect(app(View::class)->getAdditionalData($product))
+        $dto->additional_attributes = collect(app(View::class)->getAdditionalData($this->coreProduct($product)))
             ->map(fn (array $attribute) => [
                 'id' => $attribute['id'] ?? null,
                 'code' => $attribute['code'] ?? null,
@@ -453,6 +454,14 @@ class ProductDetailProvider implements ProviderInterface
     private function buildBookingProduct($bookingProduct): BookingProductDto
     {
         return BookingProductDto::fromModel($bookingProduct);
+    }
+
+    /**
+     * The product as core's model, whose option attributes read as option ids rather than the labels this API returns.
+     */
+    private function coreProduct(Product $product): CoreProduct
+    {
+        return (new CoreProduct)->newFromBuilder($product->getAttributes())->setRelations($product->getRelations());
     }
 
     /**

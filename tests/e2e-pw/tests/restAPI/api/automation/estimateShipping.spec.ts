@@ -1,9 +1,8 @@
 // tests/restAPI/api/automation/estimateShipping.spec.ts
 //
-// EstimateShipping is declared in the BagistoApi package as GraphQL-only
-// (`operations: []`, `graphQlOperations: [Mutation]`). These REST smoke tests
-// poke the URL anyway to lock down the expected absence of a REST endpoint
-// (so a future REST exposure shows up here instead of silently shipping).
+// EstimateShipping is exposed over REST as `POST /api/shop/estimate-shippings`
+// (there is no GET). It estimates shipping for the cart of the Bearer token, so
+// a request without a cart token is refused with 401.
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
@@ -24,7 +23,7 @@ test.describe('Estimate Shipping REST API', () => {
       method: 'POST',
       data: {},
     });
-    assertStatus(response, 'POST /api/shop/estimate-shippings empty', [0, 200, 400, 404, 405, 422, 500]);
+    assertStatus(response, 'POST /api/shop/estimate-shippings empty', [400, 401, 403, 422]);
   });
 
   test('POST with non-shippable params returns 4xx', async ({ request }) => {
@@ -32,6 +31,6 @@ test.describe('Estimate Shipping REST API', () => {
       method: 'POST',
       data: { country: 'US', postcode: '94103', token: 'invalid-token' },
     });
-    assertStatus(response, 'POST /api/shop/estimate-shippings invalid token', [0, 200, 400, 404, 405, 422, 500]);
+    assertStatus(response, 'POST /api/shop/estimate-shippings invalid token', [400, 401, 403, 422]);
   });
 });

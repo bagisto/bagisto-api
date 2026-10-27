@@ -514,8 +514,9 @@ export const assertAttributeByIdNode = (attribute: any) => {
     expect(typeof attribute.regex).toBe('string');
   }
 
+  // `defaultValue` is typed Int in the schema.
   if (attribute.defaultValue !== undefined && attribute.defaultValue !== null) {
-    expect(typeof attribute.defaultValue).toBe('string');
+    expect(typeof attribute.defaultValue).toBe('number');
   }
 
   if (attribute.columnName !== undefined && attribute.columnName !== null) {
@@ -647,8 +648,9 @@ export const assertAttributeByIdFullNode = (attribute: any) => {
     expect(typeof attribute.regex).toBe('string');
   }
 
+  // `defaultValue` is typed Int in the schema.
   if (attribute.defaultValue !== undefined && attribute.defaultValue !== null) {
-    expect(typeof attribute.defaultValue).toBe('string');
+    expect(typeof attribute.defaultValue).toBe('number');
   }
 
   if (attribute.columnName !== undefined && attribute.columnName !== null) {

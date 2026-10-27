@@ -148,6 +148,7 @@ class AttributeOptionCollectionProvider implements ProviderInterface
     private function cursorPaging(array $args): array
     {
         $perPage = isset($args['first']) ? (int) $args['first'] : (isset($args['last']) ? (int) $args['last'] : self::DEFAULT_PER_PAGE);
+        $perPage = max(0, $perPage);
         $offset = 0;
 
         if (! empty($args['after'])) {
@@ -164,8 +165,17 @@ class AttributeOptionCollectionProvider implements ProviderInterface
         return [$perPage, $offset];
     }
 
+    /**
+     * Wrap a page of options. `first: 0` asks for no options, only the total, so it gets an empty
+     * page rather than a division by zero.
+     */
     private function paginate(Collection $items, int $total, int $perPage, int $offset): Paginator
     {
+        if ($perPage < 1) {
+            $items = collect();
+            $perPage = 1;
+        }
+
         $currentPage = $total > 0 ? (int) floor($offset / $perPage) + 1 : 1;
 
         return new Paginator(

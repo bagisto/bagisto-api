@@ -121,6 +121,18 @@ class FilterableAttributesTest extends GraphQLTestCase
         }
     }
 
+    public function test_attribute_options_with_first_zero_return_an_empty_page(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->graphQL('{ attributeOptions(first: 0) { edges { node { _id } } totalCount } }');
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.attributeOptions.edges'))->toBe([])
+            ->and($response->json('data.attributeOptions.totalCount'))->toBe(DB::table('attribute_options')->count());
+    }
+
     public function test_category_without_own_attributes_returns_none(): void
     {
         $this->seedRequiredData();

@@ -1675,7 +1675,7 @@ return [
                     'refresh-token-ttl' => 'Durada del token de refresc (dies)',
                     'refresh-token-ttl-info' => 'Entre 1 i 90 dies. Per defecte 30.',
                     'session-lifetime' => 'Durada màxima de la sessió (dies)',
-                    'session-lifetime-info' => 'Entre 1 i 365 dies. Per defecte 90. Després, l\'administrador ha de tornar a iniciar sessió, per molt que s\'hagi refrescat la sessió.',
+                    'session-lifetime-info' => 'Entre 1 i 365 dies. Per defecte 90. Després, el client ha de tornar a iniciar sessió, per molt que s\'hagi refrescat la sessió.',
                     'max-sessions' => 'Màxim de sessions actives per client',
                     'max-sessions-info' => 'En arribar al límit, es tanca la sessió més antiga. Entre 0 i 100. 0 vol dir sense límit.',
                 ],

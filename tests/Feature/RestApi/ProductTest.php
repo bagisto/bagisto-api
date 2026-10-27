@@ -971,7 +971,45 @@ class ProductTest extends RestApiTestCase
         $response->assertOk();
 
         expect($optionBindings->reject(fn ($binding) => is_numeric($binding)))->toBeEmpty()
+            ->and($response->json('color'))->toBe($option->id)
             ->and(collect($response->json('additionalAttributes'))->firstWhere('code', 'color')['value'])->toBe($option->label);
+    }
+
+    /**
+     * The configurable option configuration indexes each variant by its option id, so the option picker can match it.
+     */
+    public function test_configurable_config_indexes_variants_by_option_id(): void
+    {
+        $color = Attribute::query()->where('code', 'color')->first();
+
+        if (! $color) {
+            $this->markTestSkipped('Color attribute not seeded.');
+        }
+
+        $parent = $this->seedSaleableProduct('configurable');
+        $variant = $this->seedSaleableProduct();
+
+        $variant->forceFill(['parent_id' => $parent->id])->save();
+        $this->ensureInventory($variant, 10);
+
+        $optionId = $this->createAttributeOption((int) $color->id, 'REST-COLOR-'.uniqid());
+
+        DB::table('product_super_attributes')->insert([
+            'product_id' => $parent->id,
+            'attribute_id' => $color->id,
+        ]);
+
+        $this->upsertProductAttributeValue($variant->id, 'color', $optionId, null, 'default');
+
+        $response = $this->publicGet($this->collectionUrl.'/'.$parent->id);
+
+        $response->assertOk();
+
+        $option = collect(collect($response->json('configurableConfig.attributes'))->firstWhere('code', 'color')['options'] ?? [])
+            ->firstWhere('id', $optionId);
+
+        expect($response->json('configurableConfig.index.'.$variant->id.'.'.$color->id))->toBe($optionId)
+            ->and($option['products'] ?? [])->toContain($variant->id);
     }
 
     /**

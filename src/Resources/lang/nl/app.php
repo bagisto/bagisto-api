@@ -1675,7 +1675,7 @@ return [
                     'refresh-token-ttl' => 'Looptijd vernieuwingstoken (dagen)',
                     'refresh-token-ttl-info' => 'Tussen 1 en 90 dagen. Standaard 30.',
                     'session-lifetime' => 'Maximale sessieduur (dagen)',
-                    'session-lifetime-info' => 'Tussen 1 en 365 dagen. Standaard 90. Daarna moet de beheerder opnieuw inloggen, hoe vaak de sessie ook is vernieuwd.',
+                    'session-lifetime-info' => 'Tussen 1 en 365 dagen. Standaard 90. Daarna moet de klant opnieuw inloggen, hoe vaak de sessie ook is vernieuwd.',
                     'max-sessions' => 'Maximaal aantal actieve sessies per klant',
                     'max-sessions-info' => 'Als de limiet is bereikt, wordt de oudste sessie beëindigd. Tussen 0 en 100. 0 betekent geen limiet.',
                 ],

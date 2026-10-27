@@ -1675,7 +1675,7 @@ return [
                     'refresh-token-ttl' => 'Duración del token de actualización (días)',
                     'refresh-token-ttl-info' => 'Entre 1 y 90 días. Por defecto 30.',
                     'session-lifetime' => 'Duración máxima de la sesión (días)',
-                    'session-lifetime-info' => 'Entre 1 y 365 días. Por defecto 90. Después, el administrador debe iniciar sesión de nuevo, sin importar cuántas veces se haya actualizado la sesión.',
+                    'session-lifetime-info' => 'Entre 1 y 365 días. Por defecto 90. Después, el cliente debe iniciar sesión de nuevo, sin importar cuántas veces se haya actualizado la sesión.',
                     'max-sessions' => 'Máximo de sesiones activas por cliente',
                     'max-sessions-info' => 'Al alcanzar el límite, se cierra la sesión más antigua. Entre 0 y 100. 0 significa sin límite.',
                 ],

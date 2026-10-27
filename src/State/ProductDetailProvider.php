@@ -138,9 +138,10 @@ class ProductDetailProvider implements ProviderInterface
         $dto->is_in_wishlist = app(ProductRelationFlagResolver::class)->isInWishlist((int) $product->id) ? 1 : 0;
         $dto->is_in_compare = app(ProductRelationFlagResolver::class)->isInCompare((int) $product->id) ? 1 : 0;
         $dto->attributes = $this->buildAttributes($product);
-        $dto->color = $this->intOrNull($product->color);
-        $dto->size = $this->intOrNull($product->size);
-        $dto->brand = $this->intOrNull($product->brand);
+        $coreProduct = $this->coreProduct($product);
+        $dto->color = $this->intOrNull($coreProduct->color);
+        $dto->size = $this->intOrNull($coreProduct->size);
+        $dto->brand = $this->intOrNull($coreProduct->brand);
     }
 
     /**
@@ -222,7 +223,7 @@ class ProductDetailProvider implements ProviderInterface
      */
     private function fillConfigurable(ProductDetailDto $dto, Product $product): void
     {
-        $dto->configurable_config = app(ConfigurableOption::class)->getConfigurationConfig($product);
+        $dto->configurable_config = app(ConfigurableOption::class)->getConfigurationConfig($this->coreProduct($product));
 
         $superAttributeIds = $product->super_attributes->pluck('id')->toArray();
         $superAttributeCodeMap = $product->super_attributes->pluck('code', 'id')->toArray();

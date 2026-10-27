@@ -1675,7 +1675,7 @@ return [
                     'refresh-token-ttl' => 'Masa Berlaku Token Penyegaran (hari)',
                     'refresh-token-ttl-info' => 'Antara 1 dan 90 hari. Bawaan 30.',
                     'session-lifetime' => 'Masa Berlaku Maksimum Sesi (hari)',
-                    'session-lifetime-info' => 'Antara 1 dan 365 hari. Bawaan 90. Setelah itu admin harus login lagi, berapa kali pun sesi disegarkan.',
+                    'session-lifetime-info' => 'Antara 1 dan 365 hari. Bawaan 90. Setelah itu pelanggan harus login lagi, berapa kali pun sesi disegarkan.',
                     'max-sessions' => 'Sesi Aktif Maksimum per Pelanggan',
                     'max-sessions-info' => 'Saat batas tercapai, sesi tertua diakhiri. Antara 0 dan 100. 0 berarti tanpa batas.',
                 ],

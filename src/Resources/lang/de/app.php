@@ -1675,7 +1675,7 @@ return [
                     'refresh-token-ttl' => 'Laufzeit des Aktualisierungstokens (Tage)',
                     'refresh-token-ttl-info' => 'Zwischen 1 und 90 Tagen. Standard 30.',
                     'session-lifetime' => 'Maximale Sitzungsdauer (Tage)',
-                    'session-lifetime-info' => 'Zwischen 1 und 365 Tagen. Standard 90. Danach muss sich der Admin erneut anmelden, egal wie oft die Sitzung aktualisiert wurde.',
+                    'session-lifetime-info' => 'Zwischen 1 und 365 Tagen. Standard 90. Danach muss sich der Kunde erneut anmelden, egal wie oft die Sitzung aktualisiert wurde.',
                     'max-sessions' => 'Maximale aktive Sitzungen je Kunde',
                     'max-sessions-info' => 'Wird das Limit erreicht, wird die älteste Sitzung beendet. Zwischen 0 und 100. 0 bedeutet kein Limit.',
                 ],

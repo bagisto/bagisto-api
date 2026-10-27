@@ -1675,7 +1675,7 @@ return [
                     'refresh-token-ttl' => 'Yenileme Belirteci Süresi (gün)',
                     'refresh-token-ttl-info' => '1 ile 90 gün arası. Varsayılan 30.',
                     'session-lifetime' => 'En Uzun Oturum Süresi (gün)',
-                    'session-lifetime-info' => '1 ile 365 gün arası. Varsayılan 90. Bundan sonra oturum kaç kez yenilenmiş olursa olsun yönetici yeniden giriş yapmalıdır.',
+                    'session-lifetime-info' => '1 ile 365 gün arası. Varsayılan 90. Bundan sonra oturum kaç kez yenilenmiş olursa olsun müşteri yeniden giriş yapmalıdır.',
                     'max-sessions' => 'Müşteri Başına En Fazla Etkin Oturum',
                     'max-sessions-info' => 'Sınıra ulaşıldığında en eski oturum sonlandırılır. 0 ile 100 arası. 0 sınır yok demektir.',
                 ],

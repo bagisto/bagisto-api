@@ -80,6 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - REST `GET /api/shop/products/{id}` no longer answers `500` on PostgreSQL for a product with a select attribute shown in the specification table: the option was looked up by its label instead of its id, which MySQL coerced silently and PostgreSQL refused.
+- REST `GET /api/shop/products/{id}`: `configurableConfig` indexes each variant by its option id for `color`, `size` and `brand` super attributes, and lists the variants under each of those options. It carried the option label instead, so the option picker matched no variant. `color`, `size` and `brand` on the detail now carry the option id; they were always `null`.
+- The *Absolute Session Lifetime* help text on *Configuration → API* named the wrong user: the English admin screen said "customer", and every other locale said "admin" on the customer screen.
 - A token refresh (admin and customer) claims the refresh token and issues the new pair in one database transaction. A failure part way used to leave the token used with no replacement, so the client's retry was treated as reuse and ended the whole session; the retry now succeeds.
 - Merging a guest cart, at login (`guest_cart_token`) or through the merge-cart operation, locks the guest cart first, so two concurrent requests cannot merge it twice; the second finds it merged. Each guest cart item is added in its own savepoint and skipped when it cannot be added, as core does, so a failed item no longer aborts the login transaction on PostgreSQL.
 - A logout, logout-all or any other write sent with no body is accepted whatever its `Content-Type`; a bare `curl -X POST`, which sends `application/x-www-form-urlencoded`, got `415`.

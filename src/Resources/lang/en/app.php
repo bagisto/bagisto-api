@@ -1725,7 +1725,7 @@ return [
                     'refresh-token-ttl' => 'Refresh Token Lifetime (days)',
                     'refresh-token-ttl-info' => 'Between 1 and 90 days. Default 30.',
                     'session-lifetime' => 'Absolute Session Lifetime (days)',
-                    'session-lifetime-info' => 'Between 1 and 365 days. Default 90. After this the customer must log in again, however often the session is refreshed.',
+                    'session-lifetime-info' => 'Between 1 and 365 days. Default 90. After this the admin must log in again, however often the session is refreshed.',
                 ],
 
                 'rate-limits' => [

@@ -1675,7 +1675,7 @@ return [
                     'refresh-token-ttl' => 'Durée du jeton de rafraîchissement (jours)',
                     'refresh-token-ttl-info' => 'Entre 1 et 90 jours. Par défaut 30.',
                     'session-lifetime' => 'Durée maximale de la session (jours)',
-                    'session-lifetime-info' => 'Entre 1 et 365 jours. Par défaut 90. Ensuite, l\'administrateur doit se reconnecter, quel que soit le nombre de rafraîchissements.',
+                    'session-lifetime-info' => 'Entre 1 et 365 jours. Par défaut 90. Ensuite, le client doit se reconnecter, quel que soit le nombre de rafraîchissements.',
                     'max-sessions' => 'Nombre maximal de sessions actives par client',
                     'max-sessions-info' => 'Une fois la limite atteinte, la session la plus ancienne est fermée. Entre 0 et 100. 0 signifie aucune limite.',
                 ],

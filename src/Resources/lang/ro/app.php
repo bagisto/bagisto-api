@@ -1675,7 +1675,7 @@ return [
                     'refresh-token-ttl' => 'Durata tokenului de reîmprospătare (zile)',
                     'refresh-token-ttl-info' => 'Între 1 și 90 de zile. Implicit 30.',
                     'session-lifetime' => 'Durata maximă a sesiunii (zile)',
-                    'session-lifetime-info' => 'Între 1 și 365 de zile. Implicit 90. După aceea administratorul trebuie să se autentifice din nou, indiferent de câte ori a fost reîmprospătată sesiunea.',
+                    'session-lifetime-info' => 'Între 1 și 365 de zile. Implicit 90. După aceea clientul trebuie să se autentifice din nou, indiferent de câte ori a fost reîmprospătată sesiunea.',
                     'max-sessions' => 'Numărul maxim de sesiuni active per client',
                     'max-sessions-info' => 'Când limita este atinsă, cea mai veche sesiune este încheiată. Între 0 și 100. 0 înseamnă fără limită.',
                 ],

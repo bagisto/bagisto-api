@@ -1675,7 +1675,7 @@ return [
                     'refresh-token-ttl' => 'Czas ważności tokenu odświeżania (dni)',
                     'refresh-token-ttl-info' => 'Od 1 do 90 dni. Domyślnie 30.',
                     'session-lifetime' => 'Maksymalny czas trwania sesji (dni)',
-                    'session-lifetime-info' => 'Od 1 do 365 dni. Domyślnie 90. Potem administrator musi zalogować się ponownie, niezależnie od liczby odświeżeń sesji.',
+                    'session-lifetime-info' => 'Od 1 do 365 dni. Domyślnie 90. Potem klient musi zalogować się ponownie, niezależnie od liczby odświeżeń sesji.',
                     'max-sessions' => 'Maksymalna liczba aktywnych sesji na klienta',
                     'max-sessions-info' => 'Po osiągnięciu limitu najstarsza sesja jest kończona. Od 0 do 100. 0 oznacza brak limitu.',
                 ],

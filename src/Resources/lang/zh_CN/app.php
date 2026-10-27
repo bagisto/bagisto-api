@@ -1675,7 +1675,7 @@ return [
                     'refresh-token-ttl' => '刷新令牌有效期（天）',
                     'refresh-token-ttl-info' => '1 到 90 天。默认 30。',
                     'session-lifetime' => '会话最长有效期（天）',
-                    'session-lifetime-info' => '1 到 365 天。默认 90。之后无论会话刷新多少次，管理员都必须重新登录。',
+                    'session-lifetime-info' => '1 到 365 天。默认 90。之后无论会话刷新多少次，客户都必须重新登录。',
                     'max-sessions' => '每个客户最大活跃会话数',
                     'max-sessions-info' => '达到上限时，最早的会话将被结束。0 到 100。0 表示不限制。',
                 ],

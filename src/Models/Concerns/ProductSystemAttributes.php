@@ -680,7 +680,7 @@ trait ProductSystemAttributes
      * Get color.
      */
     #[ApiProperty(writable: true, readable: true)]
-    public function getColor(): ?int
+    public function getColor(): ?string
     {
         return $this->getColorAttribute();
     }
@@ -707,7 +707,7 @@ trait ProductSystemAttributes
      * Get size.
      */
     #[ApiProperty(writable: true, readable: true)]
-    public function getSize(): ?int
+    public function getSize(): ?string
     {
         return $this->getSizeAttribute();
     }
@@ -732,7 +732,7 @@ trait ProductSystemAttributes
      * Get brand.
      */
     #[ApiProperty(writable: true, readable: true)]
-    public function getBrand(): ?int
+    public function getBrand(): ?string
     {
         return $this->getBrandAttribute();
     }

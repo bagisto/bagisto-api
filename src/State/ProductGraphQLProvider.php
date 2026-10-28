@@ -124,7 +124,7 @@ class ProductGraphQLProvider implements ProviderInterface
                         ->where('product_price_indices.customer_group_id', $customerGroup->id);
                 })
                     ->orderBy('product_price_indices.min_price', $direction)
-                    ->orderBy('products.id', $direction)
+                    ->orderBy('products.id', 'desc')
                     ->select('products.*');
                 break;
 

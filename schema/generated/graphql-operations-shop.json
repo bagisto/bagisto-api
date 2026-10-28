@@ -1,0 +1,927 @@
+{
+    "attribute": {
+        "kind": "query",
+        "tag": "Attribute",
+        "resource": "Webkul\\BagistoApi\\Models\\Attribute"
+    },
+    "attributeOption": {
+        "kind": "query",
+        "tag": "Attribute",
+        "resource": "Webkul\\BagistoApi\\Models\\AttributeOption"
+    },
+    "attributeOptions": {
+        "kind": "query",
+        "tag": "Attribute",
+        "resource": "Webkul\\BagistoApi\\Models\\AttributeOption"
+    },
+    "attributes": {
+        "kind": "query",
+        "tag": "Attribute",
+        "resource": "Webkul\\BagistoApi\\Models\\Attribute"
+    },
+    "bookingSlots": {
+        "kind": "query",
+        "tag": "Product Types",
+        "resource": "Webkul\\BagistoApi\\Models\\BookingSlot"
+    },
+    "cancelCustomerReturn": {
+        "kind": "mutation",
+        "tag": "Customer Return",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn"
+    },
+    "cartCrossSellProducts": {
+        "kind": "query",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\Product"
+    },
+    "categories": {
+        "kind": "query",
+        "tag": "Category",
+        "resource": "Webkul\\BagistoApi\\Models\\Category"
+    },
+    "category": {
+        "kind": "query",
+        "tag": "Category",
+        "resource": "Webkul\\BagistoApi\\Models\\Category"
+    },
+    "categoryAttributeFilters": {
+        "kind": "query",
+        "tag": "Category",
+        "resource": "Webkul\\BagistoApi\\Models\\Filter\\Attribute"
+    },
+    "categoryTrees": {
+        "kind": "query",
+        "tag": "CategoryTree",
+        "resource": "Webkul\\BagistoApi\\Models\\CategoryTree"
+    },
+    "channel": {
+        "kind": "query",
+        "tag": "Channel",
+        "resource": "Webkul\\BagistoApi\\Models\\Channel"
+    },
+    "channels": {
+        "kind": "query",
+        "tag": "Channel",
+        "resource": "Webkul\\BagistoApi\\Models\\Channel"
+    },
+    "closeCustomerReturn": {
+        "kind": "mutation",
+        "tag": "Customer Return",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn"
+    },
+    "collectionCustomerAddressToken": {
+        "kind": "query",
+        "tag": "CustomerAddressToken",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerAddressToken"
+    },
+    "collectionDefaultChannels": {
+        "kind": "query",
+        "tag": "DefaultChannel",
+        "resource": "Webkul\\BagistoApi\\Models\\DefaultChannel"
+    },
+    "collectionGetCheckoutAddresses": {
+        "kind": "query",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\GetCheckoutAddress"
+    },
+    "collectionPaymentMethods": {
+        "kind": "query",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\PaymentMethods"
+    },
+    "collectionShippingRates": {
+        "kind": "query",
+        "tag": "ShippingRates",
+        "resource": "Webkul\\BagistoApi\\Models\\ShippingRates"
+    },
+    "compareAttributes": {
+        "kind": "query",
+        "tag": "CompareItem",
+        "resource": "Webkul\\BagistoApi\\Models\\CompareAttribute"
+    },
+    "compareItem": {
+        "kind": "query",
+        "tag": "CompareItem",
+        "resource": "Webkul\\BagistoApi\\Models\\CompareItem"
+    },
+    "compareItems": {
+        "kind": "query",
+        "tag": "CompareItem",
+        "resource": "Webkul\\BagistoApi\\Models\\CompareItem"
+    },
+    "countries": {
+        "kind": "query",
+        "tag": "Country",
+        "resource": "Webkul\\BagistoApi\\Models\\Country"
+    },
+    "country": {
+        "kind": "query",
+        "tag": "Country",
+        "resource": "Webkul\\BagistoApi\\Models\\Country"
+    },
+    "countryState": {
+        "kind": "query",
+        "tag": "CountryState",
+        "resource": "Webkul\\BagistoApi\\Models\\CountryState"
+    },
+    "countryStates": {
+        "kind": "query",
+        "tag": "CountryState",
+        "resource": "Webkul\\BagistoApi\\Models\\CountryState"
+    },
+    "createAddProductInCart": {
+        "kind": "mutation",
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\AddProductInCart",
+        "example": {
+            "productId": 1,
+            "quantity": 1
+        }
+    },
+    "createAddUpdateCustomerAddress": {
+        "kind": "mutation",
+        "tag": "AddUpdateCustomerAddress",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerAddressAddUpdate"
+    },
+    "createApplyCoupon": {
+        "kind": "mutation",
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\ApplyCoupon"
+    },
+    "createCancelOrder": {
+        "kind": "mutation",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CancelOrder",
+        "example": {
+            "orderId": 411
+        }
+    },
+    "createCartToken": {
+        "kind": "mutation",
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\CartToken",
+        "example": {
+            "createNew": true
+        }
+    },
+    "createCheckoutAddress": {
+        "kind": "mutation",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutAddress"
+    },
+    "createCheckoutOrder": {
+        "kind": "mutation",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutOrder"
+    },
+    "createCheckoutPaymentConfirmation": {
+        "kind": "mutation",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutPaymentConfirmation"
+    },
+    "createCheckoutPaymentInitiation": {
+        "kind": "mutation",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutPaymentInitiation"
+    },
+    "createCheckoutPaymentMethod": {
+        "kind": "mutation",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutPaymentMethod",
+        "example": {
+            "paymentMethod": "moneytransfer"
+        }
+    },
+    "createCheckoutShippingMethod": {
+        "kind": "mutation",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutShippingMethod",
+        "example": {
+            "shippingMethod": "flatrate_flatrate"
+        }
+    },
+    "createCompareItem": {
+        "kind": "mutation",
+        "tag": "CompareItem",
+        "resource": "Webkul\\BagistoApi\\Models\\CompareItem",
+        "example": {
+            "product_id": 1
+        }
+    },
+    "createContactUs": {
+        "kind": "mutation",
+        "tag": "ContactUs",
+        "resource": "Webkul\\BagistoApi\\Models\\ContactUs",
+        "example": {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "contact": "1234567890",
+            "message": "Do you ship internationally?"
+        }
+    },
+    "createCustomer": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\Customer",
+        "example": {
+            "firstName": "John",
+            "lastName": "Doe",
+            "email": "john@example.com",
+            "password": "Password123!",
+            "confirmPassword": "Password123!"
+        }
+    },
+    "createCustomerAddressToken": {
+        "kind": "mutation",
+        "tag": "CustomerAddressToken",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerAddressToken"
+    },
+    "createCustomerLogin": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerLogin",
+        "example": {
+            "email": "john@example.com",
+            "password": "Password123!"
+        }
+    },
+    "createCustomerProfileDelete": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerProfileDelete",
+        "example": {
+            "password": "Secret@123"
+        }
+    },
+    "createCustomerProfileUpdate": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerProfileUpdate",
+        "example": {
+            "first_name": "Api",
+            "last_name": "DocUpdated",
+            "phone": "9998887777"
+        }
+    },
+    "createCustomerReturn": {
+        "kind": "mutation",
+        "tag": "Customer Return",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn"
+    },
+    "createCustomerReturnMessage": {
+        "kind": "mutation",
+        "tag": "Customer Return",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturnMessage"
+    },
+    "createDeleteAllCompareItems": {
+        "kind": "mutation",
+        "tag": "CompareItem",
+        "resource": "Webkul\\BagistoApi\\Models\\DeleteAllCompareItems"
+    },
+    "createDeleteAllWishlists": {
+        "kind": "mutation",
+        "tag": "Wishlist",
+        "resource": "Webkul\\BagistoApi\\Models\\DeleteAllWishlists"
+    },
+    "createDeleteCustomerAddress": {
+        "kind": "mutation",
+        "tag": "DeleteCustomerAddress",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerAddressDelete"
+    },
+    "createDeleteCustomerAddressToken": {
+        "kind": "mutation",
+        "tag": "CustomerAddressToken",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerAddressToken"
+    },
+    "createDownloadableProductDownloadLink": {
+        "kind": "mutation",
+        "tag": "DownloadableProductDownloadLink",
+        "resource": "Webkul\\BagistoApi\\Models\\DownloadableProductDownloadLink"
+    },
+    "createEstimateShipping": {
+        "kind": "mutation",
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\EstimateShipping",
+        "example": {
+            "country": "US",
+            "state": "CA",
+            "postcode": "90001"
+        }
+    },
+    "createEuWithdrawal": {
+        "kind": "mutation",
+        "tag": "EU Withdrawal",
+        "resource": "Webkul\\BagistoApi\\Models\\EuWithdrawal"
+    },
+    "createForgotPassword": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\ForgotPassword",
+        "example": {
+            "email": "john@example.com"
+        }
+    },
+    "createGdprRequest": {
+        "kind": "mutation",
+        "tag": "GDPR Requests",
+        "resource": "Webkul\\BagistoApi\\Models\\GdprRequest",
+        "example": {
+            "type": "delete",
+            "message": "Please delete my personal data."
+        }
+    },
+    "createGuestEuWithdrawal": {
+        "kind": "mutation",
+        "tag": "EU Withdrawal",
+        "resource": "Webkul\\BagistoApi\\Models\\GuestEuWithdrawal",
+        "example": {
+            "link": "https://shop.example.com/withdraw/34/create?expires=1784539800&signature=3f1c…",
+            "reason_text": "Changed my mind."
+        }
+    },
+    "createGuestEuWithdrawalLink": {
+        "kind": "mutation",
+        "tag": "EU Withdrawal",
+        "resource": "Webkul\\BagistoApi\\Models\\GuestEuWithdrawalLink",
+        "example": {
+            "order_increment_id": "1000123",
+            "email": "guest@example.com"
+        }
+    },
+    "createImageSearch": {
+        "kind": "mutation",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\ImageSearch"
+    },
+    "createLogout": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerLogout"
+    },
+    "createMergeCart": {
+        "kind": "mutation",
+        "tag": "MergeCart",
+        "resource": "Webkul\\BagistoApi\\Models\\MergeCart",
+        "example": {
+            "guest_cart_token": "2f1c6f7e-5a0b-4c1e-9d0a-1b2c3d4e5f60"
+        }
+    },
+    "createMoveToWishlist": {
+        "kind": "mutation",
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\MoveToWishlist",
+        "example": {
+            "itemIds": [
+                7766
+            ],
+            "quantities": [
+                1
+            ]
+        }
+    },
+    "createMutationCheckoutAddress": {
+        "kind": "mutation",
+        "tag": "MutationCheckoutAddress",
+        "resource": "Webkul\\BagistoApi\\Models\\MutationCheckoutAddress"
+    },
+    "createNewsletter": {
+        "kind": "mutation",
+        "tag": "Newsletter",
+        "resource": "Webkul\\BagistoApi\\Models\\Newsletter",
+        "example": {
+            "customerEmail": "jane@example.com"
+        }
+    },
+    "createNewsletterUnsubscribe": {
+        "kind": "mutation",
+        "tag": "Newsletter",
+        "resource": "Webkul\\BagistoApi\\Models\\NewsletterUnsubscribe",
+        "example": {
+            "token": "6a1f0c9e2b7d4"
+        }
+    },
+    "createProductReview": {
+        "kind": "mutation",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductReview",
+        "example": {
+            "product_id": 1,
+            "title": "Great product",
+            "comment": "Really enjoyed using this. Highly recommended.",
+            "rating": 5,
+            "name": "John Doe"
+        }
+    },
+    "createReadCart": {
+        "kind": "mutation",
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\ReadCart"
+    },
+    "createRemoveCartItem": {
+        "kind": "mutation",
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\RemoveCartItem"
+    },
+    "createRemoveCartItems": {
+        "kind": "mutation",
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\RemoveCartItems"
+    },
+    "createRemoveCoupon": {
+        "kind": "mutation",
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\RemoveCoupon"
+    },
+    "createReorderOrder": {
+        "kind": "mutation",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\ReorderOrder",
+        "example": {
+            "orderId": 411
+        }
+    },
+    "createResetPassword": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\ResetPassword",
+        "example": {
+            "token": "5f2b9c…",
+            "email": "john@example.com",
+            "password": "NewSecret123",
+            "passwordConfirmation": "NewSecret123"
+        }
+    },
+    "createSocialLogin": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\SocialLogin",
+        "example": {
+            "provider": "google",
+            "idToken": "eyJhbGciOi…"
+        }
+    },
+    "createUpdateCartItem": {
+        "kind": "mutation",
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\UpdateCartItem"
+    },
+    "createVerificationEmail": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\VerificationEmail",
+        "example": {
+            "email": "john@example.com"
+        }
+    },
+    "createVerifyAccount": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\VerifyAccount",
+        "example": {
+            "token": "5d41402abc4b2a76b9719d911017c592"
+        }
+    },
+    "createVerifyToken": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\VerifyToken"
+    },
+    "createWishlist": {
+        "kind": "mutation",
+        "tag": "Wishlist",
+        "resource": "Webkul\\BagistoApi\\Models\\Wishlist",
+        "example": {
+            "productId": 1
+        }
+    },
+    "currencies": {
+        "kind": "query",
+        "tag": "Currency",
+        "resource": "Webkul\\BagistoApi\\Models\\Currency"
+    },
+    "currency": {
+        "kind": "query",
+        "tag": "Currency",
+        "resource": "Webkul\\BagistoApi\\Models\\Currency"
+    },
+    "customer": {
+        "kind": "query",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\Customer"
+    },
+    "customerAddress": {
+        "kind": "query",
+        "tag": "Customer Address",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerAddress"
+    },
+    "customerDownloadableProduct": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerDownloadableProduct"
+    },
+    "customerDownloadableProducts": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerDownloadableProduct"
+    },
+    "customerInvoice": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerInvoice"
+    },
+    "customerInvoices": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerInvoice"
+    },
+    "customerOrder": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerOrder"
+    },
+    "customerOrderShipment": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerOrderShipment"
+    },
+    "customerOrderShipmentItem": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerOrderShipmentItem"
+    },
+    "customerOrderShipmentItems": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerOrderShipmentItem"
+    },
+    "customerOrderShipments": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerOrderShipment"
+    },
+    "customerOrders": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerOrder"
+    },
+    "customerRefund": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerRefund"
+    },
+    "customerRefunds": {
+        "kind": "query",
+        "tag": "Customer Order",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerRefund"
+    },
+    "customerReturn": {
+        "kind": "query",
+        "tag": "Customer Return",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn"
+    },
+    "customerReturnMessages": {
+        "kind": "query",
+        "tag": "Customer Return",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturnMessage"
+    },
+    "customerReturns": {
+        "kind": "query",
+        "tag": "Customer Return",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn"
+    },
+    "customerReview": {
+        "kind": "query",
+        "tag": "Customer Review",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReview"
+    },
+    "customerReviews": {
+        "kind": "query",
+        "tag": "Customer Review",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReview"
+    },
+    "deleteCompareItem": {
+        "kind": "mutation",
+        "tag": "CompareItem",
+        "resource": "Webkul\\BagistoApi\\Models\\CompareItem",
+        "example": {
+            "product_id": 1
+        }
+    },
+    "deleteGdprRequest": {
+        "kind": "mutation",
+        "tag": "GDPR Requests",
+        "resource": "Webkul\\BagistoApi\\Models\\GdprRequest",
+        "example": {
+            "type": "delete",
+            "message": "Please delete my personal data."
+        }
+    },
+    "deleteProductReview": {
+        "kind": "mutation",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductReview",
+        "example": {
+            "product_id": 1,
+            "title": "Great product",
+            "comment": "Really enjoyed using this. Highly recommended.",
+            "rating": 5,
+            "name": "John Doe"
+        }
+    },
+    "deleteWishlist": {
+        "kind": "mutation",
+        "tag": "Wishlist",
+        "resource": "Webkul\\BagistoApi\\Models\\Wishlist",
+        "example": {
+            "productId": 1
+        }
+    },
+    "euWithdrawal": {
+        "kind": "query",
+        "tag": "EU Withdrawal",
+        "resource": "Webkul\\BagistoApi\\Models\\EuWithdrawal"
+    },
+    "euWithdrawalStatus": {
+        "kind": "query",
+        "tag": "EU Withdrawal",
+        "resource": "Webkul\\BagistoApi\\Models\\EuWithdrawalStatus"
+    },
+    "euWithdrawals": {
+        "kind": "query",
+        "tag": "EU Withdrawal",
+        "resource": "Webkul\\BagistoApi\\Models\\EuWithdrawal"
+    },
+    "gdprData": {
+        "kind": "query",
+        "tag": "GDPR",
+        "resource": "Webkul\\BagistoApi\\Models\\GdprData"
+    },
+    "gdprRequest": {
+        "kind": "query",
+        "tag": "GDPR Requests",
+        "resource": "Webkul\\BagistoApi\\Models\\GdprRequest"
+    },
+    "gdprRequests": {
+        "kind": "query",
+        "tag": "GDPR Requests",
+        "resource": "Webkul\\BagistoApi\\Models\\GdprRequest"
+    },
+    "gdprStatus": {
+        "kind": "query",
+        "tag": "GDPR Requests",
+        "resource": "Webkul\\BagistoApi\\Models\\GdprStatus"
+    },
+    "getCustomerAddresses": {
+        "kind": "query",
+        "tag": "GetCustomerAddresses",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerAddressGetAll"
+    },
+    "locale": {
+        "kind": "query",
+        "tag": "Locale",
+        "resource": "Webkul\\BagistoApi\\Models\\Locale"
+    },
+    "locales": {
+        "kind": "query",
+        "tag": "Locale",
+        "resource": "Webkul\\BagistoApi\\Models\\Locale"
+    },
+    "moveWishlistToCart": {
+        "kind": "mutation",
+        "tag": "Wishlist",
+        "resource": "Webkul\\BagistoApi\\Models\\MoveWishlistToCart",
+        "example": {
+            "wishlistItemId": 202,
+            "quantity": 1
+        }
+    },
+    "page": {
+        "kind": "query",
+        "tag": "CMS Page",
+        "resource": "Webkul\\BagistoApi\\Models\\Page"
+    },
+    "pageByUrlKeypages": {
+        "kind": "query",
+        "tag": "CMS Page",
+        "resource": "Webkul\\BagistoApi\\Models\\Page"
+    },
+    "pageTranslation": {
+        "kind": "query",
+        "tag": "CMS Page Translation",
+        "resource": "Webkul\\BagistoApi\\Models\\PageTranslation"
+    },
+    "pageTranslations": {
+        "kind": "query",
+        "tag": "CMS Page Translation",
+        "resource": "Webkul\\BagistoApi\\Models\\PageTranslation"
+    },
+    "pages": {
+        "kind": "query",
+        "tag": "CMS Page",
+        "resource": "Webkul\\BagistoApi\\Models\\Page"
+    },
+    "product": {
+        "kind": "query",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\Product"
+    },
+    "productBundleOption": {
+        "kind": "query",
+        "tag": "Product Types",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductBundleOption"
+    },
+    "productBundleOptionProduct": {
+        "kind": "query",
+        "tag": "Product Types",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductBundleOptionProduct"
+    },
+    "productBundleOptionProducts": {
+        "kind": "query",
+        "tag": "Product Types",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductBundleOptionProduct"
+    },
+    "productBundleOptions": {
+        "kind": "query",
+        "tag": "Product Types",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductBundleOption"
+    },
+    "productDownloadableLink": {
+        "kind": "query",
+        "tag": "Product Types",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductDownloadableLink"
+    },
+    "productDownloadableLinks": {
+        "kind": "query",
+        "tag": "Product Types",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductDownloadableLink"
+    },
+    "productDownloadableSample": {
+        "kind": "query",
+        "tag": "Product Types",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductDownloadableSample"
+    },
+    "productDownloadableSamples": {
+        "kind": "query",
+        "tag": "Product Types",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductDownloadableSample"
+    },
+    "productGroupedProduct": {
+        "kind": "query",
+        "tag": "Product Types",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductGroupedProduct"
+    },
+    "productGroupedProducts": {
+        "kind": "query",
+        "tag": "Product Types",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductGroupedProduct"
+    },
+    "productImages": {
+        "kind": "query",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductImage"
+    },
+    "productReview": {
+        "kind": "query",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductReview"
+    },
+    "productReviews": {
+        "kind": "query",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductReview"
+    },
+    "productVideos": {
+        "kind": "query",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductVideo"
+    },
+    "products": {
+        "kind": "query",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\Product"
+    },
+    "readCheckoutAddress": {
+        "kind": "query",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutAddress"
+    },
+    "readCustomerAddressToken": {
+        "kind": "query",
+        "tag": "CustomerAddressToken",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerAddressToken"
+    },
+    "readCustomerProfile": {
+        "kind": "query",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerProfile"
+    },
+    "readGetCartToken": {
+        "kind": "mutation",
+        "tag": "GetCartToken",
+        "resource": "Webkul\\BagistoApi\\Models\\GetCartToken"
+    },
+    "readGetCustomerAddress": {
+        "kind": "query",
+        "tag": "GetCustomerAddress",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerAddressGet"
+    },
+    "reopenCustomerReturn": {
+        "kind": "mutation",
+        "tag": "Customer Return",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn"
+    },
+    "returnCustomFields": {
+        "kind": "query",
+        "tag": "Customer Return",
+        "resource": "Webkul\\BagistoApi\\Models\\ReturnCustomField"
+    },
+    "returnReasons": {
+        "kind": "query",
+        "tag": "Customer Return",
+        "resource": "Webkul\\BagistoApi\\Models\\ReturnReason"
+    },
+    "returnableItems": {
+        "kind": "query",
+        "tag": "Customer Return",
+        "resource": "Webkul\\BagistoApi\\Models\\ReturnableItem"
+    },
+    "returnableOrders": {
+        "kind": "query",
+        "tag": "Customer Return",
+        "resource": "Webkul\\BagistoApi\\Models\\ReturnableOrder"
+    },
+    "revokeGdprRequest": {
+        "kind": "mutation",
+        "tag": "GDPR Requests",
+        "resource": "Webkul\\BagistoApi\\Models\\GdprRequest",
+        "example": {
+            "type": "delete",
+            "message": "Please delete my personal data."
+        }
+    },
+    "searchRedirect": {
+        "kind": "query",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\SearchRedirect"
+    },
+    "section": {
+        "kind": "query",
+        "tag": "Theme",
+        "resource": "Webkul\\BagistoApi\\Models\\Section"
+    },
+    "sections": {
+        "kind": "query",
+        "tag": "Theme",
+        "resource": "Webkul\\BagistoApi\\Models\\Section"
+    },
+    "storeConfig": {
+        "kind": "query",
+        "tag": "Store Config",
+        "resource": "Webkul\\BagistoApi\\Models\\StoreConfig"
+    },
+    "theme": {
+        "kind": "query",
+        "tag": "Theme",
+        "resource": "Webkul\\BagistoApi\\Models\\Theme"
+    },
+    "toggleWishlist": {
+        "kind": "mutation",
+        "tag": "Wishlist",
+        "resource": "Webkul\\BagistoApi\\Models\\Wishlist",
+        "example": {
+            "productId": 1
+        }
+    },
+    "treeCategories": {
+        "kind": "query",
+        "tag": "Category",
+        "resource": "Webkul\\BagistoApi\\Models\\Category"
+    },
+    "updateProductReview": {
+        "kind": "mutation",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductReview",
+        "example": {
+            "product_id": 1,
+            "title": "Great product",
+            "comment": "Really enjoyed using this. Highly recommended.",
+            "rating": 5,
+            "name": "John Doe"
+        }
+    },
+    "urlResolver": {
+        "kind": "query",
+        "tag": "Catalog",
+        "resource": "Webkul\\BagistoApi\\Models\\UrlResolver"
+    },
+    "wishlist": {
+        "kind": "query",
+        "tag": "Wishlist",
+        "resource": "Webkul\\BagistoApi\\Models\\Wishlist"
+    },
+    "wishlists": {
+        "kind": "query",
+        "tag": "Wishlist",
+        "resource": "Webkul\\BagistoApi\\Models\\Wishlist"
+    }
+}

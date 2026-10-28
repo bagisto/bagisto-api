@@ -5,7 +5,6 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Checkout\Facades\Cart as CartFacade;
-use Webkul\Product\Models\Product;
 
 /**
  * GraphQL coverage for the Admin draft-cart endpoints (Wave 2).
@@ -97,20 +96,15 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
-    public function test_add_item_blocks_booking_products(): void
+    public function test_add_item_adds_a_booking_product(): void
     {
         $admin = $this->createAdmin();
-        $cartId = $this->bootstrapDraftCart();
-
-        $booking = Product::query()->where('type', 'booking')->first();
-
-        if (! $booking) {
-            $this->markTestSkipped('No booking product fixture in test DB.');
-        }
+        $cartId = $this->bootstrapEmptyAdminDraftCart();
+        $booking = $this->createDefaultBookingProduct();
 
         $mutation = <<<'GQL'
             mutation AddItem($input: addItemAdminCartInput!) {
-              addItemAdminCart(input: $input) { adminCart { id } }
+              addItemAdminCart(input: $input) { adminCart { _id itemsCount } }
             }
         GQL;
 
@@ -118,15 +112,46 @@ class CartTest extends AdminApiTestCase
             'input' => [
                 'id' => '/api/admin/carts/'.$cartId,
                 'cartId' => (string) $cartId,
-                'productId' => $booking->id,
+                'productId' => $booking['product']->id,
                 'quantity' => 1,
+                'booking' => ['type' => 'default', 'date' => $booking['date'], 'slot' => $booking['slot']],
             ],
         ], $admin);
 
-        $errors = $resp->json('errors');
-        expect($errors)->not->toBeNull();
-        $messages = collect($errors)->pluck('message')->implode(' ');
-        expect($messages)->toContain('Booking');
+        expect($resp->json('errors'))->toBeNull();
+
+        $additional = json_decode(\DB::table('cart_items')->where('cart_id', $cartId)->value('additional'), true);
+        expect($additional['booking']['slot'])->toBe($booking['slot']);
+        expect($additional)->not->toHaveKey('query');
+    }
+
+    public function test_booking_product_config_and_slots_queries(): void
+    {
+        $admin = $this->createAdmin();
+        $booking = $this->createDefaultBookingProduct();
+
+        $query = <<<'GQL'
+            query Booking($productId: Int!, $date: String!) {
+              configAdminBookingProduct(productId: $productId) {
+                productId
+                type
+                calendar
+              }
+              adminBookingProductSlots(productId: $productId, date: $date) {
+                date
+                slots
+              }
+            }
+        GQL;
+
+        $resp = $this->adminGraphQL($query, [
+            'productId' => $booking['product']->id,
+            'date' => $booking['date'],
+        ], $admin);
+
+        expect($resp->json('errors'))->toBeNull();
+        expect($resp->json('data.configAdminBookingProduct.type'))->toBe('default');
+        expect($resp->json('data.adminBookingProductSlots.slots.0.timestamp'))->toBe($booking['slot']);
     }
 
     public function test_remove_coupon_mutation(): void

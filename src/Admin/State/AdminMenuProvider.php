@@ -31,6 +31,7 @@ class AdminMenuProvider implements ProviderInterface
      * dead link.
      */
     private const IRREGULAR = [
+        'appearance' => '/api/admin/appearance/themes',
         'cms' => '/api/admin/cms/pages',
         'dashboard' => '/api/admin/dashboard/stats',
         'reporting' => '/api/admin/reporting/stats',

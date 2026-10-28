@@ -2,6 +2,25 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'Klantterugbetalings-ID is verplicht',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht IRI-formaat zoals "/api/shop/customer-refunds/1" of een numerieke ID',
+            'not-found' => 'Klantterugbetaling met ID ":id" niet gevonden',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'Opnieuw bestellen is uitgeschakeld in de winkelinstellingen.',
+            'cannot-reorder' => 'Deze bestelling kan niet opnieuw worden besteld (gastbestelling of een of meer producten zijn niet meer te koop).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'Het bericht mag niet langer zijn dan :max tekens.',
+        ],
+
+        'headers' => [
+            'unknown-channel' => 'Het kanaal ":code" in de X-Channel-header bestaat niet.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Authenticatietoken is vereist',
             'invalid-token' => 'Ongeldig of verlopen authenticatietoken',
@@ -102,6 +121,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'Product niet gevonden',
             'not-found-with-sku' => 'No product found with SKU',
             'not-found-with-url-key' => 'No product found with URL key',
             'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
@@ -130,8 +150,22 @@ return [
         'login' => [
             'invalid-credentials' => 'Ongeldig e-mailadres of wachtwoord',
             'account-suspended' => 'Uw account is opgeschort',
+            'account-inactive' => 'Uw activering wacht op goedkeuring van de beheerder',
+            'email-not-verified' => 'Verifieer eerst uw e-mailaccount.',
             'successful' => 'U bent succesvol ingelogd',
             'invalid-request' => 'Ongeldig inlogverzoek',
+        ],
+
+        'social-login' => [
+            'signed-in' => 'Succesvol aangemeld.',
+            'token-required' => 'Een social login-token is vereist.',
+            'invalid-token' => 'Het social login-token is ongeldig of verlopen. Probeer het opnieuw.',
+            'wrong-audience' => 'Dit token is uitgegeven voor een andere app.',
+            'not-configured' => 'Deze social-loginprovider is niet geconfigureerd. Neem contact op met support.',
+            'email-required' => 'De provider heeft geen e-mailadres gedeeld. Registreer u met een e-mailadres.',
+            'account-inactive' => 'Uw activering wacht op goedkeuring van de beheerder',
+            'provider-not-supported' => 'Deze social login-provider wordt niet ondersteund.',
+            'provider-disabled' => 'Deze social login-provider is niet ingeschakeld.',
         ],
 
         'checkout' => [
@@ -147,6 +181,8 @@ return [
             'shipping-method-error' => 'Fout bij het opslaan van verzendmethode',
             'payment-method-required' => 'Betaalmethode is vereist',
             'invalid-payment-method' => 'Ongeldige of niet-beschikbare betaalmethode',
+            'paypal-order-id-required' => 'De PayPal-order-ID is vereist om een betaling met de PayPal Smart Button te bevestigen.',
+            'paypal-smart-button-payment-flow' => 'Betalingen met de PayPal Smart Button worden geïnd via checkout-payments/initiate en checkout-payments/confirm, niet door de bestelling direct te plaatsen.',
             'payment-method-save-failed' => 'Kan betaalmethode niet opslaan',
             'payment-method-saved' => 'Betaalmethode succesvol opgeslagen',
             'payment-method-error' => 'Fout bij het opslaan van betaalmethode',
@@ -157,6 +193,7 @@ return [
             'account-suspended' => 'Uw account is opgeschort. Neem contact op met de klantenservice.',
             'account-inactive' => 'Uw account is inactief. Neem contact op met de klantenservice.',
             'minimum-order-not-met' => 'Minimaal bestelbedrag is :amount',
+            'guest-checkout-not-allowed' => 'Log in om af te rekenen. Afrekenen als gast is niet beschikbaar voor deze winkelwagen.',
             'email-required' => 'E-mailadres is vereist voor het aanmaken van een bestelling',
             'unknown-operation' => 'Onbekende afrekenbewerking',
         ],
@@ -199,6 +236,11 @@ return [
             'product-not-found' => 'Product niet gevonden',
             'customer-not-found' => 'Klant niet gevonden',
             'already-exists' => 'Dit product staat al op uw vergelijkingslijst',
+            'disabled' => 'Productvergelijking is uitgeschakeld voor deze winkel.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'Het verlanglijstje is uitgeschakeld voor deze winkel.',
         ],
 
         'downloadable-product' => [
@@ -229,6 +271,7 @@ return [
 
             'acl' => [
                 'title' => 'Geschiedenis van API-wijzigingen',
+                'view' => 'Bekijken',
                 'delete' => 'Geschiedenis verwijderen',
             ],
 
@@ -289,6 +332,7 @@ return [
 
         'acl' => [
             'title' => 'Integratie',
+            'view' => 'Bekijken',
             'create' => 'Integratie creëren',
             'edit' => 'Integratie bewerken',
             'delete' => 'Integratietoken intrekken',

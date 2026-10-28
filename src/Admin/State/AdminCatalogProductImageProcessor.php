@@ -10,17 +10,20 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductImageDeleteInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductImageReorderInput;
+use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductImageUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProductImage;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Support\CoreCapabilities;
 use Webkul\Product\Models\Product;
 use Webkul\Product\Models\ProductImage;
 use Webkul\Product\Repositories\ProductImageRepository;
@@ -92,6 +95,28 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             return $this->handleDelete($productId, $imageId);
         }
 
+        if ($isGraphQL && $data instanceof AdminCatalogProductImageUpdateInput) {
+            $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
+
+            $imageId = (int) ($rawArgs['imageId'] ?? $rawArgs['image_id'] ?? $data->image_id ?? 0);
+
+            if (! $imageId && ! empty($rawArgs['id'])) {
+                $imageId = (int) basename((string) $rawArgs['id']);
+            }
+
+            $productId = (int) ($rawArgs['productId'] ?? $rawArgs['product_id'] ?? $data->product_id
+                ?? ProductImage::where('id', $imageId)->value('product_id') ?? 0);
+
+            return $this->handleUpdate(
+                $productId,
+                $imageId,
+                array_key_exists('altText', $rawArgs) || array_key_exists('alt_text', $rawArgs)
+                    ? (string) ($rawArgs['altText'] ?? $rawArgs['alt_text'])
+                    : $data->alt_text,
+                $rawArgs['position'] ?? $data->position,
+            );
+        }
+
         if ($isGraphQL && $data instanceof AdminCatalogProductImageReorderInput) {
             $name = $operation->getName();
 
@@ -119,6 +144,21 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
         if ($operation instanceof Put) {
             $productId = (int) ($uriVariables['productId'] ?? request()->route('productId') ?? 0);
+            $imageId = (int) ($uriVariables['id'] ?? request()->route('id') ?? 0);
+
+            if ($imageId) {
+                $dto = $this->handleUpdate(
+                    $productId,
+                    $imageId,
+                    request()->has('alt_text') || request()->has('altText')
+                        ? (string) (request()->input('alt_text') ?? request()->input('altText'))
+                        : null,
+                    request()->input('position'),
+                );
+
+                return $this->toRestResponse($dto, 200);
+            }
+
             $order = (array) (request()->input('order') ?? []);
             $dto = $this->handleReorder($productId, $order);
 
@@ -130,7 +170,8 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             $file = request()->file('image');
             $position = request()->input('position');
             $position = $position !== null ? (int) $position : null;
-            $dto = $this->handleUpload($productId, $file, $position);
+            $altText = request()->input('alt_text') ?? request()->input('altText');
+            $dto = $this->handleUpload($productId, $file, $position, $altText !== null ? (string) $altText : null);
 
             return $this->toRestResponse($dto, 201);
         }
@@ -138,7 +179,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         return null;
     }
 
-    protected function handleUpload(int $productId, mixed $file, ?int $position): AdminCatalogProductImage
+    protected function handleUpload(int $productId, mixed $file, ?int $position, ?string $altText = null): AdminCatalogProductImage
     {
         $product = Product::find($productId);
         if (! $product) {
@@ -186,6 +227,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
                 'product_id' => $productId,
                 'position' => $position,
             ]);
+
+            if ($altText !== null) {
+                $this->saveAltText((int) $image->id, $altText);
+            }
 
             Event::dispatch('catalog.product.update.after', $product);
         } catch (InvalidInputException $e) {
@@ -356,6 +401,84 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         return new JsonResponse($payload, $status);
     }
 
+    /**
+     * Edit what is stored alongside an uploaded image.
+     */
+    protected function handleUpdate(int $productId, int $imageId, ?string $altText, mixed $position): AdminCatalogProductImage
+    {
+        $product = Product::find($productId);
+
+        if (! $product) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
+        }
+
+        $image = ProductImage::where('id', $imageId)
+            ->where('product_id', $productId)
+            ->first();
+
+        if (! $image) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.image.not-found'));
+        }
+
+        if ($altText === null && $position === null) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.product.image.update-empty'), 422);
+        }
+
+        Event::dispatch('catalog.product.update.before', $productId);
+
+        if ($position !== null) {
+            $image->position = (int) $position;
+            $image->save();
+        }
+
+        if ($altText !== null) {
+            $this->saveAltText($imageId, $altText);
+        }
+
+        Event::dispatch('catalog.product.update.after', $product);
+
+        return $this->mapRow(
+            ProductImage::find($imageId),
+            true,
+            __('bagistoapi::app.admin.product.image.updated'),
+        );
+    }
+
+    /**
+     * Store the alt text for every locale the request covers, as the product form does.
+     */
+    protected function saveAltText(int $imageId, string $altText): void
+    {
+        // BACKWARD COMPATIBILITY: the translation table arrived in 2.4.10. Remove when the
+        // minimum supported core is 2.4.10.
+        if (! app(CoreCapabilities::class)->hasProductImageAltText()) {
+            return;
+        }
+
+        foreach (core()->getRequestedLocaleCodes() as $localeCode) {
+            DB::table('product_image_translations')->updateOrInsert(
+                ['product_image_id' => $imageId, 'locale' => $localeCode],
+                ['alt_text' => $altText],
+            );
+        }
+    }
+
+    /**
+     * The alt text stored for the current locale.
+     */
+    protected function altTextFor(int $imageId): ?string
+    {
+        // BACKWARD COMPATIBILITY: remove when the minimum supported core is 2.4.10.
+        if (! app(CoreCapabilities::class)->hasProductImageAltText()) {
+            return null;
+        }
+
+        return DB::table('product_image_translations')
+            ->where('product_image_id', $imageId)
+            ->where('locale', app()->getLocale())
+            ->value('alt_text');
+    }
+
     protected function mapRow(ProductImage $image, bool $success = true, ?string $message = null): AdminCatalogProductImage
     {
         $dto = new AdminCatalogProductImage;
@@ -364,6 +487,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         $dto->path = $image->path;
         $dto->position = (int) $image->position;
         $dto->url = $this->safeUrl($image);
+        $dto->altText = $this->altTextFor((int) $image->id);
         $dto->success = $success;
         $dto->message = $message;
 
@@ -381,6 +505,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             'path' => $image->path,
             'position' => (int) $image->position,
             'url' => $this->safeUrl($image),
+            'altText' => $this->altTextFor((int) $image->id),
         ];
     }
 

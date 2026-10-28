@@ -76,7 +76,7 @@
         <script>
             window.onload = function() {
                 
-                @if(isset($endpoint) && $endpoint === 'shop' && !env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false))
+                @if(isset($endpoint) && $endpoint === 'shop' && !config('storefront.auto_inject_playground_key'))
                 
                 Object.keys(sessionStorage).forEach(key => {
                     if (key.includes('swagger') || key.includes('auth') || key.includes('X-STOREFRONT')) {
@@ -95,7 +95,7 @@
                     url: "{{ $specUrl }}",
                     dom_id: '#swagger-ui',
                     validatorUrl: null,
-                    persistAuthorization: @if(isset($endpoint) && $endpoint === 'admin') true @elseif(isset($endpoint) && $endpoint === 'shop' && env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false)) true @else false @endif,
+                    persistAuthorization: @if(isset($endpoint) && $endpoint === 'admin') true @elseif(isset($endpoint) && $endpoint === 'shop' && config('storefront.auto_inject_playground_key')) true @else false @endif,
                     presets: [
                         SwaggerUIBundle.presets.apis,
                         SwaggerUIStandalonePreset
@@ -123,9 +123,9 @@
                             request.headers['Accept'] = 'application/vnd.openapi+json';
                         }
                         
-                        @if(isset($endpoint) && $endpoint === 'shop' && env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false))
+                        @if(isset($endpoint) && $endpoint === 'shop' && config('storefront.auto_inject_playground_key'))
                         if (!request.url.includes('/api/admin')) {
-                            const storefrontKey = "{{ env('STOREFRONT_PLAYGROUND_KEY') ?? config('storefront.playground_key') }}";
+                            const storefrontKey = "{{ config('storefront.playground_key') }}";
                             if (storefrontKey) {
                                 request.headers['X-STOREFRONT-KEY'] = storefrontKey;
                             }
@@ -151,7 +151,7 @@
                     }
                     
                     
-                    @if(isset($endpoint) && $endpoint === 'shop' && !env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false))
+                    @if(isset($endpoint) && $endpoint === 'shop' && !config('storefront.auto_inject_playground_key'))
                     if (window.ui && window.ui.preauthorizeApiKey) {
                         window.ui.preauthorizeApiKey('X-STOREFRONT-KEY', '');
                     }
@@ -160,7 +160,7 @@
                 @else
                 
                 config.onComplete = function() {
-                    @if(isset($endpoint) && $endpoint === 'shop' && !env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false))
+                    @if(isset($endpoint) && $endpoint === 'shop' && !config('storefront.auto_inject_playground_key'))
                     if (window.ui && window.ui.preauthorizeApiKey) {
                         window.ui.preauthorizeApiKey('X-STOREFRONT-KEY', '');
                     }

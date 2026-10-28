@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
 class GuestCartTest extends GraphQLTestCase
@@ -630,6 +631,29 @@ class GuestCartTest extends GraphQLTestCase
         $this->assertSame($code, $read->json('data.createReadCart.readCart.couponCode'));
     }
 
+    public function test_read_cart_returns_the_issued_guest_token_not_the_cart_id(): void
+    {
+        $token = $this->getGuestCartToken();
+        $headers = $this->guestHeaders($token);
+
+        $productData = $this->createTestProduct();
+
+        $add = $this->graphQL(<<<'GQL'
+            mutation add($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
+                addProductInCart { id cartToken }
+              }
+            }
+        GQL, ['productId' => $productData['product']->id, 'quantity' => 1], $headers);
+
+        $add->assertSuccessful();
+
+        $cart = $add->json('data.createAddProductInCart.addProductInCart');
+
+        $this->assertSame($token, $cart['cartToken']);
+        $this->assertNotSame((string) $cart['id'], $cart['cartToken']);
+    }
+
     public function test_remove_coupon_response_carries_success_and_message_graphql(): void
     {
         $code = $this->seedActiveCoupon();
@@ -664,5 +688,101 @@ class GuestCartTest extends GraphQLTestCase
         $this->assertNotNull($data);
         $this->assertTrue($data['success'] ?? false);
         $this->assertNotEmpty($data['message'] ?? null);
+    }
+
+    private function setMiniCartConfig(string $field, ?string $value): void
+    {
+        $code = 'sales.checkout.mini_cart.'.$field;
+
+        DB::table('core_config')->where('code', $code)->delete();
+
+        if ($value !== null) {
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+    }
+
+    public function test_cart_payloads_carry_the_mini_cart_offer_graphql(): void
+    {
+        $this->setMiniCartConfig('display_mini_cart', '1');
+        $this->setMiniCartConfig('offer_info', 'Free shipping over 50');
+
+        $created = $this->graphQL(<<<'GQL'
+            mutation {
+              createCartToken(input: {}) {
+                cartToken {
+                  cartToken
+                  miniCartOfferInfoEnabled
+                  miniCartOfferInfo
+                }
+              }
+            }
+        GQL);
+
+        expect($created->json('errors'))->toBeNull();
+        expect($created->json('data.createCartToken.cartToken.miniCartOfferInfoEnabled'))->toBeTrue();
+        expect($created->json('data.createCartToken.cartToken.miniCartOfferInfo'))->toBe('Free shipping over 50');
+
+        $headers = $this->guestHeaders($created->json('data.createCartToken.cartToken.cartToken'));
+
+        $product = $this->createTestProduct()['product'];
+
+        $added = $this->graphQL(<<<'GQL'
+            mutation add($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
+                addProductInCart {
+                  miniCartOfferInfoEnabled
+                  miniCartOfferInfo
+                }
+              }
+            }
+        GQL, ['productId' => $product->id, 'quantity' => 1], $headers);
+
+        expect($added->json('errors'))->toBeNull();
+        expect($added->json('data.createAddProductInCart.addProductInCart.miniCartOfferInfo'))->toBe('Free shipping over 50');
+
+        $read = $this->graphQL(<<<'GQL'
+            mutation {
+              createReadCart(input: {}) {
+                readCart {
+                  miniCartOfferInfoEnabled
+                  miniCartOfferInfo
+                }
+              }
+            }
+        GQL, [], $headers);
+
+        expect($read->json('errors'))->toBeNull();
+        expect($read->json('data.createReadCart.readCart.miniCartOfferInfoEnabled'))->toBeTrue();
+        expect($read->json('data.createReadCart.readCart.miniCartOfferInfo'))->toBe('Free shipping over 50');
+    }
+
+    public function test_mini_cart_offer_is_disabled_when_the_mini_cart_is_switched_off_graphql(): void
+    {
+        $this->setMiniCartConfig('display_mini_cart', '0');
+        $this->setMiniCartConfig('offer_info', 'Free shipping over 50');
+
+        $response = $this->graphQL(<<<'GQL'
+            mutation {
+              createCartToken(input: {}) {
+                cartToken {
+                  miniCartOfferInfoEnabled
+                  miniCartOfferInfo
+                }
+              }
+            }
+        GQL);
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.createCartToken.cartToken.miniCartOfferInfoEnabled'))->toBeFalse();
+        expect($response->json('data.createCartToken.cartToken.miniCartOfferInfo'))->toBe('Free shipping over 50');
     }
 }

@@ -15,11 +15,7 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Theme\Models\ThemeCustomization;
 
 /**
- * POST /api/admin/settings/themes/mass-delete +
- * createAdminSettingsThemeMassDelete.
- *
- * Mirrors Bagisto admin ThemeController::massDestroy — best-effort loop;
- * missing IDs silently skipped. Storage directory wiped per id.
+ * POST /api/admin/settings/themes/mass-delete + createAdminSettingsThemeMassDelete.
  */
 class AdminSettingsThemeMassDeleteProcessor implements ProcessorInterface
 {

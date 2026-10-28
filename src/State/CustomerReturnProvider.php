@@ -85,7 +85,7 @@ class CustomerReturnProvider implements ProviderInterface
         $total = (clone $query)->count();
 
         $items = $query->offset($offset)->limit($perPage)->get()
-            ->map(fn ($rma) => $this->buildCustomerReturn($rma, false, $this->rmaRepository));
+            ->map(fn ($rma) => $this->buildCustomerReturn($rma, true, $this->rmaRepository));
 
         $currentPage = $total > 0 ? (int) floor($offset / $perPage) + 1 : 1;
 

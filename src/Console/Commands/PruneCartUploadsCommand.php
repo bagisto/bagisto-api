@@ -19,15 +19,13 @@ class PruneCartUploadsCommand extends Command
 
     public function handle(CartOptionFileStaging $staging): int
     {
-        $config = $staging->config();
+        $disk = Storage::disk(CartOptionFileStaging::DISK);
 
-        $disk = Storage::disk($config['disk']);
-
-        $cutoff = now()->subMinutes((int) $config['ttl_minutes'])->getTimestamp();
+        $cutoff = now()->subMinutes($staging->ttlMinutes())->getTimestamp();
 
         $deleted = 0;
 
-        foreach ($disk->files($config['stage_dir']) as $file) {
+        foreach ($disk->files(CartOptionFileStaging::STAGE_DIR) as $file) {
             if ($disk->lastModified($file) < $cutoff) {
                 $disk->delete($file);
 

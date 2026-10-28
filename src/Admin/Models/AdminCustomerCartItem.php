@@ -4,11 +4,15 @@ namespace Webkul\BagistoApi\Admin\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Admin\Dto\AdminCustomerSidebarItemRemoveInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
+use Webkul\BagistoApi\Admin\State\AdminCustomerSidebarItemDeleteProcessor;
 
 /**
  * Items in the customer's OWN active storefront cart — the right-sidebar
@@ -56,6 +60,46 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
                 ],
             ),
         ),
+        new Delete(
+            uriTemplate: '/customers/{customerId}/cart-items',
+            status: 200,
+            input: false,
+            read: false,
+            deserialize: false,
+            validate: false,
+            processor: AdminCustomerSidebarItemDeleteProcessor::class,
+            openapi: new Model\Operation(
+                tags: ['Admin Customers'],
+                summary: "Remove an item from a customer's active cart",
+                description: 'Removes an item from the customer\'s own storefront cart (`carts.is_active = 1`) and recollects the cart totals. The item must belong to the customer\'s active cart.',
+                parameters: [
+                    new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
+                ],
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['itemId'],
+                                'properties' => ['itemId' => ['type' => 'integer', 'example' => 1701]],
+                            ],
+                            'example' => ['itemId' => 1701],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Cart item removed.',
+                        content: new \ArrayObject([
+                            'application/json' => ['example' => ['id' => 1701, 'message' => 'Cart item removed successfully.']],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Customer not found, or the cart item does not belong to the customer.'),
+                    '422' => new Model\Response(description: '`itemId` missing or unknown.'),
+                ],
+            ),
+        ),
     ],
     graphQlOperations: [
         new QueryCollection(
@@ -64,6 +108,13 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
             args: [
                 'customerId' => ['type' => 'Int!', 'description' => 'Customer ID'],
             ],
+        ),
+        new Mutation(
+            name: 'remove',
+            input: AdminCustomerSidebarItemRemoveInput::class,
+            read: false,
+            processor: AdminCustomerSidebarItemDeleteProcessor::class,
+            description: 'Remove a cart item of the customer. Pass `id` as /api/admin/customers/{customerId}/cart-items/{itemId}.',
         ),
     ]
 )]

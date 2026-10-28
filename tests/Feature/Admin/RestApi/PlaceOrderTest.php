@@ -122,6 +122,7 @@ class PlaceOrderTest extends AdminApiTestCase
             ['code' => 'sales.order_settings.minimum_order.enable', 'value' => '1', 'channel_code' => null, 'locale_code' => null, 'created_at' => now(), 'updated_at' => now()],
             ['code' => 'sales.order_settings.minimum_order.minimum_order_amount', 'value' => '999999', 'channel_code' => $channel, 'locale_code' => null, 'created_at' => now(), 'updated_at' => now()],
         ]);
+        $this->forgetCoreConfigCache();
 
         $resp = $this->adminPost($admin, '/api/admin/orders/place/'.$cartId);
 

@@ -20,4 +20,11 @@ class AdminMarketingSitemapCreateInput
     #[ApiProperty(description: 'Storage directory path; must start and end with / (e.g. /).')]
     #[Groups(['mutation'])]
     public ?string $path = null;
+
+    /**
+     * @var array<int, int>|null
+     */
+    #[ApiProperty(description: 'Channel ids the sitemap covers. At least one is required — a sitemap with no channel generates nothing.')]
+    #[Groups(['mutation'])]
+    public ?array $channels = null;
 }

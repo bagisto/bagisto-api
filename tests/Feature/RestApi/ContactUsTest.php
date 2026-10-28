@@ -106,6 +106,20 @@ class ContactUsTest extends RestApiTestCase
         $response->assertStatus(400);
     }
 
+    public function test_invalid_phone_number_returns_400(): void
+    {
+        $this->seedRequiredData();
+        Mail::fake();
+
+        $payload = $this->validPayload();
+        $payload['contact'] = '12-34 abc';
+
+        $response = $this->publicPost($this->url, $payload);
+
+        $response->assertStatus(400);
+        Mail::assertNothingQueued();
+    }
+
     public function test_invalid_email_returns_400(): void
     {
         $this->seedRequiredData();

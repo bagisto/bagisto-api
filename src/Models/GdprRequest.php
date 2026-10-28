@@ -126,7 +126,7 @@ use Webkul\GDPR\Models\GDPRDataRequest;
                                 'required' => ['type', 'message'],
                                 'properties' => [
                                     'type' => ['type' => 'string', 'enum' => ['delete', 'update'], 'example' => 'delete'],
-                                    'message' => ['type' => 'string', 'example' => 'Please delete all my personal data.'],
+                                    'message' => ['type' => 'string', 'maxLength' => 500, 'example' => 'Please delete all my personal data.'],
                                 ],
                             ],
                             'example' => [
@@ -166,9 +166,18 @@ use Webkul\GDPR\Models\GDPRDataRequest;
             status: 200,
             processor: GdprRequestProcessor::class,
             openapi: new Operation(
+                requestBody: new RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => ['type' => 'object'],
+                            'example' => new \stdClass,
+                        ],
+                    ]),
+                ),
                 tags: ['GDPR Requests'],
                 summary: 'Revoke a GDPR data request',
-                description: 'Revoke one of the customer\'s own GDPR data requests. Allowed only while the request is pending or processing. Send an empty JSON body `{}`.',
+                description: 'Revoke one of the customer\'s own GDPR data requests. Allowed only while the request is pending. Send an empty JSON body `{}`.',
                 responses: [
                     '200' => new Response(
                         description: 'Request revoked. `status` becomes `revoked` and `revokedAt` is stamped.',
@@ -189,7 +198,7 @@ use Webkul\GDPR\Models\GDPRDataRequest;
                             ],
                         ]),
                     ),
-                    '422' => new Response(description: 'Request is not pending/processing, so it cannot be revoked.'),
+                    '422' => new Response(description: 'Request is not pending, so it cannot be revoked.'),
                 ],
             ),
         ),

@@ -2,6 +2,8 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\CompareItem;
 
@@ -355,5 +357,160 @@ class CompareItemTest extends RestApiTestCase
 
         $response->assertCreated();
         expect($response->json('message'))->toBeString();
+    }
+
+    private function setCoreConfig(string $code, string $value): void
+    {
+        DB::table('core_config')->where('code', $code)->delete();
+
+        DB::table('core_config')->insert([
+            'code' => $code,
+            'value' => $value,
+            'channel_code' => core()->getRequestedChannelCode(),
+            'locale_code' => core()->getRequestedLocaleCode(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->forgetCoreConfigCache();
+    }
+
+    // ── Core events ───────────────────────────────────────────
+
+    public function test_create_compare_item_fires_core_events(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $product = $this->createBaseProduct('simple');
+
+        $fired = [];
+
+        Event::listen('customer.compare.create.before', function () use (&$fired) {
+            $fired[] = 'before';
+        });
+
+        Event::listen('customer.compare.create.after', function ($item) use (&$fired) {
+            $fired[] = 'after:'.$item->product_id;
+        });
+
+        $this->authenticatedPost($customer, $this->baseUrl, [
+            'product_id' => $product->id,
+        ])->assertCreated();
+
+        expect($fired)->toBe(['before', 'after:'.$product->id]);
+    }
+
+    public function test_delete_compare_item_fires_core_events(): void
+    {
+        $testData = $this->createTestData();
+
+        $fired = [];
+
+        Event::listen('customer.compare.delete.before', function ($productId) use (&$fired) {
+            $fired[] = 'before:'.$productId;
+        });
+
+        Event::listen('customer.compare.delete.after', function ($productId) use (&$fired) {
+            $fired[] = 'after:'.$productId;
+        });
+
+        $this->authenticatedDelete(
+            $testData['customer'],
+            $this->baseUrl.'/'.$testData['compareItem1']->id
+        )->assertNoContent();
+
+        $productId = $testData['product1']->id;
+
+        expect($fired)->toBe(['before:'.$productId, 'after:'.$productId]);
+    }
+
+    public function test_delete_all_compare_items_fires_core_events(): void
+    {
+        $testData = $this->createTestData();
+
+        $fired = [];
+
+        Event::listen('customer.compare.delete-all.before', function () use (&$fired) {
+            $fired[] = 'before';
+        });
+
+        Event::listen('customer.compare.delete-all.after', function () use (&$fired) {
+            $fired[] = 'after';
+        });
+
+        $this->authenticatedPost(
+            $testData['customer'],
+            '/api/shop/delete-all-compare-items'
+        )->assertCreated();
+
+        expect($fired)->toBe(['before', 'after']);
+    }
+
+    // ── Compare option gate ───────────────────────────────────
+
+    public function test_compare_items_are_refused_when_comparison_is_disabled(): void
+    {
+        $testData = $this->createTestData();
+
+        $this->setCoreConfig('catalog.products.settings.compare_option', '0');
+
+        $this->authenticatedGet($testData['customer'], $this->baseUrl)->assertForbidden();
+
+        $this->authenticatedPost($testData['customer'], $this->baseUrl, [
+            'product_id' => $testData['product1']->id,
+        ])->assertForbidden();
+
+        $this->authenticatedPost($testData['customer'], '/api/shop/delete-all-compare-items')
+            ->assertForbidden();
+
+        expect(CompareItem::where('customer_id', $testData['customer']->id)->count())->toBe(2);
+    }
+
+    // ── Comparable attributes ─────────────────────────────────
+
+    public function test_compare_attributes_lists_the_comparable_attributes(): void
+    {
+        $this->seedRequiredData();
+
+        DB::table('attributes')->where('code', 'color')->update(['is_comparable' => 1]);
+        DB::table('attributes')->where('code', 'name')->update(['is_comparable' => 1]);
+
+        $response = $this->publicGet('/api/shop/compare-attributes');
+
+        $response->assertOk();
+
+        $codes = array_column($response->json(), 'code');
+
+        expect($codes)->toContain('color');
+        expect($codes)->not->toContain('name');
+        expect($codes)->not->toContain('price');
+
+        $color = collect($response->json())->firstWhere('code', 'color');
+
+        expect($color['id'])->toBeInt();
+        expect($color)->toHaveKeys(['adminName', 'name', 'type']);
+        expect($color['type'])->toBe('select');
+    }
+
+    public function test_compare_attributes_skip_non_comparable_attributes(): void
+    {
+        $this->seedRequiredData();
+
+        DB::table('attributes')->where('code', 'size')->update(['is_comparable' => 0]);
+
+        $response = $this->publicGet('/api/shop/compare-attributes');
+
+        $response->assertOk();
+
+        expect(array_column($response->json(), 'code'))->not->toContain('size');
+    }
+
+    public function test_compare_attributes_are_refused_when_comparison_is_disabled(): void
+    {
+        $this->seedRequiredData();
+
+        $this->setCoreConfig('catalog.products.settings.compare_option', '0');
+
+        $this->publicGet('/api/shop/compare-attributes')->assertForbidden();
     }
 }

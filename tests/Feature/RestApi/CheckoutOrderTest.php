@@ -2,8 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
+use Webkul\Sales\Models\Order;
 
 class CheckoutOrderTest extends RestApiTestCase
 {
@@ -51,10 +53,30 @@ class CheckoutOrderTest extends RestApiTestCase
         ])->assertCreated();
     }
 
-    private function setPaymentMethod(Customer $customer): void
+    private function enableGateway(string $method, array $settings): void
+    {
+        foreach (['active' => '1', ...$settings] as $field => $value) {
+            $code = "sales.payment_methods.{$method}.{$field}";
+
+            DB::table('core_config')->where('code', $code)->delete();
+
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+    }
+
+    private function setPaymentMethod(Customer $customer, string $method = 'cashondelivery'): void
     {
         $this->authenticatedPost($customer, '/api/shop/checkout-payment-methods', [
-            'paymentMethod' => 'cashondelivery',
+            'paymentMethod' => $method,
         ])->assertCreated();
     }
 
@@ -95,5 +117,84 @@ class CheckoutOrderTest extends RestApiTestCase
             $json = $response->json();
             expect($json)->toBeArray();
         }
+    }
+
+    public function test_place_order_with_offline_method_creates_the_order(): void
+    {
+        $customer = $this->createAuthenticatedCustomer();
+        $this->addProductToCart($customer);
+        $this->setCheckoutAddress($customer);
+        $this->setShippingMethod($customer);
+        $this->setPaymentMethod($customer, 'cashondelivery');
+
+        $response = $this->authenticatedPost($customer, $this->url);
+
+        $response->assertCreated();
+
+        $json = $response->json();
+
+        expect($json['redirect'])->toBeFalse();
+        expect($json['redirectUrl'])->toBeNull();
+        expect($json['orderId'])->not->toBeNull();
+
+        $this->assertDatabaseHas('orders', ['id' => (int) $json['orderId']]);
+
+        expect($json['incrementId'])->toBe((string) Order::find((int) $json['orderId'])->increment_id);
+    }
+
+    public function test_place_order_returns_the_configured_order_number(): void
+    {
+        foreach (['order_number_prefix' => 'PRE', 'order_number_length' => '6', 'order_number_suffix' => 'SUF'] as $field => $value) {
+            $code = 'sales.order_settings.order_number.'.$field;
+
+            DB::table('core_config')->where('code', $code)->delete();
+
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+
+        $customer = $this->createAuthenticatedCustomer();
+        $this->addProductToCart($customer);
+        $this->setCheckoutAddress($customer);
+        $this->setShippingMethod($customer);
+        $this->setPaymentMethod($customer, 'cashondelivery');
+
+        $json = $this->authenticatedPost($customer, $this->url)->assertCreated()->json();
+
+        expect($json['incrementId'])->toMatch('/^PRE\d{6}SUF$/');
+        expect($json['incrementId'])->toBe((string) Order::find((int) $json['orderId'])->increment_id);
+    }
+
+    public function test_place_order_with_redirect_gateway_returns_redirect_and_creates_no_order(): void
+    {
+        $customer = $this->createAuthenticatedCustomer();
+        $this->addProductToCart($customer);
+        $this->setCheckoutAddress($customer);
+        $this->setShippingMethod($customer);
+        $this->enableGateway('stripe', ['sandbox' => '1', 'api_test_key' => 'sk_test_x', 'api_test_publishable_key' => 'pk_test_x']);
+        $this->setPaymentMethod($customer, 'stripe');
+
+        $ordersBefore = Order::count();
+
+        $response = $this->authenticatedPost($customer, $this->url);
+
+        $response->assertCreated();
+
+        $json = $response->json();
+
+        expect($json['redirect'])->toBeTrue();
+        expect($json['redirectUrl'])->toContain('/stripe/redirect');
+        expect($json['orderId'])->toBeNull();
+        expect($json['incrementId'])->toBeNull();
+
+        expect(Order::count())->toBe($ordersBefore);
     }
 }

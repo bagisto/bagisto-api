@@ -11,6 +11,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
 use Webkul\BagistoApi\Dto\SendCustomerReturnMessageInput;
@@ -32,19 +33,66 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
                 description: 'Messages on the RMA named by `?return_id=`, newest first. Requires the RMA to belong to the authenticated customer.',
                 parameters: [
                     new Parameter('return_id', 'query', 'Return (RMA) id', true, schema: ['type' => 'integer']),
+                    new Parameter('limit', 'query', 'Messages per page, as the storefront\'s `limit`. Omit it to get every message.', false, schema: ['type' => 'integer', 'example' => 5]),
+                    new Parameter('page', 'query', 'Page number when `limit` is sent.', false, schema: ['type' => 'integer', 'example' => 1]),
+                ],
+                responses: [
+                    '200' => new Response(
+                        description: 'The RMA conversation messages, newest first.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id' => 88,
+                                        'rmaId' => 12,
+                                        'message' => 'We have received your request and will inspect the item.',
+                                        'isAdmin' => true,
+                                        'attachment' => null,
+                                        'attachmentUrl' => null,
+                                        'createdAt' => '2026-07-20T10:40:00+00:00',
+                                    ],
+                                    [
+                                        'id' => 87,
+                                        'rmaId' => 12,
+                                        'message' => 'The hoodie zipper is broken.',
+                                        'isAdmin' => false,
+                                        'attachment' => 'rma/12/messages/zipper.jpg',
+                                        'attachmentUrl' => 'https://example.com/storage/rma/12/messages/zipper.jpg',
+                                        'createdAt' => '2026-07-20T10:20:00+00:00',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),
         new Post(
             uriTemplate: '/return-messages',
+            inputFormats: [
+                'json' => ['application/json'],
+                'multipart' => ['multipart/form-data'],
+            ],
+            deserialize: false,
             processor: CustomerReturnMessageProcessor::class,
             openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'Send a message on a return request',
-                description: 'Adds a customer message to the RMA conversation. Body `{ return_id, message }`; an optional file can be attached via multipart `file` (REST only). Returns the created message.',
+                description: 'Sends a message on a return. Attach one file in `file` (multipart) or as a base64 data URI in `attachment` (JSON).',
                 requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([
+                        'multipart/form-data' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['return_id', 'message'],
+                                'properties' => [
+                                    'return_id' => ['type' => 'integer', 'example' => 12],
+                                    'message' => ['type' => 'string', 'example' => 'Photo of the damaged zipper attached.'],
+                                    'file' => ['type' => 'string', 'format' => 'binary', 'description' => 'Attachment for this message.'],
+                                ],
+                            ],
+                        ],
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
@@ -52,11 +100,31 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
                                 'properties' => [
                                     'return_id' => ['type' => 'integer', 'example' => 12],
                                     'message' => ['type' => 'string', 'example' => 'Any update on my return?'],
+                                    'attachment' => ['type' => 'string', 'description' => 'Attachment as a base64 data URI, max 5 MB.', 'example' => 'data:image/png;base64,iVBORw0KGgo...'],
+                                    'attachment_name' => ['type' => 'string', 'description' => 'File name shown for the attachment.', 'example' => 'zipper.png'],
                                 ],
                             ],
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Response(
+                        description: 'The created message.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 89,
+                                    'rmaId' => 12,
+                                    'message' => 'Any update on my return?',
+                                    'isAdmin' => false,
+                                    'attachment' => null,
+                                    'attachmentUrl' => null,
+                                    'createdAt' => '2026-07-20T11:15:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

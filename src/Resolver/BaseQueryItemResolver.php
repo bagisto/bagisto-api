@@ -4,8 +4,19 @@ namespace Webkul\BagistoApi\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\QueryItemResolverInterface;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Models\CustomerAddress;
+use Webkul\BagistoApi\Models\CustomerDownloadableProduct;
+use Webkul\BagistoApi\Models\CustomerInvoice;
+use Webkul\BagistoApi\Models\CustomerOrderShipment;
+use Webkul\BagistoApi\Models\CustomerRefund;
+use Webkul\BagistoApi\Models\CustomerReview;
 use Webkul\BagistoApi\Service\GenericIdNormalizer;
+use Webkul\Customer\Models\Customer;
 
 /**
  * Global Generic Query Resolver for all GraphQL single item queries
@@ -43,6 +54,10 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
 
         $modelClass = $this->getModel($context);
 
+        if ($this->isCustomerOwned($modelClass)) {
+            return $this->findOwnedResource($modelClass, (int) $numericId, $id);
+        }
+
         $resource = $modelClass::find($numericId);
 
         if (! $resource) {
@@ -55,6 +70,79 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
         }
 
         return $resource;
+    }
+
+    /**
+     * Whether the model holds a single customer's data and must be scoped to its owner.
+     */
+    protected function isCustomerOwned(string $modelClass): bool
+    {
+        return in_array($modelClass, [
+            CustomerInvoice::class,
+            CustomerOrderShipment::class,
+            CustomerRefund::class,
+            CustomerDownloadableProduct::class,
+            CustomerAddress::class,
+            CustomerReview::class,
+        ], true);
+    }
+
+    /**
+     * Resolve a customer-owned resource only when it belongs to the authenticated customer.
+     *
+     * @throws AuthenticationException
+     * @throws ResourceNotFoundException
+     */
+    protected function findOwnedResource(string $modelClass, int $numericId, mixed $id): object
+    {
+        $customer = Auth::guard('sanctum')->user();
+
+        if (! $customer instanceof Customer) {
+            throw new AuthenticationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
+        }
+
+        $resource = $this->scopeToCustomer($modelClass::query(), $modelClass, $customer->id)
+            ->whereKey($numericId)
+            ->first();
+
+        if (! $resource) {
+            throw new ResourceNotFoundException($this->ownedNotFoundMessage($modelClass, $id));
+        }
+
+        return $resource;
+    }
+
+    /**
+     * Restrict a customer-owned query to the given customer.
+     */
+    protected function scopeToCustomer(Builder $query, string $modelClass, int $customerId): Builder
+    {
+        if ($modelClass === CustomerRefund::class) {
+            return $query->ownedBy($customerId);
+        }
+
+        if (in_array($modelClass, [CustomerInvoice::class, CustomerOrderShipment::class], true)) {
+            return $query->whereHas('order', function (Builder $order) use ($customerId) {
+                $order->where('customer_id', $customerId);
+            });
+        }
+
+        return $query->where('customer_id', $customerId);
+    }
+
+    /**
+     * Not-found message for a customer-owned resource.
+     */
+    protected function ownedNotFoundMessage(string $modelClass, mixed $id): string
+    {
+        if ($modelClass === CustomerAddress::class) {
+            return __('bagistoapi::app.graphql.address.address-not-found');
+        }
+
+        return __($this->getErrorMessagePrefix().'.not-found', [
+            'id' => $id,
+            'resource' => $this->currentResourceClass,
+        ]);
     }
 
     /**

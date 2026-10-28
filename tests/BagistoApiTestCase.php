@@ -2,7 +2,9 @@
 
 namespace Webkul\BagistoApi\Tests;
 
+use Illuminate\Cache\TaggableStore;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Webkul\Attribute\Models\Attribute;
@@ -12,6 +14,7 @@ use Webkul\BagistoApi\Http\Middleware\VerifyGraphQLStorefrontKey;
 use Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey;
 use Webkul\Category\Models\Category;
 use Webkul\Core\Models\Channel;
+use Webkul\Core\Repositories\CoreConfigRepository;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerGroup;
 use Webkul\Product\Models\Product;
@@ -27,21 +30,12 @@ abstract class BagistoApiTestCase extends BagistoApiTest
 {
     use DatabaseTransactions;
 
-    /** Storefront API key for tests (resolved dynamically in setUp) */
     protected string $storefrontKey = '';
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        // The test environment posts admin GraphQL operations to the shared
-        // /api/graphql endpoint, which builds the full combined (storefront +
-        // admin) API Platform schema on each request. As the API surface grew
-        // (Bagisto 2.4.x / Laravel 12 + the added admin/RMA/EU resources) that
-        // one-shot schema build crossed the 1 GB memory_limit the host test
-        // bootstrap sets, so raise the ceiling for this package's tests. Not a
-        // leak — a single large-but-bounded schema build. Production is
-        // unaffected (it serves the smaller per-endpoint scoped schema).
         ini_set('memory_limit', '2048M');
 
         $this->withoutMiddleware([
@@ -51,6 +45,17 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         ]);
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         $this->storefrontKey = 'pk_test_'.Str::random(32);
+
+        // Bagisto caches a handful of repositories (config/repository.php), and Prettus only
+        // cleans that cache when the write goes through the repository — a test that seeds a
+        // row directly would otherwise keep reading the value cached before it. Turning the
+        // repository cache off is the exact fix; flushing the store instead takes the API
+        // metadata pool with it wherever the two share a store, which leaves every parallel
+        // worker rebuilding half a pool.
+        config([
+            'repository.cache.enabled' => false,
+            'repository.cache.repositories' => [],
+        ]);
     }
 
     protected function tearDown(): void
@@ -59,9 +64,16 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         parent::tearDown();
     }
 
-    /**
-     * Get storefront key header (public API access)
-     */
+    protected function forgetCoreConfigCache(): void
+    {
+        // The repository cache is off for tests (see setUp), so there is nothing to drop on a
+        // store that cannot be flushed by tag. Never flush the whole store here: the API
+        // metadata pool can live in it, and taking that out mid-run breaks every worker.
+        if (Cache::getStore() instanceof TaggableStore) {
+            Cache::tags(CoreConfigRepository::class)->flush();
+        }
+    }
+
     protected function storefrontHeaders(): array
     {
         return [
@@ -69,9 +81,6 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         ];
     }
 
-    /**
-     * Get headers with storefront key + customer auth token
-     */
     protected function authHeaders(Customer $customer): array
     {
         $token = $customer->createToken('test-token')->plainTextToken;
@@ -82,9 +91,6 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         ];
     }
 
-    /**
-     * Seed required database records (channel, customer group, category)
-     */
     protected function seedRequiredData(): void
     {
         try {
@@ -110,9 +116,6 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         }
     }
 
-    /**
-     * Create a customer and return it
-     */
     protected function createCustomer(array $attributes = []): Customer
     {
         $this->seedRequiredData();
@@ -120,13 +123,8 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         return Customer::factory()->create($attributes);
     }
 
-    /**
-     * Create a test customer with a valid token for Bearer authentication
-     * Returns an array with customer and token keys
-     */
     protected function createTestCustomer(): array
     {
-        // Create customer with a token field (same way it's created during registration)
         $customer = $this->createCustomer([
             'token' => md5(uniqid(rand(), true)),
         ]);
@@ -212,6 +210,12 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         $this->upsertProductAttributeValue($product->id, 'url_key', strtolower($product->sku), 'en', 'default');
         $this->upsertProductAttributeValue($product->id, 'status', 1, null, 'default');
         $this->upsertProductAttributeValue($product->id, 'visible_individually', 1, null, 'default');
+        $this->upsertProductAttributeValue($product->id, 'guest_checkout', 1, null, 'default');
+
+        DB::table('product_channels')->insertOrIgnore([
+            'product_id' => $product->id,
+            'channel_id' => core()->getCurrentChannel()->id,
+        ]);
 
         if ($price !== null) {
             $this->upsertProductAttributeValue($product->id, 'price', $price, null, 'default');
@@ -291,10 +295,6 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         return (int) $option->id;
     }
 
-    /**
-     * Get an existing product with inventory from the database for testing
-     * Returns an array with product and inventory_source_id keys
-     */
     protected function createTestProduct(): array
     {
         $productWithInventory = DB::table('product_inventories')

@@ -161,6 +161,7 @@ class OrderActionTest extends AdminApiTestCase
             'code' => 'sales.order_settings.reorder.admin',
             'value' => '0',
         ]);
+        $this->forgetCoreConfigCache();
 
         $response = $this->adminPost($admin, '/api/admin/orders/'.$id.'/reorder');
 

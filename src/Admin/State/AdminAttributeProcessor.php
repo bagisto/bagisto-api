@@ -17,13 +17,14 @@ use Webkul\Attribute\Repositories\AttributeOptionRepository;
 use Webkul\Attribute\Repositories\AttributeRepository;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeUpdateInput;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminAttribute;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Support\CoreCapabilities;
 use Webkul\Core\Rules\Code;
+use Webkul\Core\Rules\Regex;
 
 /**
  * Handles POST, PUT, DELETE on AdminAttribute resource.
@@ -41,13 +42,34 @@ class AdminAttributeProcessor implements ProcessorInterface
         protected AttributeRepository $attributeRepository,
         protected AttributeOptionRepository $attributeOptionRepository,
         protected AdminAttributeItemProvider $itemProvider,
+        protected CoreCapabilities $capabilities,
     ) {}
+
+    /**
+     * A pattern is run by the server and written into the storefront form, so one the
+     * browser cannot compile takes the product form down rather than failing here.
+     *
+     * BACKWARD COMPATIBILITY: core ships the rule from 2.4.10. Drop the condition when
+     * the minimum supported core is 2.4.10.
+     */
+    protected function regexRules(): array
+    {
+        $rules = ['nullable', 'required_if:validation,regex'];
+
+        if ($this->capabilities->hasAttributeRegexRule()) {
+            $rules[] = new Regex;
+        }
+
+        return $rules;
+    }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize(null, null, match (true) {
+            $operation instanceof Delete || ($operation instanceof Mutation && $operation->getName() === 'delete') => 'catalog.attributes.delete',
+            $operation instanceof Post || ($operation instanceof Mutation && $operation->getName() === 'create') => 'catalog.attributes.create',
+            default => 'catalog.attributes.edit',
+        });
 
         $isGraphQL = $operation instanceof Mutation;
 
@@ -87,6 +109,8 @@ class AdminAttributeProcessor implements ProcessorInterface
         if (($input['type'] ?? '') === 'boolean') {
             $rules['default_value'] = 'nullable|in:0,1';
         }
+
+        $rules['regex'] = $this->regexRules();
 
         $v = Validator::make($input, $rules);
         if ($v->fails()) {
@@ -128,6 +152,8 @@ class AdminAttributeProcessor implements ProcessorInterface
         if (($input['type'] ?? '') === 'boolean') {
             $rules['default_value'] = 'nullable|in:0,1';
         }
+
+        $rules['regex'] = $this->regexRules();
 
         $v = Validator::make($input, $rules);
         if ($v->fails()) {

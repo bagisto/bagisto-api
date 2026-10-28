@@ -27,7 +27,7 @@ jobs:
 
       - name: Install Pint
         # Pinned to the pint version Bagisto 2.4.x locks; --no-scripts because this repo is a package, not a Laravel app.
-        run: composer require --dev laravel/pint:1.29.0 --no-interaction --no-progress --no-scripts
+        run: composer require --dev laravel/pint:1.29.3 --no-interaction --no-progress --no-scripts
 
       - name: Run Pint in test mode
         run: vendor/bin/pint --test

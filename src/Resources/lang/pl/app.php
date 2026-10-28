@@ -2,6 +2,25 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'Identyfikator zwrotu klienta jest wymagany',
+            'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwano formatu IRI, np. "/api/shop/customer-refunds/1", lub identyfikatora liczbowego',
+            'not-found' => 'Nie znaleziono zwrotu klienta o identyfikatorze ":id"',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'Ponowne zamawianie jest wyłączone w ustawieniach sklepu.',
+            'cannot-reorder' => 'Tego zamówienia nie można zamówić ponownie (zamówienie gościa lub jeden lub więcej produktów nie jest już dostępnych w sprzedaży).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'Wiadomość nie może mieć więcej niż :max znaków.',
+        ],
+
+        'headers' => [
+            'unknown-channel' => 'Kanał ":code" w nagłówku X-Channel nie istnieje.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Token uwierzytelniający jest wymagany',
             'invalid-token' => 'Nieprawidłowy lub wygasły token uwierzytelniający',
@@ -102,6 +121,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'Produkt nie znaleziony',
             'not-found-with-sku' => 'No product found with SKU',
             'not-found-with-url-key' => 'No product found with URL key',
             'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
@@ -130,8 +150,22 @@ return [
         'login' => [
             'invalid-credentials' => 'Nieprawidłowy adres e-mail lub hasło',
             'account-suspended' => 'Twoje konto zostało zawieszone',
+            'account-inactive' => 'Twoja aktywacja oczekuje na zatwierdzenie administratora',
+            'email-not-verified' => 'Najpierw zweryfikuj swoje konto e-mail.',
             'successful' => 'Zalogowano pomyślnie',
             'invalid-request' => 'Nieprawidłowe żądanie logowania',
+        ],
+
+        'social-login' => [
+            'signed-in' => 'Zalogowano pomyślnie.',
+            'token-required' => 'Wymagany jest token logowania społecznościowego.',
+            'invalid-token' => 'Token logowania społecznościowego jest nieprawidłowy lub wygasł. Spróbuj ponownie.',
+            'wrong-audience' => 'Ten token został wydany dla innej aplikacji.',
+            'not-configured' => 'Ten dostawca logowania społecznościowego nie jest skonfigurowany. Skontaktuj się z pomocą.',
+            'email-required' => 'Dostawca nie udostępnił adresu e-mail. Zarejestruj się za pomocą adresu e-mail.',
+            'account-inactive' => 'Twoja aktywacja oczekuje na zatwierdzenie administratora',
+            'provider-not-supported' => 'Ten dostawca logowania społecznościowego nie jest obsługiwany.',
+            'provider-disabled' => 'Ten dostawca logowania społecznościowego nie jest włączony.',
         ],
 
         'checkout' => [
@@ -147,6 +181,8 @@ return [
             'shipping-method-error' => 'Błąd podczas zapisywania metody wysyłki',
             'payment-method-required' => 'Metoda płatności jest wymagana',
             'invalid-payment-method' => 'Nieprawidłowa lub niedostępna metoda płatności',
+            'paypal-order-id-required' => 'Identyfikator zamówienia PayPal jest wymagany do potwierdzenia płatności przyciskiem PayPal Smart Button.',
+            'paypal-smart-button-payment-flow' => 'Płatności przyciskiem PayPal Smart Button są pobierane przez checkout-payments/initiate i checkout-payments/confirm, a nie przez bezpośrednie złożenie zamówienia.',
             'payment-method-save-failed' => 'Nie udało się zapisać metody płatności',
             'payment-method-saved' => 'Metoda płatności pomyślnie zapisana',
             'payment-method-error' => 'Błąd podczas zapisywania metody płatności',
@@ -157,6 +193,7 @@ return [
             'account-suspended' => 'Twoje konto zostało zawieszone. Skontaktuj się z pomocą techniczną.',
             'account-inactive' => 'Twoje konto jest nieaktywne. Skontaktuj się z pomocą techniczną.',
             'minimum-order-not-met' => 'Minimalna kwota zamówienia wynosi :amount',
+            'guest-checkout-not-allowed' => 'Zaloguj się, aby złożyć zamówienie. Zakup jako gość nie jest dostępny dla tego koszyka.',
             'email-required' => 'Adres e-mail jest wymagany do utworzenia zamówienia',
             'unknown-operation' => 'Nieznana operacja realizacji zamówienia',
         ],
@@ -199,6 +236,11 @@ return [
             'product-not-found' => 'Produkt nie znaleziony',
             'customer-not-found' => 'Klient nie znaleziony',
             'already-exists' => 'Ten produkt jest już na Twojej liście porównawczej',
+            'disabled' => 'Porównywanie produktów jest wyłączone w tym sklepie.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'Lista życzeń jest wyłączona w tym sklepie.',
         ],
 
         'downloadable-product' => [
@@ -229,6 +271,7 @@ return [
 
             'acl' => [
                 'title' => 'Historia zmian API',
+                'view' => 'Zobacz',
                 'delete' => 'Usuń historię',
             ],
 
@@ -289,6 +332,7 @@ return [
 
         'acl' => [
             'title' => 'Integracja',
+            'view' => 'Zobacz',
             'create' => 'Stwórz Integrację',
             'edit' => 'Edytuj integrację',
             'delete' => 'Unieważnij token integracji',

@@ -8,11 +8,16 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Models\Wishlist;
+use Webkul\BagistoApi\State\Concerns\StorefrontFeatureGate;
 
 class WishlistItemProvider implements ProviderInterface
 {
+    use StorefrontFeatureGate;
+
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
+        $this->assertWishlistEnabled();
+
         $customer = Auth::guard('sanctum')->user();
 
         if (! $customer) {

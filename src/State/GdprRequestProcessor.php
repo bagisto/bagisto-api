@@ -24,7 +24,9 @@ class GdprRequestProcessor implements ProcessorInterface
 {
     use GdprFeatureGate;
 
-    private const ACTIVE_STATUSES = ['pending', 'processing'];
+    private const REVOCABLE_STATUSES = ['pending'];
+
+    private const MESSAGE_MAX_LENGTH = 500;
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
@@ -85,6 +87,10 @@ class GdprRequestProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.gdpr.message-required'));
         }
 
+        if (mb_strlen($message) > self::MESSAGE_MAX_LENGTH) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.gdpr.message-too-long', ['max' => self::MESSAGE_MAX_LENGTH]), 422);
+        }
+
         $this->safeDispatch('customer.account.gdpr-request.create.before', null);
 
         $gdprRequest = GdprRequest::create([
@@ -116,7 +122,7 @@ class GdprRequestProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.gdpr.not-found'));
         }
 
-        if (! in_array($gdprRequest->status, self::ACTIVE_STATUSES, true)) {
+        if (! in_array($gdprRequest->status, self::REVOCABLE_STATUSES, true)) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.gdpr.revoke-not-allowed'), 422);
         }
 

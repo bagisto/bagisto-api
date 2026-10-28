@@ -2,6 +2,25 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'පාරිභෝගික මුදල් ආපසු ගෙවීමේ ID අවශ්‍යයි',
+            'invalid-id-format' => 'වලංගු නොවන ID ආකෘතිය. "/api/shop/customer-refunds/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',
+            'not-found' => '":id" ID සහිත පාරිභෝගික මුදල් ආපසු ගෙවීම හමු නොවීය',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'නැවත ඇණවුම් කිරීම වෙළඳසැල් සැකසුම් තුළ අක්‍රීය කර ඇත.',
+            'cannot-reorder' => 'මෙම ඇණවුම නැවත ඇණවුම් කළ නොහැක (අමුත්තන්ගේ ඇණවුමක් හෝ නිෂ්පාදන එකක් හෝ කිහිපයක් තවදුරටත් මිලදී ගැනීමට නොමැත).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'පණිවිඩය අක්ෂර :max කට වඩා දිගු විය නොහැක.',
+        ],
+
+        'headers' => [
+            'unknown-channel' => 'X-Channel ශීර්ෂයේ ඇති ":code" නාලිකාව නොපවතී.',
+        ],
+
         'cart' => [
             'authentication-required' => 'සත්‍යාපන ටෝකනයක් අවශ්‍ය වේ',
             'invalid-token' => 'අවලංගු හෝ කල් ඉකුත් වූ සත්‍යාපන ටෝකනය',
@@ -102,6 +121,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'නිෂ්පාදනය හමු නොවිණි',
             'not-found-with-sku' => 'No product found with SKU',
             'not-found-with-url-key' => 'No product found with URL key',
             'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
@@ -130,8 +150,22 @@ return [
         'login' => [
             'invalid-credentials' => 'අවලංගු ඊමේල් හෝ මුරපදය',
             'account-suspended' => 'ඔබගේ ගිණුම අත්හිටුවා ඇත',
+            'account-inactive' => 'ඔබගේ සක්රියක් පරපුරක් සෝදන අනුමානයට හෝදන ලදි',
+            'email-not-verified' => 'කරුණාකර ඔබගේ ඊමේල් ගිණුමක් පෙනෙන පෙනුමට පිළිගනිමු.',
             'successful' => 'ඔබ සාර්ථකව පුරනය වී ඇත',
             'invalid-request' => 'අවලංගු පුරනය වීමේ ඉල්ලීම',
+        ],
+
+        'social-login' => [
+            'signed-in' => 'සාර්ථකව පිවිසුණි.',
+            'token-required' => 'සමාජ පිවිසුම් ටෝකනයක් අවශ්‍යයි.',
+            'invalid-token' => 'සමාජ පිවිසුම් ටෝකනය වලංගු නොවේ හෝ කල් ඉකුත් වී ඇත. කරුණාකර නැවත උත්සාහ කරන්න.',
+            'wrong-audience' => 'මෙම ටෝකනය වෙනත් යෙදුමක් සඳහා නිකුත් කර ඇත.',
+            'not-configured' => 'මෙම සමාජ පිවිසුම් සපයන්නා වින්‍යාස කර නැත. කරුණාකර සහාය අමතන්න.',
+            'email-required' => 'සැපයුම්කරු විද්‍යුත් තැපැල් ලිපිනයක් බෙදා නොගත්තේය. කරුණාකර ඒ වෙනුවට විද්‍යුත් තැපෑලෙන් ලියාපදිංචි වන්න.',
+            'account-inactive' => 'ඔබගේ සක්රියක් පරපුරක් සෝදන අනුමානයට හෝදන ලදි',
+            'provider-not-supported' => 'මෙම සමාජ පිවිසුම් සැපයුම්කරු සහාය නොදක්වයි.',
+            'provider-disabled' => 'මෙම සමාජ පිවිසුම් සැපයුම්කරු සක්‍රීය කර නැත.',
         ],
 
         'checkout' => [
@@ -147,6 +181,8 @@ return [
             'shipping-method-error' => 'නැව්ගත කිරීමේ ක්‍රමය සුරැකීමේ දෝෂයකි',
             'payment-method-required' => 'ගෙවීම් ක්‍රමය අවශ්‍ය වේ',
             'invalid-payment-method' => 'අවලංගු හෝ නොමැති ගෙවීම් ක්‍රමය',
+            'paypal-order-id-required' => 'PayPal ස්මාර්ට් බොත්තම් ගෙවීමක් තහවුරු කිරීමට PayPal ඇණවුම් හැඳුනුම්පත අවශ්‍ය වේ.',
+            'paypal-smart-button-payment-flow' => 'PayPal ස්මාර්ට් බොත්තම් ගෙවීම් checkout-payments/initiate සහ checkout-payments/confirm හරහා ලබා ගනී, ඇණවුම සෘජුවම තැබීමෙන් නොවේ.',
             'payment-method-save-failed' => 'ගෙවීම් ක්‍රමය සුරැකීමට අසමත් විය',
             'payment-method-saved' => 'ගෙවීම් ක්‍රමය සාර්ථකව සුරැකිණි',
             'payment-method-error' => 'ගෙවීම් ක්‍රමය සුරැකීමේ දෝෂයකි',
@@ -157,6 +193,7 @@ return [
             'account-suspended' => 'ඔබගේ ගිණුම අත්හිටුවා ඇත. කරුණාකර සහාය අමතන්න.',
             'account-inactive' => 'ඔබගේ ගිණුම අක්‍රියයි. කරුණාකර සහාය අමතන්න.',
             'minimum-order-not-met' => 'අවම ඇණවුම් මුදල :amount වේ',
+            'guest-checkout-not-allowed' => 'ගෙවීම සඳහා කරුණාකර ලොග් වන්න. මෙම කරත්තය සඳහා අමුත්තන් ලෙස ගෙවීම ලබා ගත නොහැක.',
             'email-required' => 'ඇණවුම සෑදීම සඳහා ඊමේල් ලිපිනය අවශ්‍ය වේ',
             'unknown-operation' => 'නොදන්නා ගෙවීම් මෙහෙයුම',
         ],
@@ -199,6 +236,11 @@ return [
             'product-not-found' => 'නිෂ්පාදනය හමු නොවිණි',
             'customer-not-found' => 'ගස්සා ගැනීම හමු නොවිණි',
             'already-exists' => 'මෙම නිෂ්පාදනය ඔබගේ සැසඳුම් ලැයිස්තුවේ දැනටමත් පවතී',
+            'disabled' => 'මෙම වෙළඳසැල සඳහා නිෂ්පාදන සංසන්දනය අක්‍රිය කර ඇත.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'මෙම වෙළඳසැල සඳහා කැමැත්ත ලැයිස්තුව අක්‍රිය කර ඇත.',
         ],
 
         'downloadable-product' => [
@@ -229,6 +271,7 @@ return [
 
             'acl' => [
                 'title' => 'API වෙනස් කිරීමේ ඉතිහාසය',
+                'view' => 'බලන්න',
                 'delete' => 'ඉතිහාසය මකන්න',
             ],
 
@@ -289,6 +332,7 @@ return [
 
         'acl' => [
             'title' => 'ඒකාබද්ධ කිරීම',
+            'view' => 'බලන්න',
             'create' => 'ඒකාබද්ධ කිරීම සාදන්න',
             'edit' => 'අනුකලනය සංස්කරණය කරන්න',
             'delete' => 'ඒකාබද්ධතා ටෝකනය අවලංගු කරන්න',

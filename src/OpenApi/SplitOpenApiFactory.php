@@ -11,6 +11,7 @@ use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\Model\Server;
+use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
 
 /**
@@ -18,27 +19,22 @@ use ApiPlatform\OpenApi\OpenApi;
  */
 class SplitOpenApiFactory implements OpenApiFactoryInterface
 {
+    private const HTTP_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
+
     public function __construct(private OpenApiFactoryInterface $decorated) {}
 
     public function __invoke(array $context = []): OpenApi
     {
         $openApi = ($this->decorated)($context);
 
-        // Detect which endpoint is being accessed
-        // First check context (passed from controller), then fall back to REQUEST_URI detection
         $endpoint = $context['endpoint'] ?? $this->detectEndpoint();
 
-        // Normalize endpoint to just 'shop' or 'admin' for comparison
         $endpointType = str_contains($endpoint, 'shop') ? 'shop' : 'admin';
 
-        // Inject Laravel-backed shop routes that aren't registered as ApiResource operations
-        // (they return binary file responses, so they live as plain Laravel controllers — but
-        // we still want them documented in Swagger).
         if ($endpointType === 'shop') {
             $openApi = $this->addLaravelBackedShopPaths($openApi);
         }
 
-        // Set appropriate server for this endpoint
         $servers = [
             new Server(
                 url: '/api/'.$endpointType,
@@ -48,34 +44,29 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
 
         $openApi = $this->withServers($openApi, $servers);
 
-        // Filter paths based on endpoint
         if ($endpointType === 'shop') {
             $openApi = $this->filterShopPaths($openApi);
             $description = 'Bagisto Shop API - Customer-facing operations for products, cart, orders, and checkout.';
-            // Add X-STOREFRONT-KEY security requirement for shop API
             $openApi = $this->addStorefrontKeyHeader($openApi);
         } else {
             $openApi = $this->filterAdminPaths($openApi);
             $description = 'Bagisto Admin API - Administrative operations for store management and configuration.';
         }
 
-        // Update the main description
+        $openApi = $this->cleanPathParameters($openApi);
+
         $openApi = $this->withDescription($openApi, $description);
 
-        // Filter tags and components to only include those used in the remaining paths
         $usedTags = [];
         $usedSchemas = [];
 
-        // Extract used tags and schemas from paths
         foreach ($openApi->getPaths()->getPaths() as $pathItem) {
             $this->extractTags($pathItem, $usedTags);
             $this->extractSchemaReferences($pathItem, $usedSchemas);
         }
 
-        // Filter tags based on what's used in paths
         $openApi = $this->filterTags($openApi, $usedTags);
 
-        // Filter components based on what's used in paths
         if ($openApi->getComponents()) {
             $filteredComponents = $this->filterComponents($openApi->getComponents(), $usedSchemas);
             $openApi = $openApi->withComponents($filteredComponents);
@@ -84,12 +75,71 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         return $openApi;
     }
 
+    private function cleanPathParameters(OpenApi $openApi): OpenApi
+    {
+        $paths = new Paths;
+
+        foreach ($openApi->getPaths()->getPaths() as $path => $pathItem) {
+            foreach (self::HTTP_METHODS as $method) {
+                $operation = $pathItem->{'get'.ucfirst($method)}();
+
+                if (! $operation) {
+                    continue;
+                }
+
+                $original = $operation->getParameters();
+                $parameters = [];
+
+                foreach ($original as $parameter) {
+                    if (
+                        $parameter->getIn() === 'path'
+                        && ! str_contains($path, '{'.$parameter->getName().'}')
+                    ) {
+                        continue;
+                    }
+
+                    $parameters[] = $this->withReadableParameterDescription($parameter);
+                }
+
+                if ($parameters == $original) {
+                    continue;
+                }
+
+                $pathItem = $pathItem->{'with'.ucfirst($method)}($operation->withParameters($parameters));
+            }
+
+            $paths->addPath($path, $pathItem);
+        }
+
+        return $openApi->withPaths($paths);
+    }
+
+    /**
+     * Rewrite "AdminOrderComment identifier" into "Order comment ID".
+     */
+    private function withReadableParameterDescription(Parameter $parameter): Parameter
+    {
+        if (! preg_match('/^([A-Za-z]+) identifier$/', (string) $parameter->getDescription(), $matches)) {
+            return $parameter;
+        }
+
+        $words = preg_split('/(?=[A-Z])/', preg_replace('/^Admin/', '', $matches[1]), -1, PREG_SPLIT_NO_EMPTY);
+
+        if (! $words) {
+            return $parameter;
+        }
+
+        $words = array_map('strtolower', $words);
+        $words[0] = ucfirst($words[0]);
+
+        return $parameter->withDescription(implode(' ', $words).' ID');
+    }
+
     /**
      * Detect which endpoint is being accessed (/api/shop/docs vs /api/admin/docs)
      */
     private function detectEndpoint(): string
     {
-        // Check REQUEST_URI for /docs routes
         $requestUri = $_SERVER['REQUEST_URI'] ?? '';
 
         if (strpos($requestUri, '/api/shop') !== false) {
@@ -98,29 +148,16 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             return 'admin';
         }
 
-        // Default to shop
         return 'api/shop';
     }
 
-    /**
-     * Filter to show only shop-related paths
-     * Shop paths include:
-     * - All /api/shop/* paths (explicitly shop)
-     * - All generic paths (cart, checkout, customers, etc. - customer-facing)
-     * - NO /api/admin/* paths
-     */
     private function filterShopPaths(OpenApi $openApi): OpenApi
     {
-        // Get all paths and filter
         $paths = $openApi->getPaths();
         $filteredPaths = new Paths;
 
         foreach ($paths->getPaths() as $path => $pathItem) {
-            // Include /api/shop/* paths and all non-admin generic paths
-            // Exclude only /api/admin/* paths
             if (strpos($path, '/api/admin') !== 0) {
-                // Rewrite path to remove /api/shop prefix if present
-                // This prevents duplicate /api/shop in URLs when server URL already contains it
                 $normalizedPath = $this->normalizePath($path, 'shop');
                 $filteredPaths->addPath($normalizedPath, $pathItem);
             }
@@ -129,22 +166,13 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         return $openApi->withPaths($filteredPaths);
     }
 
-    /**
-     * Filter to show only admin-related paths
-     * Admin paths are strictly /api/admin/* paths only
-     */
     private function filterAdminPaths(OpenApi $openApi): OpenApi
     {
-        // Get all paths and filter
         $paths = $openApi->getPaths();
         $filteredPaths = new Paths;
 
         foreach ($paths->getPaths() as $path => $pathItem) {
-            // Include ONLY /api/admin/* paths
-            // Exclude all shop and generic paths
             if (strpos($path, '/api/admin') === 0) {
-                // Rewrite path to remove /api/admin prefix
-                // This prevents duplicate /api/admin in URLs when server URL already contains it
                 $normalizedPath = $this->normalizePath($path, 'admin');
                 $filteredPaths->addPath($normalizedPath, $pathItem);
             }
@@ -153,21 +181,14 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         return $openApi->withPaths($filteredPaths);
     }
 
-    /**
-     * Normalize path by removing the endpoint prefix
-     * Converts /api/admin/path to /path or /api/shop/path to /path
-     * For generic paths that don't have a prefix, returns them as-is
-     */
     private function normalizePath(string $path, string $endpoint): string
     {
         $prefix = '/api/'.$endpoint.'/';
 
         if (strpos($path, $prefix) === 0) {
-            // Remove the /api/{endpoint}/ prefix
             return '/'.substr($path, strlen($prefix));
         }
 
-        // For generic paths without endpoint prefix, remove /api/ if present
         if (strpos($path, '/api/') === 0) {
             return substr($path, 4); // Remove '/api'
         }
@@ -236,40 +257,23 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * Extract all tag references from a path item recursively
+     * Collect the tag names used by a path item's operations.
+     *
+     * @param  array<string, true>  $usedTags
      */
-    private function extractTags($item, &$usedTags): void
+    private function extractTags(PathItem $pathItem, array &$usedTags): void
     {
-        if ($item === null || is_scalar($item)) {
-            return;
-        }
+        foreach (self::HTTP_METHODS as $method) {
+            $operation = $pathItem->{'get'.ucfirst($method)}();
 
-        // Convert to array for easier traversal
-        if ($item instanceof \ArrayObject) {
-            $item = $item->getArrayCopy();
-        } elseif (is_object($item)) {
-            $item = (array) $item;
-        }
-
-        if (! is_array($item)) {
-            return;
-        }
-
-        foreach ($item as $key => $value) {
-            // Check if this is the tags array from an operation
-            if ($key === 'tags' && is_array($value)) {
-                foreach ($value as $tag) {
-                    if (is_string($tag)) {
-                        $usedTags[$tag] = true;
-                    }
-                }
+            if (! $operation) {
+                continue;
             }
 
-            // Recursively check nested structures
-            if (is_array($value) || $value instanceof \ArrayObject) {
-                $this->extractTags($value, $usedTags);
-            } elseif (is_object($value)) {
-                $this->extractTags($value, $usedTags);
+            foreach ($operation->getTags() ?? [] as $tag) {
+                if (is_string($tag) && $tag !== '') {
+                    $usedTags[$tag] = true;
+                }
             }
         }
     }
@@ -288,7 +292,11 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         $filteredTags = [];
         foreach ($tags as $tag) {
             if (isset($usedTags[$tag->getName()])) {
-                $filteredTags[] = $tag;
+                // Drop the tag description. It is auto-derived from a resource
+                // class docblock, which carries internal implementation notes
+                // (e.g. "bypass API Platform's ID requirement") not meant for
+                // consumers. The tag name alone labels the group.
+                $filteredTags[] = new Tag($tag->getName());
             }
         }
 
@@ -304,7 +312,6 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             return;
         }
 
-        // Convert to array for easier traversal
         if ($item instanceof \ArrayObject) {
             $item = $item->getArrayCopy();
         } elseif (is_object($item)) {
@@ -316,7 +323,6 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         }
 
         foreach ($item as $key => $value) {
-            // Check if this value is a schema reference
             if ($key === '$ref' && is_string($value)) {
                 if (preg_match('/#\/components\/schemas\/([a-zA-Z0-9._-]+)/', $value, $match)) {
                     $schemaName = $match[1];
@@ -324,7 +330,6 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
                 }
             }
 
-            // Recursively check nested structures
             if (is_array($value) || $value instanceof \ArrayObject) {
                 $this->extractSchemaReferences($value, $usedSchemas);
             } elseif (is_object($value)) {
@@ -345,7 +350,6 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         $schemas = $components->getSchemas() ?? [];
         $filteredSchemas = [];
 
-        // Keep iterating until no new schemas are discovered (for nested references)
         $previousCount = 0;
         while (count($usedSchemas) > $previousCount) {
             $previousCount = count($usedSchemas);
@@ -353,13 +357,11 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             foreach ($usedSchemas as $schemaName => $used) {
                 if (! isset($filteredSchemas[$schemaName]) && isset($schemas[$schemaName])) {
                     $filteredSchemas[$schemaName] = $schemas[$schemaName];
-                    // Check for nested schema references
                     $this->extractSchemaReferences($schemas[$schemaName], $usedSchemas);
                 }
             }
         }
 
-        // Create new Components with filtered schemas
         $reflectionClass = new \ReflectionClass($components);
         $constructor = $reflectionClass->getConstructor();
 
@@ -368,10 +370,8 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             foreach ($constructor->getParameters() as $param) {
                 $paramName = $param->getName();
                 if ($paramName === 'schemas') {
-                    // Convert array to ArrayObject
                     $params[$paramName] = new \ArrayObject($filteredSchemas);
                 } else {
-                    // Get original value using reflection
                     $property = $reflectionClass->getProperty($paramName);
                     $property->setAccessible(true);
                     $params[$paramName] = $property->getValue($components);
@@ -384,17 +384,12 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         return $components;
     }
 
-    /**
-     * Add X-STOREFRONT-KEY header requirement to all shop API operations
-     * This header is required for authenticating shop/storefront API requests
-     */
     private function addStorefrontKeyHeader(OpenApi $openApi): OpenApi
     {
         $paths = $openApi->getPaths();
         $modifiedPaths = new Paths;
 
         foreach ($paths->getPaths() as $path => $pathItem) {
-            // Get all operations from the path item
             $pathItem = $this->addHeaderToPathItem($pathItem);
             $modifiedPaths->addPath($path, $pathItem);
         }
@@ -411,10 +406,8 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             return $pathItem;
         }
 
-        // Get the class to check what methods are available
         $reflectionClass = new \ReflectionClass($pathItem);
 
-        // List of HTTP method getters
         $methods = ['getGet', 'getPost', 'getPut', 'getPatch', 'getDelete', 'getHead', 'getOptions', 'getTrace'];
 
         foreach ($methods as $methodName) {
@@ -422,10 +415,8 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
                 $operation = $pathItem->$methodName();
 
                 if ($operation && is_object($operation)) {
-                    // Add the header to this operation
                     $operation = $this->addHeaderToOperation($operation);
 
-                    // Set the operation back on the path item
                     $setterName = 'with'.substr($methodName, 3); // getGet -> withGet
                     if (method_exists($pathItem, $setterName)) {
                         $pathItem = $pathItem->$setterName($operation);
@@ -446,7 +437,6 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             return $operation;
         }
 
-        // Get existing parameters
         $parameters = [];
         if (method_exists($operation, 'getParameters')) {
             $existingParams = $operation->getParameters();
@@ -455,7 +445,6 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             }
         }
 
-        // Check if X-STOREFRONT-KEY header already exists
         $headerExists = false;
         foreach ($parameters as $param) {
             if (is_object($param) && method_exists($param, 'getName') && $param->getName() === 'X-STOREFRONT-KEY') {
@@ -464,7 +453,6 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             }
         }
 
-        // Collect header names that already exist
         $existingHeaders = [];
         foreach ($parameters as $param) {
             if (is_object($param) && method_exists($param, 'getName')) {
@@ -472,10 +460,8 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             }
         }
 
-        // Only include the example key if auto-inject is enabled for security
-        $playgroundKey = env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false) ? (env('STOREFRONT_PLAYGROUND_KEY') ?? 'pk_storefront_xxxxx') : '';
+        $playgroundKey = config('storefront.auto_inject_playground_key') ? (config('storefront.playground_key') ?: 'pk_storefront_xxxxx') : '';
 
-        // Define all headers that should be present on every operation
         $headersToAdd = [
             [
                 'name' => 'X-STOREFRONT-KEY',
@@ -517,7 +503,6 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             }
         }
 
-        // Set parameters back to operation
         if (method_exists($operation, 'withParameters')) {
             $operation = $operation->withParameters($parameters);
         }
@@ -525,11 +510,6 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         return $operation;
     }
 
-    /**
-     * Inject paths for Laravel-backed routes that aren't declared as ApiResource
-     * operations (e.g. binary-file endpoints). These paths are picked up by the
-     * tag-filter and storefront-header logic later in the pipeline.
-     */
     private function addLaravelBackedShopPaths(OpenApi $openApi): OpenApi
     {
         $paths = $openApi->getPaths();

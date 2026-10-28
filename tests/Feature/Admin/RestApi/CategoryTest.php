@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Category\Models\Category;
@@ -989,6 +990,30 @@ class CategoryTest extends AdminApiTestCase
         expect(\DB::table('category_translations')->where('category_id', $id)->where('locale', 'en')->value('name'))->toBe('After Rename');
     }
 
+    public function test_update_category_keeps_the_logo_and_banner(): void
+    {
+        Storage::fake();
+        $admin = $this->createAdmin();
+        $slug = 'upd-img-'.uniqid();
+        $id = $this->insertCategory(['name' => 'With Images', 'slug' => $slug]);
+        Storage::put("category/{$id}/logo.webp", 'logo');
+        Storage::put("category/{$id}/banner.webp", 'banner');
+        \DB::table('categories')->where('id', $id)
+            ->update(['logo_path' => "category/{$id}/logo.webp", 'banner_path' => "category/{$id}/banner.webp"]);
+
+        $this->adminPut($admin, '/api/admin/catalog/categories/'.$id, [
+            'locale' => 'en',
+            'position' => 2,
+            'attributes' => [1],
+            'en' => ['slug' => $slug, 'name' => 'Renamed'],
+        ])->assertOk();
+
+        $category = \DB::table('categories')->where('id', $id)->first();
+        expect($category->logo_path)->toBe("category/{$id}/logo.webp");
+        expect($category->banner_path)->toBe("category/{$id}/banner.webp");
+        Storage::assertExists(["category/{$id}/logo.webp", "category/{$id}/banner.webp"]);
+    }
+
     public function test_update_category_move_changes_parent_and_position(): void
     {
         $admin = $this->createAdmin();
@@ -1288,5 +1313,47 @@ class CategoryTest extends AdminApiTestCase
         $this->seedRequiredData();
         $response = $this->postJson('/api/admin/catalog/categories/mass-update-status', ['indices' => [1], 'value' => 1]);
         expect($response->getStatusCode())->toBe(401);
+    }
+
+    public function test_update_saves_logo_alt_and_detail_returns_it(): void
+    {
+        Storage::fake();
+        $admin = $this->createAdmin();
+        $slug = 'cat-alt-'.uniqid();
+        $id = $this->insertCategory(['slug' => $slug, 'name' => 'Alt Category']);
+        Storage::put("category/{$id}/logo.webp", 'logo');
+        \DB::table('categories')->where('id', $id)->update(['logo_path' => "category/{$id}/logo.webp"]);
+
+        $response = $this->adminPut($admin, '/api/admin/catalog/categories/'.$id, [
+            'locale' => 'en',
+            'position' => 1,
+            'attributes' => [1],
+            'logo_alt' => 'Category logo',
+            'en' => ['slug' => $slug, 'name' => 'Alt Category'],
+        ]);
+
+        $response->assertOk();
+        expect($response->json('logoAlt'))->toBe('Category logo');
+
+        $detail = $this->adminGet($admin, '/api/admin/catalog/categories/'.$id);
+        expect($detail->json('logoAlt'))->toBe('Category logo');
+        expect(collect($detail->json('translations'))->firstWhere('locale', 'en')['logoAlt'])->toBe('Category logo');
+    }
+
+    public function test_update_rejects_too_long_banner_alt(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'cat-alt-long-'.uniqid();
+        $id = $this->insertCategory(['slug' => $slug]);
+
+        $response = $this->adminPut($admin, '/api/admin/catalog/categories/'.$id, [
+            'locale' => 'en',
+            'position' => 1,
+            'attributes' => [1],
+            'bannerAlt' => str_repeat('b', 256),
+            'en' => ['slug' => $slug, 'name' => 'Long Alt'],
+        ]);
+
+        expect($response->getStatusCode())->toBe(422);
     }
 }

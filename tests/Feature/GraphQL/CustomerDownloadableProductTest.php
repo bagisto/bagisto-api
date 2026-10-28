@@ -391,6 +391,49 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
         expect($data['status'])->toBe('available');
     }
 
+    public function test_other_customer_cannot_get_downloadable_product_by_id(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer();
+
+        $query = <<<GQL
+            query getCustomerDownloadableProduct {
+              customerDownloadableProduct(id: "/api/shop/customer-downloadable-products/{$testData['purchase1']->id}") {
+                _id
+                name
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($otherCustomer, $query);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not()->toBeEmpty();
+        expect($response->json('data.customerDownloadableProduct'))->toBeNull();
+    }
+
+    public function test_guest_cannot_get_downloadable_product_by_id(): void
+    {
+        $testData = $this->createTestData();
+
+        $query = <<<GQL
+            query getCustomerDownloadableProduct {
+              customerDownloadableProduct(id: "/api/shop/customer-downloadable-products/{$testData['purchase1']->id}") {
+                _id
+                name
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not()->toBeEmpty();
+        expect($response->json('data.customerDownloadableProduct'))->toBeNull();
+    }
+
     /**
      * Test: Customer with no downloadable products returns empty collection
      */

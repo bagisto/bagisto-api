@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Product\Models\Product;
@@ -418,5 +419,102 @@ class CustomerOrderReorderTest extends GraphQLTestCase
 
         // Should have added 1 item
         $this->assertEquals(1, $data['data']['createReorderOrder']['reorderOrder']['itemsAddedCount']);
+    }
+
+    private function setShopReorder(bool $enabled): void
+    {
+        DB::table('core_config')->where('code', 'sales.order_settings.reorder.shop')->delete();
+
+        DB::table('core_config')->insert([
+            'code' => 'sales.order_settings.reorder.shop',
+            'value' => $enabled ? '1' : '0',
+            'channel_code' => null,
+            'locale_code' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->forgetCoreConfigCache();
+    }
+
+    private function reorderMutation(): string
+    {
+        return <<<'GQL'
+            mutation ReorderOrder($input: createReorderOrderInput!) {
+              createReorderOrder(input: $input) {
+                reorderOrder {
+                  success
+                  message
+                  orderId
+                  itemsAddedCount
+                }
+              }
+            }
+        GQL;
+    }
+
+    public function test_reorder_refused_when_disabled_in_store_settings(): void
+    {
+        $testData = $this->createTestData();
+        $this->setShopReorder(false);
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $this->reorderMutation(), [
+            'input' => ['orderId' => $testData['completedOrder']->id],
+        ]);
+
+        expect($response->json('errors.0.message'))
+            ->toBe(__('bagistoapi::app.graphql.reorder.disabled-in-settings'));
+    }
+
+    public function test_reorder_refused_when_an_item_is_no_longer_saleable(): void
+    {
+        $testData = $this->createTestData();
+
+        $unsaleable = $this->createBaseProduct('simple', ['sku' => 'REORDER-UNSALEABLE']);
+
+        OrderItem::factory()->create([
+            'order_id' => $testData['completedOrder']->id,
+            'product_id' => $unsaleable->id,
+            'sku' => 'REORDER-UNSALEABLE',
+            'type' => 'simple',
+            'name' => 'Unsaleable Product',
+            'qty_ordered' => 1,
+        ]);
+
+        DB::table('product_attribute_values')
+            ->where('product_id', $unsaleable->id)
+            ->where('attribute_id', 8)
+            ->update(['boolean_value' => 0]);
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $this->reorderMutation(), [
+            'input' => ['orderId' => $testData['completedOrder']->id],
+        ]);
+
+        expect($response->json('errors.0.message'))
+            ->toBe(__('bagistoapi::app.graphql.reorder.cannot-reorder'));
+    }
+
+    public function test_reorder_skips_booking_items_with_a_notice(): void
+    {
+        $testData = $this->createTestData();
+
+        OrderItem::factory()->create([
+            'order_id' => $testData['completedOrder']->id,
+            'product_id' => $testData['product2']->id,
+            'sku' => 'REORDER-BOOKING',
+            'type' => 'booking',
+            'name' => 'Booking Item',
+            'qty_ordered' => 1,
+        ]);
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $this->reorderMutation(), [
+            'input' => ['orderId' => $testData['completedOrder']->id],
+        ]);
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.createReorderOrder.reorderOrder.success'))->toBeTrue();
+        expect($response->json('data.createReorderOrder.reorderOrder.itemsAddedCount'))->toBe(2);
+        expect($response->json('data.createReorderOrder.reorderOrder.message'))
+            ->toContain(__('shop::app.customers.account.orders.view.reorder-booking-skipped'));
     }
 }

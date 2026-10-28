@@ -55,7 +55,7 @@ class ProductDetailProvider implements ProviderInterface
             'up_sells.images',
             'cross_sells.images',
             'price_indices',
-        ])->find($id);
+        ])->visibleInStorefront(request()->attributes->get('bagisto_channel'), false)->find($id);
 
         if (! $product) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.product.not-found'));
@@ -131,7 +131,7 @@ class ProductDetailProvider implements ProviderInterface
                 path: $img->path,
                 product_id: (int) $img->product_id,
                 position: $img->position !== null ? (int) $img->position : null,
-                public_path: env('API_URL').($img->url ?? ''),
+                public_path: $img->url ?? '',
             ))->values()->all();
 
         $dto->videos = $product->videos
@@ -141,7 +141,7 @@ class ProductDetailProvider implements ProviderInterface
                 path: $vid->path,
                 product_id: (int) $vid->product_id,
                 position: $vid->position !== null ? (int) $vid->position : null,
-                public_path: env('API_URL').($vid->url ?? ''),
+                public_path: $vid->url ?? '',
             ))->values()->all();
 
         // Super attributes + variants (configurable only)
@@ -255,13 +255,13 @@ class ProductDetailProvider implements ProviderInterface
                     sort_order: $dl->sort_order !== null ? (int) $dl->sort_order : null,
                     type: $dl->type ?? null,
                     file_type: $dl->file_type ?? null,
-                    url_or_path: $dl->type === 'url' ? ($dl->url ?? null) : ($dl->file ?? null),
+                    url_or_path: null,
                     sample_type: $dl->sample_type ?? null,
                     sample_file_type: $dl->sample_file_type ?? null,
                     sample_url_or_path: ($dl->sample_type ?? null) === 'url' ? ($dl->sample_url ?? null) : ($dl->sample_file ?? null),
                     downloads: $dl->downloads !== null ? (int) $dl->downloads : null,
-                    price: $dl->price !== null ? (float) core()->convertPrice((float) $dl->price) : null,
-                    formatted_price: $dl->price !== null ? core()->formatPrice((float) core()->convertPrice((float) $dl->price)) : null,
+                    price: $dl->price,
+                    formatted_price: $dl->price !== null ? core()->formatPrice($dl->price) : null,
                     title: $dl->title ?? null,
                 ))->values()->all();
 

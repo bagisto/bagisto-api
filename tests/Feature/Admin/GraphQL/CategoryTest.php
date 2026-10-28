@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Category\Models\Category;
 
@@ -542,6 +543,42 @@ class CategoryTest extends AdminApiTestCase
         expect($afterName)->toBe('After GQL Update');
     }
 
+    public function test_mutation_update_category_keeps_the_logo_and_banner(): void
+    {
+        Storage::fake();
+        $admin = $this->createAdmin();
+        $slug = 'gql-cat-img-'.uniqid();
+        $id = $this->insertCategory(['slug' => $slug, 'name' => 'With Images']);
+        Storage::put("category/{$id}/logo.webp", 'logo');
+        Storage::put("category/{$id}/banner.webp", 'banner');
+        \DB::table('categories')->where('id', $id)
+            ->update(['logo_path' => "category/{$id}/logo.webp", 'banner_path' => "category/{$id}/banner.webp"]);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminCategoryInput!) {
+              updateAdminCategory(input: $input) {
+                adminCategory { _id logoUrl bannerUrl }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => '/api/admin/catalog/categories/'.$id,
+                'locale' => 'en',
+                'position' => 4,
+                'attributes' => [1],
+                'en' => ['slug' => $slug, 'name' => 'Renamed'],
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.updateAdminCategory.adminCategory.logoUrl'))->toContain("category/{$id}/logo.webp");
+        expect($response->json('data.updateAdminCategory.adminCategory.bannerUrl'))->toContain("category/{$id}/banner.webp");
+        Storage::assertExists(["category/{$id}/logo.webp", "category/{$id}/banner.webp"]);
+    }
+
     public function test_mutation_delete_category_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -661,5 +698,63 @@ class CategoryTest extends AdminApiTestCase
 
         $response->assertOk();
         expect((int) \DB::table('categories')->where('id', $id1)->value('status'))->toBe(0);
+    }
+
+    public function test_mutation_update_category_saves_logo_alt_for_the_locale(): void
+    {
+        Storage::fake();
+        $admin = $this->createAdmin();
+        $slug = 'gql-cat-alt-'.uniqid();
+        $id = $this->insertCategory(['slug' => $slug, 'name' => 'With Logo']);
+        Storage::put("category/{$id}/logo.webp", 'logo');
+        \DB::table('categories')->where('id', $id)->update(['logo_path' => "category/{$id}/logo.webp"]);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminCategoryInput!) {
+              updateAdminCategory(input: $input) {
+                adminCategory { _id logoUrl logoAlt bannerAlt }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => '/api/admin/catalog/categories/'.$id,
+                'locale' => 'en',
+                'position' => 1,
+                'attributes' => [1],
+                'logoAlt' => 'Summer logo',
+                'en' => ['slug' => $slug, 'name' => 'With Logo'],
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.updateAdminCategory.adminCategory.logoAlt'))->toBe('Summer logo');
+        expect($response->json('data.updateAdminCategory.adminCategory.bannerAlt'))->toBeNull();
+
+        expect(\DB::table('category_translations')->where('category_id', $id)->where('locale', 'en')->value('logo_alt'))
+            ->toBe('Summer logo');
+    }
+
+    public function test_query_category_detail_returns_logo_and_banner_alt(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertCategory(['slug' => 'gql-cat-read-alt-'.uniqid()]);
+        \DB::table('category_translations')->where('category_id', $id)->where('locale', 'en')
+            ->update(['logo_alt' => 'Logo alt', 'banner_alt' => 'Banner alt']);
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminCategory(id: $id) { _id logoAlt bannerAlt }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['id' => '/api/admin/catalog/categories/'.$id], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.adminCategory.logoAlt'))->toBe('Logo alt');
+        expect($response->json('data.adminCategory.bannerAlt'))->toBe('Banner alt');
     }
 }

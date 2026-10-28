@@ -69,7 +69,7 @@ class AdminAuthHelper
 
         $admin = $row->admin;
 
-        if (! $admin instanceof Admin) {
+        if (! $admin instanceof Admin || ! $admin->status) {
             return null;
         }
 

@@ -18,25 +18,12 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Support\CoreCapabilities;
 use Webkul\Marketing\Models\Template;
 use Webkul\Marketing\Repositories\TemplateRepository;
 
 /**
  * Handles POST, PUT, DELETE on AdminMarketingTemplate.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Communications\TemplateController:
- *   store / update / destroy. Events fired:
- *     marketing.templates.create.before / after
- *     marketing.templates.update.before / after
- *     marketing.templates.delete.before / after
- *
- * Permission resolution: Sanctum pattern — read role->permission_type /
- * role->permissions directly. Never calls bouncer().
- *
- * Validation mirrors TemplateController::store / ::update:
- *   - name    required
- *   - status  required|in:active,inactive,draft
- *   - content required
  */
 class AdminMarketingTemplateProcessor implements ProcessorInterface
 {
@@ -45,6 +32,7 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
     public function __construct(
         protected TemplateRepository $templateRepository,
         protected AdminMarketingTemplateItemProvider $itemProvider,
+        protected CoreCapabilities $capabilities,
     ) {}
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
@@ -128,6 +116,15 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         $template = Template::find($id);
         if (! $template) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.template.not-found'));
+        }
+
+        // BACKWARD COMPATIBILITY: core exposes the relation from 2.4.10. Drop the guard
+        // on the capability when the minimum supported core is 2.4.10.
+        if ($this->capabilities->hasCampaignRelations() && $template->campaigns()->count()) {
+            throw new InvalidInputException(
+                __('bagistoapi::app.admin.marketing.template.campaign-associated'),
+                400,
+            );
         }
 
         Event::dispatch('marketing.templates.delete.before', $id);

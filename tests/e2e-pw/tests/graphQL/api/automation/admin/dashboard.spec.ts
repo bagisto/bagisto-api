@@ -15,7 +15,6 @@ const STAT_TYPES = [
   'today',
   'stock-threshold-products',
   'total-sales',
-  'total-visitors',
   'top-selling-products',
   'top-customers',
 ];

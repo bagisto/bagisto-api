@@ -15,12 +15,12 @@ use Webkul\Attribute\Enums\AttributeTypeEnum;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeOption;
 use Webkul\Attribute\Repositories\AttributeOptionRepository;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminAttribute;
 use Webkul\BagistoApi\Admin\Models\AdminAttributeOption;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\Core\Helpers\MediaFileName;
 
 /**
  * Handles POST, PUT, DELETE on AdminAttributeOption sub-resource.
@@ -46,9 +46,7 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize(null, null, 'catalog.attributes.edit');
 
         if ($operation instanceof Put) {
             $attributeId = $this->resolveAttributeId($uriVariables, $context, $data);
@@ -122,6 +120,8 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
 
+        $this->prepareSwatchMeta($input);
+
         $optData = $this->buildOptionData($attributeId, $input);
 
         $option = $this->attributeOptionRepository->create($optData);
@@ -149,6 +149,8 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         if (! $option || (int) $option->attribute_id !== $attributeId) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.attribute.option-not-found'));
         }
+
+        $this->prepareSwatchMeta($input);
 
         $optData = $this->buildOptionData($attributeId, $input);
 
@@ -204,6 +206,26 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.attribute.option-delete-success')];
     }
 
+    /**
+     * Validate swatch alt/file name as core does, and expose the requested locale the
+     * repository saves the alt text for.
+     */
+    protected function prepareSwatchMeta(array $input): void
+    {
+        $v = Validator::make($input, [
+            'swatch_alt' => ['nullable', 'string', 'max:255'],
+            'swatch_file_name' => ['nullable', 'string', 'max:'.MediaFileName::MAX_LENGTH],
+        ]);
+
+        if ($v->fails()) {
+            throw new InvalidInputException($v->errors()->first(), 422);
+        }
+
+        if (! empty($input['locale'])) {
+            request()->merge(['locale' => $input['locale']]);
+        }
+    }
+
     protected function mapOption(AttributeOption $option): AdminAttributeOption
     {
         $dto = new AdminAttributeOption;
@@ -212,6 +234,8 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         $dto->admin_name = $option->admin_name;
         $dto->sort_order = (int) ($option->sort_order ?? 0);
         $dto->swatch_value = $option->swatch_value;
+        $dto->swatch_alt = $option->swatch_alt;
+        $dto->swatch_file_name = $option->swatch_file_name;
 
         return $dto;
     }
@@ -232,6 +256,12 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
 
         if (array_key_exists('swatch_value', $input)) {
             $optData['swatch_value'] = $input['swatch_value'];
+        }
+
+        foreach (['swatch_alt', 'swatch_file_name'] as $key) {
+            if (array_key_exists($key, $input)) {
+                $optData[$key] = $input[$key];
+            }
         }
 
         if (! empty($input['translations'])) {
@@ -276,7 +306,7 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             return $this->normaliseArgs($args);
         }
 
-        return request()->except(['_method', '_token']);
+        return $this->normaliseArgs(request()->except(['_method', '_token']));
     }
 
     /**
@@ -288,6 +318,8 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             'adminName' => 'admin_name',
             'sortOrder' => 'sort_order',
             'swatchValue' => 'swatch_value',
+            'swatchAlt' => 'swatch_alt',
+            'swatchFileName' => 'swatch_file_name',
         ];
 
         $result = [];

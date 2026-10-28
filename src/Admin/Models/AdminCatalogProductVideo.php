@@ -7,8 +7,10 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductVideoDeleteInput;
+use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductVideoReorderInput;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductVideoProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductVideoProvider;
 
@@ -16,6 +18,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductVideoProvider;
  * Admin Catalog Product videos sub-resource (mirrors AdminCatalogProductImage).
  *
  *   POST   /api/admin/catalog/products/{productId}/videos       upload (multipart `video`)
+ *   PUT    /api/admin/catalog/products/{productId}/videos/reorder  reorder positions
  *   DELETE /api/admin/catalog/products/{productId}/videos/{id}  remove DB row + file
  *
  * Binary upload is REST-only; the GraphQL create mutation is a placeholder that
@@ -76,6 +79,70 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductVideoProvider;
                 ],
             ),
         ),
+        new Put(
+            uriTemplate: '/catalog/products/{productId}/videos/reorder',
+            input: AdminCatalogProductVideoReorderInput::class,
+            provider: AdminCatalogProductVideoProvider::class,
+            processor: AdminCatalogProductVideoProcessor::class,
+            extraProperties: ['standard_put' => false],
+            read: false,
+            write: true,
+            status: 200,
+            openapi: new Model\Operation(
+                tags: ['Admin Catalog: Products'],
+                summary: 'Reorder product videos',
+                description: 'Updates the position of one or more existing videos for the given product. Each video id must belong to the product; otherwise the call is rejected.',
+                parameters: [
+                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: ['type' => 'integer', 'example' => 12]),
+                ],
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['order'],
+                                'properties' => [
+                                    'order' => [
+                                        'type' => 'array',
+                                        'items' => [
+                                            'type' => 'object',
+                                            'properties' => [
+                                                'id' => ['type' => 'integer'],
+                                                'position' => ['type' => 'integer'],
+                                            ],
+                                        ],
+                                        'example' => [
+                                            ['id' => 8, 'position' => 2],
+                                            ['id' => 9, 'position' => 1],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Videos reordered. Returns the updated list ordered by position.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'success' => true,
+                                    'message' => 'Product videos reordered successfully.',
+                                    'videos' => [
+                                        ['id' => 9, 'productId' => 12, 'path' => 'product/12/def456.mp4', 'position' => 1, 'url' => '/storage/product/12/def456.mp4'],
+                                        ['id' => 8, 'productId' => 12, 'path' => 'product/12/xyz789.mp4', 'position' => 2, 'url' => '/storage/product/12/xyz789.mp4'],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Product not found.'),
+                    '422' => new Model\Response(description: 'Video id does not belong to the product, or order payload invalid.'),
+                ],
+            ),
+        ),
         new Delete(
             uriTemplate: '/catalog/products/{productId}/videos/{id}',
             provider: AdminCatalogProductVideoProvider::class,
@@ -110,6 +177,13 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductVideoProvider;
             description: 'Placeholder for createAdminCatalogProductVideo — binary upload is REST-only. Use POST /api/admin/catalog/products/{productId}/videos.',
         ),
         new Mutation(
+            name: 'reorder',
+            input: AdminCatalogProductVideoReorderInput::class,
+            read: false,
+            processor: AdminCatalogProductVideoProcessor::class,
+            description: 'Reorder product videos. Becomes reorderAdminCatalogProductVideo.',
+        ),
+        new Mutation(
             name: 'delete',
             input: AdminCatalogProductVideoDeleteInput::class,
             processor: AdminCatalogProductVideoProcessor::class,
@@ -133,6 +207,9 @@ class AdminCatalogProductVideo
 
     #[ApiProperty(writable: false)]
     public ?string $url = null;
+
+    #[ApiProperty(writable: false)]
+    public ?array $videos = null;
 
     #[ApiProperty(writable: false)]
     public ?bool $success = null;

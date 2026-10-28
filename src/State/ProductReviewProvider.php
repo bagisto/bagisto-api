@@ -3,16 +3,19 @@
 namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Laravel\Eloquent\Paginator;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\ProductReview;
 
 /**
- * Provider for ProductReview collection queries (REST + GraphQL).
- * Filters by product_id, status, and rating.
- * Status defaults to "approved" for the storefront; pass status to override.
+ * Storefront product reviews (REST + GraphQL), mirroring the shop ReviewController: only approved
+ * reviews are listed, and reviewer names are censored when the store setting is on.
  */
 class ProductReviewProvider implements ProviderInterface
 {
@@ -20,24 +23,29 @@ class ProductReviewProvider implements ProviderInterface
 
     private const MAX_PER_PAGE = 50;
 
+    private const STATUS_APPROVED = 'approved';
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
+        if ($operation instanceof Get) {
+            return $this->findVisible((int) ($uriVariables['id'] ?? 0));
+        }
+
         $isGraphQL = ! empty($context['graphql_operation_name']);
 
         $args = $this->resolveArgs($uriVariables, $context, $isGraphQL);
 
-        $query = ProductReview::query();
+        $query = ProductReview::query()->with('customer');
 
         if (! empty($args['product_id'])) {
             $query->where('product_id', (int) $args['product_id']);
         }
 
-        /** Default to approved reviews for storefront API; explicit status overrides. */
-        $query->where('status', isset($args['status']) ? (string) $args['status'] : 'approved');
+        $query->where('status', self::STATUS_APPROVED);
 
         if (! empty($args['rating'])) {
             $query->where('rating', (int) $args['rating']);
@@ -88,7 +96,7 @@ class ProductReviewProvider implements ProviderInterface
         $page = max(1, (int) ($args['page'] ?? 1));
         $total = (clone $query)->count();
 
-        $items = $query->offset(($page - 1) * $perPage)->limit($perPage)->get();
+        $items = $this->censor($query->offset(($page - 1) * $perPage)->limit($perPage)->get());
 
         return new Paginator(
             new LengthAwarePaginator(
@@ -132,7 +140,7 @@ class ProductReviewProvider implements ProviderInterface
             $offset = max(0, $total - $perPage);
         }
 
-        $items = $query->offset($offset)->limit($perPage)->get();
+        $items = $this->censor($query->offset($offset)->limit($perPage)->get());
 
         $currentPage = $total > 0 ? (int) floor($offset / $perPage) + 1 : 1;
 
@@ -145,5 +153,39 @@ class ProductReviewProvider implements ProviderInterface
                 ['path' => request()->url()]
             )
         );
+    }
+
+    /**
+     * One review: an approved one, or the signed-in customer's own review in any status.
+     */
+    public function findVisible(int $id): ProductReview
+    {
+        $customerId = Auth::guard('sanctum')->user()?->id;
+
+        $review = ProductReview::query()
+            ->whereKey($id)
+            ->where(fn ($query) => $query->where('status', self::STATUS_APPROVED)
+                ->when($customerId, fn ($query) => $query->orWhere('customer_id', $customerId)))
+            ->first();
+
+        if (! $review) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.graphql.product-review.not-found', ['id' => $id]));
+        }
+
+        return $this->censor(collect([$review]))->first();
+    }
+
+    /**
+     * Censor reviewer names as the storefront does, without saving the change.
+     */
+    private function censor(Collection $reviews): Collection
+    {
+        if (! core()->getConfigData('catalog.products.review.censoring_reviewer_name')) {
+            return $reviews;
+        }
+
+        return $reviews->each(fn ($review) => $review->name = collect(explode(' ', (string) $review->name))
+            ->map(fn ($part) => mb_substr($part, 0, 1).str_repeat('*', max(mb_strlen($part) - 1, 0)))
+            ->join(' '));
     }
 }

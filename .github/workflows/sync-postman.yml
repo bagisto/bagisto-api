@@ -1,0 +1,143 @@
+name: Sync Collections from Postman
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: postman-sync
+  cancel-in-progress: false
+
+jobs:
+  configured:
+    runs-on: ubuntu-22.04
+
+    name: Check Postman credentials
+
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+
+    steps:
+      - name: Check
+        id: check
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+          POSTMAN_SHOP_COLLECTION_ID: ${{ secrets.POSTMAN_SHOP_COLLECTION_ID }}
+          POSTMAN_ADMIN_COLLECTION_ID: ${{ secrets.POSTMAN_ADMIN_COLLECTION_ID }}
+          POSTMAN_ENVIRONMENT_ID: ${{ secrets.POSTMAN_ENVIRONMENT_ID }}
+        run: |
+          missing=
+          for name in POSTMAN_API_KEY POSTMAN_SHOP_COLLECTION_ID POSTMAN_ADMIN_COLLECTION_ID POSTMAN_ENVIRONMENT_ID; do
+            if [ -z "${!name}" ]; then
+              missing="$missing $name"
+            fi
+          done
+
+          if [ -n "$missing" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Postman publishing is not configured, so nothing is pushed. Add these repository secrets to enable it:$missing"
+            exit 0
+          fi
+
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+  sync:
+    needs: configured
+
+    if: needs.configured.outputs.ready == 'true'
+
+    runs-on: ubuntu-22.04
+
+    name: Pull collections and environments back into the repo
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch from Postman
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+          SHOP_COLLECTION_ID: ${{ secrets.POSTMAN_SHOP_COLLECTION_ID }}
+          ADMIN_COLLECTION_ID: ${{ secrets.POSTMAN_ADMIN_COLLECTION_ID }}
+          ENVIRONMENT_ID: ${{ secrets.POSTMAN_ENVIRONMENT_ID }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys, urllib.request
+
+          TARGETS = [
+              ('collections', 'collection', 'SHOP_COLLECTION_ID',
+               'collections/Bagisto-Shop-API.postman_collection.json'),
+              ('collections', 'collection', 'ADMIN_COLLECTION_ID',
+               'collections/Bagisto-Admin-API.postman_collection.json'),
+              ('environments', 'environment', 'ENVIRONMENT_ID',
+               'environments/Bagisto.postman_environment.json'),
+          ]
+
+          def fetch(resource, identifier):
+              request = urllib.request.Request(
+                  f'https://api.getpostman.com/{resource}/{identifier}',
+                  headers={'X-Api-Key': os.environ['POSTMAN_API_KEY']},
+              )
+
+              with urllib.request.urlopen(request, timeout=120) as response:
+                  return json.load(response)
+
+          def scrub(node):
+              """Never let a credential edited in Postman land in the repo."""
+              if isinstance(node, dict):
+                  if node.get('type') == 'secret' and 'value' in node:
+                      node['value'] = ''
+
+                  return {key: scrub(value) for key, value in node.items()}
+
+              if isinstance(node, list):
+                  return [scrub(item) for item in node]
+
+              if isinstance(node, str) and 'pk_storefront_' in node:
+                  return '{{storefrontKey}}'
+
+              return node
+
+          for resource, wrapper, env_key, path in TARGETS:
+              identifier = os.environ.get(env_key, '')
+
+              if not identifier:
+                  sys.exit(f'Repository secret for {env_key} is not set.')
+
+              payload = fetch(resource, identifier)
+
+              if 'error' in payload:
+                  sys.exit(f'Postman API error for {env_key}: ' + json.dumps(payload['error']))
+
+              body = scrub(payload.get(wrapper, payload))
+
+              with open(path, 'w') as handle:
+                  json.dump(body, handle, indent=2)
+                  handle.write('\n')
+
+              print('Synced', path)
+
+              if 'pk_storefront_' in json.dumps(body):
+                  sys.exit(f'{path} still contains a storefront key after scrubbing.')
+          PY
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add collections environments
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "chore: sync Postman collections & environments for ${{ github.ref_name }}"
+          git push

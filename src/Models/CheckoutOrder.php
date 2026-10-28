@@ -10,7 +10,6 @@ use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\State\CheckoutProcessor;
 
@@ -53,16 +52,35 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                 ),
                 responses: [
                     201 => new Response(
-                        description: 'Order placed successfully.',
+                        description: 'Order placed, or a payment redirect is required. Check the `redirect` flag: when it is false the order exists and `orderId` and `incrementId` (the order number to show the shopper) are set; when it is true no order has been created yet and the shopper must be sent to `redirectUrl` to pay — the order is created once the gateway returns.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => [
-                                    'id' => 6887,
-                                    'cartToken' => '1536',
-                                    'orderId' => '2609',
-                                    'success' => true,
-                                    'message' => 'Order placed successfully',
-                                ],
+                                'examples' => new \ArrayObject([
+                                    'Order placed (cash on delivery, money transfer)' => [
+                                        'value' => [
+                                            'id' => 6887,
+                                            'cartToken' => '1536',
+                                            'orderId' => '2609',
+                                            'incrementId' => '2609',
+                                            'redirect' => false,
+                                            'redirectUrl' => null,
+                                            'success' => true,
+                                            'message' => 'Order placed successfully',
+                                        ],
+                                    ],
+                                    'Payment redirect required (stripe, razorpay, payu, phonepe, paypal_standard)' => [
+                                        'value' => [
+                                            'id' => 6887,
+                                            'cartToken' => '1536',
+                                            'orderId' => null,
+                                            'incrementId' => null,
+                                            'redirect' => true,
+                                            'redirectUrl' => 'https://example.com/stripe/redirect',
+                                            'success' => true,
+                                            'message' => 'This payment method requires the shopper to complete payment on the gateway. Send them to redirectUrl; the order is created once the gateway confirms the payment.',
+                                        ],
+                                    ],
+                                ]),
                             ],
                         ]),
                     ),
@@ -77,7 +95,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
         new Mutation(
             name: 'create',
             input: CheckoutAddressInput::class,
-            output: CartData::class,
+            output: CheckoutOrder::class,
             processor: CheckoutProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
@@ -103,4 +121,24 @@ class CheckoutOrder
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $orderId = null;
+
+    #[ApiProperty(readable: true, writable: false, description: 'The order number shown to the shopper (with the configured prefix, length and suffix), as on the storefront order success page. Null when redirect is true, because no order exists yet.')]
+    #[Groups(['query', 'mutation'])]
+    public ?string $incrementId = null;
+
+    #[ApiProperty(readable: true, writable: false, description: 'True when the selected payment method requires the shopper to be sent to a payment page before the order is created.')]
+    #[Groups(['query', 'mutation'])]
+    public ?bool $redirect = false;
+
+    #[ApiProperty(readable: true, writable: false, description: 'Payment page to open when redirect is true. Null otherwise.')]
+    #[Groups(['query', 'mutation'])]
+    public ?string $redirectUrl = null;
+
+    #[ApiProperty(readable: true, writable: false, description: 'True when the checkout call succeeded — either the order was placed or a payment redirect is required. Order-placement failures are returned as errors, not here.')]
+    #[Groups(['query', 'mutation'])]
+    public ?bool $success = null;
+
+    #[ApiProperty(readable: true, writable: false, description: 'Human-readable result of the call: order placed, or that the shopper must be redirected to the payment page to complete payment.')]
+    #[Groups(['query', 'mutation'])]
+    public ?string $message = null;
 }

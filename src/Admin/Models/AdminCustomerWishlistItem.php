@@ -4,10 +4,14 @@ namespace Webkul\BagistoApi\Admin\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Admin\Dto\AdminCustomerSidebarItemRemoveInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
+use Webkul\BagistoApi\Admin\State\AdminCustomerSidebarItemDeleteProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCustomerWishlistItemProvider;
 
 /**
@@ -52,12 +56,59 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWishlistItemProvider;
                 ],
             ),
         ),
+        new Delete(
+            uriTemplate: '/customers/{customerId}/wishlist-items',
+            status: 200,
+            input: false,
+            read: false,
+            deserialize: false,
+            validate: false,
+            processor: AdminCustomerSidebarItemDeleteProcessor::class,
+            openapi: new Model\Operation(
+                tags: ['Admin Customers'],
+                summary: "Remove an item from a customer's wishlist",
+                description: 'Removes a wishlist item of the customer. The item must belong to the customer.',
+                parameters: [
+                    new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
+                ],
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['itemId'],
+                                'properties' => ['itemId' => ['type' => 'integer', 'example' => 88]],
+                            ],
+                            'example' => ['itemId' => 88],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Wishlist item removed.',
+                        content: new \ArrayObject([
+                            'application/json' => ['example' => ['id' => 88, 'message' => 'Wishlist item removed successfully.']],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Customer not found, or the wishlist item does not belong to the customer.'),
+                    '422' => new Model\Response(description: '`itemId` missing or unknown.'),
+                ],
+            ),
+        ),
     ],
     graphQlOperations: [
         new QueryCollection(
             provider: AdminCustomerWishlistItemProvider::class,
             paginationType: 'cursor',
             args: ['customerId' => ['type' => 'Int!', 'description' => 'Customer ID']],
+        ),
+        new Mutation(
+            name: 'remove',
+            input: AdminCustomerSidebarItemRemoveInput::class,
+            read: false,
+            processor: AdminCustomerSidebarItemDeleteProcessor::class,
+            description: 'Remove a wishlist item of the customer. Pass `id` as /api/admin/customers/{customerId}/wishlist-items/{itemId}.',
         ),
     ]
 )]

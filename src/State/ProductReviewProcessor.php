@@ -2,13 +2,16 @@
 
 namespace Webkul\BagistoApi\State;
 
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\DeleteMutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
+use finfo;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Dto\CreateProductReviewInput;
-use Webkul\BagistoApi\Dto\ProductReviewOutput;
 use Webkul\BagistoApi\Dto\UpdateProductReviewInput;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
@@ -17,12 +20,39 @@ use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\ProductReview;
 use Webkul\BagistoApi\Models\ProductReviewAttachment;
 
-/**
- * ProductReviewProcessor - Handles create/update operations for product reviews
- * Validates input and delegates persistence to the persist processor
- */
 class ProductReviewProcessor implements ProcessorInterface
 {
+    /**
+     * Media MIME types accepted for a review attachment, mapped to the stored extension.
+     */
+    private const REVIEW_MEDIA_MIME_EXTENSIONS = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+        'image/gif' => 'gif',
+        'image/bmp' => 'bmp',
+        'image/x-ms-bmp' => 'bmp',
+        'video/mp4' => 'mp4',
+        'video/webm' => 'webm',
+        'video/quicktime' => 'mov',
+    ];
+
+    /**
+     * Review fields a storefront client may write. Status and ownership are set by the server.
+     */
+    private const CLIENT_WRITABLE_FIELDS = [
+        'product_id',
+        'title',
+        'comment',
+        'rating',
+        'name',
+    ];
+
+    /**
+     * Status every storefront-submitted review starts with, as in core.
+     */
+    private const STATUS_PENDING = 'pending';
+
     public function __construct(
         private readonly ProcessorInterface $persistProcessor
     ) {}
@@ -37,8 +67,19 @@ class ProductReviewProcessor implements ProcessorInterface
             return $this->handleUpdate($data);
         }
 
+        if ($operation instanceof Delete || $operation instanceof DeleteMutation) {
+            return $this->handleDelete($data, $operation);
+        }
+
         if (! ($data instanceof ProductReview)) {
             $data = new ProductReview;
+        }
+
+        if (! ($operation instanceof Post) && $data->exists) {
+            $this->assertOwnedReview($data);
+
+            $data->setAttribute('status', $data->getOriginal('status'));
+            $data->setAttribute('customer_id', $data->getOriginal('customer_id'));
         }
 
         if (isset($context['request'])) {
@@ -50,26 +91,37 @@ class ProductReviewProcessor implements ProcessorInterface
                     $allData['product_id'] = $allData['productId'];
                 }
 
-                $data->fill($allData);
+                $data->fill(array_intersect_key($allData, array_flip(self::CLIENT_WRITABLE_FIELDS)));
             }
         }
 
-        // Stamp the authenticated customer on REST POST so the review is scoped
-        // correctly (GraphQL's handleCreate path does this explicitly; REST falls
-        // through here without it).
         if ($operation instanceof Post) {
             $customer = Auth::guard('sanctum')->user();
-            if ($customer && ! $data->getAttribute('customer_id')) {
-                $data->setAttribute('customer_id', $customer->id);
-            }
-            if (! $data->getAttribute('status')) {
-                $data->setAttribute('status', 'pending');
+
+            $this->assertReviewsAllowed($customer !== null);
+            $this->assertTitleAndComment($data->getAttribute('title'), $data->getAttribute('comment'));
+
+            $data->setAttribute('customer_id', $customer?->id);
+            $data->setAttribute('status', self::STATUS_PENDING);
+
+            if ($customer) {
+                $data->setAttribute('name', $customer->name);
             }
         }
 
         $this->validateReview($data);
 
-        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        if (! $operation instanceof Post) {
+            return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        }
+
+        Event::dispatch('customer.review.create.before', $data->getAttribute('product_id'));
+
+        $review = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+
+        Event::dispatch('customer.review.create.after', $review);
+
+        return $review;
     }
 
     /**
@@ -77,17 +129,9 @@ class ProductReviewProcessor implements ProcessorInterface
      */
     private function handleCreate(CreateProductReviewInput $data)
     {
-        /** Check if customer reviews are enabled globally */
-        if (! core()->getConfigData('catalog.products.review.customer_review')) {
-            throw new AuthorizationException(__('bagistoapi::app.graphql.product-review.review-disabled'));
-        }
-
         $customer = Auth::guard('sanctum')->user();
 
-        /** Check if guest reviews are allowed when user is not authenticated */
-        if (! $customer && ! core()->getConfigData('catalog.products.review.guest_review')) {
-            throw new AuthorizationException(__('bagistoapi::app.graphql.product-review.guest-review-disabled'));
-        }
+        $this->assertReviewsAllowed($customer !== null);
 
         $review = new ProductReview;
 
@@ -95,14 +139,13 @@ class ProductReviewProcessor implements ProcessorInterface
         $review->setAttribute('title', $data->title);
         $review->setAttribute('comment', $data->comment);
         $review->setAttribute('rating', $data->rating);
-        $review->setAttribute('name', $data->name);
-        $review->setAttribute('status', $data->status ?? 'pending');
-
-        if ($customer) {
-            $review->setAttribute('customer_id', $customer->id);
-        }
+        $review->setAttribute('name', $customer?->name ?? $data->name);
+        $review->setAttribute('status', self::STATUS_PENDING);
+        $review->setAttribute('customer_id', $customer?->id);
 
         $this->validateReview($review);
+
+        Event::dispatch('customer.review.create.before', $data->productId);
 
         $review->save();
 
@@ -112,6 +155,8 @@ class ProductReviewProcessor implements ProcessorInterface
             $attachments = $this->saveAttachments($data->attachments, $review->id);
         }
 
+        Event::dispatch('customer.review.create.after', $review);
+
         if ($attachments) {
             $review->setAttribute('attachments', json_encode($attachments));
         }
@@ -119,9 +164,28 @@ class ProductReviewProcessor implements ProcessorInterface
         return $this->mapToOutput($review);
     }
 
-    /**
-     * Handle update operation for GraphQL mutations
-     */
+    private function assertReviewsAllowed(bool $isCustomer): void
+    {
+        if (! core()->getConfigData('catalog.products.review.customer_review')) {
+            throw new AuthorizationException(__('bagistoapi::app.graphql.product-review.review-disabled'));
+        }
+
+        if (! $isCustomer && ! core()->getConfigData('catalog.products.review.guest_review')) {
+            throw new AuthorizationException(__('bagistoapi::app.graphql.product-review.guest-review-disabled'));
+        }
+    }
+
+    private function assertTitleAndComment(mixed $title, mixed $comment): void
+    {
+        if (blank($title)) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.product-review.title-required'));
+        }
+
+        if (blank($comment)) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.product-review.comment-required'));
+        }
+    }
+
     private function handleUpdate(UpdateProductReviewInput $data)
     {
         $reviewId = $data->id;
@@ -132,6 +196,8 @@ class ProductReviewProcessor implements ProcessorInterface
         }
 
         $review = ProductReview::findOrFail($reviewId);
+
+        $this->assertOwnedReview($review);
 
         if ($data->product_id !== null) {
             $review->setAttribute('product_id', $data->product_id);
@@ -148,10 +214,6 @@ class ProductReviewProcessor implements ProcessorInterface
         if ($data->name !== null) {
             $review->setAttribute('name', $data->name);
         }
-        if ($data->status !== null) {
-            $review->setAttribute('status', $data->status);
-        }
-
         $this->validateReview($review);
 
         $review->save();
@@ -169,9 +231,36 @@ class ProductReviewProcessor implements ProcessorInterface
         return $this->mapToOutput($review);
     }
 
-    /**
-     * Validate review data
-     */
+    private function handleDelete(mixed $data, Operation $operation): mixed
+    {
+        if (! $data instanceof ProductReview) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.graphql.product-review.not-found', ['id' => '']));
+        }
+
+        $this->assertOwnedReview($data);
+
+        $snapshot = clone $data;
+
+        $data->delete();
+
+        return $operation instanceof DeleteMutation ? $snapshot : null;
+    }
+
+    private function assertOwnedReview(ProductReview $review): void
+    {
+        $customer = Auth::guard('sanctum')->user();
+
+        if (! $customer) {
+            throw new AuthorizationException(__('bagistoapi::app.graphql.product-review.owner-required'));
+        }
+
+        $ownerId = $review->getAttribute('customer_id');
+
+        if (! $ownerId || (int) $ownerId !== (int) $customer->id) {
+            throw new AuthorizationException(__('bagistoapi::app.graphql.product-review.not-owned'));
+        }
+    }
+
     private function validateReview(ProductReview|CreateProductReviewInput|UpdateProductReviewInput $review): void
     {
         $productId = $review instanceof CreateProductReviewInput ? $review->productId : ($review instanceof UpdateProductReviewInput ? $review->product_id : $review->getAttribute('product_id'));
@@ -211,9 +300,6 @@ class ProductReviewProcessor implements ProcessorInterface
         }
     }
 
-    /**
-     * Map ProductReview model to ProductReviewOutput DTO for GraphQL response
-     */
     private function mapToOutput(ProductReview $review): \stdClass
     {
         $output = new \stdClass;
@@ -256,7 +342,6 @@ class ProductReviewProcessor implements ProcessorInterface
 
     private function checkImageOrVideo(string $imageData): string
     {
-        // Check if it's base64 encoded with data URI scheme
         if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $matches)) {
             return 'image';  // It's an image
         }
@@ -267,9 +352,6 @@ class ProductReviewProcessor implements ProcessorInterface
         throw new InvalidInputException(__('Invalid file format'));
     }
 
-    /**
-     * Handle image upload with base64 encoding
-     */
     private function saveAttachments(string $attachmentsJson, $reviewId): array
     {
         $attachmentUrls = [];
@@ -295,10 +377,6 @@ class ProductReviewProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-format'));
         }
 
-        $mediaType = $matches[1];
-        $extension = $matches[2];
-        $mimeType = "{$mediaType}/{$extension}";
-
         $pure = substr($mediaData, strpos($mediaData, ',') + 1);
         $decoded = base64_decode($pure, true);
 
@@ -309,6 +387,15 @@ class ProductReviewProcessor implements ProcessorInterface
         if (strlen($decoded) > 5 * 1024 * 1024) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.upload.size-exceeds-limit'));
         }
+
+        $mimeType = (new finfo(FILEINFO_MIME_TYPE))->buffer($decoded);
+        $extension = self::REVIEW_MEDIA_MIME_EXTENSIONS[$mimeType] ?? null;
+
+        if (! $extension) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-format'));
+        }
+
+        $mediaType = strtok($mimeType, '/');
 
         $directory = "review/{$reviewId}";
         $filename = $directory.'/'.uniqid().'.'.$extension;

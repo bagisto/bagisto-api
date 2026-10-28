@@ -14,11 +14,12 @@ use Webkul\BagistoApi\Admin\Models\AdminInvoice;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCampaign;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSearchTerm;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSubscriber;
+use Webkul\BagistoApi\Models\Customer;
 
 class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInterface
 {
-    /** To-one relations that legitimately resolve null (listing rows, missing owner). */
     private array $nullableRelations = [
+        Customer::class => ['status', 'is_verified', 'is_suspended', 'subscribed_to_news_letter'],
         AdminCustomer::class => ['group'],
         AdminCustomerReview::class => ['customer', 'product'],
         AdminMarketingCampaign::class => ['channel', 'customer_group', 'marketing_template'],
@@ -70,7 +71,6 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
         return $metadata->withBuiltinTypes($nullable);
     }
 
-    /** api-platform 4.3 types Eloquent properties from the DB schema, so anything that is not a real column is wrongly non-null. */
     private function shouldBeNullable(string $resourceClass, string $property): bool
     {
         if (in_array($property, $this->nullableRelations[$resourceClass] ?? [], true)) {

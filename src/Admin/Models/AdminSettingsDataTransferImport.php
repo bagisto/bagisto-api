@@ -77,6 +77,8 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportWriteProvider;
                                     'field_separator' => ['type' => 'string', 'example' => ','],
                                     'process_in_queue' => ['type' => 'boolean', 'example' => false],
                                     'images_directory_path' => ['type' => 'string', 'example' => ''],
+                                    'image_source' => ['type' => 'string', 'enum' => ['url', 'upload', 'directory'], 'example' => 'directory'],
+                                    'upload_images' => ['type' => 'string', 'format' => 'binary', 'description' => 'ZIP of images, required when image_source is upload.'],
                                     'file' => ['type' => 'string', 'format' => 'binary'],
                                 ],
                             ],
@@ -282,6 +284,12 @@ class AdminSettingsDataTransferImport
 
     #[ApiProperty(writable: false, example: 'product/images')]
     public ?string $images_directory_path = null;
+
+    #[ApiProperty(writable: false, description: 'Where a product import reads its images from: url, upload or directory.')]
+    public ?string $image_source = null;
+
+    #[ApiProperty(writable: false, description: 'Name of the images archive uploaded for this import, when its images came from an upload.')]
+    public ?string $images_archive_name = null;
 
     #[ApiProperty(writable: false, example: null)]
     public ?string $error_file_path = null;

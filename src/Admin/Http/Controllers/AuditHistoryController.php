@@ -23,6 +23,22 @@ class AuditHistoryController extends Controller
 
             return $next($request);
         });
+
+        /**
+         * The audit trail records who changed what through the API, so reading it is gated on
+         * `integration.history.view`; the destructive actions keep their own node.
+         */
+        $this->middleware(function ($request, $next) {
+            $action = $request->route()?->getActionMethod();
+
+            $permission = in_array($action, ['massDestroy', 'destroyOlderThan'], true)
+                ? 'integration.history.delete'
+                : 'integration.history.view';
+
+            abort_unless(bouncer()->hasPermission($permission), 401);
+
+            return $next($request);
+        });
     }
 
     public function index()

@@ -9,13 +9,6 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\State\AdminCartPaymentMethodsProvider;
 
-/**
- * One supported payment method row exposed by
- * `GET /api/admin/carts/{cartId}/payment-methods`.
- *
- * Sequence rule: a shipping method must already be selected on the cart
- * (returns HTTP 409 otherwise).
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCartPaymentMethod',
@@ -26,7 +19,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartPaymentMethodsProvider;
             provider: AdminCartPaymentMethodsProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Sales: Orders'],
+                tags: ['Admin: Customer Order creation'],
                 summary: 'List supported payment methods for the draft cart',
                 description: 'Returns `Payment::getSupportedPaymentMethods()`. A shipping method must already be selected on the cart (HTTP 409 otherwise).',
                 parameters: [

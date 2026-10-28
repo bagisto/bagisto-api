@@ -47,14 +47,22 @@ class AdminCategoryUpdateInput
     public ?int $status = null;
 
     /** @var array<int, string>|null */
-    #[ApiProperty(description: 'Optional logo path(s). File-upload is not supported in v1.')]
+    #[ApiProperty(description: 'Not stored. Upload the logo with POST /catalog/categories/{id}/media; the current logo is kept.')]
     #[Groups(['mutation'])]
     public ?array $logo_path = null;
 
     /** @var array<int, string>|null */
-    #[ApiProperty(description: 'Optional banner path(s). File-upload is not supported in v1.')]
+    #[ApiProperty(description: 'Not stored. Upload the banner with POST /catalog/categories/{id}/media; the current banner is kept.')]
     #[Groups(['mutation'])]
     public ?array $banner_path = null;
+
+    #[ApiProperty(description: 'Logo alt text for the requested locale. Kept only while the category has a logo.')]
+    #[Groups(['mutation'])]
+    public ?string $logo_alt = null;
+
+    #[ApiProperty(description: 'Banner alt text for the requested locale. Kept only while the category has a banner.')]
+    #[Groups(['mutation'])]
+    public ?string $banner_alt = null;
 
     /**
      * Per-locale translation block. Keyed by locale code (e.g. "en"), with

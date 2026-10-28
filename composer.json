@@ -11,7 +11,13 @@
   ],
   "require": {
     "api-platform/laravel": "~4.3.8",
-    "api-platform/graphql": "~4.3.8"
+    "api-platform/graphql": "~4.3.8",
+    "symfony/property-access": "^7.0",
+    "symfony/property-info": "^7.1",
+    "symfony/serializer": "^7.4.9",
+    "symfony/type-info": "^7.3",
+    "symfony/validator": "^7.0",
+    "symfony/web-link": "^7.4"
   },
   "autoload": {
     "psr-4": {
@@ -24,11 +30,6 @@
         "Webkul\\BagistoApi\\Providers\\BagistoApiServiceProvider"
       ]
     }
-  },
-  "scripts": {
-    "post-autoload-dump": [
-      "@php artisan package:discover --ansi"
-    ]
   }
 }
 

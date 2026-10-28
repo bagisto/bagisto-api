@@ -8,11 +8,16 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CompareItem;
 use Webkul\BagistoApi\Service\GenericIdNormalizer;
+use Webkul\BagistoApi\State\Concerns\StorefrontFeatureGate;
 
 class CompareItemQueryResolver implements QueryItemResolverInterface
 {
+    use StorefrontFeatureGate;
+
     public function __invoke(?object $item, array $context): object
     {
+        $this->assertCompareEnabled();
+
         $customer = Auth::guard('sanctum')->user();
 
         if (! $customer) {

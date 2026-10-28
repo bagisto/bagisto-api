@@ -16,7 +16,7 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
     use BuildsAdminBooking;
     use ChecksAdminPermission;
 
-    protected const PERMISSION = 'sales.bookings.view';
+    protected const PERMISSION = 'sales.bookings';
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {

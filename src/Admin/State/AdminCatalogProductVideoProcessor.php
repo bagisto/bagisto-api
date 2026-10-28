@@ -6,12 +6,14 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductVideoReorderInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProductVideo;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
@@ -49,6 +51,14 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.product.video.graphql-upload-unsupported'), 422);
         }
 
+        if ($isGraphQL && $operation->getName() === 'reorder') {
+            $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
+            $productId = (int) ($rawArgs['productId'] ?? $rawArgs['product_id'] ?? ($data instanceof AdminCatalogProductVideoReorderInput ? $data->productId : 0));
+            $order = $rawArgs['order'] ?? ($data instanceof AdminCatalogProductVideoReorderInput ? $data->order : null) ?? [];
+
+            return $this->handleReorder($productId, (array) $order);
+        }
+
         if ($isGraphQL && $operation->getName() === 'delete') {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             $videoId = ! empty($rawArgs['id'])
@@ -64,6 +74,12 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
             $videoId = (int) ($uriVariables['id'] ?? request()->route('id') ?? 0);
 
             return $this->toRestResponse($this->handleDelete($productId, $videoId), 200);
+        }
+
+        if ($operation instanceof Put) {
+            $productId = (int) ($uriVariables['productId'] ?? request()->route('productId') ?? 0);
+
+            return $this->toRestResponse($this->handleReorder($productId, (array) (request()->input('order') ?? [])), 200);
         }
 
         if ($operation instanceof Post) {
@@ -131,6 +147,76 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
         return $this->mapRow(ProductVideo::find($video->id), __('bagistoapi::app.admin.product.video.uploaded'));
     }
 
+    /**
+     * @param  array<int, array{id?: int|string, position?: int|string}>  $order
+     */
+    protected function handleReorder(int $productId, array $order): AdminCatalogProductVideo
+    {
+        $product = Product::find($productId);
+        if (! $product) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
+        }
+
+        if (empty($order)) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.product.video.order-required'), 422);
+        }
+
+        $ids = [];
+        foreach ($order as $row) {
+            if (! is_array($row) || ! isset($row['id'])) {
+                throw new InvalidInputException(__('bagistoapi::app.admin.product.video.order-invalid'), 422);
+            }
+
+            $ids[] = (int) $row['id'];
+        }
+
+        $existing = ProductVideo::where('product_id', $productId)
+            ->whereIn('id', $ids)
+            ->pluck('id')
+            ->all();
+
+        $missing = array_diff($ids, $existing);
+        if (! empty($missing)) {
+            throw new InvalidInputException(
+                __('bagistoapi::app.admin.product.video.id-not-on-product', ['id' => (int) array_values($missing)[0]]),
+                422,
+            );
+        }
+
+        try {
+            Event::dispatch('catalog.product.update.before', $productId);
+
+            foreach ($order as $row) {
+                ProductVideo::where('id', (int) $row['id'])
+                    ->where('product_id', $productId)
+                    ->update(['position' => (int) ($row['position'] ?? 0)]);
+            }
+
+            Event::dispatch('catalog.product.update.after', $product);
+        } catch (\Throwable $e) {
+            report($e);
+            throw new InvalidInputException(__('bagistoapi::app.admin.product.video.reorder-failed'), 500);
+        }
+
+        $result = new AdminCatalogProductVideo;
+        $result->id = $productId;
+        $result->success = true;
+        $result->message = __('bagistoapi::app.admin.product.video.reordered');
+        $result->videos = ProductVideo::where('product_id', $productId)
+            ->orderBy('position')
+            ->get()
+            ->map(fn (ProductVideo $video) => [
+                'id' => (int) $video->id,
+                'productId' => (int) $video->product_id,
+                'path' => $video->path,
+                'position' => (int) $video->position,
+                'url' => $this->safeUrl($video),
+            ])
+            ->all();
+
+        return $result;
+    }
+
     protected function handleDelete(int $productId, int $videoId): AdminCatalogProductVideo
     {
         $product = Product::find($productId);
@@ -174,6 +260,7 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
             'path' => $dto->path,
             'position' => $dto->position,
             'url' => $dto->url,
+            'videos' => $dto->videos,
             'success' => $dto->success,
             'message' => $dto->message,
         ], static fn ($v) => $v !== null), $status);

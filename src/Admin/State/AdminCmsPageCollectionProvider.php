@@ -8,11 +8,10 @@ use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Dto\AdminCmsPageListDto;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCmsPage;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsCmsPagePreviewUrl;
-use Webkul\BagistoApi\Exception\AuthenticationException;
 
 /**
  * Provider for the admin CMS → Pages datagrid endpoint.
@@ -33,9 +32,7 @@ class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminCmsPage::class);
 
         $this->graphql = ! empty($context['graphql_operation_name']);
 

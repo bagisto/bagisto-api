@@ -11,7 +11,9 @@ use Webkul\BagistoApi\Dto\MoveWishlistToCartInput;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Models\Wishlist;
+use Webkul\BagistoApi\State\Concerns\StorefrontFeatureGate;
 use Webkul\Checkout\Facades\Cart;
 
 /**
@@ -19,6 +21,8 @@ use Webkul\Checkout\Facades\Cart;
  */
 class MoveWishlistToCartProcessor implements ProcessorInterface
 {
+    use StorefrontFeatureGate;
+
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
     ) {}
@@ -28,6 +32,8 @@ class MoveWishlistToCartProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
+        $this->assertWishlistEnabled();
+
         if ($data instanceof MoveWishlistToCartInput) {
             /**
              * The serializer's name converter may not populate camelCase DTO properties.
@@ -124,12 +130,7 @@ class MoveWishlistToCartProcessor implements ProcessorInterface
 
             // Create a new cart only if the customer genuinely has none
             if (! $cart) {
-                $channel = core()->getCurrentChannel();
-                $cart = $cartRepository->create([
-                    'customer_id' => $user->id,
-                    'channel_id' => $channel->id,
-                    'is_active' => 1,
-                ]);
+                $cart = CartTokenFacade::createCart($user);
             }
 
             // Set the cart on the facade before moving

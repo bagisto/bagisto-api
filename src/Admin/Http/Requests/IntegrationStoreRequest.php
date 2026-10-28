@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Admin\Rules\IpOrCidr;
 
@@ -32,7 +33,7 @@ class IntegrationStoreRequest extends FormRequest
             ],
             'permission_type' => ['required', 'in:all,custom,same_as_web'],
             'permissions' => ['nullable', 'array'],
-            'permissions.*' => ['string'],
+            'permissions.*' => ['string', Rule::in(array_column((array) config('acl', []), 'key'))],
             'allowed_ips' => ['nullable', 'array'],
             'allowed_ips.*' => ['string', new IpOrCidr],
         ];

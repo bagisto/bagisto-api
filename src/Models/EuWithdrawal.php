@@ -28,6 +28,35 @@ use Webkul\BagistoApi\State\EuWithdrawalProvider;
                 tags: ['EU Withdrawal'],
                 summary: 'List the authenticated customer\'s EU right-of-withdrawal declarations',
                 description: 'Returns the customer\'s own withdrawal declarations, newest first. Requires a customer Bearer token.',
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The customer\'s withdrawal declarations.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id' => 7,
+                                        'uuid' => 'b2f1c0de-5a2e-4d7a-9f2e-3c1a2b4d5e6f',
+                                        'orderId' => 12,
+                                        'orderIncrementId' => '000000012',
+                                        'isGuest' => false,
+                                        'customerEmail' => 'jane@example.com',
+                                        'status' => 'received',
+                                        'reasonText' => 'Changed my mind.',
+                                        'receivedAt' => '2026-07-20T09:00:00+00:00',
+                                        'confirmationSentAt' => '2026-07-20T09:00:05+00:00',
+                                        'declinedAt' => null,
+                                        'declinedReason' => null,
+                                        'refundedAt' => null,
+                                        'refundNote' => null,
+                                        'createdAt' => '2026-07-20T09:00:00+00:00',
+                                        'updatedAt' => '2026-07-20T09:00:05+00:00',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Get(
@@ -38,6 +67,33 @@ use Webkul\BagistoApi\State\EuWithdrawalProvider;
                 tags: ['EU Withdrawal'],
                 summary: 'Get one of the customer\'s withdrawal declarations',
                 description: 'Full detail of a single withdrawal owned by the authenticated customer (ownership via the underlying order). 404 if it is not the customer\'s.',
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The withdrawal declaration detail.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 7,
+                                    'uuid' => 'b2f1c0de-5a2e-4d7a-9f2e-3c1a2b4d5e6f',
+                                    'orderId' => 12,
+                                    'orderIncrementId' => '000000012',
+                                    'isGuest' => false,
+                                    'customerEmail' => 'jane@example.com',
+                                    'status' => 'received',
+                                    'reasonText' => 'Changed my mind.',
+                                    'receivedAt' => '2026-07-20T09:00:00+00:00',
+                                    'confirmationSentAt' => '2026-07-20T09:00:05+00:00',
+                                    'declinedAt' => null,
+                                    'declinedReason' => null,
+                                    'refundedAt' => null,
+                                    'refundNote' => null,
+                                    'createdAt' => '2026-07-20T09:00:00+00:00',
+                                    'updatedAt' => '2026-07-20T09:00:05+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Post(
@@ -62,6 +118,33 @@ use Webkul\BagistoApi\State\EuWithdrawalProvider;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'The created (or existing, idempotent) withdrawal declaration.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 7,
+                                    'uuid' => 'b2f1c0de-5a2e-4d7a-9f2e-3c1a2b4d5e6f',
+                                    'orderId' => 12,
+                                    'orderIncrementId' => '000000012',
+                                    'isGuest' => false,
+                                    'customerEmail' => 'jane@example.com',
+                                    'status' => 'received',
+                                    'reasonText' => 'Changed my mind.',
+                                    'receivedAt' => '2026-07-20T09:00:00+00:00',
+                                    'confirmationSentAt' => '2026-07-20T09:00:05+00:00',
+                                    'declinedAt' => null,
+                                    'declinedReason' => null,
+                                    'refundedAt' => null,
+                                    'refundNote' => null,
+                                    'createdAt' => '2026-07-20T09:00:00+00:00',
+                                    'updatedAt' => '2026-07-20T09:00:05+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

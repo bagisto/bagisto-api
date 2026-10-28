@@ -379,4 +379,40 @@ class CmsPageTest extends GraphQLTestCase
 
         expect(count($edges))->toBeGreaterThanOrEqual(2);
     }
+
+    public function test_page_by_url_key_hides_a_page_not_assigned_to_the_channel(): void
+    {
+        ['page' => $page] = $this->createTestCmsPage();
+
+        $page->channels()->detach();
+
+        $query = <<<'GQL'
+            query getCmsPageByUrlKey {
+              pageByUrlKeypages(urlKey: "test-about-us") {
+                _id
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.pageByUrlKeypages'))->toBe([]);
+    }
+
+    public function test_page_and_pages_hide_a_page_not_assigned_to_the_channel(): void
+    {
+        ['page' => $page] = $this->createTestCmsPage();
+
+        $page->channels()->detach();
+
+        $item = $this->graphQL('query P($id: ID!) { page(id: $id) { _id } }', ['id' => '/api/shop/pages/'.$page->id]);
+
+        expect($item->json('errors'))->not->toBeNull();
+
+        $list = $this->graphQL('{ pages(first: 100) { edges { node { _id } } } }');
+
+        expect(array_column(array_column($list->json('data.pages.edges'), 'node'), '_id'))->not->toContain($page->id);
+    }
 }

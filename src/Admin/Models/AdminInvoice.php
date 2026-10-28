@@ -41,6 +41,7 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
                     new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
                     new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
                     new Model\Parameter('id', 'query', 'Filter by invoice id (integer or comma-separated list).', false, schema: ['type' => 'string', 'example' => '12']),
+                    new Model\Parameter('customer_id', 'query', 'Only invoices of orders placed by this customer.', false, schema: ['type' => 'integer', 'example' => 12]),
                     new Model\Parameter('order_id', 'query', 'Partial order increment_id match.', false, schema: ['type' => 'string', 'example' => '00000']),
                     new Model\Parameter('state', 'query', 'Filter by invoice state.', false, schema: ['type' => 'string', 'enum' => ['pending', 'pending_payment', 'paid', 'overdue'], 'example' => 'paid']),
                     new Model\Parameter('base_grand_total_from', 'query', 'Minimum base grand total.', false, schema: ['type' => 'number', 'example' => 0]),
@@ -247,19 +248,19 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
         new Get(
             uriTemplate: '/invoices/export',
             provider: AdminInvoiceExportProvider::class,
-            outputFormats: ['csv' => ['text/csv']],
+            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Invoices'],
-                summary: 'Export invoices as CSV',
-                description: 'Downloads the invoices datagrid as a CSV file (text/csv attachment) — the same data the admin Export button produces. Honours the same filters as the listing. Binary download, not JSON. Only ?format=csv is supported.',
+                summary: 'Export invoices as csv, xls or xlsx',
+                description: 'Downloads the invoices datagrid as a csv, xls or xlsx file — the same data the admin Export button produces. Honours the same filters as the listing. Binary download, not JSON. Pick the file type with ?format=csv|xls|xlsx (default csv).',
                 parameters: [
-                    new Model\Parameter('format', 'query', 'Export format. Currently only csv.', false, schema: ['type' => 'string', 'enum' => ['csv'], 'default' => 'csv']),
+                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'CSV file downloaded (text/csv attachment).', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
+                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
                     '403' => new Model\Response(description: 'Admin role lacks the view permission.'),
-                    '422' => new Model\Response(description: 'Unsupported format (only csv).'),
+                    '422' => new Model\Response(description: 'Unsupported format (csv, xls and xlsx only).'),
                 ],
             ),
         ),
@@ -275,6 +276,7 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
             description: 'Admin invoices datagrid listing (cursor pagination).',
             extraArgs: [
                 'id' => ['type' => 'String'],
+                'customerId' => ['type' => 'Int'],
                 'order_id' => ['type' => 'String'],
                 'state' => ['type' => 'String'],
                 'base_grand_total_from' => ['type' => 'Float'],

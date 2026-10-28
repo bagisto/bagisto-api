@@ -10,10 +10,12 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchTermCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchTermRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchTermUpdateInput;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermCollectionProvider;
@@ -41,6 +43,55 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
     shortName: 'AdminMarketingSearchTerm',
     normalizationContext: ['skip_null_values' => false],
     operations: [
+        new Post(
+            uriTemplate: '/marketing/search-terms',
+            input: AdminMarketingSearchTermCreateInput::class,
+            output: AdminMarketingSearchTermRestDto::class,
+            processor: AdminMarketingSearchTermProcessor::class,
+            openapi: new Model\Operation(
+                tags: ['Admin Marketing: Search & SEO'],
+                summary: 'Create a search term',
+                description: 'Manually create a search term with an optional redirect URL for a channel and locale. Mirrors the admin Search & SEO → Search Terms create form.',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['term', 'channel_id', 'locale'],
+                                'properties' => [
+                                    'term' => ['type' => 'string', 'example' => 'red shirt'],
+                                    'redirect_url' => ['type' => 'string', 'nullable' => true, 'example' => 'https://example.com/shirts'],
+                                    'channel_id' => ['type' => 'integer', 'example' => 1],
+                                    'locale' => ['type' => 'string', 'example' => 'en'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'Search term created; returns the detail.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 107,
+                                    'term' => 'red shirt',
+                                    'results' => 0,
+                                    'uses' => 0,
+                                    'redirectUrl' => 'https://example.com/shirts',
+                                    'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                    'locale' => 'en',
+                                    'createdAt' => '2026-08-14T13:14:05+05:30',
+                                    'updatedAt' => '2026-08-14T13:14:05+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(description: 'Validation failure.'),
+                ],
+            ),
+        ),
         new Put(
             uriTemplate: '/marketing/search-terms/{id}',
             input: AdminMarketingSearchTermUpdateInput::class,
@@ -222,6 +273,12 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
         new Query(
             provider: AdminMarketingSearchTermItemProvider::class,
             description: 'Admin search term detail by id.',
+        ),
+        new Mutation(
+            name: 'create',
+            input: AdminMarketingSearchTermCreateInput::class,
+            processor: AdminMarketingSearchTermProcessor::class,
+            description: 'Create a search term. Becomes createAdminMarketingSearchTerm.',
         ),
         new Mutation(
             name: 'update',

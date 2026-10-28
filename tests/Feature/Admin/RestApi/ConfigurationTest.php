@@ -4,8 +4,12 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
+use Webkul\Admin\Services\CacheManagerService;
 use Webkul\BagistoApi\Admin\State\AdminConfigurationSchemaResolver;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
 class ConfigurationTest extends AdminApiTestCase
@@ -445,5 +449,174 @@ class ConfigurationTest extends AdminApiTestCase
             ->first();
         expect($row)->not->toBeNull();
         expect((string) $row->value)->not->toBe('');
+    }
+
+    protected function createConfigurationRoleAdmin(array $permissions): Admin
+    {
+        $role = Role::create([
+            'name' => 'conf-role-'.uniqid(),
+            'description' => 'Configuration role',
+            'permission_type' => 'custom',
+            'permissions' => $permissions,
+        ]);
+
+        return $this->createAdmin(['role_id' => $role->id]);
+    }
+
+    public function test_cache_action_runs_through_core_cache_manager(): void
+    {
+        $this->mock(CacheManagerService::class, function ($mock) {
+            $mock->shouldReceive('execute')->once()->with('clear-views')->andReturn([
+                'success' => true,
+                'message' => 'Action "view:clear" executed successfully.',
+                'output' => 'Compiled views cleared successfully.',
+                'command' => 'view:clear',
+            ]);
+        });
+
+        $admin = $this->createAdmin();
+
+        $response = $this->adminPost($admin, '/api/admin/configuration/cache', ['action' => 'clear-views']);
+
+        $response->assertOk();
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('command'))->toBe('view:clear');
+    }
+
+    public function test_cache_unknown_action_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminPost($admin, '/api/admin/configuration/cache', ['action' => 'drop-database']);
+
+        $response->assertStatus(422);
+        expect($response->json('success'))->toBeFalse();
+        expect($response->json('command'))->toBe('');
+    }
+
+    public function test_cache_missing_action_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->adminPost($admin, '/api/admin/configuration/cache', [])->assertStatus(422);
+    }
+
+    public function test_cache_requires_authentication(): void
+    {
+        $this->publicPost('/api/admin/configuration/cache', ['action' => 'clear-views'])->assertStatus(401);
+    }
+
+    public function test_cache_requires_the_configuration_permission(): void
+    {
+        $admin = $this->createConfigurationRoleAdmin(['dashboard']);
+
+        $this->adminPost($admin, '/api/admin/configuration/cache', ['action' => 'clear-views'])->assertStatus(403);
+    }
+
+    public function test_search_returns_matches_with_slug(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/configuration/search?query=reorder');
+
+        $response->assertOk();
+        $row = $response->json()[0];
+        expect($row['query'])->toBe('reorder');
+        expect($row['results'])->toBeArray()->and($row['results'])->not->toBeEmpty();
+        expect($row['results'][0])->toHaveKeys(['title', 'url', 'slug']);
+        expect(collect($row['results'])->pluck('slug')->all())->toContain('sales.order_settings');
+    }
+
+    public function test_search_without_query_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->adminGet($admin, '/api/admin/configuration/search')->assertStatus(422);
+    }
+
+    public function test_search_requires_authentication(): void
+    {
+        $this->publicGet('/api/admin/configuration/search?query=reorder')->assertStatus(401);
+    }
+
+    public function test_search_requires_the_configuration_permission(): void
+    {
+        $admin = $this->createConfigurationRoleAdmin(['dashboard']);
+
+        $this->adminGet($admin, '/api/admin/configuration/search?query=reorder')->assertStatus(403);
+    }
+
+    protected function configurationBinaryGet(Admin $admin, string $url): TestResponse
+    {
+        return $this->get($url, array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'application/octet-stream'],
+        ));
+    }
+
+    public function test_download_streams_the_stored_configuration_file(): void
+    {
+        Storage::fake();
+        Storage::put('configuration/admin-logo.png', 'png-bytes');
+
+        DB::table('core_config')->where('code', 'general.design.admin_logo.logo_image')->delete();
+        DB::table('core_config')->insert([
+            'code' => 'general.design.admin_logo.logo_image',
+            'value' => 'configuration/admin-logo.png',
+            'channel_code' => null,
+            'locale_code' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $this->forgetCoreConfigCache();
+
+        $admin = $this->createAdmin();
+
+        $response = $this->configurationBinaryGet($admin, '/api/admin/configuration/download?code=general.design.admin_logo.logo_image');
+
+        $response->assertOk();
+        expect($response->headers->get('content-disposition'))->toContain('admin-logo.png');
+    }
+
+    public function test_download_without_a_stored_file_returns_404(): void
+    {
+        Storage::fake();
+        DB::table('core_config')->where('code', 'general.design.admin_logo.logo_image')->delete();
+        $this->forgetCoreConfigCache();
+
+        $admin = $this->createAdmin();
+
+        $this->configurationBinaryGet($admin, '/api/admin/configuration/download?code=general.design.admin_logo.logo_image')
+            ->assertStatus(404);
+    }
+
+    public function test_download_of_a_non_file_field_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->configurationBinaryGet($admin, '/api/admin/configuration/download?code=sales.order_settings.reorder.admin')
+            ->assertStatus(422);
+    }
+
+    public function test_download_of_an_unknown_field_returns_404(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->configurationBinaryGet($admin, '/api/admin/configuration/download?code=nope.nada.zilch')
+            ->assertStatus(404);
+    }
+
+    public function test_download_requires_authentication(): void
+    {
+        $this->get('/api/admin/configuration/download?code=general.design.admin_logo.logo_image', ['Accept' => 'application/octet-stream'])
+            ->assertStatus(401);
+    }
+
+    public function test_download_requires_the_configuration_permission(): void
+    {
+        $admin = $this->createConfigurationRoleAdmin(['dashboard']);
+
+        $this->configurationBinaryGet($admin, '/api/admin/configuration/download?code=general.design.admin_logo.logo_image')
+            ->assertStatus(403);
     }
 }

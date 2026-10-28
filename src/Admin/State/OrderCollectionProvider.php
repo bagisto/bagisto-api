@@ -8,11 +8,10 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Dto\AdminOrderListDto;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminOrder;
 use Webkul\BagistoApi\Admin\Models\AdminOrderItemPreview;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\ResolvesAdminDateRange;
-use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\Sales\Models\Order;
 
 /**
@@ -35,9 +34,7 @@ class OrderCollectionProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminOrder::class);
 
         $args = $context['args'] ?? [];
 
@@ -105,11 +102,30 @@ class OrderCollectionProvider implements ProviderInterface
     }
 
     /**
-     * Apply the 7 listing filters: order ID, status, grand total, channel,
-     * customer, email, and date (preset or custom range).
+     * Apply the quick search, the customer id filter and the datagrid filters;
+     * the quick search ORs email, status, name and increment id like core's order search.
      */
     protected function applyFilters($query, array $args): void
     {
+        $search = $this->filterValue($args, 'query');
+
+        if ($search !== null && $search !== '') {
+            $search = urldecode((string) $search);
+
+            $query->where(function ($query) use ($search) {
+                $query->where('customer_email', 'like', '%'.$search.'%')
+                    ->orWhere('status', 'like', '%'.$search.'%')
+                    ->orWhereRaw("CONCAT(customer_first_name, ' ', customer_last_name) like ?", ['%'.$search.'%'])
+                    ->orWhere('increment_id', $search);
+            });
+        }
+
+        $customerId = $args['customerId'] ?? $this->filterValue($args, 'customer_id');
+
+        if ($customerId !== null && $customerId !== '') {
+            $query->where('customer_id', (int) $customerId);
+        }
+
         if ($orderId = $this->filterValue($args, 'order_id')) {
             $query->where('increment_id', 'like', '%'.$orderId.'%');
         }
@@ -118,8 +134,6 @@ class OrderCollectionProvider implements ProviderInterface
             $query->where('status', $status);
         }
 
-        // Grand total filters the base_grand_total column (the value the admin
-        // datagrid shows + sorts on), with optional from/to range support.
         $grandTotal = $this->filterValue($args, 'grand_total');
         if ($grandTotal !== null && $grandTotal !== '') {
             $query->where('base_grand_total', $grandTotal);
@@ -148,9 +162,6 @@ class OrderCollectionProvider implements ProviderInterface
             $query->where('customer_email', 'like', '%'.$email.'%');
         }
 
-        // Date filter — preset (today, yesterday, this_week, …, last_three_months,
-        // last_six_months, this_year) or custom date_from/date_to. Preset keys +
-        // ranges match the admin datagrid exactly (see ResolvesAdminDateRange).
         [$from, $to] = $this->resolveAdminDateRange($args);
 
         if ($from) {

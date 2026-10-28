@@ -90,7 +90,7 @@ class AdminCustomerImpersonateProcessor implements ProcessorInterface
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array('customers.customers.edit', $perms, true) && ! in_array('*', $perms, true)) {
+        if (! in_array('customers.customers.login_as_customer', $perms, true) && ! in_array('*', $perms, true)) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.no-permission'));
         }
     }

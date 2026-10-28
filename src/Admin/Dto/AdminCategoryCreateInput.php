@@ -69,12 +69,20 @@ class AdminCategoryCreateInput
     public ?string $meta_keywords = null;
 
     /** @var array<int, string>|null */
-    #[ApiProperty(description: 'Optional logo path(s). File-upload is not supported in v1 — accepts pre-uploaded storage paths.')]
+    #[ApiProperty(description: 'Not stored. Upload images with POST /catalog/categories/{id}/media.')]
     #[Groups(['mutation'])]
     public ?array $logo_path = null;
 
     /** @var array<int, string>|null */
-    #[ApiProperty(description: 'Optional banner path(s). File-upload is not supported in v1 — accepts pre-uploaded storage paths.')]
+    #[ApiProperty(description: 'Not stored. Upload images with POST /catalog/categories/{id}/media.')]
     #[Groups(['mutation'])]
     public ?array $banner_path = null;
+
+    #[ApiProperty(description: 'Logo alt text for the requested locale. Kept only while the category has a logo.')]
+    #[Groups(['mutation'])]
+    public ?string $logo_alt = null;
+
+    #[ApiProperty(description: 'Banner alt text for the requested locale. Kept only while the category has a banner.')]
+    #[Groups(['mutation'])]
+    public ?string $banner_alt = null;
 }

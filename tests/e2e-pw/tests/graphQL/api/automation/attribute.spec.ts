@@ -469,14 +469,14 @@ test.describe('Get Attributes API - Full with Translations', () => {
     attributes.edges.forEach((edge: any) => {
       if (edge.node.options && edge.node.options.edges.length > 0) {
         edge.node.options.edges.forEach((optionEdge: any) => {
-          if (optionEdge.node.swatchValue !== undefined || optionEdge.node.swatchValueUrl !== undefined) {
+          // Both are nullable: only colour and image swatches carry a value.
+          if (optionEdge.node.swatchValue !== undefined && optionEdge.node.swatchValue !== null) {
             foundSwatch = true;
-            if (optionEdge.node.swatchValue !== undefined) {
-              expect(typeof optionEdge.node.swatchValue).toBe('string');
-            }
-            if (optionEdge.node.swatchValueUrl !== undefined) {
-              expect(typeof optionEdge.node.swatchValueUrl).toBe('string');
-            }
+            expect(typeof optionEdge.node.swatchValue).toBe('string');
+          }
+          if (optionEdge.node.swatchValueUrl !== undefined && optionEdge.node.swatchValueUrl !== null) {
+            foundSwatch = true;
+            expect(typeof optionEdge.node.swatchValueUrl).toBe('string');
           }
         });
       }

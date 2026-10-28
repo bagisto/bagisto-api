@@ -7,6 +7,7 @@ use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Core\Facades\Core;
+use Webkul\Product\Helpers\Indexers\Flat;
 use Webkul\Product\Models\Product;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
@@ -125,6 +126,19 @@ class CatalogProductTest extends AdminApiTestCase
             'attribute_family_id' => $attributeFamilyId,
             'visible_individually' => 1,
         ], $overrides));
+
+        $this->refreshFlatDerived((int) $product->id);
+    }
+
+    protected function refreshFlatDerived(int $productId): void
+    {
+        // BACKWARD COMPATIBILITY: product_flat gained these columns in 2.4.10; an older
+        // core has the listing compute them. Remove when the minimum core is 2.4.10.
+        if (! $this->core()->hasProductFlatDerivedColumns()) {
+            return;
+        }
+
+        app(Flat::class)->refreshDerivedColumns([$productId]);
     }
 
     public function test_filter_by_product_id(): void
@@ -413,6 +427,8 @@ class CatalogProductTest extends AdminApiTestCase
             ['product_id' => $product->id, 'inventory_source_id' => 2, 'qty' => 7, 'vendor_id' => 0],
         ]);
 
+        $this->refreshFlatDerived((int) $product->id);
+
         $body = $this->adminGet($admin, '/api/admin/catalog/products?product_id='.$product->id)->json();
         $row = collect($body['data'])->firstWhere('id', $product->id);
         $this->assertSame(12, $row['quantity']);
@@ -424,6 +440,8 @@ class CatalogProductTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product);
         \DB::table('product_images')->where('product_id', $product->id)->delete();
+
+        $this->refreshFlatDerived((int) $product->id);
 
         $body = $this->adminGet($admin, '/api/admin/catalog/products?product_id='.$product->id)->json();
         $row = collect($body['data'])->firstWhere('id', $product->id);
@@ -1382,10 +1400,25 @@ class CatalogProductTest extends AdminApiTestCase
         expect($response->getContent())->toContain('ID,Name,SKU,"Attribute Family",Price,Quantity,Status,Category,Type');
     }
 
+    public function test_export_supports_xlsx(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->get('/api/admin/catalog/products/export?format=xlsx', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        ));
+
+        $response->assertStatus(200);
+
+        expect($response->headers->get('Content-Type'))->toContain('spreadsheetml');
+        expect($response->headers->get('Content-Disposition'))->toContain('.xlsx');
+    }
+
     public function test_export_unsupported_format_returns_422(): void
     {
         $admin = $this->createAdmin();
-        $this->get('/api/admin/catalog/products/export?format=xlsx', array_merge(
+        $this->get('/api/admin/catalog/products/export?format=pdf', array_merge(
             $this->adminHeaders($admin),
             ['Accept' => 'text/csv'],
         ))->assertStatus(422);

@@ -12,12 +12,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeMassDeleteProcessor;
 
 /**
  * Mass-delete admin settings theme customizations.
- *
- * REST:    POST /api/admin/settings/themes/mass-delete
- * GraphQL: createAdminSettingsThemeMassDelete
- *
- * Mirrors Bagisto admin ThemeController::massDestroy. Non-existent IDs are
- * silently skipped (matches monolith — best-effort loop).
  */
 #[ApiResource(
     routePrefix: '/api/admin',

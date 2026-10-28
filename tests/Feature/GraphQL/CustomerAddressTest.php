@@ -142,6 +142,25 @@ class CustomerAddressTest extends GraphQLTestCase
         ]);
     }
 
+    public function test_create_address_rejects_an_invalid_phone(): void
+    {
+        ['token' => $token] = $this->authCustomer();
+
+        $mutation = <<<'GQL'
+            mutation createAddress($input: createAddUpdateCustomerAddressInput!) {
+              createAddUpdateCustomerAddress(input: $input) {
+                addUpdateCustomerAddress { id }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, [
+            'input' => $this->dummyAddressInput(['phone' => '12-ab']),
+        ], ['Authorization' => 'Bearer '.$token]);
+
+        expect($response->json('errors'))->not->toBeNull();
+    }
+
     public function test_create_address_fails_without_authentication(): void
     {
         $mutation = <<<'GQL'

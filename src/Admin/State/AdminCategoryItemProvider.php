@@ -38,6 +38,8 @@ class AdminCategoryItemProvider extends AbstractAdminItemProvider
         $dto->slug = $primary?->slug;
         $dto->description = $primary?->description;
         $dto->locale = $primary?->locale;
+        $dto->logoAlt = $primary?->logo_alt;
+        $dto->bannerAlt = $primary?->banner_alt;
         $dto->createdAt = $category->created_at?->toIso8601String();
         $dto->updatedAt = $category->updated_at?->toIso8601String();
 
@@ -50,6 +52,8 @@ class AdminCategoryItemProvider extends AbstractAdminItemProvider
                 'metaTitle' => $t->meta_title,
                 'metaDescription' => $t->meta_description,
                 'metaKeywords' => $t->meta_keywords,
+                'logoAlt' => $t->logo_alt,
+                'bannerAlt' => $t->banner_alt,
             ];
         })->values()->all();
 

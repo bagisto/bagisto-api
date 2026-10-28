@@ -80,8 +80,8 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                                     'phone' => null,
                                     'status' => 1,
                                     'apiToken' => 'PPKI0VNiX5qehio2q1cMeMd6TCaIKofwQ4mb7y2zcy0japYwsyc',
-                                    'customerGroupId' => null,
-                                    'channelId' => null,
+                                    'customerGroupId' => 2,
+                                    'channelId' => 1,
                                     'subscribedToNewsLetter' => false,
                                     'isVerified' => 0,
                                     'isSuspended' => 0,
@@ -102,22 +102,6 @@ use Webkul\BagistoApi\State\CustomerProcessor;
         new Query(resolver: CustomerQueryResolver::class),
         new Mutation(
             name: 'create',
-            processor: CustomerProcessor::class,
-            denormalizationContext: [
-                'allow_extra_attributes' => true,
-                'groups' => ['mutation'],
-            ],
-        ),
-        new Mutation(
-            name: 'update',
-            processor: CustomerProcessor::class,
-            denormalizationContext: [
-                'allow_extra_attributes' => true,
-                'groups' => ['mutation'],
-            ],
-        ),
-        new Mutation(
-            name: 'delete',
             processor: CustomerProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,

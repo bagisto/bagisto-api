@@ -16,7 +16,6 @@ class OrderActionTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    /** Resolve or create a reorderable order id. Never returns null. */
     protected function aReorderableOrderId(): int
     {
         $admin = $this->createAdmin();
@@ -78,7 +77,6 @@ class OrderActionTest extends AdminApiTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
-    /** Run the reorder mutation for a given order id as the given admin. */
     protected function runReorder(int $orderId, $admin = null, ?string $token = null)
     {
         $mutation = <<<'GQL'
@@ -94,7 +92,6 @@ class OrderActionTest extends AdminApiTestCase
         ], $admin, $token);
     }
 
-    /** Edge case A1: guest orders -> errors[]. */
     public function test_reorder_mutation_rejects_guest_orders(): void
     {
         $admin = $this->createAdmin();
@@ -122,7 +119,6 @@ class OrderActionTest extends AdminApiTestCase
         expect($errors[0]['message'])->toBe(trans('bagistoapi::app.admin.order.reorder.guest-not-supported'));
     }
 
-    /** Edge case A2: items not saleable -> errors[]. */
     public function test_reorder_mutation_rejects_when_items_not_saleable(): void
     {
         $admin = $this->createAdmin();
@@ -153,7 +149,6 @@ class OrderActionTest extends AdminApiTestCase
         expect($errors[0]['message'])->toBe(trans('bagistoapi::app.admin.order.reorder.items-not-saleable'));
     }
 
-    /** Edge case B: admin lacks permission -> errors[]. */
     public function test_reorder_mutation_rejects_when_admin_lacks_permission(): void
     {
         $id = $this->aReorderableOrderId() ?? Order::where('is_guest', 0)->value('id');
@@ -178,7 +173,6 @@ class OrderActionTest extends AdminApiTestCase
         expect($errors[0]['message'])->toBe(trans('bagistoapi::app.admin.order.reorder.no-permission'));
     }
 
-    /** Edge case C: reorder disabled in settings -> errors[]. */
     public function test_reorder_mutation_rejects_when_disabled_in_settings(): void
     {
         $admin = $this->createAdmin();
@@ -189,6 +183,7 @@ class OrderActionTest extends AdminApiTestCase
             'code' => 'sales.order_settings.reorder.admin',
             'value' => '0',
         ]);
+        $this->forgetCoreConfigCache();
 
         $response = $this->runReorder($id, $admin);
         $errors = $response->json('errors');

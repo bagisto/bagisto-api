@@ -19,7 +19,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprDownloadDataProcessor;
  * GraphQL : createAdminCustomerGdprDownloadData
  *
  * Not bound to a GDPR request — admin can run ad-hoc on any customer.
- * Permission: customers.gdpr_requests.view (read-only inspection).
+ * Permission: customers.gdpr_requests (read-only inspection).
  *
  * Returns an embedded `data` array carrying:
  *   - customer:  full customer record

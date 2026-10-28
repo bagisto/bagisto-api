@@ -20,12 +20,15 @@ use Webkul\BagistoApi\Exception\OperationFailedException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\Wishlist;
+use Webkul\BagistoApi\State\Concerns\StorefrontFeatureGate;
 
 /**
  * WishlistProcessor - Handles create/delete operations for wishlist items
  */
 class WishlistProcessor implements ProcessorInterface
 {
+    use StorefrontFeatureGate;
+
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private ?Request $request = null
@@ -36,6 +39,8 @@ class WishlistProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
+        $this->assertWishlistEnabled();
+
         $operationName = $operation->getName();
 
         if (in_array($operationName, ['toggle']) && $data instanceof CreateWishlistInput) {

@@ -42,8 +42,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapGenerateProcessor;
                             'application/json' => [
                                 'example' => [
                                     'sitemapId' => 1,
-                                    'indexFile' => '/sitemap.xml',
-                                    'generatedSitemaps' => ['/sitemap-products-1.xml', '/sitemap-categories-1.xml'],
+                                    'generatedFiles' => [
+                                        [
+                                            'channelId' => 1,
+                                            'channelCode' => 'default',
+                                            'hostname' => 'https://example.com',
+                                            'index' => 'sitemaps/default/sitemap-1-1.xml',
+                                            'sitemaps' => ['sitemaps/default/sitemap-1-1-1.xml'],
+                                        ],
+                                    ],
+                                    'urls' => ['https://example.com/storage/sitemaps/default/sitemap-1-1.xml'],
+                                    'indexFile' => null,
+                                    'generatedSitemaps' => [],
                                     'generatedAt' => '2026-06-23T13:00:00+05:30',
                                     'message' => 'Sitemap generated.',
                                 ],
@@ -76,7 +86,13 @@ class AdminMarketingSitemapGenerate
     #[ApiProperty(writable: false)]
     public ?int $sitemap_id = null;
 
-    #[ApiProperty(writable: false, description: 'Generated sitemap index file path under the public disk.')]
+    #[ApiProperty(writable: false, description: 'What the run wrote, one entry per covered channel — { channelId, channelCode, hostname, index, sitemaps }.')]
+    public ?array $generated_files = null;
+
+    #[ApiProperty(writable: false, description: 'Public index URL per channel — the link to submit to a search engine.')]
+    public ?array $urls = null;
+
+    #[ApiProperty(writable: false, description: 'Legacy: index path of a sitemap generated before generation became channel-aware. Null for anything generated since; read generatedFiles instead.')]
     public ?string $index_file = null;
 
     #[ApiProperty(writable: false, description: 'Generated child sitemap file paths.')]

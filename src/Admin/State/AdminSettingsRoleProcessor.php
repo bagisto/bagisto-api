@@ -19,6 +19,7 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\User\Models\Role;
+use Webkul\User\Repositories\AdminRepository;
 use Webkul\User\Repositories\RoleRepository;
 
 /**
@@ -34,6 +35,7 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
     public function __construct(
         protected RoleRepository $roleRepository,
         protected AdminSettingsRoleItemProvider $itemProvider,
+        protected AdminRepository $adminRepository,
     ) {}
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
@@ -102,6 +104,14 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         $this->validatePayload($input);
 
         $payload = $this->filterRepositoryPayload($input);
+
+        if (
+            ($payload['permission_type'] ?? null) === 'custom'
+            && $role->permission_type === 'all'
+            && $this->adminRepository->countAdminsWithAllAccess() === 1
+        ) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.settings.role.cannot-remove-last-full-access'), 422);
+        }
 
         if (($payload['permission_type'] ?? null) === 'all') {
             $payload['permissions'] = [];

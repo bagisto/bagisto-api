@@ -26,7 +26,7 @@ use Webkul\Sales\Models\Order;
  * version only exports orders + addresses; this exports everything an admin
  * would expect for a GDPR data-portability request.
  *
- * Permission: customers.gdpr_requests.view (read-only inspection).
+ * Permission: customers.gdpr_requests (read-only inspection).
  */
 class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
 {
@@ -122,7 +122,7 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array('customers.gdpr_requests.view', $perms, true) && ! in_array('*', $perms, true)) {
+        if (! in_array('customers.gdpr_requests', $perms, true) && ! in_array('*', $perms, true)) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.gdpr.no-permission'));
         }
     }

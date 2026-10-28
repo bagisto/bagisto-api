@@ -7,11 +7,16 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator as LaravelPaginator;
+use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Models\Product;
-use Webkul\Customer\Repositories\CustomerGroupRepository;
+use Webkul\BagistoApi\State\Concerns\HandlesSearchTerms;
+use Webkul\BagistoApi\State\Concerns\ResolvesSearchEngine;
 
 class ProductGraphQLProvider implements ProviderInterface
 {
+    use HandlesSearchTerms;
+    use ResolvesSearchEngine;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -34,26 +39,31 @@ class ProductGraphQLProvider implements ProviderInterface
 
         $args = $context['args'] ?? [];
 
-        $query = Product::query();
-
-        $query->whereHas('attribute_values', function ($q) {
-            $q->where('attribute_id', 8)
-                ->where('boolean_value', 1);
-        });
-
-        $query->whereHas('attribute_values', function ($q) {
-            $q->where('attribute_id', 7)
-                ->where('boolean_value', 1);
-        });
+        $query = Product::query()->visibleInStorefront(
+            $args['channel'] ?? request()->attributes->get('bagisto_channel')
+        );
 
         if (! empty($args['query'])) {
-            $searchTerm = $args['query'];
+            $args['query'] = $this->searchSuggestion($args['query'], $args['suggest'] ?? null) ?? $args['query'];
+        }
 
-            $query->where(function ($q) use ($searchTerm) {
+        $elasticIds = ! empty($args['query']) ? $this->elasticProductIds($args['query']) : null;
+
+        if ($elasticIds !== null) {
+            $query->whereIn('products.id', $elasticIds ?: [0]);
+        } elseif (! empty($args['query'])) {
+            $searchTerm = $args['query'];
+            $synonyms = $this->searchSynonyms($searchTerm);
+
+            $query->where(function ($q) use ($searchTerm, $synonyms) {
                 $q->where('sku', 'like', "%{$searchTerm}%")
-                    ->orWhereHas('attribute_values', function ($attr) use ($searchTerm) {
+                    ->orWhereHas('attribute_values', function ($attr) use ($synonyms) {
                         $attr->where('attribute_id', 2)
-                            ->where('text_value', 'like', "%{$searchTerm}%");
+                            ->where(function ($name) use ($synonyms) {
+                                foreach ($synonyms as $synonym) {
+                                    $name->orWhere('text_value', 'like', "%{$synonym}%");
+                                }
+                            });
                     });
             });
         }
@@ -107,17 +117,14 @@ class ProductGraphQLProvider implements ProviderInterface
                 break;
 
             case 'PRICE':
-                $user = auth()->user();
-                $customerGroup = $user?->getDefaultGroup()
-                    ?? app(CustomerGroupRepository::class)
-                        ->findOneByField('code', 'guest');
+                $customerGroup = $this->currentCustomerGroup();
 
                 $query->leftJoin('product_price_indices', function ($join) use ($customerGroup) {
                     $join->on('products.id', '=', 'product_price_indices.product_id')
                         ->where('product_price_indices.customer_group_id', $customerGroup->id);
                 })
                     ->orderBy('product_price_indices.min_price', $direction)
-                    ->orderBy('products.id', $direction)
+                    ->orderBy('products.id', 'desc')
                     ->select('products.*');
                 break;
 
@@ -139,6 +146,8 @@ class ProductGraphQLProvider implements ProviderInterface
             }
         }
 
+        $isPlainSearch = ! empty($args['query']) && empty($filters);
+
         if (! empty($filters['type'])) {
             $query->where('type', $filters['type']);
             unset($filters['type']);
@@ -149,20 +158,22 @@ class ProductGraphQLProvider implements ProviderInterface
             unset($filters['sku']);
         }
 
-        if (isset($filters['new'])) {
-            $query->leftJoin('product_flat', 'products.id', '=', 'product_flat.product_id')
-                ->where('product_flat.new', filter_var($filters['new'], FILTER_VALIDATE_BOOLEAN))
-                ->select('products.*')
-                ->distinct('products.id');
-            unset($filters['new']);
-        }
+        /**
+         * Both flags live on product_flat. Join it once, otherwise combining the
+         * two filters aliases the same table twice and the query fails.
+         */
+        $flatFlags = array_intersect_key($filters, array_flip(['new', 'featured']));
 
-        if (isset($filters['featured'])) {
+        if ($flatFlags) {
             $query->leftJoin('product_flat', 'products.id', '=', 'product_flat.product_id')
-                ->where('product_flat.featured', filter_var($filters['featured'], FILTER_VALIDATE_BOOLEAN))
                 ->select('products.*')
                 ->distinct('products.id');
-            unset($filters['featured']);
+
+            foreach ($flatFlags as $flag => $value) {
+                $query->where('product_flat.'.$flag, filter_var($value, FILTER_VALIDATE_BOOLEAN));
+            }
+
+            unset($filters['new'], $filters['featured']);
         }
 
         if (! empty($filters['category_id'])) {
@@ -173,24 +184,37 @@ class ProductGraphQLProvider implements ProviderInterface
             unset($filters['category_id']);
         }
 
-        if (! empty($filters['price_from']) || ! empty($filters['price_to'])) {
-            $from = isset($filters['price_from']) ? (float) $filters['price_from'] : null;
-            $to = isset($filters['price_to']) ? (float) $filters['price_to'] : null;
+        if (isset($filters['price']) && is_string($filters['price']) && $filters['price'] !== '') {
+            $priceRange = array_map('trim', explode(',', $filters['price']));
 
-            $query->whereHas('attribute_values', function ($q) use ($from, $to) {
-                $q->where('attribute_id', 11);
+            $filters['price_from'] ??= current($priceRange);
+            $filters['price_to'] ??= end($priceRange);
+        }
 
-                if (! is_null($from) && ! is_null($to)) {
-                    $q->whereBetween('float_value', [$from, $to]);
-                } elseif (! is_null($from)) {
-                    $q->where('float_value', '>=', $from);
-                } elseif (! is_null($to)) {
-                    $q->where('float_value', '<=', $to);
+        unset($filters['price']);
+
+        $priceFrom = $filters['price_from'] ?? null;
+        $priceTo = $filters['price_to'] ?? null;
+
+        if (is_numeric($priceFrom) || is_numeric($priceTo)) {
+            $from = is_numeric($priceFrom) ? (float) core()->convertToBasePrice((float) $priceFrom) : null;
+            $to = is_numeric($priceTo) ? (float) core()->convertToBasePrice((float) $priceTo) : null;
+            $customerGroupId = $this->currentCustomerGroup()->id;
+
+            $query->whereHas('price_indices', function ($q) use ($from, $to, $customerGroupId) {
+                $q->where('customer_group_id', $customerGroupId);
+
+                if (! is_null($from)) {
+                    $q->where('min_price', '>=', $from);
+                }
+
+                if (! is_null($to)) {
+                    $q->where('min_price', '<=', $to);
                 }
             });
-
-            unset($filters['price_from'], $filters['price_to']);
         }
+
+        unset($filters['price_from'], $filters['price_to']);
 
         // Setup for variant filtering with COALESCE
         $prefix = \DB::getTablePrefix();
@@ -198,7 +222,10 @@ class ProductGraphQLProvider implements ProviderInterface
 
         // Collect attribute filters that need to be applied
         foreach ($filters as $attrCode => $spec) {
-            if (in_array($attrCode, ['pageSize', 'first', 'last', 'after', 'before'], true)) {
+            if (
+                in_array($attrCode, ['pageSize', 'first', 'last', 'after', 'before'], true)
+                || ! array_key_exists($attrCode, $this->attributeTypeCache)
+            ) {
                 continue;
             }
 
@@ -273,6 +300,8 @@ class ProductGraphQLProvider implements ProviderInterface
             'attribute_family',
             'images',
             'attribute_values',
+            'product_flats',
+            'price_indices',
             'super_attributes',
             'variants' => fn ($q) => $q->without(['variants', 'super_attributes', 'attribute_values', 'attribute_family']),
             'booking_products' => fn ($q) => $q->select('id', 'product_id', 'type'),
@@ -305,6 +334,10 @@ class ProductGraphQLProvider implements ProviderInterface
             $offset = max(0, $total - $limit);
         }
 
+        if ($isPlainSearch && ! $after && ! $before) {
+            $this->recordSearchTerm($args['query'], $total);
+        }
+
         $items = $query
             ->distinct('products.id')
             ->offset($offset)
@@ -334,6 +367,14 @@ class ProductGraphQLProvider implements ProviderInterface
                 ['path' => request()->url()]
             )
         );
+    }
+
+    /**
+     * Resolve the customer group whose price index the listing reads.
+     */
+    private function currentCustomerGroup(): object
+    {
+        return Auth::guard('sanctum')->user()?->group ?? core()->getGuestCustomerGroup();
     }
 
     /**

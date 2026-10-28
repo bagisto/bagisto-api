@@ -37,6 +37,8 @@ class AdminSettingsDataTransferImportItemProvider extends AbstractAdminItemProvi
         $dto->fieldSeparator = $import->field_separator;
         $dto->filePath = $import->file_path;
         $dto->imagesDirectoryPath = $import->images_directory_path;
+        $dto->imageSource = $import->image_source;
+        $dto->imagesArchiveName = $import->images_archive_name;
         $dto->errorFilePath = $import->error_file_path;
         $dto->summary = is_array($import->summary) ? $import->summary : null;
         $dto->startedAt = $import->started_at?->toIso8601String();

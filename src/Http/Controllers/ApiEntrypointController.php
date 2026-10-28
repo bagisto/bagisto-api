@@ -21,20 +21,20 @@ class ApiEntrypointController
                 [
                     'name' => 'Shop API',
                     'description' => 'Customer-facing API for shop operations, products, cart management, and orders',
-                    'url' => '/api/shop',
+                    'url' => url('/api/shop'),
                     'icon' => 'shop-api.svg',
                     'type' => 'shop',
                 ],
                 [
                     'name' => 'Admin API',
                     'description' => 'Administrator API for store management, products, orders, and configurations',
-                    'url' => '/api/admin',
+                    'url' => url('/api/admin'),
                     'icon' => 'admin-api.svg',
                     'type' => 'admin',
                 ],
             ],
-            'graphql_url' => '/graphql',
-            'graphql_playground_url' => '/graphiql',
+            'graphql_url' => url('/api/graphql'),
+            'graphql_playground_url' => url('/api/graphiql'),
         ]);
     }
 }

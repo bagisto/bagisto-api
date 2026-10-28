@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Request as RequestFacade;
 use Webkul\BagistoApi\Dto\CreateCompareItemInput;
 use Webkul\BagistoApi\Dto\DeleteCompareItemInput;
@@ -16,12 +17,15 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CompareItem;
 use Webkul\BagistoApi\Models\Product;
+use Webkul\BagistoApi\State\Concerns\StorefrontFeatureGate;
 
 /**
  * CompareItemProcessor - Handles create/delete operations for compare items
  */
 class CompareItemProcessor implements ProcessorInterface
 {
+    use StorefrontFeatureGate;
+
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private ?Request $request = null
@@ -32,6 +36,8 @@ class CompareItemProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
+        $this->assertCompareEnabled();
+
         if ($data instanceof CreateCompareItemInput) {
             $this->hydrateCreateInputFromContext($data, $context);
 
@@ -96,10 +102,14 @@ class CompareItemProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.compare-item.already-exists'));
         }
 
+        Event::dispatch('customer.compare.create.before');
+
         $compareItem = CompareItem::create([
             'product_id' => $input->product_id,
             'customer_id' => $user->id,
         ]);
+
+        Event::dispatch('customer.compare.create.after', $compareItem);
 
         $compareItem->load(['product', 'customer']);
 
@@ -133,7 +143,12 @@ class CompareItemProcessor implements ProcessorInterface
         }
 
         $compareItem->load(['product', 'customer']);
+
+        Event::dispatch('customer.compare.delete.before', $compareItem->product_id);
+
         $compareItem->delete();
+
+        Event::dispatch('customer.compare.delete.after', $compareItem->product_id);
 
         return $compareItem;
     }

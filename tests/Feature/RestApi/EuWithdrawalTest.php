@@ -4,10 +4,12 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\EUWithdrawal\Models\Withdrawal;
 use Webkul\Sales\Models\Order;
+use Webkul\Shop\Mail\Customer\EUWithdrawal\GuestWithdrawalLink;
 
 class EuWithdrawalTest extends RestApiTestCase
 {
@@ -17,7 +19,8 @@ class EuWithdrawalTest extends RestApiTestCase
             ['code' => 'sales.eu_withdrawal.general.enabled', 'channel_code' => $channel->code, 'locale_code' => null],
             ['value' => 1]
         );
-        core()->getConfigData('sales.eu_withdrawal.general.enabled', $channel->code);
+
+        $this->forgetCoreConfigCache();
     }
 
     private function customerOrder($customer, Channel $channel): Order
@@ -122,14 +125,9 @@ class EuWithdrawalTest extends RestApiTestCase
         expect((int) $get->json('orderId'))->toBe($order->id);
     }
 
-    public function test_guest_submit_matches_by_increment_and_email(): void
+    private function guestOrder(Channel $channel): Order
     {
-        Mail::fake();
-        $this->seedRequiredData();
-        $channel = Channel::first();
-        $this->enable($channel);
-
-        $order = Order::factory()->create([
+        return Order::factory()->create([
             'customer_id' => null,
             'customer_email' => 'guest@example.com',
             'increment_id' => 'G-'.uniqid(),
@@ -137,10 +135,87 @@ class EuWithdrawalTest extends RestApiTestCase
             'is_guest' => 1,
             'status' => 'completed',
         ]);
+    }
 
-        $response = $this->publicPost('/api/shop/eu-withdrawals/guest', [
+    private function guestLink(Order $order, ?\DateTimeInterface $expires = null): string
+    {
+        return URL::temporarySignedRoute('shop.eu-withdrawal.guest.create', $expires ?? now()->addHours(24), ['orderId' => $order->id]);
+    }
+
+    public function test_guest_lookup_emails_a_link_when_the_order_matches(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+        $order = $this->guestOrder($channel);
+
+        $response = $this->publicPost('/api/shop/eu-withdrawals/guest/lookup', [
             'order_increment_id' => $order->increment_id,
             'email' => 'guest@example.com',
+        ]);
+
+        $response->assertCreated();
+        expect($response->json('success'))->toBeTrue();
+        Mail::assertQueued(GuestWithdrawalLink::class);
+    }
+
+    public function test_guest_lookup_gives_the_same_answer_when_nothing_matches(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+        $order = $this->guestOrder($channel);
+
+        $match = $this->publicPost('/api/shop/eu-withdrawals/guest/lookup', [
+            'order_increment_id' => $order->increment_id,
+            'email' => 'guest@example.com',
+        ]);
+
+        $miss = $this->publicPost('/api/shop/eu-withdrawals/guest/lookup', [
+            'order_increment_id' => $order->increment_id,
+            'email' => 'wrong@example.com',
+        ]);
+
+        $miss->assertCreated();
+        expect($miss->json())->toBe($match->json());
+        Mail::assertQueuedCount(1);
+    }
+
+    public function test_guest_lookup_is_throttled(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $this->enable(Channel::first());
+
+        foreach (range(1, 5) as $attempt) {
+            $this->publicPost('/api/shop/eu-withdrawals/guest/lookup', ['order_increment_id' => 'x', 'email' => 'a@example.com'])->assertCreated();
+        }
+
+        $this->publicPost('/api/shop/eu-withdrawals/guest/lookup', ['order_increment_id' => 'x', 'email' => 'a@example.com'])->assertStatus(429);
+    }
+
+    public function test_guest_lookup_returns_404_when_the_feature_is_off(): void
+    {
+        $this->seedRequiredData();
+
+        $this->publicPost('/api/shop/eu-withdrawals/guest/lookup', [
+            'order_increment_id' => 'x',
+            'email' => 'a@example.com',
+        ])->assertNotFound();
+    }
+
+    public function test_guest_submit_with_a_signed_link_files_the_withdrawal(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+        $order = $this->guestOrder($channel);
+
+        $response = $this->publicPost('/api/shop/eu-withdrawals/guest', [
+            'link' => $this->guestLink($order),
             'reason_text' => 'No longer needed.',
         ]);
 
@@ -150,26 +225,71 @@ class EuWithdrawalTest extends RestApiTestCase
         $this->assertDatabaseHas('eu_withdrawals', ['order_id' => $order->id, 'is_guest' => 1]);
     }
 
-    public function test_guest_submit_wrong_email_returns_404(): void
+    public function test_guest_submit_with_the_same_link_returns_the_existing_withdrawal(): void
     {
         Mail::fake();
         $this->seedRequiredData();
         $channel = Channel::first();
         $this->enable($channel);
+        $order = $this->guestOrder($channel);
+        $link = $this->guestLink($order);
 
-        $order = Order::factory()->create([
-            'customer_id' => null,
-            'customer_email' => 'guest@example.com',
-            'increment_id' => 'G-'.uniqid(),
-            'channel_id' => $channel->id,
-            'is_guest' => 1,
-            'status' => 'completed',
-        ]);
+        $first = $this->publicPost('/api/shop/eu-withdrawals/guest', ['link' => $link]);
+        $second = $this->publicPost('/api/shop/eu-withdrawals/guest', ['link' => $link]);
+
+        expect($second->json('uuid'))->toBe($first->json('uuid'));
+        expect(Withdrawal::where('order_id', $order->id)->count())->toBe(1);
+    }
+
+    public function test_guest_submit_without_a_link_is_refused(): void
+    {
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+        $order = $this->guestOrder($channel);
 
         $response = $this->publicPost('/api/shop/eu-withdrawals/guest', [
             'order_increment_id' => $order->increment_id,
-            'email' => 'wrong@example.com',
+            'email' => 'guest@example.com',
         ]);
-        expect($response->getStatusCode())->toBeIn([403, 404]);
+
+        $response->assertStatus(422);
+        $this->assertDatabaseMissing('eu_withdrawals', ['order_id' => $order->id]);
+    }
+
+    public function test_guest_submit_with_a_tampered_link_is_refused(): void
+    {
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+        $order = $this->guestOrder($channel);
+        $other = $this->guestOrder($channel);
+
+        $tampered = str_replace('/withdraw/'.$order->id.'/', '/withdraw/'.$other->id.'/', $this->guestLink($order));
+
+        $this->publicPost('/api/shop/eu-withdrawals/guest', ['link' => $tampered])->assertStatus(422);
+        $this->assertDatabaseMissing('eu_withdrawals', ['order_id' => $other->id]);
+    }
+
+    public function test_guest_submit_with_an_expired_link_is_refused(): void
+    {
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+        $order = $this->guestOrder($channel);
+
+        $this->publicPost('/api/shop/eu-withdrawals/guest', [
+            'link' => $this->guestLink($order, now()->subMinute()),
+        ])->assertStatus(422);
+    }
+
+    public function test_guest_submit_refuses_a_customer_order(): void
+    {
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+        $order = $this->customerOrder($this->createCustomer(), $channel);
+
+        $this->publicPost('/api/shop/eu-withdrawals/guest', ['link' => $this->guestLink($order)])->assertNotFound();
     }
 }

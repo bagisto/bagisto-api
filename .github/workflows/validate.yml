@@ -1,0 +1,155 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-22.04
+
+    name: Collections and environments
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate
+        run: |
+          python3 - <<'PY'
+          import json, re, sys, pathlib
+
+          # One environment serves both collections.
+          COLLECTIONS = ['Bagisto-Shop-API', 'Bagisto-Admin-API']
+          ENVIRONMENT = 'Bagisto'
+
+          failures = []
+
+          def requests(item):
+              if 'request' in item:
+                  yield item
+                  return
+              for child in item.get('item', []):
+                  yield from requests(child)
+
+          for collection_name in COLLECTIONS:
+              environment_name = ENVIRONMENT
+              collection_path = pathlib.Path(f'collections/{collection_name}.postman_collection.json')
+              environment_path = pathlib.Path(f'environments/{environment_name}.postman_environment.json')
+
+              for path in (collection_path, environment_path):
+                  if not path.is_file():
+                      failures.append(f'{path} is missing')
+
+              if failures:
+                  continue
+
+              raw = collection_path.read_text()
+
+              try:
+                  collection = json.loads(raw)
+              except json.JSONDecodeError as error:
+                  failures.append(f'{collection_path} is not valid JSON: {error}')
+                  continue
+
+              environment = json.loads(environment_path.read_text())
+
+              # Schema version Postman will accept on import.
+              if 'v2.1.0' not in collection['info'].get('schema', ''):
+                  failures.append(f'{collection_path} does not declare the v2.1.0 schema')
+
+              # An Overview page is the first thing a consumer reads.
+              if len(collection['info'].get('description', '')) < 200:
+                  failures.append(f'{collection_path} has no meaningful description')
+
+              folders = {folder['name']: [child['name'] for child in folder['item']] for folder in collection['item']}
+
+              for required in ('REST', 'GraphQL'):
+                  if required not in folders:
+                      failures.append(f'{collection_path} is missing its {required} folder')
+
+              if 'REST' in folders and 'GraphQL' in folders:
+                  orphans = set(folders['GraphQL']) - set(folders['REST'])
+                  if orphans:
+                      failures.append(f'{collection_path} has GraphQL folders with no REST counterpart: {sorted(orphans)}')
+
+              declared = {value['key'] for value in environment['values']} | {'baseUrl'}
+              used = set(re.findall(r'\{\{(\w+)\}\}', raw))
+
+              undeclared = used - declared
+              if undeclared:
+                  failures.append(f'{collection_path} uses variables {environment_path.name} does not declare: {sorted(undeclared)}')
+
+              # A request with no URL imports as an unusable stub.
+              for request in requests({'item': collection['item']}):
+                  url = request['request'].get('url') or {}
+                  if not url.get('raw'):
+                      failures.append(f"{collection_path}: request '{request['name']}' has no URL")
+                      break
+                  if any('/' in str(segment) for segment in url.get('host', [])):
+                      failures.append(f"{collection_path}: request '{request['name']}' puts a path in its host")
+                      break
+
+          # No credential may ever be committed, in any file.
+          for path in pathlib.Path('.').rglob('*.json'):
+              if 'pk_storefront_' in path.read_text():
+                  failures.append(f'{path} contains a storefront key')
+
+          for value in json.loads(pathlib.Path(f'environments/{ENVIRONMENT}.postman_environment.json').read_text())['values']:
+              if value.get('type') == 'secret' and value.get('value'):
+                  failures.append(f"environments/{ENVIRONMENT}: secret '{value['key']}' is not blank")
+
+          if failures:
+              for failure in failures:
+                  print(f'::error::{failure}')
+              sys.exit(1)
+
+          print('Collections and environments valid.')
+          PY
+
+  generated:
+    runs-on: ubuntu-22.04
+
+    name: Collections match the exported schema
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install dependencies
+        # Only the autoloader is needed; the package ships no application to boot.
+        run: composer install --no-interaction --no-progress --prefer-dist --no-scripts
+
+      - name: Rebuild and compare
+        run: |
+          # The collections are generated from schema/generated, so a commit that edits one
+          # by hand — or that exports a new schema without rebuilding — would publish a
+          # collection the API no longer matches.
+          mkdir -p /tmp/collections
+
+          php schema/tools/build-collection.php /tmp/collections
+
+          status=0
+
+          for file in collections/*.postman_collection.json; do
+            if ! diff -q "$file" "/tmp/${file}" > /dev/null; then
+              echo "::error file=$file::Out of date. Run: php schema/tools/build-collection.php"
+              status=1
+            fi
+          done
+
+          exit $status

@@ -20,11 +20,15 @@ class GdprRequestTest extends GraphQLTestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        $this->forgetCoreConfigCache();
     }
 
     private function disableGdpr(): void
     {
         DB::table('core_config')->where('code', 'general.gdpr.settings.enabled')->delete();
+
+        $this->forgetCoreConfigCache();
     }
 
     private function seedRequest(Customer $customer, array $overrides = []): int
@@ -127,6 +131,27 @@ class GdprRequestTest extends GraphQLTestCase
         ]);
 
         expect($response->json('errors'))->not->toBeNull();
+    }
+
+    public function test_create_mutation_message_over_500_characters_errors(): void
+    {
+        $this->enableGdpr();
+        $customer = $this->createCustomer();
+
+        $mutation = <<<'GQL'
+            mutation CreateGdprRequest($input: createGdprRequestInput!) {
+              createGdprRequest(input: $input) {
+                gdprRequest { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $mutation, [
+            'input' => ['type' => 'delete', 'message' => str_repeat('a', 501)],
+        ]);
+
+        expect($response->json('errors'))->not->toBeNull();
+        $this->assertDatabaseMissing('gdpr_data_request', ['customer_id' => $customer->id]);
     }
 
     public function test_collection_query_returns_only_own(): void
@@ -284,6 +309,28 @@ class GdprRequestTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    public function test_revoke_mutation_not_allowed_when_processing(): void
+    {
+        $this->enableGdpr();
+        $customer = $this->createCustomer();
+        $id = $this->seedRequest($customer, ['status' => 'processing']);
+
+        $mutation = <<<'GQL'
+            mutation RevokeGdprRequest($input: revokeGdprRequestInput!) {
+              revokeGdprRequest(input: $input) {
+                gdprRequest { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $mutation, [
+            'input' => ['id' => '/api/shop/gdpr-requests/'.$id],
+        ]);
+
+        expect($response->json('errors'))->not->toBeNull();
+        $this->assertDatabaseHas('gdpr_data_request', ['id' => $id, 'status' => 'processing']);
+    }
+
     public function test_revoke_mutation_cross_customer_errors(): void
     {
         $this->enableGdpr();
@@ -411,5 +458,30 @@ class GdprRequestTest extends GraphQLTestCase
 
         expect($response->json('errors'))->not->toBeNull();
         expect(strtolower(json_encode($response->json('errors'))))->toContain('disabled');
+    }
+
+    public function test_gdpr_data_returns_the_customer_data(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGdpr();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedGraphQL($customer, '{ gdprData { _id customer addresses orders } }');
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.gdprData._id'))->toBe($customer->id);
+        expect($response->json('data.gdprData.customer.email'))->toBe($customer->email);
+    }
+
+    public function test_gdpr_data_is_refused_when_gdpr_is_off(): void
+    {
+        $this->seedRequiredData();
+        $this->disableGdpr();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedGraphQL($customer, '{ gdprData { _id } }');
+
+        expect($response->json('errors'))->not->toBeNull();
     }
 }

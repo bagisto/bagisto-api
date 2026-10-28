@@ -2,8 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\Customer\Models\Customer;
 use Webkul\Product\Models\Product;
 
 /**
@@ -153,5 +155,69 @@ class ProductTest extends AdminApiTestCase
         $firstId = $first->json('data.0.id');
         $secondId = $second->json('data.0.id');
         expect($firstId)->not()->toBe($secondId);
+    }
+
+    protected function makeSearchProduct(string $sku): Product
+    {
+        $product = Product::factory()->create(['type' => 'simple', 'sku' => $sku]);
+
+        DB::table('product_channels')->where('product_id', $product->id)->delete();
+
+        return $product;
+    }
+
+    protected function addCustomizableOption(int $productId): void
+    {
+        DB::table('product_customizable_options')->insert([
+            'product_id' => $productId,
+            'type' => 'text',
+            'is_required' => 0,
+        ]);
+    }
+
+    public function test_exclude_customizable_products_filters_simple_products(): void
+    {
+        $admin = $this->createAdmin();
+        $prefix = 'xcust'.uniqid();
+        $plain = $this->makeSearchProduct($prefix.'-plain');
+        $custom = $this->makeSearchProduct($prefix.'-custom');
+        $this->addCustomizableOption($custom->id);
+
+        $all = $this->adminGet($admin, '/api/admin/products?type=simple&query='.$prefix);
+        $all->assertOk();
+        expect(array_column($all->json('data'), 'id'))->toContain($plain->id, $custom->id);
+
+        $filtered = $this->adminGet($admin, '/api/admin/products?type=simple&exclude_customizable_products=1&query='.$prefix);
+        $filtered->assertOk();
+        expect(array_column($filtered->json('data'), 'id'))->toBe([$plain->id]);
+    }
+
+    public function test_customer_id_scopes_to_customer_channel(): void
+    {
+        $admin = $this->createAdmin();
+        $prefix = 'xchan'.uniqid();
+        $inChannel = $this->makeSearchProduct($prefix.'-in');
+        $this->makeSearchProduct($prefix.'-out');
+
+        $channelId = core()->getDefaultChannel()->id;
+        DB::table('product_channels')->insert(['product_id' => $inChannel->id, 'channel_id' => $channelId]);
+        $customer = Customer::factory()->create(['channel_id' => $channelId]);
+
+        $response = $this->adminGet($admin, '/api/admin/products?customerId='.$customer->id.'&query='.$prefix);
+
+        $response->assertOk();
+        expect(array_column($response->json('data'), 'id'))->toBe([$inChannel->id]);
+    }
+
+    public function test_unknown_customer_id_applies_no_channel_filter(): void
+    {
+        $admin = $this->createAdmin();
+        $prefix = 'xnone'.uniqid();
+        $product = $this->makeSearchProduct($prefix.'-a');
+
+        $response = $this->adminGet($admin, '/api/admin/products?customerId=999999999&query='.$prefix);
+
+        $response->assertOk();
+        expect(array_column($response->json('data'), 'id'))->toBe([$product->id]);
     }
 }

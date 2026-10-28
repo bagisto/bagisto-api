@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CompareItem;
+use Webkul\BagistoApi\State\Concerns\StorefrontFeatureGate;
 
 /**
  * Provider for REST GET /api/shop/compare-items/{id}
@@ -17,8 +18,12 @@ use Webkul\BagistoApi\Models\CompareItem;
  */
 class CompareItemItemProvider implements ProviderInterface
 {
+    use StorefrontFeatureGate;
+
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
+        $this->assertCompareEnabled();
+
         $customer = Auth::guard('sanctum')->user();
 
         if (! $customer) {

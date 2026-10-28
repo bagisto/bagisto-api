@@ -59,10 +59,11 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
-                                'required' => ['file_name', 'path'],
+                                'required' => ['file_name', 'path', 'channels'],
                                 'properties' => [
                                     'file_name' => ['type' => 'string', 'example' => 'sitemap.xml'],
                                     'path' => ['type' => 'string', 'example' => '/'],
+                                    'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
                                 ],
                             ],
                         ],
@@ -77,7 +78,10 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                                     'id' => 1,
                                     'fileName' => 'sitemap.xml',
                                     'path' => '/',
+                                    'channels' => [1],
+                                    'urls' => ['https://example.com/storage/sitemaps/default/sitemap-1-1.xml'],
                                     'generatedAt' => null,
+                                    'generatedFiles' => [],
                                     'indexFile' => null,
                                     'generatedSitemaps' => [],
                                     'createdAt' => '2026-06-20T10:00:00+05:30',
@@ -108,6 +112,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                                 'properties' => [
                                     'file_name' => ['type' => 'string', 'example' => 'sitemap.xml'],
                                     'path' => ['type' => 'string', 'example' => '/'],
+                                    'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
                                 ],
                             ],
                         ],
@@ -122,9 +127,20 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                                     'id' => 1,
                                     'fileName' => 'sitemap.xml',
                                     'path' => '/',
+                                    'channels' => [1],
+                                    'urls' => ['https://example.com/storage/sitemaps/default/sitemap-1-1.xml'],
                                     'generatedAt' => '2026-06-23T13:00:00+05:30',
-                                    'indexFile' => '/sitemap.xml',
-                                    'generatedSitemaps' => ['/sitemap-products-1.xml', '/sitemap-categories-1.xml'],
+                                    'generatedFiles' => [
+                                        [
+                                            'channelId' => 1,
+                                            'channelCode' => 'default',
+                                            'hostname' => 'https://example.com',
+                                            'index' => 'sitemaps/default/sitemap-1-1.xml',
+                                            'sitemaps' => ['sitemaps/default/sitemap-1-1-1.xml'],
+                                        ],
+                                    ],
+                                    'indexFile' => null,
+                                    'generatedSitemaps' => [],
                                     'createdAt' => '2026-06-20T10:00:00+05:30',
                                     'updatedAt' => '2026-06-23T13:05:00+05:30',
                                 ],
@@ -174,9 +190,20 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                                     'id' => 1,
                                     'fileName' => 'sitemap.xml',
                                     'path' => '/',
+                                    'channels' => [1],
+                                    'urls' => ['https://example.com/storage/sitemaps/default/sitemap-1-1.xml'],
                                     'generatedAt' => '2026-06-23T13:00:00+05:30',
-                                    'indexFile' => '/sitemap.xml',
-                                    'generatedSitemaps' => ['/sitemap-products-1.xml', '/sitemap-categories-1.xml'],
+                                    'generatedFiles' => [
+                                        [
+                                            'channelId' => 1,
+                                            'channelCode' => 'default',
+                                            'hostname' => 'https://example.com',
+                                            'index' => 'sitemaps/default/sitemap-1-1.xml',
+                                            'sitemaps' => ['sitemaps/default/sitemap-1-1-1.xml'],
+                                        ],
+                                    ],
+                                    'indexFile' => null,
+                                    'generatedSitemaps' => [],
                                     'createdAt' => '2026-06-20T10:00:00+05:30',
                                     'updatedAt' => '2026-06-23T13:05:00+05:30',
                                 ],
@@ -194,17 +221,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'List sitemaps',
-                description: 'Filters: file_name (LIKE). Sort: id (default desc), file_name.',
+                description: 'Filters: file_name (LIKE), channel_id (exact). Sort: id (default desc), file_name.',
                 parameters: [
                     new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer', 'example' => 1]),
                     new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
                     new Model\Parameter('file_name', 'query', 'Partial file_name match.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('channel_id', 'query', 'Only sitemaps covering this channel.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'file_name']]),
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
                 ],
                 responses: [
                     '200' => new Model\Response(
-                        description: 'Paginated list in the { data, meta } envelope. indexFile / generatedSitemaps are detail-only and null on list rows.',
+                        description: 'Paginated list in the { data, meta } envelope. generatedFiles / indexFile / generatedSitemaps are detail-only and null on list rows.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
@@ -213,7 +241,10 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                                             'id' => 1,
                                             'fileName' => 'sitemap.xml',
                                             'path' => '/',
+                                            'channels' => [1],
+                                            'urls' => ['https://example.com/storage/sitemaps/default/sitemap-1-1.xml'],
                                             'generatedAt' => null,
+                                            'generatedFiles' => null,
                                             'indexFile' => null,
                                             'generatedSitemaps' => null,
                                             'createdAt' => '2026-06-20T10:00:00+05:30',
@@ -242,6 +273,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             paginationType: 'cursor',
             extraArgs: [
                 'file_name' => ['type' => 'String'],
+                'channel_id' => ['type' => 'Int'],
                 'sort' => ['type' => 'String'],
                 'order' => ['type' => 'String'],
             ],
@@ -284,13 +316,22 @@ class AdminMarketingSitemap
     #[ApiProperty(writable: false)]
     public ?string $path = null;
 
+    #[ApiProperty(writable: false, description: 'Channel ids the sitemap covers. A sitemap generates one index plus its child files per channel.')]
+    public ?array $channels = null;
+
+    #[ApiProperty(writable: false, description: 'Public index URL per channel — the link to submit to a search engine.')]
+    public ?array $urls = null;
+
     #[ApiProperty(writable: false, description: 'ISO8601 timestamp of the most recent successful generate, or null.')]
     public ?string $generated_at = null;
 
-    #[ApiProperty(writable: false, description: 'Detail-only: path of the generated sitemap index file under the public disk.')]
+    #[ApiProperty(writable: false, description: 'Detail-only: what the last generate wrote, one entry per channel — { channelId, channelCode, hostname, index, sitemaps }.')]
+    public ?array $generated_files = null;
+
+    #[ApiProperty(writable: false, description: 'Detail-only, legacy: index path of a sitemap generated before generation became channel-aware. Null for anything generated since; read generatedFiles instead.')]
     public ?string $index_file = null;
 
-    #[ApiProperty(writable: false, description: 'Detail-only: list of generated child sitemap file paths under the public disk.')]
+    #[ApiProperty(writable: false, description: 'Detail-only, legacy: child file paths of a sitemap generated before generation became channel-aware. Empty for anything generated since; read generatedFiles instead.')]
     public ?array $generated_sitemaps = null;
 
     #[ApiProperty(writable: false)]

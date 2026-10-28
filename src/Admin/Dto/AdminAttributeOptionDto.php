@@ -29,6 +29,10 @@ class AdminAttributeOptionDto
 
     public ?string $swatchValueUrl = null;
 
+    public ?string $swatchAlt = null;
+
+    public ?string $swatchFileName = null;
+
     /**
      * @var array<int, AdminAttributeOptionTranslationDto>|null
      */

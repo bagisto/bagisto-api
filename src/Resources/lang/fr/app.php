@@ -2,6 +2,25 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'L\'ID du remboursement client est requis',
+            'invalid-id-format' => 'Format d\'ID non valide. Format IRI attendu, par exemple "/api/shop/customer-refunds/1", ou ID numérique',
+            'not-found' => 'Remboursement client avec l\'ID ":id" introuvable',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'La recommande est désactivée dans les paramètres de la boutique.',
+            'cannot-reorder' => 'Cette commande ne peut pas être recommandée (commande invité ou un ou plusieurs articles ne sont plus disponibles à l\'achat).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'Le message ne peut pas dépasser :max caractères.',
+        ],
+
+        'headers' => [
+            'unknown-channel' => 'Le canal ":code" de l\'en-tête X-Channel n\'existe pas.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Le jeton d\'authentification est requis',
             'invalid-token' => 'Jeton d\'authentification invalide ou expiré',
@@ -102,6 +121,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'Produit introuvable',
             'not-found-with-sku' => 'No product found with SKU',
             'not-found-with-url-key' => 'No product found with URL key',
             'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
@@ -130,8 +150,22 @@ return [
         'login' => [
             'invalid-credentials' => 'E-mail ou mot de passe invalide',
             'account-suspended' => 'Votre compte a été suspendu',
+            'account-inactive' => 'Votre activation nécessite l\'approbation de l\'administrateur',
+            'email-not-verified' => 'Vérifiez d\'abord votre compte e-mail.',
             'successful' => 'Vous vous êtes connecté avec succès',
             'invalid-request' => 'Demande de connexion invalide',
+        ],
+
+        'social-login' => [
+            'signed-in' => 'Connexion réussie.',
+            'token-required' => 'Un jeton de connexion sociale est requis.',
+            'invalid-token' => 'Le jeton de connexion sociale est invalide ou expiré. Veuillez réessayer.',
+            'wrong-audience' => 'Ce jeton a été émis pour une autre application.',
+            'not-configured' => 'Ce fournisseur de connexion sociale n’est pas configuré. Veuillez contacter le support.',
+            'email-required' => 'Le fournisseur n’a pas communiqué d’adresse e-mail. Veuillez vous inscrire avec un e-mail.',
+            'account-inactive' => 'Votre activation nécessite l\'approbation de l\'administrateur',
+            'provider-not-supported' => 'Ce fournisseur de connexion sociale n’est pas pris en charge.',
+            'provider-disabled' => 'Ce fournisseur de connexion sociale n’est pas activé.',
         ],
 
         'checkout' => [
@@ -147,6 +181,8 @@ return [
             'shipping-method-error' => 'Erreur lors de l\'enregistrement de la méthode de livraison',
             'payment-method-required' => 'La méthode de paiement est requise',
             'invalid-payment-method' => 'Méthode de paiement invalide ou indisponible',
+            'paypal-order-id-required' => 'L\'identifiant de commande PayPal est requis pour confirmer un paiement par le bouton intelligent PayPal.',
+            'paypal-smart-button-payment-flow' => 'Les paiements par le bouton intelligent PayPal sont capturés via checkout-payments/initiate et checkout-payments/confirm, et non en passant la commande directement.',
             'payment-method-save-failed' => 'Échec de l\'enregistrement de la méthode de paiement',
             'payment-method-saved' => 'Méthode de paiement enregistrée avec succès',
             'payment-method-error' => 'Erreur lors de l\'enregistrement de la méthode de paiement',
@@ -157,6 +193,7 @@ return [
             'account-suspended' => 'Votre compte a été suspendu. Veuillez contacter le support.',
             'account-inactive' => 'Votre compte est inactif. Veuillez contacter le support.',
             'minimum-order-not-met' => 'Le montant minimum de commande est de :amount',
+            'guest-checkout-not-allowed' => 'Veuillez vous connecter pour passer commande. Le paiement en tant qu\'invité n\'est pas disponible pour ce panier.',
             'email-required' => 'L\'adresse e-mail est requise pour la création de la commande',
             'unknown-operation' => 'Opération de paiement inconnue',
         ],
@@ -199,6 +236,11 @@ return [
             'product-not-found' => 'Produit non trouvé',
             'customer-not-found' => 'Client non trouvé',
             'already-exists' => 'Ce produit se trouve déjà dans votre liste de comparaison',
+            'disabled' => 'La comparaison de produits est désactivée pour cette boutique.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'La liste de souhaits est désactivée pour cette boutique.',
         ],
 
         'downloadable-product' => [
@@ -229,6 +271,7 @@ return [
 
             'acl' => [
                 'title' => 'Historique des modifications de l\'API',
+                'view' => 'Voir',
                 'delete' => 'Supprimer l\'historique',
             ],
 
@@ -289,6 +332,7 @@ return [
 
         'acl' => [
             'title' => 'Intégration',
+            'view' => 'Voir',
             'create' => 'Créer une intégration',
             'edit' => 'Modifier l\'intégration',
             'delete' => 'Révoquer le jeton d\'intégration',

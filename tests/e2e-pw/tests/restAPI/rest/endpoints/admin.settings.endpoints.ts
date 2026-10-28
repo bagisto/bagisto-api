@@ -45,11 +45,6 @@ export const ADMIN_SETTINGS = {
   USERS: '/api/admin/settings/users',
   USER: (id: number | string) => `/api/admin/settings/users/${id}`,
 
-  // ── Themes ──────────────────────────────────────────────────
-  THEMES: '/api/admin/settings/themes',
-  THEME: (id: number | string) => `/api/admin/settings/themes/${id}`,
-  THEMES_MASS_DELETE: '/api/admin/settings/themes/mass-delete',
-  THEMES_MASS_UPDATE_STATUS: '/api/admin/settings/themes/mass-update-status',
 
   // ── Data Transfer Imports ───────────────────────────────────
   DATA_TRANSFER_IMPORTS: '/api/admin/settings/data-transfer/imports',

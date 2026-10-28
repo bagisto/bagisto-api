@@ -37,11 +37,16 @@ class AdminEuWithdrawalProcessor implements ProcessorInterface
             return $this->handleMarkRefunded($id, $data->refund_note);
         }
 
-        if ($data instanceof AdminEuWithdrawalActionInput) {
+        if ($data instanceof AdminEuWithdrawalActionInput || $this->isResendConfirmation($operation)) {
             return $this->handleResend($id);
         }
 
         throw new InvalidInputException(__('bagistoapi::app.admin.eu-withdrawal.not-found'), 422);
+    }
+
+    private function isResendConfirmation(Operation $operation): bool
+    {
+        return str_contains((string) $operation->getUriTemplate(), 'resend-confirmation');
     }
 
     private function handleDecline(int $id, ?string $reason): AdminEuWithdrawal

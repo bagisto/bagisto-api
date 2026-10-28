@@ -1,0 +1,132 @@
+name: Push Collections to Postman
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'collections/**.json'
+      - 'environments/**.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: postman-push-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  configured:
+    runs-on: ubuntu-22.04
+
+    name: Check Postman credentials
+
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+
+    steps:
+      - name: Check
+        id: check
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+          POSTMAN_SHOP_COLLECTION_ID: ${{ secrets.POSTMAN_SHOP_COLLECTION_ID }}
+          POSTMAN_ADMIN_COLLECTION_ID: ${{ secrets.POSTMAN_ADMIN_COLLECTION_ID }}
+          POSTMAN_ENVIRONMENT_ID: ${{ secrets.POSTMAN_ENVIRONMENT_ID }}
+        run: |
+          missing=
+          for name in POSTMAN_API_KEY POSTMAN_SHOP_COLLECTION_ID POSTMAN_ADMIN_COLLECTION_ID POSTMAN_ENVIRONMENT_ID; do
+            if [ -z "${!name}" ]; then
+              missing="$missing $name"
+            fi
+          done
+
+          if [ -n "$missing" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Postman publishing is not configured, so nothing is pushed. Add these repository secrets to enable it:$missing"
+            exit 0
+          fi
+
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+  push:
+    needs: configured
+
+    if: needs.configured.outputs.ready == 'true'
+
+    runs-on: ubuntu-22.04
+
+    name: ${{ matrix.label }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Shop collection
+            resource: collections
+            wrapper: collection
+            file: collections/Bagisto-Shop-API.postman_collection.json
+            secret: POSTMAN_SHOP_COLLECTION_ID
+          - label: Admin collection
+            resource: collections
+            wrapper: collection
+            file: collections/Bagisto-Admin-API.postman_collection.json
+            secret: POSTMAN_ADMIN_COLLECTION_ID
+          - label: Environment
+            resource: environments
+            wrapper: environment
+            file: environments/Bagisto.postman_environment.json
+            secret: POSTMAN_ENVIRONMENT_ID
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Refuse to publish a credential
+        env:
+          FILE: ${{ matrix.file }}
+        run: |
+          if grep -q 'pk_storefront_' "$FILE"; then
+            echo "::error file=$FILE::Contains a storefront key. Refusing to publish."
+            exit 1
+          fi
+
+      - name: Push to Postman
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+          TARGET_ID: ${{ secrets[matrix.secret] }}
+          FILE: ${{ matrix.file }}
+          WRAPPER: ${{ matrix.wrapper }}
+          RESOURCE: ${{ matrix.resource }}
+          SECRET_NAME: ${{ matrix.secret }}
+        run: |
+          if [ -z "$TARGET_ID" ]; then
+            echo "::error::Repository secret $SECRET_NAME is not set."
+            exit 1
+          fi
+
+          # The admin collection is ~1.5 MB, so the payload goes through a file rather than an
+          # argv-sized -d string.
+          python3 - > payload.json <<'PY'
+          import json, os
+
+          body = json.load(open(os.environ['FILE']))
+
+          print(json.dumps({os.environ['WRAPPER']: body}))
+          PY
+
+          curl -sS -X PUT "https://api.getpostman.com/$RESOURCE/$TARGET_ID" \
+            -H "X-Api-Key: $POSTMAN_API_KEY" \
+            -H "Content-Type: application/json" \
+            --data @payload.json \
+            -o response.json
+
+          python3 - <<'PY'
+          import json, os, sys
+
+          data = json.load(open('response.json'))
+
+          if 'error' in data:
+              sys.exit('Postman API error: ' + json.dumps(data['error']))
+
+          print('Pushed', os.environ['FILE'])
+          PY

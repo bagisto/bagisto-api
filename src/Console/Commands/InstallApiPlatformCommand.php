@@ -179,12 +179,6 @@ class InstallApiPlatformCommand extends Command
 
         $composer = json_decode($this->files->get($composerPath), true);
 
-        if (! isset($composer['autoload']['psr-4'])) {
-            $composer['autoload']['psr-4'] = [];
-        }
-
-        $composer['autoload']['psr-4']['Webkul\\GraphQL\\'] = 'packages/Webkul/GraphQL/src';
-
         if (! isset($composer['extra']['laravel']['dont-discover'])) {
             $composer['extra']['laravel']['dont-discover'] = [];
         }

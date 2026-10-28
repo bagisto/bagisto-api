@@ -53,7 +53,9 @@ class AdminReturnProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof AdminCreateReturnInput) {
-            return $this->handleCreate($this->inputToArray($data), []);
+            $customAttributes = $context['args']['input']['customAttributes'] ?? $data->custom_attributes ?? [];
+
+            return $this->handleCreate($this->inputToArray($data), [], (array) $customAttributes);
         }
 
         if ($data instanceof AdminReturnUpdateStatusInput) {
@@ -92,13 +94,13 @@ class AdminReturnProcessor implements ProcessorInterface
 
             $images = request()->hasFile('images') ? request()->file('images') : [];
 
-            return $this->handleCreate($input, $images);
+            return $this->handleCreate($input, $images, (array) request('customAttributes', []));
         }
 
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }
 
-    private function handleCreate(array $input, array $images): AdminReturn
+    private function handleCreate(array $input, array $images, array $customAttributes = []): AdminReturn
     {
         $this->authorizedAdmin('sales.rma.requests.create', 'bagistoapi::app.admin.rma.no-permission');
 
@@ -153,8 +155,6 @@ class AdminReturnProcessor implements ProcessorInterface
         if (! empty($images)) {
             $this->rmaImageRepository->manageImages($images, $rma);
         }
-
-        $customAttributes = request('customAttributes', []);
 
         if (! empty($customAttributes)) {
             $this->rmaAdditionalFieldRepository->createManyForRma($rma->id, $customAttributes);

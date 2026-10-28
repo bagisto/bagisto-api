@@ -183,6 +183,13 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
 )]
 class ProductDownloadableLink extends BaseProductDownloadableLink
 {
+    /**
+     * Paid link content is served to buyers only, never with the catalog.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = ['url', 'file', 'file_name'];
+
     public function toArray(): array
     {
         $array = parent::toArray();
@@ -274,7 +281,7 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $this->getFormattedPriceAttribute();
     }
 
-    #[ApiProperty(writable: true, readable: true)]
+    #[ApiProperty(writable: true, readable: false)]
     #[Groups(['mutation'])]
     public function getUrl(): ?string
     {

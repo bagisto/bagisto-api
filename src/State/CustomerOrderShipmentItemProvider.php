@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerOrderShipmentItem;
-use Webkul\Customer\Models\Customer;
 
 /**
  * Scopes shipment-items to the authenticated customer via shipment → order.
@@ -47,8 +46,7 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
 
         $item = CustomerOrderShipmentItem::query()
             ->whereHas('shipment.order', function ($q) use ($customer) {
-                $q->where('customer_id', $customer->id)
-                    ->where('customer_type', Customer::class);
+                $q->where('customer_id', $customer->id);
             })
             ->find($id);
 
@@ -74,8 +72,7 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
 
         $query = CustomerOrderShipmentItem::query()
             ->whereHas('shipment.order', function ($q) use ($customer) {
-                $q->where('customer_id', $customer->id)
-                    ->where('customer_type', Customer::class);
+                $q->where('customer_id', $customer->id);
             })
             ->orderBy('id', 'desc');
 

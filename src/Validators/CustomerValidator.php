@@ -23,7 +23,7 @@ class CustomerValidator
         $rules = [
             'first_name' => 'string|required',
             'last_name' => 'string|required',
-            'email' => 'email|required|unique:customers,email',
+            'email' => 'email|required|unique:customers,email,NULL,id,channel_id,'.$this->channelId($customer),
             'phone' => 'string|nullable|unique:customers,phone',
             'password' => 'min:6|required',
         ];
@@ -51,6 +51,17 @@ class CustomerValidator
     }
 
     /**
+     * The channel a customer belongs to.
+     *
+     * The same address may register on each channel of a store, so an email is unique per
+     * channel rather than across the table.
+     */
+    protected function channelId(Customer $customer): int
+    {
+        return (int) ($customer->channel_id ?: core()->getCurrentChannel()->id);
+    }
+
+    /**
      * Validate customer for update
      * Only validates fields that have been changed (non-null values)
      *
@@ -74,7 +85,7 @@ class CustomerValidator
 
         if ($customer->email !== null) {
             $data['email'] = $customer->email;
-            $rules['email'] = 'email|unique:customers,email,'.$customer->id;
+            $rules['email'] = 'email|unique:customers,email,'.$customer->id.',id,channel_id,'.$this->channelId($customer);
         }
 
         if ($customer->phone !== null) {

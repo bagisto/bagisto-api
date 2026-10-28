@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Admin\Models\AdminRefund;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminRefund;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Sales\Models\Refund;
@@ -13,11 +14,9 @@ class AdminRefundProvider implements ProviderInterface
 {
     use BuildsAdminRefund;
 
-    public function __construct(protected AdminOrderActionGuard $guard) {}
-
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminRefund
     {
-        $this->guard->resolveAdmin();
+        AdminReadPermissions::authorize($operation, AdminRefund::class);
 
         $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
 

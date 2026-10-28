@@ -2,11 +2,20 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Checkout\Models\CartAddress;
 
 class CheckoutAddressTest extends RestApiTestCase
 {
+    private function guestPostWithToken(string $url, string $token, array $payload): TestResponse
+    {
+        return $this->withHeaders([
+            ...$this->storefrontHeaders(),
+            'Authorization' => 'Bearer '.$token,
+        ])->postJson($url, $payload);
+    }
+
     /**
      * Add product to customer's cart via REST so we have an active cart to set addresses on.
      */
@@ -20,6 +29,70 @@ class CheckoutAddressTest extends RestApiTestCase
         ]);
 
         $response->assertSuccessful();
+    }
+
+    public function test_address_response_returns_the_real_guest_cart_token(): void
+    {
+        $this->seedRequiredData();
+
+        $tokenResponse = $this->publicPost('/api/shop/cart-tokens', ['createNew' => true]);
+
+        expect($tokenResponse->getStatusCode())->toBeIn([200, 201]);
+
+        $cartToken = $tokenResponse->json('cartToken') ?? $tokenResponse->json('sessionToken');
+
+        $this->assertNotEmpty($cartToken);
+
+        $product = $this->createTestProduct()['product'];
+
+        $this->guestPostWithToken('/api/shop/add-product-in-cart', $cartToken, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ])->assertSuccessful();
+
+        $response = $this->guestPostWithToken('/api/shop/checkout-addresses', $cartToken, [
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
+            'billingPhoneNumber' => '2125551234',
+            'useForShipping' => true,
+        ]);
+
+        $response->assertCreated();
+
+        expect($response->json('cartToken'))->toBe($cartToken);
+    }
+
+    public function test_address_response_returns_no_cart_token_for_a_customer_cart(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer([
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+        $this->addProductToCart($customer);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/checkout-addresses', [
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
+            'billingPhoneNumber' => '2125551234',
+            'useForShipping' => true,
+        ]);
+
+        $response->assertCreated();
+
+        expect($response->json('cartToken'))->toBeNull();
+        expect($response->json('cartToken'))->not->toBe((string) $customer->id);
     }
 
     public function test_set_checkout_address_with_use_for_shipping(): void

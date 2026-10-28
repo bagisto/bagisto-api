@@ -10,7 +10,6 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 
 /**
  * Placeholder provider for PUT / DELETE on AdminSettingsTheme.
- * The real lookup lives in the processor.
  */
 class AdminSettingsThemeWriteProvider implements ProviderInterface
 {

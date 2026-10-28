@@ -143,6 +143,11 @@ class CustomerInvoice extends Model
      */
     public function addresses(): HasMany
     {
+        // GraphQL builds the invoice from its id alone, so the order id the relation joins on is loaded first.
+        if ($this->getKey() && ! array_key_exists('order_id', $this->getAttributes())) {
+            $this->setAttribute('order_id', static::query()->whereKey($this->getKey())->value('order_id'));
+        }
+
         return $this->hasMany(CustomerInvoiceAddress::class, 'order_id', 'order_id')
             ->whereIn('address_type', ['order_billing', 'order_shipping']);
     }

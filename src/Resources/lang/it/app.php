@@ -2,6 +2,25 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'L\'ID del rimborso cliente è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/customer-refunds/1" o ID numerico',
+            'not-found' => 'Rimborso cliente con ID ":id" non trovato',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'Il riordino è disattivato nelle impostazioni del negozio.',
+            'cannot-reorder' => 'Questo ordine non può essere riordinato (ordine ospite o uno o più prodotti non sono più disponibili per l\'acquisto).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'Il messaggio non può superare :max caratteri.',
+        ],
+
+        'headers' => [
+            'unknown-channel' => 'Il canale ":code" nell\'intestazione X-Channel non esiste.',
+        ],
+
         'cart' => [
             'authentication-required' => 'È richiesto un token di autenticazione',
             'invalid-token' => 'Token di autenticazione non valido o scaduto',
@@ -102,6 +121,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'Prodotto non trovato',
             'not-found-with-sku' => 'No product found with SKU',
             'not-found-with-url-key' => 'No product found with URL key',
             'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
@@ -130,8 +150,22 @@ return [
         'login' => [
             'invalid-credentials' => 'Email o password non validi',
             'account-suspended' => 'Il tuo account è stato sospeso',
+            'account-inactive' => 'La tua attivazione richiede l’approvazione dell’amministratore',
+            'email-not-verified' => 'Verifica prima il tuo account email.',
             'successful' => 'Accesso effettuato con successo',
             'invalid-request' => 'Richiesta di accesso non valida',
+        ],
+
+        'social-login' => [
+            'signed-in' => 'Accesso effettuato con successo.',
+            'token-required' => 'È richiesto un token di accesso social.',
+            'invalid-token' => 'Il token di accesso social non è valido o è scaduto. Riprova.',
+            'wrong-audience' => 'Questo token è stato emesso per un’altra app.',
+            'not-configured' => 'Questo provider di accesso social non è configurato. Contatta l’assistenza.',
+            'email-required' => 'Il provider non ha condiviso un indirizzo email. Registrati con l’email.',
+            'account-inactive' => 'La tua attivazione richiede l’approvazione dell’amministratore',
+            'provider-not-supported' => 'Questo provider di accesso social non è supportato.',
+            'provider-disabled' => 'Questo provider di accesso social non è abilitato.',
         ],
 
         'checkout' => [
@@ -147,6 +181,8 @@ return [
             'shipping-method-error' => 'Errore durante il salvataggio del metodo di spedizione',
             'payment-method-required' => 'Il metodo di pagamento è obbligatorio',
             'invalid-payment-method' => 'Metodo di pagamento non valido o non disponibile',
+            'paypal-order-id-required' => 'L\'ID dell\'ordine PayPal è obbligatorio per confermare un pagamento con il pulsante intelligente PayPal.',
+            'paypal-smart-button-payment-flow' => 'I pagamenti con il pulsante intelligente PayPal vengono acquisiti tramite checkout-payments/initiate e checkout-payments/confirm, non effettuando direttamente l\'ordine.',
             'payment-method-save-failed' => 'Impossibile salvare il metodo di pagamento',
             'payment-method-saved' => 'Metodo di pagamento salvato con successo',
             'payment-method-error' => 'Errore durante il salvataggio del metodo di pagamento',
@@ -157,6 +193,7 @@ return [
             'account-suspended' => 'Il tuo account è stato sospeso. Contatta l\'assistenza.',
             'account-inactive' => 'Il tuo account non è attivo. Contatta l\'assistenza.',
             'minimum-order-not-met' => 'L\'importo minimo dell\'ordine è :amount',
+            'guest-checkout-not-allowed' => 'Accedi per completare l\'acquisto. Il checkout come ospite non è disponibile per questo carrello.',
             'email-required' => 'L\'indirizzo email è obbligatorio per la creazione dell\'ordine',
             'unknown-operation' => 'Operazione di checkout sconosciuta',
         ],
@@ -199,6 +236,11 @@ return [
             'product-not-found' => 'Prodotto non trovato',
             'customer-not-found' => 'Cliente non trovato',
             'already-exists' => 'Questo prodotto è già nel tuo elenco di confronto',
+            'disabled' => 'Il confronto dei prodotti è disattivato per questo negozio.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'La lista dei desideri è disattivata per questo negozio.',
         ],
 
         'downloadable-product' => [
@@ -229,6 +271,7 @@ return [
 
             'acl' => [
                 'title' => 'Cronologia modifiche API',
+                'view' => 'Visualizza',
                 'delete' => 'Elimina cronologia',
             ],
 
@@ -289,6 +332,7 @@ return [
 
         'acl' => [
             'title' => 'Integrazione',
+            'view' => 'Visualizza',
             'create' => 'Crea integrazione',
             'edit' => 'Modifica integrazione',
             'delete' => 'Revoca token di integrazione',

@@ -307,9 +307,9 @@ export const SHOP_DOCS_QUERIES = {
       }
     }
   `,
-  getThemeCustomizations: `
-    query themeCustomizations($first: Int, $after: String) {
-      themeCustomizations(first: $first, after: $after) {
+  getSections: `
+    query sections($first: Int, $after: String) {
+      sections(first: $first, after: $after) {
         edges {
           node {
             id
@@ -334,9 +334,9 @@ export const SHOP_DOCS_QUERIES = {
       }
     }
   `,
-  getThemeCustomization: `
+  getSection: `
     query getThemeCustomisation($id: ID!) {
-      themeCustomization(id: $id) {
+      section(id: $id) {
         id
         _id
         type

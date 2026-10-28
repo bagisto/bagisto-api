@@ -23,7 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminDashboardProvider;
  * the `Webkul\Admin\Helpers\Dashboard` helper:
  *
  *   over-all (default), today, stock-threshold-products, total-sales,
- *   total-visitors, top-selling-products, top-customers
+ *   top-selling-products, top-customers
  *
  * `start` / `end` (ISO dates) and `channel` (channel code) narrow the
  * window; the helper falls back to "last 30 days" when omitted.
@@ -43,7 +43,7 @@ use Webkul\BagistoApi\Admin\State\AdminDashboardProvider;
                 summary: 'Admin dashboard statistics',
                 description: 'Returns aggregate stats from `Webkul\\Admin\\Helpers\\Dashboard`. Use `?type=` to choose the stat group; `?start=` + `?end=` (ISO dates) to bound the window; `?channel=` (channel code) to filter by channel.',
                 parameters: [
-                    new Model\Parameter('type', 'query', 'Stat group: over-all (default), today, stock-threshold-products, total-sales, total-visitors, top-selling-products, top-customers.', false, schema: ['type' => 'string', 'enum' => ['over-all', 'today', 'stock-threshold-products', 'total-sales', 'total-visitors', 'top-selling-products', 'top-customers']]),
+                    new Model\Parameter('type', 'query', 'Stat group: over-all (default), today, stock-threshold-products, total-sales, top-selling-products, top-customers.', false, schema: ['type' => 'string', 'enum' => ['over-all', 'today', 'stock-threshold-products', 'total-sales', 'top-selling-products', 'top-customers']]),
                     new Model\Parameter('start', 'query', 'Start date (YYYY-MM-DD). Defaults to 30 days ago.', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('end', 'query', 'End date (YYYY-MM-DD). Defaults to today.', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('channel', 'query', 'Channel code filter.', false, schema: ['type' => 'string']),

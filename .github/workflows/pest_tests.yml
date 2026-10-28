@@ -12,16 +12,15 @@ concurrency:
 jobs:
   pest_tests:
     runs-on: ubuntu-22.04
-    continue-on-error: true
 
     strategy:
       matrix:
         php-versions: ['8.3']
 
-    name: PHP ${{ matrix.php-versions }} | pest against Bagisto v2.4.7
+    name: PHP ${{ matrix.php-versions }} | pest against Bagisto v2.4.10
 
     env:
-      BAGISTO_VERSION: v2.4.7
+      BAGISTO_VERSION: v2.4.10
 
     services:
       mysql:
@@ -51,7 +50,8 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
           extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip
-          ini-values: error_reporting=E_ALL
+          ini-values: error_reporting=E_ALL, memory_limit=-1
+          coverage: none
           tools: composer:v2
 
       - name: Install Bagisto composer dependencies
@@ -59,10 +59,12 @@ jobs:
         run: composer install --no-interaction --prefer-dist
 
       - name: Wire plugin into Bagisto via composer path repository
-        # AFTER composer install: otherwise composer.lock replay drops the require.
         working-directory: bagisto
         run: |
-          composer config repositories.bagisto-api path ../plugin
+          # Install the package as a real directory rather than a symlink, which is how it is
+          # installed everywhere else: a symlinked path repository leaves the autoloader and
+          # Laravel's package discovery resolving the same classes through two paths.
+          composer config repositories.bagisto-api '{"type": "path", "url": "../plugin", "options": {"symlink": false}}' --json
           composer require bagisto/bagisto-api:@dev --no-interaction --no-progress
 
       - name: Configure environment
@@ -76,10 +78,14 @@ jobs:
           sed -i "s|^\(DB_DATABASE=\s*\).*$|\1bagisto|" .env
           sed -i "s|^\(DB_USERNAME=\s*\).*$|\1root|" .env
           sed -i "s|^\(DB_PASSWORD=\s*\).*$|\1root|" .env
-          # No Redis service in CI; tests bypass rate-limit middleware anyway.
+          # Laravel 12 reads CACHE_STORE; CACHE_DRIVER alone leaves the app cache on `file`,
+          # which is where API_PLATFORM_CACHE keeps the metadata pool — one flush of the app
+          # cache would then take the metadata of every parallel worker with it.
+          grep -q '^CACHE_STORE=' .env && sed -i "s|^CACHE_STORE=.*|CACHE_STORE=array|" .env || echo "CACHE_STORE=array" >> .env
           grep -q '^CACHE_DRIVER=' .env && sed -i "s|^CACHE_DRIVER=.*|CACHE_DRIVER=array|" .env || echo "CACHE_DRIVER=array" >> .env
           grep -q '^SESSION_DRIVER=' .env && sed -i "s|^SESSION_DRIVER=.*|SESSION_DRIVER=array|" .env || echo "SESSION_DRIVER=array" >> .env
           grep -q '^QUEUE_CONNECTION=' .env && sed -i "s|^QUEUE_CONNECTION=.*|QUEUE_CONNECTION=sync|" .env || echo "QUEUE_CONNECTION=sync" >> .env
+          grep -q '^API_PLATFORM_CACHE=' .env && sed -i "s|^API_PLATFORM_CACHE=.*|API_PLATFORM_CACHE=file|" .env || echo "API_PLATFORM_CACHE=file" >> .env
           cat .env
 
       - name: Run Bagisto installer
@@ -100,6 +106,17 @@ jobs:
             file_put_contents($file, json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
           '
           composer dump-autoload --no-interaction
+
+      - name: Suppress api-platform auto-discovery and clear caches
+        working-directory: bagisto
+        run: |
+          php -r '$f="composer.json";$j=json_decode(file_get_contents($f),true);$d=$j["extra"]["laravel"]["dont-discover"]??[];if(!in_array("api-platform/laravel",$d,true))$d[]="api-platform/laravel";$j["extra"]["laravel"]["dont-discover"]=$d;file_put_contents($f,json_encode($j,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)."\n");'
+          composer dump-autoload --no-interaction
+          php artisan optimize:clear
+
+      - name: Warm the API metadata cache
+        working-directory: bagisto
+        run: php artisan bagisto-api-platform:warm-cache
 
       - name: Run GraphQL APIs Pest (plugin suite)
         id: graphql_tests
@@ -128,8 +145,6 @@ jobs:
         continue-on-error: true
         run: vendor/bin/pest --parallel --processes=4 --colors=always vendor/bagisto/bagisto-api/tests/Feature/Admin/RestApi
         
-      # Every suite runs even when an earlier one is red (continue-on-error above),
-      # then this step fails the job if any of them did not pass.
       - name: Suite results
         if: always()
         run: |
@@ -137,3 +152,11 @@ jobs:
           echo "REST:           ${{ steps.rest_tests.outcome }}"
           echo "Admin GraphQL:  ${{ steps.admin_graphql_tests.outcome }}"
           echo "Admin REST:     ${{ steps.admin_rest_tests.outcome }}"
+
+          if [ "${{ steps.graphql_tests.outcome }}" != "success" ] \
+            || [ "${{ steps.rest_tests.outcome }}" != "success" ] \
+            || [ "${{ steps.admin_graphql_tests.outcome }}" != "success" ] \
+            || [ "${{ steps.admin_rest_tests.outcome }}" != "success" ]; then
+            echo "::error::One or more Pest suites failed."
+            exit 1
+          fi

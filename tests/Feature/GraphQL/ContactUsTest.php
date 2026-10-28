@@ -107,4 +107,35 @@ class ContactUsTest extends GraphQLTestCase
             $response->json('data.createContactUs.clientMutationId')
         );
     }
+
+    public function test_create_contact_us_rejects_invalid_phone_number(): void
+    {
+        Mail::fake();
+
+        $query = <<<'GQL'
+            mutation createContactUs($input: createContactUsInput!) {
+                createContactUs(input: $input) {
+                    contactUs {
+                        success
+                        message
+                    }
+                }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, [
+            'input' => [
+                'name' => 'Jane Smith',
+                'email' => 'jane.smith@example.com',
+                'contact' => 'call me maybe',
+                'message' => 'Question about an order.',
+            ],
+        ]);
+
+        $response->assertSuccessful();
+
+        expect($response->json('errors'))->not()->toBeNull();
+
+        Mail::assertNothingQueued();
+    }
 }

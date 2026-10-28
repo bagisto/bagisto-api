@@ -4,10 +4,11 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
+use Webkul\BagistoApi\Models\Customer as ApiCustomer;
 use Webkul\BagistoApi\Models\CustomerProfile;
 use Webkul\Customer\Models\Customer;
 
@@ -53,24 +54,13 @@ class CustomerProfileCollectionProvider implements ProviderInterface
     private function getCustomerFromToken(string $token): ?Customer
     {
         try {
-            $tokenParts = explode('|', $token);
+            $personalAccessToken = PersonalAccessToken::findToken($token);
 
-            if (count($tokenParts) !== 2) {
-                return null;
-            }
-
-            $tokenId = $tokenParts[0];
-
-            $personalAccessToken = DB::table('personal_access_tokens')
-                ->where('id', $tokenId)
-                ->whereIn('tokenable_type', [Customer::class, \Webkul\BagistoApi\Models\Customer::class])
-                ->where(function ($query) {
-                    $query->whereNull('expires_at')
-                        ->orWhere('expires_at', '>', now());
-                })
-                ->first();
-
-            if (! $personalAccessToken) {
+            if (
+                ! $personalAccessToken
+                || ! in_array($personalAccessToken->tokenable_type, [Customer::class, ApiCustomer::class], true)
+                || ($personalAccessToken->expires_at && $personalAccessToken->expires_at->isPast())
+            ) {
                 return null;
             }
 

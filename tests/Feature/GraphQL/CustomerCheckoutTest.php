@@ -2,7 +2,12 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
+use Webkul\CartRule\Exceptions\CouponUsageLimitExceededException;
+use Webkul\Checkout\Models\Cart;
+use Webkul\Sales\Models\Order;
 
 class CustomerCheckoutTest extends GraphQLTestCase
 {
@@ -387,6 +392,8 @@ class CustomerCheckoutTest extends GraphQLTestCase
                 checkoutOrder {
                   id
                   orderId
+                  success
+                  message
                 }
               }
             }
@@ -401,6 +408,10 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $this->assertNotNull($data, 'checkout order response is null');
         $this->assertArrayHasKey('id', $data);
         $this->assertArrayHasKey('orderId', $data);
+
+        // success/message must be populated on the order-placed path (not null).
+        $this->assertTrue($data['success']);
+        $this->assertNotEmpty($data['message']);
     }
 
     /**
@@ -723,6 +734,27 @@ class CustomerCheckoutTest extends GraphQLTestCase
     /**
      * Place order without token returns error.
      */
+    public function test_place_order_drops_a_spent_coupon(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $token = $customerData['token'];
+
+        $this->addProductToCart($token);
+        $this->setCheckoutAddress($token);
+        $this->setShippingMethod($token);
+        $this->setPaymentMethod($token);
+
+        $cart = Cart::where('customer_id', $customerData['customer']->id)->where('is_active', 1)->firstOrFail();
+        $cart->update(['coupon_code' => 'SPENT']);
+
+        Event::listen('checkout.order.save.before', fn () => throw new CouponUsageLimitExceededException('Coupon used up.'));
+
+        $response = $this->graphQL('mutation { createCheckoutOrder(input: {}) { checkoutOrder { orderId } } }', [], $this->customerHeaders($token));
+
+        expect($response->json('errors.0.message'))->toBe(trans('shop::app.checkout.coupon.usage-limit-exceeded'));
+        expect($cart->fresh()->coupon_code)->toBeNull();
+    }
+
     public function test_place_order_without_token_returns_error(): void
     {
         $mutation = <<<'GQL'
@@ -816,6 +848,110 @@ class CustomerCheckoutTest extends GraphQLTestCase
     /**
      * Helper to set checkout address
      */
+    private function enableStripe(): void
+    {
+        foreach ([
+            'active' => '1',
+            'sandbox' => '1',
+            'api_test_key' => 'sk_test_x',
+            'api_test_publishable_key' => 'pk_test_x',
+        ] as $field => $value) {
+            $code = "sales.payment_methods.stripe.{$field}";
+
+            DB::table('core_config')->where('code', $code)->delete();
+
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+    }
+
+    public function test_payment_method_resolves_a_gateway_url_for_a_redirect_gateway(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $token = $customerData['token'];
+
+        $this->addProductToCart($token);
+        $this->setCheckoutAddress($token);
+        $this->setShippingMethod($token);
+        $this->enableStripe();
+
+        $query = <<<'GQL'
+            mutation createCheckoutPaymentMethod($paymentMethod: String!) {
+              createCheckoutPaymentMethod(input: {paymentMethod: $paymentMethod}) {
+                checkoutPaymentMethod {
+                  success
+                  paymentGatewayUrl
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, ['paymentMethod' => 'stripe'], $this->customerHeaders($token));
+
+        $response->assertSuccessful();
+
+        $this->assertNull($response->json('errors'));
+
+        $data = $response->json('data.createCheckoutPaymentMethod.checkoutPaymentMethod');
+
+        $this->assertTrue($data['success']);
+        $this->assertStringContainsString('/stripe/redirect', (string) $data['paymentGatewayUrl']);
+    }
+
+    public function test_place_order_returns_a_redirect_and_creates_no_order_for_a_redirect_gateway(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $token = $customerData['token'];
+
+        $this->addProductToCart($token);
+        $this->setCheckoutAddress($token);
+        $this->setShippingMethod($token);
+        $this->enableStripe();
+        $this->setPaymentMethod($token, 'stripe');
+
+        $ordersBefore = Order::count();
+
+        $query = <<<'GQL'
+            mutation createCheckoutOrder {
+              createCheckoutOrder(input:{}) {
+                checkoutOrder {
+                  orderId
+                  redirect
+                  redirectUrl
+                  success
+                  message
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, [], $this->customerHeaders($token));
+
+        $response->assertSuccessful();
+
+        $this->assertNull($response->json('errors'));
+
+        $data = $response->json('data.createCheckoutOrder.checkoutOrder');
+
+        $this->assertTrue($data['redirect']);
+        $this->assertStringContainsString('/stripe/redirect', (string) $data['redirectUrl']);
+        $this->assertNull($data['orderId']);
+
+        // The redirect path must still be a populated, unambiguous result — not all-null.
+        $this->assertTrue($data['success']);
+        $this->assertNotEmpty($data['message']);
+
+        $this->assertSame($ordersBefore, Order::count());
+    }
+
     private function setCheckoutAddress(string $token): void
     {
         $headers = $this->customerHeaders($token);
@@ -909,7 +1045,7 @@ class CustomerCheckoutTest extends GraphQLTestCase
     /**
      * Helper to set payment method
      */
-    private function setPaymentMethod(string $token): void
+    private function setPaymentMethod(string $token, string $method = 'moneytransfer'): void
     {
         $headers = $this->customerHeaders($token);
 
@@ -936,7 +1072,7 @@ class CustomerCheckoutTest extends GraphQLTestCase
         GQL;
 
         $variables = [
-            'paymentMethod' => 'moneytransfer',
+            'paymentMethod' => $method,
             'successUrl' => 'https://myapp.com/payment/success',
             'failureUrl' => 'https://myapp.com/payment/failure',
             'cancelUrl' => 'https://myapp.com/payment/cancel',
@@ -945,5 +1081,44 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $response = $this->graphQL($query, $variables, $headers);
 
         $response->assertSuccessful();
+    }
+
+    /**
+     * The address step applies the storefront's address rules, so an invalid phone number is
+     * refused and nothing is written to the cart.
+     */
+    public function test_set_checkout_address_with_invalid_phone_returns_error(): void
+    {
+        $token = $this->createTestCustomer()['token'];
+
+        $this->addProductToCart($token);
+
+        $mutation = <<<'GQL'
+            mutation {
+              createCheckoutAddress(
+                input: {
+                  billingFirstName: "John"
+                  billingLastName: "Doe"
+                  billingEmail: "john@example.com"
+                  billingAddress: "123 Main St"
+                  billingCity: "Los Angeles"
+                  billingCountry: "IN"
+                  billingState: "UP"
+                  billingPostcode: "201301"
+                  billingPhoneNumber: "not-a-phone"
+                  useForShipping: true
+                }
+              ) {
+                checkoutAddress { _id success }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, [], $this->customerHeaders($token));
+
+        $response->assertSuccessful();
+
+        $this->assertNotEmpty($response->json('errors'));
+        $this->assertStringContainsString('billingPhoneNumber', (string) $response->json('errors.0.message'));
     }
 }

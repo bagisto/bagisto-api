@@ -48,6 +48,18 @@ class MarketingCartRuleTest extends AdminApiTestCase
         ], $overrides));
     }
 
+    public function test_query_condition_attributes(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGraphQL('{ adminMarketingCartRuleConditionAttributes { attributes operators } }', [], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect(array_column($response->json('data.adminMarketingCartRuleConditionAttributes.attributes'), 'key'))->toBe(['cart', 'cart_item', 'product']);
+        expect(array_column($response->json('data.adminMarketingCartRuleConditionAttributes.operators.select'), 'operator'))->toBe(['==', '!=']);
+    }
+
     public function test_query_listing(): void
     {
         $admin = $this->createAdmin();

@@ -19,7 +19,7 @@ use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Dto\CreateProductReviewInput;
 use Webkul\BagistoApi\Dto\UpdateProductReviewInput;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\BagistoApi\Resolver\ProductReviewQueryResolver;
 use Webkul\BagistoApi\State\ProductReviewProcessor;
 use Webkul\BagistoApi\State\ProductReviewProvider;
 use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
@@ -27,6 +27,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'ProductReview',
+    normalizationContext: ['skip_null_values' => false],
     uriTemplate: '/reviews',
     operations: [
         new GetCollection(
@@ -38,7 +39,6 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                 description: 'Returns product reviews. Defaults to `approved` reviews only; pass `status` to override. Supports filtering by `product_id`, `status`, and `rating`, with `page` + `per_page` (alias `limit`, max 50) pagination. Mirrors the GraphQL `productReviews` query.',
                 parameters: [
                     new Parameter(name: 'product_id', in: 'query', description: 'Filter by product ID', required: false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Parameter(name: 'status', in: 'query', description: 'Filter by status. Defaults to `approved` when omitted.', required: false, schema: ['type' => 'string', 'enum' => ['approved', 'pending'], 'example' => 'approved']),
                     new Parameter(name: 'rating', in: 'query', description: 'Filter by star rating (1-5)', required: false, schema: ['type' => 'integer', 'minimum' => 1, 'maximum' => 5, 'example' => 5]),
                     new Parameter(name: 'page', in: 'query', description: 'Page number (1-based)', required: false, schema: ['type' => 'integer', 'default' => 1, 'example' => 1]),
                     new Parameter(name: 'per_page', in: 'query', description: 'Items per page (alias: `limit`). Default 30, max 50.', required: false, schema: ['type' => 'integer', 'default' => 30, 'maximum' => 50, 'example' => 10]),
@@ -68,6 +68,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
         ),
         new Get(
             uriTemplate: '/reviews/{id}',
+            provider: ProductReviewProvider::class,
             openapi: new Operation(
                 tags: ['Product'],
                 summary: 'Get a single product review by ID',
@@ -209,6 +210,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
         ),
         new Delete(
             uriTemplate: '/reviews/{id}',
+            processor: ProductReviewProcessor::class,
             openapi: new Operation(
                 tags: ['Customer Review'],
                 summary: 'Delete a product review',
@@ -225,7 +227,6 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
             provider: ProductReviewProvider::class,
             args: [
                 'product_id' => ['type' => 'Int', 'description' => 'Filter reviews by product ID'],
-                'status' => ['type' => 'String', 'description' => 'Filter reviews by status (pending, approved, rejected)'],
                 'rating' => ['type' => 'Int', 'description' => 'Filter reviews by rating (1-5 stars)'],
                 'first' => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
                 'last' => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
@@ -233,7 +234,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                 'before' => ['type' => 'String', 'description' => 'Cursor to start pagination before'],
             ]
         ),
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(resolver: ProductReviewQueryResolver::class),
         new Mutation(
             name: 'create',
             input: CreateProductReviewInput::class,
@@ -250,6 +251,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
         ),
         new DeleteMutation(
             name: 'delete',
+            processor: ProductReviewProcessor::class,
             description: 'Delete a product review'
         ),
     ]
@@ -257,6 +259,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'ProductReview',
+    normalizationContext: ['skip_null_values' => false],
     uriTemplate: '/products/{productId}/reviews',
     uriVariables: [
         'productId' => new Link(
@@ -273,7 +276,6 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                 summary: 'List reviews for a product',
                 description: 'Returns reviews scoped to the given product ID. Defaults to `approved` reviews only; pass `status` to override. Supports filtering by `status` and `rating`, with `page` + `per_page` (alias `limit`, max 50) pagination.',
                 parameters: [
-                    new Parameter(name: 'status', in: 'query', description: 'Filter by status. Defaults to `approved` when omitted.', required: false, schema: ['type' => 'string', 'enum' => ['approved', 'pending'], 'example' => 'approved']),
                     new Parameter(name: 'rating', in: 'query', description: 'Filter by star rating (1-5)', required: false, schema: ['type' => 'integer', 'minimum' => 1, 'maximum' => 5, 'example' => 5]),
                     new Parameter(name: 'page', in: 'query', description: 'Page number (1-based)', required: false, schema: ['type' => 'integer', 'default' => 1, 'example' => 1]),
                     new Parameter(name: 'per_page', in: 'query', description: 'Items per page (alias: `limit`). Default 30, max 50.', required: false, schema: ['type' => 'integer', 'default' => 30, 'maximum' => 50, 'example' => 10]),
@@ -306,6 +308,8 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
 )]
 class ProductReview extends \Webkul\Product\Models\ProductReview
 {
+    protected $appends = ['customer_image_url'];
+
     protected $fillable = [
         'comment',
         'title',
@@ -329,11 +333,6 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         'updated_at' => 'datetime',
     ];
 
-    /**
-     * Override __get to expose Eloquent attributes to Serializer
-     * Removing public property declarations ensures this method is called
-     * instead of property reflection accessing empty declared values.
-     */
     public function __get($key)
     {
         if ($this->hasAttribute($key)) {
@@ -348,10 +347,6 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         return $this->getAttribute('id');
     }
 
-    /**
-     * Override __isset to ensure isset() works correctly with __get()
-     * This is critical for Symfony PropertyAccessor which checks isset() before reading.
-     */
     public function __isset($key)
     {
         if ($this->hasAttribute($key)) {
@@ -361,9 +356,6 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         return parent::__isset($key);
     }
 
-    /**
-     * Override __set to handle attribute setting properly
-     */
     public function __set($key, $value)
     {
         if (in_array($key, ['id', 'product_id', 'customer_id', 'title', 'comment', 'rating', 'name', 'email', 'status', 'created_at', 'updated_at'])) {
@@ -371,6 +363,15 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         } else {
             parent::__set($key, $value);
         }
+    }
+
+    /**
+     * The reviewer's profile image URL, or the storefront's default user image for a guest review or a
+     * customer without a photo — the same fallback the storefront account menu uses.
+     */
+    public function getCustomerImageUrlAttribute(): string
+    {
+        return $this->customer?->image_url ?? bagisto_asset('images/user-placeholder.png', 'shop');
     }
 
     public function getAttachmentsAttribute()

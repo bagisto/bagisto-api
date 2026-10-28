@@ -12,13 +12,6 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
 /**
  * Provider for GET /api/admin/settings/themes + adminSettingsThemes GraphQL query.
- *
- * Slim listing — translations are NOT inlined here (would be N+1 across rows).
- * Use the detail endpoint to get the per-locale options blob.
- *
- * Branches: GraphQL → an AdminSettingsTheme Eloquent row per result (the
- * `translations` connection is set empty on listings — detail-only, no N+1);
- * REST → the flat AdminSettingsThemeRestDto.
  */
 class AdminSettingsThemeCollectionProvider extends AbstractAdminCollectionProvider
 {
@@ -106,8 +99,7 @@ class AdminSettingsThemeCollectionProvider extends AbstractAdminCollectionProvid
     }
 
     /**
-     * GraphQL listing row → Eloquent AdminSettingsTheme. The `translations`
-     * relation is set empty (detail-only on the listing — no per-row query).
+     * GraphQL listing row → Eloquent AdminSettingsTheme.
      */
     protected function mapRowToEloquent(object $row): AdminSettingsTheme
     {

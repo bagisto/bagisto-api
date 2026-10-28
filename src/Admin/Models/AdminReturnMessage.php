@@ -31,6 +31,35 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
                 parameters: [
                     new Model\Parameter('return_id', 'query', 'Return (RMA) id', true, schema: ['type' => 'integer']),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The RMA conversation messages, newest first.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id' => 90,
+                                        'rmaId' => 12,
+                                        'message' => 'We have received your package.',
+                                        'isAdmin' => true,
+                                        'attachment' => null,
+                                        'attachmentUrl' => null,
+                                        'createdAt' => '2026-07-20T11:30:00+00:00',
+                                    ],
+                                    [
+                                        'id' => 87,
+                                        'rmaId' => 12,
+                                        'message' => 'The hoodie zipper is broken.',
+                                        'isAdmin' => false,
+                                        'attachment' => 'rma/12/messages/zipper.jpg',
+                                        'attachmentUrl' => 'https://example.com/storage/rma/12/messages/zipper.jpg',
+                                        'createdAt' => '2026-07-20T10:20:00+00:00',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Post(
@@ -55,6 +84,24 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'The created admin message.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 91,
+                                    'rmaId' => 12,
+                                    'message' => 'We have received your package.',
+                                    'isAdmin' => true,
+                                    'attachment' => null,
+                                    'attachmentUrl' => null,
+                                    'createdAt' => '2026-07-20T11:35:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

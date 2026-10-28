@@ -12,7 +12,6 @@ use Webkul\BagistoApi\Admin\Http\Requests\IntegrationUpdateRequest;
 use Webkul\BagistoApi\Admin\Mail\AdminTokenNotification;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Admin\Services\AdminTokenService;
-use Webkul\User\Models\Admin;
 
 class IntegrationController extends Controller
 {
@@ -25,14 +24,26 @@ class IntegrationController extends Controller
 
             return $next($request);
         })->except('revokeViaEmail');
+
+        $this->middleware(function ($request, $next) {
+            abort_unless(bouncer()->hasPermission($this->permissionFor($request->route()?->getActionMethod())), 401);
+
+            return $next($request);
+        })->except('revokeViaEmail');
     }
 
-    /**
-     * Landing route for the Integration menu. Redirects to the Tokens screen,
-     * which lives at its own `/integration/token` URL so the sidebar's
-     * substring-based active-state does not also highlight Tokens when the
-     * History sub-menu (`/integration/history`) is open.
-     */
+    protected function permissionFor(?string $action): string
+    {
+        return match ($action) {
+            'create', 'store' => 'integration.create',
+            'update' => 'integration.edit',
+            'destroy' => 'integration.delete',
+            'generate' => 'integration.generate',
+            'regenerate' => 'integration.regenerate',
+            default => 'integration.view',
+        };
+    }
+
     public function redirectToTokens()
     {
         return redirect()->route('admin.integration.token.index');
@@ -177,13 +188,6 @@ class IntegrationController extends Controller
         ]);
     }
 
-    /**
-     * Revoke a token via the signed, login-free link sent in lifecycle emails.
-     *
-     * The `signed` middleware on this route guarantees the link was issued by
-     * us and has not expired. No admin session is required — the token owner
-     * can act straight from their inbox.
-     */
     public function revokeViaEmail(int $id)
     {
         $token = AdminPersonalAccessToken::with('admin')->findOrFail($id);
@@ -203,13 +207,6 @@ class IntegrationController extends Controller
         ]);
     }
 
-    /**
-     * Email the token owner about a lifecycle event.
-     *
-     * The plaintext token is never included — only the event, metadata, and
-     * (for generate/regenerate) a signed revoke link. Mail failures are logged
-     * but never bubble up: notification must not block token management.
-     */
     protected function notifyOwner(AdminPersonalAccessToken $token, string $event): void
     {
         $token->loadMissing('admin');

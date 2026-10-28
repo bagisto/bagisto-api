@@ -25,4 +25,8 @@ class ContactUsInput
 
     #[Groups(['mutation'])]
     public ?string $message = null;
+
+    #[ApiProperty(description: 'reCAPTCHA Enterprise token, required when the store turns captcha on.')]
+    #[Groups(['mutation'])]
+    public ?string $recaptchaToken = null;
 }

@@ -264,6 +264,22 @@ class SettingsRoleTest extends AdminApiTestCase
         $this->assertDatabaseHas('roles', ['id' => $id, 'name' => 'After']);
     }
 
+    public function test_update_refuses_to_take_full_access_from_the_last_full_access_admin(): void
+    {
+        $admin = $this->createAdmin();
+        $this->makeOnlyFullAccessAdmin($admin);
+
+        $response = $this->adminPut($admin, '/api/admin/settings/roles/1', [
+            'name' => 'Administrator',
+            'description' => 'd',
+            'permission_type' => 'custom',
+            'permissions' => ['dashboard'],
+        ]);
+
+        expect($response->getStatusCode())->toBe(422);
+        expect(Role::find(1)->permission_type)->toBe('all');
+    }
+
     public function test_update_to_all_clears_permissions(): void
     {
         $admin = $this->createAdmin();

@@ -4,6 +4,8 @@ namespace Webkul\BagistoApi\Dto;
 
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\BagistoApi\Facades\TokenHeaderFacade;
+use Webkul\BagistoApi\Models\GuestCartTokens;
 use Webkul\Checkout\Models\Cart;
 use Webkul\Tax\Facades\Tax;
 
@@ -95,6 +97,21 @@ class CartData
     #[Groups(['query', 'mutation'])]
     #[ApiProperty(description: 'Applied coupon code')]
     public ?string $couponCode = null;
+
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)')]
+    public ?bool $miniCartOfferInfoEnabled = null;
+
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)')]
+    public ?string $miniCartOfferInfo = null;
+
+    /**
+     * @var array<int, array<string, string|float>>|null
+     */
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'Shipping methods available for the estimate address. Returned by estimate shipping only.')]
+    public ?array $shippingMethods = null;
 
     #[Groups(['query', 'mutation'])]
     public ?bool $success = null;
@@ -193,6 +210,17 @@ class CartData
     #[ApiProperty(description: 'Redirect URL for buy now checkout')]
     public ?string $redirectUri = null;
 
+    /**
+     * Every cart payload carries the mini cart offer, including the empty cart returned
+     * after its last item is removed.
+     */
+    public function __construct()
+    {
+        $this->miniCartOfferInfo = core()->getConfigData('sales.checkout.mini_cart.offer_info') ?: null;
+        $this->miniCartOfferInfoEnabled = (bool) core()->getConfigData('sales.checkout.mini_cart.display_mini_cart')
+            && $this->miniCartOfferInfo !== null;
+    }
+
     public function getSelectedShippingRate(): ?string
     {
         return $this->selectedShippingRate;
@@ -213,12 +241,28 @@ class CartData
         $this->selectedShippingRateTitle = $selectedShippingRateTitle;
     }
 
+    /**
+     * Return the cart's guest token only to a caller who authenticated with that same token.
+     */
+    protected static function ownedCartToken(Cart $cart): ?string
+    {
+        $guestToken = GuestCartTokens::where('cart_id', $cart->id)->orderByDesc('id')->value('token');
+
+        $bearer = TokenHeaderFacade::getAuthorizationBearerToken(request());
+
+        if (! $guestToken || ! $bearer || ! hash_equals((string) $guestToken, $bearer)) {
+            return null;
+        }
+
+        return $guestToken;
+    }
+
     public static function fromModel(Cart $cart): self
     {
         $data = new self;
 
         $data->id = $cart->id;
-        $data->cartToken = (string) $cart->id;
+        $data->cartToken = self::ownedCartToken($cart);
         $data->customerId = $cart->customer_id;
         $data->isGuest = ! $cart->customer_id;
         $data->channelId = $cart->channel_id;
@@ -341,6 +385,10 @@ class CartData
     {
         $this->items = $items;
     }
+
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'True when the selected payment method requires the shopper to be sent to a payment page before the order is created')]
+    public ?bool $redirect = false;
 
     #[Groups(['query', 'mutation'])]
     #[ApiProperty(description: 'Redirect URL for payment gateway')]

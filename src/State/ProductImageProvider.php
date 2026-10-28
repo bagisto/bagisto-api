@@ -10,4 +10,12 @@ class ProductImageProvider extends AbstractNestedResourceProvider
     {
         return ProductImage::class;
     }
+
+    /**
+     * Gallery order, the same order the storefront draws them in.
+     */
+    protected function orderColumn(): ?string
+    {
+        return 'position';
+    }
 }

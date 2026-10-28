@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSitemapGenerateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSitemapGenerate;
+use Webkul\BagistoApi\Admin\State\Concerns\MapsSitemapChannels;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
@@ -18,21 +19,11 @@ use Webkul\Sitemap\Models\Sitemap;
 /**
  * Handles POST /api/admin/marketing/sitemaps/{id}/generate +
  * createAdminMarketingSitemapGenerate.
- *
- * Runs Webkul\Sitemap\Jobs\ProcessSitemap **synchronously** (via dispatchSync)
- * so the API response can carry the resulting index + child sitemap file
- * paths and the updated generated_at timestamp. The monolith dispatches the
- * same job to the queue; API consumers expect a synchronous result, so we
- * deviate here.
- *
- * If sitemap generation is disabled in core config
- * (general.sitemap.settings.enabled), the job returns early and the response
- * indicates no files were generated.
- *
- * Permission: marketing.search_seo.sitemaps.edit.
  */
 class AdminMarketingSitemapGenerateProcessor implements ProcessorInterface
 {
+    use MapsSitemapChannels;
+
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -47,9 +38,13 @@ class AdminMarketingSitemapGenerateProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.marketing.sitemap.generate.id-required'), 422);
         }
 
-        $sitemap = Sitemap::find($id);
+        $sitemap = Sitemap::with('channels')->find($id);
         if (! $sitemap) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.sitemap.not-found'));
+        }
+
+        if ($sitemap->channels->isEmpty()) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.marketing.sitemap.generate.no-channels'), 422);
         }
 
         try {
@@ -62,12 +57,14 @@ class AdminMarketingSitemapGenerateProcessor implements ProcessorInterface
             );
         }
 
-        $sitemap = Sitemap::find($id);
+        $sitemap = Sitemap::with('channels')->find($id);
         $additional = $sitemap->additional ?? [];
 
         $result = new AdminMarketingSitemapGenerate;
         $result->id = (int) $sitemap->id;
         $result->sitemapId = (int) $sitemap->id;
+        $result->generatedFiles = $this->sitemapGeneratedFiles($additional, $sitemap->channels);
+        $result->urls = $this->sitemapUrls($sitemap->channels, (int) $sitemap->id, $sitemap->path, $sitemap->file_name);
         $result->indexFile = $additional['index'] ?? null;
         $result->generatedSitemaps = $additional['sitemaps'] ?? [];
         $result->generatedAt = $sitemap->generated_at ? Carbon::parse($sitemap->generated_at)->toIso8601String() : null;

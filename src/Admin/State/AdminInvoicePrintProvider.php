@@ -6,17 +6,17 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
+use Webkul\BagistoApi\Admin\Models\AdminInvoice;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Sales\Models\Invoice;
 
 class AdminInvoicePrintProvider implements ProviderInterface
 {
-    public function __construct(protected AdminOrderActionGuard $guard) {}
-
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Response
     {
-        $this->guard->resolveAdmin();
+        AdminReadPermissions::authorize($operation, AdminInvoice::class);
 
         $id = (int) basename((string) ($uriVariables['id'] ?? 0));
 
@@ -31,7 +31,9 @@ class AdminInvoicePrintProvider implements ProviderInterface
         }
 
         try {
-            $html = view('admin::sales.invoices.pdf', compact('invoice'))->render();
+            $orderCurrencyCode = $invoice->order->order_currency_code;
+
+            $html = view('shop::customers.account.orders.pdf', compact('invoice', 'orderCurrencyCode'))->render();
 
             $pdf = Pdf::loadHTML($html)
                 ->setPaper('A4', 'portrait')

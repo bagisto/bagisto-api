@@ -21,7 +21,6 @@ use Webkul\BagistoApi\Dto\CustomerOrder\OrderShipmentItemDto;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerOrder;
-use Webkul\Customer\Models\Customer;
 
 /**
  * CustomerOrderProvider — Retrieves orders belonging to the authenticated customer
@@ -97,8 +96,7 @@ class CustomerOrderProvider implements ProviderInterface
         }
 
         $orderQuery = CustomerOrder::with(['items', 'addresses', 'payment', 'shipments.items'])
-            ->where('customer_id', $customer->id)
-            ->where('customer_type', Customer::class);
+            ->where('customer_id', $customer->id);
 
         $order = $orderQuery->find($id);
 
@@ -319,8 +317,7 @@ class CustomerOrderProvider implements ProviderInterface
         $filters = $context['filters'] ?? [];
 
         $query = CustomerOrder::with(['items', 'addresses', 'payment', 'shipments.items', 'shipments.shippingAddress'])
-            ->where('customer_id', $customer->id)
-            ->where('customer_type', Customer::class);
+            ->where('customer_id', $customer->id);
 
         /** Apply optional status filter */
         $status = $args['status'] ?? $filters['status'] ?? null;

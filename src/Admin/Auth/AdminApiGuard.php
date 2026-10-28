@@ -83,7 +83,7 @@ class AdminApiGuard implements Guard
 
         $admin = $this->provider->retrieveById($token->admin_id);
 
-        if (! $admin) {
+        if (! $admin || ! $admin->status) {
             return null;
         }
 

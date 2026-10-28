@@ -75,10 +75,14 @@ class AdminCustomerProcessor implements ProcessorInterface
     {
         $sendPassword = (bool) ($input['send_password'] ?? true);
 
+        // The same address may register on each channel of a store, so an email is unique
+        // per channel rather than across the table.
+        $channelId = (int) ($input['channel_id'] ?? core()->getCurrentChannel()->id);
+
         $rules = [
             'first_name' => ['required', 'string'],
             'last_name' => ['required', 'string'],
-            'email' => ['required', 'email', 'unique:customers,email'],
+            'email' => ['required', 'email', 'unique:customers,email,NULL,id,channel_id,'.$channelId],
             'date_of_birth' => ['nullable', 'date', 'before:today'],
             'customer_group_id' => ['required', 'integer', 'exists:customer_groups,id'],
         ];
@@ -106,7 +110,7 @@ class AdminCustomerProcessor implements ProcessorInterface
             'gender' => $input['gender'] ?? null,
             'date_of_birth' => $input['date_of_birth'] ?? null,
             'customer_group_id' => (int) $input['customer_group_id'],
-            'channel_id' => (int) ($input['channel_id'] ?? core()->getCurrentChannel()->id),
+            'channel_id' => $channelId,
             'status' => isset($input['status']) ? (int) $input['status'] : 1,
             'subscribed_to_news_letter' => (int) ($input['subscribed_to_news_letter'] ?? 0),
             'password' => bcrypt($password),
@@ -143,7 +147,7 @@ class AdminCustomerProcessor implements ProcessorInterface
         $rules = [
             'first_name' => ['sometimes', 'required', 'string'],
             'last_name' => ['sometimes', 'required', 'string'],
-            'email' => ['sometimes', 'required', 'email', 'unique:customers,email,'.$id],
+            'email' => ['sometimes', 'required', 'email', 'unique:customers,email,'.$id.',id,channel_id,'.(int) ($input['channel_id'] ?? $existing->channel_id ?: core()->getCurrentChannel()->id)],
             'date_of_birth' => ['nullable', 'date', 'before:today'],
         ];
 

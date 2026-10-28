@@ -23,7 +23,7 @@ use Webkul\DataTransfer\Models\Import;
  *
  * The concrete action is selected by the resource shortName the operation belongs
  * to (each action gets its own one-op resource). Permission gate:
- * settings.data_transfer.imports.edit.
+ * settings.data_transfer.imports.import.
  */
 class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterface
 {
@@ -39,7 +39,7 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $this->assertPermission($admin, 'settings.data_transfer.imports.edit');
+        $this->assertPermission($admin, 'settings.data_transfer.imports.import');
 
         $id = $this->resolveImportId($data, $uriVariables, $context);
         if ($id <= 0) {

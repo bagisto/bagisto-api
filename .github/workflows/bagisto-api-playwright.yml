@@ -31,27 +31,29 @@ jobs:
       - name: Checkout Bagisto API
         uses: actions/checkout@v4
         with:
-          repository: yashvir-webkul/bagisto-api
-          ref: 2.4
           path: bagisto-api
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip
+          extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip, opcache
+          ini-values: opcache.enable=1, opcache.enable_cli=1, opcache.validate_timestamps=0, opcache.max_accelerated_files=20000, opcache.memory_consumption=256
+          coverage: none
           tools: composer:v2
 
       - name: Install Bagisto
         run: |
-          composer create-project bagisto/bagisto:2.4.7 bagisto
+          composer create-project bagisto/bagisto:2.4.10 bagisto
           cd bagisto
           cp .env.example .env
+          sed -i "s|^APP_DEBUG=.*|APP_DEBUG=false|" .env
           sed -i "s|DB_HOST=.*|DB_HOST=127.0.0.1|" .env
           sed -i "s|DB_PORT=.*|DB_PORT=${{ job.services.mysql.ports['3306'] }}|" .env
           sed -i "s|DB_DATABASE=.*|DB_DATABASE=bagisto|" .env
           sed -i "s|DB_USERNAME=.*|DB_USERNAME=root|" .env
           sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=root|" .env
+          grep -q '^CACHE_STORE=' .env && sed -i "s|^CACHE_STORE=.*|CACHE_STORE=file|" .env || echo "CACHE_STORE=file" >> .env
           php artisan bagisto:install --skip-env-check --skip-admin-creation --skip-cloud-promotion
           php artisan db:seed --class="Webkul\Installer\Database\Seeders\ProductTableSeeder"
           php artisan indexer:index --mode=full
@@ -84,6 +86,9 @@ jobs:
           composer dump-autoload
           php artisan optimize:clear
           php artisan bagisto-api-platform:install
+          php -r '$f="composer.json";$j=json_decode(file_get_contents($f),true);$d=$j["extra"]["laravel"]["dont-discover"]??[];if(!in_array("api-platform/laravel",$d,true))$d[]="api-platform/laravel";$j["extra"]["laravel"]["dont-discover"]=$d;file_put_contents($f,json_encode($j,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)."\n");'
+          composer dump-autoload
+          php artisan optimize:clear
 
       - name: Issue storefront API key
         working-directory: bagisto

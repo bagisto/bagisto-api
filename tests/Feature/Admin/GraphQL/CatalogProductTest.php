@@ -4,19 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\Product\Helpers\Indexers\Flat;
 use Webkul\Product\Models\Product;
 
 /**
  * GraphQL coverage for the adminCatalogProducts query (cursor pagination).
- *
- * These tests verify:
- *   1. The query executes and returns the correct cursor-paginated shape.
- *   2. Seeded products appear in the response (full listing, client-side check).
- *   3. Field shapes: id (IRI), sku, name, type, status are all populated.
- *   4. Authentication is enforced.
- *   5. Filter args (sku, type, status) work as GraphQL variables — the provider
- *      reads them from $context['args'] which API Platform populates from the
- *      query variables object.
  */
 class CatalogProductTest extends AdminApiTestCase
 {
@@ -441,11 +433,6 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertTrue(\Illuminate\Support\Facades\DB::table('products')->where('sku', $sku)->where('type', 'bundle')->exists());
     }
 
-    /**
-     * Copied verbatim from tests/Feature/Admin/RestApi/CatalogProductTest.php.
-     * Do NOT move to AdminApiTestCase — shared base class is used by other
-     * parallel development windows and must not be modified here.
-     */
     protected function insertProductFlat(object $product, array $overrides = []): void
     {
         $attributeFamilyId = (int) (\Illuminate\Support\Facades\DB::table('attribute_families')->value('id') ?? 1);
@@ -463,6 +450,19 @@ class CatalogProductTest extends AdminApiTestCase
             'attribute_family_id' => $attributeFamilyId,
             'visible_individually' => 1,
         ], $overrides));
+
+        $this->refreshFlatDerived((int) $product->id);
+    }
+
+    protected function refreshFlatDerived(int $productId): void
+    {
+        // BACKWARD COMPATIBILITY: product_flat gained these columns in 2.4.10; an older
+        // core has the listing compute them. Remove when the minimum core is 2.4.10.
+        if (! $this->core()->hasProductFlatDerivedColumns()) {
+            return;
+        }
+
+        app(Flat::class)->refreshDerivedColumns([$productId]);
     }
 
     public function test_mutation_update_happy_path(): void

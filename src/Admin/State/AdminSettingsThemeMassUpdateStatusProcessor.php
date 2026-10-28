@@ -13,11 +13,7 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Theme\Repositories\ThemeCustomizationRepository;
 
 /**
- * POST /api/admin/settings/themes/mass-update-status +
- * createAdminSettingsThemeMassUpdateStatus.
- *
- * Delegates to ThemeCustomizationRepository::massUpdateStatus — same path as
- * the admin ThemeController::massUpdate.
+ * POST /api/admin/settings/themes/mass-update-status + createAdminSettingsThemeMassUpdateStatus.
  */
 class AdminSettingsThemeMassUpdateStatusProcessor implements ProcessorInterface
 {

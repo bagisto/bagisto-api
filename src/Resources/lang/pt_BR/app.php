@@ -2,6 +2,25 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'O ID do reembolso do cliente é obrigatório',
+            'invalid-id-format' => 'Formato de ID inválido. Esperado formato IRI como "/api/shop/customer-refunds/1" ou ID numérico',
+            'not-found' => 'Reembolso do cliente com ID ":id" não encontrado',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'Refazer pedido está desativado nas configurações da loja.',
+            'cannot-reorder' => 'Este pedido não pode ser refeito (pedido de convidado ou um ou mais produtos não estão mais disponíveis para compra).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'A mensagem não pode ter mais de :max caracteres.',
+        ],
+
+        'headers' => [
+            'unknown-channel' => 'O canal ":code" no cabeçalho X-Channel não existe.',
+        ],
+
         'cart' => [
             'authentication-required' => 'É necessário um token de autenticação',
             'invalid-token' => 'Token de autenticação inválido ou expirado',
@@ -102,6 +121,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'Produto não encontrado',
             'not-found-with-sku' => 'No product found with SKU',
             'not-found-with-url-key' => 'No product found with URL key',
             'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
@@ -130,8 +150,22 @@ return [
         'login' => [
             'invalid-credentials' => 'E-mail ou senha inválidos',
             'account-suspended' => 'Sua conta foi suspensa',
+            'account-inactive' => 'Sua ativação aguarda aprovação do administrador',
+            'email-not-verified' => 'Verifique primeiro sua conta de e-mail.',
             'successful' => 'Você fez login com sucesso',
             'invalid-request' => 'Solicitação de login inválida',
+        ],
+
+        'social-login' => [
+            'signed-in' => 'Login efetuado com sucesso.',
+            'token-required' => 'É necessário um token de login social.',
+            'invalid-token' => 'O token de login social é inválido ou expirou. Tente novamente.',
+            'wrong-audience' => 'Este token foi emitido para outro aplicativo.',
+            'not-configured' => 'Este provedor de login social não está configurado. Entre em contato com o suporte.',
+            'email-required' => 'O provedor não compartilhou um endereço de e-mail. Cadastre-se com e-mail.',
+            'account-inactive' => 'Sua ativação aguarda aprovação do administrador',
+            'provider-not-supported' => 'Este provedor de login social não é compatível.',
+            'provider-disabled' => 'Este provedor de login social não está habilitado.',
         ],
 
         'checkout' => [
@@ -147,6 +181,8 @@ return [
             'shipping-method-error' => 'Erro ao salvar o método de envio',
             'payment-method-required' => 'O método de pagamento é obrigatório',
             'invalid-payment-method' => 'Método de pagamento inválido ou indisponível',
+            'paypal-order-id-required' => 'O ID do pedido do PayPal é obrigatório para confirmar um pagamento pelo botão inteligente do PayPal.',
+            'paypal-smart-button-payment-flow' => 'Os pagamentos pelo botão inteligente do PayPal são capturados por checkout-payments/initiate e checkout-payments/confirm, e não ao finalizar o pedido diretamente.',
             'payment-method-save-failed' => 'Falha ao salvar o método de pagamento',
             'payment-method-saved' => 'Método de pagamento salvo com sucesso',
             'payment-method-error' => 'Erro ao salvar o método de pagamento',
@@ -157,6 +193,7 @@ return [
             'account-suspended' => 'Sua conta foi suspensa. Entre em contato com o suporte.',
             'account-inactive' => 'Sua conta está inativa. Entre em contato com o suporte.',
             'minimum-order-not-met' => 'O valor mínimo do pedido é :amount',
+            'guest-checkout-not-allowed' => 'Faça login para finalizar a compra. O checkout como visitante não está disponível para este carrinho.',
             'email-required' => 'O endereço de e-mail é obrigatório para a criação do pedido',
             'unknown-operation' => 'Operação de checkout desconhecida',
         ],
@@ -199,6 +236,11 @@ return [
             'product-not-found' => 'Produto não encontrado',
             'customer-not-found' => 'Cliente não encontrado',
             'already-exists' => 'Este produto já está em sua lista de comparação',
+            'disabled' => 'A comparação de produtos está desativada nesta loja.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'A lista de desejos está desativada nesta loja.',
         ],
 
         'downloadable-product' => [
@@ -229,6 +271,7 @@ return [
 
             'acl' => [
                 'title' => 'Histórico de alterações da API',
+                'view' => 'Visualizar',
                 'delete' => 'Excluir histórico',
             ],
 
@@ -289,6 +332,7 @@ return [
 
         'acl' => [
             'title' => 'Integração',
+            'view' => 'Visualizar',
             'create' => 'Criar Integração',
             'edit' => 'Editar integração',
             'delete' => 'Revogar token de integração',

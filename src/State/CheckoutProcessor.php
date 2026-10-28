@@ -7,10 +7,12 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\Dto\CheckoutAddressOutput;
 use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\OperationFailedException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
@@ -18,12 +20,15 @@ use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Models\CheckoutOrder;
 use Webkul\BagistoApi\Models\CheckoutPaymentMethod;
 use Webkul\BagistoApi\Models\CheckoutShippingMethod;
+use Webkul\BagistoApi\State\Concerns\ResolvesCartToken;
+use Webkul\BagistoApi\State\Concerns\ValidatesCheckoutCart;
 use Webkul\Checkout\Facades\Cart;
-use Webkul\Checkout\Models\CartAddress;
 use Webkul\Checkout\Repositories\CartRepository;
+use Webkul\Core\Rules\PhoneNumber;
+use Webkul\Core\Rules\PostCode;
 use Webkul\Customer\Repositories\CustomerRepository;
+use Webkul\Payment\Facades\Payment;
 use Webkul\Sales\Repositories\OrderRepository;
-use Webkul\Sales\Transformers\OrderResource;
 use Webkul\Shipping\Facades\Shipping;
 
 /**
@@ -31,6 +36,9 @@ use Webkul\Shipping\Facades\Shipping;
  */
 class CheckoutProcessor implements ProcessorInterface
 {
+    use ResolvesCartToken;
+    use ValidatesCheckoutCart;
+
     public function __construct(
         protected CustomerRepository $customerRepository,
         protected OrderRepository $orderRepository,
@@ -122,95 +130,126 @@ class CheckoutProcessor implements ProcessorInterface
     }
 
     /**
-     * Save billing and shipping addresses for cart.
+     * Save billing and shipping addresses for cart, the way core's checkout address step does.
      */
     private function saveAddress($cart, CheckoutAddressInput $input)
     {
         try {
+            Cart::setCart($cart);
+
+            $this->assertGuestCheckoutAllowed($cart);
+
+            $this->assertCartHasNoErrors();
+
             if (! $input->billingFirstName && ! $input->billingAddress) {
                 throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.billing-address-required'));
             }
 
-            if ($cart->haveStockableItems()) {
-                $hasShippingData = $input->shippingFirstName || $input->shippingAddress || $input->useForShipping;
-                if (! $hasShippingData) {
-                    throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.shipping-address-required'));
-                }
+            $useForShipping = (bool) $input->useForShipping;
+
+            $needsShippingAddress = $cart->haveStockableItems() && ! $useForShipping;
+
+            if (
+                $needsShippingAddress
+                && ! $input->shippingFirstName
+                && ! $input->shippingAddress
+            ) {
+                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.shipping-address-required'));
             }
 
-            $billingAddress = null;
-            $shippingAddress = null;
+            $params = [
+                'billing' => [
+                    ...$this->addressParams('billing', $input),
+                    'use_for_shipping' => $useForShipping,
+                ],
+            ];
 
-            $cart->billing_address()->delete();
-            $cart->shipping_address()->delete();
-
-            if ($input->billingFirstName || $input->billingAddress) {
-                $billingAddress = new CartAddress;
-                $billingAddress->cart_id = $cart->id;
-                $billingAddress->address_type = CartAddress::ADDRESS_TYPE_BILLING;
-                $billingAddress->first_name = $input->billingFirstName;
-                $billingAddress->last_name = $input->billingLastName;
-                $billingAddress->email = $input->billingEmail;
-                $billingAddress->company_name = $input->billingCompanyName;
-                $billingAddress->address = $input->billingAddress;
-                $billingAddress->country = $input->billingCountry;
-                $billingAddress->state = $input->billingState;
-                $billingAddress->city = $input->billingCity;
-                $billingAddress->postcode = $input->billingPostcode;
-                $billingAddress->phone = $input->billingPhoneNumber;
-                $billingAddress->save();
-
-                if ($input->billingEmail && ! $cart->customer_email) {
-                    $cart->customer_email = $input->billingEmail;
-                    $cart->save();
-                }
+            if ($needsShippingAddress) {
+                $params['shipping'] = $this->addressParams('shipping', $input);
             }
 
-            if ($input->useForShipping && $billingAddress !== null) {
-                $shippingAddress = new CartAddress;
-                $shippingAddress->cart_id = $cart->id;
-                $shippingAddress->address_type = CartAddress::ADDRESS_TYPE_SHIPPING;
-                $shippingAddress->first_name = $input->billingFirstName;
-                $shippingAddress->last_name = $input->billingLastName;
-                $shippingAddress->email = $input->billingEmail;
-                $shippingAddress->company_name = $input->billingCompanyName;
-                $shippingAddress->address = $input->billingAddress;
-                $shippingAddress->country = $input->billingCountry;
-                $shippingAddress->state = $input->billingState;
-                $shippingAddress->city = $input->billingCity;
-                $shippingAddress->postcode = $input->billingPostcode;
-                $shippingAddress->phone = $input->billingPhoneNumber;
-                $shippingAddress->save();
-            } elseif ($input->shippingFirstName || $input->shippingAddress) {
-                $shippingAddress = new CartAddress;
-                $shippingAddress->cart_id = $cart->id;
-                $shippingAddress->address_type = CartAddress::ADDRESS_TYPE_SHIPPING;
-                $shippingAddress->first_name = $input->shippingFirstName;
-                $shippingAddress->last_name = $input->shippingLastName;
-                $shippingAddress->email = $input->shippingEmail;
-                $shippingAddress->company_name = $input->shippingCompanyName;
-                $shippingAddress->address = $input->shippingAddress;
-                $shippingAddress->country = $input->shippingCountry;
-                $shippingAddress->state = $input->shippingState;
-                $shippingAddress->city = $input->shippingCity;
-                $shippingAddress->postcode = $input->shippingPostcode;
-                $shippingAddress->phone = $input->shippingPhoneNumber;
-                $shippingAddress->save();
-            }
+            $this->validateAddresses($params);
 
-            if (! $billingAddress) {
-                throw new OperationFailedException('No billing address was provided');
-            }
+            Cart::saveAddresses($params);
 
             Cart::collectTotals();
+
+            $cart = Cart::getCart();
 
             if ($cart->haveStockableItems()) {
                 Shipping::collectRates();
             }
 
-            return $this->buildAddressOutput($billingAddress, $shippingAddress);
+            return $this->buildAddressOutput($cart->billing_address, $cart->shipping_address);
+        } catch (InvalidInputException $e) {
+            throw $e;
         } catch (\Exception $e) {
             throw new OperationFailedException($e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Map one side of the address input to the keys core's cart address step expects.
+     */
+    private function addressParams(string $type, CheckoutAddressInput $input): array
+    {
+        $address = $input->{$type.'Address'};
+
+        return [
+            'company_name' => $input->{$type.'CompanyName'},
+            'first_name' => $input->{$type.'FirstName'},
+            'last_name' => $input->{$type.'LastName'},
+            'email' => $input->{$type.'Email'} ?: $input->billingEmail,
+            'address' => filled($address) ? [$address] : [],
+            'country' => $input->{$type.'Country'},
+            'state' => $input->{$type.'State'},
+            'city' => $input->{$type.'City'},
+            'postcode' => $input->{$type.'Postcode'},
+            'phone' => $input->{$type.'PhoneNumber'},
+        ];
+    }
+
+    /**
+     * Apply the storefront's cart address rules, reporting failures by their API field names.
+     */
+    private function validateAddresses(array $params): void
+    {
+        $rules = [];
+
+        $attributes = [];
+
+        foreach (array_keys($params) as $type) {
+            $rules += [
+                "{$type}.company_name" => ['nullable'],
+                "{$type}.first_name" => ['required'],
+                "{$type}.last_name" => ['required'],
+                "{$type}.email" => ['required'],
+                "{$type}.address" => ['required', 'array', 'min:1'],
+                "{$type}.city" => ['required'],
+                "{$type}.country" => core()->isCountryRequired() ? ['required'] : ['nullable'],
+                "{$type}.state" => core()->isStateRequired() ? ['required'] : ['nullable'],
+                "{$type}.postcode" => core()->isPostCodeRequired() ? ['required', new PostCode] : [new PostCode],
+                "{$type}.phone" => ['required', new PhoneNumber],
+            ];
+
+            $attributes += [
+                "{$type}.company_name" => "{$type}CompanyName",
+                "{$type}.first_name" => "{$type}FirstName",
+                "{$type}.last_name" => "{$type}LastName",
+                "{$type}.email" => "{$type}Email",
+                "{$type}.address" => "{$type}Address",
+                "{$type}.city" => "{$type}City",
+                "{$type}.country" => "{$type}Country",
+                "{$type}.state" => "{$type}State",
+                "{$type}.postcode" => "{$type}Postcode",
+                "{$type}.phone" => "{$type}PhoneNumber",
+            ];
+        }
+
+        $validator = Validator::make($params, $rules, [], $attributes);
+
+        if ($validator->fails()) {
+            throw new InvalidInputException($validator->errors()->first(), 422);
         }
     }
 
@@ -221,6 +260,8 @@ class CheckoutProcessor implements ProcessorInterface
     {
         try {
             cart()->setCart($cart);
+
+            $this->assertCartHasNoErrors();
 
             if (! $input->shippingMethod) {
                 throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.shipping-method-required'));
@@ -242,7 +283,7 @@ class CheckoutProcessor implements ProcessorInterface
                 'id' => (string) $cart->id,
                 'success' => true,
                 'message' => __('bagistoapi::app.graphql.checkout.shipping-method-saved'),
-                'cartToken' => (string) ($cart->guest_cart_token ?? $cart->customer_id),
+                'cartToken' => $this->resolveCartToken($cart),
                 'shippingMethod' => (string) ($cart->shipping_method ?? ''),
             ]);
         } catch (\Exception $e) {
@@ -261,8 +302,14 @@ class CheckoutProcessor implements ProcessorInterface
             throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.payment-method-required'));
         }
 
+        $this->assertCartHasNoErrors();
+
         $paymentMethodConfig = config('payment_methods.'.$input->paymentMethod);
-        if (! $paymentMethodConfig || ! isset($paymentMethodConfig['class'])) {
+        if (
+            ! $paymentMethodConfig
+            || ! isset($paymentMethodConfig['class'])
+            || ! $this->isPaymentMethodAvailable($input->paymentMethod)
+        ) {
             throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.invalid-payment-method'));
         }
 
@@ -280,7 +327,10 @@ class CheckoutProcessor implements ProcessorInterface
             if ($cart->payment) {
                 $paymentMethodClass = app($paymentMethodConfig['class']);
 
-                if (method_exists($paymentMethodClass, 'getPaymentUrl') && method_exists($paymentMethodClass, 'getPaymentData')) {
+                if (
+                    is_callable([$paymentMethodClass, 'getPaymentUrl'])
+                    && is_callable([$paymentMethodClass, 'getPaymentData'])
+                ) {
                     $paymentData = $paymentMethodClass->getPaymentData($cart);
 
                     if ($input->paymentSuccessUrl) {
@@ -308,13 +358,15 @@ class CheckoutProcessor implements ProcessorInterface
 
                     $paymentGatewayUrl = $paymentMethodClass->getPaymentUrl();
                     $paymentData = json_encode($paymentData);
+                } else {
+                    $paymentGatewayUrl = Payment::getRedirectUrl($cart) ?: null;
                 }
             }
 
             return $this->paymentMethodOutput([
                 'success' => true,
                 'message' => __('bagistoapi::app.graphql.checkout.payment-method-saved'),
-                'cartToken' => (string) ($cart->guest_cart_token ?? $cart->customer_id),
+                'cartToken' => $this->resolveCartToken($cart),
                 'paymentMethod' => (string) ($cart->payment?->method ?? ''),
                 'paymentGatewayUrl' => $paymentGatewayUrl,
                 'paymentData' => $paymentData,
@@ -330,13 +382,32 @@ class CheckoutProcessor implements ProcessorInterface
     private function createOrder($cart, CheckoutAddressInput $input)
     {
         try {
-            $this->validateOrderCreation($cart, $input);
-
             Cart::setCart($cart);
+
+            $this->assertCartHasNoErrors();
+
             Cart::collectTotals();
 
-            $orderData = $this->buildOrderDataFromCart($cart);
-            $order = $this->orderRepository->create($orderData);
+            $cart = Cart::getCart();
+
+            $this->validateOrderCreation($cart, $input);
+
+            if ($cart->payment->method === 'paypal_smart_button') {
+                throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.paypal-smart-button-payment-flow'), 422);
+            }
+
+            if ($redirectUrl = Payment::getRedirectUrl($cart)) {
+                return $this->orderOutput([
+                    'id' => $cart->id,
+                    'cartToken' => $this->resolveCartToken($cart),
+                    'redirect' => true,
+                    'redirectUrl' => $redirectUrl,
+                    'success' => true,
+                    'message' => __('bagistoapi::app.graphql.checkout.order-redirect-required'),
+                ]);
+            }
+
+            $order = $this->createOrderFromCart($cart);
 
             if (! $order || ! $order->id) {
                 throw new \Exception(__('bagistoapi::app.graphql.checkout.order-creation-failed'));
@@ -356,79 +427,18 @@ class CheckoutProcessor implements ProcessorInterface
 
             return $this->orderOutput([
                 'id' => $cart->id,
-                'cartToken' => (string) ($cart->guest_cart_token ?? $cart->customer_id),
+                'cartToken' => $this->resolveCartToken($cart),
                 'orderId' => (string) $order->id,
+                'incrementId' => (string) $order->increment_id,
+                'redirect' => false,
+                'redirectUrl' => null,
+                'success' => true,
+                'message' => __('bagistoapi::app.graphql.checkout.order-placed'),
             ]);
+        } catch (InvalidInputException $e) {
+            throw $e;
         } catch (\Exception $e) {
             throw new OperationFailedException($e->getMessage(), 0, $e);
-        }
-    }
-
-    /**
-     * Build order data from cart.
-     */
-    private function buildOrderDataFromCart($cart): array
-    {
-        $orderResource = new OrderResource($cart);
-
-        return $orderResource->jsonSerialize();
-    }
-
-    /**
-     * Validate order can be created.
-     */
-    private function validateOrderCreation($cart, CheckoutAddressInput $input): void
-    {
-        if (! $cart || $cart->items()->count() === 0) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.cart-empty'));
-        }
-
-        if (auth()->guard('customer')->check()) {
-            $customer = auth()->guard('customer')->user();
-
-            if ($customer && $customer->is_suspended) {
-                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.account-suspended'));
-            }
-
-            if ($customer && ! $customer->status) {
-                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.account-inactive'));
-            }
-        }
-
-        $minimumOrderAmount = core()->getConfigData('sales.order_settings.minimum_order.minimum_order_amount') ?: 0;
-        if (! Cart::haveMinimumOrderAmount()) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.minimum-order-not-met', ['amount' => core()->currency($minimumOrderAmount)]));
-        }
-
-        $hasBillingAddress = $input->billingAddress || $cart->billing_address()->exists();
-        if (! $hasBillingAddress) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.billing-address-required'));
-        }
-
-        $hasShippingAddress = $input->shippingAddress || $input->useForShipping || $cart->shipping_address()->exists();
-        if (! $hasShippingAddress && $cart->haveStockableItems()) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.shipping-address-required'));
-        }
-
-        $hasEmail = $cart->customer_email || $input->billingEmail || ($cart->billing_address && $cart->billing_address->email);
-        if (! $hasEmail) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.email-required'));
-        }
-
-        if ($cart->haveStockableItems()) {
-            $hasShippingMethod = $input->shippingMethod || $cart->shipping_method;
-            if (! $hasShippingMethod) {
-                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.shipping-method-required'));
-            }
-
-            if (! $cart->selected_shipping_rate) {
-                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.invalid-shipping-method'));
-            }
-        }
-
-        $hasPaymentMethod = $input->paymentMethod || $cart->payment()->exists();
-        if (! $hasPaymentMethod) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.payment-method-required'));
         }
     }
 
@@ -492,7 +502,7 @@ class CheckoutProcessor implements ProcessorInterface
 
         if ($billingAddress) {
             $output->id = $billingAddress->id;
-            $output->cartToken = (string) ($billingAddress->cart->guest_cart_token ?? $billingAddress->cart->customer_id);
+            $output->cartToken = $this->resolveCartToken($billingAddress->cart);
             $output->customerId = $billingAddress->cart->customer_id;
 
             $output->billingFirstName = (string) ($billingAddress->first_name ?? '');
@@ -532,7 +542,7 @@ class CheckoutProcessor implements ProcessorInterface
             $output = new CheckoutAddressOutput;
 
             $output->id = $cart->id;
-            $output->cartToken = $cart->guest_cart_token ?? $cart->customer_id;
+            $output->cartToken = $this->resolveCartToken($cart);
             $output->customerId = $cart->customer_id;
 
             $billingAddress = $cart->billing_address;

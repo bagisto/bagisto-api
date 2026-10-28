@@ -2,6 +2,25 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'ID pengembalian dana pelanggan wajib diisi',
+            'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/customer-refunds/1" atau ID numerik',
+            'not-found' => 'Pengembalian dana pelanggan dengan ID ":id" tidak ditemukan',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'Pesan ulang dinonaktifkan di pengaturan toko.',
+            'cannot-reorder' => 'Pesanan ini tidak dapat dipesan ulang (pesanan tamu atau satu atau lebih produk tidak lagi tersedia untuk dibeli).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'Pesan tidak boleh lebih dari :max karakter.',
+        ],
+
+        'headers' => [
+            'unknown-channel' => 'Channel ":code" pada header X-Channel tidak ada.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Token autentikasi diperlukan',
             'invalid-token' => 'Token autentikasi tidak valid atau telah kedaluwarsa',
@@ -102,6 +121,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'Produk tidak ditemukan',
             'not-found-with-sku' => 'No product found with SKU',
             'not-found-with-url-key' => 'No product found with URL key',
             'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
@@ -130,8 +150,22 @@ return [
         'login' => [
             'invalid-credentials' => 'Email atau kata sandi tidak valid',
             'account-suspended' => 'Akun Anda telah ditangguhkan',
+            'account-inactive' => 'Akun Anda memerlukan persetujuan admin untuk aktivasi.',
+            'email-not-verified' => 'Harap verifikasi akun email Anda terlebih dahulu.',
             'successful' => 'Anda telah berhasil masuk',
             'invalid-request' => 'Permintaan masuk tidak valid',
+        ],
+
+        'social-login' => [
+            'signed-in' => 'Berhasil masuk.',
+            'token-required' => 'Token login sosial diperlukan.',
+            'invalid-token' => 'Token login sosial tidak valid atau kedaluwarsa. Silakan coba lagi.',
+            'wrong-audience' => 'Token ini diterbitkan untuk aplikasi lain.',
+            'not-configured' => 'Penyedia login sosial ini belum dikonfigurasi. Silakan hubungi dukungan.',
+            'email-required' => 'Penyedia tidak membagikan alamat email. Silakan daftar dengan email.',
+            'account-inactive' => 'Akun Anda memerlukan persetujuan admin untuk aktivasi.',
+            'provider-not-supported' => 'Penyedia login sosial ini tidak didukung.',
+            'provider-disabled' => 'Penyedia login sosial ini tidak diaktifkan.',
         ],
 
         'checkout' => [
@@ -147,6 +181,8 @@ return [
             'shipping-method-error' => 'Kesalahan saat menyimpan metode pengiriman',
             'payment-method-required' => 'Metode pembayaran diperlukan',
             'invalid-payment-method' => 'Metode pembayaran tidak valid atau tidak tersedia',
+            'paypal-order-id-required' => 'ID pesanan PayPal diperlukan untuk mengonfirmasi pembayaran Tombol Pintar PayPal.',
+            'paypal-smart-button-payment-flow' => 'Pembayaran Tombol Pintar PayPal ditangkap melalui checkout-payments/initiate dan checkout-payments/confirm, bukan dengan membuat pesanan secara langsung.',
             'payment-method-save-failed' => 'Gagal menyimpan metode pembayaran',
             'payment-method-saved' => 'Metode pembayaran berhasil disimpan',
             'payment-method-error' => 'Kesalahan saat menyimpan metode pembayaran',
@@ -157,6 +193,7 @@ return [
             'account-suspended' => 'Akun Anda telah ditangguhkan. Silakan hubungi dukungan.',
             'account-inactive' => 'Akun Anda tidak aktif. Silakan hubungi dukungan.',
             'minimum-order-not-met' => 'Jumlah pesanan minimum adalah :amount',
+            'guest-checkout-not-allowed' => 'Silakan masuk untuk checkout. Checkout sebagai tamu tidak tersedia untuk keranjang ini.',
             'email-required' => 'Alamat email diperlukan untuk pembuatan pesanan',
             'unknown-operation' => 'Operasi checkout tidak dikenal',
         ],
@@ -199,6 +236,11 @@ return [
             'product-not-found' => 'Produk tidak ditemukan',
             'customer-not-found' => 'Pelanggan tidak ditemukan',
             'already-exists' => 'Produk ini sudah ada di daftar perbandingan Anda',
+            'disabled' => 'Perbandingan produk dinonaktifkan untuk toko ini.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'Daftar keinginan dinonaktifkan untuk toko ini.',
         ],
 
         'downloadable-product' => [
@@ -229,6 +271,7 @@ return [
 
             'acl' => [
                 'title' => 'Riwayat Perubahan API',
+                'view' => 'Lihat',
                 'delete' => 'Hapus Riwayat',
             ],
 
@@ -289,6 +332,7 @@ return [
 
         'acl' => [
             'title' => 'Integrasi',
+            'view' => 'Lihat',
             'create' => 'Buat Integrasi',
             'edit' => 'Sunting Integrasi',
             'delete' => 'Cabut Token Integrasi',

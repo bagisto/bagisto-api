@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Customer;
@@ -241,6 +242,53 @@ class CustomerInvoiceTest extends GraphQLTestCase
     /**
      * Test: Filter invoices by orderId
      */
+    public function test_invoices_are_listed_with_their_addresses_for_an_overriding_customer_model(): void
+    {
+        $testData = $this->createTestData();
+
+        DB::table('orders')->where('id', $testData['order']->id)->update(['customer_type' => 'Vendor\\Package\\Models\\Customer']);
+        DB::table('addresses')->insert([
+            'address_type' => 'order_billing',
+            'order_id' => $testData['order']->id,
+            'customer_id' => $testData['customer']->id,
+            'first_name' => 'Bill',
+            'last_name' => 'Payer',
+            'address' => '1 Main St',
+            'city' => 'Austin',
+            'country' => 'US',
+            'postcode' => '73301',
+            'email' => $testData['customer']->email,
+            'phone' => '5551234567',
+        ]);
+
+        $query = <<<'GQL'
+            query getCustomerInvoices($orderId: Int) {
+              customerInvoices(first: 10, orderId: $orderId) {
+                edges {
+                  node {
+                    _id
+                    addresses {
+                      edges {
+                        node {
+                          addressType
+                          city
+                        }
+                      }
+                    }
+                  }
+                }
+                totalCount
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $query, ['orderId' => $testData['order']->id]);
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.customerInvoices.totalCount'))->toBe(2);
+        expect($response->json('data.customerInvoices.edges.0.node.addresses.edges.0.node.city'))->toBe('Austin');
+    }
+
     public function test_filter_invoices_by_order_id(): void
     {
         $testData = $this->createTestData();
@@ -370,7 +418,7 @@ class CustomerInvoiceTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query);
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $data = $response->json('data.customerInvoice');
@@ -403,7 +451,7 @@ class CustomerInvoiceTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query);
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $data = $response->json('data.customerInvoice');
@@ -418,6 +466,57 @@ class CustomerInvoiceTest extends GraphQLTestCase
             'shippingAmount',
             'discountAmount',
         ]);
+    }
+
+    /**
+     * Test: A guest cannot read a customer's invoice by ID
+     */
+    public function test_guest_cannot_get_customer_invoice_by_id(): void
+    {
+        $testData = $this->createTestData();
+        $invoiceId = "/api/shop/customer-invoices/{$testData['invoice1']->id}";
+
+        $query = <<<GQL
+            query getCustomerInvoice {
+              customerInvoice(id: "{$invoiceId}") {
+                _id
+                grandTotal
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not()->toBeEmpty();
+        expect($response->json('data.customerInvoice'))->toBeNull();
+    }
+
+    /**
+     * Test: Another customer cannot read someone else's invoice by ID
+     */
+    public function test_other_customer_cannot_get_customer_invoice_by_id(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer();
+        $invoiceId = "/api/shop/customer-invoices/{$testData['invoice1']->id}";
+
+        $query = <<<GQL
+            query getCustomerInvoice {
+              customerInvoice(id: "{$invoiceId}") {
+                _id
+                grandTotal
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($otherCustomer, $query);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not()->toBeEmpty();
+        expect($response->json('data.customerInvoice'))->toBeNull();
     }
 
     /**

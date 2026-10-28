@@ -12,12 +12,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeMassUpdateStatusProcessor;
 
 /**
  * Mass-update status admin settings theme customizations.
- *
- * REST:    POST /api/admin/settings/themes/mass-update-status
- * GraphQL: createAdminSettingsThemeMassUpdateStatus
- *
- * Mirrors Bagisto admin ThemeController::massUpdate which calls
- * ThemeCustomizationRepository::massUpdateStatus.
  */
 #[ApiResource(
     routePrefix: '/api/admin',

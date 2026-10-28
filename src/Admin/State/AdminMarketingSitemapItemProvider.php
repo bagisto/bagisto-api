@@ -5,10 +5,13 @@ namespace Webkul\BagistoApi\Admin\State;
 use Carbon\Carbon;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSitemap;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
+use Webkul\BagistoApi\Admin\State\Concerns\MapsSitemapChannels;
 use Webkul\Sitemap\Models\Sitemap;
 
 class AdminMarketingSitemapItemProvider extends AbstractAdminItemProvider
 {
+    use MapsSitemapChannels;
+
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.marketing.sitemap.not-found';
@@ -16,7 +19,7 @@ class AdminMarketingSitemapItemProvider extends AbstractAdminItemProvider
 
     protected function findEntity(int $id): ?object
     {
-        return Sitemap::find($id);
+        return Sitemap::with('channels')->find($id);
     }
 
     protected function mapToDto(object $sitemap): AdminMarketingSitemap
@@ -29,7 +32,14 @@ class AdminMarketingSitemapItemProvider extends AbstractAdminItemProvider
         $dto->path = $sitemap->path;
         $dto->generatedAt = $sitemap->generated_at ? Carbon::parse($sitemap->generated_at)->toIso8601String() : null;
 
+        $channels = $sitemap->channels;
+
+        $dto->channels = $channels->pluck('id')->map('intval')->all();
+        $dto->urls = $this->sitemapUrls($channels, (int) $sitemap->id, $sitemap->path, $sitemap->file_name);
+
         $additional = $sitemap->additional ?? [];
+
+        $dto->generatedFiles = $this->sitemapGeneratedFiles($additional, $channels);
         $dto->indexFile = $additional['index'] ?? null;
         $dto->generatedSitemaps = $additional['sitemaps'] ?? [];
 
@@ -39,7 +49,6 @@ class AdminMarketingSitemapItemProvider extends AbstractAdminItemProvider
         return $dto;
     }
 
-    /** Public alias used by the processor to reuse mapping after a write. */
     public function mapToDtoPublic(object $sitemap): AdminMarketingSitemap
     {
         return $this->mapToDto($sitemap);

@@ -38,10 +38,6 @@ class AdminCartAddItemProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.cart.product-not-found'));
         }
 
-        if ($product->type === 'booking') {
-            throw new InvalidInputException(__('bagistoapi::app.admin.cart.booking-unsupported'));
-        }
-
         if ($product->type !== 'grouped') {
             try {
                 $saleable = (bool) $product->getTypeInstance()->isSaleable();
@@ -112,6 +108,10 @@ class AdminCartAddItemProcessor implements ProcessorInterface
             }
         }
 
+        if (isset($params['booking']) && is_string($params['booking'])) {
+            $params['booking'] = json_decode($params['booking'], true) ?: [];
+        }
+
         // bundle — [{ optionId, productIds, quantity }]
         //   -> bundle_options { optionId: [ids] } + bundle_option_qty { optionId: qty }
         if (! isset($params['bundle_options']) && ! empty($params['bundleOptions']) && is_array($params['bundleOptions'])) {
@@ -141,7 +141,8 @@ class AdminCartAddItemProcessor implements ProcessorInterface
 
     protected function mergeParams(mixed $data, array $context): array
     {
-        $params = request()->all();
+        // Over GraphQL the request body is the query document, so only the mutation input is read.
+        $params = isset($context['args']) ? [] : request()->all();
 
         if (! empty($context['args']['input']) && is_array($context['args']['input'])) {
             foreach ($context['args']['input'] as $k => $v) {
@@ -158,6 +159,8 @@ class AdminCartAddItemProcessor implements ProcessorInterface
                 }
             }
         }
+
+        unset($params['id'], $params['cartId'], $params['clientMutationId']);
 
         return $params;
     }

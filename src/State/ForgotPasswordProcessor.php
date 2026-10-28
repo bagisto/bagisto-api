@@ -8,9 +8,12 @@ use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Password;
 use Webkul\BagistoApi\Dto\ForgotPasswordInput;
 use Webkul\BagistoApi\Models\ForgotPassword;
+use Webkul\BagistoApi\State\Concerns\VerifiesCaptcha;
 
 class ForgotPasswordProcessor implements ProcessorInterface
 {
+    use VerifiesCaptcha;
+
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         $defaultResponse = [
@@ -38,6 +41,8 @@ class ForgotPasswordProcessor implements ProcessorInterface
 
             return $this->output($defaultResponse);
         }
+
+        $this->assertCaptcha($data, $context);
 
         if (empty($data->email)) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.forgot-password.email-required');

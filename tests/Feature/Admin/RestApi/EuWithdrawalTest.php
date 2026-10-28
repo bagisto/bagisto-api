@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Sales\Models\Order;
+use Webkul\User\Models\Role;
 
 class EuWithdrawalTest extends AdminApiTestCase
 {
@@ -113,6 +114,18 @@ class EuWithdrawalTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBeIn([200, 201]);
         expect($response->json('message'))->not->toBeNull();
         $this->assertDatabaseHas('eu_withdrawals', ['id' => $w['id']]);
+
+        $withJunkObject = $this->adminPost($admin, '/api/admin/eu-withdrawals/'.$w['id'].'/resend-confirmation', ['unexpected' => 'value']);
+        expect($withJunkObject->getStatusCode())->toBeIn([200, 201]);
+
+        $withRawString = $this->call(
+            'POST',
+            '/api/admin/eu-withdrawals/'.$w['id'].'/resend-confirmation',
+            [], [], [],
+            $this->transformHeadersToServerVars($this->adminHeaders($admin)) + ['CONTENT_TYPE' => 'application/json'],
+            '"string"'
+        );
+        expect($withRawString->getStatusCode())->toBeIn([200, 201]);
     }
 
     public function test_requires_auth(): void
@@ -120,5 +133,70 @@ class EuWithdrawalTest extends AdminApiTestCase
         $w = $this->createWithdrawal();
         $response = $this->getJson('/api/admin/eu-withdrawals/'.$w['id']);
         expect($response->getStatusCode())->toBeIn([401, 403]);
+    }
+
+    public function test_export_returns_csv(): void
+    {
+        $admin = $this->createAdmin();
+        $w = $this->createWithdrawal();
+
+        $response = $this->get('/api/admin/eu-withdrawals/export?format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ));
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('text/csv');
+        expect($response->headers->get('Content-Disposition'))->toContain('eu-withdrawals.csv');
+        expect($response->getContent())->toContain('"Received At",Order,"Customer Email",Status,Channel,"Confirmation Sent",Reference');
+        expect($response->getContent())->toContain($w['order']->increment_id);
+    }
+
+    public function test_export_unsupported_format_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $w = $this->createWithdrawal();
+
+        $this->get('/api/admin/eu-withdrawals/export?format=pdf', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(422);
+    }
+
+    public function test_export_requires_authentication(): void
+    {
+        $w = $this->createWithdrawal();
+
+        $this->get('/api/admin/eu-withdrawals/export', ['Accept' => 'text/csv'])->assertStatus(401);
+    }
+
+    public function test_export_no_permission_returns_403(): void
+    {
+        $role = Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions' => [],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $w = $this->createWithdrawal();
+
+        $this->get('/api/admin/eu-withdrawals/export', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(403);
+    }
+
+    public function test_export_honours_the_status_filter(): void
+    {
+        $admin = $this->createAdmin();
+        $received = $this->createWithdrawal('received');
+        $declined = $this->createWithdrawal('declined');
+
+        $content = $this->get('/api/admin/eu-withdrawals/export?format=csv&status=declined', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertOk()->getContent();
+
+        expect($content)->toContain($declined['order']->increment_id);
+        expect($content)->not->toContain($received['order']->increment_id);
     }
 }

@@ -10,12 +10,15 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
+use Webkul\BagistoApi\State\Concerns\ResolvesCartToken;
 
 /**
  * Provides address data from BagistoApi queries.
  */
 class CheckoutAddressProvider implements ProviderInterface
 {
+    use ResolvesCartToken;
+
     public function __construct() {}
 
     /**
@@ -52,7 +55,7 @@ class CheckoutAddressProvider implements ProviderInterface
         $output = new CheckoutAddressOutput;
 
         $output->id = $cart->id;
-        $output->cartToken = $cart->guest_cart_token ?? $cart->customer_id;
+        $output->cartToken = $this->resolveCartToken($cart);
         $output->customerId = $cart->customer_id;
 
         $billingAddress = $cart->billing_address;

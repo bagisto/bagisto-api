@@ -209,13 +209,13 @@ use Webkul\BagistoApi\Admin\State\AdminRefundProvider;
         new Get(
             uriTemplate: '/refunds/export',
             provider: AdminRefundExportProvider::class,
-            outputFormats: ['csv' => ['text/csv']],
+            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Refunds'],
-                summary: 'Export refunds as CSV',
-                description: 'Downloads the refunds datagrid as a CSV file (`text/csv` attachment) — the same data the admin Refunds "Export" button produces (ID, Order ID, Refunded Amount, Billed To, Refund Date). Honours the same filters as the listing (`id`, `order_id`, `state`, `base_grand_total_from`/`_to`, `billed_to`, `created_at_from`/`_to`). The response is a binary download, not JSON. Requires `sales.refunds.view`.',
+                summary: 'Export refunds as csv, xls or xlsx',
+                description: 'Downloads the refunds datagrid as a csv, xls or xlsx file — the same data the admin Refunds "Export" button produces (ID, Order ID, Refunded Amount, Billed To, Refund Date). Honours the same filters as the listing (`id`, `order_id`, `state`, `base_grand_total_from`/`_to`, `billed_to`, `created_at_from`/`_to`). The response is a binary download, not JSON. Requires `sales.refunds.view`.',
                 parameters: [
-                    new Model\Parameter('format', 'query', 'Export format. Currently only `csv` is supported.', false, schema: ['type' => 'string', 'enum' => ['csv'], 'default' => 'csv']),
+                    new Model\Parameter('format', 'query', 'Export format: `csv`, `xls` or `xlsx`. Defaults to `csv`.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
                     new Model\Parameter('id', 'query', 'Filter by refund id (integer or comma-list).', false, schema: ['type' => 'string']),
                     new Model\Parameter('order_id', 'query', 'Partial order increment_id match.', false, schema: ['type' => 'string']),
                     new Model\Parameter('state', 'query', 'Refund state.', false, schema: ['type' => 'string']),
@@ -227,16 +227,16 @@ use Webkul\BagistoApi\Admin\State\AdminRefundProvider;
                 ],
                 responses: [
                     '200' => new Model\Response(
-                        description: 'The refunds CSV file is downloaded (text/csv attachment).',
+                        description: 'The refunds export file is downloaded as an attachment.',
                         content: new \ArrayObject([
-                            'text/csv' => [
-                                'schema' => ['type' => 'string', 'format' => 'binary'],
-                            ],
+                            'text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']],
+                            'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']],
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']],
                         ]),
                     ),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
                     '403' => new Model\Response(description: 'Admin role lacks sales.refunds.view.'),
-                    '422' => new Model\Response(description: 'Unsupported format (only csv).'),
+                    '422' => new Model\Response(description: 'Unsupported format (csv, xls and xlsx only).'),
                 ],
             ),
         ),

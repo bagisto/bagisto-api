@@ -3,11 +3,16 @@
 return [
 
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'The channel ":code" in the X-Channel header does not exist.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Authentication token is required',
             'invalid-token' => 'Invalid or expired authentication token',
             'unauthorized-access' => 'Unauthorized access to cart',
             'authenticated-only' => 'Only authenticated users can fetch their carts',
+            'move-to-wishlist-login-required' => 'Sign in to move cart items to your wishlist.',
             'merge-requires-auth' => 'Guest merge requires authentication',
             'unknown-operation' => 'Unknown cart operation',
 
@@ -26,8 +31,6 @@ return [
             'cart-item-id-required' => 'Cart item ID is required',
             'item-ids-required' => 'Item IDs array is required',
 
-            'event-booking-quantity-not-changeable' => 'Event booking product quantity cannot be changed. Quantity is determined by ticket selection.',
-            'appointment-booking-quantity-not-changeable' => 'Appointment booking product quantity cannot be changed.',
             'coupon-code-required' => 'Coupon code is required',
             'address-data-required' => 'Country, state, and postcode are required',
             'grouped-qty-required' => 'Grouped product requires selected quantities. Pass groupedQty as JSON string, e.g. {"101":2,"102":1}.',
@@ -80,6 +83,21 @@ return [
             'error-sending-reset-link' => 'An error occurred while sending reset link',
         ],
 
+        'reset-password' => [
+            'success' => 'Your password has been reset. You can now sign in with the new password.',
+        ],
+
+        'verify-account' => [
+            'token-required' => 'The verification token is required.',
+            'invalid-token' => 'This verification link is invalid or has already been used.',
+            'verified' => 'Your account has been verified. You can now sign in.',
+        ],
+
+        'verification-email' => [
+            'sent' => 'Verification email sent.',
+            'not-sent' => 'The verification email could not be sent. Please try again later.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Invalid operation',
             'invalid-input-data' => 'Invalid input data',
@@ -100,6 +118,7 @@ return [
             'address-not-found' => 'Address not found or does not belong to this customer',
             'retrieved' => 'Addresses retrieved successfully',
             'fetch-failed' => 'Failed to fetch addresses:',
+            'field-required' => 'The :field field is required',
         ],
 
         'customer-profile' => [
@@ -113,11 +132,13 @@ return [
             'confirm-password-required' => 'Confirm password is required when changing password',
             'current-password-required' => 'Current password is required to change your password',
             'current-password-incorrect' => 'The current password you entered is incorrect',
+            'delete-password-required' => 'Your password is required to delete your account.',
             'unauthenticated' => 'Unauthenticated. Please login to perform this action',
             'id-required' => 'Customer ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/admin/customers/1" or numeric ID',
             'not-found' => 'Customer not found',
             'phone-special-chars-not-allowed' => 'Mobile number can only contain digits. Special characters are not allowed',
+            'email-already-taken' => 'This email address is already registered to another account',
             'invalid-gender' => 'Invalid gender value ":gender". Allowed values are: :valid',
         ],
 
@@ -132,12 +153,33 @@ return [
             'comment-required' => 'Review comment is required',
             'review-disabled' => 'Product reviews are currently disabled',
             'guest-review-disabled' => 'Guest reviews are not allowed. Please login to submit a review',
+            'owner-required' => 'Please login to manage your review',
+            'not-owned' => 'This review was not written by you and cannot be modified or deleted',
         ],
 
         'customer-review' => [
             'id-required' => 'Customer review ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/customer-reviews/1" or numeric ID',
             'not-found' => 'Customer review with ID ":id" not found',
+        ],
+
+        'search' => [
+            'query-required' => 'The search query is required.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'The path is required.',
+            'not-found' => 'Nothing matches this path.',
+        ],
+
+        'image-search' => [
+            'image-required' => 'An image is required.',
+        ],
+
+        'newsletter' => [
+            'error-during-subscription' => 'Unable to complete the subscription at this time. Please try again later',
+            'token-required' => 'The unsubscribe token is required.',
+            'unsubscribed' => 'You have been unsubscribed from the newsletter.',
         ],
 
         'contact-us' => [
@@ -161,6 +203,11 @@ return [
             'invalid-order' => 'The selected order is not valid.',
             'invalid-item' => 'The selected item is not eligible for return.',
             'qty-exceeds' => 'The requested quantity exceeds the returnable quantity.',
+            'invalid-package-condition' => 'Package condition must be "open" or "packed".',
+            'invalid-image' => 'One or more of the uploaded files has an unsupported file type.',
+            'invalid-custom-field' => 'Unknown custom field ":id".',
+            'custom-field-required' => 'The field ":field" is required.',
+            'invalid-custom-field-value' => 'The value for ":field" is not one of the allowed options.',
             'created' => 'Return request created successfully.',
             'canceled' => 'Return request canceled successfully.',
             'already-canceled' => 'Return request is already canceled.',
@@ -174,6 +221,10 @@ return [
             'not-found' => 'Withdrawal declaration not found.',
             'order-not-found' => 'The order could not be found or is not eligible for withdrawal.',
             'created' => 'Withdrawal declaration filed successfully.',
+            'disabled' => 'EU withdrawal is not available on this channel.',
+            'link-sent' => 'If the order number and email match a guest order, we have emailed a link to withdraw from it.',
+            'invalid-link' => 'This withdrawal link is invalid or has expired. Request a new one.',
+            'too-many-attempts' => 'Too many attempts. Please wait a minute and try again.',
         ],
 
         'customer-order-shipment' => [
@@ -194,6 +245,8 @@ return [
             'not-found' => 'Order with ID ":id" not found or does not belong to this customer',
             'reorder-success' => ':count item(s) from your previous order have been added to your cart',
             'no-items-added' => 'No items could be added to the cart. Products may be out of stock or unavailable',
+            'disabled-in-settings' => 'Reorder is disabled in store settings.',
+            'cannot-reorder' => 'This order cannot be reordered (guest order or one or more items are no longer available for purchase).',
         ],
 
         'customer-downloadable-product' => [
@@ -202,17 +255,16 @@ return [
             'not-found' => 'Customer downloadable product with ID ":id" not found',
         ],
 
+        'customer-refund' => [
+            'id-required' => 'Customer refund ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/customer-refunds/1" or numeric ID',
+            'not-found' => 'Customer refund with ID ":id" not found',
+        ],
+
         'customer-invoice' => [
             'id-required' => 'Customer invoice ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/customer-invoices/1" or numeric ID',
             'not-found' => 'Customer invoice with ID ":id" not found',
-        ],
-
-        'product' => [
-            'not-found' => 'Product not found',
-            'not-found-with-sku' => 'No product found with SKU',
-            'not-found-with-url-key' => 'No product found with URL key',
-            'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
         ],
 
         'auth' => [
@@ -267,11 +319,33 @@ return [
         'login' => [
             'invalid-credentials' => 'Invalid email or password',
             'account-suspended' => 'Your account has been suspended',
+            'account-inactive' => 'Your account is not activated. Please contact support.',
+            'email-not-verified' => 'Please verify your email address before logging in.',
             'successful' => 'You have logged in successfully',
             'invalid-request' => 'Invalid login request',
         ],
 
+        'social-login' => [
+            'signed-in' => 'Signed in successfully.',
+            'token-required' => 'A social login token is required.',
+            'invalid-token' => 'The social login token is invalid or expired. Please try again.',
+            'wrong-audience' => 'This token was issued for a different app.',
+            'not-configured' => 'This social login provider is not configured. Please contact support.',
+            'email-required' => 'The provider did not share an email address. Please sign up with email instead.',
+            'account-inactive' => 'Your account is not activated. Please contact support.',
+            'provider-not-supported' => 'This social login provider is not supported.',
+            'provider-disabled' => 'This social login provider is not enabled.',
+        ],
+
         'checkout' => [
+            'payment-not-online' => 'The selected payment method needs no online payment. Place the order directly.',
+            'payment-initiation-failed' => 'The payment could not be started. Please try again or choose another payment method.',
+            'payment-not-configured' => 'This payment method is not configured.',
+            'payment-currency-unsupported' => 'This payment method does not support the cart currency. Supported currencies: :currencies.',
+            'payment-no-confirmation' => 'The selected payment method needs no confirmation.',
+            'payment-not-verified' => 'The payment could not be verified.',
+            'payment-confirmed' => 'Payment confirmed and order placed.',
+            'payment-method-mismatch' => 'The payment method does not match the one saved on the cart.',
             'invalid-input' => 'Invalid input data for checkout operation',
             'billing-address-required' => 'Billing address is required',
             'shipping-address-required' => 'Shipping address is required for shipments',
@@ -284,10 +358,13 @@ return [
             'shipping-method-error' => 'Error saving shipping method',
             'payment-method-required' => 'Payment method is required',
             'invalid-payment-method' => 'Invalid or unavailable payment method',
+            'paypal-order-id-required' => 'The PayPal order id is required to confirm a PayPal Smart Button payment.',
+            'paypal-smart-button-payment-flow' => 'PayPal Smart Button payments are captured through checkout-payments/initiate and checkout-payments/confirm, not by placing the order directly.',
             'payment-method-save-failed' => 'Failed to save payment method',
             'payment-method-saved' => 'Payment method saved successfully',
             'payment-method-error' => 'Error saving payment method',
             'order-placed' => 'Order placed successfully',
+            'order-redirect-required' => 'This payment method is paid on the gateway. Call POST /api/shop/checkout-payments/initiate to start the payment; redirectUrl is the storefront page and needs a browser session.',
             'order-creation-failed' => 'Order creation failed: Order ID is null or order not persisted',
             'order-retrieval-failed' => 'Failed to retrieve created order',
             'order-creation-error' => 'Failed to create order',
@@ -295,6 +372,7 @@ return [
             'account-suspended' => 'Your account has been suspended. Please contact support.',
             'account-inactive' => 'Your account is inactive. Please contact support.',
             'minimum-order-not-met' => 'Minimum order amount is :amount',
+            'guest-checkout-not-allowed' => 'Please log in to check out. Guest checkout is not available for this cart.',
             'email-required' => 'Email address is required for order creation',
             'unknown-operation' => 'Unknown checkout operation',
         ],
@@ -306,6 +384,10 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'Product not found',
+            'not-found-with-sku' => 'No product found with SKU',
+            'not-found-with-url-key' => 'No product found with URL key',
+            'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
             'type' => 'Product Type',
             'attribute-family' => 'Attribute Family',
             'sku' => 'SKU',
@@ -364,6 +446,7 @@ return [
             'customer-not-found' => 'Customer not found',
             'already-exists' => 'This product is already in your comparison list',
             'delete-all-success' => 'All compare items have been removed successfully',
+            'disabled' => 'Product comparison is disabled for this store.',
         ],
 
         'wishlist' => [
@@ -384,6 +467,7 @@ return [
             'move-to-cart-missing-options' => 'Product has missing required options. Please configure it manually',
             'moved-to-cart-success' => 'Item moved to cart successfully',
             'delete-all-success' => 'All wishlist items have been removed successfully',
+            'disabled' => 'The wishlist is disabled for this store.',
         ],
 
         'gdpr' => [
@@ -393,16 +477,17 @@ return [
             'type-required' => 'The request type is required',
             'type-invalid' => 'The request type must be either "delete" or "update"',
             'message-required' => 'The message is required',
+            'message-too-long' => 'The message may not be greater than :max characters.',
             'raised' => 'Your GDPR data request has been raised successfully.',
             'revoked' => 'Your GDPR data request has been revoked successfully.',
             'revoke-not-allowed' => 'This GDPR data request can no longer be revoked.',
             'deleted' => 'Your GDPR data request has been deleted successfully.',
         ],
 
-        'theme-customization' => [
-            'id-required' => 'Theme Customization ID is required',
-            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/theme-customizations/1" or numeric ID',
-            'not-found' => 'Theme Customization not found',
+        'section' => [
+            'id-required' => 'Section ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/sections/1" or numeric ID',
+            'not-found' => 'Section not found',
         ],
 
         'install' => [
@@ -565,7 +650,7 @@ return [
         ],
 
         'dashboard' => [
-            'invalid-type' => 'Unknown dashboard stat type. Valid types: over-all, today, stock-threshold-products, total-sales, total-visitors, top-selling-products, top-customers.',
+            'invalid-type' => 'Unknown dashboard stat type. Valid types: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
         ],
 
         'rma' => [
@@ -611,7 +696,7 @@ return [
         'reporting' => [
             'invalid-entity' => 'Unknown reporting entity.',
             'invalid-type' => 'Unknown reporting stat type for this entity.',
-            'export-format-unsupported' => 'Only the csv export format is supported.',
+            'export-format-unsupported' => 'Only the csv, xls and xlsx export formats are supported.',
         ],
 
         'configuration' => [
@@ -622,6 +707,10 @@ return [
             'values-required' => 'At least one value is required under `values`.',
             'scope-escape' => 'The key `:key` is outside the requested slug subtree.',
             'unknown-field' => 'The key `:key` is not a registered configuration field.',
+            'search-query-required' => 'A search query is required.',
+            'download-code-required' => 'The configuration field code is required.',
+            'download-not-file' => 'Only file or image configuration fields can be downloaded.',
+            'download-file-not-found' => 'No file is stored for this configuration field.',
             'validation-failed' => 'One or more configuration values failed validation.',
             'file-upload-rest-only' => 'Binary file uploads for the field `:field` are only supported over the REST multipart endpoint, not GraphQL.',
             'custom-view-readonly' => 'The field `:field` is a custom blade-rendered field and cannot be updated via the API.',
@@ -629,6 +718,14 @@ return [
         ],
 
         'customer' => [
+            'sidebar' => [
+                'item-id-required' => 'The item id field is required.',
+                'item-not-exists' => 'The selected item id is invalid.',
+                'item-not-found' => 'The item does not belong to this customer.',
+                'cart-item-deleted' => 'Cart item removed successfully.',
+                'wishlist-item-deleted' => 'Wishlist item removed successfully.',
+                'compare-item-deleted' => 'Compare item removed successfully.',
+            ],
             'not-found' => 'Customer not found.',
             'no-permission' => 'You do not have permission to perform this action.',
             'has-active-orders' => 'Customer has pending or processing orders and cannot be deleted.',
@@ -768,6 +865,41 @@ return [
             ],
         ],
 
+        'appearance' => [
+            'no-permission' => 'You do not have permission to manage appearance.',
+
+            'theme' => [
+                'not-found' => 'Theme not found.',
+                'not-installed' => 'This theme is not installed.',
+                'channel-ids-required' => 'At least one channel is required.',
+                'unknown-channel' => 'One or more channels do not exist.',
+                'activated' => 'Theme activated successfully.',
+            ],
+
+            'section' => [
+                'not-found' => 'Section not found.',
+                'invalid-payload' => 'Unsupported section payload.',
+                'footer-links-exists' => 'This channel already has a footer links section.',
+                'options-required' => 'Options are required.',
+                'status-required' => 'Status is required.',
+                'section-ids-required' => 'At least one section is required.',
+                'reorder-single-scope' => 'Sections can only be reordered within one theme and channel at a time.',
+                'reorder-incomplete' => 'Reordering needs every section of the theme and channel, in the order they should render.',
+                'unknown-section' => 'One or more sections do not exist.',
+                'file-required' => 'A file is required.',
+                'created' => 'Section created successfully.',
+                'updated' => 'Section updated successfully.',
+                'deleted' => 'Section deleted successfully.',
+                'draft-saved' => 'Section changes staged successfully.',
+                'status-staged' => 'Section status staged successfully.',
+                'order-staged' => 'Section order staged successfully.',
+                'duplicated' => 'Section copied successfully.',
+                'published' => 'Section changes published successfully.',
+                'discarded' => 'Section changes discarded successfully.',
+                'media-uploaded' => 'Media uploaded successfully.',
+            ],
+        ],
+
         'sales' => [
             'no-permission' => 'You do not have permission to view this sales resource.',
             'invoice' => [
@@ -781,7 +913,7 @@ return [
             'refund' => [
                 'not-found' => 'Refund not found.',
                 'no-permission' => 'You do not have permission to view refunds.',
-                'export-format-unsupported' => 'Only csv export is currently supported.',
+                'export-format-unsupported' => 'Only csv, xls and xlsx exports are supported.',
             ],
             'transaction' => [
                 'not-found' => 'Transaction not found.',
@@ -798,11 +930,42 @@ return [
             ],
             'booking' => [
                 'not-found' => 'Booking not found.',
+                'calendar-date-invalid' => 'The start and end dates must be valid dates in Y-m-d format.',
                 'no-permission' => 'You do not have permission to view bookings.',
             ],
             'export' => [
-                'format-unsupported' => 'Only csv export is currently supported.',
+                'format-unsupported' => 'Only csv, xls and xlsx exports are supported.',
             ],
+        ],
+
+        'booking-product' => [
+            'not-found' => 'This product is not a booking product.',
+            'date-invalid' => 'A date in Y-m-d format is required.',
+        ],
+
+        'media' => [
+            'file-required' => 'The :field file is required.',
+        ],
+
+        'magic-ai' => [
+            'disabled' => 'Magic AI is disabled. Enable Magic AI and this feature in Configuration → Magic AI.',
+        ],
+
+        'account' => [
+            'update-success' => 'Account updated successfully',
+            'invalid-password' => 'The current password you entered is incorrect.',
+            'two-factor' => [
+                'already-enabled' => 'Two-factor authentication is already enabled. Disable it before setting it up again.',
+                'setup-required' => 'Set up two-factor authentication before enabling it.',
+                'invalid-code' => 'Invalid verification code.',
+                'enabled-success' => 'Two-Factor Authentication enabled successfully.',
+                'disabled-success' => 'Two-Factor Authentication has been disabled.',
+            ],
+        ],
+
+        'notification' => [
+            'not-found' => 'Notification not found.',
+            'marked-success' => 'All notifications have been marked as read',
         ],
 
         'cart' => [
@@ -810,7 +973,6 @@ return [
             'not-draft' => 'This cart cannot be modified through the admin API.',
             'product-required' => 'productId is required.',
             'product-not-found' => 'Product not found.',
-            'booking-unsupported' => 'Booking products cannot be added to an admin draft order. Booking purchases must be made through the customer storefront.',
             'product-not-saleable' => 'This product is not available for sale (out of stock or disabled) and cannot be added to the order.',
             'qty-required' => 'qty is required and must be a non-empty object of itemId => quantity.',
             'cart-item-required' => 'cartItemId is required.',
@@ -856,7 +1018,6 @@ return [
         'product' => [
             'not-found' => 'Product not found.',
 
-            // Mass actions
             'mass-delete-success' => 'Products deleted successfully.',
             'mass-update-status-success' => 'Products status updated successfully.',
             'indices-required' => 'The indices field is required and must be a non-empty array.',
@@ -865,12 +1026,10 @@ return [
             'mass-delete-failed' => 'One or more products could not be deleted.',
             'no-permission' => 'You do not have permission to manage products.',
 
-            // Copy
             'copy-success' => 'Product copied successfully.',
             'copy-failed' => 'Failed to copy product.',
             'copy-variant-not-supported' => 'Variants of configurable products cannot be copied. Copy the parent configurable product instead.',
 
-            // Phases 5.3 — 5.8 + 5.8-booking — Create (all 7 types)
             'create' => [
                 'created' => 'Product created successfully.',
                 'create-failed' => 'Failed to create product.',
@@ -886,7 +1045,6 @@ return [
                 'no-permission' => 'You do not have permission to create products.',
             ],
 
-            // Update (any type)
             'update' => [
                 'updated' => 'Product updated successfully.',
                 'update-failed' => 'Failed to update product.',
@@ -905,15 +1063,15 @@ return [
                 'translations-single-locale' => 'Only the requested locale was updated. To update locale(s) :locales, send a separate request with ?locale=<code> for each.',
             ],
 
-            // Delete
             'delete' => [
                 'deleted' => 'Product deleted successfully.',
                 'delete-failed' => 'Failed to delete product.',
             ],
 
-            // Images (upload / reorder / delete)
             'image' => [
                 'uploaded' => 'Product image uploaded successfully.',
+                'updated' => 'Product image updated successfully.',
+                'update-empty' => 'Send an alt text or a position to update.',
                 'reordered' => 'Product images reordered successfully.',
                 'deleted' => 'Product image deleted successfully.',
                 'image-required' => 'An image file is required (multipart field "image").',
@@ -937,6 +1095,11 @@ return [
                 'no-permission' => 'You do not have permission to manage downloadable product files.',
             ],
             'video' => [
+                'order-required' => 'The order field is required.',
+                'order-invalid' => 'Each order row must contain an id and a position.',
+                'id-not-on-product' => 'Video #:id does not belong to this product.',
+                'reorder-failed' => 'Failed to reorder product videos.',
+                'reordered' => 'Product videos reordered successfully.',
                 'uploaded' => 'Product video uploaded successfully.',
                 'deleted' => 'Product video deleted successfully.',
                 'video-required' => 'A video file is required (multipart field "video").',
@@ -949,7 +1112,6 @@ return [
                 'graphql-upload-unsupported' => 'Video upload over GraphQL is not supported. Use POST /api/admin/catalog/products/{productId}/videos with multipart/form-data.',
             ],
 
-            // Inventory (per-source qty updates)
             'inventory' => [
                 'updated' => 'Product inventories saved successfully.',
                 'inventories-required' => 'The inventories field is required and must be a non-empty map of inventory_source_id to quantity.',
@@ -960,7 +1122,6 @@ return [
                 'not-found' => 'Product not found.',
             ],
 
-            // Customer-group prices CRUD
             'customer-group-price' => [
                 'created' => 'Customer-group price added successfully.',
                 'updated' => 'Customer-group price updated successfully.',
@@ -979,9 +1140,9 @@ return [
         ],
 
         'category' => [
+            'media-type-required' => 'Send exactly one image file: logo or banner.',
             'not-found' => 'Category not found.',
 
-            // CRUD
             'created' => 'Category created successfully.',
             'updated' => 'Category updated successfully.',
             'deleted' => 'Category deleted successfully.',
@@ -1002,9 +1163,9 @@ return [
         ],
 
         'attribute' => [
+            'swatch-image-only' => 'Swatch images can only be uploaded for attributes whose swatch type is image.',
             'not-found' => 'Attribute not found.',
 
-            // CRUD
             'create-success' => 'Attribute created successfully.',
             'update-success' => 'Attribute updated successfully.',
             'delete-success' => 'Attribute deleted successfully.',
@@ -1018,7 +1179,6 @@ return [
             'system-attribute' => 'System attributes cannot be deleted.',
             'in-use-family' => 'Attribute is part of one or more attribute families (group IDs: :ids). Remove it from those families first.',
 
-            // Option sub-resource
             'option-not-found' => 'Attribute option not found.',
             'option-not-supported' => 'Attribute type ":type" does not support options. Only select, multiselect, and checkbox attributes can have options.',
             'option-in-use' => 'This option is used by :count product(s) and cannot be deleted.',
@@ -1028,7 +1188,6 @@ return [
         'family' => [
             'not-found' => 'Attribute family not found.',
 
-            // CRUD
             'created' => 'Attribute family created successfully.',
             'updated' => 'Attribute family updated successfully.',
             'deleted' => 'Attribute family deleted successfully.',
@@ -1038,6 +1197,10 @@ return [
             'group-code-required' => 'Each attribute group must have a code.',
             'group-name-required' => 'Each attribute group must have a name.',
             'group-column-invalid' => 'Each attribute group column must be 1 or 2.',
+            'group-name-duplicate' => 'An attribute group name must be unique within the attribute family.',
+            'update-failed' => 'Attribute family could not be updated.',
+            'create-failed' => 'Attribute family could not be created.',
+            'default-delete-error' => 'The default attribute family cannot be deleted.',
             'last-delete-error' => 'At least one attribute family is required.',
             'attribute-product-error' => 'This attribute family is in use by one or more products. Reassign those products before deleting it.',
             'delete-failed' => 'Attribute family could not be deleted.',
@@ -1131,6 +1294,7 @@ return [
                 'permissions-required' => 'The permissions field is required when permission_type is custom.',
                 'cannot-delete-in-use' => 'This role is assigned to one or more admins and cannot be deleted.',
                 'cannot-delete-last-role' => 'At least one role is required — cannot delete the last remaining role.',
+                'cannot-remove-last-full-access' => 'This role gives the last admin full access, so it cannot be changed to custom permissions.',
                 'delete-failed' => 'Role could not be deleted.',
                 'no-permission' => 'You do not have permission to manage roles.',
             ],
@@ -1152,16 +1316,13 @@ return [
                 'delete-failed' => 'Currency could not be deleted.',
                 'no-permission' => 'You do not have permission to manage currencies.',
 
-                // Mass delete
                 'mass-delete-success' => 'Currencies deleted successfully.',
                 'mass-delete-indices-required' => 'The indices field is required and must be a non-empty array.',
             ],
 
             'channel' => [
-                // Read
                 'not-found' => 'Channel not found.',
 
-                // Create / Update / Delete
                 'created' => 'Channel created successfully.',
                 'updated' => 'Channel updated successfully.',
                 'deleted' => 'Channel deleted successfully.',
@@ -1194,6 +1355,8 @@ return [
                 'role-not-found' => 'The selected role does not exist.',
                 'status-invalid' => 'The status must be 0 or 1.',
                 'cannot-delete-self' => 'You cannot delete your own admin account.',
+                'cannot-deactivate-last-full-access' => 'You are the only active admin with full access, so you cannot make your own account inactive.',
+                'cannot-change-last-full-access-role' => 'This is the last admin with full access, so its role cannot be changed.',
                 'cannot-delete-last-admin' => 'At least one admin user is required — cannot delete the last remaining admin.',
                 'delete-failed' => 'Admin user could not be deleted.',
                 'no-permission' => 'You do not have permission to manage admin users.',
@@ -1222,6 +1385,9 @@ return [
                     'nothing-to-import' => 'There is nothing to import.',
                     'not-valid' => 'The import is not valid.',
                     'setup-queue-error' => 'The queue connection is set to sync; configure a real queue to process imports in the background.',
+                    'image-download-failed' => 'The import images could not be downloaded.',
+                    'validation-failed' => 'The import could not be validated. Please check the file and try again.',
+                    'sample-images-not-found' => 'This importer has no sample images archive.',
                     'file-not-found' => 'No file is available for download.',
                     'error-report-not-found' => 'No error report is available for download.',
                     'sample-not-found' => 'No sample file is available for the requested type and format.',
@@ -1232,10 +1398,8 @@ return [
 
         'cms' => [
             'page' => [
-                // Read
                 'not-found' => 'CMS page not found.',
 
-                // Create
                 'created' => 'CMS page created successfully.',
                 'url-key-required' => 'The url_key field is required.',
                 'url-key-unique' => 'The url_key has already been taken.',
@@ -1245,19 +1409,15 @@ return [
                 'channels-required' => 'At least one channel must be selected.',
                 'channels-invalid' => 'One or more channels are invalid.',
 
-                // Update
                 'updated' => 'CMS page updated successfully.',
 
-                // Delete
                 'deleted' => 'CMS page deleted successfully.',
                 'delete-failed' => 'CMS page could not be deleted.',
 
-                // Mass delete
                 'mass-deleted' => 'CMS pages deleted successfully.',
                 'indices-required' => 'The indices field is required and must be a non-empty array.',
                 'indices-invalid' => 'The indices field must be an array of CMS page IDs.',
 
-                // Common
                 'no-permission' => 'You do not have permission to manage CMS pages.',
             ],
         ],
@@ -1297,6 +1457,7 @@ return [
                 'no-permission' => 'You do not have permission to manage sitemaps.',
                 'generate' => [
                     'id-required' => 'Sitemap id is required.',
+                    'no-channels' => 'This sitemap covers no channel, so there is nothing to generate. Assign at least one channel to it first.',
                     'success' => 'Sitemap regenerated successfully.',
                     'failed' => 'Sitemap generation failed: :message',
                 ],
@@ -1319,8 +1480,8 @@ return [
                 'coupon-code-unique' => 'This coupon code is already in use.',
             ],
 
-            // Marketing → Email Templates
             'template' => [
+                'campaign-associated' => 'This email template is used by a campaign, so it cannot be deleted. Remove it from the campaign first.',
                 'not-found' => 'Email template not found.',
                 'created' => 'Email template created successfully.',
                 'updated' => 'Email template updated successfully.',
@@ -1330,8 +1491,8 @@ return [
                 'no-permission' => 'You do not have permission to manage email templates.',
             ],
 
-            // Marketing → Events
             'event' => [
+                'campaign-associated' => 'This event is used by a campaign, so it cannot be deleted. Remove it from the campaign first.',
                 'not-found' => 'Marketing event not found.',
                 'created' => 'Marketing event created successfully.',
                 'updated' => 'Marketing event updated successfully.',
@@ -1340,7 +1501,6 @@ return [
                 'no-permission' => 'You do not have permission to manage marketing events.',
             ],
 
-            // Marketing → Search Synonyms
             'search-synonym' => [
                 'not-found' => 'Search synonym not found.',
                 'created' => 'Search synonym created successfully.',
@@ -1352,7 +1512,6 @@ return [
                 'no-permission' => 'You do not have permission to manage search synonyms.',
             ],
 
-            // Marketing → URL Rewrites
             'url-rewrite' => [
                 'not-found' => 'URL rewrite not found.',
                 'created' => 'URL rewrite created successfully.',
@@ -1364,7 +1523,6 @@ return [
                 'no-permission' => 'You do not have permission to manage URL rewrites.',
             ],
 
-            // Cart Rule Coupons (sub-resource of Cart Rules)
             'cart-rule-coupon' => [
                 'cart-rule-not-found' => 'Cart rule not found.',
                 'not-found' => 'Coupon not found.',
@@ -1378,7 +1536,6 @@ return [
                 'no-permission' => 'You do not have permission to manage cart rule coupons.',
             ],
 
-            // Newsletter Subscribers
             'subscriber' => [
                 'not-found' => 'Newsletter subscriber not found.',
                 'updated' => 'Subscription updated successfully.',
@@ -1387,7 +1544,6 @@ return [
                 'no-permission' => 'You do not have permission to manage newsletter subscribers.',
             ],
 
-            // Search Terms
             'search-term' => [
                 'not-found' => 'Search term not found.',
                 'updated' => 'Search term updated successfully.',
@@ -1414,6 +1570,7 @@ return [
 
             'acl' => [
                 'title' => 'API Change History',
+                'view' => 'View',
                 'delete' => 'Delete History',
             ],
 
@@ -1474,6 +1631,7 @@ return [
 
         'acl' => [
             'title' => 'Integration',
+            'view' => 'View',
             'create' => 'Create Integration',
             'edit' => 'Edit Integration',
             'delete' => 'Revoke Integration Token',

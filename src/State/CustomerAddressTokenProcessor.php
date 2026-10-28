@@ -9,14 +9,18 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Dto\CustomerAddressInput;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
+use Webkul\Core\Rules\PhoneNumber;
+use Webkul\Core\Rules\PostCode;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerAddress as AddressModel;
+use Webkul\Customer\Rules\VatIdRule;
 
 class CustomerAddressTokenProcessor implements ProcessorInterface
 {
@@ -105,6 +109,8 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
 
         $this->mapInputToAddress($address, $data);
 
+        $this->validateAddress($address);
+
         if ($data->defaultAddress) {
             AddressModel::where('customer_id', $customer->id)
                 ->where('address_type', 'customer')
@@ -117,6 +123,32 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         Event::dispatch('customer.addresses.create.after', $address);
 
         return $this->mapAddressToResponse($address);
+    }
+
+    /**
+     * The storefront address rules (AddressRequest), applied to the values the address will be
+     * saved with, so a partial update is checked against the merged result.
+     */
+    private function validateAddress(AddressModel $address): void
+    {
+        $validator = Validator::make($address->only([
+            'first_name', 'last_name', 'address', 'country', 'state', 'city', 'postcode', 'phone', 'vat_id', 'email',
+        ]), [
+            'first_name' => ['required'],
+            'last_name' => ['required'],
+            'address' => ['required'],
+            'country' => core()->isCountryRequired() ? ['required'] : ['nullable'],
+            'state' => core()->isStateRequired() ? ['required'] : ['nullable'],
+            'city' => ['required', 'string'],
+            'postcode' => core()->isPostCodeRequired() ? ['required', new PostCode] : ['nullable', new PostCode],
+            'phone' => ['required', new PhoneNumber],
+            'vat_id' => [(new VatIdRule)->setCountry($address->country)],
+            'email' => ['required', 'email'],
+        ]);
+
+        if ($validator->fails()) {
+            throw new InvalidInputException($validator->errors()->first(), 422);
+        }
     }
 
     private function handleUpdate(Customer $customer, CustomerAddressInput $data): array
@@ -133,6 +165,8 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         Event::dispatch('customer.addresses.update.before', $data->addressId);
 
         $this->mapInputToAddress($address, $data, true);
+
+        $this->validateAddress($address);
 
         if ($data->defaultAddress) {
             AddressModel::where('customer_id', $customer->id)

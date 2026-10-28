@@ -2,6 +2,25 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'נדרש מזהה החזר של לקוח',
+            'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/customer-refunds/1" או מזהה מספרי',
+            'not-found' => 'החזר הלקוח עם המזהה ":id" לא נמצא',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'הזמנה חוזרת מושבתת בהגדרות החנות.',
+            'cannot-reorder' => 'לא ניתן להזמין מחדש הזמנה זו (הזמנת אורח או שמוצר אחד או יותר אינם זמינים עוד לרכישה).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'ההודעה לא יכולה להכיל יותר מ-:max תווים.',
+        ],
+
+        'headers' => [
+            'unknown-channel' => 'הערוץ ":code" בכותרת X-Channel אינו קיים.',
+        ],
+
         'cart' => [
             'authentication-required' => 'נדרש אסימון אימות',
             'invalid-token' => 'אסימון אימות לא תקף או שפג תוקפו',
@@ -102,6 +121,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'המוצר לא נמצא',
             'not-found-with-sku' => 'No product found with SKU',
             'not-found-with-url-key' => 'No product found with URL key',
             'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
@@ -130,8 +150,22 @@ return [
         'login' => [
             'invalid-credentials' => 'אימייל או סיסמה שגויים',
             'account-suspended' => 'חשבונך הושעה',
+            'account-inactive' => 'הפעלת החשבון שלך מחכה לאישור מנהל',
+            'email-not-verified' => 'אנא אמת את חשבון האימייל שלך תחילה.',
             'successful' => 'התחברת בהצלחה',
             'invalid-request' => 'בקשת התחברות לא חוקית',
+        ],
+
+        'social-login' => [
+            'signed-in' => 'ההתחברות בוצעה בהצלחה.',
+            'token-required' => 'נדרש אסימון התחברות חברתית.',
+            'invalid-token' => 'אסימון ההתחברות החברתית אינו תקין או שפג תוקפו. אנא נסה שוב.',
+            'wrong-audience' => 'אסימון זה הונפק עבור אפליקציה אחרת.',
+            'not-configured' => 'ספק ההתחברות החברתית הזה אינו מוגדר. פנה לתמיכה.',
+            'email-required' => 'הספק לא שיתף כתובת דוא״ל. אנא הירשם באמצעות דוא״ל.',
+            'account-inactive' => 'הפעלת החשבון שלך מחכה לאישור מנהל',
+            'provider-not-supported' => 'ספק ההתחברות החברתית הזה אינו נתמך.',
+            'provider-disabled' => 'ספק ההתחברות החברתית הזה אינו מופעל.',
         ],
 
         'checkout' => [
@@ -147,6 +181,8 @@ return [
             'shipping-method-error' => 'שגיאה בשמירת שיטת המשלוח',
             'payment-method-required' => 'שיטת התשלום נדרשת',
             'invalid-payment-method' => 'שיטת תשלום לא תקינה או לא זמינה',
+            'paypal-order-id-required' => 'נדרש מזהה הזמנת PayPal כדי לאשר תשלום בכפתור החכם של PayPal.',
+            'paypal-smart-button-payment-flow' => 'תשלומים בכפתור החכם של PayPal נגבים דרך checkout-payments/initiate ו-checkout-payments/confirm, ולא בביצוע ההזמנה ישירות.',
             'payment-method-save-failed' => 'שמירת שיטת התשלום נכשלה',
             'payment-method-saved' => 'שיטת התשלום נשמרה בהצלחה',
             'payment-method-error' => 'שגיאה בשמירת שיטת התשלום',
@@ -157,6 +193,7 @@ return [
             'account-suspended' => 'חשבונך הושעה. אנא צור קשר עם התמיכה.',
             'account-inactive' => 'חשבונך אינו פעיל. אנא צור קשר עם התמיכה.',
             'minimum-order-not-met' => 'סכום ההזמנה המינימלי הוא :amount',
+            'guest-checkout-not-allowed' => 'יש להתחבר כדי לבצע תשלום. תשלום כאורח אינו זמין עבור עגלה זו.',
             'email-required' => 'כתובת אימייל נדרשת ליצירת ההזמנה',
             'unknown-operation' => 'פעולת תשלום לא ידועה',
         ],
@@ -199,6 +236,11 @@ return [
             'product-not-found' => 'המוצר לא נמצא',
             'customer-not-found' => 'הלקוח לא נמצא',
             'already-exists' => 'מוצר זה כבר ברשימת ההשוואה שלך',
+            'disabled' => 'השוואת מוצרים מושבתת בחנות זו.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'רשימת המשאלות מושבתת בחנות זו.',
         ],
 
         'downloadable-product' => [
@@ -229,6 +271,7 @@ return [
 
             'acl' => [
                 'title' => 'היסטוריית שינויים ב-API',
+                'view' => 'הצג',
                 'delete' => 'מחק היסטוריה',
             ],
 
@@ -289,6 +332,7 @@ return [
 
         'acl' => [
             'title' => 'אינטגרציה',
+            'view' => 'הצג',
             'create' => 'צור אינטגרציה',
             'edit' => 'ערוך אינטגרציה',
             'delete' => 'בטל אסימון אינטגרציה',

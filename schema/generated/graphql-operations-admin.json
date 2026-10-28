@@ -1,0 +1,2393 @@
+{
+    "addItemAdminCart": {
+        "kind": "mutation",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCart",
+        "example": {
+            "productId": 142,
+            "quantity": 1
+        }
+    },
+    "adminAppearanceSection": {
+        "kind": "query",
+        "tag": "Admin Appearance: Sections",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceSection"
+    },
+    "adminAppearanceSectionFields": {
+        "kind": "query",
+        "tag": "Admin Appearance: Sections",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceSectionFields"
+    },
+    "adminAppearanceSectionPreview": {
+        "kind": "query",
+        "tag": "Admin Appearance: Sections",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceSectionPreview"
+    },
+    "adminAppearanceSections": {
+        "kind": "query",
+        "tag": "Admin Appearance: Sections",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceSection"
+    },
+    "adminAppearanceTheme": {
+        "kind": "query",
+        "tag": "Admin Appearance: Themes",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceTheme"
+    },
+    "adminAppearanceThemeImpact": {
+        "kind": "query",
+        "tag": "Admin Appearance: Themes",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceThemeImpact"
+    },
+    "adminAppearanceThemes": {
+        "kind": "query",
+        "tag": "Admin Appearance: Themes",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceTheme"
+    },
+    "adminAttribute": {
+        "kind": "query",
+        "tag": "Admin Catalog: Attributes",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttribute"
+    },
+    "adminAttributeFamilies": {
+        "kind": "query",
+        "tag": "Admin Catalog: Attribute Families",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttributeFamily"
+    },
+    "adminAttributeFamily": {
+        "kind": "query",
+        "tag": "Admin Catalog: Attribute Families",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttributeFamily"
+    },
+    "adminAttributes": {
+        "kind": "query",
+        "tag": "Admin Catalog: Attributes",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttribute"
+    },
+    "adminBooking": {
+        "kind": "query",
+        "tag": "Admin Sales: Bookings",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminBooking"
+    },
+    "adminBookingProductSlots": {
+        "kind": "query",
+        "tag": "Admin Sales: Orders",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminBookingProductSlots"
+    },
+    "adminBookings": {
+        "kind": "query",
+        "tag": "Admin Sales: Bookings",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminBooking"
+    },
+    "adminCart": {
+        "kind": "query",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCart"
+    },
+    "adminCartPaymentMethods": {
+        "kind": "query",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCartPaymentMethod"
+    },
+    "adminCartShippingRates": {
+        "kind": "query",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCartShippingRate"
+    },
+    "adminCatalogProduct": {
+        "kind": "query",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProduct"
+    },
+    "adminCatalogProductCartOptions": {
+        "kind": "query",
+        "tag": "Admin Sales: Orders",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductCartOptions"
+    },
+    "adminCatalogProductCustomerGroupPrices": {
+        "kind": "query",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductCustomerGroupPrice"
+    },
+    "adminCatalogProductInventories": {
+        "kind": "query",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductInventory"
+    },
+    "adminCatalogProducts": {
+        "kind": "query",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProduct"
+    },
+    "adminCategories": {
+        "kind": "query",
+        "tag": "Admin Catalog: Categories",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCategory"
+    },
+    "adminCategory": {
+        "kind": "query",
+        "tag": "Admin Catalog: Categories",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCategory"
+    },
+    "adminCategoryTrees": {
+        "kind": "query",
+        "tag": "Admin Catalog: Categories",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCategoryTree"
+    },
+    "adminCmsPage": {
+        "kind": "query",
+        "tag": "Admin CMS",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCmsPage"
+    },
+    "adminCmsPages": {
+        "kind": "query",
+        "tag": "Admin CMS",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCmsPage"
+    },
+    "adminCustomer": {
+        "kind": "query",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomer"
+    },
+    "adminCustomerAddress": {
+        "kind": "query",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerAddress"
+    },
+    "adminCustomerAddresses": {
+        "kind": "query",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerAddress"
+    },
+    "adminCustomerCartItems": {
+        "kind": "query",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerCartItem"
+    },
+    "adminCustomerCompareItems": {
+        "kind": "query",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerCompareItem"
+    },
+    "adminCustomerGdprRequest": {
+        "kind": "query",
+        "tag": "Admin Customer GDPR",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerGdprRequest"
+    },
+    "adminCustomerGdprRequests": {
+        "kind": "query",
+        "tag": "Admin Customer GDPR",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerGdprRequest"
+    },
+    "adminCustomerGroup": {
+        "kind": "query",
+        "tag": "Admin Customer Groups",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerGroup"
+    },
+    "adminCustomerGroups": {
+        "kind": "query",
+        "tag": "Admin Customer Groups",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerGroup"
+    },
+    "adminCustomerNotes": {
+        "kind": "query",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerNote"
+    },
+    "adminCustomerRecentOrderItems": {
+        "kind": "query",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerRecentOrderItem"
+    },
+    "adminCustomerReview": {
+        "kind": "query",
+        "tag": "Admin Customer Reviews",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerReview"
+    },
+    "adminCustomerReviews": {
+        "kind": "query",
+        "tag": "Admin Customer Reviews",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerReview"
+    },
+    "adminCustomerWishlistItems": {
+        "kind": "query",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerWishlistItem"
+    },
+    "adminCustomers": {
+        "kind": "query",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomer"
+    },
+    "adminEuWithdrawal": {
+        "kind": "query",
+        "tag": "Admin Sales: EU Withdrawal",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminEuWithdrawal"
+    },
+    "adminEuWithdrawals": {
+        "kind": "query",
+        "tag": "Admin Sales: EU Withdrawal",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminEuWithdrawal"
+    },
+    "adminInvoice": {
+        "kind": "query",
+        "tag": "Admin Sales: Invoices",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminInvoice"
+    },
+    "adminInvoices": {
+        "kind": "query",
+        "tag": "Admin Sales: Invoices",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminInvoice"
+    },
+    "adminMarketingCampaign": {
+        "kind": "query",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCampaign"
+    },
+    "adminMarketingCampaigns": {
+        "kind": "query",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCampaign"
+    },
+    "adminMarketingCartRule": {
+        "kind": "query",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRule"
+    },
+    "adminMarketingCartRuleConditionAttributes": {
+        "kind": "query",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRuleConditionAttributes"
+    },
+    "adminMarketingCartRuleCoupons": {
+        "kind": "query",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRuleCoupon"
+    },
+    "adminMarketingCartRules": {
+        "kind": "query",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRule"
+    },
+    "adminMarketingCatalogRule": {
+        "kind": "query",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCatalogRule"
+    },
+    "adminMarketingCatalogRuleConditionAttributes": {
+        "kind": "query",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCatalogRuleConditionAttributes"
+    },
+    "adminMarketingCatalogRules": {
+        "kind": "query",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCatalogRule"
+    },
+    "adminMarketingEvent": {
+        "kind": "query",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingEvent"
+    },
+    "adminMarketingEvents": {
+        "kind": "query",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingEvent"
+    },
+    "adminMarketingSearchSynonym": {
+        "kind": "query",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSearchSynonym"
+    },
+    "adminMarketingSearchSynonyms": {
+        "kind": "query",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSearchSynonym"
+    },
+    "adminMarketingSearchTerm": {
+        "kind": "query",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSearchTerm"
+    },
+    "adminMarketingSearchTerms": {
+        "kind": "query",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSearchTerm"
+    },
+    "adminMarketingSitemap": {
+        "kind": "query",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSitemap"
+    },
+    "adminMarketingSitemaps": {
+        "kind": "query",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSitemap"
+    },
+    "adminMarketingSubscriber": {
+        "kind": "query",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSubscriber"
+    },
+    "adminMarketingSubscribers": {
+        "kind": "query",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSubscriber"
+    },
+    "adminMarketingTemplate": {
+        "kind": "query",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingTemplate"
+    },
+    "adminMarketingTemplates": {
+        "kind": "query",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingTemplate"
+    },
+    "adminMarketingUrlRewrite": {
+        "kind": "query",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingUrlRewrite"
+    },
+    "adminMarketingUrlRewrites": {
+        "kind": "query",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingUrlRewrite"
+    },
+    "adminNotification": {
+        "kind": "query",
+        "tag": "Admin Notifications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminNotification"
+    },
+    "adminNotifications": {
+        "kind": "query",
+        "tag": "Admin Notifications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminNotification"
+    },
+    "adminOrderComments": {
+        "kind": "query",
+        "tag": "Admin Sales: Orders",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminOrderComment"
+    },
+    "adminOrderDetail": {
+        "kind": "query",
+        "tag": "Admin Sales: Orders",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\OrderDetail"
+    },
+    "adminOrders": {
+        "kind": "query",
+        "tag": "Admin Sales: Orders",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminOrder"
+    },
+    "adminProducts": {
+        "kind": "query",
+        "tag": "Admin Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminProduct"
+    },
+    "adminRefund": {
+        "kind": "query",
+        "tag": "Admin Sales: Refunds",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRefund"
+    },
+    "adminRefunds": {
+        "kind": "query",
+        "tag": "Admin Sales: Refunds",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRefund"
+    },
+    "adminReturn": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReturn"
+    },
+    "adminReturnMessages": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReturnMessage"
+    },
+    "adminReturnReasons": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReturnReason"
+    },
+    "adminReturnableItems": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReturnableItem"
+    },
+    "adminReturns": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReturn"
+    },
+    "adminRmaCustomField": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaCustomField"
+    },
+    "adminRmaCustomFields": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaCustomField"
+    },
+    "adminRmaReason": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaReason"
+    },
+    "adminRmaReasons": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaReason"
+    },
+    "adminRmaRule": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaRule"
+    },
+    "adminRmaRules": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaRule"
+    },
+    "adminRmaStatus": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaStatus"
+    },
+    "adminRmaStatuses": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaStatus"
+    },
+    "adminSettingsChannel": {
+        "kind": "query",
+        "tag": "Admin Settings: Channels",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsChannel"
+    },
+    "adminSettingsChannels": {
+        "kind": "query",
+        "tag": "Admin Settings: Channels",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsChannel"
+    },
+    "adminSettingsCurrencies": {
+        "kind": "query",
+        "tag": "Admin Settings: Currencies",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsCurrency"
+    },
+    "adminSettingsCurrency": {
+        "kind": "query",
+        "tag": "Admin Settings: Currencies",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsCurrency"
+    },
+    "adminSettingsDataTransferImport": {
+        "kind": "query",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImport"
+    },
+    "adminSettingsDataTransferImportImages": {
+        "kind": "query",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImportImages"
+    },
+    "adminSettingsDataTransferImportStats": {
+        "kind": "query",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImportStats"
+    },
+    "adminSettingsDataTransferImportValidation": {
+        "kind": "query",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImportValidation"
+    },
+    "adminSettingsDataTransferImports": {
+        "kind": "query",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImport"
+    },
+    "adminSettingsExchangeRate": {
+        "kind": "query",
+        "tag": "Admin Settings: Exchange Rates",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsExchangeRate"
+    },
+    "adminSettingsExchangeRates": {
+        "kind": "query",
+        "tag": "Admin Settings: Exchange Rates",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsExchangeRate"
+    },
+    "adminSettingsInventorySource": {
+        "kind": "query",
+        "tag": "Admin Settings: Inventory Sources",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsInventorySource"
+    },
+    "adminSettingsInventorySources": {
+        "kind": "query",
+        "tag": "Admin Settings: Inventory Sources",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsInventorySource"
+    },
+    "adminSettingsLocale": {
+        "kind": "query",
+        "tag": "Admin Settings: Locales",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsLocale"
+    },
+    "adminSettingsLocales": {
+        "kind": "query",
+        "tag": "Admin Settings: Locales",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsLocale"
+    },
+    "adminSettingsRole": {
+        "kind": "query",
+        "tag": "Admin Settings: Roles",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsRole"
+    },
+    "adminSettingsRoles": {
+        "kind": "query",
+        "tag": "Admin Settings: Roles",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsRole"
+    },
+    "adminSettingsTaxCategories": {
+        "kind": "query",
+        "tag": "Admin Settings: Tax Categories",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsTaxCategory"
+    },
+    "adminSettingsTaxCategory": {
+        "kind": "query",
+        "tag": "Admin Settings: Tax Categories",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsTaxCategory"
+    },
+    "adminSettingsTaxRate": {
+        "kind": "query",
+        "tag": "Admin Settings: Tax Rates",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsTaxRate"
+    },
+    "adminSettingsTaxRates": {
+        "kind": "query",
+        "tag": "Admin Settings: Tax Rates",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsTaxRate"
+    },
+    "adminSettingsUser": {
+        "kind": "query",
+        "tag": "Admin Settings: Users",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUser"
+    },
+    "adminSettingsUsers": {
+        "kind": "query",
+        "tag": "Admin Settings: Users",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUser"
+    },
+    "adminShipment": {
+        "kind": "query",
+        "tag": "Admin Sales: Shipments",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminShipment"
+    },
+    "adminShipments": {
+        "kind": "query",
+        "tag": "Admin Sales: Shipments",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminShipment"
+    },
+    "adminTransaction": {
+        "kind": "query",
+        "tag": "Admin Sales: Transactions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminTransaction"
+    },
+    "adminTransactions": {
+        "kind": "query",
+        "tag": "Admin Sales: Transactions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminTransaction"
+    },
+    "applyCouponAdminCart": {
+        "kind": "mutation",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCart",
+        "example": {
+            "productId": 142,
+            "quantity": 1
+        }
+    },
+    "cancelAdminSettingsDataTransferImportCancel": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImportCancel"
+    },
+    "chunkAdminSettingsDataTransferImportValidation": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImportValidation"
+    },
+    "configAdminBookingProduct": {
+        "kind": "query",
+        "tag": "Admin Sales: Orders",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminBookingProduct"
+    },
+    "copyAdminMarketingCartRule": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRule"
+    },
+    "createAdminAppearanceSection": {
+        "kind": "mutation",
+        "tag": "Admin Appearance: Sections",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceSection"
+    },
+    "createAdminAppearanceSectionDiscard": {
+        "kind": "mutation",
+        "tag": "Admin Appearance: Sections",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceSectionDiscard",
+        "example": {
+            "channel": 1
+        }
+    },
+    "createAdminAppearanceSectionDraft": {
+        "kind": "mutation",
+        "tag": "Admin Appearance: Sections",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceSectionDraft"
+    },
+    "createAdminAppearanceSectionDuplicate": {
+        "kind": "mutation",
+        "tag": "Admin Appearance: Sections",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceSectionDuplicate"
+    },
+    "createAdminAppearanceSectionPublish": {
+        "kind": "mutation",
+        "tag": "Admin Appearance: Sections",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceSectionPublish",
+        "example": {
+            "channel": 1
+        }
+    },
+    "createAdminAppearanceSectionReorder": {
+        "kind": "mutation",
+        "tag": "Admin Appearance: Sections",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceSectionReorder",
+        "example": {
+            "sectionIds": [
+                5,
+                3,
+                2,
+                1,
+                4,
+                6
+            ]
+        }
+    },
+    "createAdminAppearanceSectionStatus": {
+        "kind": "mutation",
+        "tag": "Admin Appearance: Sections",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceSectionStatus"
+    },
+    "createAdminAppearanceThemeActivate": {
+        "kind": "mutation",
+        "tag": "Admin Appearance: Themes",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceThemeActivate"
+    },
+    "createAdminAttribute": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Attributes",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttribute"
+    },
+    "createAdminAttributeFamily": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Attribute Families",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttributeFamily"
+    },
+    "createAdminAttributeMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Attributes",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttributeMassDelete"
+    },
+    "createAdminAttributeOption": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Attributes",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttributeOption"
+    },
+    "createAdminCancelOrder": {
+        "kind": "mutation",
+        "tag": "Admin Sales: Orders",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCancelOrder"
+    },
+    "createAdminCatalogProduct": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProduct",
+        "example": {
+            "sku": "sp-001",
+            "name": "Arctic Beanie",
+            "product_number": "PN-1001",
+            "url_key": "arctic-beanie",
+            "status": 1,
+            "visible_individually": 1,
+            "guest_checkout": 1,
+            "new": 1,
+            "featured": 1,
+            "manage_stock": 1,
+            "tax_category_id": 2,
+            "color": 1,
+            "size": 6,
+            "brand": 10,
+            "price": "99.99",
+            "cost": "40.00",
+            "special_price": "79.99",
+            "special_price_from": "2026-08-01",
+            "special_price_to": "2026-08-31",
+            "GST": "5.00",
+            "short_description": "Warm knit beanie.",
+            "description": "Full HTML description.",
+            "length": "10",
+            "width": "5",
+            "height": "3",
+            "weight": "0.5",
+            "meta_title": "Arctic Beanie",
+            "meta_keywords": "beanie, winter",
+            "meta_description": "Buy the Arctic Beanie.",
+            "categories": [
+                1,
+                8
+            ],
+            "channels": [
+                1
+            ],
+            "up_sells": [
+                2
+            ],
+            "cross_sells": [
+                3
+            ],
+            "related_products": [
+                2
+            ],
+            "customizable_options": {
+                "option_1": {
+                    "en": {
+                        "label": "Engraving text"
+                    },
+                    "type": "text",
+                    "is_required": "1",
+                    "max_characters": "30",
+                    "sort_order": "1",
+                    "price": "5.00"
+                },
+                "option_2": {
+                    "en": {
+                        "label": "Gift wrap"
+                    },
+                    "type": "checkbox",
+                    "is_required": "0",
+                    "sort_order": "2",
+                    "prices": {
+                        "price_1": {
+                            "en": {
+                                "label": "Standard"
+                            },
+                            "price": "3.00",
+                            "sort_order": "1"
+                        },
+                        "price_2": {
+                            "en": {
+                                "label": "Premium"
+                            },
+                            "price": "6.00",
+                            "sort_order": "2"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "createAdminCatalogProductCopy": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductCopy"
+    },
+    "createAdminCatalogProductCustomerGroupPrice": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductCustomerGroupPrice"
+    },
+    "createAdminCatalogProductImage": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductImage"
+    },
+    "createAdminCatalogProductMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductMassDelete"
+    },
+    "createAdminCatalogProductMassUpdateStatus": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductMassUpdateStatus"
+    },
+    "createAdminCatalogProductVideo": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductVideo"
+    },
+    "createAdminCategory": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Categories",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCategory"
+    },
+    "createAdminCategoryMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Categories",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCategoryMassDelete"
+    },
+    "createAdminCategoryMassUpdateStatus": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Categories",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCategoryMassUpdateStatus"
+    },
+    "createAdminCmsPage": {
+        "kind": "mutation",
+        "tag": "Admin CMS",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCmsPage"
+    },
+    "createAdminCmsPageMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin CMS",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCmsPageMassDelete"
+    },
+    "createAdminConfigurationCache": {
+        "kind": "mutation",
+        "tag": "Admin Configuration",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminConfigurationCache",
+        "example": {
+            "action": "clear-views"
+        }
+    },
+    "createAdminConfigurationUpdate": {
+        "kind": "mutation",
+        "tag": "Admin Configuration",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminConfigurationUpdate"
+    },
+    "createAdminCustomer": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomer",
+        "example": {
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "email": "jane@example.com",
+            "phone": "+1-202-555-0148",
+            "gender": "Female",
+            "date_of_birth": "1990-01-01",
+            "customer_group_id": 2,
+            "status": 1
+        }
+    },
+    "createAdminCustomerAddress": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerAddress",
+        "example": {
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "company_name": "Acme Inc.",
+            "vat_id": "GB123456789",
+            "address": "1600 Amphitheatre Parkway",
+            "city": "Mountain View",
+            "state": "CA",
+            "country": "US",
+            "postcode": "94043",
+            "phone": "+1-202-555-0148",
+            "email": "jane@example.com",
+            "default_address": true
+        }
+    },
+    "createAdminCustomerGdprDownloadData": {
+        "kind": "mutation",
+        "tag": "Admin Customer GDPR",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerGdprDownloadData"
+    },
+    "createAdminCustomerGdprProcess": {
+        "kind": "mutation",
+        "tag": "Admin Customer GDPR",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerGdprProcess",
+        "example": {
+            "message": "Approved and processed per customer request."
+        }
+    },
+    "createAdminCustomerGroup": {
+        "kind": "mutation",
+        "tag": "Admin Customer Groups",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerGroup",
+        "example": {
+            "code": "wholesale",
+            "name": "Wholesale Buyers"
+        }
+    },
+    "createAdminCustomerGroupMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Customer Groups",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerGroupMassDelete",
+        "example": {
+            "indices": [
+                5,
+                6,
+                7
+            ]
+        }
+    },
+    "createAdminCustomerImpersonate": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerImpersonate"
+    },
+    "createAdminCustomerMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerMassDelete",
+        "example": {
+            "indices": [
+                14,
+                15,
+                16
+            ]
+        }
+    },
+    "createAdminCustomerMassUpdateStatus": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerMassUpdateStatus",
+        "example": {
+            "indices": [
+                14,
+                15,
+                16
+            ],
+            "value": 1
+        }
+    },
+    "createAdminCustomerNote": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerNote",
+        "example": {
+            "note": "Called the customer about delivery.",
+            "customer_notified": false
+        }
+    },
+    "createAdminCustomerReviewMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Customer Reviews",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerReviewMassDelete",
+        "example": {
+            "indices": [
+                21,
+                22,
+                23
+            ]
+        }
+    },
+    "createAdminCustomerReviewMassUpdateStatus": {
+        "kind": "mutation",
+        "tag": "Admin Customer Reviews",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerReviewMassUpdateStatus",
+        "example": {
+            "indices": [
+                21,
+                22,
+                23
+            ],
+            "value": "approved"
+        }
+    },
+    "createAdminDraftCart": {
+        "kind": "mutation",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminDraftCart"
+    },
+    "createAdminInvoice": {
+        "kind": "mutation",
+        "tag": "Admin Sales: Invoices",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminInvoice",
+        "example": {
+            "items": [
+                {
+                    "orderItemId": 42,
+                    "quantity": 3
+                },
+                {
+                    "orderItemId": 43,
+                    "quantity": 1
+                }
+            ],
+            "can_create_transaction": true
+        }
+    },
+    "createAdminInvoiceMassUpdateStatus": {
+        "kind": "mutation",
+        "tag": "Admin Sales: Invoices",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminInvoiceMassUpdateStatus"
+    },
+    "createAdminInvoiceSendDuplicate": {
+        "kind": "mutation",
+        "tag": "Admin Sales: Invoices",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminInvoiceSendDuplicate",
+        "example": {
+            "email": "customer@example.com"
+        }
+    },
+    "createAdminMagicAiContent": {
+        "kind": "mutation",
+        "tag": "Admin Magic AI",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMagicAiContent",
+        "example": {
+            "prompt": "Write a 60-word product description for a red cotton crew-neck t-shirt.",
+            "model": "gpt-4o-mini"
+        }
+    },
+    "createAdminMagicAiImage": {
+        "kind": "mutation",
+        "tag": "Admin Magic AI",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMagicAiImage",
+        "example": {
+            "prompt": "A studio photo of a red cotton t-shirt on a white background",
+            "model": "gpt-image-1",
+            "n": 1,
+            "size": "1:1",
+            "quality": "medium"
+        }
+    },
+    "createAdminMarketingCampaign": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCampaign"
+    },
+    "createAdminMarketingCampaignSend": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCampaignSend"
+    },
+    "createAdminMarketingCartRule": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRule"
+    },
+    "createAdminMarketingCartRuleCoupon": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRuleCoupon"
+    },
+    "createAdminMarketingCartRuleCouponGenerate": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRuleCouponGenerate"
+    },
+    "createAdminMarketingCartRuleCouponMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRuleCouponMassDelete"
+    },
+    "createAdminMarketingCartRuleMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRuleMassDelete"
+    },
+    "createAdminMarketingCatalogRule": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCatalogRule"
+    },
+    "createAdminMarketingCatalogRuleMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCatalogRuleMassDelete"
+    },
+    "createAdminMarketingEvent": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingEvent"
+    },
+    "createAdminMarketingSearchSynonym": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSearchSynonym"
+    },
+    "createAdminMarketingSearchSynonymMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSearchSynonymMassDelete"
+    },
+    "createAdminMarketingSearchTerm": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSearchTerm"
+    },
+    "createAdminMarketingSearchTermMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSearchTermMassDelete"
+    },
+    "createAdminMarketingSitemap": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSitemap"
+    },
+    "createAdminMarketingSitemapGenerate": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSitemapGenerate"
+    },
+    "createAdminMarketingTemplate": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingTemplate"
+    },
+    "createAdminMarketingUrlRewrite": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingUrlRewrite"
+    },
+    "createAdminMarketingUrlRewriteMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingUrlRewriteMassDelete"
+    },
+    "createAdminOrderComment": {
+        "kind": "mutation",
+        "tag": "Admin Sales: Orders",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminOrderComment",
+        "example": {
+            "comment": "Customer called to confirm shipping address.",
+            "customerNotified": true
+        }
+    },
+    "createAdminPlaceOrder": {
+        "kind": "mutation",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminPlaceOrder"
+    },
+    "createAdminRefund": {
+        "kind": "mutation",
+        "tag": "Admin Sales: Refunds",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRefund",
+        "example": {
+            "items": [
+                {
+                    "orderItemId": 42,
+                    "quantity": 1
+                }
+            ],
+            "shipping": 0,
+            "adjustmentRefund": 0,
+            "adjustmentFee": 0
+        }
+    },
+    "createAdminReorder": {
+        "kind": "mutation",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReorder"
+    },
+    "createAdminReturn": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReturn"
+    },
+    "createAdminReturnMessage": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReturnMessage"
+    },
+    "createAdminRmaCustomField": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaCustomField"
+    },
+    "createAdminRmaCustomFieldMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaCustomFieldMassDelete"
+    },
+    "createAdminRmaCustomFieldMassUpdateStatus": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaCustomFieldMassUpdateStatus"
+    },
+    "createAdminRmaReason": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaReason"
+    },
+    "createAdminRmaReasonMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaReasonMassDelete"
+    },
+    "createAdminRmaReasonMassUpdateStatus": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaReasonMassUpdateStatus"
+    },
+    "createAdminRmaRule": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaRule"
+    },
+    "createAdminRmaRuleMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaRuleMassDelete"
+    },
+    "createAdminRmaRuleMassUpdateStatus": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaRuleMassUpdateStatus"
+    },
+    "createAdminRmaStatus": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaStatus"
+    },
+    "createAdminRmaStatusMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaStatusMassDelete"
+    },
+    "createAdminRmaStatusMassUpdateStatus": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaStatusMassUpdateStatus"
+    },
+    "createAdminSettingsChannel": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Channels",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsChannel",
+        "example": {
+            "code": "us_store",
+            "name": "US Store",
+            "hostname": "us.example.com",
+            "theme": "default",
+            "timezone": "America/New_York",
+            "locales": [
+                1
+            ],
+            "default_locale_id": 1,
+            "currencies": [
+                1
+            ],
+            "base_currency_id": 1,
+            "inventory_sources": [
+                1
+            ],
+            "root_category_id": 1,
+            "seo_title": "Welcome to the US store",
+            "seo_description": "Best products for the US market",
+            "seo_keywords": "shop, us, store",
+            "is_maintenance_on": false
+        }
+    },
+    "createAdminSettingsCurrency": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Currencies",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsCurrency"
+    },
+    "createAdminSettingsCurrencyMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Currencies",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsCurrencyMassDelete"
+    },
+    "createAdminSettingsDataTransferImport": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImport"
+    },
+    "createAdminSettingsExchangeRate": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Exchange Rates",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsExchangeRate"
+    },
+    "createAdminSettingsExchangeRateMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Exchange Rates",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsExchangeRateMassDelete"
+    },
+    "createAdminSettingsExchangeRateUpdateRates": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Exchange Rates",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsExchangeRateUpdateRates"
+    },
+    "createAdminSettingsInventorySource": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Inventory Sources",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsInventorySource"
+    },
+    "createAdminSettingsInventorySourceMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Inventory Sources",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsInventorySourceMassDelete"
+    },
+    "createAdminSettingsLocale": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Locales",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsLocale"
+    },
+    "createAdminSettingsLocaleMassDelete": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Locales",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsLocaleMassDelete"
+    },
+    "createAdminSettingsRole": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Roles",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsRole"
+    },
+    "createAdminSettingsTaxCategory": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Tax Categories",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsTaxCategory"
+    },
+    "createAdminSettingsTaxRate": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Tax Rates",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsTaxRate",
+        "example": {
+            "identifier": "US-CA-SF",
+            "is_zip": false,
+            "zip_code": "94103",
+            "state": "CA",
+            "country": "US",
+            "tax_rate": 8.5
+        }
+    },
+    "createAdminSettingsUser": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Users",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUser"
+    },
+    "createAdminSettingsUserDeleteSelf": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Users",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUserDeleteSelf"
+    },
+    "createAdminShipment": {
+        "kind": "mutation",
+        "tag": "Admin Sales: Shipments",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminShipment",
+        "example": {
+            "source": 1,
+            "items": [
+                {
+                    "orderItemId": 42,
+                    "inventorySourceId": 1,
+                    "quantity": 3
+                }
+            ],
+            "carrierTitle": "UPS",
+            "trackNumber": "1Z999AA1"
+        }
+    },
+    "createAdminTransaction": {
+        "kind": "mutation",
+        "tag": "Admin Sales: Transactions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminTransaction",
+        "example": {
+            "invoiceId": 12,
+            "paymentMethod": "cashondelivery",
+            "amount": 99.99
+        }
+    },
+    "declineAdminEuWithdrawal": {
+        "kind": "mutation",
+        "tag": "Admin Sales: EU Withdrawal",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminEuWithdrawal"
+    },
+    "deleteAdminAppearanceSection": {
+        "kind": "mutation",
+        "tag": "Admin Appearance: Sections",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceSection"
+    },
+    "deleteAdminAttribute": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Attributes",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttribute"
+    },
+    "deleteAdminAttributeFamily": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Attribute Families",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttributeFamily"
+    },
+    "deleteAdminAttributeOption": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Attributes",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttributeOption"
+    },
+    "deleteAdminCatalogProduct": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProduct",
+        "example": {
+            "sku": "sp-001",
+            "name": "Arctic Beanie",
+            "product_number": "PN-1001",
+            "url_key": "arctic-beanie",
+            "status": 1,
+            "visible_individually": 1,
+            "guest_checkout": 1,
+            "new": 1,
+            "featured": 1,
+            "manage_stock": 1,
+            "tax_category_id": 2,
+            "color": 1,
+            "size": 6,
+            "brand": 10,
+            "price": "99.99",
+            "cost": "40.00",
+            "special_price": "79.99",
+            "special_price_from": "2026-08-01",
+            "special_price_to": "2026-08-31",
+            "GST": "5.00",
+            "short_description": "Warm knit beanie.",
+            "description": "Full HTML description.",
+            "length": "10",
+            "width": "5",
+            "height": "3",
+            "weight": "0.5",
+            "meta_title": "Arctic Beanie",
+            "meta_keywords": "beanie, winter",
+            "meta_description": "Buy the Arctic Beanie.",
+            "categories": [
+                1,
+                8
+            ],
+            "channels": [
+                1
+            ],
+            "up_sells": [
+                2
+            ],
+            "cross_sells": [
+                3
+            ],
+            "related_products": [
+                2
+            ],
+            "customizable_options": {
+                "option_1": {
+                    "en": {
+                        "label": "Engraving text"
+                    },
+                    "type": "text",
+                    "is_required": "1",
+                    "max_characters": "30",
+                    "sort_order": "1",
+                    "price": "5.00"
+                },
+                "option_2": {
+                    "en": {
+                        "label": "Gift wrap"
+                    },
+                    "type": "checkbox",
+                    "is_required": "0",
+                    "sort_order": "2",
+                    "prices": {
+                        "price_1": {
+                            "en": {
+                                "label": "Standard"
+                            },
+                            "price": "3.00",
+                            "sort_order": "1"
+                        },
+                        "price_2": {
+                            "en": {
+                                "label": "Premium"
+                            },
+                            "price": "6.00",
+                            "sort_order": "2"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "deleteAdminCatalogProductCustomerGroupPrice": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductCustomerGroupPrice"
+    },
+    "deleteAdminCatalogProductImage": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductImage"
+    },
+    "deleteAdminCatalogProductVideo": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductVideo"
+    },
+    "deleteAdminCategory": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Categories",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCategory"
+    },
+    "deleteAdminCmsPage": {
+        "kind": "mutation",
+        "tag": "Admin CMS",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCmsPage"
+    },
+    "deleteAdminCustomer": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomer",
+        "example": {
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "email": "jane@example.com",
+            "phone": "+1-202-555-0148",
+            "gender": "Female",
+            "date_of_birth": "1990-01-01",
+            "customer_group_id": 2,
+            "status": 1
+        }
+    },
+    "deleteAdminCustomerAddress": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerAddress",
+        "example": {
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "company_name": "Acme Inc.",
+            "vat_id": "GB123456789",
+            "address": "1600 Amphitheatre Parkway",
+            "city": "Mountain View",
+            "state": "CA",
+            "country": "US",
+            "postcode": "94043",
+            "phone": "+1-202-555-0148",
+            "email": "jane@example.com",
+            "default_address": true
+        }
+    },
+    "deleteAdminCustomerGdprRequest": {
+        "kind": "mutation",
+        "tag": "Admin Customer GDPR",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerGdprRequest",
+        "example": {
+            "status": "processing",
+            "message": "Reviewing the request."
+        }
+    },
+    "deleteAdminCustomerGroup": {
+        "kind": "mutation",
+        "tag": "Admin Customer Groups",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerGroup",
+        "example": {
+            "code": "wholesale",
+            "name": "Wholesale Buyers"
+        }
+    },
+    "deleteAdminCustomerReview": {
+        "kind": "mutation",
+        "tag": "Admin Customer Reviews",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerReview"
+    },
+    "deleteAdminMarketingCampaign": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCampaign"
+    },
+    "deleteAdminMarketingCartRule": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRule"
+    },
+    "deleteAdminMarketingCartRuleCoupon": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRuleCoupon"
+    },
+    "deleteAdminMarketingCatalogRule": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCatalogRule"
+    },
+    "deleteAdminMarketingEvent": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingEvent"
+    },
+    "deleteAdminMarketingSearchSynonym": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSearchSynonym"
+    },
+    "deleteAdminMarketingSearchTerm": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSearchTerm"
+    },
+    "deleteAdminMarketingSitemap": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSitemap"
+    },
+    "deleteAdminMarketingSubscriber": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSubscriber"
+    },
+    "deleteAdminMarketingTemplate": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingTemplate"
+    },
+    "deleteAdminMarketingUrlRewrite": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingUrlRewrite"
+    },
+    "deleteAdminRmaCustomField": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaCustomField"
+    },
+    "deleteAdminRmaReason": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaReason"
+    },
+    "deleteAdminRmaRule": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaRule"
+    },
+    "deleteAdminRmaStatus": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaStatus"
+    },
+    "deleteAdminSettingsChannel": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Channels",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsChannel",
+        "example": {
+            "code": "us_store",
+            "name": "US Store",
+            "hostname": "us.example.com",
+            "theme": "default",
+            "timezone": "America/New_York",
+            "locales": [
+                1
+            ],
+            "default_locale_id": 1,
+            "currencies": [
+                1
+            ],
+            "base_currency_id": 1,
+            "inventory_sources": [
+                1
+            ],
+            "root_category_id": 1,
+            "seo_title": "Welcome to the US store",
+            "seo_description": "Best products for the US market",
+            "seo_keywords": "shop, us, store",
+            "is_maintenance_on": false
+        }
+    },
+    "deleteAdminSettingsCurrency": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Currencies",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsCurrency"
+    },
+    "deleteAdminSettingsDataTransferImport": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImport"
+    },
+    "deleteAdminSettingsExchangeRate": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Exchange Rates",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsExchangeRate"
+    },
+    "deleteAdminSettingsInventorySource": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Inventory Sources",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsInventorySource"
+    },
+    "deleteAdminSettingsLocale": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Locales",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsLocale"
+    },
+    "deleteAdminSettingsRole": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Roles",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsRole"
+    },
+    "deleteAdminSettingsTaxCategory": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Tax Categories",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsTaxCategory"
+    },
+    "deleteAdminSettingsTaxRate": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Tax Rates",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsTaxRate",
+        "example": {
+            "identifier": "US-CA-SF",
+            "is_zip": false,
+            "zip_code": "94103",
+            "state": "CA",
+            "country": "US",
+            "tax_rate": 8.5
+        }
+    },
+    "deleteAdminSettingsUser": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Users",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUser"
+    },
+    "disableAdminTwoFactor": {
+        "kind": "mutation",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminTwoFactor",
+        "example": {
+            "code": "123456"
+        }
+    },
+    "downloadAdminSettingsDataTransferImportImages": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImportImages"
+    },
+    "enableAdminTwoFactor": {
+        "kind": "mutation",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminTwoFactor",
+        "example": {
+            "code": "123456"
+        }
+    },
+    "getAdminAcl": {
+        "kind": "query",
+        "tag": "Admin Settings: Roles",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAcl"
+    },
+    "getAdminBookingCalendar": {
+        "kind": "query",
+        "tag": "Admin Sales: Bookings",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminBookingCalendar"
+    },
+    "getAdminMenu": {
+        "kind": "query",
+        "tag": "Admin Menu",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMenu"
+    },
+    "getAdminPermissions": {
+        "kind": "query",
+        "tag": "Admin Menu",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminPermissions"
+    },
+    "indexAdminSettingsDataTransferImportIndex": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImportIndex"
+    },
+    "linkAdminSettingsDataTransferImportLink": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImportLink"
+    },
+    "listAdminConfigurationSlug": {
+        "kind": "query",
+        "tag": "Admin Configuration",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminConfigurationSlug"
+    },
+    "markRefundedAdminEuWithdrawal": {
+        "kind": "mutation",
+        "tag": "Admin Sales: EU Withdrawal",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminEuWithdrawal"
+    },
+    "menuAdminConfigurationMenu": {
+        "kind": "query",
+        "tag": "Admin Configuration",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminConfigurationMenu"
+    },
+    "previewAdminRefund": {
+        "kind": "mutation",
+        "tag": "Admin Sales: Refunds",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRefund",
+        "example": {
+            "items": [
+                {
+                    "orderItemId": 42,
+                    "quantity": 1
+                }
+            ],
+            "shipping": 0,
+            "adjustmentRefund": 0,
+            "adjustmentFee": 0
+        }
+    },
+    "queueAdminSettingsDataTransferImportImages": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImportImages"
+    },
+    "queueAdminSettingsDataTransferImportValidation": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImportValidation"
+    },
+    "readAdminNotification": {
+        "kind": "mutation",
+        "tag": "Admin Notifications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminNotification"
+    },
+    "readAdminProfile": {
+        "kind": "query",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminProfile"
+    },
+    "readAllAdminNotification": {
+        "kind": "mutation",
+        "tag": "Admin Notifications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminNotification"
+    },
+    "removeAdminCustomerCartItem": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerCartItem",
+        "example": {
+            "itemId": 1701
+        }
+    },
+    "removeAdminCustomerCompareItem": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerCompareItem",
+        "example": {
+            "itemId": 12
+        }
+    },
+    "removeAdminCustomerWishlistItem": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerWishlistItem",
+        "example": {
+            "itemId": 88
+        }
+    },
+    "removeCouponAdminCart": {
+        "kind": "mutation",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCart",
+        "example": {
+            "productId": 142,
+            "quantity": 1
+        }
+    },
+    "removeItemAdminCart": {
+        "kind": "mutation",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCart",
+        "example": {
+            "productId": 142,
+            "quantity": 1
+        }
+    },
+    "reopenAdminReturn": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReturn"
+    },
+    "reorderAdminCatalogProductImage": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductImage"
+    },
+    "reorderAdminCatalogProductVideo": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductVideo"
+    },
+    "resendConfirmationAdminEuWithdrawal": {
+        "kind": "mutation",
+        "tag": "Admin Sales: EU Withdrawal",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminEuWithdrawal"
+    },
+    "saveAddressAdminCart": {
+        "kind": "mutation",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCart",
+        "example": {
+            "productId": 142,
+            "quantity": 1
+        }
+    },
+    "searchAdminConfiguration": {
+        "kind": "query",
+        "tag": "Admin Configuration",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminConfigurationSearch"
+    },
+    "setDefaultAdminCustomerAddress": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerAddress",
+        "example": {
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "company_name": "Acme Inc.",
+            "vat_id": "GB123456789",
+            "address": "1600 Amphitheatre Parkway",
+            "city": "Mountain View",
+            "state": "CA",
+            "country": "US",
+            "postcode": "94043",
+            "phone": "+1-202-555-0148",
+            "email": "jane@example.com",
+            "default_address": true
+        }
+    },
+    "setPaymentMethodAdminCart": {
+        "kind": "mutation",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCart",
+        "example": {
+            "productId": 142,
+            "quantity": 1
+        }
+    },
+    "setShippingMethodAdminCart": {
+        "kind": "mutation",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCart",
+        "example": {
+            "productId": 142,
+            "quantity": 1
+        }
+    },
+    "setupAdminTwoFactor": {
+        "kind": "query",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminTwoFactor"
+    },
+    "startAdminSettingsDataTransferImportStart": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImportStart"
+    },
+    "statsAdminDashboard": {
+        "kind": "query",
+        "tag": "Admin Dashboard",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminDashboard"
+    },
+    "statsAdminReportingCustomers": {
+        "kind": "query",
+        "tag": "Admin Reporting: Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReportingCustomers"
+    },
+    "statsAdminReportingOverview": {
+        "kind": "query",
+        "tag": "Admin Reporting: Overview",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReportingOverview"
+    },
+    "statsAdminReportingProducts": {
+        "kind": "query",
+        "tag": "Admin Reporting: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReportingProducts"
+    },
+    "statsAdminReportingSales": {
+        "kind": "query",
+        "tag": "Admin Reporting: Sales",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReportingSales"
+    },
+    "summaryAdminNotification": {
+        "kind": "query",
+        "tag": "Admin Notifications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminNotification"
+    },
+    "updateAdminAppearanceSection": {
+        "kind": "mutation",
+        "tag": "Admin Appearance: Sections",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAppearanceSection"
+    },
+    "updateAdminAttribute": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Attributes",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttribute"
+    },
+    "updateAdminAttributeFamily": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Attribute Families",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttributeFamily"
+    },
+    "updateAdminAttributeOption": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Attributes",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAttributeOption"
+    },
+    "updateAdminCatalogProduct": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProduct",
+        "example": {
+            "sku": "sp-001",
+            "name": "Arctic Beanie",
+            "product_number": "PN-1001",
+            "url_key": "arctic-beanie",
+            "status": 1,
+            "visible_individually": 1,
+            "guest_checkout": 1,
+            "new": 1,
+            "featured": 1,
+            "manage_stock": 1,
+            "tax_category_id": 2,
+            "color": 1,
+            "size": 6,
+            "brand": 10,
+            "price": "99.99",
+            "cost": "40.00",
+            "special_price": "79.99",
+            "special_price_from": "2026-08-01",
+            "special_price_to": "2026-08-31",
+            "GST": "5.00",
+            "short_description": "Warm knit beanie.",
+            "description": "Full HTML description.",
+            "length": "10",
+            "width": "5",
+            "height": "3",
+            "weight": "0.5",
+            "meta_title": "Arctic Beanie",
+            "meta_keywords": "beanie, winter",
+            "meta_description": "Buy the Arctic Beanie.",
+            "categories": [
+                1,
+                8
+            ],
+            "channels": [
+                1
+            ],
+            "up_sells": [
+                2
+            ],
+            "cross_sells": [
+                3
+            ],
+            "related_products": [
+                2
+            ],
+            "customizable_options": {
+                "option_1": {
+                    "en": {
+                        "label": "Engraving text"
+                    },
+                    "type": "text",
+                    "is_required": "1",
+                    "max_characters": "30",
+                    "sort_order": "1",
+                    "price": "5.00"
+                },
+                "option_2": {
+                    "en": {
+                        "label": "Gift wrap"
+                    },
+                    "type": "checkbox",
+                    "is_required": "0",
+                    "sort_order": "2",
+                    "prices": {
+                        "price_1": {
+                            "en": {
+                                "label": "Standard"
+                            },
+                            "price": "3.00",
+                            "sort_order": "1"
+                        },
+                        "price_2": {
+                            "en": {
+                                "label": "Premium"
+                            },
+                            "price": "6.00",
+                            "sort_order": "2"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "updateAdminCatalogProductCustomerGroupPrice": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductCustomerGroupPrice"
+    },
+    "updateAdminCatalogProductImage": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductImage"
+    },
+    "updateAdminCatalogProductInventory": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCatalogProductInventory",
+        "example": {
+            "inventories": {
+                "1": 25,
+                "2": 0
+            }
+        }
+    },
+    "updateAdminCategory": {
+        "kind": "mutation",
+        "tag": "Admin Catalog: Categories",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCategory"
+    },
+    "updateAdminCmsPage": {
+        "kind": "mutation",
+        "tag": "Admin CMS",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCmsPage"
+    },
+    "updateAdminCustomer": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomer",
+        "example": {
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "email": "jane@example.com",
+            "phone": "+1-202-555-0148",
+            "gender": "Female",
+            "date_of_birth": "1990-01-01",
+            "customer_group_id": 2,
+            "status": 1
+        }
+    },
+    "updateAdminCustomerAddress": {
+        "kind": "mutation",
+        "tag": "Admin Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerAddress",
+        "example": {
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "company_name": "Acme Inc.",
+            "vat_id": "GB123456789",
+            "address": "1600 Amphitheatre Parkway",
+            "city": "Mountain View",
+            "state": "CA",
+            "country": "US",
+            "postcode": "94043",
+            "phone": "+1-202-555-0148",
+            "email": "jane@example.com",
+            "default_address": true
+        }
+    },
+    "updateAdminCustomerGdprRequest": {
+        "kind": "mutation",
+        "tag": "Admin Customer GDPR",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerGdprRequest",
+        "example": {
+            "status": "processing",
+            "message": "Reviewing the request."
+        }
+    },
+    "updateAdminCustomerGroup": {
+        "kind": "mutation",
+        "tag": "Admin Customer Groups",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerGroup",
+        "example": {
+            "code": "wholesale",
+            "name": "Wholesale Buyers"
+        }
+    },
+    "updateAdminCustomerReview": {
+        "kind": "mutation",
+        "tag": "Admin Customer Reviews",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerReview"
+    },
+    "updateAdminMarketingCampaign": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCampaign"
+    },
+    "updateAdminMarketingCartRule": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRule"
+    },
+    "updateAdminMarketingCatalogRule": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Promotions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCatalogRule"
+    },
+    "updateAdminMarketingEvent": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingEvent"
+    },
+    "updateAdminMarketingSearchSynonym": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSearchSynonym"
+    },
+    "updateAdminMarketingSearchTerm": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSearchTerm"
+    },
+    "updateAdminMarketingSitemap": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSitemap"
+    },
+    "updateAdminMarketingSubscriber": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingSubscriber"
+    },
+    "updateAdminMarketingTemplate": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Communications",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingTemplate"
+    },
+    "updateAdminMarketingUrlRewrite": {
+        "kind": "mutation",
+        "tag": "Admin Marketing: Search & SEO",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingUrlRewrite"
+    },
+    "updateAdminProfile": {
+        "kind": "mutation",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminProfile",
+        "example": {
+            "name": "Example Admin",
+            "email": "admin@example.com",
+            "password": "new-secret",
+            "password_confirmation": "new-secret",
+            "current_password": "admin123"
+        }
+    },
+    "updateAdminRmaCustomField": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaCustomField"
+    },
+    "updateAdminRmaReason": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaReason"
+    },
+    "updateAdminRmaRule": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaRule"
+    },
+    "updateAdminRmaStatus": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaStatus"
+    },
+    "updateAdminSettingsChannel": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Channels",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsChannel",
+        "example": {
+            "code": "us_store",
+            "name": "US Store",
+            "hostname": "us.example.com",
+            "theme": "default",
+            "timezone": "America/New_York",
+            "locales": [
+                1
+            ],
+            "default_locale_id": 1,
+            "currencies": [
+                1
+            ],
+            "base_currency_id": 1,
+            "inventory_sources": [
+                1
+            ],
+            "root_category_id": 1,
+            "seo_title": "Welcome to the US store",
+            "seo_description": "Best products for the US market",
+            "seo_keywords": "shop, us, store",
+            "is_maintenance_on": false
+        }
+    },
+    "updateAdminSettingsCurrency": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Currencies",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsCurrency"
+    },
+    "updateAdminSettingsExchangeRate": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Exchange Rates",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsExchangeRate"
+    },
+    "updateAdminSettingsInventorySource": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Inventory Sources",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsInventorySource"
+    },
+    "updateAdminSettingsLocale": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Locales",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsLocale"
+    },
+    "updateAdminSettingsRole": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Roles",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsRole"
+    },
+    "updateAdminSettingsTaxCategory": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Tax Categories",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsTaxCategory"
+    },
+    "updateAdminSettingsTaxRate": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Tax Rates",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsTaxRate",
+        "example": {
+            "identifier": "US-CA-SF",
+            "is_zip": false,
+            "zip_code": "94103",
+            "state": "CA",
+            "country": "US",
+            "tax_rate": 8.5
+        }
+    },
+    "updateAdminSettingsUser": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Users",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUser"
+    },
+    "updateItemsAdminCart": {
+        "kind": "mutation",
+        "tag": "Admin: Customer Order creation",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCart",
+        "example": {
+            "productId": 142,
+            "quantity": 1
+        }
+    },
+    "updateStatusAdminReturn": {
+        "kind": "mutation",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReturn"
+    },
+    "validateAdminSettingsDataTransferImportValidate": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Data Transfer",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsDataTransferImportValidate"
+    },
+    "valuesAdminConfigurationValues": {
+        "kind": "query",
+        "tag": "Admin Configuration",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminConfigurationValues"
+    },
+    "viewStatsAdminReportingCustomers": {
+        "kind": "query",
+        "tag": "Admin Reporting: Customers",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReportingCustomers"
+    },
+    "viewStatsAdminReportingProducts": {
+        "kind": "query",
+        "tag": "Admin Reporting: Products",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReportingProducts"
+    },
+    "viewStatsAdminReportingSales": {
+        "kind": "query",
+        "tag": "Admin Reporting: Sales",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReportingSales"
+    }
+}

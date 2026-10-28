@@ -20,7 +20,35 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusMassDeleteProcessor;
             uriTemplate: '/rma/statuses/mass-delete',
             input: AdminRmaStatusMassDeleteInput::class,
             processor: AdminRmaStatusMassDeleteProcessor::class,
-            openapi: new Model\Operation(tags: ['Admin Sales: RMA'], summary: 'Mass-delete RMA statuses', description: 'Body `{ indices: int[] }`. Default statuses are skipped. Permission: sales.rma.statuses.delete.'),
+            openapi: new Model\Operation(
+                tags: ['Admin Sales: RMA'],
+                summary: 'Mass-delete RMA statuses',
+                description: 'Default statuses are skipped. Permission: sales.rma.statuses.delete.',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['indices'],
+                                'properties' => [
+                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [9, 10]],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The deleted status ids (default statuses skipped).',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => ['deleted' => [9, 10], 'message' => 'Selected RMA statuses deleted successfully.'],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
         ),
     ],
     graphQlOperations: [

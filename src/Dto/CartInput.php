@@ -30,6 +30,13 @@ class CartInput
     public ?int $cartId = null;
 
     /**
+     * Guest cart token proving ownership of the guest cart (required for merge)
+     */
+    #[ApiProperty(required: false, description: 'Guest cart token of the cart being merged')]
+    #[Groups(['mutation'])]
+    public ?string $guestCartToken = null;
+
+    /**
      * Product ID (required for addProduct operation)
      */
     #[ApiProperty(required: false)]
@@ -160,7 +167,7 @@ class CartInput
      */
     #[ApiProperty(required: false, description: 'Is buy now (0 = cart, 1 = buy now)')]
     #[Groups(['mutation'])]
-    public ?int $isBuyNow = 0;
+    public ?int $isBuyNow = null;
 
     /**
      * Bundle product options

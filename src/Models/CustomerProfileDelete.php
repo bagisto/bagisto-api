@@ -23,25 +23,22 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
     operations: [
         new Post(
             uriTemplate: '/customer-profile-deletes/{id}',
+            processor: CustomerProfileProcessor::class,
             openapi: new Operation(
                 tags: ['Customer'],
                 summary: 'Delete customer profile',
-                description: 'Delete the authenticated customer\'s account. Requires Bearer token.',
+                description: 'Delete the authenticated customer\'s account. Requires the Bearer token and the account password, as the storefront does. An account with a pending or processing order cannot be deleted (422).',
                 requestBody: new RequestBody(
-                    description: 'Confirm deletion with the account password.',
+                    description: 'The account password. The account itself is identified by the Bearer token.',
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['password'],
-                                'properties' => [
-                                    'password' => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
-                                ],
+                                'properties' => ['password' => ['type' => 'string']],
                             ],
-                            'example' => [
-                                'password' => 'Password123!',
-                            ],
+                            'example' => ['password' => 'Secret@123'],
                         ],
                     ]),
                 ),
@@ -68,7 +65,7 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
                 'allow_extra_attributes' => true,
                 'groups' => ['mutation'],
             ],
-            description: 'Delete authenticated customer profile (requires token)',
+            description: 'Delete the authenticated customer profile. Requires the token and `password`.',
         ),
     ]
 )]

@@ -8,18 +8,9 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductCopyInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductCopyProcessor;
 
-/**
- * One-operation resource for copying a catalog product.
- *
- * REST:
- *   POST /api/admin/catalog/products/{sourceId}/copy
- *     200: { id, sourceId, sku, type, name, success, message }
- *
- * GraphQL:
- *   createAdminCatalogProductCopy(input: { sourceId: Int! })
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCatalogProductCopy',
@@ -34,6 +25,9 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCopyProcessor;
                 tags: ['Admin Catalog: Products'],
                 summary: 'Copy a catalog product',
                 description: 'Duplicates an existing product across all attribute_values, images, inventories, categories and customer_group_prices. Refuses variants (parent_id != null) with HTTP 422. Mirrors Bagisto monolith ProductController::copy. Fires catalog.product.create.before and catalog.product.create.after.',
+                parameters: [
+                    new Model\Parameter('sourceId', 'path', 'ID of the product to copy', true, schema: ['type' => 'integer']),
+                ],
                 requestBody: new Model\RequestBody(
                     required: false,
                     content: new \ArrayObject([
@@ -80,11 +74,13 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCopyProcessor;
 )]
 class AdminCatalogProductCopy
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false, description: 'ID of the source product that was copied.')]
-    public ?int $sourceId = null;
+    public ?int $source_id = null;
 
     #[ApiProperty(writable: false, description: 'SKU of the newly created copy (auto-suffixed by Bagisto core).')]
     public ?string $sku = null;

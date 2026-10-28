@@ -2,6 +2,25 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => '顧客の返金IDは必須です',
+            'invalid-id-format' => '無効なID形式です。"/api/shop/customer-refunds/1" のようなIRI形式または数値IDを指定してください',
+            'not-found' => 'ID ":id" の顧客の返金が見つかりません',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'ストア設定で再注文が無効になっています。',
+            'cannot-reorder' => 'この注文は再注文できません（ゲスト注文、または1つ以上の商品が購入できなくなっています）。',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'メッセージは:max文字以内で入力してください。',
+        ],
+
+        'headers' => [
+            'unknown-channel' => 'X-Channel ヘッダーのチャネル ":code" は存在しません。',
+        ],
+
         'cart' => [
             'authentication-required' => '認証トークンが必要です',
             'invalid-token' => '認証トークンが無効か期限切れです',
@@ -102,6 +121,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => '商品が見つかりません',
             'not-found-with-sku' => 'No product found with SKU',
             'not-found-with-url-key' => 'No product found with URL key',
             'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
@@ -130,8 +150,22 @@ return [
         'login' => [
             'invalid-credentials' => 'メールアドレスまたはパスワードが無効です',
             'account-suspended' => 'お客様のアカウントは停止されています',
+            'account-inactive' => 'アクティベーションは管理者の承認が必要です',
+            'email-not-verified' => 'まずメールアカウントを確認してください。',
             'successful' => '正常にログインしました',
             'invalid-request' => '無効なログインリクエストです',
+        ],
+
+        'social-login' => [
+            'signed-in' => 'サインインしました。',
+            'token-required' => 'ソーシャルログイントークンが必要です。',
+            'invalid-token' => 'ソーシャルログイントークンが無効または期限切れです。もう一度お試しください。',
+            'wrong-audience' => 'このトークンは別のアプリ用に発行されています。',
+            'not-configured' => 'このソーシャルログインプロバイダーは設定されていません。サポートにお問い合わせください。',
+            'email-required' => 'プロバイダーがメールアドレスを共有しませんでした。メールで登録してください。',
+            'account-inactive' => 'アクティベーションは管理者の承認が必要です',
+            'provider-not-supported' => 'このソーシャルログインプロバイダーはサポートされていません。',
+            'provider-disabled' => 'このソーシャルログインプロバイダーは有効になっていません。',
         ],
 
         'checkout' => [
@@ -147,6 +181,8 @@ return [
             'shipping-method-error' => '配送方法の保存中にエラーが発生しました',
             'payment-method-required' => '支払い方法が必要です',
             'invalid-payment-method' => '支払い方法が無効か利用できません',
+            'paypal-order-id-required' => 'PayPal スマートボタンの支払いを確定するには PayPal の注文 ID が必要です。',
+            'paypal-smart-button-payment-flow' => 'PayPal スマートボタンの支払いは checkout-payments/initiate と checkout-payments/confirm で確定します。注文を直接確定することはできません。',
             'payment-method-save-failed' => '支払い方法を保存できませんでした',
             'payment-method-saved' => '支払い方法が正常に保存されました',
             'payment-method-error' => '支払い方法の保存中にエラーが発生しました',
@@ -157,6 +193,7 @@ return [
             'account-suspended' => 'お客様のアカウントは停止されています。サポートにお問い合わせください。',
             'account-inactive' => 'お客様のアカウントは無効です。サポートにお問い合わせください。',
             'minimum-order-not-met' => '最低注文金額は :amount です',
+            'guest-checkout-not-allowed' => 'チェックアウトするにはログインしてください。このカートではゲストチェックアウトをご利用いただけません。',
             'email-required' => '注文の作成にはメールアドレスが必要です',
             'unknown-operation' => '不明なチェックアウト操作です',
         ],
@@ -199,6 +236,11 @@ return [
             'product-not-found' => '商品が見つかりません',
             'customer-not-found' => '顧客が見つかりません',
             'already-exists' => 'この商品は既に比較リストに含まれています',
+            'disabled' => 'このストアでは商品比較が無効になっています。',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'このストアではウィッシュリストが無効になっています。',
         ],
 
         'downloadable-product' => [
@@ -229,6 +271,7 @@ return [
 
             'acl' => [
                 'title' => 'API変更履歴',
+                'view' => '表示',
                 'delete' => '履歴の削除',
             ],
 
@@ -289,6 +332,7 @@ return [
 
         'acl' => [
             'title' => '統合',
+            'view' => '表示',
             'create' => '統合の作成',
             'edit' => '統合の編集',
             'delete' => '統合トークンの取り消し',

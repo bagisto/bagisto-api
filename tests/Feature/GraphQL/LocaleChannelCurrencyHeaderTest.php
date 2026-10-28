@@ -185,6 +185,17 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
         $this->assertArrayNotHasKey('errors', $json, 'GraphQL errors: '.json_encode($json['errors'] ?? []));
     }
 
+    public function test_unknown_channel_header_returns_400(): void
+    {
+        $response = $this->graphQL($this->cmsPageQuery(), [], [
+            'X-Channel' => 'nonexistent',
+        ]);
+
+        $response->assertStatus(400);
+        $response->assertJsonPath('error', 'invalid_channel');
+        $response->assertJsonPath('header_name', 'X-Channel');
+    }
+
     public function test_channel_header_not_passed_uses_default(): void
     {
         // No X-Channel header at all
@@ -229,7 +240,7 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
         $response = $this->graphQL($this->cmsPageQuery(), [], [
             'X-Locale' => 'xx-NOPE',
             'X-Currency' => 'FAKE',
-            'X-Channel' => 'nonexistent',
+            'X-Channel' => Channel::first()->code,
         ]);
 
         $response->assertSuccessful();

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
@@ -1001,5 +1002,77 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $data = $response->json('data.products');
         $this->assertArrayHasKey('edges', $data);
         $this->assertArrayHasKey('totalCount', $data);
+    }
+
+    public function test_unknown_filter_keys_are_ignored(): void
+    {
+        $product = $this->createBaseProduct('simple', ['sku' => 'TEST-UNKNOWN-'.uniqid()]);
+
+        $response = $this->graphQL($this->productIdsQuery(), [
+            'filter' => json_encode(['sku' => $product->sku, 'utm_source' => 'newsletter']),
+        ]);
+
+        $response->assertSuccessful();
+        $this->assertNull($response->json('errors'));
+        $this->assertContains($product->id, $this->nodeIds($response));
+    }
+
+    public function test_price_filter_reads_the_price_index(): void
+    {
+        $product = $this->createBaseProduct('simple', ['sku' => 'TEST-PRICEIDX-'.uniqid()]);
+
+        DB::table('product_price_indices')->updateOrInsert(
+            [
+                'product_id' => $product->id,
+                'customer_group_id' => core()->getGuestCustomerGroup()->id,
+                'channel_id' => core()->getCurrentChannel()->id,
+            ],
+            [
+                'min_price' => 500,
+                'regular_min_price' => 500,
+                'max_price' => 500,
+                'regular_max_price' => 500,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+
+        $inRange = $this->graphQL($this->productIdsQuery(), [
+            'filter' => json_encode(['sku' => $product->sku, 'price_from' => 400, 'price_to' => 600]),
+        ]);
+
+        $inRange->assertSuccessful();
+        $this->assertNull($inRange->json('errors'));
+        $this->assertContains($product->id, $this->nodeIds($inRange));
+
+        $attributeRange = $this->graphQL($this->productIdsQuery(), [
+            'filter' => json_encode(['sku' => $product->sku, 'price' => '5,15']),
+        ]);
+
+        $attributeRange->assertSuccessful();
+        $this->assertNull($attributeRange->json('errors'));
+        $this->assertNotContains($product->id, $this->nodeIds($attributeRange));
+    }
+
+    private function productIdsQuery(): string
+    {
+        return <<<'GQL'
+            query getProducts($filter: String) {
+              products(filter: $filter, first: 50) {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+              }
+            }
+        GQL;
+    }
+
+    private function nodeIds($response): array
+    {
+        return collect($response->json('data.products.edges') ?? [])
+            ->map(fn ($edge) => (int) $edge['node']['_id'])
+            ->all();
     }
 }

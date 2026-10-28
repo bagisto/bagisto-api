@@ -9,14 +9,19 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\ReturnableItem;
+use Webkul\BagistoApi\State\Concerns\ResolvesReturnableItems;
 use Webkul\RMA\Helpers\Helper as RMAHelper;
+use Webkul\RMA\Repositories\RMAItemRepository;
 use Webkul\Sales\Repositories\OrderRepository;
 
 class ReturnableItemProvider implements ProviderInterface
 {
+    use ResolvesReturnableItems;
+
     public function __construct(
         private readonly RMAHelper $rmaHelper,
         private readonly OrderRepository $orderRepository,
+        private readonly RMAItemRepository $rmaItemRepository,
     ) {}
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): iterable
@@ -44,7 +49,7 @@ class ReturnableItemProvider implements ProviderInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.return.invalid-order'));
         }
 
-        return $this->rmaHelper->getOrderItems((int) $order->id)
+        return $this->resolveReturnableItems($this->rmaHelper, $this->rmaItemRepository, (int) $order->id)
             ->map(function ($item) {
                 $row = new ReturnableItem;
                 $row->order_item_id = (int) $item->order_item_id;

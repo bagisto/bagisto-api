@@ -6,27 +6,8 @@ use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 
-/**
- * REST coverage for the admin catalog attributes endpoint.
- *
- * Endpoint: GET /api/admin/catalog/attributes
- *
- * Verifies the { data, meta } envelope, field shape, all supported filters,
- * sort behaviour, pagination edge cases, and auth guards.
- *
- * Does NOT modify AdminApiTestCase — attribute seeding is handled by the
- * local insertAttribute() helper below.
- */
 class AttributeTest extends AdminApiTestCase
 {
-    /**
-     * Insert one attribute row and return the attribute ID.
-     *
-     * Handles the full Bagisto 2.x schema — optional default_value and regex
-     * columns are included when present. The attributes table has no
-     * attribute_translations equivalent used by the datagrid (admin_name is
-     * a direct column on the attributes table).
-     */
     protected function insertAttribute(array $overrides = []): int
     {
         $id = \DB::table('attributes')->insertGetId(array_merge([
@@ -459,9 +440,6 @@ class AttributeTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
-    /**
-     * Insert one attribute option row and return the option ID.
-     */
     protected function insertAttributeOption(int $attributeId, array $overrides = []): int
     {
         return \DB::table('attribute_options')->insertGetId(array_merge([
@@ -472,9 +450,6 @@ class AttributeTest extends AdminApiTestCase
         ], $overrides));
     }
 
-    /**
-     * Insert one attribute option translation row.
-     */
     protected function insertAttributeOptionTranslation(int $optionId, string $locale, string $label): void
     {
         \DB::table('attribute_option_translations')->insert([
@@ -706,7 +681,7 @@ class AttributeTest extends AdminApiTestCase
             'is_comparable' => true,
             'enable_wysiwyg' => false,
             'validation' => 'regex',
-            'regex' => '^[A-Z]+$',
+            'regex' => '/^[A-Z]+$/',
         ]);
         $created->assertStatus(201);
         $id = $created->json('id');
@@ -716,7 +691,25 @@ class AttributeTest extends AdminApiTestCase
         expect($detail->json('isComparable'))->toBe(1);
         expect($detail->json('enableWysiwyg'))->toBe(0);
         expect($detail->json('validation'))->toBe('regex');
-        expect($detail->json('regex'))->toBe('^[A-Z]+$');
+        expect($detail->json('regex'))->toBe('/^[A-Z]+$/');
+    }
+
+    public function test_create_attribute_rejects_a_pattern_the_storefront_cannot_compile(): void
+    {
+        // BACKWARD COMPATIBILITY: remove when the minimum supported core is 2.4.10.
+        $this->skipUnlessCoreSupports($this->core()->hasAttributeRegexRule(), 'Attribute regex validation');
+
+        $admin = $this->createAdmin();
+
+        $response = $this->adminPost($admin, '/api/admin/catalog/attributes', [
+            'code' => 'crud_rx_'.uniqid(),
+            'admin_name' => 'CRUD Regex',
+            'type' => 'text',
+            'validation' => 'regex',
+            'regex' => '^[A-Z]+$',
+        ]);
+
+        $response->assertStatus(422);
     }
 
     public function test_create_attribute_select_with_options_returns_201(): void

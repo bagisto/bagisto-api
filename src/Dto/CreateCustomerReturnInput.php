@@ -31,9 +31,16 @@ class CreateCustomerReturnInput
     #[Groups(['mutation'])]
     public ?string $information = null;
 
-    #[ApiProperty(description: 'Condition of the package')]
+    #[ApiProperty(description: 'Condition of the package: open | packed')]
     #[Groups(['mutation'])]
     public ?string $package_condition = null;
+
+    /**
+     * @var array<int|string,mixed>|null
+     */
+    #[ApiProperty(description: 'Custom field answers keyed by field id (see /return-custom-fields)')]
+    #[Groups(['mutation'])]
+    public ?array $custom_attributes = null;
 
     #[ApiProperty(description: 'Variant product id for configurable products')]
     #[Groups(['mutation'])]
@@ -42,6 +49,13 @@ class CreateCustomerReturnInput
     #[ApiProperty(description: 'Must be true to accept the return policy')]
     #[Groups(['mutation'])]
     public ?bool $agreement = null;
+
+    /**
+     * @var array<int, string>|null
+     */
+    #[ApiProperty(description: 'Evidence images as base64 data URIs (data:image/png;base64,...), max 5 MB each. Allowed types follow Configuration > Sales > RMA > Allowed file extension.')]
+    #[Groups(['mutation'])]
+    public ?array $images = null;
 
     public function getOrder_id(): ?int
     {
@@ -111,6 +125,16 @@ class CreateCustomerReturnInput
     public function setPackage_condition(?string $v): void
     {
         $this->package_condition = $v;
+    }
+
+    public function getCustom_attributes(): ?array
+    {
+        return $this->custom_attributes;
+    }
+
+    public function setCustom_attributes(?array $v): void
+    {
+        $this->custom_attributes = $v;
     }
 
     public function getVariant(): ?int

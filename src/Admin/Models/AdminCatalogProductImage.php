@@ -11,6 +11,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductImageDeleteInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductImageReorderInput;
+use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductImageUpdateInput;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
 
@@ -53,7 +54,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Catalog: Products'],
                 summary: 'Upload a product image',
-                description: 'Uploads a new image for the given product. Send as multipart/form-data with `image` containing the file (allowed mime types: bmp, jpeg, jpg, png, webp).',
+                description: 'Uploads a new image for the given product. Send as multipart/form-data with `image` containing the file (allowed mime types: bmp, jpeg, jpg, png, webp). Optional `alt_text` is stored for every locale the request covers.',
                 parameters: [
                     new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: ['type' => 'integer', 'example' => 12]),
                 ],
@@ -67,6 +68,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                                 'properties' => [
                                     'image' => ['type' => 'string', 'format' => 'binary'],
                                     'position' => ['type' => 'integer', 'example' => 1],
+                                    'alt_text' => ['type' => 'string', 'example' => 'Blue running shoe, side view'],
                                 ],
                             ],
                         ],
@@ -83,6 +85,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                                     'path' => 'product/12/abc123.webp',
                                     'position' => 1,
                                     'url' => '/storage/product/12/abc123.webp',
+                                    'altText' => 'Blue running shoe, side view',
                                 ],
                             ],
                         ]),
@@ -155,6 +158,55 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                 ],
             ),
         ),
+        new Put(
+            uriTemplate: '/catalog/products/{productId}/images/{id}',
+            input: AdminCatalogProductImageUpdateInput::class,
+            provider: AdminCatalogProductImageProvider::class,
+            processor: AdminCatalogProductImageProcessor::class,
+            requirements: ['id' => '\d+'],
+            extraProperties: ['standard_put' => false],
+            openapi: new Model\Operation(
+                tags: ['Admin Catalog: Products'],
+                summary: 'Update a product image',
+                description: 'Edits what is stored alongside an uploaded image — its alt text and its position. The file itself is replaced by uploading a new image and deleting this one.',
+                parameters: [
+                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: ['type' => 'integer', 'example' => 12]),
+                    new Model\Parameter('id', 'path', 'Image ID.', true, schema: ['type' => 'integer', 'example' => 47]),
+                ],
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'alt_text' => ['type' => 'string', 'example' => 'Blue running shoe, side view'],
+                                    'position' => ['type' => 'integer', 'example' => 2],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Image updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 47,
+                                    'productId' => 12,
+                                    'path' => 'product/12/abc123.webp',
+                                    'position' => 2,
+                                    'url' => '/storage/product/12/abc123.webp',
+                                    'altText' => 'Blue running shoe, side view',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Image (or its parent product) not found.'),
+                ],
+            ),
+        ),
         new Delete(
             uriTemplate: '/catalog/products/{productId}/images/{id}',
             provider: AdminCatalogProductImageProvider::class,
@@ -197,6 +249,12 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
             description: 'Reorder product images. Becomes reorderAdminCatalogProductImage.',
         ),
         new Mutation(
+            name: 'update',
+            input: AdminCatalogProductImageUpdateInput::class,
+            processor: AdminCatalogProductImageProcessor::class,
+            description: 'Update a product image\'s alt text and position. Becomes updateAdminCatalogProductImage.',
+        ),
+        new Mutation(
             name: 'delete',
             input: AdminCatalogProductImageDeleteInput::class,
             processor: AdminCatalogProductImageProcessor::class,
@@ -220,6 +278,9 @@ class AdminCatalogProductImage
 
     #[ApiProperty(writable: false)]
     public ?string $url = null;
+
+    #[ApiProperty(writable: false, description: 'Alt text stored for the current locale.')]
+    public ?string $altText = null;
 
     #[ApiProperty(writable: false)]
     public ?bool $success = null;

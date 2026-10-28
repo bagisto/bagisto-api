@@ -6,8 +6,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Models\AdminSettingsDataTransferImportDownload;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\DataTransfer\Models\Import;
@@ -18,6 +18,7 @@ use Webkul\DataTransfer\Models\Import;
  *   GET /settings/data-transfer/imports/{id}/download
  *   GET /settings/data-transfer/imports/{id}/download-error-report
  *   GET /settings/data-transfer/imports/sample/{type}/{format}
+ *   GET /settings/data-transfer/imports/sample-images/{type}
  *
  * The concrete download is selected by the operation shortName.
  * Returns an Illuminate\Http\Response so API Platform's SerializeProcessor
@@ -29,14 +30,16 @@ class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterfa
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Response
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminSettingsDataTransferImportDownload::class);
 
         $template = method_exists($operation, 'getUriTemplate')
             ? (string) $operation->getUriTemplate()
             : '';
         $path = (string) request()->path();
+
+        if (str_contains($template, '/sample-images/') || str_contains($path, '/imports/sample-images/')) {
+            return $this->downloadSampleImages($uriVariables);
+        }
 
         if (str_contains($template, '/sample/') || str_contains($path, '/imports/sample/')) {
             return $this->downloadSample($uriVariables);
@@ -84,6 +87,19 @@ class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterfa
 
         if (! $samplePath || ! Storage::exists($samplePath)) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.data-transfer.import.sample-not-found'));
+        }
+
+        return $this->stream(Storage::path($samplePath), basename($samplePath));
+    }
+
+    protected function downloadSampleImages(array $uriVariables): Response
+    {
+        $type = (string) ($uriVariables['type'] ?? request()->route('type') ?? 'products');
+
+        $samplePath = config("importers.{$type}.sample_images_zip_path");
+
+        if (empty($samplePath) || ! Storage::exists($samplePath)) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.data-transfer.import.sample-images-not-found'));
         }
 
         return $this->stream(Storage::path($samplePath), basename($samplePath));

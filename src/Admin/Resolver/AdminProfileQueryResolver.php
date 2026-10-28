@@ -28,6 +28,7 @@ class AdminProfileQueryResolver implements QueryItemResolverInterface
         $profile->name = $data['name'];
         $profile->email = $data['email'];
         $profile->image = $data['image'];
+        $profile->imageUrl = $data['imageUrl'];
         $profile->status = $data['status'];
         $profile->roleId = $data['roleId'];
         $profile->roleName = $data['roleName'];

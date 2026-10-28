@@ -21,8 +21,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *   - root_category_id: required, must exist
  *   - seo_title / seo_description / seo_keywords: required strings (rolled into home_seo)
  *
- * Image uploads (logo / favicon) are deferred — accept a string path only.
- * Mirrors the Phase 5.11 image-upload-deferral pattern.
+ * Image upload (logo / favicon) is not supported yet.
  */
 class AdminSettingsChannelCreateInput
 {
@@ -101,11 +100,11 @@ class AdminSettingsChannelCreateInput
     #[Groups(['mutation'])]
     public ?string $allowed_ips = null;
 
-    #[ApiProperty(description: 'Optional storage path of an already-uploaded logo (binary upload deferred).')]
+    #[ApiProperty(description: 'Not stored: image upload is not supported yet.')]
     #[Groups(['mutation'])]
     public ?string $logo = null;
 
-    #[ApiProperty(description: 'Optional storage path of an already-uploaded favicon (binary upload deferred).')]
+    #[ApiProperty(description: 'Not stored: image upload is not supported yet.')]
     #[Groups(['mutation'])]
     public ?string $favicon = null;
 

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 /**
@@ -346,6 +347,45 @@ class SettingsChannelTest extends AdminApiTestCase
             ->exists();
         $hasErrors = ! empty($response->json('errors'));
         expect($updated || $hasErrors)->toBeTrue();
+    }
+
+    public function test_mutation_update_keeps_the_logo_and_favicon(): void
+    {
+        Storage::fake();
+        $admin = $this->createAdmin();
+        $id = $this->insertChannel(['code' => 'gimg'.uniqid()]);
+        $s = $this->ensureSupportRows();
+        Storage::put("channel/{$id}/logo.png", 'logo');
+        Storage::put("channel/{$id}/favicon.png", 'favicon');
+        \DB::table('channels')->where('id', $id)
+            ->update(['logo' => "channel/{$id}/logo.png", 'favicon' => "channel/{$id}/favicon.png"]);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminSettingsChannelInput!) {
+              updateAdminSettingsChannel(input: $input) {
+                adminSettingsChannel { _id logo favicon }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => '/api/admin/settings/channels/'.$id,
+                'hostname' => 'img-gql.example.com',
+                'locales' => [$s['localeId']],
+                'defaultLocaleId' => $s['localeId'],
+                'currencies' => [$s['currencyId']],
+                'baseCurrencyId' => $s['currencyId'],
+                'inventorySources' => [$s['sourceId']],
+                'rootCategoryId' => $s['rootCategoryId'],
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.updateAdminSettingsChannel.adminSettingsChannel.logo'))->toBe("channel/{$id}/logo.png");
+        expect($response->json('data.updateAdminSettingsChannel.adminSettingsChannel.favicon'))->toBe("channel/{$id}/favicon.png");
+        Storage::assertExists(["channel/{$id}/logo.png", "channel/{$id}/favicon.png"]);
     }
 
     public function test_mutation_delete_happy_path(): void

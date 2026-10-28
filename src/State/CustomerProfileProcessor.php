@@ -9,19 +9,28 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Dto\CustomerProfileOutput;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Helper\CustomerProfileHelper;
 use Webkul\BagistoApi\Models\CustomerProfile as CustomerProfileModel;
+use Webkul\BagistoApi\State\Concerns\SyncsNewsletterSubscription;
 use Webkul\BagistoApi\Validators\CustomerValidator;
+use Webkul\Core\Repositories\SubscribersListRepository;
+use Webkul\Core\Rules\PhoneNumber;
 use Webkul\Customer\Models\Customer;
+use Webkul\Sales\Models\Order;
 
 class CustomerProfileProcessor implements ProcessorInterface
 {
+    use SyncsNewsletterSubscription;
+
     public function __construct(
-        protected CustomerValidator $validator
+        protected CustomerValidator $validator,
+        protected SubscribersListRepository $subscriptionRepository
     ) {}
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
@@ -96,7 +105,7 @@ class CustomerProfileProcessor implements ProcessorInterface
         $resourceShortName = class_basename($resourceClass);
 
         if ($resourceShortName === 'CustomerProfileDelete') {
-            return $this->handleDelete($authenticatedCustomer);
+            return $this->handleDelete($data, $authenticatedCustomer);
         } elseif ($resourceShortName === 'CustomerProfileUpdate') {
             return $this->handleUpdate($data, $authenticatedCustomer);
         } elseif ($resourceShortName === 'CustomerProfile') {
@@ -115,6 +124,35 @@ class CustomerProfileProcessor implements ProcessorInterface
     }
 
     /**
+     * The email column is unique per channel, so a clash would otherwise surface
+     * as a raw database error instead of a validation failure.
+     */
+    /**
+     * The storefront profile rules (ProfileRequest) for the fields being changed: email unique in
+     * the channel, phone format and uniqueness, birth date in the past, new password of 6 or more.
+     */
+    private function validateProfileFields(mixed $data, Customer $customer): void
+    {
+        $fields = [
+            'email' => ['email', Rule::unique('customers', 'email')->ignore($customer->id)->where('channel_id', $customer->channel_id)],
+            'phone' => [new PhoneNumber, Rule::unique('customers', 'phone')->ignore($customer->id)],
+            'dateOfBirth' => ['date', 'before:today'],
+            'password' => ['min:6'],
+        ];
+
+        $values = array_filter(
+            array_map(fn ($field) => is_object($data) ? ($data->{$field} ?? null) : null, array_combine(array_keys($fields), array_keys($fields))),
+            fn ($value) => $value !== null && $value !== ''
+        );
+
+        $validator = Validator::make($values, array_intersect_key($fields, $values));
+
+        if ($validator->fails()) {
+            throw new InvalidInputException($validator->errors()->first(), 422);
+        }
+    }
+
+    /**
      * Handle customer profile update.
      */
     private function handleUpdate(mixed $data, Customer $authenticatedCustomer): CustomerProfileOutput
@@ -126,6 +164,8 @@ class CustomerProfileProcessor implements ProcessorInterface
                 throw new AuthenticationException(__('bagistoapi::app.graphql.auth.cannot-update-other-profile'));
             }
         }
+
+        $this->validateProfileFields($data, $authenticatedCustomer);
 
         if (is_object($data) && property_exists($data, 'firstName') && ! empty($data->firstName)) {
             $updateData['first_name'] = $data->firstName;
@@ -140,8 +180,6 @@ class CustomerProfileProcessor implements ProcessorInterface
         }
 
         if (is_object($data) && property_exists($data, 'phone') && ! empty($data->phone)) {
-            // Validate phone - no special characters allowed
-            $this->validatePhone($data->phone);
             $updateData['phone'] = $data->phone;
         }
 
@@ -165,10 +203,12 @@ class CustomerProfileProcessor implements ProcessorInterface
                 throw new InvalidInputException(__('bagistoapi::app.graphql.customer.current-password-incorrect'));
             }
 
-            if (is_object($data) && property_exists($data, 'confirmPassword')) {
-                if ($data->password !== $data->confirmPassword) {
-                    throw new InvalidInputException(__('bagistoapi::app.graphql.customer.password-mismatch'));
-                }
+            if (empty($data->confirmPassword ?? null)) {
+                throw new InvalidInputException(__('bagistoapi::app.graphql.customer.confirm-password-required'));
+            }
+
+            if ($data->password !== $data->confirmPassword) {
+                throw new InvalidInputException(__('bagistoapi::app.graphql.customer.password-mismatch'));
             }
 
             if (! Hash::isHashed($data->password)) {
@@ -176,7 +216,7 @@ class CustomerProfileProcessor implements ProcessorInterface
             }
         }
 
-        if (is_object($data) && property_exists($data, 'subscribedToNewsLetter')) {
+        if (is_object($data) && property_exists($data, 'subscribedToNewsLetter') && $data->subscribedToNewsLetter !== null) {
             $updateData['subscribed_to_news_letter'] = $data->subscribedToNewsLetter;
         }
 
@@ -200,7 +240,15 @@ class CustomerProfileProcessor implements ProcessorInterface
 
         $authenticatedCustomer->refresh();
 
+        if (isset($updateData['password'])) {
+            Event::dispatch('customer.password.update.after', $authenticatedCustomer);
+        }
+
         Event::dispatch('customer.update.after', $authenticatedCustomer);
+
+        if (array_key_exists('subscribed_to_news_letter', $updateData)) {
+            $this->syncSubscriptionOnProfileUpdate($authenticatedCustomer, (bool) $updateData['subscribed_to_news_letter']);
+        }
 
         $output = CustomerProfileHelper::mapCustomerToProfileOutput($authenticatedCustomer);
         $output->success = true;
@@ -213,8 +261,26 @@ class CustomerProfileProcessor implements ProcessorInterface
     /**
      * Handle customer profile deletion.
      */
-    private function handleDelete(Customer $authenticatedCustomer): null
+    /**
+     * Mirror the storefront delete: the password must match, and an account with a pending
+     * or processing order cannot be deleted.
+     */
+    private function handleDelete(mixed $data, Customer $authenticatedCustomer): null
     {
+        $password = is_object($data) ? ($data->password ?? null) : null;
+
+        if (empty($password)) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.customer.delete-password-required'), 422);
+        }
+
+        if (! Hash::check((string) $password, $authenticatedCustomer->password)) {
+            throw new InvalidInputException(trans('shop::app.customers.account.profile.index.wrong-password'), 422);
+        }
+
+        if ($authenticatedCustomer->orders()->whereIn('status', [Order::STATUS_PENDING, Order::STATUS_PROCESSING])->exists()) {
+            throw new InvalidInputException(trans('shop::app.customers.account.profile.index.order-pending'), 422);
+        }
+
         if ($authenticatedCustomer->image) {
             Storage::delete($authenticatedCustomer->image);
         }
@@ -279,8 +345,7 @@ class CustomerProfileProcessor implements ProcessorInterface
     private function handleImageUpload(string $imageData, Customer $customer): void
     {
         try {
-            if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $matches)) {
-                $imageFormat = $matches[1];
+            if (preg_match('/^data:image\/(bmp|jpe?g|png|webp);base64,/i', $imageData)) {
                 $base64Data = substr($imageData, strpos($imageData, ',') + 1);
                 $decodedData = base64_decode($base64Data, true);
 
@@ -290,6 +355,12 @@ class CustomerProfileProcessor implements ProcessorInterface
 
                 if (strlen($decodedData) > 5 * 1024 * 1024) {
                     throw new InvalidInputException(__('bagistoapi::app.graphql.upload.size-exceeds-limit'));
+                }
+
+                $imageFormat = CustomerProfileHelper::verifiedProfileImageExtension($decodedData);
+
+                if (! $imageFormat) {
+                    throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-format'));
                 }
 
                 $directory = 'customer/'.$customer->id;
@@ -311,26 +382,6 @@ class CustomerProfileProcessor implements ProcessorInterface
             }
         } catch (\Exception $e) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.upload.failed'));
-        }
-    }
-
-    /**
-     * Validate phone number - only digits allowed
-     *
-     * @throws InvalidInputException
-     */
-    private function validatePhone(?string $phone): void
-    {
-        if ($phone === null || $phone === '') {
-            return;
-        }
-
-        // Phone should only contain digits - remove all non-digit characters
-        $cleanedPhone = preg_replace('/[^0-9]/', '', $phone);
-
-        // If the cleaned phone is different from original, it means special characters were present
-        if ($cleanedPhone !== $phone) {
-            throw new InvalidInputException(__('bagistoapi::app.graphql.customer.phone-special-chars-not-allowed'));
         }
     }
 }

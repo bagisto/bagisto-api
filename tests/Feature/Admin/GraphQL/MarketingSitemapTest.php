@@ -14,13 +14,31 @@ class MarketingSitemapTest extends AdminApiTestCase
 {
     protected function insertSitemap(array $overrides = []): int
     {
-        return DB::table('sitemaps')->insertGetId(array_merge([
+        $channels = $overrides['channels'] ?? [$this->defaultChannelId()];
+
+        unset($overrides['channels']);
+
+        $id = DB::table('sitemaps')->insertGetId(array_merge([
             'file_name' => 'gqlsm-'.uniqid().'.xml',
             'path' => '/',
             'generated_at' => null,
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
+
+        foreach ($channels as $channelId) {
+            DB::table('sitemap_channels')->insert([
+                'sitemap_id' => $id,
+                'channel_id' => $channelId,
+            ]);
+        }
+
+        return $id;
+    }
+
+    protected function defaultChannelId(): int
+    {
+        return (int) DB::table('channels')->orderBy('id')->value('id');
     }
 
     public function test_query_listing(): void
@@ -67,21 +85,30 @@ class MarketingSitemapTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation Create($input: createAdminMarketingSitemapInput!) {
               createAdminMarketingSitemap(input: $input) {
-                adminMarketingSitemap { _id fileName }
+                adminMarketingSitemap { _id fileName channels urls }
               }
             }
         GQL;
 
         $unique = 'gqlcr-sm-'.uniqid().'.xml';
+        $channelId = $this->defaultChannelId();
+
         $response = $this->adminGraphQL($mutation, [
             'input' => [
                 'fileName' => $unique,
                 'path' => '/',
+                'channels' => [$channelId],
             ],
         ], $admin);
 
         $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.createAdminMarketingSitemap.adminMarketingSitemap');
+
+        expect($node['channels'] ?? null)->toBe([$channelId]);
         $this->assertDatabaseHas('sitemaps', ['file_name' => $unique]);
+        $this->assertDatabaseHas('sitemap_channels', ['sitemap_id' => $node['_id'], 'channel_id' => $channelId]);
     }
 
     public function test_mutation_update(): void
@@ -141,6 +168,7 @@ class MarketingSitemapTest extends AdminApiTestCase
             ['code' => 'general.sitemap.file_limits.max_url_per_file', 'channel_code' => null, 'locale_code' => null],
             ['value' => '50000']
         );
+        $this->forgetCoreConfigCache();
 
         $admin = $this->createAdmin();
         $id = $this->insertSitemap(['file_name' => 'gqlgen-sm.xml', 'path' => '/']);

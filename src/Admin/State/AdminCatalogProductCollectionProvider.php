@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProduct;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
+use Webkul\BagistoApi\Support\CoreCapabilities;
 
 /**
  * Provider for the admin Catalog → Products datagrid endpoint.
@@ -18,6 +19,11 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
  *
  * Mirrors Webkul\Admin\DataGrids\Catalog\ProductDataGrid 1:1 — same DB joins,
  * same Elasticsearch branch gated by core config.
+ *
+ * Quantity, image count, base image, stock handling, category names and the family name
+ * are read from the flat table's own derived columns, as the admin listing reads them, so
+ * the row matches the screen. A core older than 2.4.10 has no such columns and the listing
+ * computes the same values per returned row.
  */
 class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvider
 {
@@ -28,6 +34,8 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
     protected ?string $resolvedChannel = null;
 
     protected bool $listingIsGraphQL = false;
+
+    public function __construct(protected CoreCapabilities $capabilities) {}
 
     /**
      * Override provide() to check the Elasticsearch branch before delegating
@@ -61,8 +69,7 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         $this->resolvedLocale = $locale;
         $this->resolvedChannel = $channel;
 
-        return DB::table('product_flat')
-            ->leftJoin('attribute_families as af', 'product_flat.attribute_family_id', '=', 'af.id')
+        $query = DB::table('product_flat')
             ->select(
                 'product_flat.product_id',
                 'product_flat.sku',
@@ -88,13 +95,32 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
                 'product_flat.featured',
                 'product_flat.created_at',
                 'product_flat.updated_at',
-                'af.name as attribute_family',
-            )
-            ->selectRaw('(SELECT COALESCE(SUM(qty), 0) FROM '.$p.'product_inventories WHERE '.$p.'product_inventories.product_id = '.$p.'product_flat.product_id) as quantity')
-            ->selectRaw('(SELECT COUNT(*) FROM '.$p.'product_images WHERE '.$p.'product_images.product_id = '.$p.'product_flat.product_id) as images_count')
-            ->selectRaw('(SELECT path FROM '.$p.'product_images WHERE '.$p.'product_images.product_id = '.$p.'product_flat.product_id ORDER BY id ASC LIMIT 1) as base_image')
+            );
+
+        if ($this->capabilities->hasProductFlatDerivedColumns()) {
+            $query->addSelect(
+                'product_flat.quantity',
+                'product_flat.images_count',
+                'product_flat.base_image',
+                'product_flat.manage_stock',
+                'product_flat.category_name',
+                'product_flat.attribute_family_name as attribute_family',
+            );
+        } else {
+            // BACKWARD COMPATIBILITY: a core before 2.4.10 has no derived columns on the
+            // flat table, so the listing computes the same values per returned row. Drop
+            // this arm when the minimum supported core is 2.4.10.
+            $query->leftJoin('attribute_families as af', 'product_flat.attribute_family_id', '=', 'af.id')
+                ->addSelect('af.name as attribute_family')
+                ->selectRaw('(SELECT COALESCE(SUM(qty), 0) FROM '.$p.'product_inventories WHERE '.$p.'product_inventories.product_id = '.$p.'product_flat.product_id) as quantity')
+                ->selectRaw('(SELECT COUNT(*) FROM '.$p.'product_images WHERE '.$p.'product_images.product_id = '.$p.'product_flat.product_id) as images_count')
+                ->selectRaw('(SELECT path FROM '.$p.'product_images WHERE '.$p.'product_images.product_id = '.$p.'product_flat.product_id ORDER BY position ASC, id ASC LIMIT 1) as base_image')
+                ->selectRaw('(SELECT ct.name FROM '.$p.'category_translations ct INNER JOIN '.$p.'product_categories pc ON pc.category_id = ct.category_id WHERE pc.product_id = '.$p.'product_flat.product_id AND ct.locale = ? ORDER BY pc.category_id ASC LIMIT 1) as category_name', [$locale])
+                ->selectRaw('NULL as manage_stock');
+        }
+
+        return $query
             ->selectRaw('(SELECT category_id FROM '.$p.'product_categories WHERE '.$p.'product_categories.product_id = '.$p.'product_flat.product_id ORDER BY category_id ASC LIMIT 1) as category_id')
-            ->selectRaw('(SELECT ct.name FROM '.$p.'category_translations ct INNER JOIN '.$p.'product_categories pc ON pc.category_id = ct.category_id WHERE pc.product_id = '.$p.'product_flat.product_id AND ct.locale = ? ORDER BY pc.category_id ASC LIMIT 1) as category_name', [$locale])
             ->where('product_flat.locale', $locale)
             ->where('product_flat.channel', $channel);
     }
@@ -102,7 +128,6 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
     protected function countTotal($query): int
     {
         $count = DB::table('product_flat')
-            ->leftJoin('attribute_families as af', 'product_flat.attribute_family_id', '=', 'af.id')
             ->where('product_flat.locale', $this->resolvedLocale)
             ->where('product_flat.channel', $this->resolvedChannel);
 
@@ -140,7 +165,7 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         }
 
         if (! empty($args['attribute_family'])) {
-            $query->where('af.id', (int) $args['attribute_family']);
+            $query->where('product_flat.attribute_family_id', (int) $args['attribute_family']);
         }
 
         [$priceFrom, $priceTo] = $this->resolvePriceRange($args);
@@ -159,9 +184,10 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         $columnMap = [
             'name' => 'product_flat.name',
             'sku' => 'product_flat.sku',
-            'attribute_family' => 'af.id',
+            'attribute_family' => 'product_flat.attribute_family_id',
             'price' => 'product_flat.price',
-            'quantity' => 'quantity',
+            // BACKWARD COMPATIBILITY: before 2.4.10 the quantity is a selected alias, not a column.
+            'quantity' => $this->capabilities->hasProductFlatDerivedColumns() ? 'product_flat.quantity' : 'quantity',
             'product_id' => 'product_flat.product_id',
             'status' => 'product_flat.status',
             'type' => 'product_flat.type',
@@ -169,12 +195,6 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         ];
 
         $orderColumn = $columnMap[$column] ?? 'product_flat.product_id';
-
-        if ($column === 'quantity') {
-            $query->orderByRaw('quantity '.$direction);
-
-            return;
-        }
 
         $query->orderBy($orderColumn, $direction);
     }
@@ -199,6 +219,7 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         $dto->specialPriceFrom = $row->special_price_from ? (string) $row->special_price_from : null;
         $dto->specialPriceTo = $row->special_price_to ? (string) $row->special_price_to : null;
         $dto->quantity = $row->quantity !== null ? (int) $row->quantity : 0;
+        $dto->manageStock = $row->manage_stock !== null ? (bool) $row->manage_stock : null;
         $dto->baseImageUrl = $row->base_image ? Storage::url($row->base_image) : null;
         $dto->imagesCount = (int) ($row->images_count ?? 0);
         $dto->categoryId = $row->category_id !== null ? (int) $row->category_id : null;
@@ -256,7 +277,7 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
             'meta_keywords' => $row->meta_keywords,
             'weight' => $row->weight !== null ? (float) $row->weight : null,
             'tax_category_id' => null,
-            'manage_stock' => null,
+            'manage_stock' => $row->manage_stock !== null ? (int) $row->manage_stock : null,
             'in_stock' => null,
             'featured' => (bool) $row->featured,
             'new' => (bool) $row->new,

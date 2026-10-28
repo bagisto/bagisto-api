@@ -12,8 +12,11 @@ return [
     | Default Rate Limit
     |--------------------------------------------------------------------------
     |
-    | Default number of requests allowed per minute for each storefront key.
-    | Can be overridden per key in the database.
+    | Requests allowed per minute for a storefront key, counted separately for
+    | each client IP, so one shopper cannot use up the budget every visitor of
+    | the storefront shares. The key's own `rate_limit` column overrides this;
+    | a null or 0 limit on the key means unlimited. Behind a load balancer or
+    | CDN, configure trusted proxies so the real client IP is used.
     |
     */
     'default_rate_limit' => env('STOREFRONT_DEFAULT_RATE_LIMIT', 100),
@@ -54,20 +57,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Cart Customizable File Upload
+    | Auto-inject the Playground Key
     |--------------------------------------------------------------------------
     |
-    | Staging settings for file-type customizable options added to the cart.
-    | The upload endpoint stages the file and returns a token; add-to-cart
-    | resolves the token. A persistent cache driver is required.
+    | Pre-fills the playground key in the GraphiQL and Swagger UI headers so a
+    | developer can call the shop API without pasting it. Leave it off on any
+    | publicly reachable environment — it exposes the key to every visitor.
+    |
+    | Example: API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY=true
     |
     */
-    'cart' => [
-        'customizable_file' => [
-            'max_size_kb' => (int) env('STOREFRONT_CART_FILE_MAX_KB', 2048),
-            'ttl_minutes' => (int) env('STOREFRONT_CART_FILE_TTL', 60),
-            'disk' => env('STOREFRONT_CART_FILE_DISK', 'private'),
-            'stage_dir' => 'cart-uploads',
-        ],
-    ],
+    'auto_inject_playground_key' => env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false),
+
 ];

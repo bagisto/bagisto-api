@@ -100,11 +100,11 @@ class MergeCartTest extends GraphQLTestCase
         return compact('customer', 'token');
     }
 
-    private function mergeCart(string $customerToken, int $cartId): array
+    private function mergeCart(string $customerToken, int $cartId, ?string $guestCartToken = null): array
     {
         $mutation = <<<'GQL'
-            mutation mergeCart($cartId: Int!) {
-              createMergeCart(input: { cartId: $cartId }) {
+            mutation mergeCart($cartId: Int!, $guestCartToken: String) {
+              createMergeCart(input: { cartId: $cartId, guestCartToken: $guestCartToken }) {
                 mergeCart {
                   id
                   _id
@@ -137,6 +137,7 @@ class MergeCartTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'cartId' => $cartId,
+            'guestCartToken' => $guestCartToken,
         ], ['Authorization' => 'Bearer '.$customerToken]);
 
         return [
@@ -165,7 +166,7 @@ class MergeCartTest extends GraphQLTestCase
 
         // Login and merge
         ['token' => $customerToken] = $this->createCustomerWithAuth();
-        $result = $this->mergeCart($customerToken, $guestCartId);
+        $result = $this->mergeCart($customerToken, $guestCartId, $guestToken);
 
         $result['response']->assertSuccessful();
         $this->assertNull($result['errors'], 'Merge should not return errors');
@@ -205,7 +206,7 @@ class MergeCartTest extends GraphQLTestCase
         $guestCartId = (int) $guestCart['_id'];
 
         // Merge
-        $result = $this->mergeCart($customerToken, $guestCartId);
+        $result = $this->mergeCart($customerToken, $guestCartId, $guestToken);
         $result['response']->assertSuccessful();
 
         $data = $result['data'];
@@ -246,6 +247,24 @@ class MergeCartTest extends GraphQLTestCase
     /**
      * Merge with non-existent cart ID should fail gracefully.
      */
+    public function test_merge_fails_without_guest_cart_token(): void
+    {
+        $guestToken = $this->createGuestCartToken();
+        $productData = $this->createTestProduct();
+        $guestCart = $this->addProductToGuestCart($guestToken, $productData['product']->id, 1);
+        $guestCartId = (int) $guestCart['_id'];
+
+        ['token' => $customerToken] = $this->createCustomerWithAuth();
+
+        $result = $this->mergeCart($customerToken, $guestCartId);
+
+        $this->assertNotEmpty($result['errors'], 'Merge without the guest cart token must fail');
+
+        $row = DB::table('cart')->where('id', $guestCartId)->first();
+        $this->assertSame(1, (int) $row->is_active);
+        $this->assertNull($row->customer_id);
+    }
+
     public function test_merge_fails_with_invalid_cart_id(): void
     {
         ['token' => $customerToken] = $this->createCustomerWithAuth();
@@ -257,9 +276,9 @@ class MergeCartTest extends GraphQLTestCase
     }
 
     /**
-     * Guest cart should be deactivated after merge.
+     * Guest cart must not stay an active guest cart after merge.
      */
-    public function test_guest_cart_deactivated_after_merge(): void
+    public function test_guest_cart_is_not_left_active_after_merge(): void
     {
         $guestToken = $this->createGuestCartToken();
         $productData = $this->createTestProduct();
@@ -267,12 +286,14 @@ class MergeCartTest extends GraphQLTestCase
         $guestCartId = (int) $guestCart['_id'];
 
         ['token' => $customerToken] = $this->createCustomerWithAuth();
-        $result = $this->mergeCart($customerToken, $guestCartId);
+        $result = $this->mergeCart($customerToken, $guestCartId, $guestToken);
         $result['response']->assertSuccessful();
 
-        // Verify guest cart is deactivated in DB
         $guestCartRow = DB::table('cart')->where('id', $guestCartId)->first();
-        $this->assertSame(0, (int) $guestCartRow->is_active, 'Guest cart should be deactivated after merge');
+        $this->assertTrue(
+            $guestCartRow === null || $guestCartRow->customer_id !== null,
+            'Guest cart must be removed or handed over to the customer after merge'
+        );
     }
 
     /**
@@ -300,7 +321,7 @@ class MergeCartTest extends GraphQLTestCase
         $this->assertSame(2, $guestCart['itemsCount'], 'Guest cart should have 2 items');
 
         ['token' => $customerToken] = $this->createCustomerWithAuth();
-        $result = $this->mergeCart($customerToken, $guestCartId);
+        $result = $this->mergeCart($customerToken, $guestCartId, $guestToken);
         $result['response']->assertSuccessful();
 
         $data = $result['data'];
@@ -373,7 +394,7 @@ class MergeCartTest extends GraphQLTestCase
         $this->assertSame(1, $guestCart['itemsCount']);
 
         ['token' => $customerToken] = $this->createCustomerWithAuth();
-        $result = $this->mergeCart($customerToken, $guestCartId);
+        $result = $this->mergeCart($customerToken, $guestCartId, $guestToken);
 
         $result['response']->assertSuccessful();
         $this->assertNull($result['errors'], 'Merge with configurable product should not error: '.json_encode($result['errors'] ?? []));
@@ -402,17 +423,17 @@ class MergeCartTest extends GraphQLTestCase
         ['token' => $customerToken] = $this->createCustomerWithAuth();
 
         // First merge succeeds
-        $result1 = $this->mergeCart($customerToken, $guestCartId);
+        $result1 = $this->mergeCart($customerToken, $guestCartId, $guestToken);
         $result1['response']->assertSuccessful();
         $this->assertTrue($result1['data']['success']);
         $firstMergeCount = $result1['data']['itemsCount'];
 
-        // Second merge on same deactivated cart should not add more items
-        $result2 = $this->mergeCart($customerToken, $guestCartId);
+        $result2 = $this->mergeCart($customerToken, $guestCartId, $guestToken);
         $result2['response']->assertSuccessful();
+        $this->assertNotEmpty($result2['errors'], 'An already merged guest cart cannot be merged again');
 
-        $data2 = $result2['data'];
-        $this->assertLessThanOrEqual($firstMergeCount, $data2['itemsCount'],
+        $itemsCount = (int) DB::table('cart')->where('id', $guestCartId)->value('items_count');
+        $this->assertLessThanOrEqual($firstMergeCount, $itemsCount,
             'Items should not increase when merging same cart again');
     }
 }

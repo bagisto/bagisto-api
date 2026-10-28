@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
 class CustomerCartTest extends GraphQLTestCase
@@ -751,5 +752,76 @@ class CustomerCartTest extends GraphQLTestCase
 
         $response->assertSuccessful();
         $this->assertNotEmpty($response->json('errors'));
+    }
+
+    public function test_estimate_shipping_returns_shipping_methods(): void
+    {
+        $token = $this->loginCustomerAndGetToken();
+        $this->createCustomerCartWithItem($token, 1);
+
+        $mutation = <<<'GQL'
+            mutation estimate($input: createEstimateShippingInput!) {
+              createEstimateShipping(input: $input) {
+                estimateShipping {
+                  itemsCount
+                  grandTotal
+                  shippingMethods
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, [
+            'input' => ['country' => 'US', 'state' => 'CA', 'postcode' => '90001'],
+        ], $this->customerHeaders($token));
+
+        $response->assertOk();
+        $this->assertNull($response->json('errors'));
+
+        $methods = $response->json('data.createEstimateShipping.estimateShipping.shippingMethods');
+
+        $this->assertIsArray($methods);
+        $this->assertNotEmpty($methods);
+        $this->assertArrayHasKey('method', $methods[0]);
+        $this->assertArrayHasKey('formattedPrice', $methods[0]);
+    }
+
+    public function test_move_to_wishlist_moves_the_item_out_of_the_cart(): void
+    {
+        $token = $this->loginCustomerAndGetToken();
+        $cart = $this->createCustomerCartWithItem($token, 1);
+
+        $mutation = <<<'GQL'
+            mutation move($input: createMoveToWishlistInput!) {
+              createMoveToWishlist(input: $input) {
+                moveToWishlist {
+                  itemsCount
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, [
+            'input' => ['itemIds' => [$cart['cartItemId']]],
+        ], $this->customerHeaders($token));
+
+        $response->assertOk();
+        $this->assertNull($response->json('errors'));
+        $this->assertFalse(DB::table('cart_items')->where('id', $cart['cartItemId'])->exists());
+        $this->assertTrue(DB::table('wishlist_items')->where('product_id', $cart['product'])->exists());
+    }
+
+    public function test_cart_cross_sells_returns_cross_sells_of_cart_products(): void
+    {
+        $token = $this->loginCustomerAndGetToken();
+        $cart = $this->createCustomerCartWithItem($token, 1);
+        $crossSell = $this->createBaseProduct('simple');
+        DB::table('product_cross_sells')->insert(['parent_id' => $cart['product'], 'child_id' => $crossSell->id]);
+
+        $response = $this->graphQL('{ cartCrossSellProducts { _id sku name } }', [], $this->customerHeaders($token));
+
+        $response->assertOk();
+        $this->assertNull($response->json('errors'));
+        $this->assertSame([$crossSell->id], array_column($response->json('data.cartCrossSellProducts'), '_id'));
     }
 }

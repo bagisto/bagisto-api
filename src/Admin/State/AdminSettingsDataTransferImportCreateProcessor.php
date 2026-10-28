@@ -16,24 +16,19 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\DataTransfer\Helpers\Import as ImportHelper;
 use Webkul\DataTransfer\Models\Import;
 use Webkul\DataTransfer\Repositories\ImportRepository;
+use ZipArchive;
 
 /**
  * Create + update for data-transfer imports (multipart upload).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\DataTransfer\ImportController
- * store() / update():
- *   - POST /api/admin/settings/data-transfer/imports        (file required)
- *   - PUT  /api/admin/settings/data-transfer/imports/{id}   (file optional; resets state)
- *
- * Binary upload is REST-only — the GraphQL `create` mutation is rejected (422).
- *
- * Permission gate: settings.data_transfer.imports.create / .edit.
  */
 class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterface
 {
     protected const SUPPORTED_FORMATS = ['csv', 'xls', 'xlsx', 'xml'];
+
+    protected const MAX_IMAGES_ARCHIVE_KB = 102400;
 
     public function __construct(
         protected ImportRepository $importRepository,
@@ -77,12 +72,20 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
 
         Event::dispatch('data_transfer.imports.create.before');
 
-        $file = request()->file('file');
-        $filePath = $this->storeFile($file);
+        $import = $this->importRepository->create(array_merge($payload, ['file_path' => '']));
 
-        $import = $this->importRepository->create(array_merge($payload, [
-            'file_path' => $filePath,
-        ]));
+        try {
+            $import = $this->importRepository->update(
+                $this->storeImportFiles((int) $import->id),
+                $import->id,
+            );
+        } catch (\Throwable $e) {
+            $this->purgeImportFiles((int) $import->id);
+
+            $this->importRepository->delete($import->id);
+
+            throw $e;
+        }
 
         Event::dispatch('data_transfer.imports.create.after', $import);
 
@@ -117,8 +120,9 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         $file = request()->file('file');
         if ($file instanceof UploadedFile && $file->isValid()) {
             $this->deleteFile($import->file_path);
-            $data['file_path'] = $this->storeFile($file);
         }
+
+        $data = array_merge($data, $this->storeImportFiles((int) $import->id));
 
         $updated = $this->importRepository->update($data, $import->id);
 
@@ -141,13 +145,17 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
             'validation_strategy',
             'allowed_errors',
             'field_separator',
-            'images_directory_path',
         ]);
+
+        $input = array_merge($input, $this->imageSourceData(request()->input('type')));
 
         $fileRule = $fileRequired ? 'required|file' : 'nullable|file';
 
         $validator = Validator::make(
-            array_merge($input, ['file' => request()->file('file')]),
+            array_merge($input, [
+                'file' => request()->file('file'),
+                'upload_images' => request()->file('upload_images'),
+            ]),
             [
                 'type' => 'required|in:'.implode(',', $importers),
                 'action' => 'required|in:append,delete',
@@ -155,7 +163,10 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
                 'allowed_errors' => 'required|integer|min:0',
                 'field_separator' => 'required',
                 'file' => $fileRule,
-            ],
+            ] + $this->imageRules(
+                request()->input('type'),
+                $fileRequired ? null : (int) (request()->route('id') ?? 0),
+            ),
         );
 
         if ($validator->fails()) {
@@ -178,12 +189,128 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         return $input;
     }
 
-    protected function storeFile(UploadedFile $file): string
+    protected function storeFile(UploadedFile $file, int $importId): string
     {
         $safeFilename = uniqid().'_'.hash('sha256', $file->getClientOriginalName());
         $extension = $file->guessExtension() ?: $file->getClientOriginalExtension();
 
-        return $file->storeAs('imports', $safeFilename.'.'.$extension, 'private');
+        return $file->storeAs('imports/'.$importId, $safeFilename.'.'.$extension, 'private');
+    }
+
+    /**
+     * Validation rules for the image fields, or none for an import type that has no
+     * images — a customer or tax-rate import would otherwise be asked for a directory.
+     *
+     * @return array<string, string>
+     */
+    protected function imageRules(?string $type, ?int $importId = null): array
+    {
+        if (! ImportHelper::typeSupportsImages($type)) {
+            return [];
+        }
+
+        $archiveRequired = $importId && $this->countUploadedImages($importId)
+            ? ''
+            : 'required_if:image_source,'.ImportHelper::IMAGE_SOURCE_UPLOAD.'|';
+
+        return [
+            'image_source' => 'nullable|in:url,upload,directory',
+            'upload_images' => $archiveRequired.'nullable|file|mimes:zip|max:'.self::MAX_IMAGES_ARCHIVE_KB,
+            'images_directory_path' => 'required_if:image_source,'.ImportHelper::IMAGE_SOURCE_DIRECTORY.'|nullable|string',
+        ];
+    }
+
+    /**
+     * The image columns to save, or none at all for a type that has no images.
+     *
+     * @return array<string, mixed>
+     */
+    protected function imageSourceData(?string $type): array
+    {
+        if (! ImportHelper::typeSupportsImages($type)) {
+            return [];
+        }
+
+        return [
+            'image_source' => request()->input('image_source', ImportHelper::IMAGE_SOURCE_DIRECTORY),
+            'images_directory_path' => request()->input('images_directory_path'),
+        ];
+    }
+
+    /**
+     * Store the files that arrived with the request and return the columns they set.
+     *
+     * @return array<string, mixed>
+     */
+    protected function storeImportFiles(int $importId): array
+    {
+        $data = [];
+
+        $file = request()->file('file');
+
+        if ($file instanceof UploadedFile && $file->isValid()) {
+            $data['file_path'] = $this->storeFile($file, $importId);
+        }
+
+        $archive = request()->file('upload_images');
+
+        if (
+            request()->input('image_source') == ImportHelper::IMAGE_SOURCE_UPLOAD
+            && $archive instanceof UploadedFile
+            && $archive->isValid()
+        ) {
+            $this->purgeImportImages($importId);
+
+            $this->storeImagesArchive($archive, $importId);
+
+            $data['images_archive_name'] = $archive->getClientOriginalName();
+        }
+
+        return $data;
+    }
+
+    protected function storeImagesArchive(UploadedFile $file, int $importId): void
+    {
+        $disk = Storage::disk('private');
+
+        $directory = 'imports/'.$importId.'/images';
+
+        $archivePath = $file->storeAs($directory, $file->getClientOriginalName(), 'private');
+
+        $zip = new ZipArchive;
+
+        if ($zip->open($disk->path($archivePath)) === true) {
+            $zip->extractTo($disk->path($directory));
+
+            $zip->close();
+        }
+
+        $disk->delete($archivePath);
+    }
+
+    protected function countUploadedImages(int $importId): int
+    {
+        try {
+            return count(Storage::disk('private')->files('imports/'.$importId.'/images'));
+        } catch (\Throwable) {
+            return 0;
+        }
+    }
+
+    protected function purgeImportImages(int $importId): void
+    {
+        try {
+            Storage::disk('private')->deleteDirectory('imports/'.$importId.'/images');
+        } catch (\Throwable) {
+        }
+    }
+
+    protected function purgeImportFiles(int $importId): void
+    {
+        try {
+            Storage::disk('private')->deleteDirectory('imports/'.$importId);
+        } catch (\Throwable) {
+        }
     }
 
     protected function deleteFile(?string $path): void

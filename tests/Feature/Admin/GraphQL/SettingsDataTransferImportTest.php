@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class SettingsDataTransferImportTest extends AdminApiTestCase
@@ -23,6 +24,86 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
+    }
+
+    public function test_download_images_mutation_and_status_query(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertImport(['type' => 'products', 'state' => 'validated', 'image_source' => 'directory']);
+
+        $mutation = <<<'GQL'
+            mutation D($input: downloadAdminSettingsDataTransferImportImagesInput!) {
+              downloadAdminSettingsDataTransferImportImages(input: $input) {
+                adminSettingsDataTransferImportImages { _id total processed progress done }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, ['input' => ['id' => (string) $id, 'importId' => $id]], $admin);
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.downloadAdminSettingsDataTransferImportImages.adminSettingsDataTransferImportImages.done'))->toBeTrue();
+
+        $status = $this->adminGraphQL(
+            'query S($importId: Int!) { adminSettingsDataTransferImportImages(importId: $importId) { _id progress done } }',
+            ['importId' => $id],
+            $admin,
+        );
+
+        expect($status->json('errors'))->toBeNull();
+        expect($status->json('data.adminSettingsDataTransferImportImages.progress'))->toBe(100);
+    }
+
+    public function test_validation_status_query_reports_the_verdict(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertImport(['type' => 'products', 'state' => 'validated', 'processed_rows_count' => 5]);
+
+        $response = $this->adminGraphQL(
+            'query S($importId: Int!) { adminSettingsDataTransferImportValidation(importId: $importId) { _id state total processed progress done isValid import } }',
+            ['importId' => $id],
+            $admin,
+        );
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.adminSettingsDataTransferImportValidation.done'))->toBeTrue();
+        expect($response->json('data.adminSettingsDataTransferImportValidation.isValid'))->toBeTrue();
+        expect($response->json('data.adminSettingsDataTransferImportValidation.state'))->toBe('validated');
+    }
+
+    public function test_validation_chunk_and_queue_mutations_report_a_failed_step(): void
+    {
+        Storage::fake('private');
+        $admin = $this->createAdmin();
+
+        $path = 'imports/empty-'.uniqid().'.csv';
+        Storage::disk('private')->put($path, '');
+        $id = $this->insertImport(['type' => 'products', 'file_path' => $path]);
+
+        foreach (['chunk', 'queue'] as $name) {
+            $field = $name.'AdminSettingsDataTransferImportValidation';
+
+            $response = $this->adminGraphQL(
+                "mutation V(\$input: {$field}Input!) { {$field}(input: \$input) { adminSettingsDataTransferImportValidation { _id done } } }",
+                ['input' => ['id' => (string) $id, 'importId' => $id]],
+                $admin,
+            );
+
+            expect($response->json('errors'))->not->toBeNull();
+        }
+    }
+
+    public function test_validation_chunk_mutation_of_an_unknown_import_errors(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGraphQL(
+            'mutation V($input: chunkAdminSettingsDataTransferImportValidationInput!) { chunkAdminSettingsDataTransferImportValidation(input: $input) { adminSettingsDataTransferImportValidation { _id } } }',
+            ['input' => ['id' => '999999', 'importId' => 999999]],
+            $admin,
+        );
+
+        expect($response->json('errors'))->not->toBeNull();
     }
 
     public function test_listing_returns_edges(): void

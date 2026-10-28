@@ -13,7 +13,7 @@ class SettingsInventorySourceTest extends AdminApiTestCase
     protected function insertInventorySource(array $overrides = []): int
     {
         return \DB::table('inventory_sources')->insertGetId(array_merge([
-            'code' => 'gqs-'.substr((string) microtime(true), -4).rand(10, 99),
+            'code' => 'gqs-'.str_replace('.', '', uniqid('', true)),
             'name' => 'GQL Source '.rand(100, 999),
             'description' => null,
             'contact_name' => 'Jane',

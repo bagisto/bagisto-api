@@ -32,6 +32,24 @@ class AuthenticationTest extends AdminApiTestCase
         $this->assertSame($admin->name, $data['name']);
     }
 
+    public function test_profile_query_resolves_multiword_role_fields(): void
+    {
+        $admin = $this->createAdmin();
+
+        $query = <<<'GQL'
+            query { readAdminProfile { _id roleId roleName } }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [], $admin);
+
+        $response->assertOk();
+        $this->assertNull($response->json('errors'));
+
+        $data = $response->json('data.readAdminProfile');
+        $this->assertSame($admin->role_id, $data['roleId']);
+        $this->assertSame($admin->role?->name, $data['roleName']);
+    }
+
     public function test_profile_query_requires_authentication(): void
     {
         $query = <<<'GQL'

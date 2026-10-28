@@ -286,10 +286,46 @@ test.describe('Customer Product Reviews REST API', () => {
 });
 
 test.describe('Product Reviews — Validation', () => {
+  let vToken: string | null = null;
+  let vProductId: number | null = null;
+
+  test.beforeAll(async ({ request }) => {
+    const email = `prodrev_val_${Date.now()}@example.com`;
+    const password = `ProdRevVal${Math.floor(Math.random() * 10000)}!`;
+
+    const reg = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REGISTER, {
+      method: 'POST',
+      data: { first_name: 'Review', last_name: 'Val', email, password, password_confirmation: password },
+    });
+
+    if ([200, 201].includes(reg.status())) {
+      const login = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
+        method: 'POST',
+        data: { email, password },
+      });
+      const body = [200, 201].includes(login.status()) ? await login.json() : null;
+      if (body?.token) {
+        vToken = body.token as string;
+      }
+    }
+
+    const productsResp = await sendRestRequest(request, ENDPOINTS.PRODUCTS, { params: { per_page: '1' } });
+    const products = await productsResp.json();
+    if (Array.isArray(products) && products.length > 0) {
+      vProductId = products[0].id;
+    }
+  });
+
   test('Should return error for review with invalid rating', async ({ request }) => {
+    if (!vToken || !vProductId) {
+      test.skip(true, 'Login or product unavailable');
+      return;
+    }
+
     const response = await sendRestRequest(request, ENDPOINTS.REVIEWS, {
       method: 'POST',
-      data: { productId: 1, title: 'Bad rating', comment: 'Comment', rating: 6 },
+      headers: authHeaders(vToken),
+      data: { productId: vProductId, title: 'Bad rating', comment: 'Comment', rating: 6 },
     });
     console.log('POST /api/shop/reviews (invalid rating):', response.status());
     expect([400, 422]).toContain(response.status());

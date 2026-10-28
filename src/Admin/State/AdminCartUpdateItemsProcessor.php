@@ -9,11 +9,6 @@ use Webkul\BagistoApi\Admin\Models\AdminCart;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Checkout\Facades\Cart;
 
-/**
- * PUT /api/admin/carts/{id}/items — bulk-update line-item quantities.
- *
- * Body: { "qty": { "12": 3, "13": 1 } } (mirrors monolith CartController::updateItem).
- */
 class AdminCartUpdateItemsProcessor implements ProcessorInterface
 {
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminCart
@@ -39,7 +34,10 @@ class AdminCartUpdateItemsProcessor implements ProcessorInterface
                 'error' => $e->getMessage(),
             ]);
 
-            return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $e->getMessage() ?: __('bagistoapi::app.admin.cart.item-update-failed'));
+            throw new InvalidInputException(
+                $e->getMessage() ?: __('bagistoapi::app.admin.cart.item-update-failed'),
+                422,
+            );
         }
     }
 

@@ -7,9 +7,9 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminProduct;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
+use Webkul\Customer\Repositories\CustomerRepository;
 use Webkul\Product\Facades\ProductImage;
 use Webkul\Product\Models\Product;
 
@@ -37,11 +37,11 @@ class AdminProductProvider implements ProviderInterface
 
     protected const ATTR_STATUS = 7;
 
+    public function __construct(protected CustomerRepository $customerRepository) {}
+
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminProduct::class);
 
         $args = $context['args'] ?? [];
 
@@ -115,6 +115,22 @@ class AdminProductProvider implements ProviderInterface
 
         if ($type = $this->filterValue($args, 'type')) {
             $query->where('products.type', $type);
+
+            if ($type === 'simple' && $this->excludesCustomizableProducts($args)) {
+                $query->whereNotExists(fn ($q) => $q->select(DB::raw(1))
+                    ->from('product_customizable_options')
+                    ->whereColumn('product_customizable_options.product_id', 'products.id'));
+            }
+        }
+
+        $customerId = $this->filterValue($args, 'customerId') ?? $this->filterValue($args, 'customer_id');
+        $channelId = $customerId ? $this->customerRepository->find((int) $customerId)?->channel_id : null;
+
+        if ($channelId) {
+            $query->whereExists(fn ($q) => $q->select(DB::raw(1))
+                ->from('product_channels')
+                ->whereColumn('product_channels.product_id', 'products.id')
+                ->where('product_channels.channel_id', $channelId));
         }
 
         $status = $this->filterValue($args, 'status');
@@ -132,6 +148,14 @@ class AdminProductProvider implements ProviderInterface
         }
 
         $query->select('products.*')->distinct();
+    }
+
+    protected function excludesCustomizableProducts(array $args): bool
+    {
+        $value = $this->filterValue($args, 'excludeCustomizableProducts')
+            ?? $this->filterValue($args, 'exclude_customizable_products');
+
+        return ! empty($value) && filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 
     protected function applySort($query): void

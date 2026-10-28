@@ -15,6 +15,7 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 use Webkul\BagistoApi\State\ProductImageProvider;
 use Webkul\Product\Models\ProductImage as BaseProductImage;
+use Webkul\Product\Models\ProductImageTranslation;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -40,6 +41,8 @@ use Webkul\Product\Models\ProductImage as BaseProductImage;
                                         'productId' => 1,
                                         'position' => 1,
                                         'publicPath' => 'http://localhost:8000/storage/product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
+                                        'altText' => 'Blue running shoe, side view',
+                                        'fileName' => 'zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT',
                                     ],
                                 ],
                             ],
@@ -81,6 +84,8 @@ use Webkul\Product\Models\ProductImage as BaseProductImage;
                                     'productId' => 1,
                                     'position' => 1,
                                     'publicPath' => 'http://localhost:8000/storage/product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
+                                    'altText' => 'Blue running shoe, side view',
+                                    'fileName' => 'zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT',
                                 ],
                             ],
                         ]),
@@ -127,6 +132,8 @@ use Webkul\Product\Models\ProductImage as BaseProductImage;
                                         'productId' => 1,
                                         'position' => 1,
                                         'publicPath' => 'http://localhost:8000/storage/product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
+                                        'altText' => 'Blue running shoe, side view',
+                                        'fileName' => 'zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT',
                                     ],
                                 ],
                             ],
@@ -140,6 +147,12 @@ use Webkul\Product\Models\ProductImage as BaseProductImage;
 )]
 class ProductImage extends BaseProductImage
 {
+    /**
+     * Astrotomic derives the translation model from the class name, which for this
+     * subclass would be a ProductImageTranslation in this namespace that does not exist.
+     */
+    public $translationModel = ProductImageTranslation::class;
+
     protected $visible = [
         'id',
         'type',
@@ -147,12 +160,28 @@ class ProductImage extends BaseProductImage
         'product_id',
         'position',
         'public_path',
+        'alt_text',
+        'file_name',
     ];
 
     #[ApiProperty(readable: true, writable: false)]
     public function getPublicPathAttribute(): ?string
     {
-        return env('API_URL').$this->getUrlAttribute();
+        return $this->getUrlAttribute();
+    }
+
+    /**
+     * The alt text of the image, for the current locale.
+     *
+     * `alt_text` lives on the translation, and a property that is neither a column nor an
+     * accessor is not part of the resource — so this exists to put it there. Translatable
+     * has already resolved the value by the time the accessor runs, which is why it is
+     * handed straight back rather than looked up again.
+     */
+    #[ApiProperty(readable: true, writable: false, description: 'Description of the image for the current locale.')]
+    public function getAltTextAttribute(?string $value = null): ?string
+    {
+        return $value;
     }
 
     #[ApiProperty(identifier: true, writable: false)]

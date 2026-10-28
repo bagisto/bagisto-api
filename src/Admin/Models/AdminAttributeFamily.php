@@ -187,7 +187,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Catalog: Attribute Families'],
                 summary: 'Delete an attribute family',
-                description: 'Refuses if this is the last family (HTTP 400) or if any product is using it (HTTP 400).',
+                description: 'Refuses the default family (HTTP 400), which backs every product form, and any family a product is using (HTTP 400).',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Family ID.', true, schema: ['type' => 'integer', 'example' => 4]),
                 ],
@@ -201,7 +201,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                         ]),
                     ),
                     '400' => new Model\Response(
-                        description: 'Cannot delete — last family or products attached.',
+                        description: 'Cannot delete — the default family, or products attached.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => ['type' => '/errors/400', 'status' => 400, 'detail' => 'At least one attribute family is required.'],

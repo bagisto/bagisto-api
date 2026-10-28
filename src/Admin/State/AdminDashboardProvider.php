@@ -7,8 +7,8 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Webkul\Admin\Helpers\Dashboard;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Models\AdminDashboard;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 
 /**
@@ -27,7 +27,6 @@ class AdminDashboardProvider implements ProviderInterface
         'today' => 'getTodayStats',
         'stock-threshold-products' => 'getStockThresholdProducts',
         'total-sales' => 'getSalesStats',
-        'total-visitors' => 'getVisitorStats',
         'top-selling-products' => 'getTopSellingProducts',
         'top-customers' => 'getTopCustomers',
     ];
@@ -36,9 +35,7 @@ class AdminDashboardProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminDashboard::class);
 
         return [self::buildPayload(request()->query('type', self::DEFAULT_TYPE))];
     }

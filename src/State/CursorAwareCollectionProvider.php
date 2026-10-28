@@ -76,13 +76,17 @@ class CursorAwareCollectionProvider implements ProviderInterface
             ->limit($limit)
             ->get();
 
-        $currentPage = $total > 0 ? (int) floor($offset / $limit) + 1 : 1;
+        // `first: 0` yields an empty page (the query's LIMIT 0 returns no rows).
+        // Guard the page math + paginator perPage so a zero limit never divides
+        // by zero — that previously surfaced as an "Internal server error".
+        $divisor = max(1, $limit);
+        $currentPage = $total > 0 ? (int) floor($offset / $divisor) + 1 : 1;
 
         return new Paginator(
             new LengthAwarePaginator(
                 $items,
                 $total,
-                $limit,
+                $divisor,
                 $currentPage,
                 ['path' => request()->url()]
             )

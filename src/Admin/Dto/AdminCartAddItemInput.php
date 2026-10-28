@@ -20,6 +20,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *   - downloadable : links (list of downloadable-link ids)
  *   - grouped      : groupedQuantities ([{ productId, quantity }])
  *   - bundle       : bundleOptions ([{ optionId, productIds, quantity }])
+ *   - booking      : booking ({ type, date, slot, ... }), passed to the cart as sent
  */
 class AdminCartAddItemInput
 {
@@ -62,4 +63,13 @@ class AdminCartAddItemInput
     #[ApiProperty(description: 'Bundle products: list of { optionId, productIds, quantity }.')]
     #[Groups(['mutation'])]
     public ?array $bundleOptions = null;
+
+    /**
+     * Booking products: the drawer selection, e.g. { type, date, slot } or event { type, qty }.
+     *
+     * @var array<string, mixed>|null
+     */
+    #[ApiProperty(description: 'Booking products: { type, date, slot } for default, appointment and table; { type, date_from, date_to } or { type, date, slot } for rental; { type, qty: { ticketId: qty } } for event. Table bookings also take note.')]
+    #[Groups(['mutation'])]
+    public ?array $booking = null;
 }

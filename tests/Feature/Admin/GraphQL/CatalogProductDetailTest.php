@@ -4,25 +4,13 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Product\Helpers\Indexers\Flat;
 
 /**
  * GraphQL coverage for the admin catalog product detail Query.
- *
- *   GraphQL field: adminCatalogProduct(id: ID!)
- *   IRI format   : /api/admin/catalog/products/{id}
- *
- * Mirrors seeding helpers from RestApi/CatalogProductDetailTest.php.
- * Due to the project-wide GraphQL scalar-nullability quirk, camelCase fields
- * (e.g. sku, name, type) may come back null over GraphQL even when the REST
- * endpoint returns them populated.  Tests that rely on those fields fall back
- * to a REST assertion so the behaviour is still validated.
  */
 class CatalogProductDetailTest extends AdminApiTestCase
 {
-    /**
-     * Insert a product_flat row for the given Product so the detail provider's
-     * product_flats relation has something to work with.
-     */
     protected function insertProductFlat(object $product, array $overrides = []): void
     {
         $attributeFamilyId = (int) (DB::table('attribute_families')->value('id') ?? 1);
@@ -44,9 +32,21 @@ class CatalogProductDetailTest extends AdminApiTestCase
             'featured' => 0,
             'new' => 0,
         ], $overrides));
+
+        $this->refreshFlatDerived((int) $product->id);
     }
 
-    /** GraphQL query fragment for the detail fields we can safely assert on. */
+    protected function refreshFlatDerived(int $productId): void
+    {
+        // BACKWARD COMPATIBILITY: product_flat gained these columns in 2.4.10; an older
+        // core has the listing compute them. Remove when the minimum core is 2.4.10.
+        if (! $this->core()->hasProductFlatDerivedColumns()) {
+            return;
+        }
+
+        app(Flat::class)->refreshDerivedColumns([$productId]);
+    }
+
     private function detailQuery(): string
     {
         return <<<'GQL'

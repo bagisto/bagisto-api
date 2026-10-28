@@ -38,6 +38,18 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         return (int) \DB::table('customer_groups')->first()->id;
     }
 
+    public function test_query_condition_attributes(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGraphQL('{ adminMarketingCatalogRuleConditionAttributes { attributes operators } }', [], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect(array_column($response->json('data.adminMarketingCatalogRuleConditionAttributes.attributes'), 'key'))->toBe(['product']);
+        expect(array_column($response->json('data.adminMarketingCatalogRuleConditionAttributes.operators.select'), 'operator'))->toBe(['==', '!=']);
+    }
+
     public function test_query_listing(): void
     {
         $admin = $this->createAdmin();

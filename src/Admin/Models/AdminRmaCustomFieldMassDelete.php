@@ -16,7 +16,35 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldMassDeleteProcessor;
     shortName: 'AdminRmaCustomFieldMassDelete',
     normalizationContext: ['skip_null_values' => false],
     operations: [
-        new Post(uriTemplate: '/rma/custom-fields/mass-delete', input: AdminRmaCustomFieldMassDeleteInput::class, processor: AdminRmaCustomFieldMassDeleteProcessor::class, openapi: new Model\Operation(tags: ['Admin Sales: RMA'], summary: 'Mass-delete RMA custom fields', description: 'Body `{ indices: int[] }`. Permission: sales.rma.custom-fields.delete.')),
+        new Post(uriTemplate: '/rma/custom-fields/mass-delete', input: AdminRmaCustomFieldMassDeleteInput::class, processor: AdminRmaCustomFieldMassDeleteProcessor::class, openapi: new Model\Operation(
+            tags: ['Admin Sales: RMA'],
+            summary: 'Mass-delete RMA custom fields',
+            description: 'Permission: sales.rma.custom-fields.delete.',
+            requestBody: new Model\RequestBody(
+                required: true,
+                content: new \ArrayObject([
+                    'application/json' => [
+                        'schema' => [
+                            'type' => 'object',
+                            'required' => ['indices'],
+                            'properties' => [
+                                'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [4, 6]],
+                            ],
+                        ],
+                    ],
+                ]),
+            ),
+            responses: [
+                '200' => new Model\Response(
+                    description: 'The deleted custom-field ids.',
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'example' => ['deleted' => [4, 6], 'message' => 'Selected RMA custom fields deleted successfully.'],
+                        ],
+                    ]),
+                ),
+            ],
+        )),
     ],
     graphQlOperations: [
         new Mutation(name: 'create', input: AdminRmaCustomFieldMassDeleteInput::class, processor: AdminRmaCustomFieldMassDeleteProcessor::class),

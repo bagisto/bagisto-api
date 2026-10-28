@@ -8,9 +8,12 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\Product\Repositories\ProductDownloadableLinkRepository;
 use Webkul\Product\Repositories\ProductDownloadableSampleRepository;
 use Webkul\Product\Repositories\ProductRepository;
+use Webkul\Shop\Traits\ValidatesExternalUrl;
 
 class DownloadSampleController extends Controller
 {
+    use ValidatesExternalUrl;
+
     public function __construct(
         protected ProductRepository $productRepository,
         protected ProductDownloadableLinkRepository $productDownloadableLinkRepository,
@@ -55,6 +58,10 @@ class DownloadSampleController extends Controller
             return response()->json(['message' => 'Sample file not found.', 'error' => 'file_not_found'], 404);
         }
 
+        if (! $this->validateExternalUrl($productDownloadableLink->sample_url)) {
+            return response()->json(['message' => 'Downloadable link not found.', 'error' => 'not_found'], 404);
+        }
+
         $fileName = basename($productDownloadableLink->sample_url);
         $tempImage = tempnam(sys_get_temp_dir(), $fileName);
         copy($productDownloadableLink->sample_url, $tempImage);
@@ -90,6 +97,10 @@ class DownloadSampleController extends Controller
             }
 
             return response()->json(['message' => 'Sample file not found.', 'error' => 'file_not_found'], 404);
+        }
+
+        if (! $this->validateExternalUrl($productDownloadableSample->url)) {
+            return response()->json(['message' => 'Downloadable link not found.', 'error' => 'not_found'], 404);
         }
 
         $fileName = basename($productDownloadableSample->url);

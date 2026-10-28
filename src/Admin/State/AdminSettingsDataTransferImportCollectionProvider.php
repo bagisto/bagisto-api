@@ -9,12 +9,6 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
 /**
  * Provider for GET /api/admin/settings/data-transfer/imports + adminSettingsDataTransferImports.
- *
- * Filters: code (entity type — `imports.type` column), action, state, created_at range.
- * `type` is accepted as an alias for `code` for spec compatibility — both map to
- * the same underlying column.
- *
- * Sort: id (default desc), state, created_at.
  */
 class AdminSettingsDataTransferImportCollectionProvider extends AbstractAdminCollectionProvider
 {
@@ -82,6 +76,8 @@ class AdminSettingsDataTransferImportCollectionProvider extends AbstractAdminCol
         $dto->fieldSeparator = $row->field_separator ?? null;
         $dto->filePath = $row->file_path ?? null;
         $dto->imagesDirectoryPath = $row->images_directory_path ?? null;
+        $dto->imageSource = $row->image_source ?? null;
+        $dto->imagesArchiveName = $row->images_archive_name ?? null;
         $dto->errorFilePath = $row->error_file_path ?? null;
         $dto->startedAt = $row->started_at ? Carbon::parse($row->started_at)->toIso8601String() : null;
         $dto->completedAt = $row->completed_at ? Carbon::parse($row->completed_at)->toIso8601String() : null;

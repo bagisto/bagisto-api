@@ -2,6 +2,25 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'ग्राहक रिफ़ंड आईडी आवश्यक है',
+            'invalid-id-format' => 'अमान्य आईडी प्रारूप। "/api/shop/customer-refunds/1" जैसा IRI प्रारूप या संख्यात्मक आईडी अपेक्षित है',
+            'not-found' => 'आईडी ":id" वाला ग्राहक रिफ़ंड नहीं मिला',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'स्टोर सेटिंग्स में पुनः ऑर्डर अक्षम है।',
+            'cannot-reorder' => 'यह ऑर्डर दोबारा नहीं किया जा सकता (अतिथि ऑर्डर या एक या अधिक उत्पाद अब खरीद के लिए उपलब्ध नहीं हैं)।',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'संदेश :max वर्णों से अधिक नहीं हो सकता।',
+        ],
+
+        'headers' => [
+            'unknown-channel' => 'X-Channel हेडर में दिया गया चैनल ":code" मौजूद नहीं है।',
+        ],
+
         'cart' => [
             'authentication-required' => 'प्रमाणीकरण टोकन आवश्यक है',
             'invalid-token' => 'अमान्य या समाप्त प्रमाणीकरण टोकन',
@@ -102,6 +121,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'उत्पाद नहीं मिला',
             'not-found-with-sku' => 'No product found with SKU',
             'not-found-with-url-key' => 'No product found with URL key',
             'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
@@ -130,8 +150,22 @@ return [
         'login' => [
             'invalid-credentials' => 'अमान्य ईमेल या पासवर्ड',
             'account-suspended' => 'आपका खाता निलंबित कर दिया गया है',
+            'account-inactive' => 'आपका सक्रियण व्यवस्थापक स्वीकृति की प्रतीक्षा कर रहा है',
+            'email-not-verified' => 'पहले अपना ईमेल खाता सत्यापित करें।',
             'successful' => 'आपने सफलतापूर्वक लॉग इन कर लिया है',
             'invalid-request' => 'अमान्य लॉगिन अनुरोध',
+        ],
+
+        'social-login' => [
+            'signed-in' => 'सफलतापूर्वक साइन इन किया गया।',
+            'token-required' => 'एक सोशल लॉगिन टोकन आवश्यक है।',
+            'invalid-token' => 'सोशल लॉगिन टोकन अमान्य या समाप्त हो गया है। कृपया पुनः प्रयास करें।',
+            'wrong-audience' => 'यह टोकन किसी अन्य ऐप के लिए जारी किया गया था।',
+            'not-configured' => 'यह सोशल लॉगिन प्रदाता कॉन्फ़िगर नहीं है। कृपया सहायता से संपर्क करें।',
+            'email-required' => 'प्रदाता ने कोई ईमेल पता साझा नहीं किया। कृपया इसके बजाय ईमेल से साइन अप करें।',
+            'account-inactive' => 'आपका सक्रियण व्यवस्थापक स्वीकृति की प्रतीक्षा कर रहा है',
+            'provider-not-supported' => 'यह सोशल लॉगिन प्रदाता समर्थित नहीं है।',
+            'provider-disabled' => 'यह सोशल लॉगिन प्रदाता सक्षम नहीं है।',
         ],
 
         'checkout' => [
@@ -147,6 +181,8 @@ return [
             'shipping-method-error' => 'शिपिंग विधि सहेजने में त्रुटि',
             'payment-method-required' => 'भुगतान विधि आवश्यक है',
             'invalid-payment-method' => 'अमान्य या अनुपलब्ध भुगतान विधि',
+            'paypal-order-id-required' => 'PayPal स्मार्ट बटन भुगतान की पुष्टि के लिए PayPal ऑर्डर आईडी आवश्यक है।',
+            'paypal-smart-button-payment-flow' => 'PayPal स्मार्ट बटन भुगतान checkout-payments/initiate और checkout-payments/confirm के माध्यम से लिए जाते हैं, सीधे ऑर्डर देकर नहीं।',
             'payment-method-save-failed' => 'भुगतान विधि सहेजने में विफल',
             'payment-method-saved' => 'भुगतान विधि सफलतापूर्वक सहेजी गई',
             'payment-method-error' => 'भुगतान विधि सहेजने में त्रुटि',
@@ -157,6 +193,7 @@ return [
             'account-suspended' => 'आपका खाता निलंबित कर दिया गया है। कृपया सहायता से संपर्क करें।',
             'account-inactive' => 'आपका खाता निष्क्रिय है। कृपया सहायता से संपर्क करें।',
             'minimum-order-not-met' => 'न्यूनतम ऑर्डर राशि :amount है',
+            'guest-checkout-not-allowed' => 'चेकआउट करने के लिए कृपया लॉग इन करें। इस कार्ट के लिए अतिथि चेकआउट उपलब्ध नहीं है।',
             'email-required' => 'ऑर्डर निर्माण के लिए ईमेल पता आवश्यक है',
             'unknown-operation' => 'अज्ञात चेकआउट ऑपरेशन',
         ],
@@ -199,6 +236,11 @@ return [
             'product-not-found' => 'उत्पाद नहीं मिला',
             'customer-not-found' => 'ग्राहक नहीं मिला',
             'already-exists' => 'यह उत्पाद पहले से ही आपकी तुलना सूची में है',
+            'disabled' => 'इस स्टोर के लिए उत्पाद तुलना अक्षम है।',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'इस स्टोर के लिए विशलिस्ट अक्षम है।',
         ],
 
         'downloadable-product' => [
@@ -229,6 +271,7 @@ return [
 
             'acl' => [
                 'title' => 'एपीआई परिवर्तन इतिहास',
+                'view' => 'देखें',
                 'delete' => 'इतिहास हटाएँ',
             ],
 
@@ -289,6 +332,7 @@ return [
 
         'acl' => [
             'title' => 'एकीकरण',
+            'view' => 'देखें',
             'create' => 'एकीकरण बनाएँ',
             'edit' => 'एकीकरण संपादित करें',
             'delete' => 'एकीकरण टोकन निरस्त करें',

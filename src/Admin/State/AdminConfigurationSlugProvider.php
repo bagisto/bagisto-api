@@ -4,9 +4,8 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminConfigurationSlug;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 
 class AdminConfigurationSlugProvider implements ProviderInterface
 {
@@ -14,9 +13,7 @@ class AdminConfigurationSlugProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.configuration.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminConfigurationSlug::class);
 
         return [self::buildPayload($this->resolver)];
     }

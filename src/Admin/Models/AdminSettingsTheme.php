@@ -25,29 +25,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
 
 /**
  * Admin Settings → Themes (theme customizations).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\ThemeController.
- *
- * Bagisto "Themes" are per-channel theme customization blocks (image carousels,
- * static content, footer links, etc.) — NOT a registry of installable themes.
- * Each row picks a `type` from a fixed set and stores arbitrary per-locale
- * `options` JSON via translation rows.
- *
- * REST:
- *   GET    /api/admin/settings/themes
- *   GET    /api/admin/settings/themes/{id}
- *   POST   /api/admin/settings/themes
- *   PUT    /api/admin/settings/themes/{id}
- *   DELETE /api/admin/settings/themes/{id}
- *
- * GraphQL: adminSettingsThemes, adminSettingsTheme,
- *          createAdminSettingsTheme, updateAdminSettingsTheme,
- *          deleteAdminSettingsTheme
- *
- * Deferred (v1):
- *   - Image uploads under `options.images[*].image` / `options.services[*].service_icon`
- *     and the `static_content` inline image-pick action. Accept path strings only.
- *   - The two-step admin upload flow (`store` with `id` param + multipart) — not exposed.
  */
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -264,10 +241,7 @@ class AdminSettingsTheme extends EloquentModel
     }
 
     /**
-     * Per-locale theme customization translations (GraphQL connection —
-     * `translations { edges { node { _id locale options } } }`). Plain HasMany
-     * over the standard FK `theme_customization_id`. `options` is dynamic
-     * theme-config JSON, kept as a scalar node field on the sub-resource.
+     * Per-locale translations, exposed as a GraphQL connection.
      */
     #[ApiProperty(writable: false)]
     public function translations(): HasMany

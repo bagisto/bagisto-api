@@ -26,19 +26,6 @@ use Webkul\Theme\Repositories\ThemeCustomizationRepository;
 
 /**
  * Handles POST / PUT / DELETE for AdminSettingsTheme.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\ThemeController.
- *
- * Notes:
- *  - Image uploads inside `options` (image_carousel/services_content slides,
- *    static_content inline images) are deferred — only path strings are
- *    accepted in v1. The repository's uploadImage() flow expects UploadedFile
- *    instances behind a TinyMCE editor; reproducing it across REST + GraphQL
- *    is out of scope for v1. Use the admin panel UI for image uploads.
- *  - Permission resolution mirrors AdminSettingsLocaleProcessor — reads role
- *    permission_type/permissions directly, never calls bouncer().
- *  - Delete also wipes the theme's storage directory (theme/{id}) to match
- *    monolith parity.
  */
 class AdminSettingsThemeProcessor implements ProcessorInterface
 {
@@ -240,8 +227,7 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
     }
 
     /**
-     * Result of a create/update: the Eloquent model for GraphQL (translations
-     * connection resolves), the flat RestDto for REST.
+     * The Eloquent model for GraphQL, the flat RestDto for REST.
      */
     protected function buildResult(int $id, bool $isGraphQL): AdminSettingsTheme|AdminSettingsThemeRestDto
     {
@@ -423,8 +409,7 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
     }
 
     /**
-     * Strip non-string image payloads from options. v1 accepts already-uploaded
-     * path strings only.
+     * Strip non-string image payloads from options.
      */
     protected function sanitiseOptions(string $type, array $options): array
     {

@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Sales\Models\Order;
@@ -16,6 +17,8 @@ class EuWithdrawalTest extends GraphQLTestCase
             ['code' => 'sales.eu_withdrawal.general.enabled', 'channel_code' => $channel->code, 'locale_code' => null],
             ['value' => 1]
         );
+
+        $this->forgetCoreConfigCache();
     }
 
     public function test_customer_create_and_list(): void
@@ -61,18 +64,73 @@ class EuWithdrawalTest extends GraphQLTestCase
             'is_guest' => 1, 'status' => 'completed',
         ]);
 
-        $mutation = <<<GQL
-            mutation {
-              createGuestEuWithdrawal(input: {orderIncrementId: "{$order->increment_id}", email: "g@example.com", reasonText: "x"}) {
-                guestEuWithdrawal { _id uuid orderId isGuest }
+        $mutation = <<<'GQL'
+            mutation guest($input: createGuestEuWithdrawalInput!) {
+              createGuestEuWithdrawal(input: $input) {
+                guestEuWithdrawal {
+                  _id
+                  uuid
+                  orderId
+                  isGuest
+                }
               }
             }
         GQL;
-        $response = $this->graphQL($mutation);
+        $response = $this->graphQL($mutation, [
+            'input' => [
+                'link' => URL::temporarySignedRoute('shop.eu-withdrawal.guest.create', now()->addHours(24), ['orderId' => $order->id]),
+                'reasonText' => 'x',
+            ],
+        ]);
+        $this->assertNull($response->json('errors'));
         $response->assertOk();
         $node = $response->json('data.createGuestEuWithdrawal.guestEuWithdrawal');
         expect((int) $node['orderId'])->toBe($order->id);
         expect((bool) $node['isGuest'])->toBeTrue();
+    }
+
+    public function test_guest_create_without_a_valid_link_returns_an_error(): void
+    {
+        $this->seedRequiredData();
+        $this->enable(Channel::first());
+
+        $mutation = <<<'GQL'
+            mutation guest($input: createGuestEuWithdrawalInput!) {
+              createGuestEuWithdrawal(input: $input) {
+                guestEuWithdrawal {
+                  _id
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, ['input' => ['link' => 'https://shop.example.com/withdraw/1/create']]);
+
+        expect($response->json('errors'))->not->toBeNull();
+    }
+
+    public function test_guest_lookup_returns_a_constant_answer(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $this->enable(Channel::first());
+
+        $mutation = <<<'GQL'
+            mutation lookup($input: createGuestEuWithdrawalLinkInput!) {
+              createGuestEuWithdrawalLink(input: $input) {
+                guestEuWithdrawalLink {
+                  success
+                  message
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, ['input' => ['orderIncrementId' => 'none', 'email' => 'a@example.com']]);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.createGuestEuWithdrawalLink.guestEuWithdrawalLink.success'))->toBeTrue();
     }
 
     public function test_create_requires_auth(): void

@@ -259,13 +259,13 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
         new Get(
             uriTemplate: '/cms/pages/export',
             provider: AdminCmsPageExportProvider::class,
-            outputFormats: ['csv' => ['text/csv']],
+            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
             openapi: new Model\Operation(
                 tags: ['Admin CMS'],
-                summary: 'Export CMS pages as CSV',
-                description: 'Downloads the CMS Pages datagrid as a CSV file (`text/csv` attachment) — the same data the admin CMS → Pages "view" listing shows (ID, Page Title, URL Key, Channel, Locale). Honours the same filters as the listing (`id`, `page_title`, `url_key`, `channel`, `locale`). The response is a binary download, not JSON.',
+                summary: 'Export CMS pages as csv, xls or xlsx',
+                description: 'Downloads the CMS Pages datagrid as a csv, xls or xlsx file — the same data the admin CMS → Pages "view" listing shows (ID, Page Title, URL Key, Channel, Locale). Honours the same filters as the listing (`id`, `page_title`, `url_key`, `channel`, `locale`). The response is a binary download, not JSON.',
                 parameters: [
-                    new Model\Parameter('format', 'query', 'Export format. Currently only `csv` is supported.', false, schema: ['type' => 'string', 'enum' => ['csv'], 'default' => 'csv']),
+                    new Model\Parameter('format', 'query', 'Export format: `csv`, `xls` or `xlsx`. Defaults to `csv`.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
                     new Model\Parameter('id', 'query', 'Filter by CMS page ID.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('page_title', 'query', 'Partial page title match.', false, schema: ['type' => 'string']),
                     new Model\Parameter('url_key', 'query', 'Partial url_key match.', false, schema: ['type' => 'string']),
@@ -274,16 +274,16 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                 ],
                 responses: [
                     '200' => new Model\Response(
-                        description: 'The CMS pages CSV file is downloaded (text/csv attachment).',
+                        description: 'The CMS pages export file is downloaded as an attachment.',
                         content: new \ArrayObject([
-                            'text/csv' => [
-                                'schema' => ['type' => 'string', 'format' => 'binary'],
-                            ],
+                            'text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']],
+                            'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']],
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']],
                         ]),
                     ),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
                     '403' => new Model\Response(description: 'Admin role lacks permission.'),
-                    '422' => new Model\Response(description: 'Unsupported format (only csv).'),
+                    '422' => new Model\Response(description: 'Unsupported format (csv, xls and xlsx only).'),
                 ],
             ),
         ),

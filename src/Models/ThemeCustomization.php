@@ -15,6 +15,7 @@ use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Model;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
+use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -139,6 +140,13 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 )]
 class ThemeCustomization extends \Webkul\Theme\Models\ThemeCustomization
 {
+    use ServesLoadedTranslation;
+
+    /**
+     * @var list<string>
+     */
+    protected $with = ['translations'];
+
     /**
      * Get unique theme customization identifier for API
      */

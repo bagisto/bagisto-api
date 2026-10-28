@@ -2,6 +2,25 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'شناسه بازپرداخت مشتری الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/customer-refunds/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'بازپرداخت مشتری با شناسه ":id" یافت نشد',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'سفارش مجدد در تنظیمات فروشگاه غیرفعال است.',
+            'cannot-reorder' => 'این سفارش قابل سفارش مجدد نیست (سفارش مهمان یا یک یا چند محصول دیگر برای خرید در دسترس نیستند).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'پیام نباید بیشتر از :max نویسه باشد.',
+        ],
+
+        'headers' => [
+            'unknown-channel' => 'کانال ":code" در هدر X-Channel وجود ندارد.',
+        ],
+
         'cart' => [
             'authentication-required' => 'توکن احراز هویت مورد نیاز است',
             'invalid-token' => 'توکن احراز هویت نامعتبر یا منقضی شده است',
@@ -102,6 +121,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'محصول یافت نشد',
             'not-found-with-sku' => 'No product found with SKU',
             'not-found-with-url-key' => 'No product found with URL key',
             'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
@@ -130,8 +150,22 @@ return [
         'login' => [
             'invalid-credentials' => 'ایمیل یا رمز عبور نامعتبر',
             'account-suspended' => 'حساب شما معلق شده است',
+            'account-inactive' => 'درخواست فعال‌سازی حساب شما منتظر تأیید مدیر است',
+            'email-not-verified' => 'ابتدا حساب ایمیل خود را تأیید کنید.',
             'successful' => 'شما با موفقیت وارد شدید',
             'invalid-request' => 'درخواست ورود نامعتبر',
+        ],
+
+        'social-login' => [
+            'signed-in' => 'با موفقیت وارد شدید.',
+            'token-required' => 'توکن ورود اجتماعی لازم است.',
+            'invalid-token' => 'توکن ورود اجتماعی نامعتبر یا منقضی شده است. لطفاً دوباره تلاش کنید.',
+            'wrong-audience' => 'این توکن برای برنامه دیگری صادر شده است.',
+            'not-configured' => 'این ارائه‌دهنده ورود اجتماعی پیکربندی نشده است. لطفاً با پشتیبانی تماس بگیرید.',
+            'email-required' => 'ارائه‌دهنده هیچ آدرس ایمیلی به اشتراک نگذاشت. لطفاً با ایمیل ثبت‌نام کنید.',
+            'account-inactive' => 'درخواست فعال‌سازی حساب شما منتظر تأیید مدیر است',
+            'provider-not-supported' => 'این ارائه‌دهنده ورود اجتماعی پشتیبانی نمی‌شود.',
+            'provider-disabled' => 'این ارائه‌دهنده ورود اجتماعی فعال نیست.',
         ],
 
         'checkout' => [
@@ -147,6 +181,8 @@ return [
             'shipping-method-error' => 'خطا در ذخیره روش ارسال',
             'payment-method-required' => 'روش پرداخت الزامی است',
             'invalid-payment-method' => 'روش پرداخت نامعتبر یا غیرقابل دسترس',
+            'paypal-order-id-required' => 'برای تأیید پرداخت با دکمه هوشمند PayPal، شناسه سفارش PayPal لازم است.',
+            'paypal-smart-button-payment-flow' => 'پرداخت‌های دکمه هوشمند PayPal از طریق checkout-payments/initiate و checkout-payments/confirm دریافت می‌شوند، نه با ثبت مستقیم سفارش.',
             'payment-method-save-failed' => 'ذخیره روش پرداخت ناموفق بود',
             'payment-method-saved' => 'روش پرداخت با موفقیت ذخیره شد',
             'payment-method-error' => 'خطا در ذخیره روش پرداخت',
@@ -157,6 +193,7 @@ return [
             'account-suspended' => 'حساب شما معلق شده است. لطفاً با پشتیبانی تماس بگیرید.',
             'account-inactive' => 'حساب شما غیرفعال است. لطفاً با پشتیبانی تماس بگیرید.',
             'minimum-order-not-met' => 'حداقل مبلغ سفارش :amount است',
+            'guest-checkout-not-allowed' => 'لطفاً برای تسویه حساب وارد شوید. تسویه حساب مهمان برای این سبد خرید در دسترس نیست.',
             'email-required' => 'آدرس ایمیل برای ایجاد سفارش الزامی است',
             'unknown-operation' => 'عملیات ناشناخته تسویه‌حساب',
         ],
@@ -199,6 +236,11 @@ return [
             'product-not-found' => 'محصول یافت نشد',
             'customer-not-found' => 'مشتری یافت نشد',
             'already-exists' => 'این محصول قبلاً در فهرست مقایسه شما وجود دارد',
+            'disabled' => 'مقایسه محصولات در این فروشگاه غیرفعال است.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'لیست علاقه‌مندی‌ها در این فروشگاه غیرفعال است.',
         ],
 
         'downloadable-product' => [
@@ -229,6 +271,7 @@ return [
 
             'acl' => [
                 'title' => 'تاریخچه تغییرات API',
+                'view' => 'مشاهده',
                 'delete' => 'حذف تاریخچه',
             ],
 
@@ -289,6 +332,7 @@ return [
 
         'acl' => [
             'title' => 'یکپارچه سازی',
+            'view' => 'مشاهده',
             'create' => 'ایجاد یکپارچگی',
             'edit' => 'ویرایش یکپارچه سازی',
             'delete' => 'لغو رمز ادغام',

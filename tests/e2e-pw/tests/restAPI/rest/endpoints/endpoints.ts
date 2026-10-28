@@ -141,9 +141,10 @@ export const ENDPOINTS = {
   // ── CMS PAGES ───────────────────────────────────────────────
   CMS_PAGES: '/api/shop/cms_pages',
 
-  // ── THEME CUSTOMIZATIONS ───────────────────────────────────
-  THEME_CUSTOMIZATIONS: '/api/shop/theme-customizations',
-  THEME_CUSTOMIZATION: (id: number | string) => `/api/shop/theme-customizations/${id}`,
+  // ── THEME + SECTIONS ────────────────────────────────────────
+  THEME: '/api/shop/theme',
+  SECTIONS: '/api/shop/sections',
+  SECTION: (id: number | string) => `/api/shop/sections/${id}`,
 
   // ── SHOP DOCS ───────────────────────────────────────────────
   SHOP_DOCS: '/api/shop/shop_docs',

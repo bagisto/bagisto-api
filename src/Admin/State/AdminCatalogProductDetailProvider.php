@@ -246,6 +246,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
             'path' => $img->path,
             'url' => Storage::url($img->path),
             'sortOrder' => (int) ($img->position ?? 0),
+            'altText' => $img->alt_text,
         ])->values()->all();
     }
 

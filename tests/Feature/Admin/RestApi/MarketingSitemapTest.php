@@ -17,13 +17,31 @@ class MarketingSitemapTest extends AdminApiTestCase
 {
     protected function insertSitemap(array $overrides = []): int
     {
-        return DB::table('sitemaps')->insertGetId(array_merge([
+        $channels = $overrides['channels'] ?? [$this->defaultChannelId()];
+
+        unset($overrides['channels']);
+
+        $id = DB::table('sitemaps')->insertGetId(array_merge([
             'file_name' => 'sitemap-'.uniqid().'.xml',
             'path' => '/',
             'generated_at' => null,
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
+
+        foreach ($channels as $channelId) {
+            DB::table('sitemap_channels')->insert([
+                'sitemap_id' => $id,
+                'channel_id' => $channelId,
+            ]);
+        }
+
+        return $id;
+    }
+
+    protected function defaultChannelId(): int
+    {
+        return (int) DB::table('channels')->orderBy('id')->value('id');
     }
 
     protected function adminPut(Admin $admin, string $url, array $data = []): TestResponse
@@ -53,6 +71,7 @@ class MarketingSitemapTest extends AdminApiTestCase
         return array_merge([
             'file_name' => 'api-sitemap-'.uniqid().'.xml',
             'path' => '/',
+            'channels' => [$this->defaultChannelId()],
         ], $overrides);
     }
 
@@ -155,6 +174,126 @@ class MarketingSitemapTest extends AdminApiTestCase
         $response->assertStatus(201);
         $id = $response->json('id');
         $this->assertDatabaseHas('sitemaps', ['id' => $id, 'file_name' => 'created-sm.xml']);
+    }
+
+    public function test_create_assigns_the_channels(): void
+    {
+        $admin = $this->createAdmin();
+        $channelId = $this->defaultChannelId();
+
+        $response = $this->adminPost($admin, '/api/admin/marketing/sitemaps', $this->basePayload([
+            'file_name' => 'channel-sm.xml',
+            'channels' => [$channelId],
+        ]));
+
+        $response->assertStatus(201);
+
+        $id = $response->json('id');
+
+        $this->assertDatabaseHas('sitemap_channels', ['sitemap_id' => $id, 'channel_id' => $channelId]);
+        expect($response->json('channels'))->toBe([$channelId]);
+    }
+
+    public function test_create_without_channels_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $payload = $this->basePayload();
+        unset($payload['channels']);
+
+        $this->adminPost($admin, '/api/admin/marketing/sitemaps', $payload)->assertStatus(422);
+    }
+
+    public function test_create_with_an_unknown_channel_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->adminPost($admin, '/api/admin/marketing/sitemaps', $this->basePayload([
+            'channels' => [999999],
+        ]))->assertStatus(422);
+    }
+
+    public function test_update_replaces_the_channels(): void
+    {
+        $admin = $this->createAdmin();
+        $channelId = $this->defaultChannelId();
+
+        $otherId = DB::table('channels')->insertGetId([
+            'code' => 'sm'.uniqid(),
+            'theme' => 'default',
+            'hostname' => 'https://second.test',
+            'root_category_id' => DB::table('categories')->orderBy('id')->value('id'),
+            'default_locale_id' => DB::table('locales')->orderBy('id')->value('id'),
+            'base_currency_id' => DB::table('currencies')->orderBy('id')->value('id'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $id = $this->insertSitemap(['channels' => [$channelId]]);
+
+        $this->adminPut($admin, '/api/admin/marketing/sitemaps/'.$id, $this->basePayload([
+            'channels' => [$otherId],
+        ]))->assertOk();
+
+        $this->assertDatabaseHas('sitemap_channels', ['sitemap_id' => $id, 'channel_id' => $otherId]);
+        $this->assertDatabaseMissing('sitemap_channels', ['sitemap_id' => $id, 'channel_id' => $channelId]);
+    }
+
+    public function test_update_without_channels_keeps_the_stored_ones(): void
+    {
+        $admin = $this->createAdmin();
+        $channelId = $this->defaultChannelId();
+
+        $id = $this->insertSitemap(['channels' => [$channelId]]);
+
+        $this->adminPut($admin, '/api/admin/marketing/sitemaps/'.$id, [
+            'file_name' => 'renamed-sm.xml',
+            'path' => '/',
+        ])->assertOk();
+
+        $this->assertDatabaseHas('sitemaps', ['id' => $id, 'file_name' => 'renamed-sm.xml']);
+        $this->assertDatabaseHas('sitemap_channels', ['sitemap_id' => $id, 'channel_id' => $channelId]);
+    }
+
+    public function test_detail_carries_channels_and_index_urls(): void
+    {
+        $admin = $this->createAdmin();
+        $channelId = $this->defaultChannelId();
+
+        DB::table('channels')->where('id', $channelId)->update(['hostname' => 'https://shop.test']);
+
+        $id = $this->insertSitemap(['file_name' => 'urls-sm.xml', 'path' => '/', 'channels' => [$channelId]]);
+
+        $response = $this->adminGet($admin, '/api/admin/marketing/sitemaps/'.$id);
+        $response->assertOk();
+
+        expect($response->json('channels'))->toBe([$channelId]);
+        expect($response->json('urls.0'))->toContain('https://shop.test/storage/sitemaps/');
+        expect($response->json('urls.0'))->toContain('urls-sm-'.$id.'-'.$channelId.'.xml');
+    }
+
+    public function test_filter_by_channel_id(): void
+    {
+        $admin = $this->createAdmin();
+        $channelId = $this->defaultChannelId();
+
+        $id = $this->insertSitemap(['file_name' => 'chan-filter.xml', 'channels' => [$channelId]]);
+        $orphan = $this->insertSitemap(['file_name' => 'no-chan.xml', 'channels' => []]);
+
+        $response = $this->adminGet($admin, '/api/admin/marketing/sitemaps?channel_id='.$channelId);
+        $response->assertOk();
+
+        $ids = array_column($response->json('data'), 'id');
+
+        expect($ids)->toContain($id);
+        expect($ids)->not->toContain($orphan);
+    }
+
+    public function test_generate_without_channels_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertSitemap(['channels' => []]);
+
+        $this->adminPost($admin, '/api/admin/marketing/sitemaps/'.$id.'/generate')->assertStatus(422);
     }
 
     public function test_create_missing_file_name_returns_422(): void
@@ -295,6 +434,7 @@ class MarketingSitemapTest extends AdminApiTestCase
             ['code' => 'general.sitemap.file_limits.max_url_per_file', 'channel_code' => null, 'locale_code' => null],
             ['value' => '50000']
         );
+        $this->forgetCoreConfigCache();
 
         $admin = $this->createAdmin();
         $id = $this->insertSitemap(['file_name' => 'gen-sm.xml', 'path' => '/']);

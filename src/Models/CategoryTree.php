@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
@@ -96,6 +97,9 @@ use Webkul\BagistoApi\State\CategoryTreeProvider;
                 ],
             ),
         ),
+    ],
+    graphQlOperations: [
+        new QueryCollection(provider: CategoryTreeProvider::class, paginationEnabled: false),
     ],
 )]
 class CategoryTree

@@ -415,6 +415,7 @@ class CustomerProfileTest extends GraphQLTestCase
         $customer = $this->createCustomer([
             'first_name' => 'ToDelete',
             'email' => 'delete-me@example.com',
+            'password' => Hash::make('Secret@123'),
         ]);
 
         $customerId = $customer->id;
@@ -428,12 +429,65 @@ class CustomerProfileTest extends GraphQLTestCase
         GQL;
 
         $response = $this->authenticatedGraphQL($customer, $mutation, [
-            'input' => [],
+            'input' => ['password' => 'Secret@123'],
         ]);
 
         $response->assertSuccessful();
 
         expect(Customer::find($customerId))->toBeNull();
+    }
+
+    public function test_delete_profile_refuses_a_wrong_or_missing_password(): void
+    {
+        $customer = $this->createCustomer(['password' => Hash::make('Secret@123')]);
+
+        $mutation = <<<'GQL'
+            mutation deleteProfile($input: createCustomerProfileDeleteInput!) {
+              createCustomerProfileDelete(input: $input) {
+                clientMutationId
+              }
+            }
+        GQL;
+
+        foreach ([[], ['password' => 'wrong-password']] as $input) {
+            $response = $this->authenticatedGraphQL($customer, $mutation, ['input' => $input]);
+
+            expect($response->json('errors'))->not->toBeNull();
+        }
+
+        expect(Customer::find($customer->id))->not->toBeNull();
+    }
+
+    public function test_delete_profile_refuses_while_an_order_is_pending(): void
+    {
+        $customer = $this->createCustomer(['password' => Hash::make('Secret@123')]);
+        DB::table('orders')->insert([
+            'increment_id' => 'DEL-'.uniqid(),
+            'status' => 'pending',
+            'customer_id' => $customer->id,
+            'customer_type' => Customer::class,
+            'customer_email' => $customer->email,
+            'customer_first_name' => $customer->first_name,
+            'customer_last_name' => $customer->last_name,
+            'is_guest' => 0,
+            'channel_id' => core()->getCurrentChannel()->id,
+            'channel_name' => 'Default',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $mutation = <<<'GQL'
+            mutation deleteProfile($input: createCustomerProfileDeleteInput!) {
+              createCustomerProfileDelete(input: $input) {
+                clientMutationId
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $mutation, ['input' => ['password' => 'Secret@123']]);
+
+        expect($response->json('errors.0.message'))->toContain('pending');
+        expect(Customer::find($customer->id))->not->toBeNull();
     }
 
     /**
@@ -443,6 +497,7 @@ class CustomerProfileTest extends GraphQLTestCase
     {
         $customer = $this->createCustomer([
             'email' => 'token-delete@example.com',
+            'password' => Hash::make('Secret@123'),
         ]);
 
         $customer->createToken('token-1');
@@ -464,7 +519,7 @@ class CustomerProfileTest extends GraphQLTestCase
         GQL;
 
         $this->authenticatedGraphQL($customer, $mutation, [
-            'input' => [],
+            'input' => ['password' => 'Secret@123'],
         ]);
 
         $remainingTokens = DB::table('personal_access_tokens')
@@ -507,6 +562,7 @@ class CustomerProfileTest extends GraphQLTestCase
     {
         $customer = $this->createCustomer([
             'email' => 'ghost@example.com',
+            'password' => Hash::make('Secret@123'),
         ]);
 
         $customerId = $customer->id;
@@ -520,7 +576,7 @@ class CustomerProfileTest extends GraphQLTestCase
         GQL;
 
         $this->authenticatedGraphQL($customer, $deleteMutation, [
-            'input' => [],
+            'input' => ['password' => 'Secret@123'],
         ]);
 
         expect(Customer::find($customerId))->toBeNull();
@@ -691,6 +747,23 @@ class CustomerProfileTest extends GraphQLTestCase
     /**
      * Bug fix: wrong currentPassword fails, hash stays unchanged.
      */
+    public function test_update_rejects_an_invalid_phone_graphql(): void
+    {
+        $customer = $this->createCustomer();
+
+        $mutation = <<<'GQL'
+            mutation updateProfile($input: createCustomerProfileUpdateInput!) {
+              createCustomerProfileUpdate(input: $input) {
+                clientMutationId
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $mutation, ['input' => ['phone' => '12-ab']]);
+
+        expect($response->json('errors'))->not->toBeNull();
+    }
+
     public function test_update_password_with_wrong_current_password_returns_error_graphql(): void
     {
         $customer = $this->createCustomer(['password' => Hash::make('OldPassword123!')]);

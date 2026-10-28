@@ -62,7 +62,7 @@ class VerifyStorefrontKey
         }
 
         $client = $validation['client'];
-        $rateLimit = $this->apiKeyService->checkRateLimit($client);
+        $rateLimit = $this->apiKeyService->checkRateLimit($client, $ipAddress);
 
         $request->attributes->set('api_key', $client);
         $request->attributes->set('key_type', $keyType);
@@ -89,7 +89,6 @@ class VerifyStorefrontKey
      */
     protected function getRequiredKeyType(string $path): ?string
     {
-        // /api/admin/* — Bearer-token auth via AdminApiGuard, no API key needed.
         if (str_starts_with($path, '/api/admin')) {
             return null;
         }
@@ -186,7 +185,7 @@ class VerifyStorefrontKey
             'message' => 'Rate limit exceeded',
             'error' => 'rate_limit_exceeded',
             'retry_after' => $rateLimit['reset_at'] ?? 60,
-        ], 429);
+        ], 429, ['Retry-After' => (string) ($rateLimit['reset_at'] ?? 60)]);
     }
 
     /**
@@ -194,7 +193,7 @@ class VerifyStorefrontKey
      */
     protected function addRateLimitHeaders(Response $response, array $rateLimit): Response
     {
-        $response->headers->set('X-RateLimit-Limit', (string) config('storefront.default_rate_limit', 100));
+        $response->headers->set('X-RateLimit-Limit', (string) ($rateLimit['limit'] ?? config('storefront.default_rate_limit', 100)));
         $response->headers->set('X-RateLimit-Remaining', (string) $rateLimit['remaining']);
         $response->headers->set('X-RateLimit-Reset', (string) ($rateLimit['reset_at'] ?? time() + 60));
 

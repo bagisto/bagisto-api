@@ -2,6 +2,25 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'معرّف استرداد العميل مطلوب',
+            'invalid-id-format' => 'تنسيق المعرّف غير صالح. المتوقع تنسيق IRI مثل "/api/shop/customer-refunds/1" أو معرّف رقمي',
+            'not-found' => 'لم يتم العثور على استرداد العميل ذي المعرّف ":id"',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'إعادة الطلب معطلة في إعدادات المتجر.',
+            'cannot-reorder' => 'لا يمكن إعادة طلب هذا الطلب (طلب ضيف أو أن منتجًا أو أكثر لم يعد متاحًا للشراء).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'يجب ألا تزيد الرسالة عن :max حرفًا.',
+        ],
+
+        'headers' => [
+            'unknown-channel' => 'القناة ":code" في ترويسة X-Channel غير موجودة.',
+        ],
+
         'cart' => [
             'authentication-required' => 'مطلوب رمز المصادقة',
             'invalid-token' => 'رمز المصادقة غير صحيح أو منتهي الصلاحية',
@@ -102,6 +121,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'لم يتم العثور على المنتج',
             'not-found-with-sku' => 'لم يتم العثور على منتج برمز SKU',
             'not-found-with-url-key' => 'لم يتم العثور على منتج برمز URL',
             'parameters-required' => 'يجب توفير واحد على الأقل من المعاملات التالية: "sku" أو "id" أو "urlKey"',
@@ -130,8 +150,22 @@ return [
         'login' => [
             'invalid-credentials' => 'بريد إلكتروني أو كلمة مرور غير صحيحة',
             'account-suspended' => 'تم تعليق حسابك',
+            'account-inactive' => 'يتطلب تنشيط حسابك موافقة المسؤول',
+            'email-not-verified' => 'الرجاء التحقق من حساب البريد الإلكتروني الخاص بك أولاً.',
             'successful' => 'لقد قمت بتسجيل الدخول بنجاح',
             'invalid-request' => 'طلب تسجيل دخول غير صحيح',
+        ],
+
+        'social-login' => [
+            'signed-in' => 'تم تسجيل الدخول بنجاح.',
+            'token-required' => 'مطلوب رمز تسجيل الدخول عبر مواقع التواصل.',
+            'invalid-token' => 'رمز تسجيل الدخول غير صالح أو منتهي الصلاحية. يرجى المحاولة مرة أخرى.',
+            'wrong-audience' => 'تم إصدار هذا الرمز لتطبيق آخر.',
+            'not-configured' => 'لم يتم إعداد مزود تسجيل الدخول الاجتماعي هذا. يرجى التواصل مع الدعم.',
+            'email-required' => 'لم يشارك المزود عنوان بريد إلكتروني. يرجى التسجيل بالبريد الإلكتروني بدلاً من ذلك.',
+            'account-inactive' => 'يتطلب تنشيط حسابك موافقة المسؤول',
+            'provider-not-supported' => 'مزود تسجيل الدخول الاجتماعي هذا غير مدعوم.',
+            'provider-disabled' => 'مزود تسجيل الدخول الاجتماعي هذا غير مُفعّل.',
         ],
 
         'checkout' => [
@@ -147,6 +181,8 @@ return [
             'shipping-method-error' => 'خطأ في حفظ طريقة الشحن',
             'payment-method-required' => 'طريقة الدفع مطلوبة',
             'invalid-payment-method' => 'طريقة دفع غير صحيحة أو غير متاحة',
+            'paypal-order-id-required' => 'معرّف طلب PayPal مطلوب لتأكيد الدفع عبر زر PayPal الذكي.',
+            'paypal-smart-button-payment-flow' => 'يتم تحصيل مدفوعات زر PayPal الذكي عبر checkout-payments/initiate و checkout-payments/confirm، وليس بتقديم الطلب مباشرة.',
             'payment-method-save-failed' => 'فشل حفظ طريقة الدفع',
             'payment-method-saved' => 'تم حفظ طريقة الدفع بنجاح',
             'payment-method-error' => 'خطأ في حفظ طريقة الدفع',
@@ -157,6 +193,7 @@ return [
             'account-suspended' => 'تم تعليق حسابك. يرجى التواصل مع الدعم.',
             'account-inactive' => 'حسابك غير نشط. يرجى التواصل مع الدعم.',
             'minimum-order-not-met' => 'الحد الأدنى لمبلغ الطلب هو :amount',
+            'guest-checkout-not-allowed' => 'يرجى تسجيل الدخول لإتمام الشراء. الدفع كضيف غير متاح لهذه السلة.',
             'email-required' => 'عنوان البريد الإلكتروني مطلوب لإنشاء الطلب',
             'unknown-operation' => 'عملية دفع غير معروفة',
         ],
@@ -199,6 +236,11 @@ return [
             'product-not-found' => 'المنتج غير موجود',
             'customer-not-found' => 'العميل غير موجود',
             'already-exists' => 'هذا المنتج موجود بالفعل في قائمة المقارنة الخاصة بك',
+            'disabled' => 'مقارنة المنتجات معطلة في هذا المتجر.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'قائمة الأمنيات معطلة في هذا المتجر.',
         ],
 
         'downloadable-product' => [
@@ -229,6 +271,7 @@ return [
 
             'acl' => [
                 'title' => 'سجل تغييرات واجهة برمجة التطبيقات',
+                'view' => 'عرض',
                 'delete' => 'حذف السجل',
             ],
 
@@ -289,6 +332,7 @@ return [
 
         'acl' => [
             'title' => 'التكامل',
+            'view' => 'عرض',
             'create' => 'إنشاء تكامل',
             'edit' => 'تعديل التكامل',
             'delete' => 'إبطال رمز التكامل',

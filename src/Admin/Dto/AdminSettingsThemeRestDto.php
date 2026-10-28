@@ -7,16 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 
 /**
- * REST output for AdminSettingsTheme (detail + listing). Snake_case props surface
- * as camelCase via the central converter (provider writes camelCase; the trait
- * maps it). `translations` is a flat JSON array (`[{locale, options}]`) over REST;
- * over GraphQL the same data is served as a connection off the AdminSettingsTheme
- * Eloquent resource.
- *
- * IMPORTANT (the output:-DTO name-match trap, see CLAUDE.md OrderDetail notes):
- * with `output:` set, API Platform only serialises DTO props whose names match an
- * attribute/relation on the AdminSettingsTheme Eloquent resource — so the
- * translations block MUST be named `translations` (the relation).
+ * REST output for AdminSettingsTheme (detail + listing).
  */
 #[ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
 class AdminSettingsThemeRestDto

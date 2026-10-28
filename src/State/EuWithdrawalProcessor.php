@@ -4,7 +4,9 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Dto\CreateEuWithdrawalInput;
 use Webkul\BagistoApi\Dto\CreateGuestEuWithdrawalInput;
@@ -14,12 +16,14 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\EuWithdrawal;
 use Webkul\BagistoApi\Models\GuestEuWithdrawal;
 use Webkul\BagistoApi\State\Concerns\BuildsEuWithdrawal;
+use Webkul\BagistoApi\State\Concerns\ThrottlesGuestRequests;
 use Webkul\EUWithdrawal\Services\WithdrawalService;
 use Webkul\Sales\Repositories\OrderRepository;
 
 class EuWithdrawalProcessor implements ProcessorInterface
 {
     use BuildsEuWithdrawal;
+    use ThrottlesGuestRequests;
 
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
@@ -34,15 +38,11 @@ class EuWithdrawalProcessor implements ProcessorInterface
         }
 
         if ($data instanceof CreateGuestEuWithdrawalInput) {
-            return $this->handleGuest($data->order_increment_id, $data->email, $data->reason_text);
+            return $this->handleGuest($data->link, $data->reason_text);
         }
 
         if ($data instanceof GuestEuWithdrawal) {
-            return $this->handleGuest(
-                request()->input('order_increment_id'),
-                request()->input('email'),
-                request()->input('reason_text'),
-            );
+            return $this->handleGuest(request()->input('link'), request()->input('reason_text'));
         }
 
         if ($data instanceof EuWithdrawal) {
@@ -82,27 +82,45 @@ class EuWithdrawalProcessor implements ProcessorInterface
         return $this->buildEuWithdrawal($withdrawal->loadMissing('order'));
     }
 
-    private function handleGuest(?string $incrementId, ?string $email, ?string $reasonText): GuestEuWithdrawal
+    private function handleGuest(?string $link, ?string $reasonText): GuestEuWithdrawal
     {
-        $this->validateGuest($incrementId, $email, $reasonText);
+        $this->throttleGuestRequest('eu-withdraw-submit', 20);
 
-        $currentChannel = core()->getCurrentChannel();
+        $validator = Validator::make(['link' => $link, 'reason_text' => $reasonText], [
+            'link' => ['required', 'string', 'max:2048'],
+            'reason_text' => ['nullable', 'string', 'max:5000'],
+        ]);
 
-        $order = $this->orders->getModel()
-            ->newQuery()
-            ->where('increment_id', $incrementId)
-            ->where('customer_email', $email)
-            ->where('is_guest', 1)
-            ->when($currentChannel, fn ($q) => $q->where('channel_id', $currentChannel->id))
-            ->first();
+        if ($validator->fails()) {
+            throw new InvalidInputException($validator->errors()->first(), 422);
+        }
 
-        if (! $order || ! $this->channelEnabled($order)) {
+        $order = $this->orders->find($this->orderIdFromSignedLink($link));
+
+        if (! $order || ! $order->is_guest || ! $this->channelEnabled($order)) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.eu-withdrawal.order-not-found'));
         }
 
         $withdrawal = $this->service->submit($order, $reasonText, app()->getLocale());
 
         return $this->buildGuestEuWithdrawal($withdrawal->loadMissing('order'));
+    }
+
+    /**
+     * Reads the order id from the emailed guest-create link, which must carry a valid, unexpired signature.
+     */
+    private function orderIdFromSignedLink(string $link): int
+    {
+        $path = (string) parse_url($link, PHP_URL_PATH);
+
+        if (
+            ! preg_match('#/withdraw/(\d+)/create$#', $path, $matches)
+            || ! URL::hasValidSignature(Request::create($link))
+        ) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.eu-withdrawal.invalid-link'), 422);
+        }
+
+        return (int) $matches[1];
     }
 
     private function assertChannelEnabled(object $order): void
@@ -120,23 +138,6 @@ class EuWithdrawalProcessor implements ProcessorInterface
     private function validateReason(?string $reasonText): void
     {
         $validator = Validator::make(['reason_text' => $reasonText], [
-            'reason_text' => ['nullable', 'string', 'max:5000'],
-        ]);
-
-        if ($validator->fails()) {
-            throw new InvalidInputException($validator->errors()->first(), 422);
-        }
-    }
-
-    private function validateGuest(?string $incrementId, ?string $email, ?string $reasonText): void
-    {
-        $validator = Validator::make([
-            'order_increment_id' => $incrementId,
-            'email' => $email,
-            'reason_text' => $reasonText,
-        ], [
-            'order_increment_id' => ['required', 'max:50'],
-            'email' => ['required', 'email', 'max:191'],
             'reason_text' => ['nullable', 'string', 'max:5000'],
         ]);
 

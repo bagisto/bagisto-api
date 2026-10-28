@@ -13,6 +13,7 @@ use ApiPlatform\Metadata\Operation;
  *
  * Param mapping:
  *   ?query=foo                  → args.query
+ *   ?suggest=0                  → args.suggest (skip the elastic "did you mean" swap)
  *   ?sort=name-asc              → args.sortKey=NAME, args.reverse=false
  *   ?per_page=20&page=2         → args.first=20, args.after=base64(19)
  *   ?type=configurable          → args.filter.type
@@ -28,7 +29,7 @@ class ProductRestProvider extends ProductGraphQLProvider
 {
     private const RESERVED_KEYS = [
         'query', 'sort', 'order', 'page', 'per_page',
-        'locale', 'channel', 'filter',
+        'locale', 'channel', 'filter', 'suggest',
     ];
 
     /**
@@ -48,6 +49,10 @@ class ProductRestProvider extends ProductGraphQLProvider
 
         if (isset($query['query']) && $query['query'] !== '') {
             $args['query'] = (string) $query['query'];
+        }
+
+        if (isset($query['suggest'])) {
+            $args['suggest'] = $query['suggest'];
         }
 
         [$sortKey, $reverse] = $this->parseSort($query['sort'] ?? null, $query['order'] ?? null);

@@ -23,19 +23,6 @@ use Webkul\Sitemap\Repositories\SitemapRepository;
 
 /**
  * Handles POST, PUT, DELETE on AdminMarketingSitemap.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\SearchSEO\SitemapController:
- *   store / update / destroy.
- *
- * Events:
- *   marketing.search_seo.sitemap.create.before / after
- *   marketing.search_seo.sitemap.update.before / after
- *   marketing.search_seo.sitemap.delete.before / after
- *
- * Note: this CRUD endpoint does NOT auto-generate the XML on create/update
- * (the monolith dispatches ProcessSitemap to the queue). Callers must hit
- * POST /generate explicitly so the API stays synchronous and the response
- * carries the resulting file paths.
  */
 class AdminMarketingSitemapProcessor implements ProcessorInterface
 {
@@ -94,6 +81,7 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         $sitemap = $this->sitemapRepository->create([
             'file_name' => $input['file_name'],
             'path' => $input['path'],
+            'channels' => $this->channelIds($input),
         ]);
 
         $sitemap = Sitemap::find($sitemap->id);
@@ -110,6 +98,10 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.sitemap.not-found'));
         }
 
+        if (! array_key_exists('channels', $input)) {
+            $input['channels'] = $sitemap->channels->pluck('id')->all();
+        }
+
         $this->validatePayload($input);
 
         Event::dispatch('marketing.search_seo.sitemap.update.before', $id);
@@ -117,6 +109,7 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         $this->sitemapRepository->update([
             'file_name' => $input['file_name'],
             'path' => $input['path'],
+            'channels' => $this->channelIds($input),
         ], $id);
 
         $sitemap = Sitemap::find($id);
@@ -161,12 +154,24 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         $rules = [
             'file_name' => ['required', 'regex:/^[\w\-\.]+$/', 'ends_with:.xml'],
             'path' => ['required', 'starts_with:/', 'regex:/^(?!.*\/\/)[\w\-\.\/]+$/', 'ends_with:/'],
+            'channels' => ['required', 'array', 'min:1'],
+            'channels.*' => ['integer', 'exists:channels,id'],
         ];
 
         $v = Validator::make($input, $rules);
         if ($v->fails()) {
             throw new InvalidInputException($v->errors()->first(), 422);
         }
+    }
+
+    /**
+     * The channel ids a write carried, as a plain int list.
+     *
+     * @return array<int, int>
+     */
+    protected function channelIds(array $input): array
+    {
+        return array_values(array_map('intval', (array) ($input['channels'] ?? [])));
     }
 
     protected function assertPermission(object $admin, string $permission): void

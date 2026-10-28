@@ -21,4 +21,11 @@ class AdminMarketingSitemapUpdateInput
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?string $path = null;
+
+    /**
+     * @var array<int, int>|null
+     */
+    #[ApiProperty(description: 'Channel ids the sitemap covers. The supplied list replaces the current one.')]
+    #[Groups(['mutation'])]
+    public ?array $channels = null;
 }

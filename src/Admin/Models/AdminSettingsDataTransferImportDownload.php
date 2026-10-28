@@ -14,8 +14,9 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportDownloadProvide
  *   GET /settings/data-transfer/imports/{id}/download
  *   GET /settings/data-transfer/imports/{id}/download-error-report
  *   GET /settings/data-transfer/imports/sample/{type}/{format}
+ *   GET /settings/data-transfer/imports/sample-images/{type}
  *
- * All three respond with application/octet-stream attachments. The `id`
+ * All four respond with application/octet-stream attachments. The `id`
  * requirement keeps the literal sample/{type}/{format} route from colliding.
  */
 #[ApiResource(
@@ -74,6 +75,25 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportDownloadProvide
                     '200' => new Model\Response(description: 'The sample file is downloaded.'),
                     '404' => new Model\Response(description: 'Unknown type or missing sample.'),
                     '422' => new Model\Response(description: 'Unsupported sample format.'),
+                ],
+            ),
+        ),
+        new Get(
+            uriTemplate: '/settings/data-transfer/imports/sample-images/{type}',
+            provider: AdminSettingsDataTransferImportDownloadProvider::class,
+            outputFormats: ['binary' => ['application/octet-stream']],
+            openapi: new Model\Operation(
+                tags: ['Admin Settings: Data Transfer'],
+                summary: 'Download the sample images archive',
+                description: 'Streams the sample images ZIP for an importer that carries images. It holds exactly the files the sample sheet\'s `images` column names, so uploading the two together imports cleanly. Send `Accept: application/octet-stream`. 404 for an importer without images.',
+                parameters: [
+                    new Model\Parameter('type', 'path', 'Importer type, e.g. products.', true, schema: ['type' => 'string', 'example' => 'products']),
+                ],
+                responses: [
+                    '200' => new Model\Response(description: 'The sample images archive is downloaded.'),
+                    '401' => new Model\Response(description: 'Missing or invalid admin token.'),
+                    '403' => new Model\Response(description: 'Admin role lacks settings.data_transfer.imports.import.'),
+                    '404' => new Model\Response(description: 'The importer has no sample images archive.'),
                 ],
             ),
         ),

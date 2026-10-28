@@ -138,10 +138,9 @@ class ProductDetailProvider implements ProviderInterface
         $dto->is_in_wishlist = app(ProductRelationFlagResolver::class)->isInWishlist((int) $product->id) ? 1 : 0;
         $dto->is_in_compare = app(ProductRelationFlagResolver::class)->isInCompare((int) $product->id) ? 1 : 0;
         $dto->attributes = $this->buildAttributes($product);
-        $coreProduct = $this->coreProduct($product);
-        $dto->color = $this->intOrNull($coreProduct->color);
-        $dto->size = $this->intOrNull($coreProduct->size);
-        $dto->brand = $this->intOrNull($coreProduct->brand);
+        $dto->color = $this->labelOrNull($product->color);
+        $dto->size = $this->labelOrNull($product->size);
+        $dto->brand = $this->labelOrNull($product->brand);
     }
 
     /**
@@ -466,22 +465,13 @@ class ProductDetailProvider implements ProviderInterface
     }
 
     /**
-     * Int or null.
+     * An option attribute's label, or null when the product has none.
      */
-    private function intOrNull($value): ?int
+    private function labelOrNull(mixed $value): ?string
     {
-        if (
-            $value === null
-            || $value === ''
-            || $value === false
-        ) {
-            return null;
-        }
-        if (is_numeric($value)) {
-            return (int) $value;
-        }
-
-        return null;
+        return filled($value)
+            ? (string) $value
+            : null;
     }
 
     /**

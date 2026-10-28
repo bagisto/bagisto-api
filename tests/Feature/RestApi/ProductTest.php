@@ -971,7 +971,7 @@ class ProductTest extends RestApiTestCase
         $response->assertOk();
 
         expect($optionBindings->reject(fn ($binding) => is_numeric($binding)))->toBeEmpty()
-            ->and($response->json('color'))->toBe($option->id)
+            ->and($response->json('color'))->toBe($option->label)
             ->and(collect($response->json('additionalAttributes'))->firstWhere('code', 'color')['value'])->toBe($option->label);
     }
 

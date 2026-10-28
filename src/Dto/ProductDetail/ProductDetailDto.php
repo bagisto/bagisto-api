@@ -198,19 +198,19 @@ class ProductDetailDto
     public array $attributes = [];
 
     /**
-     * The color.
+     * The color option's label.
      */
-    public ?int $color = null;
+    public ?string $color = null;
 
     /**
-     * The size.
+     * The size option's label.
      */
-    public ?int $size = null;
+    public ?string $size = null;
 
     /**
-     * The brand.
+     * The brand option's label.
      */
-    public ?int $brand = null;
+    public ?string $brand = null;
 
     /**
      * The categories the product is assigned to.

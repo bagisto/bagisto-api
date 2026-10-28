@@ -801,6 +801,40 @@ class ProductQueryTest extends GraphQLTestCase
     /**
      * Reading a select attribute returns the option label without writing it back over the stored option id.
      */
+    /**
+     * GraphQL and REST both return the color as its option label.
+     */
+    public function test_color_is_the_option_label_on_both_transports(): void
+    {
+        $this->seedRequiredData();
+
+        $color = Attribute::query()->where('code', 'color')->with('options')->first();
+
+        if (
+            ! $color
+            || $color->options->isEmpty()
+        ) {
+            $this->markTestSkipped('The color attribute has no options.');
+        }
+
+        $option = $color->options->first();
+        $product = $this->createBaseProduct('simple');
+
+        $this->upsertProductAttributeValue($product->id, 'color', $option->id, null, null);
+
+        $graphQL = $this->graphQL('query($id: ID!) { product(id: $id) { color } }', [
+            'id' => '/api/shop/products/'.$product->id,
+        ]);
+
+        $rest = $this->getJson('/api/shop/products/'.$product->id, $this->storefrontHeaders());
+
+        $rest->assertOk();
+
+        expect($graphQL->json('errors'))->toBeNull()
+            ->and($graphQL->json('data.product.color'))->toBe((string) $option->label)
+            ->and($rest->json('color'))->toBe((string) $option->label);
+    }
+
     public function test_select_attribute_read_does_not_overwrite_the_stored_option(): void
     {
         $this->seedRequiredData();

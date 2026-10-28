@@ -12,9 +12,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Resolver\CustomerQueryResolver;
 use Webkul\BagistoApi\State\CustomerProfileCollectionProvider;
 
-/**
- * Authenticated customer profile read operation
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     uriTemplate: '/customer-profiles',
@@ -78,66 +75,135 @@ use Webkul\BagistoApi\State\CustomerProfileCollectionProvider;
 )]
 class CustomerProfile
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false, identifier: true)]
     #[Groups(['query'])]
     public ?string $id = null;
 
+    /**
+     * The first name.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $first_name = null;
 
+    /**
+     * The last name.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $last_name = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $email = null;
 
+    /**
+     * The phone.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $phone = null;
 
+    /**
+     * The gender.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $gender = null;
 
+    /**
+     * The date of birth.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $date_of_birth = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $status = null;
 
+    /**
+     * The subscribed to news letter.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?bool $subscribed_to_news_letter = null;
 
+    /**
+     * The is verified.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $is_verified = null;
 
+    /**
+     * The is suspended.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $is_suspended = null;
 
+    /**
+     * The id of the customer's group.
+     */
+    #[ApiProperty(readable: true, writable: false)]
+    #[Groups(['query', 'mutation'])]
+    public ?int $customer_group_id = null;
+
+    /**
+     * The code of the customer's group.
+     */
+    #[ApiProperty(readable: true, writable: false)]
+    #[Groups(['query', 'mutation'])]
+    public ?string $customer_group_code = null;
+
+    /**
+     * The name of the customer's group.
+     */
+    #[ApiProperty(readable: true, writable: false)]
+    #[Groups(['query', 'mutation'])]
+    public ?string $customer_group_name = null;
+
+    /**
+     * The image.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $image = null;
 
+    /**
+     * The password.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $password = null;
 
+    /**
+     * The confirm password.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $confirmPassword = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $message = null;

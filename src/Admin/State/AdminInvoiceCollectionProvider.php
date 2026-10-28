@@ -14,35 +14,34 @@ use Webkul\BagistoApi\Admin\State\Concerns\MapsOrderAddress;
 use Webkul\BagistoApi\Support\Sql;
 use Webkul\Sales\Models\Order;
 
-/**
- * GET /api/admin/invoices + adminInvoices cursor query.
- *
- * Filters: id (exact/list), order_id (partial on increment_id), state,
- * base_grand_total (exact or range via base_grand_total_from/to), and
- * created_at (range / preset). Sort: id (default desc), increment_id,
- * order_id, base_grand_total, state, created_at.
- *
- * Returns the full AdminInvoice resource per row so EVERY invoice column has its
- * real value over both transports (clients pick which they query). Only the
- * relation-derived fields (items / billingAddress / shippingAddress) stay null
- * on the listing — they need per-row queries; use GET /api/admin/invoices/{id}
- * for those.
- */
 class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
 {
     use ChecksAdminPermission;
     use MapsOrderAddress;
 
+    /**
+     * The permission constant.
+     */
     protected const PERMISSION = 'sales.invoices.view';
 
-    /** Per-page address caches, keyed by order_id (batch-loaded in mapRows). */
+    /**
+     * Per-page address caches, keyed by order_id (batch-loaded in mapRows).
+     */
     private array $billingByOrder = [];
 
+    /**
+     * The shipping by order.
+     */
     private array $shippingByOrder = [];
 
-    /** Set per request so mapRow can return the Eloquent model (GraphQL) or the DTO (REST). */
+    /**
+     * Set per request so mapRow can return the Eloquent model (GraphQL) or the DTO (REST).
+     */
     protected bool $listingIsGraphQL = false;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin(self::PERMISSION);
@@ -52,18 +51,23 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'increment_id', 'order_id', 'base_grand_total', 'state', 'created_at'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         $prefix = DB::getTablePrefix();
 
         return DB::table('invoices')
             ->leftJoin('orders', 'invoices.order_id', '=', 'orders.id')
-            // All invoice columns + the cheap order-context columns from the join.
             ->select('invoices.*')
             ->addSelect(
                 'orders.increment_id as order_increment_id',
@@ -75,11 +79,12 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
                 'orders.created_at as order_created_at',
             )
             ->selectRaw('COALESCE('.Sql::column('invoices.increment_id').', '.db_grammar()->castToString(Sql::column('invoices.id')).') AS resolved_increment_id')
-            // Surface the linked order-transaction id when the invoice column is
-            // null (the "Create Transaction" path records it in order_transactions).
             ->selectRaw("COALESCE({$prefix}invoices.transaction_id, (SELECT ot.transaction_id FROM {$prefix}order_transactions ot WHERE ot.invoice_id = {$prefix}invoices.id LIMIT 1)) AS resolved_transaction_id");
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['id'])) {
@@ -125,6 +130,9 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -171,6 +179,9 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         return $rows->map(fn ($row) => $this->mapRow($row))->all();
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): object
     {
         if ($this->listingIsGraphQL) {
@@ -188,12 +199,10 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         $dto->emailSent = $row->email_sent !== null ? (bool) $row->email_sent : null;
         $dto->totalQty = $row->total_qty !== null ? (int) $row->total_qty : null;
 
-        // --- Currency codes ---
         $dto->orderCurrencyCode = $row->order_currency_code;
         $dto->baseCurrencyCode = $row->base_currency_code;
         $dto->channelCurrencyCode = $row->channel_currency_code;
 
-        // --- Sub-total ---
         $dto->subTotal = $this->num($row->sub_total);
         $dto->formattedSubTotal = $this->money($row->sub_total, $currency);
         $dto->baseSubTotal = $this->num($row->base_sub_total);
@@ -203,25 +212,21 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         $dto->baseSubTotalInclTax = $this->num($row->base_sub_total_incl_tax);
         $dto->formattedBaseSubTotalInclTax = $this->baseMoney($row->base_sub_total_incl_tax);
 
-        // --- Grand total ---
         $dto->grandTotal = $this->num($row->grand_total);
         $dto->formattedGrandTotal = $this->money($row->grand_total, $currency);
         $dto->baseGrandTotal = $this->num($row->base_grand_total);
         $dto->formattedBaseGrandTotal = $this->baseMoney($row->base_grand_total);
 
-        // --- Tax ---
         $dto->taxAmount = $this->num($row->tax_amount);
         $dto->formattedTaxAmount = $this->money($row->tax_amount, $currency);
         $dto->baseTaxAmount = $this->num($row->base_tax_amount);
         $dto->formattedBaseTaxAmount = $this->baseMoney($row->base_tax_amount);
 
-        // --- Discount ---
         $dto->discountAmount = $this->num($row->discount_amount);
         $dto->formattedDiscountAmount = $this->money($row->discount_amount, $currency);
         $dto->baseDiscountAmount = $this->num($row->base_discount_amount);
         $dto->formattedBaseDiscountAmount = $this->baseMoney($row->base_discount_amount);
 
-        // --- Shipping ---
         $dto->shippingAmount = $this->num($row->shipping_amount);
         $dto->formattedShippingAmount = $this->money($row->shipping_amount, $currency);
         $dto->baseShippingAmount = $this->num($row->base_shipping_amount);
@@ -241,7 +246,6 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         $dto->createdAt = $row->created_at ? (string) $row->created_at : null;
         $dto->updatedAt = $row->updated_at ? (string) $row->updated_at : null;
 
-        // --- Order / customer context (cheap — already joined to orders) ---
         $name = trim((string) ($row->order_customer_first_name ?? '').' '.($row->order_customer_last_name ?? ''));
         $dto->customerName = $name !== '' ? $name : null;
         $dto->customerEmail = $row->order_customer_email;
@@ -250,8 +254,6 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         $dto->channelName = $row->order_channel_name;
         $dto->orderDate = $row->order_created_at ? (string) $row->order_created_at : null;
 
-        // Order id is cheap (already joined); addresses + line items are
-        // detail-only — use GET /api/admin/invoices/{id} for those.
         $dto->order = ['id' => $row->order_id !== null ? (int) $row->order_id : null];
         $dto->items = [];
 
@@ -260,8 +262,7 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
 
     /**
      * GraphQL listing row → Eloquent AdminInvoice. Order-context columns are
-     * pre-filled (so the model's accessors don't re-query per row) and the
-     * items / addresses relations are set empty (detail-only on the listing).
+     * pre-filled (so the model's accessors don't re-query per row) and the.
      */
     protected function mapRowToEloquent(object $row): AdminInvoice
     {
@@ -297,7 +298,6 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
             'next_reminder_at' => $row->next_reminder_at,
             'created_at' => $row->created_at,
             'updated_at' => $row->updated_at,
-            // Pre-set so the accessors use these instead of re-querying the order.
             'transaction_id' => $row->resolved_transaction_id ?? $row->transaction_id,
             'order_increment_id' => $row->order_increment_id,
             'order_status' => $row->order_status,
@@ -308,54 +308,14 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         ]);
 
         $model->setRelation('items', collect());
-        // The full nested order object is detail-only (querying it on the listing
-        // would expose OrderDetail's many non-null fields, none of which are loaded
-        // here). It resolves null on the listing — use the flat orderIncrementId /
-        // orderStatus scalars on the row, or the detail query for the full object.
         $model->setRelation('order', null);
 
         return $model;
     }
 
-    private function num($value): ?float
-    {
-        return $value !== null ? (float) $value : null;
-    }
-
-    private function money($value, ?string $currency): ?string
-    {
-        return $value !== null ? $this->safeFormatPrice((float) $value, $currency) : null;
-    }
-
-    private function baseMoney($value): ?string
-    {
-        return $value !== null ? core()->formatBasePrice((float) $value) : null;
-    }
-
-    /**
-     * Human-readable order status label from the raw status code (no DB query) —
-     * reuses the core Order model's status-label map so it matches the detail.
-     */
-    private function orderStatusLabel(?string $status): ?string
-    {
-        if (! $status) {
-            return null;
-        }
-
-        try {
-            $order = new Order;
-            $order->status = $status;
-
-            return $order->status_label;
-        } catch (\Throwable $exception) {
-            return $status;
-        }
-    }
-
     /**
      * Format a price in the given currency code, falling back to the base-currency
-     * format (and then the raw numeric string) when the code can't be resolved to a
-     * Currency row — e.g. an order whose snapshot currency was later deleted.
+     * format (and then the raw numeric string) when the code can't be resolved to a.
      */
     protected function safeFormatPrice(float $amount, ?string $currencyCode): string
     {
@@ -411,5 +371,49 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
             'this_year' => [$now->copy()->startOfYear(), $now->copy()->endOfYear()],
             default => [null, null],
         };
+    }
+
+    /**
+     * Num.
+     */
+    private function num($value): ?float
+    {
+        return $value !== null ? (float) $value : null;
+    }
+
+    /**
+     * Money.
+     */
+    private function money($value, ?string $currency): ?string
+    {
+        return $value !== null ? $this->safeFormatPrice((float) $value, $currency) : null;
+    }
+
+    /**
+     * Base money.
+     */
+    private function baseMoney($value): ?string
+    {
+        return $value !== null ? core()->formatBasePrice((float) $value) : null;
+    }
+
+    /**
+     * Human-readable order status label from the raw status code (no DB query) —
+     * reuses the core Order model's status-label map so it matches the detail.
+     */
+    private function orderStatusLabel(?string $status): ?string
+    {
+        if (! $status) {
+            return null;
+        }
+
+        try {
+            $order = new Order;
+            $order->status = $status;
+
+            return $order->status_label;
+        } catch (\Throwable $exception) {
+            return $status;
+        }
     }
 }

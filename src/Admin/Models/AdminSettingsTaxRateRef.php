@@ -7,17 +7,6 @@ use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Tax rate — nested sub-resource of AdminSettingsTaxCategory (`taxRates`
- * connection). Backed by the pivot table `tax_categories_tax_rates` as a plain
- * HasMany (NOT belongsToMany) — the pivot carries its own `id` column, which a
- * belongsToMany connection node would mistakenly resolve as the node `_id`
- * instead of the real rate id. Reading the pivot directly and resolving the rate
- * fields by `tax_rate_id` makes `node { _id identifier taxRate }` resolve to the
- * actual rate (id = tax_rate_id), the same combo HasMany sub-resources use.
- *
- * `tax_rate` surfaces as `taxRate`, the rate id as `_id`, via the central converter.
- */
 #[ApiResource(
     shortName: 'AdminSettingsTaxRateRef',
     operations: [],
@@ -26,29 +15,50 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminSettingsTaxRateRef extends Model
 {
-    /** @var string */
+    /**
+     * The pivot table that links tax categories to their tax rates.
+     *
+     * @var string
+     */
     protected $table = 'tax_categories_tax_rates';
 
-    /** @var bool */
+    /**
+     * Indicates the tax rate reference does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the tax rate reference is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['identifier', 'tax_rate'];
 
-    /** @var array */
+    /**
+     * The native types the tax rate reference attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'tax_rate_id' => 'int',
     ];
 
+    /**
+     * The rate row memo.
+     */
     private ?object $rateRowMemo = null;
 
+    /**
+     * The rate row loaded.
+     */
     private bool $rateRowLoaded = false;
 
     /**
      * `id` is aliased to `tax_rate_id` by the parent relation's select (the pivot
-     * table's own `id` column is never selected), so the node `_id` is the real
-     * rate id rather than the pivot row id.
+     * table's own `id` column is never selected), so the node `_id` is the real.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
@@ -56,12 +66,18 @@ class AdminSettingsTaxRateRef extends Model
         return $this->id !== null ? (int) $this->id : null;
     }
 
+    /**
+     * Get identifier attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getIdentifierAttribute(): ?string
     {
         return $this->rateRow()?->identifier;
     }
 
+    /**
+     * Get tax rate attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getTaxRateAttribute(): ?float
     {
@@ -70,6 +86,9 @@ class AdminSettingsTaxRateRef extends Model
         return $value !== null ? (float) $value : null;
     }
 
+    /**
+     * Rate row.
+     */
     private function rateRow(): ?object
     {
         if (! $this->rateRowLoaded) {

@@ -11,10 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminAppearanceSectionReorderInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionReorderProcessor;
 
-/**
- * Render order is staged like any other edit. Footer links are always drawn last, so
- * they are moved back to the end of whatever order is sent.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAppearanceSectionReorder',
@@ -27,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionReorderProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Stage a new section order',
+                description: 'Stages a new render order for every section of one theme and channel. Nothing changes on the storefront until POST /appearance/themes/{code}/sections/publish; a partial, mixed-scope or unknown list of section IDs is refused with 422.',
                 requestBody: new Model\RequestBody(
                     description: 'Every section of the theme and channel, in the order they should render. A partial list is rejected, because the sections left out would be renumbered over the ones sent. Read the current set from GET /appearance/themes/{code}/sections first. The footer is pinned last whatever position it is given.',
                     required: true,
@@ -50,7 +47,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionReorderProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'Order staged.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -85,18 +82,28 @@ class AdminAppearanceSectionReorder
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $id = 'reorder';
 
     /**
+     * The section ids in the order that was staged.
+     *
      * @var array<int, int>
      */
     public array $section_ids = [];
 
     /**
+     * Whether each reordered section now has a draft, keyed by section id.
+     *
      * @var array<string, bool>
      */
     public array $has_draft = [];
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

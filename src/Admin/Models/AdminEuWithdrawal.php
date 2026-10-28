@@ -94,6 +94,7 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: EU Withdrawal'],
                 summary: 'Get a withdrawal declaration (evidence + timeline)',
+                description: 'One EU right-of-withdrawal declaration by ID, with the evidence the customer submitted and its timeline. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'The withdrawal declaration with its full evidence timeline.',
@@ -164,7 +165,7 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The declined withdrawal declaration.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -217,7 +218,7 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The refunded withdrawal declaration.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -254,7 +255,7 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
                 summary: 'Resend the durable-medium confirmation email',
                 description: 'Empty body. Re-sends the confirmation email in the declaration\'s locale. Permission: sales.eu_withdrawals.resend_confirmation.',
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The declaration after the confirmation email was re-sent (confirmationSentAt refreshed).',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -280,6 +281,7 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
         new QueryCollection(
             provider: AdminEuWithdrawalCollectionProvider::class,
             paginationType: 'cursor',
+            description: 'EU right-of-withdrawal declarations, newest first by default. Filters: `order_increment_id` and `customer_email` (partial match), `status` (received, refunded or declined), `channel_code`, and `received_at_from`/`_to` and `confirmation_sent_at_from`/`_to` dates. Sortable by id, received_at or status. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page\'s `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.eu_withdrawals` permission.',
             args: [
                 'order_increment_id' => ['type' => 'String'],
                 'customer_email' => ['type' => 'String'],
@@ -295,7 +297,10 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
                 'after' => ['type' => 'String'],
             ],
         ),
-        new Query(provider: AdminEuWithdrawalItemProvider::class),
+        new Query(
+            provider: AdminEuWithdrawalItemProvider::class,
+            description: 'One withdrawal declaration with its evidence and timeline. Needs the `sales.eu_withdrawals.view` permission.',
+        ),
         new Mutation(name: 'decline', input: AdminEuWithdrawalDeclineInput::class, processor: AdminEuWithdrawalProcessor::class),
         new Mutation(name: 'markRefunded', input: AdminEuWithdrawalMarkRefundedInput::class, processor: AdminEuWithdrawalProcessor::class),
         new Mutation(name: 'resendConfirmation', input: AdminEuWithdrawalActionInput::class, processor: AdminEuWithdrawalProcessor::class),
@@ -305,60 +310,144 @@ class AdminEuWithdrawal
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The uuid.
+     */
     public ?string $uuid = null;
 
+    /**
+     * The order id.
+     */
     public ?int $order_id = null;
 
+    /**
+     * The order increment id.
+     */
     public ?string $order_increment_id = null;
 
+    /**
+     * The customer id.
+     */
     public ?int $customer_id = null;
 
+    /**
+     * The customer name.
+     */
     public ?string $customer_name = null;
 
+    /**
+     * The customer email.
+     */
     public ?string $customer_email = null;
 
+    /**
+     * The is guest.
+     */
     public ?bool $is_guest = null;
 
+    /**
+     * The channel id.
+     */
     public ?int $channel_id = null;
 
+    /**
+     * The channel code.
+     */
     public ?string $channel_code = null;
 
+    /**
+     * The locale.
+     */
     public ?string $locale = null;
 
+    /**
+     * The reason text.
+     */
     public ?string $reason_text = null;
 
+    /**
+     * The status.
+     */
     public ?string $status = null;
 
+    /**
+     * The received at.
+     */
     public ?string $received_at = null;
 
+    /**
+     * The confirmation sent at.
+     */
     public ?string $confirmation_sent_at = null;
 
+    /**
+     * The final confirmation sent at.
+     */
     public ?string $final_confirmation_sent_at = null;
 
+    /**
+     * The confirmation error.
+     */
     public ?string $confirmation_error = null;
 
+    /**
+     * The declined at.
+     */
     public ?string $declined_at = null;
 
+    /**
+     * The declined reason.
+     */
     public ?string $declined_reason = null;
 
+    /**
+     * The declined by user id.
+     */
     public ?int $declined_by_user_id = null;
 
+    /**
+     * The declined by name.
+     */
     public ?string $declined_by_name = null;
 
+    /**
+     * The refunded at.
+     */
     public ?string $refunded_at = null;
 
+    /**
+     * The refunded by user id.
+     */
     public ?int $refunded_by_user_id = null;
 
+    /**
+     * The refunded by name.
+     */
     public ?string $refunded_by_name = null;
 
+    /**
+     * The refund note.
+     */
     public ?string $refund_note = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

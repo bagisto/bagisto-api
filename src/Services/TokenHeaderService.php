@@ -4,15 +4,11 @@ namespace Webkul\BagistoApi\Services;
 
 use Illuminate\Http\Request;
 
-/**
- * Service for extracting and managing API tokens from Authorization header
- * Recommended approach: Authorization: Bearer <customer_token>
- */
 class TokenHeaderService
 {
     /**
      * Extract Bearer token from Authorization header
-     * Format: Authorization: Bearer <token>
+     * Format: Authorization: Bearer <token>.
      */
     public static function extractToken(Request $request): ?string
     {
@@ -21,7 +17,7 @@ class TokenHeaderService
 
     /**
      * Get Authorization Bearer token from request header
-     * Format: Authorization: Bearer <token>
+     * Format: Authorization: Bearer <token>.
      */
     public static function getAuthorizationBearerToken(Request $request): ?string
     {
@@ -38,7 +34,7 @@ class TokenHeaderService
     }
 
     /**
-     * Check if Authorization Bearer token is present
+     * Check if Authorization Bearer token is present.
      */
     public static function hasAuthorizationToken(Request $request): bool
     {

@@ -8,11 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTheme;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Placeholder provider for PUT / DELETE on AdminSettingsTheme.
- */
 class AdminSettingsThemeWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminSettingsTheme
     {
         if (! AdminAuthHelper::resolveAdmin()) {

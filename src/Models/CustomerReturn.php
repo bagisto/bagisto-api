@@ -334,7 +334,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                 summary: 'Cancel a return request',
                 description: 'Cancels the customer\'s own RMA (unless it is already canceled). Empty body. Returns the updated RMA.',
                 responses: [
-                    '200' => new Response(
+                    '201' => new Response(
                         description: 'The canceled return request.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -375,7 +375,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                 summary: 'Reopen a return request',
                 description: 'Reopens a canceled/declined RMA back to pending — only when store settings allow it (otherwise 400). Empty body. Returns the updated RMA.',
                 responses: [
-                    '200' => new Response(
+                    '201' => new Response(
                         description: 'The reopened return request.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -416,7 +416,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                 summary: 'Close (mark solved) a return request',
                 description: 'Marks the customer\'s own RMA as solved and adds a conversation note. Empty body. Returns the updated RMA.',
                 responses: [
-                    '200' => new Response(
+                    '201' => new Response(
                         description: 'The closed (solved) return request.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -441,7 +441,10 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
         ),
     ],
     graphQlOperations: [
-        new Query(provider: CustomerReturnProvider::class),
+        new Query(
+            provider: CustomerReturnProvider::class,
+            description: 'One return request on an order of the authenticated customer; any other return is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
         new Mutation(
             name: 'create',
             input: CreateCustomerReturnInput::class,
@@ -464,6 +467,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
         ),
         new QueryCollection(
             provider: CustomerReturnProvider::class,
+            description: 'Return requests on the authenticated customer\'s orders, newest first; `status` filters by RMA status ID. Paginate forward only: `first` (default 10, between 1 and 50) and `after`. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'status' => [
@@ -479,44 +483,98 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
 )]
 class CustomerReturn implements SnakeCaseFieldsResource
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The order id.
+     */
     public ?int $order_id = null;
 
+    /**
+     * The order increment id.
+     */
     public ?string $order_increment_id = null;
 
+    /**
+     * The status id.
+     */
     public ?int $status_id = null;
 
+    /**
+     * The status title.
+     */
     public ?string $status_title = null;
 
+    /**
+     * The status color.
+     */
     public ?string $status_color = null;
 
+    /**
+     * The package condition.
+     */
     public ?string $package_condition = null;
 
+    /**
+     * The information.
+     */
     public ?string $information = null;
 
+    /**
+     * The can close.
+     */
     public ?bool $can_close = null;
 
+    /**
+     * The can reopen.
+     */
     public ?bool $can_reopen = null;
 
+    /**
+     * The is expired.
+     */
     public ?bool $is_expired = null;
 
-    /** @var array<string,mixed>|null */
+    /**
+     * The order item being returned.
+     *
+     * @var array<string,mixed>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'object'])]
     public ?array $item = null;
 
-    /** @var array<int,array<string,mixed>>|null */
+    /**
+     * The images attached to the return.
+     *
+     * @var array<int,array<string,mixed>>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $images = null;
 
-    /** @var array<int,array<string,mixed>>|null */
+    /**
+     * The answers to the return custom fields.
+     *
+     * @var array<int,array<string,mixed>>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $custom_attributes = null;
 
+    /**
+     * The messages count.
+     */
     public ?int $messages_count = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

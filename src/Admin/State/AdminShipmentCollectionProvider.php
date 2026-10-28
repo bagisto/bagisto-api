@@ -19,12 +19,24 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
     use ChecksAdminPermission;
     use MapsOrderAddress;
 
+    /**
+     * The permission constant.
+     */
     protected const PERMISSION = 'sales.shipments.view';
 
+    /**
+     * The billing by order.
+     */
     private array $billingByOrder = [];
 
+    /**
+     * The shipping by order.
+     */
     private array $shippingByOrder = [];
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin(self::PERMISSION);
@@ -32,11 +44,17 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'order_id', 'total_qty', 'inventory_source_name', 'shipped_to', 'order_date', 'created_at'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         $prefix = DB::getTablePrefix();
@@ -73,6 +91,9 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
             ->selectRaw(Sql::shipmentSourceName().' as inventory_source_name');
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         $prefix = DB::getTablePrefix();
@@ -119,6 +140,9 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -136,6 +160,9 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
         $query->orderBy($map[$column] ?? 'shipments.id', $direction);
     }
 
+    /**
+     * Map rows.
+     */
     protected function mapRows($rows): array
     {
         $this->billingByOrder = [];
@@ -167,6 +194,9 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
         return $rows->map(fn ($row) => $this->mapRow($row))->all();
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminShipment
     {
         $name = trim((string) ($row->order_customer_first_name ?? '').' '.($row->order_customer_last_name ?? ''));
@@ -202,6 +232,9 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
         return $dto;
     }
 
+    /**
+     * Resolve date range.
+     */
     protected function resolveDateRange(array $args, string $prefix): array
     {
         $from = $args[$prefix.'_from'] ?? $args['date_from'] ?? null;
@@ -213,6 +246,9 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
         ];
     }
 
+    /**
+     * Order status label.
+     */
     private function orderStatusLabel(?string $status): ?string
     {
         if (! $status) {

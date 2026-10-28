@@ -11,6 +11,9 @@ use Webkul\Customer\Models\CustomerAddress;
 
 class AdminCustomerAddressItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminCustomerAddress
     {
         AdminReadPermissions::authorize($operation, AdminCustomerAddress::class);
@@ -33,6 +36,9 @@ class AdminCustomerAddressItemProvider implements ProviderInterface
         return $this->toDto($address);
     }
 
+    /**
+     * To dto.
+     */
     public function toDto($address): AdminCustomerAddress
     {
         $dto = new AdminCustomerAddress;

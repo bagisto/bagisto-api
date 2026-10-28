@@ -4,93 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * GraphQL coverage for Admin Settings → Channels CRUD (Block B Wave 2).
- *
- * Mirrors the SettingsCurrency GraphQL test pattern. The project-wide GraphQL
- * IRI-generation quirk means write mutations may return `adminSettingsChannel:
- * null` while still persisting; we assert the underlying DB state.
- */
 class SettingsChannelTest extends AdminApiTestCase
 {
-    protected function ensureSupportRows(): array
-    {
-        $this->seedRequiredData();
-
-        $localeId = (int) (\DB::table('locales')->value('id') ?: 0);
-        $currencyId = (int) (\DB::table('currencies')->value('id') ?: 0);
-        $sourceId = (int) (\DB::table('inventory_sources')->value('id') ?: 0);
-        $rootCategoryId = (int) (\DB::table('categories')->value('id') ?: 0);
-
-        if (! $localeId) {
-            $localeId = (int) \DB::table('locales')->insertGetId([
-                'code' => 'en', 'name' => 'English', 'direction' => 'ltr',
-                'created_at' => now(), 'updated_at' => now(),
-            ]);
-        }
-        if (! $currencyId) {
-            $currencyId = (int) \DB::table('currencies')->insertGetId([
-                'code' => 'USD', 'name' => 'US Dollar', 'symbol' => '$',
-                'created_at' => now(), 'updated_at' => now(),
-            ]);
-        }
-        if (! $sourceId) {
-            $sourceId = (int) \DB::table('inventory_sources')->insertGetId([
-                'code' => 'default', 'name' => 'Default',
-                'contact_name' => 'D', 'contact_email' => 'd@x.com', 'contact_number' => '0',
-                'country' => 'US', 'state' => 'CA', 'city' => 'LA', 'street' => 'X', 'postcode' => '90001',
-                'priority' => 0, 'status' => 1,
-                'created_at' => now(), 'updated_at' => now(),
-            ]);
-        }
-        if (! $rootCategoryId) {
-            $rootCategoryId = (int) \DB::table('categories')->insertGetId([
-                '_lft' => 1, '_rgt' => 2, 'parent_id' => null, 'status' => 1, 'position' => 0,
-                'created_at' => now(), 'updated_at' => now(),
-            ]);
-        }
-
-        return compact('localeId', 'currencyId', 'sourceId', 'rootCategoryId');
-    }
-
-    protected function insertChannel(array $overrides = []): int
-    {
-        $s = $this->ensureSupportRows();
-        $code = $overrides['code'] ?? ('gqc'.uniqid());
-
-        $id = \DB::table('channels')->insertGetId(array_merge([
-            'code' => $code,
-            'hostname' => $code.'.example.com',
-            'is_maintenance_on' => 0,
-            'root_category_id' => $s['rootCategoryId'],
-            'default_locale_id' => $s['localeId'],
-            'base_currency_id' => $s['currencyId'],
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], array_diff_key($overrides, ['name' => 1])));
-
-        $localeCode = (string) \DB::table('locales')->where('id', $s['localeId'])->value('code');
-        \DB::table('channel_translations')->insert([
-            'channel_id' => $id, 'locale' => $localeCode,
-            'name' => $overrides['name'] ?? ('GQL '.$id),
-            'created_at' => now(), 'updated_at' => now(),
-        ]);
-        \DB::table('channel_locales')->insertOrIgnore([
-            'channel_id' => $id,
-            'locale_id' => $s['localeId'],
-        ]);
-        \DB::table('channel_currencies')->insertOrIgnore([
-            'channel_id' => $id,
-            'currency_id' => $s['currencyId'],
-        ]);
-        \DB::table('channel_inventory_sources')->insertOrIgnore([
-            'channel_id' => $id,
-            'inventory_source_id' => $s['sourceId'],
-        ]);
-
-        return $id;
-    }
-
+    /**
+     * Test query listing returns channels.
+     */
     public function test_query_listing_returns_channels(): void
     {
         $admin = $this->createAdmin();
@@ -111,6 +29,9 @@ class SettingsChannelTest extends AdminApiTestCase
         expect(is_array($edges) || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test query detail returns channel.
+     */
     public function test_query_detail_returns_channel(): void
     {
         $admin = $this->createAdmin();
@@ -130,6 +51,9 @@ class SettingsChannelTest extends AdminApiTestCase
         expect($hasErrors || $hasData)->toBeTrue();
     }
 
+    /**
+     * Test query detail multiword fields resolve over graphql.
+     */
     public function test_query_detail_multiword_fields_resolve_over_graphql(): void
     {
         $admin = $this->createAdmin();
@@ -162,6 +86,9 @@ class SettingsChannelTest extends AdminApiTestCase
         expect($node['updatedAt'])->not->toBeNull();
     }
 
+    /**
+     * Test query detail resolves connections and home seo.
+     */
     public function test_query_detail_resolves_connections_and_home_seo(): void
     {
         $admin = $this->createAdmin();
@@ -236,27 +163,25 @@ class SettingsChannelTest extends AdminApiTestCase
         $node = $response->json('data.adminSettingsChannel');
         expect($node)->not->toBeNull();
 
-        // homeSeo via flat string accessors (the field-selectable equivalent of a
-        // nested homeSeo object — see the model for why a typed object wasn't possible).
         expect($node['seoMetaTitle'])->toBe('Conn Title');
         expect($node['seoMetaDescription'])->toBe('Conn Desc');
         expect($node['seoMetaKeywords'])->toBe('conn,kw');
 
-        // locales connection resolves with real node data.
         $localeNodes = $response->json('data.adminSettingsChannel.locales.edges');
         expect($localeNodes)->toBeArray();
         expect(count($localeNodes))->toBeGreaterThan(0);
         expect($localeNodes[0]['node']['_id'])->not->toBeNull();
         expect($localeNodes[0]['node']['code'])->not->toBeNull();
 
-        // currencies + inventorySources connections resolve.
         expect($response->json('data.adminSettingsChannel.currencies.edges.0.node._id'))->not->toBeNull();
         expect($response->json('data.adminSettingsChannel.inventorySources.edges.0.node._id'))->not->toBeNull();
 
-        // translations connection resolves (homeSeo JSON on the node).
         expect($response->json('data.adminSettingsChannel.translations.edges.0.node._id'))->not->toBeNull();
     }
 
+    /**
+     * Test mutation create happy path.
+     */
     public function test_mutation_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -291,6 +216,9 @@ class SettingsChannelTest extends AdminApiTestCase
         expect($exists || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test mutation create missing code fails.
+     */
     public function test_mutation_create_missing_code_fails(): void
     {
         $admin = $this->createAdmin();
@@ -320,6 +248,9 @@ class SettingsChannelTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test mutation update happy path.
+     */
     public function test_mutation_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -357,6 +288,9 @@ class SettingsChannelTest extends AdminApiTestCase
         expect($updated || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -378,6 +312,9 @@ class SettingsChannelTest extends AdminApiTestCase
         $this->assertDatabaseMissing('channels', ['id' => $id]);
     }
 
+    /**
+     * Test mutation delete last channel fails.
+     */
     public function test_mutation_delete_last_channel_fails(): void
     {
         $admin = $this->createAdmin();
@@ -398,5 +335,89 @@ class SettingsChannelTest extends AdminApiTestCase
         $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
         $this->assertDatabaseHas('channels', ['id' => $id]);
+    }
+
+    /**
+     * Ensure support rows.
+     */
+    protected function ensureSupportRows(): array
+    {
+        $this->seedRequiredData();
+
+        $localeId = (int) (\DB::table('locales')->value('id') ?: 0);
+        $currencyId = (int) (\DB::table('currencies')->value('id') ?: 0);
+        $sourceId = (int) (\DB::table('inventory_sources')->value('id') ?: 0);
+        $rootCategoryId = (int) (\DB::table('categories')->value('id') ?: 0);
+
+        if (! $localeId) {
+            $localeId = (int) \DB::table('locales')->insertGetId([
+                'code' => 'en', 'name' => 'English', 'direction' => 'ltr',
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+        if (! $currencyId) {
+            $currencyId = (int) \DB::table('currencies')->insertGetId([
+                'code' => 'USD', 'name' => 'US Dollar', 'symbol' => '$',
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+        if (! $sourceId) {
+            $sourceId = (int) \DB::table('inventory_sources')->insertGetId([
+                'code' => 'default', 'name' => 'Default',
+                'contact_name' => 'D', 'contact_email' => 'd@x.com', 'contact_number' => '0',
+                'country' => 'US', 'state' => 'CA', 'city' => 'LA', 'street' => 'X', 'postcode' => '90001',
+                'priority' => 0, 'status' => 1,
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+        if (! $rootCategoryId) {
+            $rootCategoryId = (int) \DB::table('categories')->insertGetId([
+                '_lft' => 1, '_rgt' => 2, 'parent_id' => null, 'status' => 1, 'position' => 0,
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+
+        return compact('localeId', 'currencyId', 'sourceId', 'rootCategoryId');
+    }
+
+    /**
+     * Insert channel.
+     */
+    protected function insertChannel(array $overrides = []): int
+    {
+        $s = $this->ensureSupportRows();
+        $code = $overrides['code'] ?? ('gqc'.uniqid());
+
+        $id = \DB::table('channels')->insertGetId(array_merge([
+            'code' => $code,
+            'hostname' => $code.'.example.com',
+            'is_maintenance_on' => 0,
+            'root_category_id' => $s['rootCategoryId'],
+            'default_locale_id' => $s['localeId'],
+            'base_currency_id' => $s['currencyId'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], array_diff_key($overrides, ['name' => 1])));
+
+        $localeCode = (string) \DB::table('locales')->where('id', $s['localeId'])->value('code');
+        \DB::table('channel_translations')->insert([
+            'channel_id' => $id, 'locale' => $localeCode,
+            'name' => $overrides['name'] ?? ('GQL '.$id),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        \DB::table('channel_locales')->insertOrIgnore([
+            'channel_id' => $id,
+            'locale_id' => $s['localeId'],
+        ]);
+        \DB::table('channel_currencies')->insertOrIgnore([
+            'channel_id' => $id,
+            'currency_id' => $s['currencyId'],
+        ]);
+        \DB::table('channel_inventory_sources')->insertOrIgnore([
+            'channel_id' => $id,
+            'inventory_source_id' => $s['sourceId'],
+        ]);
+
+        return $id;
     }
 }

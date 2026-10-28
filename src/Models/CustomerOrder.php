@@ -15,17 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderDetailDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderListDto;
 use Webkul\BagistoApi\State\CustomerOrderProvider;
+use Webkul\Sales\Models\RefundProxy;
 
-/**
- * Customer Order API Resource
- *
- * Standalone model pointing to the `orders` table with explicit field casts
- * and hand-picked relationships. Follows the same pattern as CustomerInvoice
- * to avoid inheriting unwanted relationships from the base Order model
- * (morphTo fields, proxy relationships) that can break API Platform serialization.
- *
- * This is a read-only, customer-scoped resource.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomerOrder',
@@ -36,22 +27,32 @@ use Webkul\BagistoApi\State\CustomerOrderProvider;
             provider: CustomerOrderProvider::class,
             output: CustomerOrderListDto::class,
             normalizationContext: ['skip_null_values' => false],
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'List the customer\'s orders',
+                description: 'Orders placed by the authenticated customer, newest first; `status` filters by exact order status. `per_page` (default 10, at most 50) and `page` select the page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
         new Get(
             uriTemplate: '/customer-orders/{id}',
             provider: CustomerOrderProvider::class,
             output: CustomerOrderDetailDto::class,
             normalizationContext: ['skip_null_values' => false],
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'Get an order of the customer',
+                description: 'One order placed by the authenticated customer, with its items, addresses, payment and shipments; another customer\'s order or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
     ],
     graphQlOperations: [
         new Query(
             provider: CustomerOrderProvider::class,
+            description: 'One order placed by the authenticated customer, with its items, addresses, payment and shipments; any other order is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
         ),
         new QueryCollection(
             provider: CustomerOrderProvider::class,
+            description: 'Orders placed by the authenticated customer, newest first; `status` filters by exact order status. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'status' => [
@@ -84,10 +85,18 @@ use Webkul\BagistoApi\State\CustomerOrderProvider;
 )]
 class CustomerOrder extends Model
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'orders';
 
-    /** @var array */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'increment_id' => 'string',
@@ -156,7 +165,7 @@ class CustomerOrder extends Model
     ];
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -207,5 +216,23 @@ class CustomerOrder extends Model
     public function shipments(): HasMany
     {
         return $this->hasMany(CustomerOrderShipment::class, 'order_id');
+    }
+
+    /**
+     * Get the invoices for this order.
+     */
+    #[ApiProperty(writable: false)]
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(CustomerInvoice::class, 'order_id');
+    }
+
+    /**
+     * Get the refunds for this order.
+     */
+    #[ApiProperty(writable: false)]
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(RefundProxy::modelClass(), 'order_id');
     }
 }

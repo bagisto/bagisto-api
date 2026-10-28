@@ -7,11 +7,6 @@ use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Order customer — nested to-one sub-resource of AdminOrderDetail (the
- * registered customer who placed the order; null for guest orders). `group` is
- * a typed to-one object: customer { group { code name } }.
- */
 #[ApiResource(
     shortName: 'AdminOrderDetailCustomer',
     operations: [],
@@ -24,30 +19,56 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 )]
 class AdminOrderDetailCustomer extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the customers.
+     *
+     * @var string
+     */
     protected $table = 'customers';
 
-    /** @var array */
+    /**
+     * The secret customer columns that are never serialized.
+     */
+    protected $hidden = ['password', 'api_token', 'remember_token', 'token'];
+
+    /**
+     * The computed attributes appended when the order customer is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['name'];
 
-    /** @var array */
+    /**
+     * The native types the order customer attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'status' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getNameAttribute(): ?string
     {
         return trim(($this->first_name ?? '').' '.($this->last_name ?? '')) ?: null;
     }
 
+    /**
+     * Group.
+     */
     #[ApiProperty(writable: false)]
     public function group(): BelongsTo
     {

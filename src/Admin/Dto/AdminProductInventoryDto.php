@@ -5,10 +5,6 @@ namespace Webkul\BagistoApi\Admin\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 
-/**
- * Schema-only DTO for a per-source inventory entry embedded inside
- * AdminCatalogProduct detail.
- */
 #[ApiResource(
     operations: [],
     graphQlOperations: [],
@@ -16,12 +12,21 @@ use ApiPlatform\Metadata\ApiResource;
 )]
 class AdminProductInventoryDto
 {
+    /**
+     * The source id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $sourceId = null;
 
+    /**
+     * The source code.
+     */
     #[ApiProperty(writable: false)]
     public ?string $sourceCode = null;
 
+    /**
+     * The qty.
+     */
     #[ApiProperty(writable: false)]
     public ?int $qty = null;
 }

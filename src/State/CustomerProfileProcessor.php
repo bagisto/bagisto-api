@@ -4,27 +4,33 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
-use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Dto\CustomerProfileOutput;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Helper\CustomerProfileHelper;
 use Webkul\BagistoApi\Models\CustomerProfile as CustomerProfileModel;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\BagistoApi\Validators\CustomerValidator;
 use Webkul\Customer\Models\Customer;
 use Webkul\Sales\Models\Order;
 
 class CustomerProfileProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CustomerValidator $validator
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $data = $this->mergeGraphQlInput($data, $context);
@@ -112,7 +118,7 @@ class CustomerProfileProcessor implements ProcessorInterface
     }
 
     /**
-     * Map customer model to DTO object
+     * Map customer model to DTO object.
      */
     private function mapCustomerToProfile(Customer $authenticatedCustomer): CustomerProfileModel
     {
@@ -120,12 +126,18 @@ class CustomerProfileProcessor implements ProcessorInterface
     }
 
     /**
-     * The email column is unique per channel, so a clash would otherwise surface
-     * as a raw database error instead of a validation failure.
+     * Refuse an invalid email, and one another customer of the same channel uses, as core's profile request does.
      */
     private function assertEmailAvailable(string $email, Customer $authenticatedCustomer): void
     {
+        $validator = Validator::make(['email' => $email], ['email' => 'email']);
+
+        if ($validator->fails()) {
+            throw new InvalidInputException($validator->errors()->first('email'));
+        }
+
         $taken = Customer::where('email', $email)
+            ->where('channel_id', $authenticatedCustomer->channel_id)
             ->where('id', '!=', $authenticatedCustomer->id)
             ->exists();
 
@@ -182,7 +194,6 @@ class CustomerProfileProcessor implements ProcessorInterface
             && property_exists($data, 'phone')
             && ! empty($data->phone)
         ) {
-            // Validate phone - no special characters allowed
             $this->validatePhone($data->phone);
             $updateData['phone'] = $data->phone;
         }
@@ -192,7 +203,6 @@ class CustomerProfileProcessor implements ProcessorInterface
             && property_exists($data, 'gender')
             && ! empty($data->gender)
         ) {
-            // Validate and normalize gender
             $updateData['gender'] = $this->validator->validateGender($data->gender);
         }
 
@@ -240,9 +250,6 @@ class CustomerProfileProcessor implements ProcessorInterface
         ) {
             $updateData['subscribed_to_news_letter'] = filter_var($data->subscribedToNewsLetter, FILTER_VALIDATE_BOOLEAN);
         }
-
-        // Note: status, isVerified, isSuspended are admin-only fields.
-        // Customers cannot change these via the profile update endpoint.
 
         Event::dispatch('customer.update.before');
 
@@ -308,11 +315,6 @@ class CustomerProfileProcessor implements ProcessorInterface
 
         Event::dispatch('customer.delete.before', $authenticatedCustomer);
 
-        DB::table('personal_access_tokens')
-            ->where('tokenable_id', $authenticatedCustomer->id)
-            ->where('tokenable_type', Customer::class)
-            ->delete();
-
         $authenticatedCustomer->delete();
 
         Event::dispatch('customer.delete.after', $authenticatedCustomer);
@@ -338,29 +340,11 @@ class CustomerProfileProcessor implements ProcessorInterface
     }
 
     /**
-     * Get customer from Sanctum token.
+     * Resolve the customer behind a customer access token.
      */
     private function getCustomerFromToken(string $token): ?Customer
     {
-        try {
-            if (strpos($token, '|') === false) {
-                return null;
-            }
-
-            $personalAccessToken = PersonalAccessToken::findToken($token);
-
-            if (! $personalAccessToken) {
-                return null;
-            }
-
-            if (! $personalAccessToken->tokenable instanceof Customer) {
-                return null;
-            }
-
-            return $personalAccessToken->tokenable;
-        } catch (\Exception $exception) {
-            return null;
-        }
+        return CurrentCustomer::fromToken($token);
     }
 
     /**
@@ -410,7 +394,7 @@ class CustomerProfileProcessor implements ProcessorInterface
     }
 
     /**
-     * Validate phone number - only digits allowed
+     * Validate phone number - only digits allowed.
      *
      * @throws InvalidInputException
      */
@@ -423,10 +407,8 @@ class CustomerProfileProcessor implements ProcessorInterface
             return;
         }
 
-        // Phone should only contain digits - remove all non-digit characters
         $cleanedPhone = preg_replace('/[^0-9]/', '', $phone);
 
-        // If the cleaned phone is different from original, it means special characters were present
         if ($cleanedPhone !== $phone) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.customer.phone-special-chars-not-allowed'));
         }

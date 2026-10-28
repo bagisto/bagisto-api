@@ -4,16 +4,18 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\BagistoApi\Tests\Concerns\AssertsSanitisedHtml;
 use Webkul\Product\Helpers\Indexers\Flat;
 use Webkul\Product\Models\Product;
 
-/**
- * GraphQL coverage for the adminCatalogProducts query (cursor pagination).
- */
 class CatalogProductTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
+    use AssertsSanitisedHtml;
 
+    /**
+     * The list query constant.
+     */
     private const LIST_QUERY = <<<'GQL'
         query AdminCatalogProducts($first: Int, $after: String) {
             adminCatalogProducts(first: $first, after: $after) {
@@ -32,6 +34,9 @@ class CatalogProductTest extends AdminApiTestCase
         }
     GQL;
 
+    /**
+     * Test query returns seeded product.
+     */
     public function test_query_returns_seeded_product(): void
     {
         $admin = $this->createAdmin();
@@ -52,6 +57,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertContains($sku, $skus);
     }
 
+    /**
+     * Test query returns correct field shape.
+     */
     public function test_query_returns_correct_field_shape(): void
     {
         $admin = $this->createAdmin();
@@ -77,6 +85,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(1, (int) $node['status']);
     }
 
+    /**
+     * Test query returns pagination metadata.
+     */
     public function test_query_returns_pagination_metadata(): void
     {
         $admin = $this->createAdmin();
@@ -94,6 +105,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertGreaterThanOrEqual(1, $data['totalCount']);
     }
 
+    /**
+     * Test query disabled products are included.
+     */
     public function test_query_disabled_products_are_included(): void
     {
         $admin = $this->createAdmin();
@@ -113,6 +127,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(0, (int) $found['node']['status']);
     }
 
+    /**
+     * Test query requires token.
+     */
     public function test_query_requires_token(): void
     {
         $response = $this->postJson('/api/graphql', [
@@ -123,6 +140,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotEmpty($response->json('errors'));
     }
 
+    /**
+     * Test query filter by sku.
+     */
     public function test_query_filter_by_sku(): void
     {
         $admin = $this->createAdmin();
@@ -150,6 +170,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotContains($miss->id, $ids);
     }
 
+    /**
+     * Test query filter by type.
+     */
     public function test_query_filter_by_type(): void
     {
         $admin = $this->createAdmin();
@@ -177,6 +200,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotContains($simple->id, $ids);
     }
 
+    /**
+     * Test query filter by status via arg.
+     */
     public function test_query_filter_by_status_via_arg(): void
     {
         $admin = $this->createAdmin();
@@ -204,6 +230,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotContains($enabled->id, $ids);
     }
 
+    /**
+     * Test mutation mass delete products happy path.
+     */
     public function test_mutation_mass_delete_products_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -228,6 +257,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertFalse(\DB::table('products')->where('id', $b->id)->exists());
     }
 
+    /**
+     * Test mutation mass delete empty indices returns errors.
+     */
     public function test_mutation_mass_delete_empty_indices_returns_errors(): void
     {
         $admin = $this->createAdmin();
@@ -244,6 +276,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotNull($response->json('errors'));
     }
 
+    /**
+     * Test mutation mass update status happy path.
+     */
     public function test_mutation_mass_update_status_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -270,6 +305,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(0, (int) \DB::table('product_flat')->where('product_id', $a->id)->value('status'));
     }
 
+    /**
+     * Test mutation mass update status invalid value returns errors.
+     */
     public function test_mutation_mass_update_status_invalid_value_returns_errors(): void
     {
         $admin = $this->createAdmin();
@@ -293,6 +331,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotNull($response->json('errors'));
     }
 
+    /**
+     * Test mutation copy product happy path.
+     */
     public function test_mutation_copy_product_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -323,6 +364,9 @@ class CatalogProductTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test mutation copy refuses variant.
+     */
     public function test_mutation_copy_refuses_variant(): void
     {
         $admin = $this->createAdmin();
@@ -349,6 +393,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotNull($response->json('errors'));
     }
 
+    /**
+     * Test mutation create simple product happy path.
+     */
     public function test_mutation_create_simple_product_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -375,6 +422,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertTrue(\DB::table('products')->where('sku', $sku)->exists(), 'New product row should exist after create.');
     }
 
+    /**
+     * Test mutation create configurable missing super attributes errors.
+     */
     public function test_mutation_create_configurable_missing_super_attributes_errors(): void
     {
         $admin = $this->createAdmin();
@@ -400,6 +450,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotNull($response->json('errors'));
     }
 
+    /**
+     * Test mutation create configurable happy path.
+     */
     public function test_mutation_create_configurable_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -434,6 +487,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertTrue(\Illuminate\Support\Facades\DB::table('products')->where('sku', $sku)->where('type', 'configurable')->exists());
     }
 
+    /**
+     * Test mutation create bundle happy path.
+     */
     public function test_mutation_create_bundle_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -461,38 +517,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertTrue(\Illuminate\Support\Facades\DB::table('products')->where('sku', $sku)->where('type', 'bundle')->exists());
     }
 
-    protected function insertProductFlat(object $product, array $overrides = []): void
-    {
-        $attributeFamilyId = (int) (\Illuminate\Support\Facades\DB::table('attribute_families')->value('id') ?? 1);
-
-        \Illuminate\Support\Facades\DB::table('product_flat')->insert(array_merge([
-            'product_id' => $product->id,
-            'locale' => 'en',
-            'channel' => 'default',
-            'sku' => $product->sku,
-            'name' => 'Test '.$product->sku,
-            'type' => 'simple',
-            'status' => 1,
-            'price' => 10.00,
-            'url_key' => strtolower($product->sku).'-'.$product->id,
-            'attribute_family_id' => $attributeFamilyId,
-            'visible_individually' => 1,
-        ], $overrides));
-
-        $this->refreshFlatDerived((int) $product->id);
-    }
-
-    protected function refreshFlatDerived(int $productId): void
-    {
-        // BACKWARD COMPATIBILITY: product_flat gained these columns in 2.4.10; an older
-        // core has the listing compute them. Remove when the minimum core is 2.4.10.
-        if (! $this->core()->hasProductFlatDerivedColumns()) {
-            return;
-        }
-
-        app(Flat::class)->refreshDerivedColumns([$productId]);
-    }
-
+    /**
+     * Test mutation update happy path.
+     */
     public function test_mutation_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -519,6 +546,50 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertTrue(\DB::table('products')->where('id', $product->id)->where('sku', $newSku)->exists(), 'Body: '.$response->getContent());
     }
 
+    /**
+     * The update mutation stores a WYSIWYG attribute as core's `clean_content()` leaves it.
+     */
+    public function test_mutation_update_sanitises_wysiwyg_attributes(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $this->insertProductFlat($product);
+
+        $this->upsertProductAttributeValue($product->id, 'description', '<p>Old</p>', 'en', null);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminCatalogProductInput!) {
+              updateAdminCatalogProduct(input: $input) {
+                adminCatalogProduct { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => '/api/admin/catalog/products/'.$product->id,
+                'translations' => [
+                    'en' => ['description' => $this->unsafeHtml()],
+                ],
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        $this->assertNull($response->json('errors'), 'Body: '.$response->getContent());
+
+        $this->assertSanitisedHtml(
+            \DB::table('product_attribute_values')
+                ->where('product_id', $product->id)
+                ->where('attribute_id', $this->getAttributeIdByCode('description'))
+                ->where('locale', 'en')
+                ->value('text_value'),
+            $this->unsafeHtml(),
+        );
+    }
+
+    /**
+     * Test mutation update duplicate sku returns error.
+     */
     public function test_mutation_update_duplicate_sku_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -544,6 +615,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotNull($response->json('errors'), 'Expected errors[] on duplicate sku.');
     }
 
+    /**
+     * Test mutation update strips subresources and keeps them unchanged.
+     */
     public function test_mutation_update_strips_subresources_and_keeps_them_unchanged(): void
     {
         $admin = $this->createAdmin();
@@ -571,6 +645,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame($imagesBefore, $imagesAfter, 'Stripped images field must not mutate product_images.');
     }
 
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -593,6 +670,9 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertFalse(\DB::table('products')->where('id', $id)->exists());
     }
 
+    /**
+     * Test mutation delete non existent returns error.
+     */
     public function test_mutation_delete_non_existent_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -611,5 +691,41 @@ class CatalogProductTest extends AdminApiTestCase
 
         $response->assertOk();
         $this->assertNotNull($response->json('errors'));
+    }
+
+    /**
+     * Insert product flat.
+     */
+    protected function insertProductFlat(object $product, array $overrides = []): void
+    {
+        $attributeFamilyId = (int) (\Illuminate\Support\Facades\DB::table('attribute_families')->value('id') ?? 1);
+
+        \Illuminate\Support\Facades\DB::table('product_flat')->insert(array_merge([
+            'product_id' => $product->id,
+            'locale' => 'en',
+            'channel' => 'default',
+            'sku' => $product->sku,
+            'name' => 'Test '.$product->sku,
+            'type' => 'simple',
+            'status' => 1,
+            'price' => 10.00,
+            'url_key' => strtolower($product->sku).'-'.$product->id,
+            'attribute_family_id' => $attributeFamilyId,
+            'visible_individually' => 1,
+        ], $overrides));
+
+        $this->refreshFlatDerived((int) $product->id);
+    }
+
+    /**
+     * Refresh flat derived.
+     */
+    protected function refreshFlatDerived(int $productId): void
+    {
+        if (! $this->core()->hasProductFlatDerivedColumns()) {
+            return;
+        }
+
+        app(Flat::class)->refreshDerivedColumns([$productId]);
     }
 }

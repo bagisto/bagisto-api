@@ -8,22 +8,14 @@ use Webkul\Product\Models\ProductDownloadableSample;
 
 class ProductDownloadableSampleTest extends RestApiTestCase
 {
+    /**
+     * The base url.
+     */
     private string $baseUrl = '/api/shop/product-downloadable-samples';
 
-    private function seedDownloadableSample(): ProductDownloadableSample
-    {
-        $product = $this->createBaseProduct('downloadable', [
-            'sku' => 'DL-SAMPLE-PARENT-'.uniqid(),
-        ]);
-
-        return ProductDownloadableSample::create([
-            'url' => 'https://example.com/sample.pdf',
-            'type' => 'url',
-            'sort_order' => 1,
-            'product_id' => $product->id,
-        ]);
-    }
-
+    /**
+     * Test get collection.
+     */
     public function test_get_collection(): void
     {
         $this->seedRequiredData();
@@ -36,6 +28,9 @@ class ProductDownloadableSampleTest extends RestApiTestCase
         expect(\count($response->json()))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test get single downloadable sample.
+     */
     public function test_get_single_downloadable_sample(): void
     {
         $this->seedRequiredData();
@@ -47,6 +42,9 @@ class ProductDownloadableSampleTest extends RestApiTestCase
         expect((int) $response->json('id'))->toBe($sample->id);
     }
 
+    /**
+     * Test get nonexistent sample returns 404.
+     */
     public function test_get_nonexistent_sample_returns_404(): void
     {
         $this->seedRequiredData();
@@ -56,6 +54,9 @@ class ProductDownloadableSampleTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([404, 500]);
     }
 
+    /**
+     * Test nested collection for product.
+     */
     public function test_nested_collection_for_product(): void
     {
         $this->seedRequiredData();
@@ -137,5 +138,22 @@ class ProductDownloadableSampleTest extends RestApiTestCase
         $sample = $this->seedDownloadableSample();
 
         $this->publicGet('/api/downloadable/download-sample/archive/'.$sample->id)->assertNotFound();
+    }
+
+    /**
+     * Seed downloadable sample.
+     */
+    private function seedDownloadableSample(): ProductDownloadableSample
+    {
+        $product = $this->createBaseProduct('downloadable', [
+            'sku' => 'DL-SAMPLE-PARENT-'.uniqid(),
+        ]);
+
+        return ProductDownloadableSample::create([
+            'url' => 'https://example.com/sample.pdf',
+            'type' => 'url',
+            'sort_order' => 1,
+            'product_id' => $product->id,
+        ]);
     }
 }

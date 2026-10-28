@@ -1,140 +1,100 @@
-// tests/restAPI/api/automation/wishlist.spec.ts
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
-import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import {
+  SHOP_CART_MESSAGES,
+  ShopCustomer,
+  addWishlistItem,
+  bearer,
+  expectProblem,
+  findSaleableSimpleProducts,
+  readJson,
+  referenceId,
+  registerShopCustomer,
+} from '../../rest/helpers/coverage/shopCart.helpers';
 
-function assertStatus(resp: any, debugLabel: string) {
-  expect([0, 200, 201, 400, 401, 403, 404, 422, 500]).toContain(resp.status());
-  console.log(`${debugLabel}:`, resp.status());
-}
+test.describe.configure({ timeout: 120_000 });
 
-function generateUniqueEmail() {
-  return `wishlist_${Date.now()}@example.com`;
-}
+const WISHLISTS = '/api/shop/wishlists';
+const WISHLIST = (id: number | string) => `/api/shop/wishlists/${id}`;
+const WISHLIST_TOGGLE = '/api/shop/wishlists/toggle';
+const MISSING_PRODUCT_ID = 999999999;
 
-function generatePassword() {
-  return `Wishlist${Math.floor(Math.random() * 10000)}!`;
-}
-
-let authToken: string | null = null;
-let customerEmail: string;
-let customerPassword: string;
-
-test.describe('Wishlist REST API (Public)', () => {
-  test('Should return status for wishlist listing without auth', async ({ request }) => {
-    const response = await sendRestRequest(request, '/api/shop/wishlists');
-    assertStatus(response, 'GET /api/shop/wishlists');
+test.describe('wishlist rest api without a customer token', () => {
+  test('should refuse the wishlist listing', async ({ request }) => {
+    await expectProblem(await sendRestRequest(request, WISHLISTS), 403, SHOP_CART_MESSAGES.UNAUTHENTICATED);
   });
 
-  test('Should return status for single wishlist by ID without auth', async ({ request }) => {
-    const response = await sendRestRequest(request, '/api/shop/wishlists/1');
-    assertStatus(response, 'GET /api/shop/wishlists/1');
+  test('should refuse a single wishlist item', async ({ request }) => {
+    await expectProblem(await sendRestRequest(request, WISHLIST(1)), 403, SHOP_CART_MESSAGES.UNAUTHENTICATED);
+  });
+
+  test('should refuse a wishlist add before looking up the product', async ({ request }) => {
+    const response = await sendRestRequest(request, WISHLISTS, {
+      method: 'POST',
+      data: { productId: MISSING_PRODUCT_ID },
+    });
+
+    await expectProblem(response, 403, SHOP_CART_MESSAGES.UNAUTHENTICATED);
+  });
+
+  test('should refuse a wishlist toggle before looking up the product', async ({ request }) => {
+    const response = await sendRestRequest(request, WISHLIST_TOGGLE, {
+      method: 'POST',
+      data: { productId: MISSING_PRODUCT_ID },
+    });
+
+    await expectProblem(response, 403, SHOP_CART_MESSAGES.UNAUTHENTICATED);
   });
 });
 
-test.describe('Wishlist REST API (Auth Required)', () => {
-  test.beforeAll(async ({ request }) => {
-    customerEmail = generateUniqueEmail();
-    customerPassword = generatePassword();
-    console.log(`Wishlist test credentials - Email: ${customerEmail}, Password: ${customerPassword}`);
+test.describe('wishlist rest api for a customer', () => {
+  let customer: ShopCustomer;
+  let productId: number;
+  let wishlistId: number;
 
-    const loginResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
+  test.beforeEach(async ({ request }) => {
+    [productId] = await findSaleableSimpleProducts(request, 1);
+    customer = await registerShopCustomer(request);
+    wishlistId = await addWishlistItem(request, customer, productId);
+  });
+
+  test('should return own wishlist when authenticated', async ({ request }) => {
+    const response = await sendRestRequest(request, WISHLISTS, { headers: bearer(customer.token) });
+    const body = await readJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(Array.isArray(body), JSON.stringify(body)).toBe(true);
+    expect(body).toHaveLength(1);
+    expect(body[0].id).toBe(wishlistId);
+    expect(referenceId(body[0].product)).toBe(productId);
+  });
+
+  test('should return single wishlist by id when authenticated', async ({ request }) => {
+    const response = await sendRestRequest(request, WISHLIST(wishlistId), { headers: bearer(customer.token) });
+    const body = await readJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body.id).toBe(wishlistId);
+    expect(referenceId(body.product)).toBe(productId);
+  });
+
+  test('should not return a wishlist item of another customer', async ({ request }) => {
+    const other = await registerShopCustomer(request);
+
+    await expectProblem(
+      await sendRestRequest(request, WISHLIST(wishlistId), { headers: bearer(other.token) }),
+      404,
+      SHOP_CART_MESSAGES.WISHLIST_NOT_FOUND
+    );
+  });
+
+  test('should report a missing product to an authenticated customer toggling the wishlist', async ({ request }) => {
+    const response = await sendRestRequest(request, WISHLIST_TOGGLE, {
       method: 'POST',
-      data: { email: customerEmail, password: customerPassword },
+      data: { productId: MISSING_PRODUCT_ID },
+      headers: bearer(customer.token),
     });
 
-    const body = [200, 201].includes(loginResp.status())
-        ? await loginResp.json()
-        : null;
-    if (body?.token) {
-      authToken = body.token as string;
-      console.log('Logged in for wishlist tests. Token:', authToken?.slice(0, 12) + '...');
-    } else {
-      // Try to register first
-      const registerResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REGISTER, {
-        method: 'POST',
-        data: {
-          first_name: 'Wishlist',
-          last_name: 'User',
-          email: customerEmail,
-          password: customerPassword,
-          password_confirmation: customerPassword,
-        },
-      });
-
-      if (registerResp.status() === 200 || registerResp.status() === 201) {
-        const loginRetry = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-          method: 'POST',
-          data: { email: customerEmail, password: customerPassword },
-        });
-        const body = [200, 201].includes(loginRetry.status())
-            ? await loginRetry.json()
-            : null;
-        if (body?.token) {
-          authToken = body.token as string;
-          console.log('Registered and logged in for wishlist tests');
-        }
-      }
-    }
-  });
-
-  function authHeaders(token: string) {
-    return { Authorization: `Bearer ${token}` };
-  }
-
-  test('Should return own wishlist when authenticated', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'Login failed');
-      return;
-    }
-    const response = await sendRestRequest(request, '/api/shop/wishlists', {
-      headers: authHeaders(authToken),
-    });
-    assertStatus(response, 'GET /api/shop/wishlists (authenticated)');
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(body).toBeDefined();
-      if (Array.isArray(body)) {
-        console.log('Wishlist item count:', body.length);
-        if (body.length > 0) {
-          console.log('First wishlist item:', JSON.stringify({ id: body[0].id, name: body[0].name }));
-        }
-      }
-    }
-  });
-
-  test('Should return single wishlist by ID when authenticated', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'Login failed');
-      return;
-    }
-    const listResp = await sendRestRequest(request, '/api/shop/wishlists', {
-      headers: authHeaders(authToken),
-    });
-    if (listResp.status() !== 200) {
-      test.skip(true, 'Wishlist list endpoint unavailable');
-      return;
-    }
-    const listBody = await listResp.json();
-    const items = Array.isArray(listBody) ? listBody : listBody.data ?? [];
-    if (items.length === 0) {
-      test.skip(true, 'No wishlist items');
-      return;
-    }
-    const wishlistId = items[0].id;
-    const response = await sendRestRequest(request, `/api/shop/wishlists/${wishlistId}`, {
-      headers: authHeaders(authToken),
-    });
-    assertStatus(response, `GET /api/shop/wishlists/${wishlistId} (authenticated)`);
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(body.id).toBe(wishlistId);
-      console.log('Single wishlist item:', { id: body.id, name: body.name });
-    }
-  });
-
-  test('Should return 401/403 when accessing wishlist without token', async ({ request }) => {
-    const response = await sendRestRequest(request, '/api/shop/wishlists');
-    assertStatus(response, 'GET /api/shop/wishlists (no auth)');
+    await expectProblem(response, 404, 'Product not found');
   });
 });

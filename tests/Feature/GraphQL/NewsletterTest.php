@@ -9,9 +9,7 @@ class NewsletterTest extends GraphQLTestCase
 {
     /**
      * Bug 4 regression — `createNewsletter` mutation lost `customerEmail`
-     * because the camelCase JSON key never landed on the snake-case DTO
-     * property. Processor now falls back to `$context['args']['input']`.
-     * Verifies the hydration path: an authenticated subscribe must succeed.
+     * because the camelCase JSON key never landed on the snake-case DTO.
      */
     public function test_create_newsletter_hydrates_customer_email_via_graphql(): void
     {
@@ -36,8 +34,6 @@ class NewsletterTest extends GraphQLTestCase
         ]);
 
         $response->assertOk();
-        // Before the fix the response carried success=false +
-        // "customer email field is required". Now success=true.
         expect($response->json('data.createNewsletter.newsletter.success'))->toBeTrue();
         expect(DB::table('subscribers_list')->where('email', $email)->exists())->toBeTrue();
     }

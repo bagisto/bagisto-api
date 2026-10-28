@@ -74,23 +74,41 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 )]
 class ProductDownloadableLinkTranslation extends Model
 {
+    /**
+     * The table.
+     */
     protected $table = 'product_downloadable_link_translations';
 
+    /**
+     * The timestamps.
+     */
     public $timestamps = false;
 
+    /**
+     * The fillable.
+     */
     protected $fillable = ['title', 'product_downloadable_link_id', 'locale'];
 
+    /**
+     * Downloadable link.
+     */
     public function downloadableLink(): BelongsTo
     {
         return $this->belongsTo(ProductDownloadableLink::class, 'product_downloadable_link_id');
     }
 
+    /**
+     * Get title.
+     */
     #[ApiProperty(writable: true, readable: true)]
     public function getTitle(): ?string
     {
         return $this->title;
     }
 
+    /**
+     * Set title.
+     */
     public function setTitle(?string $value): void
     {
         $this->title = $value;

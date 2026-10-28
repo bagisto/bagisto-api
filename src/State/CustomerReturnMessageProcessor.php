@@ -5,7 +5,6 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Symfony\Component\Mime\MimeTypes;
@@ -15,17 +14,24 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerReturnMessage;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\RMA\Repositories\RMAMessageRepository;
 use Webkul\RMA\Repositories\RMARepository;
 
 class CustomerReturnMessageProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private readonly RMARepository $rmaRepository,
         private readonly RMAMessageRepository $rmaMessageRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof SendCustomerReturnMessageInput) {
@@ -43,9 +49,12 @@ class CustomerReturnMessageProcessor implements ProcessorInterface
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }
 
+    /**
+     * Handle send.
+     */
     private function handleSend(?int $returnId, ?string $message, $file): CustomerReturnMessage
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -85,8 +94,9 @@ class CustomerReturnMessageProcessor implements ProcessorInterface
             $extension = MimeTypes::getDefault()->getExtensions($file->getMimeType())[0] ?? null;
 
             $path = $file->storeAs(
-                'rma-conversation/'.$stored->id,
-                Str::random(40).($extension ? '.'.$extension : '')
+                'rmas/'.$rma->id.'/conversations/'.$stored->id,
+                Str::random(40).($extension ? '.'.$extension : ''),
+                'private'
             );
 
             $this->rmaMessageRepository->update([

@@ -1,330 +1,227 @@
-// tests/restAPI/api/automation/customer.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import { bearer, expectProblem, readJson, uniqueSuffix } from '../../rest/helpers/coverage/shopCart.helpers';
 
-let createdCustomerId: number | null = null;
-let authToken: string | null = null;
-let customerEmail: string;
-let customerPassword: string;
+const CUSTOMER_ADDRESSES = '/api/shop/customer-addresses';
+const VERIFY_TOKENS = '/api/shop/verify-tokens';
 
-function generateUniqueEmail(): string {
-  const timestamp = Date.now();
-  return `testcustomer_${timestamp}@example.com`;
+const MSG = {
+  LOGIN_SUCCESS: 'You have logged in successfully',
+  INVALID_CREDENTIALS: 'Invalid email or password',
+  LOGIN_FIELDS_REQUIRED: 'The email field is required. The password field is required.',
+  PROFILE_TOKEN_REQUIRED: 'Authentication token is required. Please provide token in query input',
+  PROFILE_UPDATED: 'Customer profile updated successfully',
+  CURRENT_PASSWORD_INCORRECT: 'The current password you entered is incorrect',
+  UNAUTHENTICATED: 'Unauthenticated. Please login to perform this action',
+  ADDRESS_TOKEN_REQUIRED: 'Authentication token is required. Please provide the token in the Authorization header as "Bearer <token>"',
+};
+
+interface RegisteredCustomer {
+  id: number;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  token: string;
 }
 
-function generatePassword(): string {
-  return `TestPass${Math.floor(Math.random() * 10000)}!`;
+function newCredentials(): { email: string; password: string; firstName: string; lastName: string } {
+  const suffix = uniqueSuffix();
+
+  return {
+    email: `rest.customer.${suffix}@example.com`,
+    password: `Cust${suffix}!Aa`,
+    firstName: 'Rest',
+    lastName: 'Customer',
+  };
 }
 
-test.describe('Customer Registration REST API', () => {
-  test.beforeAll(async ({ request }) => {
-    customerEmail = generateUniqueEmail();
-    customerPassword = generatePassword();
-    console.log(`Generated credentials - Email: ${customerEmail}, Password: ${customerPassword}`);
+async function registerCustomer(request: APIRequestContext): Promise<RegisteredCustomer> {
+  const credentials = newCredentials();
+
+  const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REGISTER, {
+    method: 'POST',
+    data: { ...credentials, confirmPassword: credentials.password },
   });
+  const body = await readJson(response);
 
-  test('Should register a new customer', async ({ request }) => {
+  expect(response.status(), JSON.stringify(body)).toBe(201);
+  expectAccessToken(body);
+
+  return { id: Number(body.id), ...credentials, token: body.accessToken };
+}
+
+async function login(request: APIRequestContext, email: string, password: string, status = 201): Promise<any> {
+  const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
+    method: 'POST',
+    data: { email, password },
+  });
+  const body = await readJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(status);
+
+  return body;
+}
+
+function expectAccessToken(body: any): void {
+  expect(String(body.accessToken).split('.'), JSON.stringify(body)).toHaveLength(3);
+  expect(typeof body.refreshToken).toBe('string');
+  expect(Number(body.expiresIn)).toBeGreaterThan(0);
+}
+
+function expectTokenPair(body: any): void {
+  expect(body.tokenType, JSON.stringify(body)).toBe('Bearer');
+  expect(String(body.accessToken).split('.')).toHaveLength(3);
+  expect(typeof body.refreshToken).toBe('string');
+  expect(Number(body.expiresIn)).toBeGreaterThan(0);
+  expect(Number(body.session?.id)).toBeGreaterThan(0);
+}
+
+async function readProfile(request: APIRequestContext, token: string): Promise<any> {
+  const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_PROFILE, { headers: bearer(token) });
+  const body = await readJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(200);
+  expect(Array.isArray(body)).toBe(true);
+  expect(body).toHaveLength(1);
+
+  return body[0];
+}
+
+test.describe('customer registration rest api', () => {
+  test('registers a new customer and issues a token', async ({ request }) => {
+    const credentials = newCredentials();
+    const phone = `${Date.now()}${Math.floor(Math.random() * 10)}`;
+
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REGISTER, {
       method: 'POST',
-      data: {
-        first_name: 'Test',
-        last_name: 'Customer',
-        email: customerEmail,
-        password: customerPassword,
-        password_confirmation: customerPassword,
-        phone: '5550123456',
-      },
+      data: { ...credentials, confirmPassword: credentials.password, phone },
     });
+    const body = await readJson(response);
 
-    const statusCode = response.status();
-    console.log('POST /api/customers:', statusCode);
+    expect(response.status(), JSON.stringify(body)).toBe(201);
+    expect(Number(body.id)).toBeGreaterThan(0);
+    expect(body.email).toBe(credentials.email);
+    expect(body.firstName).toBe(credentials.firstName);
+    expect(body.lastName).toBe(credentials.lastName);
+    expect(body.phone).toBe(phone);
+    expectAccessToken(body);
 
-    const body = await response.json().catch(() => ({}));
-    console.log('Registration response:', JSON.stringify(body, null, 2));
-
-    // Accept 200, 201, 429 (rate limit), 500 (server issues) or 400/422 (validation errors)
-    expect([200, 201, 400, 401, 422, 429, 500]).toContain(statusCode);
-
-    if (statusCode === 201 || statusCode === 200) {
-      if (body.id) {
-        createdCustomerId = body.id;
-        console.log(`Created customer with ID: ${createdCustomerId}`);
-      }
-    }
+    const profile = await readProfile(request, body.accessToken);
+    expect(profile.email).toBe(credentials.email);
+    expect(profile.phone).toBe(phone);
   });
 });
 
-test.describe('Customer Login REST API', () => {
-  test('Should login with registered credentials', async ({ request }) => {
-    if (!customerEmail || !customerPassword) {
-      test.skip(true, 'No credentials available');
-      return;
-    }
+test.describe('customer login rest api', () => {
+  test('logs in with the registered credentials', async ({ request }) => {
+    const customer = await registerCustomer(request);
 
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-      method: 'POST',
-      data: {
-        email: customerEmail,
-        password: customerPassword,
-      },
-    });
+    const body = await login(request, customer.email, customer.password);
 
-    const statusCode = response.status();
-    console.log('POST /api/customers/login:', statusCode);
+    expect(body.success).toBe(true);
+    expect(body.message).toBe(MSG.LOGIN_SUCCESS);
+    expect(Number(body.id)).toBe(customer.id);
+    expectTokenPair(body);
+    expect(body.token).toBe(body.accessToken);
 
-    const body = await response.json().catch(() => ({}));
-    console.log('Login response:', JSON.stringify(body, null, 2));
-
-    // Login can return various status codes based on server state
-    expect([200, 401, 403, 404, 429, 500]).toContain(statusCode);
-
-    if (statusCode === 200) {
-      const token = body.token || body.access_token || body.data?.token;
-      if (token) {
-        authToken = token;
-        console.log('Login successful, token:', token.substring(0, 20) + '...');
-      }
-    }
+    const profile = await readProfile(request, body.accessToken);
+    expect(profile.email).toBe(customer.email);
   });
 
-  test('Should return error for invalid credentials', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-      method: 'POST',
-      data: {
-        email: 'nonexistent@example.com',
-        password: 'WrongPassword123!',
-      },
-    });
+  test('refuses credentials that match no customer without issuing a token', async ({ request }) => {
+    const body = await login(request, `nobody.${uniqueSuffix()}@example.com`, 'WrongPassword123!', 401);
 
-    const statusCode = response.status();
-    console.log('Invalid login status:', statusCode);
-    // NOTE: the API surfaces invalid-credential errors via a 201 response body
-    // ({ success: false, message: ... }) rather than a 4xx status code — a
-    // REST-contract quirk we tolerate here. When status is 2xx, additionally
-    // assert the body carries success=false so we still catch a regression
-    // where invalid creds wrongly succeed.
-    expect([200, 201, 400, 401, 403, 404, 429, 500]).toContain(statusCode);
-    if (statusCode >= 200 && statusCode < 300) {
-      const body = await response.json();
-      expect(body.success).toBe(false);
-      expect(body.message).toBeTruthy();
-    }
+    expect(body.error).toBe('invalid_credentials');
+    expect(body.message).toBe(MSG.INVALID_CREDENTIALS);
+    expect(body.accessToken).toBeUndefined();
   });
 
-  test('Should return error for empty credentials', async ({ request }) => {
+  test('rejects empty credentials', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
       method: 'POST',
       data: {},
     });
 
-    const statusCode = response.status();
-    console.log('Empty login status:', statusCode);
-    expect([400, 401, 422, 429, 500]).toContain(statusCode);
+    await expectProblem(response, 400, MSG.LOGIN_FIELDS_REQUIRED);
   });
 });
 
-test.describe('Customer Profile REST API', () => {
+test.describe('customer profile rest api', () => {
+  let customer: RegisteredCustomer;
+
   test.beforeEach(async ({ request }) => {
-    if (!customerEmail || !customerPassword) {
-      test.skip(true, 'No credentials available');
-      return;
-    }
-
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-      method: 'POST',
-      data: { email: customerEmail, password: customerPassword },
-    });
-
-    if (response.status() === 200) {
-      const body = await response.json().catch(() => ({}));
-      authToken = body.token || body.access_token || body.data?.token;
-    }
+    customer = await registerCustomer(request);
   });
 
-  test('Should get customer profile with valid token', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'No auth token available');
-      return;
-    }
+  test('reads the profile of the token owner', async ({ request }) => {
+    const profile = await readProfile(request, customer.token);
 
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_PROFILE, {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
-
-    const statusCode = response.status();
-    console.log('GET /api/shop/customers/profile:', statusCode);
-
-    const body = await response.json().catch(() => ({}));
-    console.log('Profile response:', JSON.stringify(body, null, 2));
-
-    // Accept various status codes based on server implementation
-    expect([200, 401, 404, 429, 500]).toContain(statusCode);
-
-    if (statusCode === 200) {
-      const customer = body.customer || body.data?.customer || body.data || body;
-      if (customer) {
-        console.log('Customer profile:', JSON.stringify({
-          id: customer.id,
-          email: customer.email,
-          firstName: customer.firstName || customer.first_name,
-          lastName: customer.lastName || customer.last_name,
-        }, null, 2));
-      }
-    }
+    expect(String(profile.id)).toBe(String(customer.id));
+    expect(profile.email).toBe(customer.email);
+    expect(profile.firstName).toBe(customer.firstName);
+    expect(profile.lastName).toBe(customer.lastName);
   });
 
-  test('Should return error for profile without token', async ({ request }) => {
+  test('refuses the profile without a token', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_PROFILE);
-    const statusCode = response.status();
-    console.log('Profile without token:', statusCode);
-    expect([401, 404, 500]).toContain(statusCode);
+
+    await expectProblem(response, 401, MSG.PROFILE_TOKEN_REQUIRED);
   });
 
-  test('Should handle profile update', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'No auth token available');
-      return;
-    }
-
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_PROFILE, {
+  test('updates the profile names and reads them back', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_PROFILE_UPDATE(customer.id), {
       method: 'PUT',
-      data: { first_name: 'Updated', last_name: 'Name' },
-      headers: { Authorization: `Bearer ${authToken}` },
+      data: { firstName: 'Updated', lastName: 'Name' },
+      headers: bearer(customer.token),
     });
+    const body = await readJson(response);
 
-    const statusCode = response.status();
-    console.log('PUT /api/shop/customers/profile:', statusCode);
-    expect([200, 202, 400, 401, 404, 500]).toContain(statusCode);
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.message).toBe(MSG.PROFILE_UPDATED);
+    expect(body.firstName).toBe('Updated');
+    expect(body.lastName).toBe('Name');
+
+    const profile = await readProfile(request, customer.token);
+    expect(profile.firstName).toBe('Updated');
+    expect(profile.lastName).toBe('Name');
+    expect(profile.email).toBe(customer.email);
   });
 });
 
-test.describe('Customer Token Verification', () => {
-  test.beforeEach(async ({ request }) => {
-    if (!customerEmail || !customerPassword) {
-      test.skip(true, 'No credentials available');
-      return;
-    }
-
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
+test.describe('customer token verification rest api', () => {
+  test('reports a malformed bearer token as unauthenticated', async ({ request }) => {
+    const response = await sendRestRequest(request, VERIFY_TOKENS, {
       method: 'POST',
-      data: { email: customerEmail, password: customerPassword },
+      data: {},
+      headers: bearer('invalid-token'),
     });
+    const body = await readJson(response);
 
-    if (response.status() === 200) {
-      const body = await response.json().catch(() => ({}));
-      authToken = body.token || body.access_token || body.data?.token;
-    }
-  });
-
-  test('Should verify valid token', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'No auth token available');
-      return;
-    }
-
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_VERIFY_TOKEN, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
-
-    const statusCode = response.status();
-    console.log('POST /api/shop/customers/verify-token:', statusCode);
-    expect([200, 401, 404, 500]).toContain(statusCode);
-  });
-
-  test('Should return error for invalid token', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_VERIFY_TOKEN, {
-      method: 'POST',
-      headers: { Authorization: 'Bearer invalid-token' },
-    });
-
-    const statusCode = response.status();
-    console.log('Invalid token verification:', statusCode);
-    expect([401, 404, 500]).toContain(statusCode);
+    expect(response.status(), JSON.stringify(body)).toBe(201);
+    expect(body.isValid).toBe(false);
+    expect(body.id).toBe(0);
+    expect(body.email).toBe('');
+    expect(body.message).toBe(MSG.UNAUTHENTICATED);
   });
 });
 
-test.describe('Customer Logout REST API', () => {
+test.describe('customer address rest api', () => {
+  let customer: RegisteredCustomer;
+
   test.beforeEach(async ({ request }) => {
-    if (!customerEmail || !customerPassword) {
-      test.skip(true, 'No credentials available');
-      return;
-    }
-
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-      method: 'POST',
-      data: { email: customerEmail, password: customerPassword },
-    });
-
-    if (response.status() === 200) {
-      const body = await response.json().catch(() => ({}));
-      authToken = body.token || body.access_token || body.data?.token;
-    }
+    customer = await registerCustomer(request);
   });
 
-  test('Should logout customer', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'No auth token available');
-      return;
-    }
-
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGOUT, {
+  test('creates an address for the token owner', async ({ request }) => {
+    const response = await sendRestRequest(request, CUSTOMER_ADDRESSES, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
-
-    const statusCode = response.status();
-    console.log('POST /api/shop/customers/logout:', statusCode);
-    expect([200, 401, 404, 500]).toContain(statusCode);
-  });
-});
-
-test.describe('Customer Address REST API', () => {
-  test.beforeEach(async ({ request }) => {
-    if (!customerEmail || !customerPassword) {
-      test.skip(true, 'No credentials available');
-      return;
-    }
-
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-      method: 'POST',
-      data: { email: customerEmail, password: customerPassword },
-    });
-
-    if (response.status() === 200) {
-      const body = await response.json().catch(() => ({}));
-      authToken = body.token || body.access_token || body.data?.token;
-    }
-  });
-
-  test('Should list customer addresses', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'No auth token available');
-      return;
-    }
-
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESSES, {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
-
-    const statusCode = response.status();
-    console.log('GET /api/shop/customers/addresses:', statusCode);
-    expect([200, 401, 404, 500]).toContain(statusCode);
-  });
-
-  test('Should create customer address', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'No auth token available');
-      return;
-    }
-
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS_CREATE, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${authToken}` },
+      headers: bearer(customer.token),
       data: {
-        first_name: 'Test',
-        last_name: 'Address',
+        firstName: 'Test',
+        lastName: 'Address',
         address1: '123 Test St',
         city: 'Test City',
         country: 'US',
@@ -333,136 +230,107 @@ test.describe('Customer Address REST API', () => {
         phone: '5550123456',
       },
     });
+    const body = await readJson(response);
 
-    const statusCode = response.status();
-    console.log('POST /api/shop/customer-addresses:', statusCode);
-    expect([200, 201, 400, 401, 404, 500]).toContain(statusCode);
+    expect(response.status(), JSON.stringify(body)).toBe(201);
+    expect(body.id).toBeGreaterThan(0);
+    expect(body.firstName).toBe('Test');
+    expect(body.lastName).toBe('Address');
+    expect(body.address1).toBe('123 Test St');
+    expect(body.city).toBe('Test City');
+    expect(body.country).toBe('US');
+    expect(body.state).toBe('CA');
+    expect(body.postcode).toBe('90210');
+  });
+
+  test('lists only the addresses of the token owner', async ({ request }) => {
+    const created = await sendRestRequest(request, CUSTOMER_ADDRESSES, {
+      method: 'POST',
+      headers: bearer(customer.token),
+      data: { firstName: 'List', lastName: 'Address', address1: '9 List Rd', city: 'Listville', country: 'US', state: 'CA', postcode: '90001' },
+    });
+    const createdBody = await readJson(created);
+    expect(created.status(), JSON.stringify(createdBody)).toBe(201);
+
+    const response = await sendRestRequest(request, CUSTOMER_ADDRESSES, { headers: bearer(customer.token) });
+    const body = await readJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(Array.isArray(body)).toBe(true);
+    expect(body).toHaveLength(1);
+    expect(body[0].id).toBe(createdBody.id);
+    expect(body[0].city).toBe('Listville');
+  });
+
+  test('refuses the address list without a token', async ({ request }) => {
+    const response = await sendRestRequest(request, CUSTOMER_ADDRESSES);
+
+    await expectProblem(response, 401, MSG.ADDRESS_TOKEN_REQUIRED);
   });
 });
 
-test.describe('Customer Orders REST API', () => {
-  test.beforeEach(async ({ request }) => {
-    if (!customerEmail || !customerPassword) {
-      test.skip(true, 'No credentials available');
-      return;
-    }
+test.describe('customer orders rest api', () => {
+  test('lists no orders for a customer who has not ordered', async ({ request }) => {
+    const customer = await registerCustomer(request);
 
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-      method: 'POST',
-      data: { email: customerEmail, password: customerPassword },
-    });
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDERS, { headers: bearer(customer.token) });
+    const body = await readJson(response);
 
-    if (response.status() === 200) {
-      const body = await response.json().catch(() => ({}));
-      authToken = body.token || body.access_token || body.data?.token;
-    }
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body).toEqual([]);
   });
 
-  test('Should list customer orders', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'No auth token available');
-      return;
-    }
+  test('refuses the order list without a token', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDERS);
 
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDERS, {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
-
-    const statusCode = response.status();
-    console.log('GET /api/shop/customer-orders:', statusCode);
-    expect([200, 401, 404, 500]).toContain(statusCode);
+    await expectProblem(response, 403, MSG.UNAUTHENTICATED);
   });
 });
 
-// ─── REGRESSION (strict): currentPassword on PUT /customers/profile ──────────
-// Locks down the bug fix where PUT /customers/profile must reject password
-// change without the correct currentPassword and accept it with the right one.
-test.describe('REGRESSION — currentPassword on profile update', () => {
-  let regEmail: string;
-  let regPassword: string;
-  let regToken: string | null = null;
-  let regId: number | null = null;
+test.describe('customer password change rest api', () => {
+  test('changes the password when the current password is correct', async ({ request }) => {
+    const customer = await registerCustomer(request);
+    const newPassword = `New${uniqueSuffix()}!Aa`;
 
-  test.beforeAll(async ({ request }) => {
-    regEmail = `regCurPass_${Date.now()}@example.com`;
-    regPassword = `RegPass${Math.floor(Math.random() * 10000)}!`;
-    const reg = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REGISTER, {
-      method: 'POST',
-      data: {
-        first_name: 'Reg',
-        last_name: 'CurPass',
-        email: regEmail,
-        password: regPassword,
-        password_confirmation: regPassword,
-      },
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_PROFILE_UPDATE(customer.id), {
+      method: 'PUT',
+      data: { currentPassword: customer.password, password: newPassword, confirmPassword: newPassword },
+      headers: bearer(customer.token),
     });
-    if (reg.status() === 200 || reg.status() === 201) {
-      regId = (await reg.json()).id ?? null;
+    const body = await readJson(response);
 
-      const login = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-        method: 'POST',
-        data: { email: regEmail, password: regPassword },
-      });
-      if ([200, 201].includes(login.status())) {
-        regToken = ((await login.json()).token as string) ?? null;
-      }
-    }
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.message).toBe(MSG.PROFILE_UPDATED);
+
+    const withNew = await login(request, customer.email, newPassword);
+    expect(withNew.success).toBe(true);
+    expectTokenPair(withNew);
+
+    const withOld = await login(request, customer.email, customer.password, 401);
+    expect(withOld.error).toBe('invalid_credentials');
+    expect(withOld.message).toBe(MSG.INVALID_CREDENTIALS);
   });
 
-  test('PUT customer-profile-updates with correct currentPassword updates password', async ({ request }) => {
-    if (!regToken || !regId) {
-      test.skip(true, 'Registration / login failed during setup');
-      return;
-    }
-    const newPassword = `NewPass${Math.floor(Math.random() * 10000)}!`;
-    const updateResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_PROFILE_UPDATE(regId!), {
+  test('rejects a password change with a wrong current password and keeps the old one', async ({ request }) => {
+    const customer = await registerCustomer(request);
+
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_PROFILE_UPDATE(customer.id), {
       method: 'PUT',
       data: {
-        first_name: 'Reg',
-        last_name: 'CurPass',
-        email: regEmail,
-        currentPassword: regPassword,
-        password: newPassword,
-        confirmPassword: newPassword,
-      },
-      headers: { Authorization: `Bearer ${regToken}` },
-    });
-    expect([200, 201]).toContain(updateResp.status());
-
-    // Re-login with the NEW password to confirm it actually changed.
-    const relogin = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-      method: 'POST',
-      data: { email: regEmail, password: newPassword },
-    });
-    expect([200, 201]).toContain(relogin.status());
-    const reBody = await relogin.json();
-    expect(reBody).toHaveProperty('token');
-    expect(typeof reBody.token).toBe('string');
-    expect(reBody.token.length).toBeGreaterThan(0);
-
-    regPassword = newPassword;
-    regToken = reBody.token as string;
-  });
-
-  test('PUT customer-profile-updates with WRONG currentPassword is rejected', async ({ request }) => {
-    if (!regToken || !regId) {
-      test.skip(true, 'Registration / login failed during setup');
-      return;
-    }
-    const updateResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_PROFILE_UPDATE(regId!), {
-      method: 'PUT',
-      data: {
-        first_name: 'Reg',
-        last_name: 'CurPass',
-        email: regEmail,
         currentPassword: 'definitely-not-the-current-password',
         password: 'BogusPass1234!',
         confirmPassword: 'BogusPass1234!',
       },
-      headers: { Authorization: `Bearer ${regToken}` },
+      headers: bearer(customer.token),
     });
-    // Must NOT succeed. Project commonly returns 400/422 here; 401/403 also acceptable.
-    expect([400, 401, 403, 422]).toContain(updateResp.status());
-    console.log('PUT profile wrong currentPassword:', updateResp.status());
+
+    await expectProblem(response, 400, MSG.CURRENT_PASSWORD_INCORRECT);
+
+    const withOld = await login(request, customer.email, customer.password);
+    expect(withOld.success).toBe(true);
+
+    const withBogus = await login(request, customer.email, 'BogusPass1234!', 401);
+    expect(withBogus.error).toBe('invalid_credentials');
   });
 });

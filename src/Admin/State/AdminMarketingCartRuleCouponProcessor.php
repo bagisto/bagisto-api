@@ -22,20 +22,18 @@ use Webkul\CartRule\Models\CartRule;
 use Webkul\CartRule\Models\CartRuleCoupon;
 use Webkul\CartRule\Repositories\CartRuleCouponRepository;
 
-/**
- * Create + Delete a single cart-rule coupon. Mirrors
- * Webkul\Admin\Http\Controllers\Marketing\Promotions\CartRuleCouponController.
- *
- * Ownership: every coupon touched here must belong to the cart_rule named in
- * the URL. Cross-rule access → 404 (no info leak about whether the coupon
- * exists under another rule).
- */
 class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CartRuleCouponRepository $couponRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -109,6 +107,30 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * To dto.
+     */
+    public static function toDto(CartRuleCoupon $coupon): AdminMarketingCartRuleCoupon
+    {
+        $dto = new AdminMarketingCartRuleCoupon;
+        $dto->id = (int) $coupon->id;
+        $dto->cartRuleId = (int) $coupon->cart_rule_id;
+        $dto->code = $coupon->code;
+        $dto->usageLimit = $coupon->usage_limit !== null ? (int) $coupon->usage_limit : null;
+        $dto->usagePerCustomer = $coupon->usage_per_customer !== null ? (int) $coupon->usage_per_customer : null;
+        $dto->timesUsed = $coupon->times_used !== null ? (int) $coupon->times_used : null;
+        $dto->type = $coupon->type !== null ? (int) $coupon->type : null;
+        $dto->isPrimary = (bool) $coupon->is_primary;
+        $dto->expiredAt = $coupon->expired_at ? (string) $coupon->expired_at : null;
+        $dto->createdAt = $coupon->created_at?->toIso8601String();
+        $dto->updatedAt = $coupon->updated_at?->toIso8601String();
+
+        return $dto;
+    }
+
+    /**
+     * Handle create.
+     */
     protected function handleCreate(int $cartRuleId, array $input): AdminMarketingCartRuleCoupon
     {
         $cartRule = CartRule::find($cartRuleId);
@@ -152,6 +174,9 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
         return $dto;
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $cartRuleId, int $couponId): AdminMarketingCartRuleCoupon
     {
         if (
@@ -181,24 +206,9 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
         return $dto;
     }
 
-    public static function toDto(CartRuleCoupon $coupon): AdminMarketingCartRuleCoupon
-    {
-        $dto = new AdminMarketingCartRuleCoupon;
-        $dto->id = (int) $coupon->id;
-        $dto->cartRuleId = (int) $coupon->cart_rule_id;
-        $dto->code = $coupon->code;
-        $dto->usageLimit = $coupon->usage_limit !== null ? (int) $coupon->usage_limit : null;
-        $dto->usagePerCustomer = $coupon->usage_per_customer !== null ? (int) $coupon->usage_per_customer : null;
-        $dto->timesUsed = $coupon->times_used !== null ? (int) $coupon->times_used : null;
-        $dto->type = $coupon->type !== null ? (int) $coupon->type : null;
-        $dto->isPrimary = (bool) $coupon->is_primary;
-        $dto->expiredAt = $coupon->expired_at ? (string) $coupon->expired_at : null;
-        $dto->createdAt = $coupon->created_at?->toIso8601String();
-        $dto->updatedAt = $coupon->updated_at?->toIso8601String();
-
-        return $dto;
-    }
-
+    /**
+     * Normalize keys.
+     */
     protected function normalizeKeys(array $args): array
     {
         $map = [
@@ -215,6 +225,9 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
         return $out;
     }
 
+    /**
+     * To rest response.
+     */
     protected function toRestResponse(AdminMarketingCartRuleCoupon $dto, int $status): JsonResponse
     {
         $payload = array_filter(
@@ -239,6 +252,9 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
         return new JsonResponse($payload, $status);
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

@@ -84,7 +84,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'Get one RMA request',
-                description: 'Full detail of a single return request — the returned item, images, status, the customer/order context, whether it can be reopened, and the list of status transitions the admin may set next.',
+                description: 'Full detail of a single return request — the returned item, images, status, the customer/order context, whether it can be reopened, and the list of status transitions the admin may set next. Each image `url` points at `GET /api/admin/rma/requests/images/{id}`, which needs the admin token.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'The return request detail. availableStatuses lists the status transitions the admin may set next.',
@@ -120,8 +120,8 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                                     'images' => [
                                         [
                                             'id' => 5,
-                                            'path' => 'rma/12/damage-front.png',
-                                            'url' => 'https://example.com/storage/rma/12/damage-front.png',
+                                            'path' => 'rmas/12/images/damage-front.png',
+                                            'url' => 'https://example.com/api/admin/rma/requests/images/5',
                                         ],
                                     ],
 
@@ -147,12 +147,17 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
         ),
         new Post(
             uriTemplate: '/rma/requests',
+            inputFormats: [
+                'json' => ['application/json'],
+                'multipart' => ['multipart/form-data'],
+            ],
             processor: AdminReturnProcessor::class,
             read: false,
+            deserialize: false,
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'Create an RMA request for a customer order',
-                description: 'Admin-side return creation for any order. `rmaQty` is capped server-side by the item\'s returnable/cancelable quantity. Optional image files via multipart `images[]` (REST only). Returns the created RMA. Permission: sales.rma.requests.create.',
+                description: 'Admin-side return creation for any order. `rmaQty` is capped server-side by the item\'s returnable/cancelable quantity. Optional image files via multipart `images[]`, or a single `images` file (REST only). Returns the created RMA. Permission: sales.rma.requests.create.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -196,6 +201,60 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                                     'package_condition' => [
                                         'type' => 'string',
                                         'example' => 'opened',
+                                    ],
+                                ],
+                            ],
+                        ],
+
+                        'multipart/form-data' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['order_id', 'order_item_id', 'rma_qty', 'resolution_type', 'rma_reason_id'],
+
+                                'properties' => [
+                                    'order_id' => [
+                                        'type' => 'integer',
+                                        'example' => 12,
+                                    ],
+
+                                    'order_item_id' => [
+                                        'type' => 'integer',
+                                        'example' => 45,
+                                    ],
+
+                                    'rma_qty' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'resolution_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['return', 'cancel_items'],
+                                        'example' => 'return',
+                                    ],
+
+                                    'rma_reason_id' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'information' => [
+                                        'type' => 'string',
+                                        'example' => 'Customer reported a defect.',
+                                    ],
+
+                                    'package_condition' => [
+                                        'type' => 'string',
+                                        'example' => 'opened',
+                                    ],
+
+                                    'images[]' => [
+                                        'type' => 'array',
+                                        'items' => [
+                                            'type' => 'string',
+                                            'format' => 'binary',
+                                        ],
+                                        'description' => 'Photos of the returned item.',
                                     ],
                                 ],
                             ],
@@ -288,7 +347,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The updated return request after the status change.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -338,7 +397,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                 summary: 'Reopen an RMA request',
                 description: 'Reopens a declined/canceled RMA back to pending when store settings allow it (otherwise 422). Empty body. Returns the updated RMA. Permission: sales.rma.requests.',
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The reopened return request.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -375,6 +434,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
         new QueryCollection(
             provider: AdminReturnCollectionProvider::class,
             paginationType: 'cursor',
+            description: 'Every return (RMA) request, as in the admin RMA grid. Filters: `id`, `order_id`, `status` (partial match on the status title) and `customer_name` (partial match). Sortable by id, order_id or created_at. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page\'s `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.requests` permission.',
             args: [
                 'id' => ['type' => 'Int'],
                 'order_id' => ['type' => 'Int'],
@@ -386,7 +446,10 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                 'after' => ['type' => 'String'],
             ],
         ),
-        new Query(provider: AdminReturnItemProvider::class),
+        new Query(
+            provider: AdminReturnItemProvider::class,
+            description: 'One return request with the returned item, images, status, order and customer context, whether it can be reopened and the statuses the admin may set next. Needs the `sales.rma.requests` permission.',
+        ),
         new Mutation(
             name: 'create',
             input: AdminCreateReturnInput::class,
@@ -408,48 +471,108 @@ class AdminReturn
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The order id.
+     */
     public ?int $order_id = null;
 
+    /**
+     * The order increment id.
+     */
     public ?string $order_increment_id = null;
 
+    /**
+     * The order status.
+     */
     public ?string $order_status = null;
 
+    /**
+     * The customer name.
+     */
     public ?string $customer_name = null;
 
+    /**
+     * The customer email.
+     */
     public ?string $customer_email = null;
 
+    /**
+     * The is guest.
+     */
     public ?int $is_guest = null;
 
+    /**
+     * The status id.
+     */
     public ?int $status_id = null;
 
+    /**
+     * The status title.
+     */
     public ?string $status_title = null;
 
+    /**
+     * The status color.
+     */
     public ?string $status_color = null;
 
+    /**
+     * The package condition.
+     */
     public ?string $package_condition = null;
 
+    /**
+     * The information.
+     */
     public ?string $information = null;
 
+    /**
+     * The can reopen.
+     */
     public ?bool $can_reopen = null;
 
-    /** @var array<string,mixed>|null */
+    /**
+     * The returned item.
+     *
+     * @var array<string,mixed>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'object'])]
     public ?array $item = null;
 
-    /** @var array<int,array<string,mixed>>|null */
+    /**
+     * The images attached to the return.
+     *
+     * @var array<int,array<string,mixed>>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $images = null;
 
-    /** @var array<int,array<string,mixed>>|null */
+    /**
+     * The status transitions the admin may set next.
+     *
+     * @var array<int,array<string,mixed>>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $available_statuses = null;
 
+    /**
+     * The messages count.
+     */
     public ?int $messages_count = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

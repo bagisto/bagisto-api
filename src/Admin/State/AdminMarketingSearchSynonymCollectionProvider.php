@@ -7,19 +7,19 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSearchSynonym;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/marketing/search-synonyms + adminMarketingSearchSynonyms.
- *
- * Filters: name (LIKE), terms (LIKE).
- * Sort:    id (default desc), name.
- */
 class AdminMarketingSearchSynonymCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'name'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('search_synonyms')->select(
@@ -31,6 +31,9 @@ class AdminMarketingSearchSynonymCollectionProvider extends AbstractAdminCollect
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
@@ -42,6 +45,9 @@ class AdminMarketingSearchSynonymCollectionProvider extends AbstractAdminCollect
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -54,6 +60,9 @@ class AdminMarketingSearchSynonymCollectionProvider extends AbstractAdminCollect
         $query->orderBy($columnMap[$column] ?? 'search_synonyms.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminMarketingSearchSynonym
     {
         $dto = new AdminMarketingSearchSynonym;

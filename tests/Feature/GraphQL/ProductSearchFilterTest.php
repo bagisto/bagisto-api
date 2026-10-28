@@ -6,28 +6,15 @@ use Illuminate\Support\Facades\DB;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
-/**
- * Tests for product search, filter, sort, and pagination APIs.
- *
- * Covers spec queries:
- *  - Search with query + variables
- *  - Category filter with pagination + full fields
- *  - Filter by type with totalCount
- *  - Filter by color attribute
- *  - Filter by multiple attributes
- *  - Sort A-Z / Z-A / Newest / Oldest / Cheapest / Most Expensive (all with totalCount)
- *  - New products filter
- *  - Featured products filter
- *  - Brand filter
- *  - Edge cases: empty query, no match, bad cursor, invalid JSON, first:0, combined filter+sort
- */
 class ProductSearchFilterTest extends GraphQLTestCase
 {
-    // ─── Search with Query Variables ─────────────────────────────────────
+    // ============================================================================
+    // Search With Query Variables
+    // ============================================================================
 
     /**
      * Search with query string and all sort variables bound.
-     * Matches spec: products(query: $query, sortKey: $sortKey, reverse: $reverse, first: $first)
+     * Matches spec: products(query: $query, sortKey: $sortKey, reverse: $reverse, first: $first).
      */
     public function test_search_products_with_query_variables(): void
     {
@@ -131,11 +118,13 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertEmpty($edges, 'Non-matching search should return empty edges');
     }
 
-    // ─── Category Filter with Pagination ─────────────────────────────────
+    // ============================================================================
+    // Category Filter With Pagination
+    // ============================================================================
 
     /**
      * Category ID filter with full spec fields, pageInfo, and totalCount.
-     * Matches spec: products(filter: "{\"category_id\": \"22\"}", first: 2, after: "Mg==")
+     * Matches spec: products(filter: "{\"category_id\": \"22\"}", first: 2, after: "Mg==").
      */
     public function test_filter_by_category_id_with_pagination_full_fields(): void
     {
@@ -233,11 +222,13 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertEmpty($data['edges'] ?? []);
     }
 
-    // ─── Type Filter ─────────────────────────────────────────────────────
+    // ============================================================================
+    // Type Filter
+    // ============================================================================
 
     /**
      * Filter by product type includes totalCount.
-     * Matches spec: products(filter: "{\"type\": \"configurable\"}")
+     * Matches spec: products(filter: "{\"type\": \"configurable\"}").
      */
     public function test_filter_by_product_type_with_total_count(): void
     {
@@ -268,17 +259,18 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertIsInt($data['totalCount']);
     }
 
-    // ─── Attribute Filters ────────────────────────────────────────────────
+    // ============================================================================
+    // Attribute Filters
+    // ============================================================================
 
     /**
      * Filter by color attribute returns valid response structure.
-     * Matches spec: products(filter: "{\"color\": \"3\"}")
+     * Matches spec: products(filter: "{\"color\": \"3\"}").
      */
     public function test_filter_by_color_attribute(): void
     {
         $filter = '{"color": "3"}';
 
-        // If color attribute with options exists, create a product and use its real option ID
         $colorAttribute = Attribute::where('code', 'color')->first();
         if ($colorAttribute) {
             $option = $colorAttribute->options()->first();
@@ -319,8 +311,65 @@ class ProductSearchFilterTest extends GraphQLTestCase
     }
 
     /**
+     * A sku or type filter combined with an attribute filter reads the product's own columns, not the variant join's.
+     */
+    public function test_filter_by_sku_and_type_together_with_an_attribute(): void
+    {
+        $option = $this->colorOption();
+
+        $product = $this->createBaseProduct('simple', [
+            'sku' => 'TEST-SKU-COLOR-'.uniqid(),
+        ]);
+        $this->ensureInventory($product, 10);
+        $this->upsertProductAttributeValue($product->id, 'color', $option->id, null, 'default');
+
+        $response = $this->graphQL($this->productIdsQuery(), [
+            'filter' => json_encode([
+                'sku' => $product->sku,
+                'type' => 'simple',
+                'color' => (string) $option->id,
+            ]),
+        ]);
+
+        expect($response->json('errors'))->toBeNull();
+        expect($this->nodeIds($response))->toBe([$product->id]);
+    }
+
+    /**
+     * A non-numeric term on a select attribute matches no product and never reaches the integer column.
+     */
+    public function test_filter_by_a_select_attribute_with_a_non_numeric_term_matches_nothing(): void
+    {
+        $option = $this->colorOption();
+
+        $product = $this->createBaseProduct('simple', [
+            'sku' => 'TEST-COLOR-TERM-'.uniqid(),
+        ]);
+        $this->ensureInventory($product, 10);
+        $this->upsertProductAttributeValue($product->id, 'color', $option->id, null, 'default');
+
+        $bindings = [];
+
+        DB::listen(function ($query) use (&$bindings) {
+            $bindings = array_merge($bindings, $query->bindings);
+        });
+
+        foreach (['red-term', 'red-term,blue-term'] as $term) {
+            $response = $this->graphQL($this->productIdsQuery(), [
+                'filter' => json_encode(['color' => $term]),
+            ]);
+
+            expect($response->json('errors'))->toBeNull();
+            expect($this->nodeIds($response))->toBe([]);
+        }
+
+        expect($bindings)->not->toContain('red-term');
+        expect($bindings)->not->toContain('blue-term');
+    }
+
+    /**
      * Filter by multiple attributes (color + size + brand).
-     * Matches spec: products(filter: "{\"color\": \"5\", \"size\": \"1\", \"brand\": \"5\"}", first: 10)
+     * Matches spec: products(filter: "{\"color\": \"5\", \"size\": \"1\", \"brand\": \"5\"}", first: 10).
      */
     public function test_filter_by_multiple_attributes(): void
     {
@@ -355,11 +404,13 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertIsInt($data['totalCount']);
     }
 
-    // ─── Sort with totalCount ─────────────────────────────────────────────
+    // ============================================================================
+    // Sort With TotalCount
+    // ============================================================================
 
     /**
      * Sort A-Z by title returns edges and totalCount.
-     * Matches spec: products(sortKey: "TITLE", reverse: false, first: 5)
+     * Matches spec: products(sortKey: "TITLE", reverse: false, first: 5).
      */
     public function test_sort_az_with_total_count(): void
     {
@@ -390,7 +441,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
     /**
      * Sort Z-A by title returns edges and totalCount.
-     * Matches spec: products(sortKey: "TITLE", reverse: true, first: 5)
+     * Matches spec: products(sortKey: "TITLE", reverse: true, first: 5).
      */
     public function test_sort_za_with_total_count(): void
     {
@@ -421,7 +472,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
     /**
      * Sort newest first returns edges and totalCount.
-     * Matches spec: products(sortKey: "CREATED_AT", reverse: true, first: 10)
+     * Matches spec: products(sortKey: "CREATED_AT", reverse: true, first: 10).
      */
     public function test_sort_newest_first_with_total_count(): void
     {
@@ -453,7 +504,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
     /**
      * Sort oldest first returns edges and totalCount.
-     * Matches spec: products(sortKey: "CREATED_AT", reverse: false, first: 10)
+     * Matches spec: products(sortKey: "CREATED_AT", reverse: false, first: 10).
      */
     public function test_sort_oldest_first_with_total_count(): void
     {
@@ -485,12 +536,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
     /**
      * Sort cheapest first returns edges with minimumPrice, price, specialPrice and totalCount.
-     * Matches spec: products(reverse: false, sortKey: "PRICE", first: 10)
-     * Sorting is based on minimumPrice (the effective selling price).
-     *
-     * Note: price sort uses product_flat.min_price which is populated by Bagisto's
-     * indexer on full product save. Test verifies the API spec fields are correct;
-     * ordering correctness is covered by integration with the existing product data.
+     * Matches spec: products(reverse: false, sortKey: "PRICE", first: 10).
      */
     public function test_sort_cheapest_first_with_total_count(): void
     {
@@ -521,7 +567,6 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertArrayHasKey('totalCount', $data);
         $this->assertIsInt($data['totalCount']);
 
-        // Verify all spec-required fields are present on each returned node
         foreach ($data['edges'] as $edge) {
             $node = $edge['node'];
             $this->assertArrayHasKey('id', $node);
@@ -532,7 +577,6 @@ class ProductSearchFilterTest extends GraphQLTestCase
             $this->assertArrayHasKey('specialPrice', $node);
         }
 
-        // Verify ascending minimumPrice order for products that have a non-null minimumPrice
         $prices = array_filter(
             array_column(array_column($data['edges'], 'node'), 'minimumPrice'),
             fn ($p) => $p !== null
@@ -549,8 +593,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
     /**
      * Sort most expensive first returns edges with minimumPrice, price, specialPrice and totalCount.
-     * Matches spec: products(reverse: true, sortKey: "PRICE", first: 10)
-     * Sorting is based on minimumPrice (the effective selling price).
+     * Matches spec: products(reverse: true, sortKey: "PRICE", first: 10).
      */
     public function test_sort_most_expensive_first_with_total_count(): void
     {
@@ -581,7 +624,6 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertArrayHasKey('totalCount', $data);
         $this->assertIsInt($data['totalCount']);
 
-        // Verify all spec-required fields are present on each returned node
         foreach ($data['edges'] as $edge) {
             $node = $edge['node'];
             $this->assertArrayHasKey('id', $node);
@@ -592,7 +634,6 @@ class ProductSearchFilterTest extends GraphQLTestCase
             $this->assertArrayHasKey('specialPrice', $node);
         }
 
-        // Verify descending minimumPrice order for products that have a non-null minimumPrice
         $prices = array_filter(
             array_column(array_column($data['edges'], 'node'), 'minimumPrice'),
             fn ($p) => $p !== null
@@ -607,11 +648,13 @@ class ProductSearchFilterTest extends GraphQLTestCase
         }
     }
 
-    // ─── New / Featured / Brand Filters ──────────────────────────────────
+    // ============================================================================
+    // New / Featured / Brand Filters
+    // ============================================================================
 
     /**
      * New products filter (new=1) returns products marked as new.
-     * Matches spec: products(filter: "{\"new\": \"1\"}", sortKey: "CREATED_AT", reverse: false, first: 10)
+     * Matches spec: products(filter: "{\"new\": \"1\"}", sortKey: "CREATED_AT", reverse: false, first: 10).
      */
     public function test_filter_new_products(): void
     {
@@ -665,7 +708,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
     /**
      * Featured products filter (featured=1) returns products marked as featured.
-     * Matches spec: products(filter: "{\"featured\": \"1\"}", sortKey: "CREATED_AT", reverse: true, first: 12)
+     * Matches spec: products(filter: "{\"featured\": \"1\"}", sortKey: "CREATED_AT", reverse: true, first: 12).
      */
     public function test_filter_featured_products(): void
     {
@@ -716,13 +759,12 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
     /**
      * Filter by brand attribute returns valid response.
-     * Matches spec: products(filter: "{\"brand\": \"25\"}", sortKey: "CREATED_AT", reverse: true, first: 12)
+     * Matches spec: products(filter: "{\"brand\": \"25\"}", sortKey: "CREATED_AT", reverse: true, first: 12).
      */
     public function test_filter_by_brand(): void
     {
         $filter = '{"brand": "25"}';
 
-        // If brand attribute with options exists, create a product and use its real option ID
         $brandAttribute = Attribute::where('code', 'brand')->first();
         if ($brandAttribute) {
             $option = $brandAttribute->options()->first();
@@ -774,14 +816,15 @@ class ProductSearchFilterTest extends GraphQLTestCase
         }
     }
 
-    // ─── Edge Cases ───────────────────────────────────────────────────────
+    // ============================================================================
+    // Edge Cases
+    // ============================================================================
 
     /**
      * Cursor-based pagination: second page uses endCursor from first page.
      */
     public function test_pagination_second_page_with_cursor(): void
     {
-        // First page
         $firstPageQuery = <<<'GQL'
             query getProducts {
               products(first: 1) {
@@ -811,7 +854,6 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $endCursor = $firstData['pageInfo']['endCursor'];
         $firstId = $firstData['edges'][0]['node']['id'] ?? null;
 
-        // Second page
         $secondPageQuery = <<<'GQL'
             query getProducts($after: String) {
               products(first: 1, after: $after) {
@@ -835,7 +877,6 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertNotNull($secondData);
         $this->assertNotEmpty($secondData['edges'], 'Second page should have results');
 
-        // Verify the second page node is different from the first page node
         $secondId = $secondData['edges'][0]['node']['id'] ?? null;
         $this->assertNotSame($firstId, $secondId, 'Second page should return a different product');
     }
@@ -860,7 +901,6 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
         $response->assertSuccessful();
 
-        // Acceptable outcomes: a GraphQL error OR empty edges (no 500)
         $errors = $response->json('errors');
         $data = $response->json('data.products');
         $this->assertTrue(
@@ -898,28 +938,55 @@ class ProductSearchFilterTest extends GraphQLTestCase
     }
 
     /**
-     * first: 0 and first: -1 are clamped to a single-item page, never an unbounded query or a 500.
+     * A first or last of zero or below returns an empty page with the total still counted.
      */
-    public function test_first_zero_and_negative_are_clamped_to_one(): void
+    public function test_first_and_last_zero_or_negative_return_an_empty_page(): void
     {
-        foreach ([0, -1] as $first) {
-            $query = <<<GQL
-                query getProducts {
-                  products(first: {$first}) {
-                    edges {
-                      node { id sku }
-                    }
-                  }
-                }
-            GQL;
+        $this->createBaseProduct('simple', ['sku' => 'TEST-EMPTY-PAGE-'.uniqid()]);
 
-            $response = $this->graphQL($query);
+        foreach (['first: 0', 'first: -1', 'last: 0', 'last: -1'] as $window) {
+            $response = $this->graphQL("query { products({$window}) { totalCount edges { node { id } } } }");
 
             $response->assertSuccessful();
 
             expect($response->json('errors'))->toBeNull();
-            expect(count($response->json('data.products.edges')))->toBeLessThanOrEqual(1);
+            expect($response->json('data.products.edges'))->toBe([]);
+            expect($response->json('data.products.totalCount'))->toBeGreaterThan(0);
         }
+    }
+
+    /**
+     * Last N without before returns the last N products of the set, and before stops at the cursor.
+     */
+    public function test_last_returns_the_final_rows_and_before_stops_at_the_cursor(): void
+    {
+        foreach (range(1, 3) as $index) {
+            $this->createBaseProduct('simple', ['sku' => 'TEST-LAST-'.$index.'-'.uniqid()]);
+        }
+
+        $all = $this->graphQL('query { products(first: 50) { totalCount edges { cursor node { _id } } } }');
+
+        expect($all->json('errors'))->toBeNull();
+
+        $edges = $all->json('data.products.edges');
+        $total = $all->json('data.products.totalCount');
+
+        expect($total)->toBeGreaterThanOrEqual(3)->toBeLessThanOrEqual(50);
+
+        $ids = array_map(fn ($edge) => (int) $edge['node']['_id'], $edges);
+
+        $last = $this->graphQL('query { products(last: 2) { totalCount edges { cursor node { _id } } } }');
+
+        expect($last->json('errors'))->toBeNull();
+        expect($this->nodeIds($last))->toBe(array_slice($ids, -2));
+        expect(array_column($last->json('data.products.edges'), 'cursor'))->toBe(array_column(array_slice($edges, -2), 'cursor'));
+
+        $before = $this->graphQL('query($before: String) { products(last: 5, before: $before) { edges { node { _id } } } }', [
+            'before' => $edges[1]['cursor'],
+        ]);
+
+        expect($before->json('errors'))->toBeNull();
+        expect($this->nodeIds($before))->toBe([$ids[0]]);
     }
 
     /**
@@ -975,7 +1042,6 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertArrayHasKey('totalCount', $data);
         $this->assertIsInt($data['totalCount']);
 
-        // Verify minimumPrice, price, specialPrice fields are present
         if (! empty($data['edges'])) {
             $node = $data['edges'][0]['node'];
             $this->assertArrayHasKey('minimumPrice', $node);
@@ -1020,6 +1086,9 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertArrayHasKey('totalCount', $data);
     }
 
+    /**
+     * Test unknown filter keys are ignored.
+     */
     public function test_unknown_filter_keys_are_ignored(): void
     {
         $product = $this->createBaseProduct('simple', ['sku' => 'TEST-UNKNOWN-'.uniqid()]);
@@ -1036,6 +1105,9 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertContains($product->id, $this->nodeIds($response));
     }
 
+    /**
+     * Test price filter reads the price index.
+     */
     public function test_price_filter_reads_the_price_index(): void
     {
         $product = $this->createBaseProduct('simple', ['sku' => 'TEST-PRICEIDX-'.uniqid()]);
@@ -1079,28 +1151,6 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertNotContains($product->id, $this->nodeIds($attributeRange));
     }
 
-    private function productIdsQuery(): string
-    {
-        return <<<'GQL'
-            query getProducts($filter: String) {
-              products(filter: $filter, first: 50) {
-                edges {
-                  node {
-                    _id
-                  }
-                }
-              }
-            }
-        GQL;
-    }
-
-    private function nodeIds($response): array
-    {
-        return collect($response->json('data.products.edges') ?? [])
-            ->map(fn ($edge) => (int) $edge['node']['_id'])
-            ->all();
-    }
-
     /**
      * Sorting by name with a channel keeps the name order instead of collapsing to NULL.
      */
@@ -1121,5 +1171,47 @@ class ProductSearchFilterTest extends GraphQLTestCase
         sort($sorted, SORT_FLAG_CASE | SORT_STRING);
 
         expect(array_values($names))->toBe(array_values($sorted));
+    }
+
+    /**
+     * Product ids query.
+     */
+    private function productIdsQuery(): string
+    {
+        return <<<'GQL'
+            query getProducts($filter: String) {
+              products(filter: $filter, first: 50) {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+              }
+            }
+        GQL;
+    }
+
+    /**
+     * The first option of the color attribute, skipping the test when the store has none.
+     */
+    private function colorOption(): object
+    {
+        $option = Attribute::query()->where('code', 'color')->first()?->options()->first();
+
+        if (! $option) {
+            $this->markTestSkipped('The color attribute has no options. Run Bagisto seeders for attributes.');
+        }
+
+        return $option;
+    }
+
+    /**
+     * Node ids.
+     */
+    private function nodeIds($response): array
+    {
+        return collect($response->json('data.products.edges') ?? [])
+            ->map(fn ($edge) => (int) $edge['node']['_id'])
+            ->all();
     }
 }

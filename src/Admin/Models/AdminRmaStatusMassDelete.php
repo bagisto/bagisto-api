@@ -44,7 +44,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusMassDeleteProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The deleted status ids (default statuses skipped).',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -67,11 +67,21 @@ class AdminRmaStatusMassDelete
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = 0;
 
-    /** @var array<int,int>|null */
+    /**
+     * The ids of the RMA statuses that were deleted.
+     *
+     * @var array<int,int>|null
+     */
     public ?array $deleted = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

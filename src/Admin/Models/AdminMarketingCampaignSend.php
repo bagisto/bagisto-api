@@ -69,15 +69,27 @@ class AdminMarketingCampaignSend
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The campaign id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $campaign_id = null;
 
+    /**
+     * The queued.
+     */
     #[ApiProperty(writable: false, description: 'Number of recipients queued for delivery.')]
     public ?int $queued = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

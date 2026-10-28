@@ -70,28 +70,54 @@ use Webkul\BagistoApi\State\ReturnCustomFieldProvider;
     graphQlOperations: [
         new QueryCollection(
             provider: ReturnCustomFieldProvider::class,
+            description: 'The active custom fields the return form must collect, with their options and validation, as a plain list (not paginated). Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
         ),
     ],
 )]
 class ReturnCustomField
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The code.
+     */
     public ?string $code = null;
 
+    /**
+     * The label.
+     */
     public ?string $label = null;
 
+    /**
+     * The type.
+     */
     public ?string $type = null;
 
+    /**
+     * The is required.
+     */
     public ?bool $is_required = null;
 
+    /**
+     * The position.
+     */
     public ?int $position = null;
 
+    /**
+     * The input validation.
+     */
     public ?string $input_validation = null;
 
-    /** @var array<int,array<string,mixed>>|null */
+    /**
+     * The selectable options of the custom field.
+     *
+     * @var array<int,array<string,mixed>>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $options = null;
 }

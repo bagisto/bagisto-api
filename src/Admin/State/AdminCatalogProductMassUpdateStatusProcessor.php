@@ -13,21 +13,18 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Product\Repositories\ProductRepository;
 
-/**
- * POST /api/admin/catalog/products/mass-update-status + createAdminCatalogProductMassUpdateStatus.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Catalog\ProductController::massUpdate:
- *   - For each ID, fire catalog.product.update.before, call repo update with
- *     ['status' => $value] (attributes whitelist ['status']), fire after.
- *   - Best-effort: no try/catch in core; missing IDs are not pre-validated.
- *     We only validate the request payload shape itself.
- */
 class AdminCatalogProductMassUpdateStatusProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ProductRepository $productRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -78,6 +75,9 @@ class AdminCatalogProductMassUpdateStatusProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -105,6 +105,9 @@ class AdminCatalogProductMassUpdateStatusProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve array.
+     */
     protected function resolveArray(mixed $data, array $context, string $key): array
     {
         if (
@@ -127,6 +130,9 @@ class AdminCatalogProductMassUpdateStatusProcessor implements ProcessorInterface
         return [];
     }
 
+    /**
+     * Resolve scalar.
+     */
     protected function resolveScalar(mixed $data, array $context, string $key): mixed
     {
         if (

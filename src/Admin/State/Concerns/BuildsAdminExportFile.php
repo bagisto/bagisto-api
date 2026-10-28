@@ -10,14 +10,23 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 
 trait BuildsAdminExportFile
 {
+    /**
+     * The export formats constant.
+     */
     protected const EXPORT_FORMATS = ['csv', 'xls', 'xlsx'];
 
+    /**
+     * The export mime types constant.
+     */
     protected const EXPORT_MIME_TYPES = [
         'csv' => 'text/csv; charset=UTF-8',
         'xls' => 'application/vnd.ms-excel',
         'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ];
 
+    /**
+     * Resolve export format.
+     */
     protected function resolveExportFormat(string $unsupportedLangKey): string
     {
         $format = strtolower((string) (request()->query('format') ?? 'csv'));
@@ -29,6 +38,9 @@ trait BuildsAdminExportFile
         return $format;
     }
 
+    /**
+     * Build export response.
+     */
     protected function buildExportResponse(array $headings, array $rows, string $baseName, string $format): Response
     {
         $headings = array_map(fn ($value) => $this->sanitizeExportValue($value), $headings);
@@ -46,6 +58,9 @@ trait BuildsAdminExportFile
         ]);
     }
 
+    /**
+     * To csv string.
+     */
     protected function toCsvString(array $headings, array $rows): string
     {
         $handle = fopen('php://temp', 'r+');

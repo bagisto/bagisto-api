@@ -7,56 +7,11 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Theme\Models\Section;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for Admin Appearance → Sections: CRUD plus the draft workflow.
- */
 class AppearanceSectionTest extends AdminApiTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // BACKWARD COMPATIBILITY: remove when the minimum supported core is 2.4.10.
-        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
-    }
-
-    private function channelId(): int
-    {
-        $this->seedRequiredData();
-
-        return (int) \DB::table('channels')->orderBy('id')->value('id');
-    }
-
-    private function makeSection(array $attributes = []): Section
-    {
-        $channelId = $this->channelId();
-
-        return Section::create(array_merge([
-            'name' => 'Test Section '.uniqid(),
-            'type' => Section::STATIC_CONTENT,
-            'theme_code' => 'default',
-            'channel_id' => $channelId,
-            'sort_order' => 99,
-            'status' => 1,
-        ], $attributes));
-    }
-
-    private function adminWithRole(string $permissionType, array $permissions = []): array
-    {
-        $this->seedRequiredData();
-
-        $role = Role::create([
-            'name' => 'appearance-role-'.uniqid(),
-            'description' => 'test',
-            'permission_type' => $permissionType,
-            'permissions' => $permissions,
-        ]);
-
-        $admin = $this->createAdmin(['role_id' => $role->id]);
-
-        return [$admin, $this->adminTokenSameAsWeb($admin)];
-    }
-
+    /**
+     * Test list returns sections of the theme.
+     */
     public function test_list_returns_sections_of_the_theme(): void
     {
         $admin = $this->createAdmin();
@@ -71,6 +26,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($ids)->toContain($section->id);
     }
 
+    /**
+     * Test list pins footer links last.
+     */
     public function test_list_pins_footer_links_last(): void
     {
         $admin = $this->createAdmin();
@@ -96,6 +54,60 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect(array_search($footer->id, $ids, true))->toBeGreaterThan(array_search($content->id, $ids, true));
     }
 
+    /**
+     * Services content is pinned to the bottom of the page as well, as core's editor pins it.
+     */
+    public function test_list_pins_services_content_last(): void
+    {
+        $admin = $this->createAdmin();
+        $channelId = $this->channelId();
+
+        \DB::table('theme_sections')->where('channel_id', $channelId)->delete();
+
+        $services = $this->makeSection([
+            'type' => Section::SERVICES_CONTENT,
+            'sort_order' => 1,
+        ]);
+        $content = $this->makeSection([
+            'type' => Section::STATIC_CONTENT,
+            'sort_order' => 2,
+        ]);
+
+        $response = $this->adminGet($admin, '/api/admin/appearance/themes/default/sections?channel='.$channelId);
+
+        $response->assertOk();
+
+        $rows = collect($response->json())->keyBy('id');
+        $ids = array_column($response->json(), 'id');
+
+        expect(array_search($services->id, $ids, true))->toBeGreaterThan(array_search($content->id, $ids, true))
+            ->and($rows[$services->id]['isPinned'])->toBeTrue()
+            ->and($rows[$content->id]['isPinned'])->toBeFalse();
+    }
+
+    /**
+     * A second services content section is refused, as core allows one per channel.
+     */
+    public function test_create_rejects_a_second_services_content_section(): void
+    {
+        $admin = $this->createAdmin();
+        $channelId = $this->channelId();
+
+        \DB::table('theme_sections')->where('channel_id', $channelId)->delete();
+
+        $this->makeSection(['type' => Section::SERVICES_CONTENT]);
+
+        $response = $this->adminPost($admin, '/api/admin/appearance/themes/default/sections?channel='.$channelId, [
+            'name' => 'Second services',
+            'type' => Section::SERVICES_CONTENT,
+        ]);
+
+        expect($response->getStatusCode())->toBe(422);
+    }
+
+    /**
+     * Test list unknown theme returns 404.
+     */
     public function test_list_unknown_theme_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -105,6 +117,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         $response->assertNotFound();
     }
 
+    /**
+     * Test list requires authentication.
+     */
     public function test_list_requires_authentication(): void
     {
         $this->seedRequiredData();
@@ -114,6 +129,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test get returns the section.
+     */
     public function test_get_returns_the_section(): void
     {
         $admin = $this->createAdmin();
@@ -130,6 +148,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->json('translations'))->toBeArray();
     }
 
+    /**
+     * Test get unknown section returns 404.
+     */
     public function test_get_unknown_section_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -139,6 +160,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         $response->assertNotFound();
     }
 
+    /**
+     * Test create stages the section switched off.
+     */
     public function test_create_stages_the_section_switched_off(): void
     {
         $admin = $this->createAdmin();
@@ -162,6 +186,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($row->theme_code)->toBe('default');
     }
 
+    /**
+     * Test create rejects an unknown type.
+     */
     public function test_create_rejects_an_unknown_type(): void
     {
         $admin = $this->createAdmin();
@@ -173,6 +200,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create rejects a second footer links section.
+     */
     public function test_create_rejects_a_second_footer_links_section(): void
     {
         $admin = $this->createAdmin();
@@ -190,6 +220,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create requires the create permission.
+     */
     public function test_create_requires_the_create_permission(): void
     {
         [$admin, $token] = $this->adminWithRole('custom', ['appearance.sections']);
@@ -201,6 +234,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         $response->assertForbidden();
     }
 
+    /**
+     * Test update writes the published values.
+     */
     public function test_update_writes_the_published_values(): void
     {
         $admin = $this->createAdmin();
@@ -223,6 +259,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect((int) $row->sort_order)->toBe(4);
     }
 
+    /**
+     * Test update writes carousel options in the shape they are stored.
+     */
     public function test_update_writes_carousel_options_in_the_shape_they_are_stored(): void
     {
         $admin = $this->createAdmin();
@@ -238,8 +277,6 @@ class AppearanceSectionTest extends AdminApiTestCase
             ],
         ];
 
-        // Core reads carousel options off the request as a list of rows coming off an upload,
-        // so handing it the stored shape made it read a key that is not there.
         $response = $this->putJson('/api/admin/appearance/sections/'.$section->id, [
             'name' => $section->name,
             'type' => Section::IMAGE_CAROUSEL,
@@ -252,10 +289,12 @@ class AppearanceSectionTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // Core normalises the key order of each row, so the comparison is on content.
         expect($section->refresh()->translate('en')?->options)->toEqual($images);
     }
 
+    /**
+     * Test update writes the options of the locale.
+     */
     public function test_update_writes_the_options_of_the_locale(): void
     {
         $admin = $this->createAdmin();
@@ -278,6 +317,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test update without options keeps the stored ones.
+     */
     public function test_update_without_options_keeps_the_stored_ones(): void
     {
         $admin = $this->createAdmin();
@@ -302,6 +344,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test update unknown section returns 404.
+     */
     public function test_update_unknown_section_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -314,6 +359,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         $response->assertNotFound();
     }
 
+    /**
+     * Test delete removes the section.
+     */
     public function test_delete_removes_the_section(): void
     {
         $admin = $this->createAdmin();
@@ -326,6 +374,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         $this->assertDatabaseMissing('theme_sections', ['id' => $section->id]);
     }
 
+    /**
+     * Test delete requires the delete permission.
+     */
     public function test_delete_requires_the_delete_permission(): void
     {
         [$admin, $token] = $this->adminWithRole('custom', ['appearance.sections']);
@@ -336,6 +387,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         $response->assertForbidden();
     }
 
+    /**
+     * Test draft stages options without touching published ones.
+     */
     public function test_draft_stages_options_without_touching_published_ones(): void
     {
         $admin = $this->createAdmin();
@@ -354,6 +408,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($translation->draft_options)->not->toBeNull();
     }
 
+    /**
+     * Test draft without options returns 422.
+     */
     public function test_draft_without_options_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -364,6 +421,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test status stages the on off state.
+     */
     public function test_status_stages_the_on_off_state(): void
     {
         $admin = $this->createAdmin();
@@ -381,6 +441,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect((bool) $row->draft_status)->toBeFalse();
     }
 
+    /**
+     * Test publish promotes staged edits.
+     */
     public function test_publish_promotes_staged_edits(): void
     {
         $admin = $this->createAdmin();
@@ -402,6 +465,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($translation->options)->toContain('staged');
     }
 
+    /**
+     * Test discard throws staged edits away.
+     */
     public function test_discard_throws_staged_edits_away(): void
     {
         $admin = $this->createAdmin();
@@ -420,6 +486,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($translation->draft_options)->toBeNull();
     }
 
+    /**
+     * Test reorder keeps footer links last.
+     */
     public function test_reorder_keeps_footer_links_last(): void
     {
         $admin = $this->createAdmin();
@@ -445,6 +514,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->json('sectionIds'))->toBe([$content->id, $footer->id]);
     }
 
+    /**
+     * Test reorder without ids returns 422.
+     */
     public function test_reorder_without_ids_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -454,6 +526,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test duplicate copies the section.
+     */
     public function test_duplicate_copies_the_section(): void
     {
         $admin = $this->createAdmin();
@@ -469,6 +544,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         $this->assertDatabaseHas('theme_sections', ['id' => $response->json('sectionId')]);
     }
 
+    /**
+     * Test duplicate refuses a footer links section.
+     */
     public function test_duplicate_refuses_a_footer_links_section(): void
     {
         $admin = $this->createAdmin();
@@ -479,6 +557,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test reorder rejects a partial list.
+     */
     public function test_reorder_rejects_a_partial_list(): void
     {
         $admin = $this->createAdmin();
@@ -496,6 +577,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test media rejects a file that is not an image or video.
+     */
     public function test_media_rejects_a_file_that_is_not_an_image_or_video(): void
     {
         $admin = $this->createAdmin();
@@ -510,6 +594,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test fields returns the schema and options.
+     */
     public function test_fields_returns_the_schema_and_options(): void
     {
         $admin = $this->createAdmin();
@@ -524,6 +611,9 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->json('schema'))->toBeArray();
     }
 
+    /**
+     * Test preview applies staged edits.
+     */
     public function test_preview_applies_staged_edits(): void
     {
         $admin = $this->createAdmin();
@@ -544,5 +634,61 @@ class AppearanceSectionTest extends AdminApiTestCase
         $ids = array_column($response->json('sections'), 'id');
 
         expect($ids)->toContain($section->id);
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
+    }
+
+    /**
+     * Channel id.
+     */
+    private function channelId(): int
+    {
+        $this->seedRequiredData();
+
+        return (int) \DB::table('channels')->orderBy('id')->value('id');
+    }
+
+    /**
+     * Make section.
+     */
+    private function makeSection(array $attributes = []): Section
+    {
+        $channelId = $this->channelId();
+
+        return Section::create(array_merge([
+            'name' => 'Test Section '.uniqid(),
+            'type' => Section::STATIC_CONTENT,
+            'theme_code' => 'default',
+            'channel_id' => $channelId,
+            'sort_order' => 99,
+            'status' => 1,
+        ], $attributes));
+    }
+
+    /**
+     * Admin with role.
+     */
+    private function adminWithRole(string $permissionType, array $permissions = []): array
+    {
+        $this->seedRequiredData();
+
+        $role = Role::create([
+            'name' => 'appearance-role-'.uniqid(),
+            'description' => 'test',
+            'permission_type' => $permissionType,
+            'permissions' => $permissions,
+        ]);
+
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        return [$admin, $this->adminAccessToken($admin)];
     }
 }

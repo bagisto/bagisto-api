@@ -9,24 +9,35 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Models\ProductReview;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
+use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
+use Webkul\BagistoApi\State\Concerns\ScopesNestedConnections;
 
-/**
- * Provider for ProductReview collection queries (REST + GraphQL).
- * Filters by product_id, status, and rating.
- * Only approved reviews are public; a client-supplied status is ignored.
- */
 class ProductReviewProvider implements ProviderInterface
 {
     use ClampsPageSize;
+    use ResolvesCursorWindow;
+    use ScopesNestedConnections;
 
+    /**
+     * The default per page constant.
+     */
     private const DEFAULT_PER_PAGE = 30;
 
+    /**
+     * The max per page constant.
+     */
     private const MAX_PER_PAGE = 50;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $isGraphQL = ! empty($context['graphql_operation_name']);
@@ -34,6 +45,10 @@ class ProductReviewProvider implements ProviderInterface
         $args = $this->resolveArgs($uriVariables, $context, $isGraphQL);
 
         $query = ProductReview::query();
+
+        if ($isGraphQL) {
+            $this->scopeToParent($query, $context);
+        }
 
         if (! empty($args['product_id'])) {
             $query->where('product_id', (int) $args['product_id']);
@@ -104,48 +119,12 @@ class ProductReviewProvider implements ProviderInterface
     }
 
     /**
-     * GraphQL cursor pagination (offset-based cursors from API Platform).
-     * Behaviour unchanged from the original provider.
+     * GraphQL cursor pagination over offset-based cursors.
      */
     private function graphQlPaginate($query, array $args): Paginator
     {
-        $first = isset($args['first']) ? (int) $args['first'] : null;
-        $last = isset($args['last']) ? (int) $args['last'] : null;
-        $after = $args['after'] ?? null;
-        $before = $args['before'] ?? null;
+        $requested = $this->requestedCursorLimit($args, self::DEFAULT_PER_PAGE);
 
-        $perPage = $this->clampPageSize($first ?? $last ?? self::DEFAULT_PER_PAGE);
-        $offset = 0;
-
-        if ($after) {
-            $decoded = base64_decode($after, true);
-            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
-        }
-
-        if ($before) {
-            $decoded = base64_decode($before, true);
-            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset = max(0, $cursor - $perPage);
-        }
-
-        $total = (clone $query)->count();
-
-        if ($offset > $total) {
-            $offset = max(0, $total - $perPage);
-        }
-
-        $items = $query->offset($offset)->limit($perPage)->get();
-
-        $currentPage = $total > 0 ? (int) floor($offset / $perPage) + 1 : 1;
-
-        return new Paginator(
-            new LengthAwarePaginator(
-                $items,
-                $total,
-                $perPage,
-                $currentPage,
-                ['path' => request()->url()]
-            )
-        );
+        return new Paginator($this->paginateCursorWindow($query, $args, $requested > 0 ? $this->clampPageSize($requested) : 0));
     }
 }

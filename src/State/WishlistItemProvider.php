@@ -4,16 +4,20 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
+use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\Wishlist;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class WishlistItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -35,7 +39,7 @@ class WishlistItemProvider implements ProviderInterface
         $wishlist = Wishlist::where('id', (int) $id)
             ->where('customer_id', $customer->id)
             ->where('channel_id', core()->getCurrentChannel()->id)
-            ->with(['product', 'customer', 'channel'])
+            ->with(['product' => fn ($query) => Product::withReviewSummary($query), 'customer', 'channel'])
             ->first();
 
         if (! $wishlist) {

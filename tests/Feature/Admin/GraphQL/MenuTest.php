@@ -8,6 +8,9 @@ use Webkul\User\Models\Role;
 
 class MenuTest extends AdminApiTestCase
 {
+    /**
+     * Test admin menu query returns tree.
+     */
     public function test_admin_menu_query_returns_tree(): void
     {
         $admin = $this->createAdmin();
@@ -34,6 +37,9 @@ class MenuTest extends AdminApiTestCase
         expect($keys)->toContain('catalog');
     }
 
+    /**
+     * Test admin menu query filtered to role.
+     */
     public function test_admin_menu_query_filtered_to_role(): void
     {
         $role = Role::create([
@@ -44,7 +50,7 @@ class MenuTest extends AdminApiTestCase
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->adminTokenSameAsWeb($admin);
+        $token = $this->adminAccessToken($admin);
 
         $query = 'query { getAdminMenu { tree } }';
 
@@ -60,6 +66,9 @@ class MenuTest extends AdminApiTestCase
         expect($keys)->not->toContain('sales');
     }
 
+    /**
+     * Test admin menu query requires authentication.
+     */
     public function test_admin_menu_query_requires_authentication(): void
     {
         $response = $this->adminGraphQL('query { getAdminMenu { tree } }');

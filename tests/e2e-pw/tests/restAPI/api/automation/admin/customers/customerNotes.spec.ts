@@ -1,17 +1,7 @@
-// tests/restAPI/api/automation/admin/customers/customerNotes.spec.ts
-//
-// Admin Customer Notes (W2) — POST /customers/{customerId}/notes (append-only).
-//
-// Probed 2026-05-26: input is { note: string, customerNotified?: boolean }.
-// Snake_case `customer_notified` is rejected with a misformatted-data 500
-// (name converter incompatibility) — use camelCase.
-
 import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_CUSTOMERS } from '../../../../rest/endpoints/admin.customers.endpoints';
 
-// Per-test timeout bumped — note write + customer delete can be slow under
-// parallel load (60s default occasionally hits the cleanup DELETE).
 test.describe.configure({ timeout: 120_000 });
 
 async function createCustomer(request: APIRequestContext) {
@@ -27,38 +17,43 @@ async function createCustomer(request: APIRequestContext) {
       password: 'e2epass123',
     },
   });
+  expect(resp.status()).toBe(201);
   return await resp.json();
 }
 
 async function dropCustomer(request: APIRequestContext, id: number) {
-  // Best-effort cleanup — never fail the test on slow / failed delete cascade
-  // (customer + notes + listener queue can take a while under parallel load).
-  try {
-    await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(id), { method: 'DELETE' });
-  } catch {
-    // ignore
-  }
+  await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(id), { method: 'DELETE' });
 }
 
-test.describe('Admin Customer Notes REST API', () => {
+async function listNotes(request: APIRequestContext, customerId: number): Promise<any[]> {
+  const resp = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER_NOTES(customerId));
+  expect(resp.status()).toBe(200);
+  return (await resp.json()).data;
+}
+
+test.describe('admin customer notes rest api', () => {
   test('create note with only note text', async ({ request }) => {
     const customer = await createCustomer(request);
+    const text = `e2e note ${Date.now()}`;
 
     const resp = await sendAdminRequest(
       request,
       ADMIN_CUSTOMERS.CUSTOMER_NOTES(customer.id),
-      { method: 'POST', data: { note: `e2e note ${Date.now()}` } },
+      { method: 'POST', data: { note: text } },
     );
-    expect([200, 201]).toContain(resp.status());
+    expect(resp.status()).toBe(201);
     const body = await resp.json();
     expect(body.id).toBeGreaterThan(0);
     expect(body.customerId).toBe(customer.id);
-    expect(typeof body.note).toBe('string');
+    expect(body.note).toBe(text);
+    expect(body.customerNotified).toBe(false);
+
+    expect((await listNotes(request, customer.id)).map((row: any) => row.id)).toEqual([body.id]);
 
     await dropCustomer(request, customer.id);
   });
 
-  test('create note with customerNotified=true', async ({ request }) => {
+  test('create note with customernotified true', async ({ request }) => {
     const customer = await createCustomer(request);
 
     const resp = await sendAdminRequest(
@@ -69,7 +64,7 @@ test.describe('Admin Customer Notes REST API', () => {
         data: { note: `notify ${Date.now()}`, customerNotified: true },
       },
     );
-    expect([200, 201]).toContain(resp.status());
+    expect(resp.status()).toBe(201);
     const body = await resp.json();
     expect(body.customerNotified).toBe(true);
 
@@ -84,7 +79,9 @@ test.describe('Admin Customer Notes REST API', () => {
       ADMIN_CUSTOMERS.CUSTOMER_NOTES(customer.id),
       { method: 'POST', data: { note: '' } },
     );
-    expect([400, 422, 500]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('Note text is required.');
+    expect(await listNotes(request, customer.id)).toEqual([]);
 
     await dropCustomer(request, customer.id);
   });
@@ -95,6 +92,7 @@ test.describe('Admin Customer Notes REST API', () => {
       ADMIN_CUSTOMERS.CUSTOMER_NOTES(99999999),
       { method: 'POST', data: { note: 'orphan' } },
     );
-    expect([404, 400]).toContain(resp.status());
+    expect(resp.status()).toBe(404);
+    expect((await resp.json()).detail).toBe('Customer not found.');
   });
 });

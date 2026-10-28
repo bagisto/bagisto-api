@@ -10,19 +10,16 @@ use Webkul\BagistoApi\Admin\Dto\AdminMarketingCatalogRuleRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCatalogRule;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/marketing/catalog-rules + adminMarketingCatalogRules.
- *
- * Filters: name (LIKE), status (exact 0/1).
- * Sort:    id (default desc), name, sort_order.
- *
- * Listing rows omit `conditions`, `channels`, `customerGroups` (detail-only —
- * keeps the listing query cheap).
- */
 class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * The listing is graph ql.
+     */
     protected bool $listingIsGraphQL = false;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
@@ -30,11 +27,17 @@ class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectio
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'name', 'sort_order'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('catalog_rules')->select(
@@ -54,6 +57,9 @@ class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectio
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['id'])) {
@@ -99,6 +105,9 @@ class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectio
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -112,6 +121,9 @@ class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectio
         $query->orderBy($columnMap[$column] ?? 'catalog_rules.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): object
     {
         if ($this->listingIsGraphQL) {
@@ -133,8 +145,6 @@ class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectio
         $dto->discountAmount = $row->discount_amount !== null ? (float) $row->discount_amount : null;
         $dto->createdAt = $row->created_at ? Carbon::parse($row->created_at)->toIso8601String() : null;
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
-
-        // channels / customerGroups / conditions are detail-only — null on list rows.
 
         return $dto;
     }

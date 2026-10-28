@@ -14,22 +14,37 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminCustomerGroupRef extends Model
 {
+    /**
+     * The table.
+     */
     protected $table = 'customer_groups';
 
+    /**
+     * The casts.
+     */
     protected $casts = ['id' => 'int'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get code.
+     */
     #[ApiProperty(writable: false)]
     public function getCode(): ?string
     {
         return $this->code;
     }
 
+    /**
+     * Get name.
+     */
     #[ApiProperty(writable: false)]
     public function getName(): ?string
     {

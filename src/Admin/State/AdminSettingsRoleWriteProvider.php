@@ -8,11 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsRole;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Minimal placeholder provider for AdminSettingsRole PUT/DELETE.
- */
 class AdminSettingsRoleWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminSettingsRole
     {
         if (! AdminAuthHelper::resolveAdmin()) {

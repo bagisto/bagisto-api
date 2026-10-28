@@ -11,21 +11,16 @@ use Webkul\BagistoApi\Admin\Dto\AdminSettingsChannelRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsChannel;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/settings/channels + adminSettingsChannels.
- *
- * Mirrors Webkul\Admin\DataGrids\Settings\ChannelDataGrid — filters on code,
- * name (via channel_translations), hostname; sort on id, code, name.
- *
- * Branches: GraphQL → an AdminSettingsChannel Eloquent row per result (the
- * translations/locales/currencies/inventorySources connections + homeSeo are set
- * empty on listings — detail-only, no N+1); REST → the flat
- * AdminSettingsChannelRestDto (nested blocks omitted on listing rows).
- */
 class AdminSettingsChannelCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * The listing is graph ql.
+     */
     protected bool $listingIsGraphQL = false;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
@@ -33,11 +28,17 @@ class AdminSettingsChannelCollectionProvider extends AbstractAdminCollectionProv
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'code', 'name'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         $locale = (string) ($args['locale'] ?? (function_exists('app') ? app()->getLocale() : 'en'));
@@ -69,6 +70,9 @@ class AdminSettingsChannelCollectionProvider extends AbstractAdminCollectionProv
             );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['code'])) {
@@ -84,6 +88,9 @@ class AdminSettingsChannelCollectionProvider extends AbstractAdminCollectionProv
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -97,6 +104,9 @@ class AdminSettingsChannelCollectionProvider extends AbstractAdminCollectionProv
         $query->orderBy($columnMap[$column] ?? 'channels.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): object
     {
         if ($this->listingIsGraphQL) {

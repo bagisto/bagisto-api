@@ -11,10 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminAppearanceSectionStatusInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionStatusProcessor;
 
-/**
- * Switching a section on or off is staged like any other edit, so the storefront only
- * changes once the theme is published.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAppearanceSectionStatus',
@@ -27,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionStatusProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Stage a section on/off',
+                description: 'Stages switching one section on or off as a draft (`status` is required). The storefront keeps the published status until the theme\'s staged edits are published; the answer says whether the section still has a draft.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Section ID', true, schema: ['type' => 'integer']),
                 ],
@@ -47,7 +44,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionStatusProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'Status staged.',
                         content: new \ArrayObject([
                             'application/json' => ['example' => [
@@ -74,12 +71,24 @@ class AdminAppearanceSectionStatus
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The section id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $section_id = null;
 
+    /**
+     * The draft status.
+     */
     public ?bool $draft_status = null;
 
+    /**
+     * The has draft.
+     */
     public ?bool $has_draft = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

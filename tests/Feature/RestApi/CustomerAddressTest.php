@@ -7,46 +7,18 @@ use Webkul\Customer\Models\CustomerAddress;
 
 class CustomerAddressTest extends RestApiTestCase
 {
+    /**
+     * The base url.
+     */
     private string $baseUrl = '/api/shop/customer-addresses';
 
-    private function dummyAddressInput(array $overrides = []): array
-    {
-        return array_merge([
-            'firstName' => 'Alice',
-            'lastName' => 'Tester',
-            'companyName' => 'Acme Inc.',
-            'vatId' => 'GB123456789',
-            'email' => 'address_'.uniqid().'@example.com',
-            'phone' => '5551234567',
-            'address1' => '123 Test Street',
-            'address2' => 'Suite 200',
-            'city' => 'Test City',
-            'state' => 'CA',
-            'country' => 'US',
-            'postcode' => '90001',
-            'defaultAddress' => false,
-        ], $overrides);
-    }
+    // ============================================================================
+    // GET Collection
+    // ============================================================================
 
-    private function createAddressFor($customer, array $overrides = []): CustomerAddress
-    {
-        return CustomerAddress::create(array_merge([
-            'customer_id' => $customer->id,
-            'address_type' => 'customer',
-            'first_name' => 'Existing',
-            'last_name' => 'Address',
-            'email' => 'existing_'.uniqid().'@example.com',
-            'phone' => '5559999999',
-            'address' => '99 Existing Lane',
-            'city' => 'Old City',
-            'state' => 'NY',
-            'country' => 'US',
-            'postcode' => '10001',
-        ], $overrides));
-    }
-
-    // ── GET Collection ────────────────────────────────────────
-
+    /**
+     * Test get collection returns only own addresses.
+     */
     public function test_get_collection_returns_only_own_addresses(): void
     {
         $this->seedRequiredData();
@@ -67,6 +39,9 @@ class CustomerAddressTest extends RestApiTestCase
         }
     }
 
+    /**
+     * Test get collection order desc returns newest first.
+     */
     public function test_get_collection_order_desc_returns_newest_first(): void
     {
         $this->seedRequiredData();
@@ -91,6 +66,9 @@ class CustomerAddressTest extends RestApiTestCase
         expect($sortIds[0])->toBe($second->id);
     }
 
+    /**
+     * Test get collection requires auth.
+     */
     public function test_get_collection_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -100,8 +78,13 @@ class CustomerAddressTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
-    // ── GET single ────────────────────────────────────────────
+    // ============================================================================
+    // GET Single
+    // ============================================================================
 
+    /**
+     * Test get single address.
+     */
     public function test_get_single_address(): void
     {
         $this->seedRequiredData();
@@ -114,6 +97,9 @@ class CustomerAddressTest extends RestApiTestCase
         expect((int) $response->json('id'))->toBe($address->id);
     }
 
+    /**
+     * Test get nonexistent address returns error.
+     */
     public function test_get_nonexistent_address_returns_error(): void
     {
         $this->seedRequiredData();
@@ -124,8 +110,13 @@ class CustomerAddressTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([403, 404, 500]);
     }
 
-    // ── POST create ───────────────────────────────────────────
+    // ============================================================================
+    // POST Create
+    // ============================================================================
 
+    /**
+     * Test create address successfully.
+     */
     public function test_create_address_successfully(): void
     {
         $this->seedRequiredData();
@@ -146,6 +137,9 @@ class CustomerAddressTest extends RestApiTestCase
         ]);
     }
 
+    /**
+     * Test create address without required fields is rejected.
+     */
     public function test_create_address_without_required_fields_is_rejected(): void
     {
         $this->seedRequiredData();
@@ -157,6 +151,9 @@ class CustomerAddressTest extends RestApiTestCase
         $this->assertDatabaseMissing('addresses', ['customer_id' => $customer->id]);
     }
 
+    /**
+     * Test create address requires auth.
+     */
     public function test_create_address_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -181,14 +178,12 @@ class CustomerAddressTest extends RestApiTestCase
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
 
-        // DB persistence
         $this->assertDatabaseHas('addresses', [
             'customer_id' => $customer->id,
             'first_name' => 'Charlie',
             'company_name' => 'Acme Inc.',
         ]);
 
-        // Response shape: company_name must be readable as either snake or camel case
         $companyName = $response->json('companyName') ?? $response->json('company_name');
         expect($companyName)->toBe('Acme Inc.');
     }
@@ -218,6 +213,9 @@ class CustomerAddressTest extends RestApiTestCase
         expect($companyName)->toBe('Updated Corp.');
     }
 
+    /**
+     * Test create address default unsets other defaults.
+     */
     public function test_create_address_default_unsets_other_defaults(): void
     {
         $this->seedRequiredData();
@@ -238,8 +236,13 @@ class CustomerAddressTest extends RestApiTestCase
         ]);
     }
 
-    // ── PUT update ────────────────────────────────────────────
+    // ============================================================================
+    // PUT Update
+    // ============================================================================
 
+    /**
+     * Test update address successfully.
+     */
     public function test_update_address_successfully(): void
     {
         $this->seedRequiredData();
@@ -264,6 +267,9 @@ class CustomerAddressTest extends RestApiTestCase
         ]);
     }
 
+    /**
+     * Test update address requires auth.
+     */
     public function test_update_address_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -278,6 +284,9 @@ class CustomerAddressTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Test update fails for another customers address.
+     */
     public function test_update_fails_for_another_customers_address(): void
     {
         $this->seedRequiredData();
@@ -297,8 +306,13 @@ class CustomerAddressTest extends RestApiTestCase
         ]);
     }
 
-    // ── DELETE ────────────────────────────────────────────────
+    // ============================================================================
+    // DELETE
+    // ============================================================================
 
+    /**
+     * Test delete address successfully.
+     */
     public function test_delete_address_successfully(): void
     {
         $this->seedRequiredData();
@@ -311,6 +325,9 @@ class CustomerAddressTest extends RestApiTestCase
         $this->assertDatabaseMissing('addresses', ['id' => $address->id]);
     }
 
+    /**
+     * Test delete requires auth.
+     */
     public function test_delete_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -323,6 +340,9 @@ class CustomerAddressTest extends RestApiTestCase
         $this->assertDatabaseHas('addresses', ['id' => $address->id]);
     }
 
+    /**
+     * Test delete fails for another customers address.
+     */
     public function test_delete_fails_for_another_customers_address(): void
     {
         $this->seedRequiredData();
@@ -334,5 +354,47 @@ class CustomerAddressTest extends RestApiTestCase
 
         expect($response->getStatusCode())->toBeIn([403, 404, 500]);
         $this->assertDatabaseHas('addresses', ['id' => $address->id]);
+    }
+
+    /**
+     * Dummy address input.
+     */
+    private function dummyAddressInput(array $overrides = []): array
+    {
+        return array_merge([
+            'firstName' => 'Alice',
+            'lastName' => 'Tester',
+            'companyName' => 'Acme Inc.',
+            'vatId' => 'GB123456789',
+            'email' => 'address_'.uniqid().'@example.com',
+            'phone' => '5551234567',
+            'address1' => '123 Test Street',
+            'address2' => 'Suite 200',
+            'city' => 'Test City',
+            'state' => 'CA',
+            'country' => 'US',
+            'postcode' => '90001',
+            'defaultAddress' => false,
+        ], $overrides);
+    }
+
+    /**
+     * Create address for.
+     */
+    private function createAddressFor($customer, array $overrides = []): CustomerAddress
+    {
+        return CustomerAddress::create(array_merge([
+            'customer_id' => $customer->id,
+            'address_type' => 'customer',
+            'first_name' => 'Existing',
+            'last_name' => 'Address',
+            'email' => 'existing_'.uniqid().'@example.com',
+            'phone' => '5559999999',
+            'address' => '99 Existing Lane',
+            'city' => 'Old City',
+            'state' => 'NY',
+            'country' => 'US',
+            'postcode' => '10001',
+        ], $overrides));
     }
 }

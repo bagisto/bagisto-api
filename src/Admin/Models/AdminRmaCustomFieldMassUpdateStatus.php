@@ -68,11 +68,21 @@ class AdminRmaCustomFieldMassUpdateStatus
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = 0;
 
-    /** @var array<int,int>|null */
+    /**
+     * The ids of the RMA custom fields whose status was updated.
+     *
+     * @var array<int,int>|null
+     */
     public ?array $updated = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

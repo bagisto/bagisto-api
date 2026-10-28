@@ -1,74 +1,163 @@
-// Admin Settings — Tax Rates GraphQL e2e. No mass-delete.
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminGraphQLRequest } from '../../../../graphql/helpers/adminGraphqlClient';
 import {
-  ADMIN_TAX_RATES_LIST,
-  ADMIN_TAX_RATE_DETAIL,
   ADMIN_TAX_RATE_CREATE,
+  ADMIN_TAX_RATE_DETAIL,
   ADMIN_TAX_RATE_UPDATE,
-  ADMIN_TAX_RATE_DELETE,
 } from '../../../../graphql/Queries/admin/settings/taxRates.queries';
 
 test.describe.configure({ timeout: 60_000 });
-async function safeJson(r: any) { try { return await r.json(); } catch { return null; } }
-function parseId(iri: any): number | null {
-  if (typeof iri === 'number') return iri;
-  if (typeof iri === 'string' && iri.includes('/')) return parseInt(iri.split('/').pop() || '0', 10);
-  return null;
+
+const RATE_IRI = (id: number) => `/api/admin/settings/tax-rates/${id}`;
+const UNKNOWN_IRI = RATE_IRI(999999999);
+
+const NOT_FOUND = 'Tax rate not found.';
+const DELETED = 'Tax rate deleted successfully.';
+const ZIP_CODE_REQUIRED = 'The zip_code field is required when is_zip is false.';
+const ZIP_RANGE_REQUIRED = 'Both zip_from and zip_to are required when is_zip is true.';
+
+const RATES_LIST = `
+  query adminSettingsTaxRates($first: Int, $identifier: String) {
+    adminSettingsTaxRates(first: $first, identifier: $identifier) {
+      totalCount
+      edges { node { _id identifier country state taxRate isZip zipCode } }
+    }
+  }
+`;
+
+const RATE_DELETE = `
+  mutation deleteAdminSettingsTaxRate($id: ID!) {
+    deleteAdminSettingsTaxRate(input: { id: $id }) { adminSettingsTaxRate { _id identifier message } }
+  }
+`;
+
+function uniqueIdentifier(): string {
+  return `e2e-gql-tr-${Date.now().toString(36)}${Math.floor(Math.random() * 1_000_000).toString(36)}`;
 }
-function unique(): string { return `e2e-tr-${Date.now().toString(36).slice(-6)}${Math.floor(Math.random()*100)}`; }
 
-async function createRate(request: any, isZip = false): Promise<{ id: number | null; identifier: string }> {
-  const identifier = unique();
-  const vars: any = isZip
-    ? { identifier, country: 'US', state: 'NY', taxRate: 8.5, isZip: true, zipFrom: '10000', zipTo: '10999' }
-    : { identifier, country: 'US', state: 'NY', taxRate: 8.5, isZip: false, zipCode: '10001' };
-  const resp = await sendAdminGraphQLRequest(request, ADMIN_TAX_RATE_CREATE, vars);
-  const body = await safeJson(resp);
-  const id = parseId(body?.data?.createAdminSettingsTaxRate?.adminSettingsTaxRate?._id
-    ?? body?.data?.createAdminSettingsTaxRate?.adminSettingsTaxRate?.id);
-  return { id, identifier };
+function zipCodeRate(identifier: string): Record<string, any> {
+  return { identifier, country: 'US', state: 'NY', taxRate: 8.5, isZip: false, zipCode: '10001' };
 }
 
-test.describe('Admin Settings TaxRates GraphQL API', () => {
-  test('listing returns edges', async ({ request }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_TAX_RATES_LIST, { first: 5 });
-    expect(resp.status()).toBe(200);
-    const body = await safeJson(resp);
-    expect(Array.isArray(body?.data?.adminSettingsTaxRates?.edges)).toBe(true);
+function zipRangeRate(identifier: string): Record<string, any> {
+  return { identifier, country: 'US', state: 'NY', taxRate: 8.5, isZip: true, zipFrom: '10000', zipTo: '10999' };
+}
+
+async function gql(request: APIRequestContext, query: string, variables: Record<string, any> = {}): Promise<any> {
+  const resp = await sendAdminGraphQLRequest(request, query, variables);
+  expect(resp.status()).toBe(200);
+  return resp.json();
+}
+
+function dataOf(body: any, field: string): any {
+  expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+  return body.data[field];
+}
+
+function firstError(body: any): string | undefined {
+  return body.errors?.[0]?.message;
+}
+
+async function createRate(request: APIRequestContext, variables: Record<string, any>): Promise<any> {
+  const rate = dataOf(await gql(request, ADMIN_TAX_RATE_CREATE, variables), 'createAdminSettingsTaxRate').adminSettingsTaxRate;
+  expect(rate.identifier).toBe(variables.identifier);
+  expect(rate.id).toBe(RATE_IRI(rate._id));
+
+  return rate;
+}
+
+async function rateCount(request: APIRequestContext, identifier: string): Promise<number> {
+  return dataOf(await gql(request, RATES_LIST, { first: 5, identifier }), 'adminSettingsTaxRates').totalCount;
+}
+
+test.describe('admin settings tax rates graphql api', () => {
+  let createdIds: number[];
+
+  test.beforeEach(() => {
+    createdIds = [];
   });
 
-  test('detail not-found', async ({ request }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_TAX_RATE_DETAIL, { id: '/api/admin/settings/tax-rates/99999999' });
-    expect(resp.status()).toBe(200);
+  test.afterEach(async ({ request }) => {
+    for (const id of createdIds) {
+      await sendAdminGraphQLRequest(request, RATE_DELETE, { id: RATE_IRI(id) });
+    }
   });
 
-  test('create zip=false + update + delete', async ({ request }) => {
-    const { id } = await createRate(request, false);
-    if (!id) return;
-    const iri = `/api/admin/settings/tax-rates/${id}`;
-    const upd = await sendAdminGraphQLRequest(request, ADMIN_TAX_RATE_UPDATE, { id: iri, taxRate: 9.0 });
-    expect(upd.status()).toBe(200);
-    const del = await sendAdminGraphQLRequest(request, ADMIN_TAX_RATE_DELETE, { id: iri });
-    expect(del.status()).toBe(200);
-  });
+  test('listing filtered by identifier returns only the created rate', async ({ request }) => {
+    const identifier = uniqueIdentifier();
+    const rate = await createRate(request, zipCodeRate(identifier));
+    createdIds.push(rate._id);
 
-  test('create zip=true + delete', async ({ request }) => {
-    const { id } = await createRate(request, true);
-    if (!id) return;
-    const del = await sendAdminGraphQLRequest(request, ADMIN_TAX_RATE_DELETE, { id: `/api/admin/settings/tax-rates/${id}` });
-    expect(del.status()).toBe(200);
-  });
-
-  test('create is_zip=false without zip_code is rejected', async ({ request }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_TAX_RATE_CREATE, {
-      identifier: unique(), country: 'US', state: 'NY', taxRate: 8.5, isZip: false,
+    const connection = dataOf(await gql(request, RATES_LIST, { first: 5, identifier }), 'adminSettingsTaxRates');
+    expect(connection.totalCount).toBe(1);
+    expect(connection.edges[0].node).toEqual({
+      _id: rate._id,
+      identifier,
+      country: 'US',
+      state: 'NY',
+      taxRate: 8.5,
+      isZip: false,
+      zipCode: '10001',
     });
-    expect(resp.status()).toBe(200);
-    const body = await safeJson(resp);
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const nullPayload = body?.data?.createAdminSettingsTaxRate?.adminSettingsTaxRate === null;
-    expect(hasErrors || nullPayload).toBe(true);
+  });
+
+  test('detail of an unknown tax rate reports not found', async ({ request }) => {
+    const body = await gql(request, ADMIN_TAX_RATE_DETAIL, { id: UNKNOWN_IRI });
+    expect(firstError(body)).toBe(NOT_FOUND);
+    expect(body.data?.adminSettingsTaxRate ?? null).toBeNull();
+  });
+
+  test('create with a zip code then update the rate and delete it', async ({ request }) => {
+    const identifier = uniqueIdentifier();
+    const rate = await createRate(request, zipCodeRate(identifier));
+    createdIds.push(rate._id);
+
+    const updated = dataOf(await gql(request, ADMIN_TAX_RATE_UPDATE, { id: rate.id, taxRate: 9 }), 'updateAdminSettingsTaxRate')
+      .adminSettingsTaxRate;
+    expect(updated).toEqual(expect.objectContaining({ _id: rate._id, taxRate: 9 }));
+
+    const reread = dataOf(await gql(request, ADMIN_TAX_RATE_DETAIL, { id: rate.id }), 'adminSettingsTaxRate');
+    expect(reread).toEqual(expect.objectContaining({ identifier, taxRate: 9, isZip: false, zipCode: '10001', zipFrom: null, zipTo: null }));
+
+    const deleted = dataOf(await gql(request, RATE_DELETE, { id: rate.id }), 'deleteAdminSettingsTaxRate').adminSettingsTaxRate;
+    expect(deleted).toEqual({ _id: rate._id, identifier, message: DELETED });
+    createdIds = [];
+
+    expect(firstError(await gql(request, ADMIN_TAX_RATE_DETAIL, { id: rate.id }))).toBe(NOT_FOUND);
+  });
+
+  test('create with a zip range stores the range and clears the zip code', async ({ request }) => {
+    const identifier = uniqueIdentifier();
+    const rate = await createRate(request, { ...zipRangeRate(identifier), zipCode: '99999' });
+    createdIds.push(rate._id);
+
+    const detail = dataOf(await gql(request, ADMIN_TAX_RATE_DETAIL, { id: rate.id }), 'adminSettingsTaxRate');
+    expect(detail).toEqual(expect.objectContaining({ identifier, isZip: true, zipCode: null, zipFrom: '10000', zipTo: '10999' }));
+  });
+
+  test('create without a zip code when is zip is false is rejected', async ({ request }) => {
+    const identifier = uniqueIdentifier();
+    expect(firstError(await gql(request, ADMIN_TAX_RATE_CREATE, { ...zipCodeRate(identifier), zipCode: null }))).toBe(ZIP_CODE_REQUIRED);
+    expect(await rateCount(request, identifier)).toBe(0);
+  });
+
+  test('create without a zip range when is zip is true is rejected', async ({ request }) => {
+    const identifier = uniqueIdentifier();
+
+    expect(firstError(await gql(request, ADMIN_TAX_RATE_CREATE, { ...zipRangeRate(identifier), zipTo: null }))).toBe(ZIP_RANGE_REQUIRED);
+    expect(await rateCount(request, identifier)).toBe(0);
+  });
+
+  test('create with a taken identifier is rejected', async ({ request }) => {
+    const identifier = uniqueIdentifier();
+    const rate = await createRate(request, zipCodeRate(identifier));
+    createdIds.push(rate._id);
+
+    expect(firstError(await gql(request, ADMIN_TAX_RATE_CREATE, zipCodeRate(identifier)))).toBe('The identifier has already been taken.');
+    expect(await rateCount(request, identifier)).toBe(1);
+  });
+
+  test('update of an unknown tax rate reports not found', async ({ request }) => {
+    expect(firstError(await gql(request, ADMIN_TAX_RATE_UPDATE, { id: UNKNOWN_IRI, taxRate: 5 }))).toBe(NOT_FOUND);
   });
 });

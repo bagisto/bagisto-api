@@ -9,8 +9,14 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionPreviewProvider;
 
 class AdminAppearanceSectionPreviewQueryResolver implements QueryItemResolverInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected AdminAppearanceSectionPreviewProvider $provider) {}
 
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?object $item, array $context): AdminAppearanceSectionPreview
     {
         return $this->provider->provide(new Get, [], $context);

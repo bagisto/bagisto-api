@@ -3,53 +3,15 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AssertsSanitisedHtml;
 
-/**
- * GraphQL coverage for the admin CMS Pages endpoints.
- */
 class CmsPageTest extends AdminApiTestCase
 {
-    protected function insertCmsPage(array $translation = [], array $channels = []): int
-    {
-        $pageId = \DB::table('cms_pages')->insertGetId([
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+    use AssertsSanitisedHtml;
 
-        \DB::table('cms_page_translations')->insert(array_merge([
-            'cms_page_id' => $pageId,
-            'locale' => 'en',
-            'page_title' => 'GQL Page '.$pageId,
-            'url_key' => 'gql-page-'.$pageId,
-            'html_content' => '<p>content</p>',
-            'meta_title' => null,
-            'meta_keywords' => null,
-            'meta_description' => null,
-        ], $translation));
-
-        if (! empty($channels)) {
-            foreach ($channels as $cid) {
-                \DB::table('cms_page_channels')->insert([
-                    'cms_page_id' => $pageId,
-                    'channel_id' => $cid,
-                ]);
-            }
-        } else {
-            $cid = \DB::table('channels')->value('id') ?: 1;
-            \DB::table('cms_page_channels')->insert([
-                'cms_page_id' => $pageId,
-                'channel_id' => $cid,
-            ]);
-        }
-
-        return $pageId;
-    }
-
-    protected function defaultChannelId(): int
-    {
-        return (int) (\DB::table('channels')->value('id') ?: 1);
-    }
-
+    /**
+     * Test query listing returns pages.
+     */
     public function test_query_listing_returns_pages(): void
     {
         $admin = $this->createAdmin();
@@ -72,6 +34,9 @@ class CmsPageTest extends AdminApiTestCase
         expect($response->json('data.adminCmsPages.edges'))->toBeArray();
     }
 
+    /**
+     * Test query listing multi word fields resolve non null.
+     */
     public function test_query_listing_multi_word_fields_resolve_non_null(): void
     {
         $admin = $this->createAdmin();
@@ -108,6 +73,9 @@ class CmsPageTest extends AdminApiTestCase
         expect($node['createdAt'])->not->toBeNull();
     }
 
+    /**
+     * Test query detail multi word fields resolve non null.
+     */
     public function test_query_detail_multi_word_fields_resolve_non_null(): void
     {
         $admin = $this->createAdmin();
@@ -142,6 +110,9 @@ class CmsPageTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test query detail returns page.
+     */
     public function test_query_detail_returns_page(): void
     {
         $admin = $this->createAdmin();
@@ -167,6 +138,9 @@ class CmsPageTest extends AdminApiTestCase
         expect($hasErrors || $hasData)->toBeTrue();
     }
 
+    /**
+     * Test mutation create happy path.
+     */
     public function test_mutation_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -195,6 +169,9 @@ class CmsPageTest extends AdminApiTestCase
         expect($exists || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test mutation update happy path.
+     */
     public function test_mutation_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -234,6 +211,83 @@ class CmsPageTest extends AdminApiTestCase
         expect($after)->toBe('After GQL Update');
     }
 
+    /**
+     * The create mutation stores the HTML content as core's `clean_content()` leaves it.
+     */
+    public function test_mutation_create_sanitises_html_content(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'gql-cr-xss-'.uniqid();
+
+        $mutation = <<<'GQL'
+            mutation($input: createAdminCmsPageInput!) {
+              createAdminCmsPage(input: $input) {
+                adminCmsPage { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'urlKey' => $slug,
+                'pageTitle' => 'GQL Sanitised',
+                'htmlContent' => $this->unsafeHtml(),
+                'channels' => [$this->defaultChannelId()],
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeEmpty();
+
+        $this->assertSanitisedHtml(
+            \DB::table('cms_page_translations')->where('url_key', $slug)->value('html_content'),
+            $this->unsafeHtml(),
+        );
+    }
+
+    /**
+     * The update mutation stores the locale's HTML content as core's `clean_content()` leaves it.
+     */
+    public function test_mutation_update_sanitises_html_content(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'gql-upd-xss-'.uniqid();
+        $id = $this->insertCmsPage(['url_key' => $slug]);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminCmsPageInput!) {
+              updateAdminCmsPage(input: $input) {
+                adminCmsPage { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => '/api/admin/cms/pages/'.$id,
+                'locale' => 'en',
+                'channels' => [$this->defaultChannelId()],
+
+                'en' => [
+                    'url_key' => $slug,
+                    'page_title' => 'GQL Sanitised Update',
+                    'html_content' => $this->unsafeHtml(),
+                ],
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeEmpty();
+
+        $this->assertSanitisedHtml(
+            \DB::table('cms_page_translations')->where('cms_page_id', $id)->where('locale', 'en')->value('html_content'),
+            $this->unsafeHtml(),
+        );
+    }
+
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -258,6 +312,9 @@ class CmsPageTest extends AdminApiTestCase
         expect(\DB::table('cms_pages')->where('id', $id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mutation mass delete happy path.
+     */
     public function test_mutation_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -279,6 +336,9 @@ class CmsPageTest extends AdminApiTestCase
         expect(\DB::table('cms_pages')->where('id', $id2)->exists())->toBeFalse();
     }
 
+    /**
+     * Test query detail selects translation and channel subfields.
+     */
     public function test_query_detail_selects_translation_and_channel_subfields(): void
     {
         $admin = $this->createAdmin();
@@ -322,6 +382,9 @@ class CmsPageTest extends AdminApiTestCase
         expect($channelNodes->first()['name'])->not->toBeNull();
     }
 
+    /**
+     * Test query detail partial translation selection returns only requested field.
+     */
     public function test_query_detail_partial_translation_selection_returns_only_requested_field(): void
     {
         $admin = $this->createAdmin();
@@ -351,5 +414,52 @@ class CmsPageTest extends AdminApiTestCase
         $en = $nodes->firstWhere('pageTitle', 'Partial Page');
         expect($en)->not->toBeNull();
         expect(array_keys($en))->toBe(['pageTitle']);
+    }
+
+    /**
+     * Insert cms page.
+     */
+    protected function insertCmsPage(array $translation = [], array $channels = []): int
+    {
+        $pageId = \DB::table('cms_pages')->insertGetId([
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        \DB::table('cms_page_translations')->insert(array_merge([
+            'cms_page_id' => $pageId,
+            'locale' => 'en',
+            'page_title' => 'GQL Page '.$pageId,
+            'url_key' => 'gql-page-'.$pageId,
+            'html_content' => '<p>content</p>',
+            'meta_title' => null,
+            'meta_keywords' => null,
+            'meta_description' => null,
+        ], $translation));
+
+        if (! empty($channels)) {
+            foreach ($channels as $cid) {
+                \DB::table('cms_page_channels')->insert([
+                    'cms_page_id' => $pageId,
+                    'channel_id' => $cid,
+                ]);
+            }
+        } else {
+            $cid = \DB::table('channels')->value('id') ?: 1;
+            \DB::table('cms_page_channels')->insert([
+                'cms_page_id' => $pageId,
+                'channel_id' => $cid,
+            ]);
+        }
+
+        return $pageId;
+    }
+
+    /**
+     * Default channel id.
+     */
+    protected function defaultChannelId(): int
+    {
+        return (int) (\DB::table('channels')->value('id') ?: 1);
     }
 }

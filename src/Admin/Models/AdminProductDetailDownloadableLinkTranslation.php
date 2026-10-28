@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/** Downloadable-link translation — nested in the downloadableLinks connection. */
 #[ApiResource(
     shortName: 'AdminProductDetailDownloadableLinkTranslation',
     operations: [],
@@ -15,12 +14,23 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminProductDetailDownloadableLinkTranslation extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the downloadable link translations.
+     *
+     * @var string
+     */
     protected $table = 'product_downloadable_link_translations';
 
-    /** @var array */
+    /**
+     * The native types the downloadable link translation attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = ['id' => 'int'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

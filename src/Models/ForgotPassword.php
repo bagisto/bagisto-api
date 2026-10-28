@@ -25,7 +25,7 @@ use Webkul\BagistoApi\State\ForgotPasswordProcessor;
                 'groups' => ['mutation'],
             ],
             openapi: new Operation(
-                tags: ['Customer'],
+                tags: ['Customer Authentication'],
                 summary: 'Request password reset link',
                 description: 'Sends a password reset email to the given customer email if the account exists.',
                 requestBody: new RequestBody(
@@ -81,9 +81,15 @@ use Webkul\BagistoApi\State\ForgotPasswordProcessor;
 )]
 class ForgotPassword
 {
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $message = null;
 }

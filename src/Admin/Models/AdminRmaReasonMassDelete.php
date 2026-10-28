@@ -44,7 +44,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonMassDeleteProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'The deleted reason ids.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -67,11 +67,21 @@ class AdminRmaReasonMassDelete
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = 0;
 
-    /** @var array<int,int>|null */
+    /**
+     * The ids of the RMA reasons that were deleted.
+     *
+     * @var array<int,int>|null
+     */
     public ?array $deleted = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

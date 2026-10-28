@@ -14,17 +14,16 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Core\Models\Currency;
 use Webkul\Core\Repositories\CurrencyRepository;
 
-/**
- * POST /api/admin/settings/currencies/mass-delete + createAdminSettingsCurrencyMassDelete.
- *
- * Pre-validates the whole batch — if any id is a channel base_currency_id, OR
- * the batch would empty the currencies table, the WHOLE batch is rejected with
- * HTTP 400. Non-existent IDs are silently skipped.
- */
 class AdminSettingsCurrencyMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected CurrencyRepository $currencyRepository) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -90,6 +89,9 @@ class AdminSettingsCurrencyMassDeleteProcessor implements ProcessorInterface
         return $this->buildResult($deleted);
     }
 
+    /**
+     * Build result.
+     */
     protected function buildResult(array $deleted): AdminSettingsCurrencyMassDelete
     {
         $result = new AdminSettingsCurrencyMassDelete;
@@ -100,6 +102,9 @@ class AdminSettingsCurrencyMassDeleteProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -127,6 +132,9 @@ class AdminSettingsCurrencyMassDeleteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

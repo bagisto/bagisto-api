@@ -11,9 +11,6 @@ use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Resolver\GdprStatusQueryResolver;
 use Webkul\BagistoApi\State\FeatureStatusProvider;
 
-/**
- * Whether GDPR data requests are enabled on the current channel.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'GdprStatus',
@@ -50,16 +47,26 @@ use Webkul\BagistoApi\State\FeatureStatusProvider;
     graphQlOperations: [
         new Query(
             resolver: GdprStatusQueryResolver::class,
+            description: 'Whether customers can raise GDPR data requests on the current channel. Takes no arguments and needs no customer login. Needs the X-STOREFRONT-KEY header.',
             args: [],
         ),
     ],
 )]
 class GdprStatus
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?string $id = null;
 
+    /**
+     * The channel.
+     */
     public ?string $channel = null;
 
+    /**
+     * The enabled.
+     */
     public ?bool $enabled = null;
 }

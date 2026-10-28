@@ -8,6 +8,9 @@ use Webkul\Sales\Models\OrderComment;
 
 class OrderCommentTest extends AdminApiTestCase
 {
+    /**
+     * Test list query resolves all fields.
+     */
     public function test_list_query_resolves_all_fields(): void
     {
         $orderId = Order::query()->value('id');
@@ -65,6 +68,9 @@ class OrderCommentTest extends AdminApiTestCase
         expect($node['createdAt'])->not->toBeNull();
     }
 
+    /**
+     * Test create requires authentication.
+     */
     public function test_create_requires_authentication(): void
     {
         $mutation = 'mutation($input: createAdminOrderCommentInput!){ createAdminOrderComment(input:$input){ adminOrderCommentDto { id } } }';
@@ -77,6 +83,9 @@ class OrderCommentTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeArray();
     }
 
+    /**
+     * Test create persists comment.
+     */
     public function test_create_persists_comment(): void
     {
         $id = Order::query()->value('id');

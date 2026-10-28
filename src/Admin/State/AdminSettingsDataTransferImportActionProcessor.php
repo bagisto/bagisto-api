@@ -14,24 +14,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\DataTransfer\Helpers\Import as ImportHelper;
 use Webkul\DataTransfer\Models\Import;
 
-/**
- * Drives the import pipeline action endpoints — validate / start / link / index.
- *
- * Each mirrors the matching ImportController method exactly: it runs the import
- * helper through one stage of the pipeline and returns { stats, import } (validate
- * also returns is_valid). The client drives the sequence by calling them in order.
- *
- * The concrete action is selected by the resource shortName the operation belongs
- * to (each action gets its own one-op resource). Permission gate:
- * settings.data_transfer.imports.import.
- */
 class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ImportHelper $importHelper,
         protected AdminSettingsDataTransferImportItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -65,6 +60,9 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
         };
     }
 
+    /**
+     * Validate.
+     */
     protected function validate(Import $import): AdminSettingsDataTransferImport
     {
         $isValid = $this->importHelper->setImport($import)->validate();
@@ -76,6 +74,9 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
         return $result;
     }
 
+    /**
+     * Start.
+     */
     protected function start(Import $import): AdminSettingsDataTransferImport
     {
         $this->assertProcessableRows($import);
@@ -122,6 +123,9 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
         return $this->statsResult(ImportHelper::STATE_PROCESSED);
     }
 
+    /**
+     * Link.
+     */
     protected function link(Import $import): AdminSettingsDataTransferImport
     {
         $this->assertProcessableRows($import);
@@ -155,6 +159,9 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
         return $this->statsResult(ImportHelper::STATE_LINKED);
     }
 
+    /**
+     * Index.
+     */
     protected function index(Import $import): AdminSettingsDataTransferImport
     {
         $this->assertProcessableRows($import);
@@ -184,8 +191,13 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
         return $this->statsResult(ImportHelper::STATE_INDEXED);
     }
 
+    /**
+     * Build the action result, reloading the batches so the stats count the batch the action just moved.
+     */
     protected function statsResult(string $state): AdminSettingsDataTransferImport
     {
+        $this->importHelper->getImport()->load('batches');
+
         $stats = $this->importHelper->stats($state);
 
         $result = $this->itemProvider->mapToDtoPublic($this->importHelper->getImport());
@@ -195,6 +207,9 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
         return $result;
     }
 
+    /**
+     * Assert processable rows.
+     */
     protected function assertProcessableRows(Import $import): void
     {
         if (! $import->processed_rows_count) {
@@ -202,6 +217,9 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
         }
     }
 
+    /**
+     * Resolve action.
+     */
     protected function resolveAction(Operation $operation): string
     {
         $shortName = (string) $operation->getShortName();
@@ -215,6 +233,9 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
         };
     }
 
+    /**
+     * Resolve import id.
+     */
     protected function resolveImportId(mixed $data, array $uriVariables, array $context): int
     {
         if (isset($uriVariables['id'])) {
@@ -243,6 +264,9 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
         return 0;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

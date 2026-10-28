@@ -1,9 +1,13 @@
 <?php
 
 return [
+
     'graphql' => [
         'headers' => [
             'unknown-channel' => 'Canalul „:code” din antetul X-Channel nu există.',
+            'storefront-key-required' => 'Antetul X-STOREFRONT-KEY este obligatoriu',
+            'storefront-key-invalid' => 'Cheie storefront invalidă',
+            'storefront-key-rate-limited' => 'Limita de cereri a fost depășită. Vă rugăm să încercați din nou după :seconds secunde',
         ],
 
         'cart' => [
@@ -42,7 +46,6 @@ return [
             'add-product-failed' => 'Adăugarea produsului în coș a eșuat',
             'update-item-failed' => 'Actualizarea articolului din coș a eșuat',
             'remove-item-failed' => 'Eliminarea articolului din coș a eșuat',
-            'apply-coupon-failed' => 'Aplicarea cuponului a eșuat',
             'remove-coupon-failed' => 'Eliminarea cuponului a eșuat',
             'coupon-applied' => 'Cuponul a fost aplicat cu succes',
             'coupon-removed' => 'Cuponul a fost eliminat cu succes',
@@ -59,6 +62,15 @@ return [
             'select-items-to-move-wishlist' => 'Vă rugăm să selectați articolele de mutat în lista de dorințe',
             'invalid-or-expired-token' => 'Tokenul coșului este invalid sau a expirat. Vă rugăm să creați un coș nou.',
             'invalid-token-of-login-user' => 'Tokenul utilizatorului autentificat este invalid.',
+            'booking-note-required' => 'booking.note este obligatoriu pentru rezervarea de mese.',
+            'booking-date-required' => 'booking.date este obligatoriu atunci când booking.slot este un interval orar formatat.',
+            'booking-qty-required' => 'booking.qty este obligatoriu pentru rezervarea la eveniment.',
+            'booking-ticket-qty-invalid' => 'Cantitatea de bilete pentru eveniment trebuie să fie un număr nenegativ.',
+            'booking-ticket-required' => 'Selectați cantitatea pentru cel puțin un bilet pentru rezervarea la eveniment.',
+            'booking-slot-unavailable' => 'Intervalul selectat nu este disponibil pentru data specificată.',
+            'invalid-quantity' => 'Cantitatea trebuie să fie de cel puțin 1',
+            'product-id-required' => 'ID-ul produsului este obligatoriu',
+            'shipping-address-required' => 'Țara și codul poștal sunt obligatorii pentru estimarea livrării',
         ],
 
         'token-verification' => [
@@ -82,6 +94,14 @@ return [
             'email-not-found' => 'Adresa de e-mail nu a fost găsită',
             'throttled' => 'Prea multe încercări de resetare. Vă rugăm să așteptați înainte de a încerca din nou.',
             'error-sending-reset-link' => 'A apărut o eroare la trimiterea linkului de resetare',
+        ],
+
+        'reset-password' => [
+            'failed' => 'Parola nu a putut fi resetată. Vă rugăm să încercați din nou.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Prea multe încercări. Vă rugăm să încercați din nou peste :seconds secunde.',
         ],
 
         'logout' => [
@@ -135,6 +155,7 @@ return [
             'id-required' => 'ID-ul recenziei produsului este obligatoriu',
             'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/reviews/1" sau un ID numeric',
             'not-found' => 'Recenzia produsului cu ID-ul „:id” nu a fost găsită',
+            'item-not-found' => 'Elementul „:id” nu a fost găsit.',
             'product-id-required' => 'ID-ul produsului este obligatoriu',
             'product-not-found' => 'Produsul nu a fost găsit',
             'rating-invalid' => 'Evaluarea trebuie să fie între 1 și 5',
@@ -144,6 +165,8 @@ return [
             'guest-review-disabled' => 'Recenziile vizitatorilor nu sunt permise. Vă rugăm să vă autentificați pentru a trimite o recenzie',
             'owner-required' => 'Vă rugăm să vă autentificați pentru a vă gestiona recenzia',
             'not-owned' => 'Această recenzie nu a fost scrisă de dumneavoastră și nu poate fi modificată sau ștearsă',
+            'invalid-attachments' => 'Format invalid al atașamentelor.',
+            'invalid-product-id-format' => 'Format de ID de produs invalid. Se așteaptă un format IRI precum "/api/shop/products/1" sau un ID numeric',
         ],
 
         'customer-review' => [
@@ -191,6 +214,7 @@ return [
             'reopen-not-allowed' => 'Această cerere de retur nu poate fi redeschisă.',
             'closed' => 'Cererea de retur a fost închisă cu succes.',
             'message-sent' => 'Mesajul a fost trimis cu succes.',
+            'attachment-not-found' => 'Atașamentul mesajului nu a fost găsit.',
         ],
 
         'eu-withdrawal' => [
@@ -204,6 +228,7 @@ return [
             'id-required' => 'ID-ul expedierii este obligatoriu',
             'not-found' => 'Expedierea cu ID-ul „:id” nu a fost găsită sau nu aparține acestui client',
             'item-not-found' => 'Articolul expedierii cu ID-ul „:id” nu a fost găsit sau nu aparține acestui client',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/customer-order-shipments/1" sau un ID numeric',
         ],
 
         'cancel-order' => [
@@ -224,6 +249,16 @@ return [
             'id-required' => 'ID-ul produsului descărcabil al clientului este obligatoriu',
             'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/customer-downloadable-products/1" sau un ID numeric',
             'not-found' => 'Produsul descărcabil al clientului cu ID-ul „:id” nu a fost găsit',
+
+            'download' => [
+                'unauthenticated' => 'Neautorizat: este necesară autentificarea clientului.',
+                'not-found' => 'Produsul descărcabil nu a fost găsit.',
+                'pending' => 'Descărcarea este în așteptare. Vă rugăm să așteptați facturarea comenzii.',
+                'limit-exceeded' => 'Limita de descărcări a fost depășită.',
+                'no-downloads-remaining' => 'Nu mai sunt descărcări disponibile.',
+                'file-not-found' => 'Fișierul nu a fost găsit.',
+                'link-not-found' => 'Linkul descărcabil nu a fost găsit.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -239,6 +274,14 @@ return [
             'token-required' => 'Tokenul de autentificare este obligatoriu. Vă rugăm să furnizați tokenul în antetul Authorization ca "Bearer <token>"',
             'unknown-resource' => 'Resursă necunoscută',
             'cannot-update-other-profile' => 'Neautorizat: nu puteți actualiza profilul altui client',
+            'refresh-token-invalid' => 'Tokenul de reîmprospătare este invalid sau a expirat. Autentifică-te din nou.',
+            'too-many-login-attempts' => 'Prea multe încercări de autentificare. Încercați din nou peste :seconds secunde.',
+            'too-many-refresh-requests' => 'Prea multe reîmprospătări de token. Încercați din nou peste :seconds secunde.',
+            'rate-limit-exceeded' => 'Prea multe încercări.',
+            'access-token-expired' => 'Tokenul de acces a expirat. Reîmprospătează-l pentru a continua.',
+            'logged-out-all' => 'Ați fost deconectat din toate sesiunile.',
+            'session-not-found' => 'Sesiunea nu a fost găsită.',
+            'session-revoked' => 'Sesiunea a fost revocată.',
         ],
 
         'upload' => [
@@ -363,6 +406,8 @@ return [
             'size' => 'Mărime',
             'brand' => 'Marcă',
             'super-attributes' => 'Super atribute',
+            'id-required' => 'ID-ul produsului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/products/1" sau un ID numeric',
         ],
 
         'downloadable-product' => [
@@ -377,6 +422,31 @@ return [
             'redirect-external-url' => 'Redirecționare către URL-ul extern de descărcare',
             'file-error' => 'A apărut o eroare la procesarea cererii de descărcare',
             'unauthorized-access' => 'Acces neautorizat la resursa de descărcare',
+            'unauthenticated' => 'Neautorizat: este necesară autentificarea clientului',
+            'link-id-required' => 'downloadableLinkPurchasedId este obligatoriu',
+            'link-not-found' => 'Linkul descărcabil nu a fost găsit',
+            'not-owner' => 'Neautorizat: acest link de descărcare nu vă aparține',
+            'pending' => 'Descărcarea este în așteptare. Vă rugăm să așteptați facturarea comenzii.',
+            'limit-exceeded' => 'Limita de descărcări a fost depășită',
+            'no-downloads-left' => 'Nu mai sunt descărcări disponibile',
+        ],
+
+        'booking-slot' => [
+            'id-required' => 'ID-ul produsului de rezervare este obligatoriu.',
+            'date-required' => 'Data este obligatorie.',
+            'product-not-found' => 'Produsul de rezervare nu a fost găsit.',
+            'invalid-type' => 'Acest tip de rezervare nu este acceptat.',
+            'invalid-time-range' => 'Interval orar invalid.',
+            'invalid-time-format' => 'Format de oră invalid.',
+        ],
+
+        'resolver' => [
+            'no-resolve-info' => 'GraphQL ResolveInfo nu este disponibil în context. Nu se poate determina clasa modelului.',
+            'unknown-resource-class' => 'Nu se poate determina clasa resursei din tipul returnat GraphQL',
+        ],
+
+        'docs' => [
+            'openapi-unavailable' => 'OpenAPI Factory nu a putut fi instanțiat',
         ],
 
         'locale' => [
@@ -579,6 +649,8 @@ return [
             'notify-success-message' => '   ✅ Au fost trimise :count notificări de expirare',
             'notify-failed-message' => '   ⚠️ Notificarea despre :key a eșuat: :error',
             'publish-assets-warning' => 'Avertisment: resursele pachetului nu au putut fi publicate. :error',
+            'env-file-not-found' => 'Fișierul .env nu a fost găsit. Creați-l înainte de instalare.',
+            'env-permission-denied' => 'Fișierul .env nu poate fi scris. Verificați-i permisiunile.',
             'env-config-saved' => '✓ Configurația de mediu API Platform a fost salvată cu succes',
             'api-endpoints' => 'Endpoint-uri API:',
             'api-documentation' => 'Documentație API: :url',
@@ -586,11 +658,106 @@ return [
             'graphql-playground' => 'GraphQL Playground: :url',
             'rest-api-storefront' => 'Swagger REST API Storefront: :url',
             'rest-api-admin' => 'Swagger REST API Admin: :url',
+            'generating-jwt-keys' => 'Se generează cheile de semnare JWT pentru tokenurile API de administrare...',
+            'jwt-keys-generated' => '✓ Cheile de semnare JWT sunt gata',
+            'jwt-keys-warning' => 'Avertisment: cheile de semnare JWT nu au putut fi generate. Rulați manual php artisan bagisto-api:jwt-keys. :error',
+            'admin-login' => 'Autentificare API de administrare: :url',
+            'admin-api-tokens' => 'Tokenuri API de administrare (integrări de server): :url',
+            'key-rotation-invalid-key' => 'Nu se poate roti o cheie invalidă sau expirată',
+            'env-file-not-found' => 'Fișierul .env nu a fost găsit',
+            'env-permission-denied' => 'Permisiune refuzată: nu se poate scrie în fișierul .env. Verificați permisiunile fișierului.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'ID-ul traducerii atributului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/attribute-translations/1" sau un ID numeric',
+            'not-found' => 'Traducerea atributului nu a fost găsită',
+        ],
+
+        'currency' => [
+            'id-required' => 'ID-ul monedei este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/currencies/1" sau un ID numeric',
+            'not-found' => 'Moneda nu a fost găsită',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'ID-ul adresei clientului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/customer-addresses/1" sau un ID numeric',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'ID-ul articolului din expediere este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/customer-order-shipment-items/1" sau un ID numeric',
+            'not-found' => 'Articolul din expediere nu a fost găsit',
+        ],
+
+        'page' => [
+            'id-required' => 'ID-ul paginii este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/pages/1" sau un ID numeric',
+            'not-found' => 'Pagina nu a fost găsită',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'ID-ul traducerii paginii este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/page-translations/1" sau un ID numeric',
+            'not-found' => 'Traducerea paginii nu a fost găsită',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'ID-ul opțiunii pachetului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-bundle-options/1" sau un ID numeric',
+            'not-found' => 'Opțiunea pachetului nu a fost găsită',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'ID-ul produsului opțiunii pachetului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-bundle-option-products/1" sau un ID numeric',
+            'not-found' => 'Produsul opțiunii pachetului nu a fost găsit',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'ID-ul linkului descărcabil este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-downloadable-links/1" sau un ID numeric',
+            'not-found' => 'Linkul descărcabil nu a fost găsit',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'ID-ul mostrei descărcabile este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-downloadable-samples/1" sau un ID numeric',
+            'not-found' => 'Mostra descărcabilă nu a fost găsită',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'ID-ul produsului grupat este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-grouped-products/1" sau un ID numeric',
+            'not-found' => 'Produsul grupat nu a fost găsit',
+        ],
+
+        'product-images' => [
+            'id-required' => 'ID-ul imaginii produsului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-images/1" sau un ID numeric',
+            'not-found' => 'Imaginea produsului nu a fost găsită',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'ID-ul videoclipului produsului este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/product-videos/1" sau un ID numeric',
+            'not-found' => 'Videoclipul produsului nu a fost găsit',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'ID-ul personalizării temei este obligatoriu',
+            'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/theme-customizations/1" sau un ID numeric',
+            'not-found' => 'Personalizarea temei nu a fost găsită',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'ID-ul resursei este obligatoriu',
+            'not-found' => 'Resursa nu a fost găsită',
         ],
     ],
 
     'admin' => [
-
         'profile' => [
             'unauthenticated' => 'Nu sunteți autentificat.',
         ],
@@ -628,6 +795,8 @@ return [
             'mass-delete-success' => 'Elementele selectate au fost șterse.',
             'mass-update-success' => 'Elementele selectate au fost actualizate.',
             'mass-value-invalid' => 'Valoarea stării trebuie să fie 0 sau 1.',
+            'image-not-found' => 'Imaginea returului nu a fost găsită.',
+            'attachment-not-found' => 'Atașamentul mesajului nu a fost găsit.',
         ],
 
         'eu-withdrawal' => [
@@ -680,10 +849,6 @@ return [
             'note' => [
                 'empty' => 'Textul notei este obligatoriu.',
                 'created' => 'Nota a fost adăugată cu succes.',
-            ],
-
-            'impersonate' => [
-                'success' => 'Tokenul de impersonare a fost emis.',
             ],
 
             'review' => [
@@ -818,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Secțiunea nu a fost găsită.',
                 'invalid-payload' => 'Conținut de secțiune neacceptat.',
-                'footer-links-exists' => 'Acest canal are deja o secțiune de linkuri în subsol.',
                 'options-required' => 'Opțiunile sunt obligatorii.',
                 'status-required' => 'Starea este obligatorie.',
                 'section-ids-required' => 'Este necesară cel puțin o secțiune.',
@@ -1213,7 +1377,6 @@ return [
 
             'currency' => [
                 'not-found' => 'Moneda nu a fost găsită.',
-
                 'created' => 'Moneda a fost creată cu succes.',
                 'updated' => 'Moneda a fost actualizată cu succes.',
                 'deleted' => 'Moneda a fost ștearsă cu succes.',
@@ -1298,6 +1461,7 @@ return [
                     'error-report-not-found' => 'Nu este disponibil niciun raport de erori pentru descărcare.',
                     'sample-not-found' => 'Nu este disponibil niciun fișier exemplu pentru tipul și formatul solicitate.',
                     'sample-format-invalid' => 'Formatul exemplului trebuie să fie unul dintre: csv, xls, xlsx, xml.',
+                    'images-archive-too-large' => 'Arhiva de imagini poate conține cel mult :entries fișiere și se poate dezarhiva la cel mult :size MB.',
                 ],
             ],
         ],
@@ -1463,22 +1627,353 @@ return [
                 'no-permission' => 'Nu aveți permisiunea de a gestiona termenii de căutare.',
             ],
         ],
-    ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'Sesiuni API',
+            ],
 
-    'integration' => [
-        'menu' => [
-            'title' => 'Integrare',
-            'tokens' => 'Tokenuri',
+            'acl' => [
+                'title' => 'Sesiuni API',
+                'delete' => 'Revocă',
+            ],
+
+            'index' => [
+                'title' => 'Sesiuni API ale clienților',
+                'info' => 'Clienți autentificați în API-ul magazinului din aplicații web, mobile, POS sau desktop. Revocarea unei sesiuni deconectează imediat acel dispozitiv.',
+            ],
+
+            'fields' => [
+                'customer' => 'Client',
+                'email' => 'E-mail',
+                'channel' => 'Canal',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'Revocă toate sesiunile clientului',
+            ],
+
+            'card' => [
+                'title' => 'Sesiuni API (:count)',
+                'empty' => 'Acest client nu are sesiuni API active.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Nu aveți permisiunea de a gestiona sesiunile API ale clienților.',
+            ],
         ],
 
-        'history' => [
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'Autentificarea clienților',
+                'info' => 'Durata tokenurilor, limitele și regulile de sesiune pentru autentificările clienților magazinului.',
+
+                'tokens' => [
+                    'title' => 'Durata tokenurilor',
+                    'info' => 'Cât timp rămân valide tokenurile de acces, tokenurile de reîmprospătare și sesiunile. Modificările se aplică tokenurilor emise ulterior.',
+                    'access-token-ttl' => 'Durata tokenului de acces (minute)',
+                    'access-token-ttl-info' => 'Între 5 și 60 de minute. Implicit 15.',
+                    'refresh-token-ttl' => 'Durata tokenului de reîmprospătare (zile)',
+                    'refresh-token-ttl-info' => 'Între 1 și 90 de zile. Implicit 30.',
+                    'session-lifetime' => 'Durata maximă a sesiunii (zile)',
+                    'session-lifetime-info' => 'Între 1 și 365 de zile. Implicit 90. După aceea clientul trebuie să se autentifice din nou, indiferent de câte ori a fost reîmprospătată sesiunea.',
+                    'max-sessions' => 'Numărul maxim de sesiuni active per client',
+                    'max-sessions-info' => 'Când limita este atinsă, cea mai veche sesiune este încheiată. Între 0 și 100. 0 înseamnă fără limită.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Limite de cereri',
+                    'info' => 'Numărul maxim de cereri API ale magazinului pe minut pentru fiecare client autentificat.',
+                    'requests-per-minute' => 'Cereri pe minut per client autentificat',
+                    'requests-per-minute-info' => 'Între 1 și 100000. Implicit 120.',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Protecția autentificării',
+                    'info' => 'Câte autentificări eșuate și reîmprospătări de token sunt permise înainte ca clientul să aștepte.',
+                    'login-max-attempts' => 'Autentificări eșuate înainte de blocare',
+                    'login-max-attempts-info' => 'Per e-mail și adresă IP. Între 3 și 20. Implicit 5.',
+                    'login-lockout-seconds' => 'Blocarea autentificării (secunde)',
+                    'login-lockout-seconds-info' => 'Între 60 și 3600. Implicit 60.',
+                    'refresh-requests-per-minute' => 'Reîmprospătări de token pe minut per sesiune',
+                    'refresh-requests-per-minute-info' => 'Între 1 și 60. Implicit 10.',
+                ],
+
+                'security' => [
+                    'title' => 'Securitate',
+                    'info' => 'Ce încheie celelalte sesiuni ale unui client.',
+                    'revoke-sessions-on-password-change' => 'Revocă sesiunile la schimbarea parolei',
+                ],
+
+                'retention' => [
+                    'title' => 'Păstrarea datelor',
+                    'info' => 'Cât timp sunt păstrate sesiunile încheiate ale clienților.',
+                    'session-prune-days' => 'Păstrează sesiunile încheiate (zile)',
+                    'session-prune-days-info' => 'Sesiunile revocate sau expirate sunt șterse după acest număr de zile. Între 1 și 365. Implicit 30.',
+                ],
+            ],
+        ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Autentificare administrator',
+                'info' => 'Durata tokenurilor, limite de cereri și reguli de securitate pentru autentificările în API-ul de administrare și tokenurile API.',
+
+                'tokens' => [
+                    'title' => 'Durata tokenurilor',
+                    'info' => 'Cât timp rămân valide tokenurile de acces, tokenurile de reîmprospătare și sesiunile. Modificările se aplică tokenurilor emise ulterior.',
+                    'access-token-ttl' => 'Durata tokenului de acces (minute)',
+                    'access-token-ttl-info' => 'Între 5 și 60 de minute. Implicit 15.',
+                    'refresh-token-ttl' => 'Durata tokenului de reîmprospătare (zile)',
+                    'refresh-token-ttl-info' => 'Între 1 și 90 de zile. Implicit 30.',
+                    'session-lifetime' => 'Durata maximă a sesiunii (zile)',
+                    'session-lifetime-info' => 'Între 1 și 365 de zile. Implicit 90. După aceea administratorul trebuie să se autentifice din nou, indiferent de câte ori a fost reîmprospătată sesiunea.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Limite de cereri',
+                    'info' => 'Numărul maxim de cereri către API-ul de administrare pe minut.',
+                    'session-requests-per-minute' => 'Cereri pe minut per administrator autentificat',
+                    'api-token-requests-per-minute' => 'Cereri pe minut per token API',
+                    'session-requests-per-minute-info' => 'Între 1 și 100000. Implicit 60.',
+                    'api-token-requests-per-minute-info' => 'Între 1 și 100000. Implicit 60.',
+                    'unauthenticated-requests-per-minute' => 'Cereri pe minut fără token, per adresă IP',
+                    'unauthenticated-requests-per-minute-info' => 'Între 10 și 1000. Implicit 60. Include cererile de autentificare, doi factori, reîmprospătare și parolă.',
+                ],
+
+                'security' => [
+                    'title' => 'Securitate',
+                    'info' => 'Reguli de revocare, expirarea tokenurilor API și legarea de domeniu.',
+                    'revoke-sessions-on-password-change' => 'Revocă sesiunile la schimbarea parolei',
+                    'revoke-api-tokens-on-password-change' => 'Revocă tokenurile API la schimbarea parolei',
+                    'allow-non-expiring-api-tokens' => 'Permite tokenuri API fără expirare',
+                    'domain-binding-mode' => 'Mod de legare de domeniu',
+                    'domain-binding-mode-info' => 'DNS verifică dacă cererea vine de la o adresă IP la care se rezolvă domeniul tokenului. Origin verifică antetul Origin sau Referer și este potrivit doar pentru browsere.',
+                    'domain-binding-dns' => 'DNS (adresa IP a clientului)',
+                    'domain-binding-origin' => 'Antetul Origin',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Protecția autentificării',
+                    'info' => 'Câte autentificări eșuate, coduri în doi factori greșite și cereri de parolă sunt permise înainte ca clientul să aștepte.',
+                    'login-max-attempts' => 'Autentificări eșuate înainte de blocare',
+                    'login-max-attempts-info' => 'Per e-mail și adresă IP. Între 3 și 20. Implicit 5.',
+                    'login-lockout-seconds' => 'Blocarea autentificării (secunde)',
+                    'login-lockout-seconds-info' => 'Între 60 și 3600. Implicit 60.',
+                    'two-factor-challenge-lifetime' => 'Durata provocării în doi factori (minute)',
+                    'two-factor-challenge-lifetime-info' => 'Între 1 și 15. Implicit 5.',
+                    'two-factor-max-failures' => 'Coduri în doi factori greșite pe minut',
+                    'two-factor-max-failures-info' => 'Per administrator, în toate provocările. Între 3 și 20. Implicit 5.',
+                    'password-requests-per-minute' => 'Cereri de parolă pe minut',
+                    'password-requests-per-minute-info' => 'Cereri de parolă uitată și resetare per adresă IP. Între 1 și 20. Implicit 5.',
+                ],
+
+                'retention' => [
+                    'title' => 'Păstrarea datelor',
+                    'info' => 'Cât timp sunt păstrate sesiunile încheiate și istoricul de audit al API-ului.',
+                    'session-prune-days' => 'Păstrează sesiunile încheiate (zile)',
+                    'session-prune-days-info' => 'Sesiunile revocate sau expirate sunt șterse după acest număr de zile. Între 1 și 365. Implicit 30.',
+                    'audit-retention-days' => 'Păstrează istoricul de audit al API-ului (zile)',
+                    'audit-retention-days-info' => 'Intrările mai vechi sunt șterse zilnic. Între 0 și 3650. Gol sau 0 le păstrează pentru totdeauna.',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'Nu sunteți autentificat.',
+                'access-token-expired' => 'Tokenul de acces a expirat. Reîmprospătează-l pentru a continua.',
+                'api-token-expired' => 'Tokenul API a expirat.',
+                'refresh-token-invalid' => 'Tokenul de reîmprospătare este invalid sau a expirat. Autentifică-te din nou.',
+                'api-token-revoked' => 'Tokenul API a fost revocat.',
+                'api-token-domain-mismatch' => 'Tokenul API nu poate fi folosit de pe acest domeniu.',
+                'access-token-required' => 'Această acțiune necesită tokenul de acces al unei sesiuni de autentificare; tokenurile API nu o pot folosi.',
+                'two-factor-required' => 'Introduceți codul de 6 cifre din aplicația de autentificare sau unul dintre codurile de rezervă pentru a finaliza conectarea.',
+                'too-many-login-attempts' => 'Prea multe încercări de autentificare. Încercați din nou peste :seconds secunde.',
+                'two-factor-challenge-invalid' => 'Verificarea în doi pași nu este validă sau a expirat. Vă rugăm să vă conectați din nou.',
+                'two-factor-attempts-exceeded' => 'Prea multe coduri greșite. Vă rugăm să vă conectați din nou.',
+                'password-reset-token-invalid' => 'Acest token de resetare a parolei nu este valid sau a expirat.',
+                'too-many-password-requests' => 'Prea multe solicitări de parolă. Vă rugăm să încercați din nou peste :seconds secunde.',
+                'rate-limit-exceeded' => 'Prea multe încercări.',
+                'no-permission' => 'Nu aveți permisiunea de a gestiona sesiunile API ale administratorilor.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'Ați fost deconectat.',
+                'logged-out-all' => 'Ați fost deconectat din toate sesiunile.',
+                'not-found' => 'Sesiunea nu a fost găsită.',
+                'revoked' => 'Sesiunea a fost revocată.',
+                'revoked-for-admin' => 'Sesiuni revocate: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'Parola a fost resetată. Vă rugăm să vă conectați din nou.',
+            ],
+        ],
+
+        'api-tokens' => [
             'menu' => [
-                'title' => 'Istoric',
+                'title' => 'Tokenuri API',
+            ],
+
+            'acl' => [
+                'title' => 'Tokenuri API',
+                'create' => 'Creează',
+                'delete' => 'Revocă',
+                'manage-others' => 'Gestionează tokenurile altor administratori',
+            ],
+
+            'index' => [
+                'title' => 'Tokenuri API',
+                'info' => 'Integrările de server, precum un ERP, PIM, depozit sau sistem de contabilitate, se autentifică cu tokenuri API. Fiecare token acționează ca un administrator, cu permisiunile rolului său, și funcționează doar de pe domeniul de care este legat.',
+                'create-btn' => 'Creează token API',
+            ],
+
+            'create' => [
+                'title' => 'Creează token API',
+                'back-btn' => 'Înapoi',
+                'save-btn' => 'Creează tokenul',
+                'general' => 'General',
+                'expiry' => 'Expirare',
+                'admin-info' => 'Tokenul acționează ca acest administrator și are exact permisiunile rolului său.',
+                'domain-info' => 'Gazda de pe care apelează integrarea, de exemplu erp.example.com. Un URL este redus la gazda sa. Adresele IP și caracterele wildcard nu sunt acceptate, iar domeniul nu poate fi schimbat ulterior.',
+                'expires-on-date' => 'Expiră la o dată',
+                'never-expires' => 'Nu expiră niciodată',
+                'no-expiry-warning' => 'Un token fără expirare funcționează până este revocat. Păstrați-l într-un seif de secrete și revocați-l imediat ce nu mai este necesar.',
+                'no-expiry-confirm' => 'Înțeleg că acest token nu expiră niciodată.',
+                'no-admins' => 'Nu există niciun administrator pentru care puteți crea un token API.',
+            ],
+
+            'view' => [
+                'title' => 'Token API',
+                'back-btn' => 'Înapoi',
+                'save-btn' => 'Salvează',
+                'revoke-btn' => 'Revocă',
+                'details' => 'Detalii',
+                'usage' => 'Utilizare',
+                'token-once-title' => 'Copiați acum tokenul API',
+                'token-once-info' => 'Este singura dată când tokenul este afișat. Păstrați-l într-un seif de secrete; dacă se pierde, revocați-l și creați unul nou.',
+                'copy-btn' => 'Copiază',
+                'copied' => 'Tokenul a fost copiat.',
+                'usage-info' => 'Trimiteți-l ca token Bearer în antetul Authorization al cererilor REST și GraphQL.',
+                'not-yet' => 'Încă nu',
+                'revoke-confirm' => 'Revocați acest token API? Integrarea care îl folosește nu mai funcționează imediat.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Nume',
+                'admin' => 'Administrator',
+                'token' => 'Token',
+                'domain' => 'Domeniu',
+                'expiry' => 'Expirare',
+                'expires-at' => 'Expiră la',
+                'no-expiry-confirmation' => 'Confirmare fără expirare',
+                'status' => 'Stare',
+                'created-by' => 'Creat de',
+                'created-at' => 'Creat la',
+                'last-used-at' => 'Ultima utilizare la',
+                'last-ip-address' => 'Ultima adresă IP',
+                'last-user-agent' => 'Ultimul user agent',
+                'last-channel' => 'Ultimul canal',
+                'resolved-ips' => 'Adrese IP rezolvate',
+                'resolved-at' => 'Rezolvat la',
+                'domain-mismatches' => 'Cereri de pe alte domenii',
+                'last-domain-mismatch-at' => 'Ultima cerere de pe alt domeniu',
+                'revoked-at' => 'Revocat la',
+                'revoked-by' => 'Revocat de',
+            ],
+
+            'datagrid' => [
+                'never' => 'Niciodată',
+                'console' => 'Comandă din consolă',
+                'view' => 'Vizualizează',
+                'revoke' => 'Revocă',
+            ],
+
+            'status' => [
+                'active' => 'Activ',
+                'expired' => 'Expirat',
+                'revoked' => 'Revocat',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'Tokenul API a fost creat.',
+                'updated' => 'Tokenul API a fost actualizat.',
+                'revoked' => 'Tokenul API a fost revocat.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Nu aveți permisiunea de a gestiona tokenuri API.',
+                'not-found' => 'Tokenul API nu a fost găsit.',
+                'cannot-create-for-admin' => 'Nu puteți crea un token API pentru acest administrator: rolul său are permisiuni pe care al dumneavoastră nu le are sau nu puteți gestiona tokenurile altor administratori.',
+                'cannot-manage' => 'Nu puteți gestiona acest token API.',
+                'already-revoked' => 'Tokenul API este deja revocat.',
+                'invalid-name' => 'Numele este obligatoriu și poate avea cel mult 100 de caractere.',
+                'invalid-domain' => 'Introduceți un nume de domeniu precum erp.example.com. Adresele IP și caracterele wildcard nu sunt acceptate.',
+                'expiry-required' => 'Tokenurile API trebuie să aibă o dată de expirare.',
+                'expiry-in-past' => 'Data de expirare trebuie să fie în viitor.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'Sesiuni API',
+            ],
+
+            'acl' => [
+                'title' => 'Sesiuni API',
+                'delete' => 'Revocă',
+            ],
+
+            'index' => [
+                'title' => 'Sesiuni API',
+                'info' => 'Administratori conectați la API-ul de administrare din aplicații web, mobile, POS sau desktop. Revocarea unei sesiuni deconectează imediat acel dispozitiv.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Administrator',
+                'device' => 'Dispozitiv',
+                'client-type' => 'Tip client',
+                'ip-address' => 'IP de autentificare',
+                'user-agent' => 'User agent de autentificare',
+                'last-ip-address' => 'Ultima adresă IP',
+                'last-user-agent' => 'Ultimul user agent',
+                'last-used-at' => 'Ultima utilizare la',
+                'last-channel' => 'Ultimul canal',
+                'refresh-expires-at' => 'Reîmprospătarea expiră la',
+                'expires-at' => 'Expiră la',
+                'status' => 'Stare',
+                'created-at' => 'Conectat la',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Revocă',
+                'revoke-all' => 'Revocă toate sesiunile acestui administrator',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Mobil',
+                'pos' => 'POS',
+                'desktop' => 'Desktop',
+                'other' => 'Altul',
+            ],
+
+            'errors' => [
+                'not-active' => 'Această sesiune este deja revocată sau expirată.',
+            ],
+        ],
+
+        'api-audit' => [
+            'menu' => [
+                'title' => 'Audit API',
             ],
 
             'acl' => [
                 'title' => 'Istoricul modificărilor API',
-                'view' => 'Vizualizare',
                 'delete' => 'Ștergere istoric',
             ],
 
@@ -1517,10 +2012,10 @@ return [
                 'date' => 'Dată',
                 'admin' => 'Administrator',
                 'token' => 'Token',
-                'action' => 'Acțiune',
+                'token-kind' => 'Tipul tokenului',
+                'channel' => 'Canal',
                 'operation' => 'Operațiune',
                 'resource' => 'Resursă',
-                'version' => 'Versiune',
                 'method' => 'Metodă',
                 'ip' => 'IP',
                 'view' => 'Vizualizare',
@@ -1533,192 +2028,27 @@ return [
                 'deleted' => 'Șters',
             ],
 
+            'token-kinds' => [
+                'session' => 'Sesiune de autentificare',
+                'api-token' => 'Token API',
+                'integration' => 'Token de integrare (eliminat)',
+                'customer-session' => 'Sesiune de autentificare a clientului',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => 'Panou de administrare',
+                'cli' => 'Comandă din consolă',
+            ],
+
             'deleted' => ':count înregistrare(ări) de istoric ștearsă(e).',
             'cleanup-input-required' => 'Furnizați un număr de zile sau o dată pentru curățare.',
         ],
 
-        'acl' => [
-            'title' => 'Integrare',
-            'view' => 'Vizualizare',
-            'create' => 'Creare integrare',
-            'edit' => 'Editare integrare',
-            'delete' => 'Revocare token de integrare',
-            'generate' => 'Generare token de integrare',
-            'regenerate' => 'Regenerare token de integrare',
-        ],
-
-        'index' => [
-            'title' => 'Integrări',
-            'create-btn' => 'Creează integrare',
-        ],
-
-        'create' => [
-            'title' => 'Creare integrare',
-            'save-btn' => 'Salvează',
-            'back-btn' => 'Înapoi',
-        ],
-
-        'edit' => [
-            'title' => 'Editare integrare',
-            'save-btn' => 'Salvează',
-            'back-btn' => 'Înapoi',
-            'generate-btn' => 'Generează token',
-            'regenerate-btn' => 'Regenerează token',
-            'revoke-btn' => 'Revocă token',
-            'copy-btn' => 'Copiază',
-            'token-warning' => 'Salvați acest token acum — nu va mai fi afișat din nou.',
-            'token-label' => 'Token',
-            'not-generated' => 'Încă negenerat',
-            'masked' => '(Stocat — afișat o singură dată, la generare)',
-            'history-banner' => 'Acest token nu mai este activ.',
-        ],
-
-        'fields' => [
-            'name' => 'Nume',
-            'description' => 'Descriere',
-            'assign-user' => 'Atribuie utilizator',
-            'permission-type' => 'Tip de permisiune',
-            'access-control' => 'Control acces',
-            'general' => 'General',
-            'token-settings' => 'Setări token',
-            'valid-till' => 'Valabil până la',
-            'rate-limit-per-minute' => 'Limită de cereri (pe minut)',
-            'rate-limit-per-day' => 'Limită de cereri (pe zi)',
-            'never-expires' => 'Nu expiră niciodată',
-            'expires-on' => 'Expiră la',
-            'unlimited' => 'Nelimitat',
-            'limit-to' => 'Limitează la',
-            'requests-per-minute' => 'cereri / minut',
-            'requests-per-day' => 'cereri / zi',
-            'select-admin' => 'Selectați un administrator',
-            'no-available-admins' => 'Nu există administratori disponibili — fiecare administrator are deja un token activ.',
-            'same-as-web-hint' => 'Tokenul va reflecta în timp real permisiunile curente ale rolului administratorului atribuit.',
-            'ip-allowlist' => 'Listă de IP-uri permise',
-            'ip-any' => 'Orice IP (implicit)',
-            'ip-restricted' => 'Restricționat la anumite IP-uri',
-            'ip-list-hint' => 'O intrare pe linie. Acceptă IPv4, IPv6 și CIDR (de ex. 10.0.0.0/24 sau 2001:db8::/32). Lăsați gol pentru a permite toate IP-urile.',
-        ],
-
-        'permission_type' => [
-            'all' => 'Toate',
-            'custom' => 'Personalizat',
-            'same_as_web' => 'La fel ca permisiunea web',
-        ],
-
-        'status' => [
-            'draft' => 'Ciornă',
-            'active' => 'Activ',
-            'revoked' => 'Revocat',
-            'regenerated' => 'Regenerat',
-        ],
-
-        'datagrid' => [
-            'id' => 'ID',
-            'name' => 'Nume',
-            'admin' => 'Administrator',
-            'token' => 'Token',
-            'status' => 'Stare',
-            'permission-type' => 'Tip de permisiune',
-            'expires-at' => 'Valabil până la',
-            'last-used-at' => 'Ultima utilizare',
-            'created-at' => 'Creat la',
-            'edit' => 'Editare',
-            'revoke' => 'Revocare',
-        ],
-
-        'messages' => [
-            'draft-created' => 'Integrarea a fost creată. Generați tokenul pentru a începe să o folosiți.',
-            'updated' => 'Integrarea a fost actualizată cu succes.',
-            'generated' => 'Tokenul a fost generat. Copiați-l acum — nu va mai fi afișat din nou.',
-            'regenerated' => 'Tokenul a fost regenerat. Copiați noul token acum — nu va mai fi afișat din nou.',
-            'revoked' => 'Tokenul a fost revocat cu succes.',
-            'generate-only-draft' => 'Tokenul poate fi generat doar pentru integrările ciornă.',
-            'regenerate-only-active' => 'Doar tokenurile active pot fi regenerate.',
-            'cannot-edit-historic' => 'Tokenurile revocate sau regenerate nu pot fi editate.',
-            'already-inactive' => 'Acest token este deja inactiv.',
-        ],
-
-        'errors' => [
-            'admin-has-token' => 'Administratorul selectat are deja un token de integrare activ.',
-        ],
-
-        'validation' => [
-            'ip-invalid' => 'Fiecare IP permis trebuie să fie o adresă IPv4 sau IPv6 validă (notația CIDR este acceptată).',
-            'cidr-prefix-invalid' => 'Prefixul CIDR nu este valid pentru versiunea de IP indicată.',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => 'API',
-                'info' => 'Setări pentru API-ul Bagisto și modulele sale de administrare.',
-            ],
-
-            'integration' => [
-                'title' => 'Integrare',
-                'info' => 'Gestionați pluginul API Integration folosit pentru emiterea tokenurilor API de administrare.',
-            ],
-
-            'settings' => [
-                'title' => 'Setări modul',
-                'info' => 'Activați sau dezactivați pluginul API Integration. Când este dezactivat, meniul său din bara laterală este ascuns, iar paginile sale returnează 404.',
-                'enable' => 'Activează modulul API Integration',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => 'A fost generat un nou token API: :name',
-                'greeting' => 'Un token de integrare API numit ":name" tocmai a fost generat în contul dumneavoastră.',
-            ],
-
-            'regenerated' => [
-                'subject' => 'Tokenul dumneavoastră API a fost regenerat: :name',
-                'greeting' => 'Tokenul de integrare API numit ":name" tocmai a fost regenerat. Tokenul anterior nu mai funcționează — doar cel nou este valid.',
-            ],
-
-            'revoked' => [
-                'subject' => 'Tokenul dumneavoastră API a fost revocat: :name',
-                'greeting' => 'Tokenul de integrare API numit ":name" a fost revocat. Orice client care îl folosea și-a pierdut accesul.',
-            ],
-
-            'details' => [
-                'name' => 'Nume token',
-                'date' => 'Dată',
-                'ip' => 'De la IP',
-            ],
-
-            'revoke-hint' => 'Dacă nu vă așteptați la acest lucru, revocați imediat tokenul folosind butonul de mai jos.',
-            'revoke-btn' => 'Revocă acest token',
-            'revoke-expiry' => 'Acest link de revocare este valabil 7 zile. După aceea, autentificați-vă în panoul de administrare pentru a gestiona tokenul.',
-            'no-action' => 'Nu este necesară nicio acțiune — acest email este doar o confirmare.',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => 'Revocare token API',
-            'confirm-title' => 'Revocați acest token?',
-            'confirm-message' => 'Tokenul ":name" va înceta imediat să funcționeze pentru toți clienții care îl folosesc.',
-            'confirm-button' => 'Revocă tokenul',
-            'success-title' => 'Token revocat',
-            'success-message' => 'Tokenul ":name" a fost revocat. Orice client care îl folosea și-a pierdut imediat accesul.',
-            'already-inactive-title' => 'Token deja inactiv',
-            'already-inactive-message' => 'Tokenul ":name" a fost deja revocat sau regenerat. Nu este necesară nicio altă acțiune.',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => 'Generare token',
-                'message' => 'Generați tokenul acum? Textul în clar va fi afișat o singură dată — copiați-l înainte de a părăsi pagina.',
-            ],
-
-            'regenerate' => [
-                'title' => 'Regenerare token',
-                'message' => 'Regenerați tokenul? Vechiul token va înceta imediat să funcționeze, iar noul text în clar va fi afișat o singură dată.',
-            ],
-
-            'revoke' => [
-                'title' => 'Revocare token',
-                'message' => 'Revocați acest token? Orice client care îl folosește își va pierde imediat accesul. Această acțiune nu poate fi anulată.',
-            ],
+        'api-configuration' => [
+            'title' => 'API',
+            'info' => 'Setări pentru API-ul Bagisto și modulele sale de administrare.',
         ],
     ],
 ];

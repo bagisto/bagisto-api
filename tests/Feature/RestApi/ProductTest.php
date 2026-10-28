@@ -8,89 +8,22 @@ use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Core\Core;
 use Webkul\Product\Models\Product;
+use Webkul\Product\Models\ProductReview;
 
-/**
- * REST tests for the Product collection endpoint.
- *
- * Mirrors the GraphQL contract (see GraphQL/ProductSearchFilterTest.php):
- *  - Query-param → args translation (sort, pagination, filter)
- *  - Search (SKU + name)
- *  - Filter by type, category, price range, attributes
- *  - Sort (name/created_at/price, asc+desc)
- *  - Pagination via ?page & ?per_page
- *  - new/featured flags
- *
- * The REST provider is a thin adapter over ProductGraphQLProvider, so these
- * tests focus on shape + translation, not the underlying filter logic.
- */
 class ProductTest extends RestApiTestCase
 {
+    /**
+     * The collection url.
+     */
     private string $collectionUrl = '/api/shop/products';
 
-    private function seedSaleableProduct(string $type = 'simple', ?string $sku = null): Product
-    {
-        return $this->createBaseProduct($type, [
-            'sku' => $sku ?? ('TEST-REST-'.uniqid()),
-        ]);
-    }
+    // ============================================================================
+    // Basic Collection
+    // ============================================================================
 
-    private function seedGuestPriceIndex(Product $product, float $minPrice): void
-    {
-        DB::table('product_price_indices')->updateOrInsert(
-            [
-                'product_id' => $product->id,
-                'customer_group_id' => core()->getGuestCustomerGroup()->id,
-                'channel_id' => core()->getCurrentChannel()->id,
-            ], [
-                'min_price' => $minPrice,
-                'regular_min_price' => $minPrice,
-                'max_price' => $minPrice,
-                'regular_max_price' => $minPrice,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
-        );
-    }
-
-    private function seedTestCurrency(float $rate): string
-    {
-        $currencyId = DB::table('currencies')->insertGetId([
-            'code' => 'TST',
-            'name' => 'Test Currency',
-            'symbol' => 'T$',
-            'decimal' => 2,
-            'group_separator' => ',',
-            'decimal_separator' => '.',
-            'currency_position' => 'left',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        DB::table('currency_exchange_rates')->insert([
-            'target_currency' => $currencyId,
-            'rate' => $rate,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        DB::table('channel_currencies')->insert([
-            'channel_id' => core()->getCurrentChannel()->id,
-            'currency_id' => $currencyId,
-        ]);
-
-        app()->forgetInstance(Core::class);
-        Facade::clearResolvedInstance(Core::class);
-
-        return 'TST';
-    }
-
-    private function productIds($response): array
-    {
-        return collect($response->json())->pluck('id')->map(fn ($id) => (int) $id)->all();
-    }
-
-    // ── Basic collection ─────────────────────────────────────────────
-
+    /**
+     * Test get products returns ok.
+     */
     public function test_get_products_returns_ok(): void
     {
         $this->seedSaleableProduct();
@@ -100,6 +33,9 @@ class ProductTest extends RestApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test get products returns array.
+     */
     public function test_get_products_returns_array(): void
     {
         $this->seedSaleableProduct();
@@ -109,8 +45,13 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Search ──────────────────────────────────────────────────────
+    // ============================================================================
+    // Search
+    // ============================================================================
 
+    /**
+     * Test search by sku.
+     */
     public function test_search_by_sku(): void
     {
         $product = $this->seedSaleableProduct('simple', 'REST-SEARCH-'.uniqid());
@@ -121,6 +62,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test search with no match returns empty.
+     */
     public function test_search_with_no_match_returns_empty(): void
     {
         $this->seedSaleableProduct();
@@ -131,8 +75,13 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray()->toBeEmpty();
     }
 
-    // ── Filter by type ──────────────────────────────────────────────
+    // ============================================================================
+    // Filter By Type
+    // ============================================================================
 
+    /**
+     * Test filter by type.
+     */
     public function test_filter_by_type(): void
     {
         $this->seedSaleableProduct('simple');
@@ -143,8 +92,13 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Filter by category ──────────────────────────────────────────
+    // ============================================================================
+    // Filter By Category
+    // ============================================================================
 
+    /**
+     * Test filter by category id.
+     */
     public function test_filter_by_category_id(): void
     {
         $this->seedSaleableProduct();
@@ -155,6 +109,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test filter by nonexistent category returns empty.
+     */
     public function test_filter_by_nonexistent_category_returns_empty(): void
     {
         $this->seedSaleableProduct();
@@ -165,8 +122,13 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray()->toBeEmpty();
     }
 
-    // ── Filter by attribute(s) ───────────────────────────────────────
+    // ============================================================================
+    // Filter By Attribute(s)
+    // ============================================================================
 
+    /**
+     * Test filter by single attribute.
+     */
     public function test_filter_by_single_attribute(): void
     {
         $attribute = Attribute::where('code', 'color')->first();
@@ -186,6 +148,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test filter by multiple attributes.
+     */
     public function test_filter_by_multiple_attributes(): void
     {
         $this->seedSaleableProduct();
@@ -196,8 +161,13 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Filter by price range ───────────────────────────────────────
+    // ============================================================================
+    // Filter By Price Range
+    // ============================================================================
 
+    /**
+     * Test filter by price range compound.
+     */
     public function test_filter_by_price_range_compound(): void
     {
         $this->seedSaleableProduct();
@@ -208,6 +178,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test filter by price range separate.
+     */
     public function test_filter_by_price_range_separate(): void
     {
         $this->seedSaleableProduct();
@@ -218,8 +191,13 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Sort ────────────────────────────────────────────────────────
+    // ============================================================================
+    // Sort
+    // ============================================================================
 
+    /**
+     * Test sort name asc.
+     */
     public function test_sort_name_asc(): void
     {
         $this->seedSaleableProduct();
@@ -230,6 +208,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test sort name asc actually orders by name.
+     */
     public function test_sort_name_asc_actually_orders_by_name(): void
     {
         $tag = 'srtasc'.uniqid();
@@ -251,6 +232,9 @@ class ProductTest extends RestApiTestCase
         expect($cPos)->toBeLessThan($aPos);
     }
 
+    /**
+     * Test sort name desc.
+     */
     public function test_sort_name_desc(): void
     {
         $this->seedSaleableProduct();
@@ -261,6 +245,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test sort newest first.
+     */
     public function test_sort_newest_first(): void
     {
         $this->seedSaleableProduct();
@@ -271,6 +258,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test sort oldest first.
+     */
     public function test_sort_oldest_first(): void
     {
         $this->seedSaleableProduct();
@@ -281,6 +271,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test sort cheapest first.
+     */
     public function test_sort_cheapest_first(): void
     {
         $this->seedSaleableProduct();
@@ -291,6 +284,37 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test sorting by price lists a product once when it has a price index row on another channel.
+     */
+    public function test_price_sort_lists_a_product_once_across_channels(): void
+    {
+        $product = $this->seedSaleableProduct();
+        $this->seedGuestPriceIndex($product, 50.0);
+
+        DB::table('product_price_indices')->insert([
+            'product_id' => $product->id,
+            'customer_group_id' => core()->getGuestCustomerGroup()->id,
+            'channel_id' => 999,
+            'min_price' => 10.0,
+            'regular_min_price' => 10.0,
+            'max_price' => 10.0,
+            'regular_max_price' => 10.0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        foreach (['price-asc', 'price-desc'] as $sort) {
+            $ids = $this->productIds($this->publicGet($this->collectionUrl.'?sort='.$sort.'&per_page=50')->assertOk());
+
+            expect(count(array_keys($ids, $product->id)))->toBeLessThanOrEqual(1);
+            expect(count($ids))->toBe(count(array_unique($ids)));
+        }
+    }
+
+    /**
+     * Test sort most expensive first.
+     */
     public function test_sort_most_expensive_first(): void
     {
         $this->seedSaleableProduct();
@@ -301,6 +325,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test sort separate sort and order params.
+     */
     public function test_sort_separate_sort_and_order_params(): void
     {
         $this->seedSaleableProduct();
@@ -311,8 +338,41 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Pagination ──────────────────────────────────────────────────
+    /**
+     * Test the listing without a sort follows the storefront default sort configuration.
+     */
+    public function test_default_sort_follows_storefront_configuration(): void
+    {
+        $tag = 'srtdef'.uniqid();
+        $a = $this->seedSaleableProduct('simple', 'REST-DEF-A-'.$tag);
+        $b = $this->seedSaleableProduct('simple', 'REST-DEF-B-'.$tag);
+        $c = $this->seedSaleableProduct('simple', 'REST-DEF-C-'.$tag);
+        $this->upsertProductAttributeValue($a->id, 'name', 'ZZZ Last', 'en', 'default');
+        $this->upsertProductAttributeValue($b->id, 'name', 'AAA First', 'en', 'default');
+        $this->upsertProductAttributeValue($c->id, 'name', 'MMM Middle', 'en', 'default');
 
+        $this->storeDefaultSort('name-asc');
+
+        $names = array_column($this->publicGet($this->collectionUrl.'?query='.$tag.'&per_page=50')->assertOk()->json(), 'name');
+
+        expect(array_values(array_intersect($names, ['AAA First', 'MMM Middle', 'ZZZ Last'])))
+            ->toBe(['AAA First', 'MMM Middle', 'ZZZ Last']);
+
+        $this->storeDefaultSort('name-desc');
+
+        $names = array_column($this->publicGet($this->collectionUrl.'?query='.$tag.'&per_page=50')->assertOk()->json(), 'name');
+
+        expect(array_values(array_intersect($names, ['AAA First', 'MMM Middle', 'ZZZ Last'])))
+            ->toBe(['ZZZ Last', 'MMM Middle', 'AAA First']);
+    }
+
+    // ============================================================================
+    // Pagination
+    // ============================================================================
+
+    /**
+     * Test pagination per page.
+     */
     public function test_pagination_per_page(): void
     {
         for ($i = 0; $i < 3; $i++) {
@@ -329,15 +389,10 @@ class ProductTest extends RestApiTestCase
 
     /**
      * Regression — Bug 5 (e2e wave 2026-05-25):
-     * ProductRestProvider had no max-per-page cap, so callers could request
-     * arbitrarily large pages (e.g. ?per_page=100 returned 84 items). The
-     * package-wide pagination_maximum_items_per_page is 50; the custom
-     * provider must enforce that explicitly.
+     * ProductRestProvider had no max-per-page cap, so callers could request.
      */
     public function test_per_page_is_capped_at_50(): void
     {
-        // Seed enough rows that the cap is what limits the response (not the
-        // available data).
         for ($i = 0; $i < 55; $i++) {
             $this->seedSaleableProduct('simple', 'REST-CAP-'.$i.'-'.uniqid());
         }
@@ -348,6 +403,9 @@ class ProductTest extends RestApiTestCase
         expect(count($response->json()))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test pagination page.
+     */
     public function test_pagination_page(): void
     {
         for ($i = 0; $i < 3; $i++) {
@@ -360,8 +418,13 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── new / featured flags ─────────────────────────────────────────
+    // ============================================================================
+    // New / Featured Flags
+    // ============================================================================
 
+    /**
+     * Test filter new products.
+     */
     public function test_filter_new_products(): void
     {
         $this->seedSaleableProduct();
@@ -372,6 +435,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test filter featured products.
+     */
     public function test_filter_featured_products(): void
     {
         $this->seedSaleableProduct();
@@ -382,6 +448,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test filter new and featured together.
+     */
     public function test_filter_new_and_featured_together(): void
     {
         $this->seedSaleableProduct();
@@ -392,8 +461,13 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Brand ───────────────────────────────────────────────────────
+    // ============================================================================
+    // Brand
+    // ============================================================================
 
+    /**
+     * Test filter by brand.
+     */
     public function test_filter_by_brand(): void
     {
         $this->seedSaleableProduct();
@@ -406,9 +480,7 @@ class ProductTest extends RestApiTestCase
 
     /**
      * Matches the storefront shop-page URL shape:
-     * https://commerce.bagisto.com/api/products?category_id=2&brand=38
-     * Even if no product is linked to that brand option, the endpoint must
-     * return 200 with an (empty) array — not 404 or 500.
+     * https://commerce.bagisto.com/api/products?category_id=2&brand=38.
      */
     public function test_filter_by_category_and_brand_storefront_url_shape(): void
     {
@@ -420,8 +492,13 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── deepObject filter[key]=value shape (Swagger UI) ─────────────
+    // ============================================================================
+    // DeepObject Filter[key]=value Shape (Swagger UI)
+    // ============================================================================
 
+    /**
+     * Test filter deep object shape.
+     */
     public function test_filter_deep_object_shape(): void
     {
         $this->seedSaleableProduct();
@@ -434,8 +511,13 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── JSON filter param (GraphQL parity) ──────────────────────────
+    // ============================================================================
+    // JSON Filter Param (GraphQL Parity)
+    // ============================================================================
 
+    /**
+     * Test json filter param.
+     */
     public function test_json_filter_param(): void
     {
         $this->seedSaleableProduct();
@@ -448,8 +530,13 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Combined filter + sort ──────────────────────────────────────
+    // ============================================================================
+    // Combined Filter + Sort
+    // ============================================================================
 
+    /**
+     * Test combined search filter and sort.
+     */
     public function test_combined_search_filter_and_sort(): void
     {
         $product = $this->seedSaleableProduct('simple', 'REST-COMBO-'.uniqid());
@@ -462,8 +549,13 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── List response is slim (Groups filter) ───────────────────────
+    // ============================================================================
+    // List Response Is Slim (Groups Filter)
+    // ============================================================================
 
+    /**
+     * Test list response excludes heavy relations.
+     */
     public function test_list_response_excludes_heavy_relations(): void
     {
         $this->seedSaleableProduct();
@@ -474,7 +566,6 @@ class ProductTest extends RestApiTestCase
         $body = $response->json();
         expect($body)->toBeArray()->not()->toBeEmpty();
         $product = $body[0];
-        // Heavy relation IRI lists must NOT appear in the list endpoint
         foreach ([
             'attributeValues', 'superAttributes', 'variants', 'categories',
             'images', 'videos', 'channels', 'attributeFamily',
@@ -486,7 +577,6 @@ class ProductTest extends RestApiTestCase
         ] as $heavyField) {
             expect($product)->not()->toHaveKey($heavyField);
         }
-        // Light fields MUST appear
         foreach ([
             'id', 'sku', 'type', 'name', 'urlKey', 'status',
             'price', 'formattedPrice', 'minimumPrice', 'maximumPrice',
@@ -496,8 +586,13 @@ class ProductTest extends RestApiTestCase
         }
     }
 
-    // ── Sub-resources (under "Product" tag in Swagger) ──────────────
+    // ============================================================================
+    // Sub-Resources (Under "Product" Tag In Swagger)
+    // ============================================================================
 
+    /**
+     * Test subresource images.
+     */
     public function test_subresource_images(): void
     {
         $product = $this->seedSaleableProduct();
@@ -508,6 +603,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test subresource attribute values.
+     */
     public function test_subresource_attribute_values(): void
     {
         $product = $this->seedSaleableProduct();
@@ -518,6 +616,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray()->not()->toBeEmpty();
     }
 
+    /**
+     * Test subresource videos.
+     */
     public function test_subresource_videos(): void
     {
         $product = $this->seedSaleableProduct();
@@ -528,6 +629,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test subresource variants.
+     */
     public function test_subresource_variants(): void
     {
         $product = $this->seedSaleableProduct();
@@ -538,6 +642,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test subresource reviews.
+     */
     public function test_subresource_reviews(): void
     {
         $product = $this->seedSaleableProduct();
@@ -548,6 +655,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test subresource customizable options.
+     */
     public function test_subresource_customizable_options(): void
     {
         $product = $this->seedSaleableProduct();
@@ -558,8 +668,47 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Type-specific sub-resources (Product Types tag) ─────────────
+    /**
+     * The customizable options of a product carry the label of the current locale.
+     */
+    public function test_subresource_customizable_options_return_the_translated_label(): void
+    {
+        $product = $this->seedSaleableProduct();
 
+        $optionId = DB::table('product_customizable_options')->insertGetId([
+            'product_id' => $product->id,
+            'type' => 'text',
+            'is_required' => 0,
+            'sort_order' => 1,
+        ]);
+
+        DB::table('product_customizable_option_translations')->insert([
+            [
+                'product_customizable_option_id' => $optionId,
+                'locale' => 'fr',
+                'label' => 'Gravure',
+            ],
+            [
+                'product_customizable_option_id' => $optionId,
+                'locale' => 'en',
+                'label' => 'Engraving',
+            ],
+        ]);
+
+        $response = $this->publicGet($this->collectionUrl.'/'.$product->id.'/customizable-options');
+
+        $response->assertOk();
+        expect($response->json('0.id'))->toBe($optionId);
+        expect($response->json('0.label'))->toBe('Engraving');
+    }
+
+    // ============================================================================
+    // Type-Specific Sub-Resources (Product Types Tag)
+    // ============================================================================
+
+    /**
+     * Test subresource bundle options.
+     */
     public function test_subresource_bundle_options(): void
     {
         $product = $this->seedSaleableProduct('bundle');
@@ -570,6 +719,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test subresource downloadable links.
+     */
     public function test_subresource_downloadable_links(): void
     {
         $product = $this->seedSaleableProduct('downloadable');
@@ -580,6 +732,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test subresource downloadable samples.
+     */
     public function test_subresource_downloadable_samples(): void
     {
         $product = $this->seedSaleableProduct('downloadable');
@@ -590,6 +745,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test subresource grouped products.
+     */
     public function test_subresource_grouped_products(): void
     {
         $product = $this->seedSaleableProduct('grouped');
@@ -600,6 +758,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test subresource booking products.
+     */
     public function test_subresource_booking_products(): void
     {
         $product = $this->seedSaleableProduct('booking');
@@ -610,8 +771,13 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
-    // ── Single product GET ──────────────────────────────────────────
+    // ============================================================================
+    // Single Product GET
+    // ============================================================================
 
+    /**
+     * Test get single product.
+     */
     public function test_get_single_product(): void
     {
         $product = $this->seedSaleableProduct();
@@ -622,6 +788,9 @@ class ProductTest extends RestApiTestCase
         expect($response->json('id'))->toBe($product->id);
     }
 
+    /**
+     * Test unknown query params do not filter the list.
+     */
     public function test_unknown_query_params_do_not_filter_the_list(): void
     {
         $product = $this->seedSaleableProduct();
@@ -632,6 +801,9 @@ class ProductTest extends RestApiTestCase
         expect($this->productIds($response))->toContain($product->id);
     }
 
+    /**
+     * Test price filter reads the price index not the price attribute.
+     */
     public function test_price_filter_reads_the_price_index_not_the_price_attribute(): void
     {
         $product = $this->seedSaleableProduct();
@@ -646,6 +818,9 @@ class ProductTest extends RestApiTestCase
         expect($this->productIds($attributeRange))->not->toContain($product->id);
     }
 
+    /**
+     * Test price filter matches configurable products through the price index.
+     */
     public function test_price_filter_matches_configurable_products_through_the_price_index(): void
     {
         $product = $this->seedSaleableProduct('configurable');
@@ -663,6 +838,9 @@ class ProductTest extends RestApiTestCase
         expect($this->productIds($response))->toContain($product->id);
     }
 
+    /**
+     * Test price filter converts the requested range to base currency.
+     */
     public function test_price_filter_converts_the_requested_range_to_base_currency(): void
     {
         $product = $this->seedSaleableProduct();
@@ -684,6 +862,9 @@ class ProductTest extends RestApiTestCase
         expect($this->productIds($unconverted))->not->toContain($product->id);
     }
 
+    /**
+     * Test downloadable link price is converted once.
+     */
     public function test_downloadable_link_price_is_converted_once(): void
     {
         $product = $this->seedSaleableProduct('downloadable');
@@ -718,5 +899,308 @@ class ProductTest extends RestApiTestCase
 
         expect($link)->not->toBeNull()
             ->and((float) $link['price'])->toBe(100.0);
+    }
+
+    /**
+     * The product card carries the saleable flag, the sale badge and the review summary, as the storefront card does.
+     */
+    public function test_product_card_carries_the_sale_badge_and_review_summary(): void
+    {
+        $product = $this->seedSaleableProduct();
+        $this->seedApprovedReviews($product, [4, 5]);
+
+        $response = $this->publicGet($this->collectionUrl.'?per_page=50');
+
+        $response->assertOk();
+
+        $card = collect($response->json())->firstWhere('id', $product->id);
+
+        expect($card['isSaleable'])->toBeTrue()
+            ->and($card['onSale'])->toBe(0)
+            ->and((float) $card['averageRating'])->toBe(4.5)
+            ->and($card['totalRating'])->toBe(9)
+            ->and($card['reviewsCount'])->toBe(2);
+    }
+
+    /**
+     * The product detail carries the review summary, the guest checkout flag and the specification table.
+     */
+    public function test_product_detail_carries_the_review_summary_and_specification(): void
+    {
+        $product = $this->seedSaleableProduct();
+        $this->seedApprovedReviews($product, [3]);
+
+        $response = $this->publicGet($this->collectionUrl.'/'.$product->id);
+
+        $response->assertOk();
+
+        expect((float) $response->json('averageRating'))->toBe(3.0)
+            ->and($response->json('reviewsCount'))->toBe(1)
+            ->and($response->json('onSale'))->toBe(0)
+            ->and($response->json())->toHaveKeys(['guestCheckout', 'visibleIndividually', 'additionalAttributes', 'customerGroupOffers', 'configurableConfig'])
+            ->and($response->json('additionalAttributes'))->toBeArray();
+    }
+
+    /**
+     * The specification table looks an option attribute up by its option id, which PostgreSQL requires, and shows its label.
+     */
+    public function test_product_detail_specification_resolves_an_option_attribute_by_its_id(): void
+    {
+        $attribute = Attribute::query()->where('code', 'color')->first();
+
+        if (
+            ! $attribute
+            || ! ($option = $attribute->options()->first())
+        ) {
+            $this->markTestSkipped('Color attribute/options not seeded.');
+        }
+
+        $attribute->forceFill(['is_visible_on_front' => 1])->save();
+
+        $product = $this->seedSaleableProduct();
+        $this->upsertProductAttributeValue($product->id, 'color', $option->id, null, 'default');
+
+        DB::enableQueryLog();
+
+        $response = $this->publicGet($this->collectionUrl.'/'.$product->id);
+
+        $optionBindings = collect(DB::getQueryLog())
+            ->filter(fn (array $query) => str_contains($query['query'], 'attribute_options'))
+            ->flatMap(fn (array $query) => $query['bindings']);
+
+        $response->assertOk();
+
+        expect($optionBindings->reject(fn ($binding) => is_numeric($binding)))->toBeEmpty()
+            ->and($response->json('color'))->toBe($option->label)
+            ->and(collect($response->json('additionalAttributes'))->firstWhere('code', 'color')['value'])->toBe($option->label);
+    }
+
+    /**
+     * The configurable option configuration indexes each variant by its option id, so the option picker can match it.
+     */
+    public function test_configurable_config_indexes_variants_by_option_id(): void
+    {
+        $color = Attribute::query()->where('code', 'color')->first();
+
+        if (! $color) {
+            $this->markTestSkipped('Color attribute not seeded.');
+        }
+
+        $parent = $this->seedSaleableProduct('configurable');
+        $variant = $this->seedSaleableProduct();
+
+        $variant->forceFill(['parent_id' => $parent->id])->save();
+        $this->ensureInventory($variant, 10);
+
+        $optionId = $this->createAttributeOption((int) $color->id, 'REST-COLOR-'.uniqid());
+
+        DB::table('product_super_attributes')->insert([
+            'product_id' => $parent->id,
+            'attribute_id' => $color->id,
+        ]);
+
+        $this->upsertProductAttributeValue($variant->id, 'color', $optionId, null, 'default');
+
+        $response = $this->publicGet($this->collectionUrl.'/'.$parent->id);
+
+        $response->assertOk();
+
+        $option = collect(collect($response->json('configurableConfig.attributes'))->firstWhere('code', 'color')['options'] ?? [])
+            ->firstWhere('id', $optionId);
+
+        expect($response->json('configurableConfig.index.'.$variant->id.'.'.$color->id))->toBe($optionId)
+            ->and($option['products'] ?? [])->toContain($variant->id);
+    }
+
+    /**
+     * Searching finds a configurable product through the name of one of its variants, as core's search does.
+     */
+    public function test_search_matches_a_configurable_product_by_its_variant_name(): void
+    {
+        $parent = $this->seedSaleableProduct('configurable');
+        $variant = $this->seedSaleableProduct('simple');
+
+        $variant->forceFill(['parent_id' => $parent->id])->save();
+
+        $term = 'variantonly'.uniqid();
+
+        DB::table('product_attribute_values')
+            ->where('product_id', $variant->id)
+            ->where('attribute_id', Attribute::query()->where('code', 'name')->value('id'))
+            ->update(['text_value' => 'Shirt '.$term]);
+
+        $response = $this->publicGet($this->collectionUrl.'?query='.$term.'&per_page=50');
+
+        $response->assertOk();
+        expect($this->productIds($response))->toContain($parent->id);
+    }
+
+    /**
+     * Test configurable price reports the regular price from the price index.
+     */
+    public function test_configurable_price_reports_the_regular_price_from_the_price_index(): void
+    {
+        $product = $this->seedSaleableProduct('configurable');
+
+        $this->seedGuestPriceIndexColumns($product, [
+            'min_price' => 20.0,
+            'regular_min_price' => 24.99,
+            'max_price' => 30.0,
+            'regular_max_price' => 30.0,
+        ]);
+
+        $response = $this->publicGet($this->collectionUrl.'/'.$product->id);
+
+        $response->assertOk();
+        expect((float) $response->json('price'))->toBe(24.99)
+            ->and($response->json('formattedPrice'))->not->toBe(core()->currency(0));
+    }
+
+    /**
+     * Test maximum price never falls below the regular price.
+     */
+    public function test_maximum_price_never_falls_below_the_regular_price(): void
+    {
+        $product = $this->seedSaleableProduct();
+
+        $this->seedGuestPriceIndexColumns($product, [
+            'min_price' => 8.0,
+            'regular_min_price' => 10.0,
+            'max_price' => 8.0,
+            'regular_max_price' => 10.0,
+        ]);
+
+        $response = $this->publicGet($this->collectionUrl.'/'.$product->id);
+
+        $response->assertOk();
+        expect((float) $response->json('maximumPrice'))->toBe(10.0);
+    }
+
+    /**
+     * Seed saleable product.
+     */
+    private function seedSaleableProduct(string $type = 'simple', ?string $sku = null): Product
+    {
+        return $this->createBaseProduct($type, [
+            'sku' => $sku ?? ('TEST-REST-'.uniqid()),
+        ]);
+    }
+
+    /**
+     * Seed guest price index.
+     */
+    private function seedGuestPriceIndex(Product $product, float $minPrice): void
+    {
+        DB::table('product_price_indices')->updateOrInsert(
+            [
+                'product_id' => $product->id,
+                'customer_group_id' => core()->getGuestCustomerGroup()->id,
+                'channel_id' => core()->getCurrentChannel()->id,
+            ], [
+                'min_price' => $minPrice,
+                'regular_min_price' => $minPrice,
+                'max_price' => $minPrice,
+                'regular_max_price' => $minPrice,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+    }
+
+    /**
+     * Seed approved reviews with the given ratings.
+     */
+    private function seedApprovedReviews(Product $product, array $ratings): void
+    {
+        $customer = $this->createCustomer();
+
+        foreach ($ratings as $rating) {
+            ProductReview::factory()->create([
+                'product_id' => $product->id,
+                'customer_id' => $customer->id,
+                'name' => 'Reviewer',
+                'status' => 'approved',
+                'rating' => $rating,
+            ]);
+        }
+    }
+
+    /**
+     * Seed the guest price index row with a value per column.
+     */
+    private function seedGuestPriceIndexColumns(Product $product, array $prices): void
+    {
+        DB::table('product_price_indices')->updateOrInsert(
+            [
+                'product_id' => $product->id,
+                'customer_group_id' => core()->getGuestCustomerGroup()->id,
+                'channel_id' => core()->getCurrentChannel()->id,
+            ], array_merge($prices, [
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])
+        );
+    }
+
+    /**
+     * Seed test currency.
+     */
+    private function seedTestCurrency(float $rate): string
+    {
+        $currencyId = DB::table('currencies')->insertGetId([
+            'code' => 'TST',
+            'name' => 'Test Currency',
+            'symbol' => 'T$',
+            'decimal' => 2,
+            'group_separator' => ',',
+            'decimal_separator' => '.',
+            'currency_position' => 'left',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('currency_exchange_rates')->insert([
+            'target_currency' => $currencyId,
+            'rate' => $rate,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('channel_currencies')->insert([
+            'channel_id' => core()->getCurrentChannel()->id,
+            'currency_id' => $currencyId,
+        ]);
+
+        app()->forgetInstance(Core::class);
+        Facade::clearResolvedInstance(Core::class);
+
+        return 'TST';
+    }
+
+    /**
+     * Product ids.
+     */
+    private function productIds($response): array
+    {
+        return collect($response->json())->pluck('id')->map(fn ($id) => (int) $id)->all();
+    }
+
+    /**
+     * Store the storefront default sort for the requested channel and clear the config cache.
+     */
+    private function storeDefaultSort(string $value): void
+    {
+        DB::table('core_config')->where('code', 'catalog.products.storefront.sort_by')->delete();
+
+        DB::table('core_config')->insert([
+            'code' => 'catalog.products.storefront.sort_by',
+            'value' => $value,
+            'channel_code' => core()->getRequestedChannelCode(),
+            'locale_code' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->forgetCoreConfigCache();
     }
 }

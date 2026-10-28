@@ -8,19 +8,35 @@ use Webkul\User\Models\Role;
 
 class AdminSettingsRoleItemProvider extends AbstractAdminItemProvider
 {
+    /**
+     * Map to dto public.
+     */
+    public function mapToDtoPublic(object $role): AdminSettingsRole
+    {
+        return $this->mapToDto($role);
+    }
+
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.settings.role.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return Role::find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $role): AdminSettingsRole
     {
-        /** @var Role $role */
         $dto = new AdminSettingsRole;
 
         $perms = $role->permissions;
@@ -38,10 +54,5 @@ class AdminSettingsRoleItemProvider extends AbstractAdminItemProvider
         $dto->updatedAt = $role->updated_at?->toIso8601String();
 
         return $dto;
-    }
-
-    public function mapToDtoPublic(object $role): AdminSettingsRole
-    {
-        return $this->mapToDto($role);
     }
 }

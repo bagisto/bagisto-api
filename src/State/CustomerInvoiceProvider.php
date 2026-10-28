@@ -8,40 +8,37 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerInvoice;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
+use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Customer\Models\Customer;
 
-/**
- * CustomerInvoiceProvider — Retrieves invoices belonging to the authenticated customer
- *
- * Scopes all queries through the order relationship to ensure customer isolation.
- * Supports cursor-based pagination, orderId and state filtering.
- */
 class CustomerInvoiceProvider implements ProviderInterface
 {
     use ClampsPageSize;
+    use ResolvesCursorWindow;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
     /**
-     * Provide customer invoices for collection or single-item operations
+     * Provide customer invoices for collection or single-item operations.
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
 
-        /** Single item — GET /api/shop/customer-invoices/{id} */
         if (
             ! $operation instanceof GetCollection
             && ! ($operation instanceof QueryCollection)
@@ -53,7 +50,7 @@ class CustomerInvoiceProvider implements ProviderInterface
     }
 
     /**
-     * Return a single invoice owned by the customer (via order relationship)
+     * Return a single invoice owned by the customer (via order relationship).
      */
     private function provideItem(object $customer, array $uriVariables): CustomerInvoice
     {
@@ -78,7 +75,7 @@ class CustomerInvoiceProvider implements ProviderInterface
     }
 
     /**
-     * Return a paginated collection of invoices owned by the customer
+     * Return a paginated collection of invoices owned by the customer.
      */
     private function provideCollection(object $customer, array $context): Paginator
     {
@@ -91,11 +88,6 @@ class CustomerInvoiceProvider implements ProviderInterface
                 ->where('customer_type', Customer::class);
         })->with(['items', 'addresses', 'order']);
 
-        /**
-         * Apply optional order ID filter.
-         * GraphQL: customerInvoices(orderId: 590) → $args['orderId']
-         * REST: /customer-invoices?order_id=590 (or ?orderId=590) → request()->query()
-         */
         $orderId = $args['orderId']
             ?? $filters['orderId']
             ?? $request->query('order_id')
@@ -107,7 +99,6 @@ class CustomerInvoiceProvider implements ProviderInterface
             $query->where('order_id', (int) $orderId);
         }
 
-        /** Apply optional state filter */
         $state = $args['state']
             ?? $filters['state']
             ?? $request->query('state');
@@ -118,49 +109,11 @@ class CustomerInvoiceProvider implements ProviderInterface
             $query->where('state', (string) $state);
         }
 
-        /** Cursor-based pagination (offset-based cursors from API Platform) */
-        $first = isset($args['first']) ? (int) $args['first'] : null;
-        $last = isset($args['last']) ? (int) $args['last'] : null;
-        $after = $args['after'] ?? null;
-        $before = $args['before'] ?? null;
-
-        $perPage = $this->clampPageSize($first ?? $last ?? 10);
-        $offset = 0;
-
-        if ($after) {
-            $decoded = base64_decode($after, true);
-            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
-        }
-
-        if ($before) {
-            $decoded = base64_decode($before, true);
-            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset = max(0, $cursor - $perPage);
-        }
+        $requested = $this->requestedCursorLimit($args, 10);
+        $limit = $requested > 0 ? $this->clampPageSize($requested) : 0;
 
         $query->orderBy('id', 'desc');
 
-        $total = (clone $query)->count();
-
-        if ($offset > $total) {
-            $offset = max(0, $total - $perPage);
-        }
-
-        $items = $query
-            ->offset($offset)
-            ->limit($perPage)
-            ->get();
-
-        $currentPage = $total > 0 ? (int) floor($offset / $perPage) + 1 : 1;
-
-        return new Paginator(
-            new LengthAwarePaginator(
-                $items,
-                $total,
-                $perPage,
-                $currentPage,
-                ['path' => request()->url()]
-            )
-        );
+        return new Paginator($this->paginateCursorWindow($query, $args, $limit));
     }
 }

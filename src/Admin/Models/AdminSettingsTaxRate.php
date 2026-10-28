@@ -22,17 +22,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
 
-/**
- * Admin Settings → Tax Rates endpoints (Block B Wave 3).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\Tax\TaxRateController.
- *
- * is_zip conditional validation:
- *   - is_zip = false → zip_code required (the specific zip mode)
- *   - is_zip = true  → zip_from + zip_to required (the range mode)
- *
- * No mass-delete in the monolith admin UI; not exposed.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsTaxRate',
@@ -46,6 +35,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Rates'],
                 summary: 'Create a new tax rate',
+                description: 'Creates a tax rate. `identifier` (unique), a two-letter `country`, `tax_rate` (0 to 100) and `is_zip` are required; with `is_zip` true send `zip_from` and `zip_to`, otherwise `zip_code`.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -163,10 +153,80 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Rates'],
                 summary: 'Update a tax rate',
-                description: 'Partial update; identifier uniqueness excludes self.',
+                description: 'Partial update: fields left out, null or empty keep their stored value, and the result is validated as a whole (identifier unique excluding this rate, two-letter country, rate 0 to 100). Switching `is_zip` to true needs `zip_from` and `zip_to` and clears `zip_code`; switching it to false needs `zip_code` and clears the range. Needs the `settings.taxes.tax_rates.edit` permission.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Tax rate ID.', true, schema: ['type' => 'integer']),
                 ],
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+
+                                'properties' => [
+                                    'identifier' => [
+                                        'type' => 'string',
+                                        'example' => 'US-CA-SF',
+                                    ],
+
+                                    'is_zip' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                    ],
+
+                                    'zip_code' => [
+                                        'type' => 'string',
+                                        'example' => '94103',
+                                    ],
+
+                                    'zip_from' => [
+                                        'type' => 'string',
+                                        'example' => '94100',
+                                    ],
+
+                                    'zip_to' => [
+                                        'type' => 'string',
+                                        'example' => '94199',
+                                    ],
+
+                                    'state' => [
+                                        'type' => 'string',
+                                        'example' => 'CA',
+                                    ],
+
+                                    'country' => [
+                                        'type' => 'string',
+                                        'example' => 'US',
+                                    ],
+
+                                    'tax_rate' => [
+                                        'type' => 'number',
+                                        'format' => 'float',
+                                        'example' => 9.25,
+                                    ],
+                                ],
+                            ],
+
+                            'examples' => [
+                                'change-rate' => [
+                                    'summary' => 'Change only the rate',
+                                    'value' => ['tax_rate' => 9.25],
+                                ],
+
+                                'switch-to-zip-range' => [
+                                    'summary' => 'Switch to a zip range (is_zip=true)',
+
+                                    'value' => [
+                                        'is_zip' => true,
+                                        'zip_from' => '94000',
+                                        'zip_to' => '94999',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
                 responses: [
                     '200' => new Model\Response(description: 'Tax rate updated.'),
                     '404' => new Model\Response(description: 'Tax rate not found.'),
@@ -183,6 +243,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Rates'],
                 summary: 'Delete a tax rate',
+                description: 'Deletes the tax rate and detaches it from every tax category. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Tax rate ID.', true, schema: ['type' => 'integer']),
                 ],
@@ -206,6 +267,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Rates'],
                 summary: 'Tax rate detail',
+                description: 'One tax rate by ID with its country, state, zip code or range and rate. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Tax rate ID.', true, schema: ['type' => 'integer']),
                 ],
@@ -251,8 +313,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
                 ],
             ),
         ),
-        // Export MUST stay the LAST Get op so the GraphQL node-id IRI keeps
-        // resolving from the detail Get (/settings/tax-rates/{id}), not /export.
         new Get(
             uriTemplate: '/settings/tax-rates/export',
             provider: AdminSettingsTaxRateExportProvider::class,
@@ -328,39 +388,75 @@ class AdminSettingsTaxRate
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
+    /**
+     * The identifier.
+     */
     #[ApiProperty(writable: false, example: 'US-CA-SF')]
     public ?string $identifier = null;
 
+    /**
+     * The is zip.
+     */
     #[ApiProperty(writable: false, example: false)]
     public ?bool $is_zip = null;
 
+    /**
+     * The zip code.
+     */
     #[ApiProperty(writable: false, example: '94103')]
     public ?string $zip_code = null;
 
+    /**
+     * The zip from.
+     */
     #[ApiProperty(writable: false, example: null)]
     public ?string $zip_from = null;
 
+    /**
+     * The zip to.
+     */
     #[ApiProperty(writable: false, example: null)]
     public ?string $zip_to = null;
 
+    /**
+     * The state.
+     */
     #[ApiProperty(writable: false, example: 'CA')]
     public ?string $state = null;
 
+    /**
+     * The country.
+     */
     #[ApiProperty(writable: false, example: 'US')]
     public ?string $country = null;
 
+    /**
+     * The tax rate.
+     */
     #[ApiProperty(writable: false, example: 8.5)]
     public ?float $tax_rate = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, example: 'Tax rate deleted successfully.')]
     public ?string $message = null;
 }

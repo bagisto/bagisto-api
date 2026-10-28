@@ -15,7 +15,9 @@ use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Webkul\BagistoApi\Dto\CreateWishlistInput;
 use Webkul\BagistoApi\Dto\DeleteWishlistInput;
 use Webkul\BagistoApi\Resolver\WishlistQueryResolver;
@@ -23,16 +25,12 @@ use Webkul\BagistoApi\State\WishlistItemProvider;
 use Webkul\BagistoApi\State\WishlistProcessor;
 use Webkul\BagistoApi\State\WishlistProvider;
 
-/**
- * Wishlist Item API Resource
- *
- * Allows customers to add and manage products in their wishlist
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
         new Get(
             provider: WishlistItemProvider::class,
+            normalizationContext: ['groups' => ['wishlist:read', 'product:list'], 'skip_null_values' => false],
             openapi: new Operation(
                 tags: ['Wishlist'],
                 summary: 'Get a wishlist item by ID',
@@ -59,6 +57,7 @@ use Webkul\BagistoApi\State\WishlistProvider;
         ),
         new GetCollection(
             provider: WishlistProvider::class,
+            normalizationContext: ['groups' => ['wishlist:read', 'product:list'], 'skip_null_values' => false],
             openapi: new Operation(
                 tags: ['Wishlist'],
                 summary: 'List the customer\'s wishlist items',
@@ -223,9 +222,13 @@ use Webkul\BagistoApi\State\WishlistProvider;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: WishlistQueryResolver::class),
+        new Query(
+            resolver: WishlistQueryResolver::class,
+            description: 'One wishlist item of the authenticated customer on the current channel; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
         new QueryCollection(
             provider: WishlistProvider::class,
+            description: 'The authenticated customer\'s wishlist on the current channel. `sort` is `id` or `created_at` (or `column-asc`/`column-desc`) and `order` is `asc` (default) or `desc`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             extraArgs: [
                 'sort' => ['type' => 'String'],
@@ -267,21 +270,55 @@ class Wishlist extends \Webkul\Customer\Models\Wishlist
         'additional' => 'array',
     ];
 
+    /**
+     * The appends.
+     */
     protected $appends = ['message'];
 
+    /**
+     * The response message.
+     */
     public ?string $responseMessage = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
+    #[Groups(['wishlist:read'])]
     public function getId(): int
     {
         return $this->id;
     }
 
+    /**
+     * When the item was added, kept in the REST read group.
+     */
+    #[Groups(['wishlist:read'])]
+    public function getCreated_at(): ?CarbonInterface
+    {
+        return $this->created_at;
+    }
+
+    /**
+     * When the item was last changed, kept in the REST read group.
+     */
+    #[Groups(['wishlist:read'])]
+    public function getUpdated_at(): ?CarbonInterface
+    {
+        return $this->updated_at;
+    }
+
+    /**
+     * Get message attribute.
+     */
     public function getMessageAttribute(): ?string
     {
         return $this->responseMessage;
     }
 
+    /**
+     * Set message.
+     */
     public function setMessage(string $message): self
     {
         $this->responseMessage = $message;
@@ -290,27 +327,30 @@ class Wishlist extends \Webkul\Customer\Models\Wishlist
     }
 
     /**
-     * Product relationship for API
+     * Product relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Associated product')]
+    #[Groups(['wishlist:read'])]
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
 
     /**
-     * Customer relationship for API
+     * Customer relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Customer who added the item')]
+    #[Groups(['wishlist:read'])]
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
 
     /**
-     * Channel relationship for API
+     * Channel relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Channel where item was added')]
+    #[Groups(['wishlist:read'])]
     public function channel(): BelongsTo
     {
         return $this->belongsTo(Channel::class, 'channel_id');

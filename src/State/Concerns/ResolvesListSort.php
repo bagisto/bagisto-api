@@ -4,6 +4,9 @@ namespace Webkul\BagistoApi\State\Concerns;
 
 trait ResolvesListSort
 {
+    /**
+     * Resolve list sort.
+     */
     protected function resolveListSort(array $args, array $sortable, string $defaultDirection = 'asc'): array
     {
         $defaultColumn = $sortable[0] ?? 'id';

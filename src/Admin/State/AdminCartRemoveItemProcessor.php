@@ -9,12 +9,11 @@ use Webkul\BagistoApi\Admin\Models\AdminCart;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Checkout\Facades\Cart;
 
-/**
- * DELETE /api/admin/carts/{id}/items (body: { cartItemId }) — remove a single
- * line-item from the draft cart. Mirrors CartController::destroyItem.
- */
 class AdminCartRemoveItemProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminCart
     {
         $cart = AdminCartGuard::resolve(AdminCartGuard::resolveId($uriVariables, $context));
@@ -43,6 +42,9 @@ class AdminCartRemoveItemProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve cart item id.
+     */
     protected function resolveCartItemId(mixed $data, array $context): ?int
     {
         if (

@@ -6,13 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Inventory source — nested sub-resource of AdminSettingsChannel
- * (`inventorySources` connection). Backed by `inventory_sources` via
- * belongsToMany over `channel_inventory_sources` (`channel_id`,
- * `inventory_source_id`) — pivot has no own `id`, so the node `_id` is the
- * source's real id. Surfaces `code`/`name`/`status`.
- */
 #[ApiResource(
     shortName: 'AdminSettingsChannelInventorySourceRef',
     operations: [],
@@ -21,18 +14,33 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminSettingsChannelInventorySourceRef extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the inventory sources.
+     *
+     * @var string
+     */
     protected $table = 'inventory_sources';
 
-    /** @var bool */
+    /**
+     * Indicates the channel inventory source reference does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The native types the channel inventory source reference attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'status' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

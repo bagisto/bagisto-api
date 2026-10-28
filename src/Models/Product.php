@@ -14,6 +14,7 @@ use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\ProductDetail\ProductDetailDto;
+use Webkul\BagistoApi\Models\Concerns\ProductCardSummary;
 use Webkul\BagistoApi\Models\Concerns\ProductPricing;
 use Webkul\BagistoApi\Models\Concerns\ProductRelations;
 use Webkul\BagistoApi\Models\Concerns\ProductSystemAttributes;
@@ -307,7 +308,8 @@ use Webkul\Product\Models\Product as BaseProduct;
                     'description' => 'Channel code (e.g. "default")',
                 ],
             ],
-            resolver: SingleProductBagistoApiResolver::class
+            resolver: SingleProductBagistoApiResolver::class,
+            description: 'One product visible in the storefront, found by `id` (IRI or numeric ID), `sku` or `urlKey`, checked in that order; sending none is an error and a product that is disabled or not visible in the channel is not found. `locale` and `channel` (codes) choose the language and channel the values are read in. Needs the X-STOREFRONT-KEY header.',
         ),
     ]
 )]
@@ -318,9 +320,13 @@ use Webkul\Product\Models\Product as BaseProduct;
     operations: [
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One product visible in the storefront of the current channel. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
         new QueryCollection(
             provider: ProductGraphQLProvider::class,
+            description: 'Products visible in the storefront of the channel. `query` searches SKU and name (partial match); `filter` is a JSON object of attribute filters such as type, sku, category_id or price; `sortKey` is TITLE (or NAME), CREATED_AT, UPDATED_AT, PRICE or ID (default), ascending unless `reverse` is true. `locale` and `channel` (codes) choose where values are read. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
             args: [
                 'sortKey' => [
                     'type' => 'String',
@@ -431,19 +437,48 @@ use Webkul\Product\Models\Product as BaseProduct;
 )]
 class Product extends BaseProduct
 {
+    use ProductCardSummary;
     use ProductPricing;
     use ProductRelations;
     use ProductSystemAttributes;
     use ProductWishlistCompareFlags;
 
+    /**
+     * The av null constant.
+     */
+    private const AV_NULL = "\0NULL";
+
+    /**
+     * The flat attributes constant.
+     */
+    private const FLAT_ATTRIBUTES = [
+        'sku', 'name', 'url_key', 'short_description', 'description',
+        'new', 'featured', 'status', 'visible_individually',
+        'meta_title', 'meta_keywords', 'meta_description',
+        'price', 'special_price', 'special_price_from', 'special_price_to',
+        'weight', 'product_number',
+    ];
+
+    /**
+     * The locale.
+     */
     public $locale;
 
+    /**
+     * The channel.
+     */
     public $channel;
 
+    /**
+     * The with.
+     */
     protected $with = [
         'attribute_family',
     ];
 
+    /**
+     * The appends.
+     */
     protected $appends = [
         'name', 'description', 'short_description', 'price', 'special_price',
         'weight', 'product_number', 'status', 'new', 'featured',
@@ -459,6 +494,9 @@ class Product extends BaseProduct
         'is_in_wishlist', 'is_in_compare',
     ];
 
+    /**
+     * The system attributes.
+     */
     protected static array $systemAttributes = [
         'sku' => ['id' => 1],
         'name' => ['id' => 2],
@@ -490,6 +528,44 @@ class Product extends BaseProduct
         'brand' => ['id' => 25],
     ];
 
+    /**
+     * Cache for attribute values to avoid repeated lookups.
+     */
+    protected array $attributeValueCache = [];
+
+    /**
+     * The flat row resolved.
+     */
+    private bool $flatRowResolved = false;
+
+    /**
+     * The flat row.
+     */
+    private mixed $flatRow = null;
+
+    /**
+     * The attribute value index.
+     */
+    private ?array $attributeValueIndex = null;
+
+    /**
+     * The price scope by request.
+     */
+    private static ?\WeakMap $priceScopeByRequest = null;
+
+    /**
+     * The price index memo.
+     */
+    private ?object $priceIndexMemo = null;
+
+    /**
+     * The price index resolved.
+     */
+    private bool $priceIndexResolved = false;
+
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     #[Groups(['product:list'])]
     public function getId(): ?int
@@ -497,19 +573,23 @@ class Product extends BaseProduct
         return $this->id;
     }
 
-    /** Parent */
+    /**
+     * Parent.
+     */
     #[ApiProperty(writable: true, readable: true, required: false)]
     public function getParent(): mixed
     {
         return $this->parent_id;
     }
 
-    public function setParent(mixed $value): void
-    {
-        // Parent cannot be modified via API
-    }
+    /**
+     * Set parent.
+     */
+    public function setParent(mixed $value): void {}
 
-    /** Is Saleable */
+    /**
+     * Is Saleable.
+     */
     #[ApiProperty(
         writable: false,
         readable: true
@@ -520,24 +600,34 @@ class Product extends BaseProduct
         return parent::isSaleable();
     }
 
+    /**
+     * Whether saleable.
+     */
     public function isSaleable(): bool
     {
         return $this->getIsSaleableAttribute();
     }
 
+    /**
+     * Available for sale attribute.
+     */
     public function availableForSaleAttribute(): bool
     {
-        return $this->status && $this->isSaleable();
+        return $this->status
+            && $this->isSaleable();
     }
 
-    /** Available for Sale */
+    /**
+     * Available for Sale.
+     */
     #[ApiProperty(
         writable: false,
         readable: true
     )]
     public function availableForSale(): bool
     {
-        return $this->status && $this->isSaleable();
+        return $this->status
+            && $this->isSaleable();
     }
 
     /**
@@ -598,11 +688,17 @@ class Product extends BaseProduct
         $this->channel = $value;
     }
 
+    /**
+     * Get index attribute.
+     */
     public function getIndexAttribute(): string
     {
         return $this->getCombinationsAttribute();
     }
 
+    /**
+     * Get index.
+     */
     #[ApiProperty(deprecationReason: 'Use the VariantAttributeMap property instead', writable: false, readable: true, required: false)]
     public function getIndex(): ?string
     {
@@ -611,6 +707,9 @@ class Product extends BaseProduct
         return $indexJson !== '{}' ? $indexJson : null;
     }
 
+    /**
+     * Get combinations attribute.
+     */
     public function getCombinationsAttribute(): string
     {
         if ($this->type !== 'configurable') {
@@ -646,33 +745,8 @@ class Product extends BaseProduct
     }
 
     /**
-     * Map a variant's super attribute values by attribute code.
+     * Get combinations.
      */
-    private function variantCombination(mixed $variant, array $superAttributeIds, array $attributeCodeMap): array
-    {
-        if (! $variant->relationLoaded('attribute_values')) {
-            $variant->load('attribute_values.attribute');
-        }
-
-        $combination = [];
-
-        foreach ($variant->attribute_values as $attributeValue) {
-            if (! in_array($attributeValue->attribute_id, $superAttributeIds)) {
-                continue;
-            }
-
-            $attributeCode = $attributeCodeMap[$attributeValue->attribute_id] ?? null;
-
-            if (! $attributeCode) {
-                continue;
-            }
-
-            $combination[$attributeCode] = $attributeValue->value;
-        }
-
-        return $combination;
-    }
-
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getCombinations(): ?string
     {
@@ -681,6 +755,9 @@ class Product extends BaseProduct
         return $indexJson !== '{}' ? $indexJson : null;
     }
 
+    /**
+     * Get super attribute options attribute.
+     */
     public function getSuperAttributeOptionsAttribute(): string
     {
         if ($this->type !== 'configurable') {
@@ -738,6 +815,9 @@ class Product extends BaseProduct
         return json_encode($result);
     }
 
+    /**
+     * Get super attribute options.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getSuper_attribute_options(): ?string
     {
@@ -746,11 +826,17 @@ class Product extends BaseProduct
         return $indexJson !== '{}' ? $indexJson : null;
     }
 
+    /**
+     * Get sku attribute.
+     */
     public function getSkuAttribute(): ?string
     {
         return $this->getSystemAttributeValue('sku');
     }
 
+    /**
+     * Get sku.
+     */
     #[ApiProperty(
         writable: true,
         readable: true
@@ -761,11 +847,17 @@ class Product extends BaseProduct
         return $this->getSkuAttribute();
     }
 
+    /**
+     * Set sku.
+     */
     public function setSku(?string $value): void
     {
         $this->setSystemAttributeValue('sku', $value);
     }
 
+    /**
+     * Get type.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -777,93 +869,17 @@ class Product extends BaseProduct
         return $this->type;
     }
 
+    /**
+     * Set type.
+     */
     public function setType(?string $value): void
     {
         $this->type = $value;
     }
 
     /**
-     * Cache for attribute values to avoid repeated lookups
+     * Get system attribute value.
      */
-    protected array $attributeValueCache = [];
-
-    private const AV_NULL = "\0NULL";
-
-    private const FLAT_ATTRIBUTES = [
-        'sku', 'name', 'url_key', 'short_description', 'description',
-        'new', 'featured', 'status', 'visible_individually',
-        'meta_title', 'meta_keywords', 'meta_description',
-        'price', 'special_price', 'special_price_from', 'special_price_to',
-        'weight', 'product_number',
-    ];
-
-    private bool $flatRowResolved = false;
-
-    private mixed $flatRow = null;
-
-    private function flatRow(): mixed
-    {
-        if ($this->flatRowResolved) {
-            return $this->flatRow;
-        }
-
-        $this->flatRowResolved = true;
-
-        if (! $this->relationLoaded('product_flats')) {
-            return $this->flatRow = null;
-        }
-
-        $locale = $this->locale ?? app()->getLocale();
-        $channel = $this->channel ?? (core()->getCurrentChannel()->code ?? 'default');
-
-        $rows = $this->product_flats;
-
-        $match = null;
-
-        foreach ($rows as $row) {
-            if (
-                $row->locale === $locale
-                && $row->channel === $channel
-            ) {
-                $match = $row;
-
-                break;
-            }
-
-            if (
-                $match === null
-                && $row->locale === $locale
-            ) {
-                $match = $row;
-            }
-        }
-
-        return $this->flatRow = $match ?? $rows->first();
-    }
-
-    private ?array $attributeValueIndex = null;
-
-    private function attributeValueIndex(): array
-    {
-        if ($this->attributeValueIndex !== null) {
-            return $this->attributeValueIndex;
-        }
-
-        $index = [];
-
-        foreach ($this->attribute_values as $attributeValue) {
-            $key = $attributeValue->attribute_id
-                .'|'.($attributeValue->locale ?? self::AV_NULL)
-                .'|'.($attributeValue->channel ?? self::AV_NULL);
-
-            if (! array_key_exists($key, $index)) {
-                $index[$key] = $attributeValue;
-            }
-        }
-
-        return $this->attributeValueIndex = $index;
-    }
-
     protected function getSystemAttributeValue(string $attributeCode): mixed
     {
         if (array_key_exists($attributeCode, $this->attributeValueCache)) {
@@ -947,27 +963,118 @@ class Product extends BaseProduct
 
         if (
             $attributeValue
-            && $attributeValue?->integer_value
-            && in_array($attributeValue?->attribute?->type, ['select', 'multiselect', 'checkbox'])
+            && $attributeValue->integer_value
+            && in_array($attributeValue->attribute?->type, ['select', 'multiselect', 'checkbox'])
         ) {
-            $attributeValue->setValue($attributeValue->attribute->options()->where('id', $attributeValue->value)->first()?->label);
+            return $this->attributeValueCache[$attributeCode] = (string) $attributeValue->attribute->options()
+                ->where('id', $attributeValue->integer_value)
+                ->first()?->label;
         }
 
         return $this->attributeValueCache[$attributeCode] = ($attributeValue ? $attributeValue->value : '');
     }
 
+    /**
+     * Set system attribute value.
+     */
     protected function setSystemAttributeValue(string $attributeCode, mixed $value): void
     {
         $tempKey = "_temp_{$attributeCode}";
         $this->attributes[$tempKey] = $value;
     }
 
-    private static ?\WeakMap $priceScopeByRequest = null;
+    /**
+     * Map a variant's super attribute values by attribute code.
+     */
+    private function variantCombination(mixed $variant, array $superAttributeIds, array $attributeCodeMap): array
+    {
+        if (! $variant->relationLoaded('attribute_values')) {
+            $variant->load('attribute_values.attribute');
+        }
 
-    private ?object $priceIndexMemo = null;
+        $combination = [];
 
-    private bool $priceIndexResolved = false;
+        foreach ($variant->attribute_values as $attributeValue) {
+            if (! in_array($attributeValue->attribute_id, $superAttributeIds)) {
+                continue;
+            }
 
-    // ─── Formatted Price Accessors ──────────────────────────────────────
+            $attributeCode = $attributeCodeMap[$attributeValue->attribute_id] ?? null;
 
+            if (! $attributeCode) {
+                continue;
+            }
+
+            $combination[$attributeCode] = $attributeValue->value;
+        }
+
+        return $combination;
+    }
+
+    /**
+     * Flat row.
+     */
+    private function flatRow(): mixed
+    {
+        if ($this->flatRowResolved) {
+            return $this->flatRow;
+        }
+
+        $this->flatRowResolved = true;
+
+        if (! $this->relationLoaded('product_flats')) {
+            return $this->flatRow = null;
+        }
+
+        $locale = $this->locale ?? app()->getLocale();
+        $channel = $this->channel ?? (core()->getCurrentChannel()->code ?? 'default');
+
+        $rows = $this->product_flats;
+
+        $match = null;
+
+        foreach ($rows as $row) {
+            if (
+                $row->locale === $locale
+                && $row->channel === $channel
+            ) {
+                $match = $row;
+
+                break;
+            }
+
+            if (
+                $match === null
+                && $row->locale === $locale
+            ) {
+                $match = $row;
+            }
+        }
+
+        return $this->flatRow = $match ?? $rows->first();
+    }
+
+    /**
+     * Attribute value index.
+     */
+    private function attributeValueIndex(): array
+    {
+        if ($this->attributeValueIndex !== null) {
+            return $this->attributeValueIndex;
+        }
+
+        $index = [];
+
+        foreach ($this->attribute_values as $attributeValue) {
+            $key = $attributeValue->attribute_id
+                .'|'.($attributeValue->locale ?? self::AV_NULL)
+                .'|'.($attributeValue->channel ?? self::AV_NULL);
+
+            if (! array_key_exists($key, $index)) {
+                $index[$key] = $attributeValue;
+            }
+        }
+
+        return $this->attributeValueIndex = $index;
+    }
 }

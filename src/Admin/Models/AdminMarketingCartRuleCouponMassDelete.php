@@ -24,6 +24,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponMassDeleteProcesso
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Mass-delete coupons for a cart rule',
+                description: 'Deletes the coupons in `indices` that belong to the cart rule; IDs that do not are returned under `skipped`. An empty `indices` is a 422 and an unknown cart rule a 404.',
                 parameters: [
                     new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
                 ],
@@ -76,22 +77,41 @@ class AdminMarketingCartRuleCouponMassDelete
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The cart rule id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $cart_rule_id = null;
 
+    /**
+     * The deleted.
+     */
     #[ApiProperty(writable: false)]
     public ?int $deleted = null;
 
-    /** @var array<int, int>|null */
+    /**
+     * The requested coupon ids that do not belong to the cart rule and were skipped.
+     *
+     * @var array<int, int>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $skipped = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

@@ -18,25 +18,24 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\GDPR\Models\GDPRDataRequest;
 use Webkul\GDPR\Repositories\GDPRDataRequestRepository;
 
-/**
- * Handles PUT (update status / message) and DELETE on
- * /api/admin/customers/gdpr-requests/{id} + GraphQL mutations
- * updateAdminCustomerGdprRequest / deleteAdminCustomerGdprRequest.
- *
- * The destructive cascade for type=delete approvals is NOT done here — call
- * the dedicated /process endpoint (AdminCustomerGdprProcessProcessor) for
- * that. This processor only writes status / message and fires the same
- * monolith events so the email listener still sends a status update mail.
- */
 class AdminCustomerGdprProcessor implements ProcessorInterface
 {
+    /**
+     * The allowed statuses constant.
+     */
     public const ALLOWED_STATUSES = ['pending', 'processing', 'declined', 'approved', 'revoked'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminCustomerGdprItemProvider $itemProvider,
         protected GDPRDataRequestRepository $gdprRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -80,6 +79,9 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminCustomerGdprRequest
     {
         $request = GDPRDataRequest::find($id);
@@ -123,6 +125,9 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDto($fresh);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminCustomerGdprRequest
     {
         $request = GDPRDataRequest::with(['customer'])->find($id);
@@ -146,6 +151,9 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.customer.gdpr.deleted')];
     }
 
+    /**
+     * Extract id.
+     */
     protected function extractId(mixed $data, array $uriVariables, array $context): int
     {
         if (! empty($uriVariables['id'])) {
@@ -163,6 +171,9 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
         return (int) basename((string) $idRaw);
     }
 
+    /**
+     * Resolve input.
+     */
     protected function resolveInput(mixed $data, array $context, bool $isGraphQL): array
     {
         if ($isGraphQL) {
@@ -175,6 +186,9 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

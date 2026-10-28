@@ -8,7 +8,7 @@ use Webkul\Core\Models\Locale;
 class LocaleTest extends GraphQLTestCase
 {
     /**
-     * Test: Query all locales collection
+     * Test: Query all locales collection.
      */
     public function test_get_locales_collection(): void
     {
@@ -82,7 +82,7 @@ class LocaleTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single locale by ID
+     * Test: Query single locale by ID.
      */
     public function test_get_locale_by_id(): void
     {
@@ -117,7 +117,7 @@ class LocaleTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Timestamps are returned in ISO8601 format
+     * Test: Timestamps are returned in ISO8601 format.
      */
     public function test_locale_timestamps_are_iso8601_format(): void
     {
@@ -140,7 +140,6 @@ class LocaleTest extends GraphQLTestCase
         $response->assertOk();
         $locale = $response->json('data.locales.edges.0.node');
 
-        // Verify ISO8601 format if timestamps exist, or null if not set in DB
         if ($locale['createdAt'] !== null) {
             expect($locale['createdAt'])->toMatch('/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
         } else {
@@ -155,7 +154,7 @@ class LocaleTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query locales with pagination (first)
+     * Test: Query locales with pagination (first).
      */
     public function test_locales_pagination_first(): void
     {
@@ -184,11 +183,10 @@ class LocaleTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query locales with pagination (after cursor)
+     * Test: Query locales with pagination (after cursor).
      */
     public function test_locales_pagination_after_cursor(): void
     {
-        // Get first page
         $firstQuery = <<<'GQL'
             query getLocales {
               locales(first: 1) {
@@ -205,7 +203,6 @@ class LocaleTest extends GraphQLTestCase
         $firstResponse = $this->graphQL($firstQuery);
         $firstCursor = $firstResponse->json('data.locales.edges.0.cursor');
 
-        // Get second page using cursor
         $secondQuery = <<<GQL
             query getLocales {
               locales(first: 1, after: "{$firstCursor}") {
@@ -224,7 +221,7 @@ class LocaleTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query locales with introspection (schema exploration)
+     * Test: Query locales with introspection (schema exploration).
      */
     public function test_locale_introspection_query(): void
     {
@@ -257,7 +254,7 @@ class LocaleTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query returns appropriate error for invalid ID
+     * Test: Query returns appropriate error for invalid ID.
      */
     public function test_invalid_locale_id_returns_error(): void
     {
@@ -277,7 +274,7 @@ class LocaleTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Logo URL is properly formatted
+     * Test: Logo URL is properly formatted.
      */
     public function test_locale_logo_url_format(): void
     {
@@ -296,14 +293,13 @@ class LocaleTest extends GraphQLTestCase
         $response->assertOk();
         $logoUrl = $response->json('data.locale.logoUrl');
 
-        // Should be either null or a valid URL
         if ($logoUrl) {
             expect($logoUrl)->toMatch('/http(s)?:\/\/.+/');
         }
     }
 
     /**
-     * Test: Multiple fields can be queried together
+     * Test: Multiple fields can be queried together.
      */
     public function test_query_multiple_locale_fields(): void
     {
@@ -340,7 +336,7 @@ class LocaleTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Direction field validation (should be 'ltr' or 'rtl')
+     * Test: Direction field validation (should be 'ltr' or 'rtl').
      */
     public function test_locale_direction_values(): void
     {

@@ -10,15 +10,11 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Tax\Models\TaxCategory;
 
-/**
- * Tax category detail — GET /api/admin/settings/tax-categories/{id} +
- * adminSettingsTaxCategory query.
- *
- * Branches: GraphQL → the AdminSettingsTaxCategory Eloquent model (taxRates
- * resolves as a connection); REST → the flat AdminSettingsTaxCategoryRestDto.
- */
 class AdminSettingsTaxCategoryItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminSettingsTaxCategory|AdminSettingsTaxCategoryRestDto
     {
         AdminReadPermissions::authorize($operation, AdminSettingsTaxCategory::class);
@@ -56,9 +52,11 @@ class AdminSettingsTaxCategoryItemProvider implements ProviderInterface
         return $this->buildRestDto($taxCategory);
     }
 
+    /**
+     * Build rest dto.
+     */
     protected function buildRestDto(object $taxCategory): AdminSettingsTaxCategoryRestDto
     {
-        /** @var TaxCategory $taxCategory */
         $dto = new AdminSettingsTaxCategoryRestDto;
 
         $dto->id = (int) $taxCategory->id;

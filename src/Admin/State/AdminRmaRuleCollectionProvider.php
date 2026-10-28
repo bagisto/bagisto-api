@@ -13,6 +13,9 @@ class AdminRmaRuleCollectionProvider extends AbstractAdminCollectionProvider
 {
     use ChecksAdminPermission;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin('sales.rma.rules');
@@ -20,16 +23,25 @@ class AdminRmaRuleCollectionProvider extends AbstractAdminCollectionProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'name'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('rma_rules')->select('id', 'name', 'description', 'status', 'return_period', 'default', 'created_at', 'updated_at');
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
@@ -45,6 +57,9 @@ class AdminRmaRuleCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -52,6 +67,9 @@ class AdminRmaRuleCollectionProvider extends AbstractAdminCollectionProvider
         $query->orderBy(in_array($column, ['id', 'name'], true) ? $column : 'id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminRmaRule
     {
         return AdminRmaRuleItemProvider::toDto($row);

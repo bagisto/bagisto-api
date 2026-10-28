@@ -11,20 +11,15 @@ class ExceptionHandlerServiceProvider extends ServiceProvider
     /**
      * Register services.
      */
-    public function register(): void
-    {
-        //
-    }
+    public function register(): void {}
 
     /**
      * Bootstrap services.
      */
     public function boot(): void
     {
-        // Get the exception handler that was already initialized
         $exceptionHandler = app()->make(ExceptionHandler::class);
 
-        // Register exception renderer for InvalidInputException
         if (method_exists($exceptionHandler, 'renderable')) {
             $exceptionHandler->renderable(function (InvalidInputException $exception, $request) {
                 if (

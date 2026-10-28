@@ -9,20 +9,22 @@ use Webkul\BagistoApi\Admin\State\Concerns\MapsAppearanceSection;
 use Webkul\Theme\Models\Section;
 use Webkul\Theme\Repositories\SectionRepository;
 
-/**
- * Sections of a theme for one channel, in render order with footer links pinned last —
- * the same set the appearance editor lists.
- */
 class AdminAppearanceSectionCollectionProvider implements ProviderInterface
 {
     use ChecksAdminPermission;
     use MapsAppearanceSection;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SectionRepository $sectionRepository,
         protected AppearanceScopeGuard $scope,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $this->authorizedAdmin('appearance.sections', 'bagistoapi::app.admin.appearance.no-permission');
@@ -43,7 +45,7 @@ class AdminAppearanceSectionCollectionProvider implements ProviderInterface
             ->where('channel_id', $channel->id)
             ->orderBy('sort_order')
             ->get()
-            ->sortBy(fn ($section) => $section->type === Section::FOOTER_LINKS ? 1 : 0)
+            ->sortBy(fn ($section) => $this->scope->isPinned($section) ? 1 : 0)
             ->values();
 
         if ($this->isGraphQL($context)) {

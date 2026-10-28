@@ -4,34 +4,29 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Models\Customer;
+use Webkul\BagistoApi\Services\CustomerAuth\CustomerApiAuthService;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\BagistoApi\Validators\CustomerValidator;
 use Webkul\Customer\Repositories\CustomerGroupRepository;
 use Webkul\Customer\Repositories\CustomerRepository;
 
 class CustomerProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CustomerRepository $customerRepository,
         protected CustomerValidator $validator,
-        protected CustomerGroupRepository $customerGroupRepository
+        protected CustomerGroupRepository $customerGroupRepository,
+        protected CustomerApiAuthService $authService,
     ) {}
-
-    /**
-     * Resolve the default customer group id the storefront assigns at registration.
-     */
-    private function defaultCustomerGroupId(): ?int
-    {
-        $code = core()->getConfigData('customer.settings.create_new_account_options.default_group') ?: 'general';
-
-        return $this->customerGroupRepository->findOneWhere(['code' => $code])?->id;
-    }
 
     /**
      * Process the customer creation or update operation.
@@ -62,6 +57,19 @@ class CustomerProcessor implements ProcessorInterface
         return $data;
     }
 
+    /**
+     * Resolve the default customer group id the storefront assigns at registration.
+     */
+    private function defaultCustomerGroupId(): ?int
+    {
+        $code = core()->getConfigData('customer.settings.create_new_account_options.default_group') ?: 'general';
+
+        return $this->customerGroupRepository->findOneWhere(['code' => $code])?->id;
+    }
+
+    /**
+     * Create customer.
+     */
     private function createCustomer(Customer $data): Customer
     {
         $this->validator->validateForCreation($data);
@@ -134,11 +142,23 @@ class CustomerProcessor implements ProcessorInterface
             return $freshCustomer;
         }
 
-        $freshCustomer->token = $freshCustomer->createToken('customer-registration')->plainTextToken;
+        $pair = $this->authService->startSession($freshCustomer, request());
+
+        $freshCustomer->token = $pair->accessToken;
+        $freshCustomer->forceFill([
+            'access_token' => $pair->accessToken,
+            'expires_in' => $pair->expiresIn(),
+            'access_token_expires_at' => $pair->accessTokenExpiresAt->toIso8601String(),
+            'refresh_token' => $pair->refreshToken,
+            'refresh_token_expires_at' => $pair->refreshTokenExpiresAt->toIso8601String(),
+        ]);
 
         return $freshCustomer;
     }
 
+    /**
+     * Update customer.
+     */
     private function updateCustomer(Customer $data): Customer
     {
         $this->requireAuthentication();
@@ -186,6 +206,9 @@ class CustomerProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Delete customer.
+     */
     private function deleteCustomer(Customer $data): Customer
     {
         $this->requireAuthentication();
@@ -204,7 +227,7 @@ class CustomerProcessor implements ProcessorInterface
      */
     private function requireAuthentication(): void
     {
-        if (! Auth::guard('sanctum')->check()) {
+        if (! CurrentCustomer::check()) {
             throw new AuthenticationException(__('bagistoapi::app.graphql.customer.unauthenticated'));
         }
     }

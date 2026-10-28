@@ -20,6 +20,9 @@ class BagistoApiTest extends TestCase
         return app(CoreCapabilities::class);
     }
 
+    /**
+     * Skip unless core supports.
+     */
     protected function skipUnlessCoreSupports(bool $supported, string $feature): void
     {
         if (! $supported) {

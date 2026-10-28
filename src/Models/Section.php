@@ -133,9 +133,13 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One active theme section of the current channel\'s theme; a switched-off section or one of another channel or theme is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
         new QueryCollection(
             provider: CursorAwareCollectionProvider::class,
+            description: 'The active sections of the current channel\'s theme in display order; `type` filters by section type. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
             parameters: [
                 'type' => new QueryParameter(key: 'type', property: 'type', filter: new EqualsFilter),
             ],
@@ -157,6 +161,8 @@ class Section extends \Webkul\Theme\Models\Section
     ];
 
     /**
+     * The relations always eager loaded with the section.
+     *
      * @var list<string>
      */
     protected $with = ['translations'];
@@ -171,6 +177,36 @@ class Section extends \Webkul\Theme\Models\Section
         'draft_sort_order',
     ];
 
+    /**
+     * Get id.
+     */
+    #[ApiProperty(identifier: true, writable: false)]
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * Get translation.
+     */
+    #[ApiProperty(readable: true, writable: false, readableLink: true, description: 'Current locale translation')]
+    public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
+    {
+        return $this->translation;
+    }
+
+    /**
+     * Get translations.
+     */
+    #[ApiProperty(readable: true, writable: false, readableLink: true, description: 'All translations')]
+    public function getTranslations()
+    {
+        return $this->translations;
+    }
+
+    /**
+     * Booted.
+     */
     protected static function booted(): void
     {
         static::addGlobalScope('bagisto_api_storefront', function (Builder $builder) {
@@ -182,23 +218,5 @@ class Section extends \Webkul\Theme\Models\Section
                 ->where('theme_sections.theme_code', $channel->theme ?: config('themes.shop-default'))
                 ->orderBy('theme_sections.sort_order');
         });
-    }
-
-    #[ApiProperty(identifier: true, writable: false)]
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    #[ApiProperty(readable: true, writable: false, readableLink: true, description: 'Current locale translation')]
-    public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
-    {
-        return $this->translation;
-    }
-
-    #[ApiProperty(readable: true, writable: false, readableLink: true, description: 'All translations')]
-    public function getTranslations()
-    {
-        return $this->translations;
     }
 }

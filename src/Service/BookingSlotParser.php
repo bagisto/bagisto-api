@@ -20,7 +20,7 @@ class BookingSlotParser
         $parts = preg_split('/\s*[-–—]\s*/u', $range) ?: [];
 
         if (count($parts) !== 2) {
-            throw new \InvalidArgumentException('Invalid time range.');
+            throw new \InvalidArgumentException(__('bagistoapi::app.graphql.booking-slot.invalid-time-range'));
         }
 
         [$fromTime, $toTime] = [trim($parts[0]), trim($parts[1])];
@@ -38,6 +38,9 @@ class BookingSlotParser
         ];
     }
 
+    /**
+     * Parse date time.
+     */
     private function parseDateTime(string $date, string $time, string $timezone): Carbon
     {
         $candidate = trim($date.' '.$time);
@@ -61,10 +64,9 @@ class BookingSlotParser
             try {
                 return Carbon::createFromFormat($format, $candidate, $timezone);
             } catch (\Throwable) {
-                // try next format
             }
         }
 
-        throw new \InvalidArgumentException('Invalid time format.');
+        throw new \InvalidArgumentException(__('bagistoapi::app.graphql.booking-slot.invalid-time-format'));
     }
 }

@@ -7,7 +7,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request as RequestFacade;
 use Webkul\BagistoApi\Dto\CreateCompareItemInput;
 use Webkul\BagistoApi\Dto\DeleteCompareItemInput;
@@ -16,19 +15,20 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CompareItem;
 use Webkul\BagistoApi\Models\Product;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
-/**
- * CompareItemProcessor - Handles create/delete operations for compare items
- */
 class CompareItemProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private ?Request $request = null
     ) {}
 
     /**
-     * Process compare item operations
+     * Process compare item operations.
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
@@ -74,7 +74,7 @@ class CompareItemProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle create operation for compare items
+     * Handle create operation for compare items.
      */
     private function handleCreate(CreateCompareItemInput $input): CompareItem
     {
@@ -88,7 +88,7 @@ class CompareItemProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.compare-item.product-not-found'));
         }
 
-        $user = Auth::guard('sanctum')->user();
+        $user = CurrentCustomer::user();
 
         if (! $user) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -113,11 +113,11 @@ class CompareItemProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle delete operation for compare items
+     * Handle delete operation for compare items.
      */
     private function handleDelete(DeleteCompareItemInput $input): CompareItem
     {
-        $user = Auth::guard('sanctum')->user();
+        $user = CurrentCustomer::user();
 
         if (! $user) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -135,7 +135,7 @@ class CompareItemProcessor implements ProcessorInterface
         }
 
         if ($compareItem->customer_id !== $user->id) {
-            throw new AuthorizationException(__('bagistoapi::app.auth.cannot-update-other-profile'));
+            throw new AuthorizationException(__('bagistoapi::app.graphql.auth.cannot-update-other-profile'));
         }
 
         $compareItem->load(['product', 'customer']);
@@ -144,6 +144,9 @@ class CompareItemProcessor implements ProcessorInterface
         return $compareItem;
     }
 
+    /**
+     * Hydrate create input from context.
+     */
     private function hydrateCreateInputFromContext(CreateCompareItemInput $input, array $context): void
     {
         if (! empty($input->product_id)) {
@@ -167,6 +170,9 @@ class CompareItemProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Hydrate delete input from context.
+     */
     private function hydrateDeleteInputFromContext(DeleteCompareItemInput $input, array $context): void
     {
         if (! empty($input->id)) {
@@ -190,6 +196,9 @@ class CompareItemProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Extract product id.
+     */
     private function extractProductId(mixed $input): ?int
     {
         if (is_array($input)) {
@@ -207,6 +216,9 @@ class CompareItemProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Extract id.
+     */
     private function extractId(mixed $input): ?string
     {
         if (is_array($input)) {

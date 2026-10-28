@@ -14,24 +14,6 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Dto\OrderDetailRestDto;
 use Webkul\BagistoApi\Admin\State\OrderDetailProvider;
 
-/**
- * Admin Order detail — connection-shape resource (2026-06-18).
- *
- * Bare Eloquent model on the `orders` table (NOT extending core Order, which
- * carries morphTo/proxy relations that break API Platform serialization —
- * same reason the shop CustomerOrder is bare). Nested data follows the proven
- * AdminReview recipe:
- *   - to-many (items / invoices / shipments / refunds / comments) → HasMany to
- *     Eloquent sub-resources → GraphQL connections (`items { edges { node } }`).
- *   - to-one (customer / billingAddress / shippingAddress) → BelongsTo/HasOne
- *     to Eloquent sub-resources → typed objects the client sub-selects.
- *   - top-level scalars + formatted strings resolve via snake_case columns and
- *     accessors through the central output converter (no AcceptsCamelCaseWrites).
- *
- * REST keeps the historical flat shape via `output: OrderDetailRestDto` (the
- * provider maps it); GraphQL ops carry no `output:` so they return THIS model
- * and serve connections. The provider branches on the GraphQL context.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminOrderDetail',
@@ -58,18 +40,44 @@ use Webkul\BagistoApi\Admin\State\OrderDetailProvider;
 )]
 class OrderDetail extends EloquentModel
 {
-    /** @var string */
+    /**
+     * Status code → label (mirrors core Order::$statusLabel).
+     */
+    private const STATUS_LABELS = [
+        'pending' => 'Pending',
+        'pending_payment' => 'Pending Payment',
+        'processing' => 'Processing',
+        'completed' => 'Completed',
+        'canceled' => 'Canceled',
+        'closed' => 'Closed',
+        'fraud' => 'Fraud',
+    ];
+
+    /**
+     * The table that stores the orders.
+     *
+     * @var string
+     */
     protected $table = 'orders';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the order is serialized.
+     *
+     * @var array
+     */
     protected $appends = [
         'status_label', 'payment_method', 'payment_title', 'total_due', 'base_total_due',
         'formatted_grand_total', 'formatted_sub_total', 'formatted_tax_amount',
         'formatted_discount_amount', 'formatted_shipping_amount', 'formatted_total_due',
         'formatted_grand_total_invoiced', 'formatted_grand_total_refunded',
+        'formatted_sub_total_incl_tax', 'formatted_shipping_amount_incl_tax',
     ];
 
-    /** @var array */
+    /**
+     * The native types the order attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'is_guest' => 'boolean',
@@ -89,17 +97,9 @@ class OrderDetail extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
-    /** Status code → label (mirrors core Order::$statusLabel). */
-    private const STATUS_LABELS = [
-        'pending' => 'Pending',
-        'pending_payment' => 'Pending Payment',
-        'processing' => 'Processing',
-        'completed' => 'Completed',
-        'canceled' => 'Canceled',
-        'closed' => 'Closed',
-        'fraud' => 'Fraud',
-    ];
-
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
     {
@@ -108,36 +108,54 @@ class OrderDetail extends EloquentModel
 
     // --- Nested relations (GraphQL connections / typed objects) ---
 
+    /**
+     * Items.
+     */
     #[ApiProperty(writable: false)]
     public function items(): HasMany
     {
         return $this->hasMany(AdminOrderDetailItem::class, 'order_id')->whereNull('parent_id');
     }
 
+    /**
+     * Invoices.
+     */
     #[ApiProperty(writable: false)]
     public function invoices(): HasMany
     {
         return $this->hasMany(AdminOrderDetailInvoice::class, 'order_id');
     }
 
+    /**
+     * Shipments.
+     */
     #[ApiProperty(writable: false)]
     public function shipments(): HasMany
     {
         return $this->hasMany(AdminOrderDetailShipment::class, 'order_id');
     }
 
+    /**
+     * Refunds.
+     */
     #[ApiProperty(writable: false)]
     public function refunds(): HasMany
     {
         return $this->hasMany(AdminOrderDetailRefund::class, 'order_id');
     }
 
+    /**
+     * Comments.
+     */
     #[ApiProperty(writable: false)]
     public function comments(): HasMany
     {
         return $this->hasMany(AdminOrderDetailComment::class, 'order_id')->orderByDesc('id');
     }
 
+    /**
+     * Customer.
+     */
     #[ApiProperty(writable: false)]
     public function customer(): BelongsTo
     {
@@ -146,11 +164,7 @@ class OrderDetail extends EloquentModel
 
     /**
      * Order addresses (billing + shipping) → connection. Each node carries
-     * `addressType` so the client can tell them apart. A constrained HasOne
-     * (filtered by address_type) cannot resolve as a typed to-one over GraphQL
-     * (API Platform 500s on the relation's runtime `where`), so both addresses
-     * are exposed in one connection. REST keeps separate billingAddress /
-     * shippingAddress objects via the output DTO.
+     * `addressType` so the client can tell them apart. A constrained HasOne.
      */
     #[ApiProperty(writable: false)]
     public function addresses(): HasMany
@@ -161,18 +175,27 @@ class OrderDetail extends EloquentModel
 
     // --- Computed scalars (appended; resolve over both transports) ---
 
+    /**
+     * Get status label attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getStatusLabelAttribute(): ?string
     {
         return self::STATUS_LABELS[$this->status] ?? $this->status;
     }
 
+    /**
+     * Get payment method attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getPaymentMethodAttribute(): ?string
     {
         return $this->paymentMethodValue();
     }
 
+    /**
+     * Get payment title attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getPaymentTitleAttribute(): ?string
     {
@@ -185,72 +208,125 @@ class OrderDetail extends EloquentModel
         return core()->getConfigData('sales.payment_methods.'.$method.'.title') ?: $method;
     }
 
+    /**
+     * Get total due attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getTotalDueAttribute(): float
     {
-        return (float) $this->grand_total - (float) $this->grand_total_invoiced;
+        return round((float) $this->grand_total - (float) $this->grand_total_invoiced, 2) + 0.0;
     }
 
+    /**
+     * Get base total due attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getBaseTotalDueAttribute(): float
     {
-        return (float) $this->base_grand_total - (float) $this->base_grand_total_invoiced;
+        return round((float) $this->base_grand_total - (float) $this->base_grand_total_invoiced, 2) + 0.0;
     }
 
+    /**
+     * Get formatted grand total attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedGrandTotalAttribute(): ?string
     {
         return $this->fmt($this->grand_total);
     }
 
+    /**
+     * Get formatted sub total attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedSubTotalAttribute(): ?string
     {
         return $this->fmt($this->sub_total);
     }
 
+    /**
+     * Get formatted tax amount attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedTaxAmountAttribute(): ?string
     {
         return $this->fmt($this->tax_amount);
     }
 
+    /**
+     * Get formatted discount amount attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedDiscountAmountAttribute(): ?string
     {
         return $this->fmt($this->discount_amount);
     }
 
+    /**
+     * Get formatted shipping amount attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedShippingAmountAttribute(): ?string
     {
         return $this->fmt($this->shipping_amount);
     }
 
+    /**
+     * Get formatted total due attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedTotalDueAttribute(): ?string
     {
         return $this->fmt($this->total_due);
     }
 
+    /**
+     * Get formatted grand total invoiced attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedGrandTotalInvoicedAttribute(): ?string
     {
         return $this->fmt($this->grand_total_invoiced);
     }
 
+    /**
+     * Get formatted sub total incl tax attribute.
+     */
+    #[ApiProperty(writable: false)]
+    public function getFormattedSubTotalInclTaxAttribute(): ?string
+    {
+        return $this->fmt($this->sub_total_incl_tax);
+    }
+
+    /**
+     * Get formatted shipping amount incl tax attribute.
+     */
+    #[ApiProperty(writable: false)]
+    public function getFormattedShippingAmountInclTaxAttribute(): ?string
+    {
+        return $this->fmt($this->shipping_amount_incl_tax);
+    }
+
+    /**
+     * Get formatted grand total refunded attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedGrandTotalRefundedAttribute(): ?string
     {
         return $this->fmt($this->grand_total_refunded);
     }
 
+    /**
+     * Fmt.
+     */
     private function fmt($amount): string
     {
         return core()->formatPrice((float) $amount, $this->order_currency_code);
     }
 
-    /** Resolve the order's payment method. */
+    /**
+     * Resolve the order's payment method.
+     */
     private function paymentMethodValue(): ?string
     {
         return DB::table('order_payment')->where('order_id', $this->id)->value('method');

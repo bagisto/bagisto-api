@@ -5,6 +5,9 @@ return [
     'graphql' => [
         'headers' => [
             'unknown-channel' => 'The channel ":code" in the X-Channel header does not exist.',
+            'storefront-key-required' => 'X-STOREFRONT-KEY header is required',
+            'storefront-key-invalid' => 'Invalid storefront key',
+            'storefront-key-rate-limited' => 'Rate limit exceeded. Please retry after :seconds seconds',
         ],
 
         'cart' => [
@@ -43,7 +46,6 @@ return [
             'add-product-failed' => 'Failed to add product to cart',
             'update-item-failed' => 'Failed to update cart item',
             'remove-item-failed' => 'Failed to remove cart item',
-            'apply-coupon-failed' => 'Failed to apply coupon',
             'remove-coupon-failed' => 'Failed to remove coupon',
             'coupon-applied' => 'Coupon applied successfully',
             'coupon-removed' => 'Coupon removed successfully',
@@ -60,6 +62,15 @@ return [
             'select-items-to-move-wishlist' => 'Please select items to move to wishlist',
             'invalid-or-expired-token' => 'Cart token is invalid or expired. Please create a new cart.',
             'invalid-token-of-login-user' => 'Login user token is invalid.',
+            'booking-note-required' => 'booking.note is required for table booking.',
+            'booking-date-required' => 'booking.date is required when booking.slot is a formatted time range.',
+            'booking-qty-required' => 'booking.qty is required for event booking.',
+            'booking-ticket-qty-invalid' => 'Event ticket quantity must be a non-negative number.',
+            'booking-ticket-required' => 'Select at least one ticket quantity for event booking.',
+            'booking-slot-unavailable' => 'Selected slot is not available for the given date.',
+            'invalid-quantity' => 'Quantity must be at least 1',
+            'product-id-required' => 'Product ID is required',
+            'shipping-address-required' => 'Country and postcode are required to estimate shipping',
         ],
 
         'token-verification' => [
@@ -83,6 +94,14 @@ return [
             'email-not-found' => 'Email address not found',
             'throttled' => 'Too many reset attempts. Please wait before trying again.',
             'error-sending-reset-link' => 'An error occurred while sending reset link',
+        ],
+
+        'reset-password' => [
+            'failed' => 'The password could not be reset. Please try again.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Too many attempts. Please try again in :seconds seconds.',
         ],
 
         'logout' => [
@@ -136,6 +155,7 @@ return [
             'id-required' => 'Product review ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/reviews/1" or numeric ID',
             'not-found' => 'Product review with ID ":id" not found',
+            'item-not-found' => 'Item ":id" not found.',
             'product-id-required' => 'Product ID is required',
             'product-not-found' => 'Product not found',
             'rating-invalid' => 'Rating must be between 1 and 5',
@@ -145,6 +165,8 @@ return [
             'guest-review-disabled' => 'Guest reviews are not allowed. Please login to submit a review',
             'owner-required' => 'Please login to manage your review',
             'not-owned' => 'This review was not written by you and cannot be modified or deleted',
+            'invalid-attachments' => 'Invalid attachments format.',
+            'invalid-product-id-format' => 'Invalid product ID format. Expected IRI format like "/api/shop/products/1" or numeric ID',
         ],
 
         'customer-review' => [
@@ -192,6 +214,7 @@ return [
             'reopen-not-allowed' => 'This return request cannot be reopened.',
             'closed' => 'Return request closed successfully.',
             'message-sent' => 'Message sent successfully.',
+            'attachment-not-found' => 'Message attachment not found.',
         ],
 
         'eu-withdrawal' => [
@@ -205,6 +228,7 @@ return [
             'id-required' => 'Shipment ID is required',
             'not-found' => 'Shipment with ID ":id" not found or does not belong to this customer',
             'item-not-found' => 'Shipment item with ID ":id" not found or does not belong to this customer',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/customer-order-shipments/1" or numeric ID',
         ],
 
         'cancel-order' => [
@@ -225,6 +249,16 @@ return [
             'id-required' => 'Customer downloadable product ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/customer-downloadable-products/1" or numeric ID',
             'not-found' => 'Customer downloadable product with ID ":id" not found',
+
+            'download' => [
+                'unauthenticated' => 'Unauthorized: Customer authentication required.',
+                'not-found' => 'Downloadable product not found.',
+                'pending' => 'Download is pending. Please wait for the order to be invoiced.',
+                'limit-exceeded' => 'Download limit exceeded.',
+                'no-downloads-remaining' => 'No more downloads available.',
+                'file-not-found' => 'File not found.',
+                'link-not-found' => 'Downloadable link not found.',
+            ],
         ],
 
         'customer-invoice' => [
@@ -240,6 +274,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token in the Authorization header as "Bearer <token>"',
             'unknown-resource' => 'Unknown resource',
             'cannot-update-other-profile' => 'Unauthorized: Cannot update another customer profile',
+            'refresh-token-invalid' => 'The refresh token is invalid or has expired. Please log in again.',
+            'too-many-login-attempts' => 'Too many login attempts. Please try again in :seconds seconds.',
+            'too-many-refresh-requests' => 'Too many token refreshes. Please try again in :seconds seconds.',
+            'rate-limit-exceeded' => 'Too Many Attempts.',
+            'access-token-expired' => 'The access token has expired. Refresh it to continue.',
+            'logged-out-all' => 'You have been logged out of every session.',
+            'session-not-found' => 'Session not found.',
+            'session-revoked' => 'The session has been revoked.',
         ],
 
         'upload' => [
@@ -364,6 +406,8 @@ return [
             'size' => 'Size',
             'brand' => 'Brand',
             'super-attributes' => 'Super Attributes',
+            'id-required' => 'Product ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/products/1" or numeric ID',
         ],
 
         'downloadable-product' => [
@@ -378,6 +422,31 @@ return [
             'redirect-external-url' => 'Redirecting to external download URL',
             'file-error' => 'An error occurred while processing your download request',
             'unauthorized-access' => 'Unauthorized access to download resource',
+            'unauthenticated' => 'Unauthorized: Customer authentication required',
+            'link-id-required' => 'downloadableLinkPurchasedId is required',
+            'link-not-found' => 'Downloadable link not found',
+            'not-owner' => 'Unauthorized: This download link does not belong to you',
+            'pending' => 'Download is pending. Please wait for the order to be invoiced.',
+            'limit-exceeded' => 'Download limit exceeded',
+            'no-downloads-left' => 'No more downloads available',
+        ],
+
+        'booking-slot' => [
+            'id-required' => 'The booking product id is required.',
+            'date-required' => 'The date is required.',
+            'product-not-found' => 'Booking product not found.',
+            'invalid-type' => 'This booking type is not supported.',
+            'invalid-time-range' => 'Invalid time range.',
+            'invalid-time-format' => 'Invalid time format.',
+        ],
+
+        'resolver' => [
+            'no-resolve-info' => 'GraphQL ResolveInfo not available in context. Cannot determine model class.',
+            'unknown-resource-class' => 'Unable to determine resource class from GraphQL return type',
+        ],
+
+        'docs' => [
+            'openapi-unavailable' => 'OpenAPI Factory could not be instantiated',
         ],
 
         'locale' => [
@@ -580,6 +649,8 @@ return [
             'notify-success-message' => '   ✅ Sent :count expiration notifications',
             'notify-failed-message' => '   ⚠️ Failed to notify about :key: :error',
             'publish-assets-warning' => 'Warning: Could not publish package assets. :error',
+            'env-file-not-found' => 'The .env file was not found. Create it before installing.',
+            'env-permission-denied' => 'The .env file is not writable. Check its permissions.',
             'env-config-saved' => '✓ API Platform environment configuration saved successfully',
             'api-endpoints' => 'API Endpoints:',
             'api-documentation' => 'API Documentation: :url',
@@ -587,13 +658,106 @@ return [
             'graphql-playground' => 'GraphQL Playground: :url',
             'rest-api-storefront' => 'Rest API Storefront Swagger: :url',
             'rest-api-admin' => 'Rest API Admin Swagger: :url',
+            'generating-jwt-keys' => 'Generating the JWT signing keys for admin API tokens...',
+            'jwt-keys-generated' => '✓ JWT signing keys are ready',
+            'jwt-keys-warning' => 'Warning: Could not generate the JWT signing keys. Run php artisan bagisto-api:jwt-keys manually. :error',
+            'admin-login' => 'Admin API Login: :url',
+            'admin-api-tokens' => 'Admin API Tokens (server integrations): :url',
+            'key-rotation-invalid-key' => 'Cannot rotate an invalid or expired key',
+            'env-file-not-found' => 'The .env file was not found',
+            'env-permission-denied' => 'Permission denied: Cannot write to the .env file. Please check file permissions.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'Attribute translation ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/attribute-translations/1" or numeric ID',
+            'not-found' => 'Attribute translation not found',
+        ],
+
+        'currency' => [
+            'id-required' => 'Currency ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/currencies/1" or numeric ID',
+            'not-found' => 'Currency not found',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'Customer address ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/customer-addresses/1" or numeric ID',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'Shipment item ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/customer-order-shipment-items/1" or numeric ID',
+            'not-found' => 'Shipment item not found',
+        ],
+
+        'page' => [
+            'id-required' => 'Page ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/pages/1" or numeric ID',
+            'not-found' => 'Page not found',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'Page translation ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/page-translations/1" or numeric ID',
+            'not-found' => 'Page translation not found',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'Bundle option ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/product-bundle-options/1" or numeric ID',
+            'not-found' => 'Bundle option not found',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'Bundle option product ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/product-bundle-option-products/1" or numeric ID',
+            'not-found' => 'Bundle option product not found',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'Downloadable link ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/product-downloadable-links/1" or numeric ID',
+            'not-found' => 'Downloadable link not found',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'Downloadable sample ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/product-downloadable-samples/1" or numeric ID',
+            'not-found' => 'Downloadable sample not found',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'Grouped product ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/product-grouped-products/1" or numeric ID',
+            'not-found' => 'Grouped product not found',
+        ],
+
+        'product-images' => [
+            'id-required' => 'Product image ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/product-images/1" or numeric ID',
+            'not-found' => 'Product image not found',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'Product video ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/product-videos/1" or numeric ID',
+            'not-found' => 'Product video not found',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'Theme customization ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/theme-customizations/1" or numeric ID',
+            'not-found' => 'Theme customization not found',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'Resource ID is required',
+            'not-found' => 'Resource not found',
         ],
     ],
 
     'admin' => [
-        // login / logout / forgot-password / profile-update keys removed in the
-        // 2026-05-27 auth refactor — admin clients now authenticate via
-        // pre-issued integration tokens (Bearer header, AdminApiGuard).
         'profile' => [
             'unauthenticated' => 'You are not authenticated.',
         ],
@@ -631,6 +795,8 @@ return [
             'mass-delete-success' => 'Selected items deleted.',
             'mass-update-success' => 'Selected items updated.',
             'mass-value-invalid' => 'Status value must be 0 or 1.',
+            'image-not-found' => 'Return image not found.',
+            'attachment-not-found' => 'Message attachment not found.',
         ],
 
         'eu-withdrawal' => [
@@ -683,10 +849,6 @@ return [
             'note' => [
                 'empty' => 'Note text is required.',
                 'created' => 'Note added successfully.',
-            ],
-
-            'impersonate' => [
-                'success' => 'Impersonation token issued.',
             ],
 
             'review' => [
@@ -821,7 +983,6 @@ return [
             'section' => [
                 'not-found' => 'Section not found.',
                 'invalid-payload' => 'Unsupported section payload.',
-                'footer-links-exists' => 'This channel already has a footer links section.',
                 'options-required' => 'Options are required.',
                 'status-required' => 'Status is required.',
                 'section-ids-required' => 'At least one section is required.',
@@ -1215,10 +1376,7 @@ return [
             ],
 
             'currency' => [
-                // Read
                 'not-found' => 'Currency not found.',
-
-                // Create / Update / Delete
                 'created' => 'Currency created successfully.',
                 'updated' => 'Currency updated successfully.',
                 'deleted' => 'Currency deleted successfully.',
@@ -1303,6 +1461,7 @@ return [
                     'error-report-not-found' => 'No error report is available for download.',
                     'sample-not-found' => 'No sample file is available for the requested type and format.',
                     'sample-format-invalid' => 'The sample format must be one of: csv, xls, xlsx, xml.',
+                    'images-archive-too-large' => 'The images archive may hold at most :entries files and unpack to at most :size MB.',
                 ],
             ],
         ],
@@ -1468,22 +1627,353 @@ return [
                 'no-permission' => 'You do not have permission to manage search terms.',
             ],
         ],
-    ],
+        'customer-api-sessions' => [
+            'menu' => [
+                'title' => 'API Sessions',
+            ],
 
-    'integration' => [
-        'menu' => [
-            'title' => 'Integration',
-            'tokens' => 'Tokens',
+            'acl' => [
+                'title' => 'API Sessions',
+                'delete' => 'Revoke',
+            ],
+
+            'index' => [
+                'title' => 'Customer API Sessions',
+                'info' => 'Customers signed in to the storefront API from apps such as a web, mobile, POS or desktop app. Revoking a session signs that device out at once.',
+            ],
+
+            'fields' => [
+                'customer' => 'Customer',
+                'email' => 'Email',
+                'channel' => 'Channel',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'Revoke All of the Customer\'s Sessions',
+            ],
+
+            'card' => [
+                'title' => 'API Sessions (:count)',
+                'empty' => 'This customer has no active API sessions.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'You do not have permission to manage customer API sessions.',
+            ],
         ],
 
-        'history' => [
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'Customer Authentication',
+                'info' => 'Token lifetimes, limits and session rules for storefront customer logins.',
+
+                'tokens' => [
+                    'title' => 'Token Lifetimes',
+                    'info' => 'How long access tokens, refresh tokens and sessions stay valid. Changes apply to tokens issued afterwards.',
+                    'access-token-ttl' => 'Access Token Lifetime (minutes)',
+                    'access-token-ttl-info' => 'Between 5 and 60 minutes. Default 15.',
+                    'refresh-token-ttl' => 'Refresh Token Lifetime (days)',
+                    'refresh-token-ttl-info' => 'Between 1 and 90 days. Default 30.',
+                    'session-lifetime' => 'Absolute Session Lifetime (days)',
+                    'session-lifetime-info' => 'Between 1 and 365 days. Default 90. After this the customer must log in again, however often the session is refreshed.',
+                    'max-sessions' => 'Maximum Active Sessions per Customer',
+                    'max-sessions-info' => 'When the limit is reached, the oldest session is ended. Between 0 and 100. 0 means no limit.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Rate Limits',
+                    'info' => 'Maximum storefront API requests per minute for each signed-in customer.',
+                    'requests-per-minute' => 'Requests per Minute per Signed-in Customer',
+                    'requests-per-minute-info' => 'Between 1 and 100000. Default 120.',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Login Protection',
+                    'info' => 'How many failed logins and token refreshes are allowed before the client must wait.',
+                    'login-max-attempts' => 'Failed Logins Before Lockout',
+                    'login-max-attempts-info' => 'Per email and IP address. Between 3 and 20. Default 5.',
+                    'login-lockout-seconds' => 'Login Lockout (seconds)',
+                    'login-lockout-seconds-info' => 'Between 60 and 3600. Default 60.',
+                    'refresh-requests-per-minute' => 'Token Refreshes per Minute per Session',
+                    'refresh-requests-per-minute-info' => 'Between 1 and 60. Default 10.',
+                ],
+
+                'security' => [
+                    'title' => 'Security',
+                    'info' => 'What ends a customer\'s other sessions.',
+                    'revoke-sessions-on-password-change' => 'Revoke Sessions on Password Change',
+                ],
+
+                'retention' => [
+                    'title' => 'Data Retention',
+                    'info' => 'How long ended customer sessions are kept.',
+                    'session-prune-days' => 'Keep Ended Sessions (days)',
+                    'session-prune-days-info' => 'Revoked or expired sessions are deleted after this many days. Between 1 and 365. Default 30.',
+                ],
+            ],
+        ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Admin Authentication',
+                'info' => 'Token lifetimes, rate limits and security rules for admin API logins and API tokens.',
+
+                'tokens' => [
+                    'title' => 'Token Lifetimes',
+                    'info' => 'How long access tokens, refresh tokens and sessions stay valid. Changes apply to tokens issued afterwards.',
+                    'access-token-ttl' => 'Access Token Lifetime (minutes)',
+                    'access-token-ttl-info' => 'Between 5 and 60 minutes. Default 15.',
+                    'refresh-token-ttl' => 'Refresh Token Lifetime (days)',
+                    'refresh-token-ttl-info' => 'Between 1 and 90 days. Default 30.',
+                    'session-lifetime' => 'Absolute Session Lifetime (days)',
+                    'session-lifetime-info' => 'Between 1 and 365 days. Default 90. After this the admin must log in again, however often the session is refreshed.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Rate Limits',
+                    'info' => 'Maximum admin API requests per minute.',
+                    'session-requests-per-minute' => 'Requests per Minute per Signed-in Admin',
+                    'api-token-requests-per-minute' => 'Requests per Minute per API Token',
+                    'session-requests-per-minute-info' => 'Between 1 and 100000. Default 60.',
+                    'api-token-requests-per-minute-info' => 'Between 1 and 100000. Default 60.',
+                    'unauthenticated-requests-per-minute' => 'Requests per Minute without a Token, per IP Address',
+                    'unauthenticated-requests-per-minute-info' => 'Between 10 and 1000. Default 60. Covers login, two-factor, refresh and password requests.',
+                ],
+
+                'security' => [
+                    'title' => 'Security',
+                    'info' => 'Revocation rules, API token expiry and domain binding.',
+                    'revoke-sessions-on-password-change' => 'Revoke Sessions on Password Change',
+                    'revoke-api-tokens-on-password-change' => 'Revoke API Tokens on Password Change',
+                    'allow-non-expiring-api-tokens' => 'Allow API Tokens Without Expiry',
+                    'domain-binding-mode' => 'Domain Binding Mode',
+                    'domain-binding-mode-info' => 'DNS checks that the request comes from an IP address the token\'s domain resolves to. Origin checks the Origin or Referer header and only suits browser callers.',
+                    'domain-binding-dns' => 'DNS (client IP address)',
+                    'domain-binding-origin' => 'Origin header',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Login Protection',
+                    'info' => 'How many failed logins, wrong two-factor codes and password requests are allowed before the client must wait.',
+                    'login-max-attempts' => 'Failed Logins Before Lockout',
+                    'login-max-attempts-info' => 'Per email and IP address. Between 3 and 20. Default 5.',
+                    'login-lockout-seconds' => 'Login Lockout (seconds)',
+                    'login-lockout-seconds-info' => 'Between 60 and 3600. Default 60.',
+                    'two-factor-challenge-lifetime' => 'Two-Factor Challenge Lifetime (minutes)',
+                    'two-factor-challenge-lifetime-info' => 'Between 1 and 15. Default 5.',
+                    'two-factor-max-failures' => 'Wrong Two-Factor Codes per Minute',
+                    'two-factor-max-failures-info' => 'Per admin, across all challenges. Between 3 and 20. Default 5.',
+                    'password-requests-per-minute' => 'Password Requests per Minute',
+                    'password-requests-per-minute-info' => 'Forgot and reset password requests per IP address. Between 1 and 20. Default 5.',
+                ],
+
+                'retention' => [
+                    'title' => 'Data Retention',
+                    'info' => 'How long ended sessions and the API audit history are kept.',
+                    'session-prune-days' => 'Keep Ended Sessions (days)',
+                    'session-prune-days-info' => 'Revoked or expired sessions are deleted after this many days. Between 1 and 365. Default 30.',
+                    'audit-retention-days' => 'Keep API Audit History (days)',
+                    'audit-retention-days-info' => 'Older entries are deleted daily. Between 0 and 3650. Empty or 0 keeps them forever.',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'Unauthenticated.',
+                'access-token-expired' => 'The access token has expired. Refresh it to continue.',
+                'api-token-expired' => 'The API token has expired.',
+                'refresh-token-invalid' => 'The refresh token is invalid or has expired. Please log in again.',
+                'api-token-revoked' => 'The API token has been revoked.',
+                'api-token-domain-mismatch' => 'The API token cannot be used from this domain.',
+                'access-token-required' => 'This action needs the access token of a login session; API tokens cannot use it.',
+                'two-factor-required' => 'Enter the 6-digit code from your authenticator app, or one of your backup codes, to finish logging in.',
+                'too-many-login-attempts' => 'Too many login attempts. Please try again in :seconds seconds.',
+                'two-factor-challenge-invalid' => 'The two-factor challenge is invalid or has expired. Please log in again.',
+                'two-factor-attempts-exceeded' => 'Too many wrong codes. Please log in again.',
+                'password-reset-token-invalid' => 'This password reset token is invalid or has expired.',
+                'too-many-password-requests' => 'Too many password requests. Please try again in :seconds seconds.',
+                'rate-limit-exceeded' => 'Too Many Attempts.',
+                'no-permission' => 'You do not have permission to manage admin API sessions.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'You have been logged out.',
+                'logged-out-all' => 'You have been logged out of every session.',
+                'not-found' => 'Session not found.',
+                'revoked' => 'The session has been revoked.',
+                'revoked-for-admin' => 'Sessions revoked: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'Your password has been reset. Please log in again.',
+            ],
+        ],
+
+        'api-tokens' => [
             'menu' => [
-                'title' => 'History',
+                'title' => 'API Tokens',
+            ],
+
+            'acl' => [
+                'title' => 'API Tokens',
+                'create' => 'Create',
+                'delete' => 'Revoke',
+                'manage-others' => 'Manage Other Admins\' Tokens',
+            ],
+
+            'index' => [
+                'title' => 'API Tokens',
+                'info' => 'Server integrations such as an ERP, PIM, warehouse or accounting system authenticate with API tokens. Each token acts as one admin user with that admin\'s role permissions, and works only from the domain it is bound to.',
+                'create-btn' => 'Create API Token',
+            ],
+
+            'create' => [
+                'title' => 'Create API Token',
+                'back-btn' => 'Back',
+                'save-btn' => 'Create Token',
+                'general' => 'General',
+                'expiry' => 'Expiry',
+                'admin-info' => 'The token acts as this admin user and has exactly the permissions of their role.',
+                'domain-info' => 'The host the integration calls from, such as erp.example.com. A URL is reduced to its host. IP addresses and wildcards are not accepted, and the domain cannot be changed later.',
+                'expires-on-date' => 'Expires on a date',
+                'never-expires' => 'Never expires',
+                'no-expiry-warning' => 'A token without expiry keeps working until it is revoked. Keep it in a secret store and revoke it as soon as it is no longer needed.',
+                'no-expiry-confirm' => 'I understand that this token never expires.',
+                'no-admins' => 'There is no admin user you may create an API token for.',
+            ],
+
+            'view' => [
+                'title' => 'API Token',
+                'back-btn' => 'Back',
+                'save-btn' => 'Save',
+                'revoke-btn' => 'Revoke',
+                'details' => 'Details',
+                'usage' => 'Usage',
+                'token-once-title' => 'Copy your API token now',
+                'token-once-info' => 'This is the only time the token is shown. Keep it in a secret store; if it is lost, revoke it and create a new one.',
+                'copy-btn' => 'Copy',
+                'copied' => 'The token has been copied.',
+                'usage-info' => 'Send it as a Bearer token in the Authorization header of REST and GraphQL requests.',
+                'not-yet' => 'Not yet',
+                'revoke-confirm' => 'Revoke this API token? The integration using it stops working at once.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Name',
+                'admin' => 'Admin User',
+                'token' => 'Token',
+                'domain' => 'Domain',
+                'expiry' => 'Expiry',
+                'expires-at' => 'Expires At',
+                'no-expiry-confirmation' => 'No expiry confirmation',
+                'status' => 'Status',
+                'created-by' => 'Created By',
+                'created-at' => 'Created At',
+                'last-used-at' => 'Last Used At',
+                'last-ip-address' => 'Last IP Address',
+                'last-user-agent' => 'Last User Agent',
+                'last-channel' => 'Last Channel',
+                'resolved-ips' => 'Resolved IP Addresses',
+                'resolved-at' => 'Resolved At',
+                'domain-mismatches' => 'Requests From Other Domains',
+                'last-domain-mismatch-at' => 'Last Request From Another Domain',
+                'revoked-at' => 'Revoked At',
+                'revoked-by' => 'Revoked By',
+            ],
+
+            'datagrid' => [
+                'never' => 'Never',
+                'console' => 'Console command',
+                'view' => 'View',
+                'revoke' => 'Revoke',
+            ],
+
+            'status' => [
+                'active' => 'Active',
+                'expired' => 'Expired',
+                'revoked' => 'Revoked',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'The API token has been created.',
+                'updated' => 'The API token has been updated.',
+                'revoked' => 'The API token has been revoked.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'You do not have permission to manage API tokens.',
+                'not-found' => 'API token not found.',
+                'cannot-create-for-admin' => 'You cannot create an API token for this admin user: their role has permissions yours does not, or you may not manage the tokens of other admins.',
+                'cannot-manage' => 'You cannot manage this API token.',
+                'already-revoked' => 'The API token is already revoked.',
+                'invalid-name' => 'The name is required and may have at most 100 characters.',
+                'invalid-domain' => 'Enter a domain name such as erp.example.com. IP addresses and wildcards are not accepted.',
+                'expiry-required' => 'API tokens must have an expiry date.',
+                'expiry-in-past' => 'The expiry date must be in the future.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'API Sessions',
+            ],
+
+            'acl' => [
+                'title' => 'API Sessions',
+                'delete' => 'Revoke',
+            ],
+
+            'index' => [
+                'title' => 'API Sessions',
+                'info' => 'Admin users signed in to the admin API from apps such as a web, mobile, POS or desktop app. Revoking a session signs that device out at once.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Admin User',
+                'device' => 'Device',
+                'client-type' => 'Client Type',
+                'ip-address' => 'Login IP Address',
+                'user-agent' => 'Login User Agent',
+                'last-ip-address' => 'Last IP Address',
+                'last-user-agent' => 'Last User Agent',
+                'last-used-at' => 'Last Used At',
+                'last-channel' => 'Last Channel',
+                'refresh-expires-at' => 'Refresh Expires At',
+                'expires-at' => 'Expires At',
+                'status' => 'Status',
+                'created-at' => 'Logged In At',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Revoke',
+                'revoke-all' => 'Revoke All Sessions of This Admin',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Mobile',
+                'pos' => 'POS',
+                'desktop' => 'Desktop',
+                'other' => 'Other',
+            ],
+
+            'errors' => [
+                'not-active' => 'This session is already revoked or expired.',
+            ],
+        ],
+
+        'api-audit' => [
+            'menu' => [
+                'title' => 'API Audit',
             ],
 
             'acl' => [
                 'title' => 'API Change History',
-                'view' => 'View',
                 'delete' => 'Delete History',
             ],
 
@@ -1522,10 +2012,10 @@ return [
                 'date' => 'Date',
                 'admin' => 'Admin',
                 'token' => 'Token',
-                'action' => 'Action',
+                'token-kind' => 'Token Kind',
+                'channel' => 'Channel',
                 'operation' => 'Operation',
                 'resource' => 'Resource',
-                'version' => 'Version',
                 'method' => 'Method',
                 'ip' => 'IP',
                 'view' => 'View',
@@ -1538,192 +2028,27 @@ return [
                 'deleted' => 'Deleted',
             ],
 
+            'token-kinds' => [
+                'session' => 'Login Session',
+                'api-token' => 'API Token',
+                'integration' => 'Integration Token (removed)',
+                'customer-session' => 'Customer Login Session',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => 'Admin Panel',
+                'cli' => 'Console Command',
+            ],
+
             'deleted' => ':count history record(s) deleted.',
             'cleanup-input-required' => 'Provide a number of days or a date to clean up.',
         ],
 
-        'acl' => [
-            'title' => 'Integration',
-            'view' => 'View',
-            'create' => 'Create Integration',
-            'edit' => 'Edit Integration',
-            'delete' => 'Revoke Integration Token',
-            'generate' => 'Generate Integration Token',
-            'regenerate' => 'Regenerate Integration Token',
-        ],
-
-        'index' => [
-            'title' => 'Integrations',
-            'create-btn' => 'Create Integration',
-        ],
-
-        'create' => [
-            'title' => 'Create Integration',
-            'save-btn' => 'Save',
-            'back-btn' => 'Back',
-        ],
-
-        'edit' => [
-            'title' => 'Edit Integration',
-            'save-btn' => 'Save',
-            'back-btn' => 'Back',
-            'generate-btn' => 'Generate Token',
-            'regenerate-btn' => 'Regenerate Token',
-            'revoke-btn' => 'Revoke Token',
-            'copy-btn' => 'Copy',
-            'token-warning' => 'Save this token now — it will not be shown again.',
-            'token-label' => 'Token',
-            'not-generated' => 'Not generated yet',
-            'masked' => '(Stored — only shown once at generation)',
-            'history-banner' => 'This token is no longer active.',
-        ],
-
-        'fields' => [
-            'name' => 'Name',
-            'description' => 'Description',
-            'assign-user' => 'Assign User',
-            'permission-type' => 'Permission Type',
-            'access-control' => 'Access Control',
-            'general' => 'General',
-            'token-settings' => 'Token Settings',
-            'valid-till' => 'Valid Till',
-            'rate-limit-per-minute' => 'Rate Limit (per minute)',
-            'rate-limit-per-day' => 'Rate Limit (per day)',
-            'never-expires' => 'Never expires',
-            'expires-on' => 'Expires on',
-            'unlimited' => 'Unlimited',
-            'limit-to' => 'Limit to',
-            'requests-per-minute' => 'requests / minute',
-            'requests-per-day' => 'requests / day',
-            'select-admin' => 'Select an admin',
-            'no-available-admins' => 'No admins available — every admin already has an active token.',
-            'same-as-web-hint' => 'Token will mirror the assigned admin\'s current role permissions live.',
-            'ip-allowlist' => 'IP Allowlist',
-            'ip-any' => 'Any IP (default)',
-            'ip-restricted' => 'Restricted to specific IPs',
-            'ip-list-hint' => 'One entry per line. Supports IPv4, IPv6 and CIDR (e.g. 10.0.0.0/24 or 2001:db8::/32). Leave blank to allow all IPs.',
-        ],
-
-        'permission_type' => [
-            'all' => 'All',
-            'custom' => 'Custom',
-            'same_as_web' => 'Same as Web Permission',
-        ],
-
-        'status' => [
-            'draft' => 'Draft',
-            'active' => 'Active',
-            'revoked' => 'Revoked',
-            'regenerated' => 'Regenerated',
-        ],
-
-        'datagrid' => [
-            'id' => 'ID',
-            'name' => 'Name',
-            'admin' => 'Admin',
-            'token' => 'Token',
-            'status' => 'Status',
-            'permission-type' => 'Permission Type',
-            'expires-at' => 'Valid Till',
-            'last-used-at' => 'Last Used',
-            'created-at' => 'Created At',
-            'edit' => 'Edit',
-            'revoke' => 'Revoke',
-        ],
-
-        'messages' => [
-            'draft-created' => 'Integration created. Generate the token to start using it.',
-            'updated' => 'Integration updated successfully.',
-            'generated' => 'Token generated. Copy it now — it will not be shown again.',
-            'regenerated' => 'Token regenerated. Copy the new token now — it will not be shown again.',
-            'revoked' => 'Token revoked successfully.',
-            'generate-only-draft' => 'Only draft integrations can have their token generated.',
-            'regenerate-only-active' => 'Only active tokens can be regenerated.',
-            'cannot-edit-historic' => 'Revoked or regenerated tokens cannot be edited.',
-            'already-inactive' => 'This token is already inactive.',
-        ],
-
-        'errors' => [
-            'admin-has-token' => 'Selected admin already has an active integration token.',
-        ],
-
-        'validation' => [
-            'ip-invalid' => 'Each allowed IP must be a valid IPv4 or IPv6 address (CIDR notation supported).',
-            'cidr-prefix-invalid' => 'The CIDR prefix is invalid for the given IP version.',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => 'API',
-                'info' => 'Settings for the Bagisto API and its admin modules.',
-            ],
-
-            'integration' => [
-                'title' => 'Integration',
-                'info' => 'Manage the API Integration plugin used to issue admin API tokens.',
-            ],
-
-            'settings' => [
-                'title' => 'Module Settings',
-                'info' => 'Enable or disable the API Integration plugin. When disabled, its sidebar menu is hidden and its pages return 404.',
-                'enable' => 'Enable API Integration Module',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => 'A new API token was generated: :name',
-                'greeting' => 'An API integration token named ":name" was just generated on your account.',
-            ],
-
-            'regenerated' => [
-                'subject' => 'Your API token was regenerated: :name',
-                'greeting' => 'The API integration token named ":name" was just regenerated. The previous token has stopped working — only the new one is valid.',
-            ],
-
-            'revoked' => [
-                'subject' => 'Your API token was revoked: :name',
-                'greeting' => 'The API integration token named ":name" was revoked. Any client using it has lost access.',
-            ],
-
-            'details' => [
-                'name' => 'Token Name',
-                'date' => 'Date',
-                'ip' => 'From IP',
-            ],
-
-            'revoke-hint' => 'If you did not expect this, revoke the token immediately using the button below.',
-            'revoke-btn' => 'Revoke This Token',
-            'revoke-expiry' => 'This revoke link is valid for 7 days. After that, sign in to the admin panel to manage the token.',
-            'no-action' => 'No action is needed — this email is only a confirmation.',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => 'Revoke API Token',
-            'confirm-title' => 'Revoke this token?',
-            'confirm-message' => 'The token ":name" will stop working immediately for every client using it.',
-            'confirm-button' => 'Revoke token',
-            'success-title' => 'Token Revoked',
-            'success-message' => 'The token ":name" has been revoked. Any client using it has lost access immediately.',
-            'already-inactive-title' => 'Token Already Inactive',
-            'already-inactive-message' => 'The token ":name" was already revoked or regenerated. No further action is needed.',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => 'Generate Token',
-                'message' => 'Generate the token now? The plaintext will be shown only once — copy it before leaving the page.',
-            ],
-
-            'regenerate' => [
-                'title' => 'Regenerate Token',
-                'message' => 'Regenerate the token? The old token will stop working immediately and the new plaintext will be shown only once.',
-            ],
-
-            'revoke' => [
-                'title' => 'Revoke Token',
-                'message' => 'Revoke this token? Any client using it will lose access immediately. This action cannot be undone.',
-            ],
+        'api-configuration' => [
+            'title' => 'API',
+            'info' => 'Settings for the Bagisto API and its admin modules.',
         ],
     ],
 ];

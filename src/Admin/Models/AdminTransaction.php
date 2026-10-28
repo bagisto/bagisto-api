@@ -238,6 +238,9 @@ class AdminTransaction
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The sample constant.
+     */
     private const SAMPLE = [
         'id' => 4,
         'transactionId' => 'pi_3PqXyz9aBcD',
@@ -270,34 +273,79 @@ class AdminTransaction
         ],
     ];
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The transaction id.
+     */
     public ?string $transaction_id = null;
 
+    /**
+     * The invoice id.
+     */
     public ?int $invoice_id = null;
 
+    /**
+     * The order id.
+     */
     public ?int $order_id = null;
 
+    /**
+     * The order increment id.
+     */
     public ?string $order_increment_id = null;
 
+    /**
+     * The amount.
+     */
     public ?float $amount = null;
 
+    /**
+     * The formatted amount.
+     */
     public ?string $formatted_amount = null;
 
+    /**
+     * The status.
+     */
     public ?string $status = null;
 
+    /**
+     * The type.
+     */
     public ?string $type = null;
 
+    /**
+     * The payment method.
+     */
     public ?string $payment_method = null;
 
+    /**
+     * The payment title.
+     */
     public ?string $payment_title = null;
 
+    /**
+     * The data.
+     */
     public ?array $data = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 
+    /**
+     * The order.
+     */
     public ?array $order = null;
 }

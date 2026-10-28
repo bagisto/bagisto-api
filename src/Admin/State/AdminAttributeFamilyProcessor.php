@@ -24,26 +24,20 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Support\CoreCapabilities;
 use Webkul\Core\Rules\Code;
 
-/**
- * Handles POST, PUT, DELETE on the AdminAttributeFamily resource (Phase 4 — CRUD).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Catalog\AttributeFamilyController:
- *   - store()   validation + events + AttributeFamilyRepository::create
- *   - update()  validation + events + AttributeFamilyRepository::update
- *   - destroy() last-family / products-attached guards + events + delete
- *
- * Permission resolution mirrors AdminAttributeProcessor: read role->permission_type
- * / role->permissions directly; never call bouncer() (Sanctum-token requests have
- * no session-bound admin).
- */
 class AdminAttributeFamilyProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AttributeFamilyRepository $attributeFamilyRepository,
         protected AdminAttributeFamilyItemProvider $itemProvider,
         protected CoreCapabilities $capabilities,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -99,6 +93,9 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminAttributeFamily
     {
         $this->validateFamilyPayload($input);
@@ -120,6 +117,9 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         return $this->fetchAndMap((int) $family->id);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminAttributeFamily
     {
         $family = AttributeFamily::find($id);
@@ -146,6 +146,9 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminAttributeFamily
     {
         $family = AttributeFamily::with(['attribute_groups.custom_attributes'])->find($id);
@@ -153,11 +156,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.family.not-found'));
         }
 
-        // The default family backs every product form, so core refuses to remove it — the
-        // count of remaining families is not what protects the store.
-        //
-        // BACKWARD COMPATIBILITY: a core before 2.4.10 protects the last family instead.
-        // Drop the else arm when the minimum supported core is 2.4.10.
         if ($this->capabilities->hasDefaultAttributeFamilyCode()) {
             if ($family->code === AttributeFamily::DEFAULT_CODE) {
                 throw new InvalidInputException(
@@ -225,9 +223,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             throw new InvalidInputException($value->errors()->first(), 422);
         }
 
-        // Attribute-group names must be unique within a family (DB constraint
-        // attribute_groups_attribute_family_id_name_unique). Core doesn't validate
-        // this and leaks a 500; catch same-payload duplicates here with a clean 422.
         $seen = [];
         foreach (($input['attribute_groups'] ?? []) as $group) {
             $name = isset($group['name']) ? mb_strtolower(trim((string) $group['name'])) : '';
@@ -242,24 +237,8 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
     }
 
     /**
-     * Convert a DB integrity violation (e.g. a duplicate attribute-group name
-     * that only surfaces against existing rows) into a clean client error
-     * instead of leaking the SQL exception as a 500.
+     * Assert permission.
      */
-    private function mapWriteException(QueryException $exception, string $failKey): InvalidInputException
-    {
-        if (
-            (string) $exception->getCode() === '23000'
-            && str_contains($exception->getMessage(), 'attribute_groups')
-        ) {
-            return new InvalidInputException(__('bagistoapi::app.admin.family.group-name-duplicate'), 422);
-        }
-
-        report($exception);
-
-        return new InvalidInputException(__($failKey), 500);
-    }
-
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -287,6 +266,9 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -302,6 +284,9 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -314,6 +299,9 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -360,6 +348,9 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Fetch and map.
+     */
     protected function fetchAndMap(int $id): AdminAttributeFamily
     {
         $fresh = AttributeFamily::with(['attribute_groups.custom_attributes'])->find($id);
@@ -367,6 +358,9 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         return $this->mapFamily($fresh);
     }
 
+    /**
+     * Map family.
+     */
     protected function mapFamily(object $family): AdminAttributeFamily
     {
         $reflection = new \ReflectionClass($this->itemProvider);
@@ -374,5 +368,23 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         $method->setAccessible(true);
 
         return $method->invoke($this->itemProvider, $family);
+    }
+
+    /**
+     * Convert a DB integrity violation (e.g. a duplicate attribute-group name
+     * that only surfaces against existing rows) into a clean client error.
+     */
+    private function mapWriteException(QueryException $exception, string $failKey): InvalidInputException
+    {
+        if (
+            (string) $exception->getCode() === '23000'
+            && str_contains($exception->getMessage(), 'attribute_groups')
+        ) {
+            return new InvalidInputException(__('bagistoapi::app.admin.family.group-name-duplicate'), 422);
+        }
+
+        report($exception);
+
+        return new InvalidInputException(__($failKey), 500);
     }
 }

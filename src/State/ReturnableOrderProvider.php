@@ -4,25 +4,31 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\ReturnableOrder;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\BagistoApi\Support\Sql;
 use Webkul\Sales\Models\Order;
 
 class ReturnableOrderProvider implements ProviderInterface
 {
+    /**
+     * The sortable constant.
+     */
     private const SORTABLE = [
         'created_at' => 'orders.created_at',
         'increment_id' => 'orders.increment_id',
         'grand_total' => 'orders.grand_total',
     ];
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): iterable
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -105,6 +111,9 @@ class ReturnableOrderProvider implements ProviderInterface
             ->all();
     }
 
+    /**
+     * Formatted.
+     */
     private function formatted(mixed $amount, ?string $currencyCode): ?string
     {
         if ($amount === null) {

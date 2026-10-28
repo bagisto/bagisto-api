@@ -13,11 +13,6 @@ use Webkul\BagistoApi\Dto\CartInput;
 use Webkul\BagistoApi\State\CartTokenMutationProvider;
 use Webkul\BagistoApi\State\CartTokenProcessor;
 
-/**
- * RemoveCartItems - GraphQL & REST API Resource for Removing Multiple Items
- *
- * Provides mutation for removing multiple items from cart in a single operation.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'RemoveCartItems',
@@ -113,10 +108,16 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
 )]
 class RemoveCartItems
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $id = null;
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $cartToken = null;

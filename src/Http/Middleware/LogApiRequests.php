@@ -7,13 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Webkul\BagistoApi\Jobs\LogApiRequestJob;
 
-/**
- * Logs all API requests for security audit trail and monitoring
- */
 class LogApiRequests
 {
     /**
-     * Paths to exclude from logging
+     * Paths to exclude from logging.
      */
     private const EXCLUDED_PATHS = [
         'health',
@@ -25,6 +22,9 @@ class LogApiRequests
         '.well-known',
     ];
 
+    /**
+     * Handle the request.
+     */
     public function handle(Request $request, Closure $next)
     {
         $startTime = microtime(true);
@@ -49,6 +49,9 @@ class LogApiRequests
         return config('api-platform.api_logging.'.$key, $default);
     }
 
+    /**
+     * Should log.
+     */
     private function shouldLog(Request $request, $response): bool
     {
         foreach ((array) $this->setting('exclude_paths', self::EXCLUDED_PATHS) as $path) {
@@ -60,6 +63,9 @@ class LogApiRequests
         return str_starts_with($request->path(), 'api/');
     }
 
+    /**
+     * Log request async.
+     */
     private function logRequestAsync(Request $request, $response, float $duration): void
     {
         $logData = [
@@ -90,6 +96,9 @@ class LogApiRequests
         }
     }
 
+    /**
+     * Log sync.
+     */
     private function logSync(array $logData): void
     {
         $level = $this->getLogLevel($logData['status']);
@@ -110,6 +119,9 @@ class LogApiRequests
         }
     }
 
+    /**
+     * Get log level.
+     */
     private function getLogLevel(int $statusCode): string
     {
         if ($statusCode >= 500) {
@@ -123,6 +135,9 @@ class LogApiRequests
         return 'info';
     }
 
+    /**
+     * Mask api key.
+     */
     private function maskApiKey(?string $apiKey): string
     {
         if (
@@ -135,6 +150,9 @@ class LogApiRequests
         return substr($apiKey, 0, 3).'***'.substr($apiKey, -3);
     }
 
+    /**
+     * Get graph qloperation.
+     */
     private function getGraphQLOperation(Request $request): ?string
     {
         if ($request->path() !== 'api/graphql') {
@@ -147,6 +165,9 @@ class LogApiRequests
         return $input;
     }
 
+    /**
+     * Extract operation name.
+     */
     private function extractOperationName(string $query): ?string
     {
         if (preg_match('/^\s*(query|mutation|subscription)\s+(\w+)/i', $query, $matches)) {

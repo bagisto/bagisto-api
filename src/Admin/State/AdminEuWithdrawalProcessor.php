@@ -23,8 +23,14 @@ class AdminEuWithdrawalProcessor implements ProcessorInterface
     use BuildsAdminEuWithdrawal;
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(private readonly WithdrawalRepository $withdrawals) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminEuWithdrawal
     {
         $id = $this->resolveId($data, $uriVariables);
@@ -47,11 +53,17 @@ class AdminEuWithdrawalProcessor implements ProcessorInterface
         throw new InvalidInputException(__('bagistoapi::app.admin.eu-withdrawal.not-found'), 422);
     }
 
+    /**
+     * Whether resend confirmation.
+     */
     private function isResendConfirmation(Operation $operation): bool
     {
         return str_contains((string) $operation->getUriTemplate(), 'resend-confirmation');
     }
 
+    /**
+     * Handle decline.
+     */
     private function handleDecline(int $id, ?string $reason): AdminEuWithdrawal
     {
         $admin = $this->authorizedAdmin('sales.eu_withdrawals.decline', 'bagistoapi::app.admin.eu-withdrawal.no-permission');
@@ -79,6 +91,9 @@ class AdminEuWithdrawalProcessor implements ProcessorInterface
         return $this->result($id, __('bagistoapi::app.admin.eu-withdrawal.declined'));
     }
 
+    /**
+     * Handle mark refunded.
+     */
     private function handleMarkRefunded(int $id, ?string $note): AdminEuWithdrawal
     {
         $admin = $this->authorizedAdmin('sales.eu_withdrawals.mark_refunded', 'bagistoapi::app.admin.eu-withdrawal.no-permission');
@@ -106,6 +121,9 @@ class AdminEuWithdrawalProcessor implements ProcessorInterface
         return $this->result($id, __('bagistoapi::app.admin.eu-withdrawal.refunded'));
     }
 
+    /**
+     * Handle resend.
+     */
     private function handleResend(int $id): AdminEuWithdrawal
     {
         $this->authorizedAdmin('sales.eu_withdrawals.resend_confirmation', 'bagistoapi::app.admin.eu-withdrawal.no-permission');
@@ -144,6 +162,9 @@ class AdminEuWithdrawalProcessor implements ProcessorInterface
         return $this->result($id, $message);
     }
 
+    /**
+     * Find or fail.
+     */
     private function findOrFail(int $id): object
     {
         $withdrawal = $this->withdrawals->find($id);
@@ -155,6 +176,9 @@ class AdminEuWithdrawalProcessor implements ProcessorInterface
         return $withdrawal;
     }
 
+    /**
+     * Result.
+     */
     private function result(int $id, string $message): AdminEuWithdrawal
     {
         $dto = $this->mapWithdrawalRow($this->baseWithdrawalQuery()->where('w.id', $id)->first());
@@ -163,6 +187,9 @@ class AdminEuWithdrawalProcessor implements ProcessorInterface
         return $dto;
     }
 
+    /**
+     * Resolve id.
+     */
     private function resolveId(mixed $data, array $uriVariables): int
     {
         if (isset($uriVariables['id'])) {

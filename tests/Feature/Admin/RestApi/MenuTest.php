@@ -8,11 +8,17 @@ use Webkul\User\Models\Role;
 
 class MenuTest extends AdminApiTestCase
 {
+    /**
+     * Test menu requires authentication.
+     */
     public function test_menu_requires_authentication(): void
     {
         $this->publicGet('/api/admin/menu')->assertStatus(401);
     }
 
+    /**
+     * Test menu returns tree.
+     */
     public function test_menu_returns_tree(): void
     {
         $admin = $this->createAdmin();
@@ -37,6 +43,9 @@ class MenuTest extends AdminApiTestCase
         expect($sales['children'])->toBeArray()->and($sales['children'])->not->toBeEmpty();
     }
 
+    /**
+     * Test leaf nodes carry api resource mapping.
+     */
     public function test_leaf_nodes_carry_api_resource_mapping(): void
     {
         $admin = $this->createAdmin();
@@ -52,6 +61,9 @@ class MenuTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test api resource is derived dynamically from metadata.
+     */
     public function test_api_resource_is_derived_dynamically_from_metadata(): void
     {
         $admin = $this->createAdmin();
@@ -91,6 +103,9 @@ class MenuTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test group headers have null api resource.
+     */
     public function test_group_headers_have_null_api_resource(): void
     {
         $admin = $this->createAdmin();
@@ -101,6 +116,9 @@ class MenuTest extends AdminApiTestCase
         expect($sales['apiResource'])->toBeNull();
     }
 
+    /**
+     * Test menu is filtered to role permissions.
+     */
     public function test_menu_is_filtered_to_role_permissions(): void
     {
         $role = Role::create([
@@ -111,7 +129,7 @@ class MenuTest extends AdminApiTestCase
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->adminTokenSameAsWeb($admin);
+        $token = $this->adminAccessToken($admin);
 
         $tree = $this->adminGet($admin, '/api/admin/menu', $token)->json('0.tree');
 

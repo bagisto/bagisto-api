@@ -6,6 +6,7 @@ const BAGISTO_PATH = process.env.BAGISTO_PATH || path.resolve(__dirname, '../../
 
 export default defineConfig({
   testDir: './tests',
+  globalSetup: './tests/fixtures/globalSetup.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

@@ -7,10 +7,6 @@ use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Product category — nested sub-resource of AdminCatalogProduct (`categories`
- * connection). name/slug resolved from category_translations (current locale).
- */
 #[ApiResource(
     shortName: 'AdminProductDetailCategory',
     operations: [],
@@ -19,33 +15,57 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminProductDetailCategory extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the categories.
+     *
+     * @var string
+     */
     protected $table = 'categories';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the product category is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['name', 'slug'];
 
-    /** @var array */
+    /**
+     * The native types the product category attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = ['id' => 'int'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getNameAttribute(): ?string
     {
         return $this->translationRow()->name ?? null;
     }
 
+    /**
+     * Get slug attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getSlugAttribute(): ?string
     {
         return $this->translationRow()->slug ?? null;
     }
 
+    /**
+     * Translation row.
+     */
     private function translationRow(): object
     {
         return DB::table('category_translations')->where('category_id', $this->id)

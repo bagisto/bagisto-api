@@ -10,17 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductMassDeleteInput;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductMassDeleteProcessor;
 
-/**
- * One-operation resource for mass-deleting catalog products.
- *
- * REST:
- *   POST /api/admin/catalog/products/mass-delete
- *     Body: { "indices": [12, 18] }
- *     200:  { "deleted": [12, 18], "message": "..." }
- *
- * GraphQL:
- *   createAdminCatalogProductMassDelete
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCatalogProductMassDelete',
@@ -85,13 +74,23 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductMassDeleteProcessor;
 )]
 class AdminCatalogProductMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the products that were deleted.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

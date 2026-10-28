@@ -2,54 +2,40 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Core\Models\Country;
 use Webkul\Core\Models\CountryState;
 
 class CountryTest extends RestApiTestCase
 {
+    /**
+     * The countries url.
+     */
     private string $countriesUrl = '/api/shop/countries';
 
+    /**
+     * The country states url.
+     */
     private string $countryStatesUrl = '/api/shop/country-states';
 
-    // Country IDs that are stable across Bagisto seeder runs
-    private int $countryWithStates = 244; // United States
+    /**
+     * The seeded id of the United States, a country with states.
+     */
+    private int $countryWithStates = 244;
 
-    private int $countryWithoutStates = 1;  // Afghanistan
+    /**
+     * The seeded id of Afghanistan, a country without states.
+     */
+    private int $countryWithoutStates = 1;
 
-    private function countryUrl(int $id): string
-    {
-        return $this->countriesUrl.'/'.$id;
-    }
+    // ============================================================================
+    // GET /countries (Collection)
+    // ============================================================================
 
-    private function nestedStatesUrl(int $countryId): string
-    {
-        return $this->countriesUrl.'/'.$countryId.'/states';
-    }
-
-    private function nestedStateUrl(int $countryId, int $stateId): string
-    {
-        return $this->countriesUrl.'/'.$countryId.'/states/'.$stateId;
-    }
-
-    private function countryStateUrl(int $id): string
-    {
-        return $this->countryStatesUrl.'/'.$id;
-    }
-
-    private function firstStateIdForCountry(int $countryId): int
-    {
-        $id = CountryState::where('country_id', $countryId)->orderBy('id')->value('id');
-
-        if (! $id) {
-            $this->markTestSkipped("No states found for country {$countryId}.");
-        }
-
-        return (int) $id;
-    }
-
-    // ── GET /countries (collection) ───────────────────────────
-
+    /**
+     * Test get countries returns ok.
+     */
     public function test_get_countries_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -60,6 +46,9 @@ class CountryTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test get countries returns non empty list.
+     */
     public function test_get_countries_returns_non_empty_list(): void
     {
         $this->seedRequiredData();
@@ -70,6 +59,9 @@ class CountryTest extends RestApiTestCase
         expect(count($response->json()))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test countries have expected fields.
+     */
     public function test_countries_have_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -83,6 +75,9 @@ class CountryTest extends RestApiTestCase
         expect($first)->toHaveKey('translations');
     }
 
+    /**
+     * Test countries id is integer.
+     */
     public function test_countries_id_is_integer(): void
     {
         $this->seedRequiredData();
@@ -92,8 +87,13 @@ class CountryTest extends RestApiTestCase
         expect($first['id'])->toBeInt();
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
+    /**
+     * Test items per page limits collection size.
+     */
     public function test_items_per_page_limits_collection_size(): void
     {
         $this->seedRequiredData();
@@ -104,6 +104,24 @@ class CountryTest extends RestApiTestCase
         expect(count($response->json()))->toBe(5);
     }
 
+    /**
+     * Test every country fits in one request, as the storefront returns them all at once.
+     */
+    public function test_every_country_fits_in_one_request(): void
+    {
+        $this->seedRequiredData();
+
+        $total = DB::table('countries')->count();
+
+        $response = $this->publicGet($this->countriesUrl.'?per_page=300');
+
+        $response->assertOk();
+        expect(count($response->json()))->toBe(min($total, 300));
+    }
+
+    /**
+     * Test page parameter returns different results.
+     */
     public function test_page_parameter_returns_different_results(): void
     {
         $this->seedRequiredData();
@@ -115,6 +133,9 @@ class CountryTest extends RestApiTestCase
             ->not()->toEqual(collect($page2)->pluck('id')->all());
     }
 
+    /**
+     * Test page beyond total returns empty.
+     */
     public function test_page_beyond_total_returns_empty(): void
     {
         $this->seedRequiredData();
@@ -125,8 +146,13 @@ class CountryTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
-    // ── GET /countries/{id} (single) ──────────────────────────
+    // ============================================================================
+    // GET /countries/{id} (Single)
+    // ============================================================================
 
+    /**
+     * Test get single country returns ok.
+     */
     public function test_get_single_country_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -136,6 +162,9 @@ class CountryTest extends RestApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test get single country returns correct id.
+     */
     public function test_get_single_country_returns_correct_id(): void
     {
         $this->seedRequiredData();
@@ -145,6 +174,9 @@ class CountryTest extends RestApiTestCase
         expect($body['id'])->toBe($this->countryWithStates);
     }
 
+    /**
+     * Test get single country returns expected fields.
+     */
     public function test_get_single_country_returns_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -158,6 +190,9 @@ class CountryTest extends RestApiTestCase
         expect($body)->toHaveKey('translations');
     }
 
+    /**
+     * Test get country with states includes states.
+     */
     public function test_get_country_with_states_includes_states(): void
     {
         $this->seedRequiredData();
@@ -168,6 +203,9 @@ class CountryTest extends RestApiTestCase
         expect(count($body['states']))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test get country without states returns empty states.
+     */
     public function test_get_country_without_states_returns_empty_states(): void
     {
         $this->seedRequiredData();
@@ -177,6 +215,9 @@ class CountryTest extends RestApiTestCase
         expect($body['states'])->toBe([]);
     }
 
+    /**
+     * Test get nonexistent country returns error.
+     */
     public function test_get_nonexistent_country_returns_error(): void
     {
         $this->seedRequiredData();
@@ -186,8 +227,13 @@ class CountryTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
     }
 
-    // ── GET /countries/{country_id}/states (nested collection) ─
+    // ============================================================================
+    // GET /countries/{country_id}/states (Nested Collection)
+    // ============================================================================
 
+    /**
+     * Test get nested states returns ok.
+     */
     public function test_get_nested_states_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -198,6 +244,9 @@ class CountryTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test get nested states all belong to country.
+     */
     public function test_get_nested_states_all_belong_to_country(): void
     {
         $this->seedRequiredData();
@@ -211,6 +260,9 @@ class CountryTest extends RestApiTestCase
         }
     }
 
+    /**
+     * Test get nested states have expected fields.
+     */
     public function test_get_nested_states_have_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -224,6 +276,9 @@ class CountryTest extends RestApiTestCase
         expect($first)->toHaveKey('defaultName');
     }
 
+    /**
+     * Test get nested states for country without states returns empty.
+     */
     public function test_get_nested_states_for_country_without_states_returns_empty(): void
     {
         $this->seedRequiredData();
@@ -234,8 +289,13 @@ class CountryTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
-    // ── GET /countries/{country_id}/states/{id} (nested single) ─
+    // ============================================================================
+    // GET /countries/{country_id}/states/{id} (Nested Single)
+    // ============================================================================
 
+    /**
+     * Test get nested single state returns ok.
+     */
     public function test_get_nested_single_state_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -246,6 +306,9 @@ class CountryTest extends RestApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test get nested single state returns correct ids.
+     */
     public function test_get_nested_single_state_returns_correct_ids(): void
     {
         $this->seedRequiredData();
@@ -257,8 +320,38 @@ class CountryTest extends RestApiTestCase
         expect($body['countryId'])->toBe($this->countryWithStates);
     }
 
-    // ── GET /country-states/{id} (root single) ────────────────
+    /**
+     * Test get nested state under a different country returns not found.
+     */
+    public function test_get_nested_state_under_different_country_returns_not_found(): void
+    {
+        $this->seedRequiredData();
+        $stateId = $this->firstStateIdForCountry($this->countryWithStates);
 
+        $response = $this->publicGet($this->nestedStateUrl($this->countryWithoutStates, $stateId));
+
+        $response->assertNotFound();
+    }
+
+    /**
+     * Test get nested unknown state returns not found.
+     */
+    public function test_get_nested_unknown_state_returns_not_found(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicGet($this->nestedStateUrl($this->countryWithStates, 999999));
+
+        $response->assertNotFound();
+    }
+
+    // ============================================================================
+    // GET /country-states/{id} (Root Single)
+    // ============================================================================
+
+    /**
+     * Test get root country state returns ok.
+     */
     public function test_get_root_country_state_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -269,6 +362,9 @@ class CountryTest extends RestApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test get root country state returns expected fields.
+     */
     public function test_get_root_country_state_returns_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -284,6 +380,9 @@ class CountryTest extends RestApiTestCase
         expect($body['id'])->toBe($stateId);
     }
 
+    /**
+     * Test root and nested state return same data.
+     */
     public function test_root_and_nested_state_return_same_data(): void
     {
         $this->seedRequiredData();
@@ -297,6 +396,9 @@ class CountryTest extends RestApiTestCase
         expect($root['countryId'])->toBe($nested['countryId']);
     }
 
+    /**
+     * Test get nonexistent state returns error.
+     */
     public function test_get_nonexistent_state_returns_error(): void
     {
         $this->seedRequiredData();
@@ -304,5 +406,51 @@ class CountryTest extends RestApiTestCase
         $response = $this->publicGet($this->countryStateUrl(999999));
 
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
+    }
+
+    /**
+     * Country url.
+     */
+    private function countryUrl(int $id): string
+    {
+        return $this->countriesUrl.'/'.$id;
+    }
+
+    /**
+     * Nested states url.
+     */
+    private function nestedStatesUrl(int $countryId): string
+    {
+        return $this->countriesUrl.'/'.$countryId.'/states';
+    }
+
+    /**
+     * Nested state url.
+     */
+    private function nestedStateUrl(int $countryId, int $stateId): string
+    {
+        return $this->countriesUrl.'/'.$countryId.'/states/'.$stateId;
+    }
+
+    /**
+     * Country state url.
+     */
+    private function countryStateUrl(int $id): string
+    {
+        return $this->countryStatesUrl.'/'.$id;
+    }
+
+    /**
+     * First state id for country.
+     */
+    private function firstStateIdForCountry(int $countryId): int
+    {
+        $id = CountryState::query()->where('country_id', $countryId)->orderBy('id')->value('id');
+
+        if (! $id) {
+            $this->markTestSkipped("No states found for country {$countryId}.");
+        }
+
+        return (int) $id;
     }
 }

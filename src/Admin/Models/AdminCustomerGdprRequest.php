@@ -19,24 +19,6 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGdprProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
 
-/**
- * Admin Customer GDPR Requests — read / status-update / delete.
- *
- * REST:
- *   GET    /api/admin/customers/gdpr-requests
- *   GET    /api/admin/customers/gdpr-requests/{id}
- *   PUT    /api/admin/customers/gdpr-requests/{id}
- *   DELETE /api/admin/customers/gdpr-requests/{id}
- *
- * GraphQL: adminCustomerGdprRequests, adminCustomerGdprRequest,
- *          updateAdminCustomerGdprRequest, deleteAdminCustomerGdprRequest
- *
- * Mirrors Webkul\Admin\Http\Controllers\Customers\GDPRController. The admin
- * panel's only writes are status update + delete; the destructive cascade for
- * type=delete requests happens via the separate /process action (see
- * AdminCustomerGdprProcess) — matches what the customer-facing side does on
- * approval but exposes it as an explicit endpoint for API integrators.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerGdprRequest',
@@ -90,7 +72,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                             'application/json' => [
                                 'example' => [
                                     'id' => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
-                                    'email' => 'jane@example.com', 'type' => 'delete', 'status' => 'processing',
+                                    'email' => 'jane@example.com', 'type' => 'delete', 'typeLabel' => 'Delete', 'status' => 'processing',
                                     'message' => 'Reviewing the request.', 'revokedAt' => null,
                                     'createdAt' => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
                                 ],
@@ -110,6 +92,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customer GDPR'],
                 summary: 'Delete a GDPR request',
+                description: 'Deletes the GDPR request record only; no customer data is touched. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Request ID', true, schema: ['type' => 'integer']),
                 ],
@@ -133,6 +116,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customer GDPR'],
                 summary: 'GDPR request detail',
+                description: 'One customer GDPR request by ID: its type, status, message and the customer who made it. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Request ID', true, schema: ['type' => 'integer']),
                 ],
@@ -143,7 +127,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                             'application/json' => [
                                 'example' => [
                                     'id' => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
-                                    'email' => 'jane@example.com', 'type' => 'delete', 'status' => 'pending',
+                                    'email' => 'jane@example.com', 'type' => 'delete', 'typeLabel' => 'Delete', 'status' => 'pending',
                                     'message' => 'Please remove my account.', 'revokedAt' => null,
                                     'createdAt' => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-10T09:00:00+00:00',
                                 ],
@@ -190,7 +174,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                                     'data' => [
                                         [
                                             'id' => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
-                                            'email' => 'jane@example.com', 'type' => 'delete', 'status' => 'pending',
+                                            'email' => 'jane@example.com', 'type' => 'delete', 'typeLabel' => 'Delete', 'status' => 'pending',
                                             'message' => 'Please remove my account.', 'revokedAt' => null,
                                             'createdAt' => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-10T09:00:00+00:00',
                                         ],
@@ -251,33 +235,81 @@ class AdminCustomerGdprRequest
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customer_id = null;
 
+    /**
+     * The customer name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $customer_name = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(writable: false)]
     public ?string $email = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $type = null;
 
+    /**
+     * The type as the admin GDPR grid shows it (Delete or Edit).
+     */
+    #[ApiProperty(writable: false)]
+    public ?string $type_label = null;
+
+    /**
+     * The status.
+     */
     #[ApiProperty(writable: false)]
     public ?string $status = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 
+    /**
+     * The revoked at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $revoked_at = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
+
+    /**
+     * The label core's GDPR grid shows for a request type.
+     */
+    public static function labelForType(?string $type): ?string
+    {
+        return match ($type) {
+            'delete' => trans('admin::app.customers.gdpr.index.datagrid.delete'),
+            'update' => trans('admin::app.customers.gdpr.index.datagrid.edit'),
+            default => null,
+        };
+    }
 }

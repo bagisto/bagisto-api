@@ -13,11 +13,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\DeleteAllWishlistsInput;
 use Webkul\BagistoApi\State\DeleteAllWishlistsProcessor;
 
-/**
- * Delete All Wishlists Response Model
- *
- * Response object for bulk delete wishlist operations
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'DeleteAllWishlists',
@@ -77,17 +72,29 @@ use Webkul\BagistoApi\State\DeleteAllWishlistsProcessor;
 )]
 class DeleteAllWishlists
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, readable: true)]
     public ?int $id = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $message = null;
 
+    /**
+     * The deleted count.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $deletedCount = null;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(?string $message = null, ?int $deletedCount = null, ?int $id = null)
     {
         $this->message = $message;

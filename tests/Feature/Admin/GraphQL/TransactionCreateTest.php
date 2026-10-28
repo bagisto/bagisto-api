@@ -10,43 +10,9 @@ class TransactionCreateTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    protected function anUnpaidInvoice(): Invoice
-    {
-        $order = $this->bootstrapInvoiceableOrder('processing');
-        $item = $order->items->first();
-
-        return Invoice::factory()->create([
-            'order_id' => $order->id,
-            'state' => 'pending',
-            'total_qty' => (int) $item->qty_ordered,
-            'sub_total' => 100,
-            'base_sub_total' => 100,
-            'grand_total' => 100,
-            'base_grand_total' => 100,
-            'base_currency_code' => 'USD',
-            'order_currency_code' => 'USD',
-            'channel_currency_code' => 'USD',
-            'increment_id' => 'INV-GTX-'.uniqid(),
-        ]);
-    }
-
-    protected function mutation(): string
-    {
-        return <<<'GQL'
-            mutation Create($input: createAdminTransactionInput!) {
-              createAdminTransaction(input: $input) {
-                adminTransaction {
-                  _id
-                  transactionId
-                  invoiceId
-                  amount
-                  status
-                }
-              }
-            }
-        GQL;
-    }
-
+    /**
+     * Test create mutation records payment.
+     */
     public function test_create_mutation_records_payment(): void
     {
         $admin = $this->createAdmin();
@@ -73,6 +39,9 @@ class TransactionCreateTest extends AdminApiTestCase
         expect(Invoice::find($invoice->id)->state)->toBe('paid');
     }
 
+    /**
+     * Test create mutation rejects overpayment.
+     */
     public function test_create_mutation_rejects_overpayment(): void
     {
         $admin = $this->createAdmin();
@@ -90,6 +59,9 @@ class TransactionCreateTest extends AdminApiTestCase
         expect(Invoice::find($invoice->id)->state)->not->toBe('paid');
     }
 
+    /**
+     * Test create mutation requires authentication.
+     */
     public function test_create_mutation_requires_authentication(): void
     {
         $invoice = $this->anUnpaidInvoice();
@@ -103,5 +75,48 @@ class TransactionCreateTest extends AdminApiTestCase
         ]);
 
         expect($response->getStatusCode() === 401 || $response->json('errors') !== null)->toBeTrue();
+    }
+
+    /**
+     * An unpaid invoice.
+     */
+    protected function anUnpaidInvoice(): Invoice
+    {
+        $order = $this->bootstrapInvoiceableOrder('processing');
+        $item = $order->items->first();
+
+        return Invoice::factory()->create([
+            'order_id' => $order->id,
+            'state' => 'pending',
+            'total_qty' => (int) $item->qty_ordered,
+            'sub_total' => 100,
+            'base_sub_total' => 100,
+            'grand_total' => 100,
+            'base_grand_total' => 100,
+            'base_currency_code' => 'USD',
+            'order_currency_code' => 'USD',
+            'channel_currency_code' => 'USD',
+            'increment_id' => 'INV-GTX-'.uniqid(),
+        ]);
+    }
+
+    /**
+     * Mutation.
+     */
+    protected function mutation(): string
+    {
+        return <<<'GQL'
+            mutation Create($input: createAdminTransactionInput!) {
+              createAdminTransaction(input: $input) {
+                adminTransaction {
+                  _id
+                  transactionId
+                  invoiceId
+                  amount
+                  status
+                }
+              }
+            }
+        GQL;
     }
 }

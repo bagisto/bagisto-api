@@ -4,9 +4,6 @@ namespace Webkul\BagistoApi\Traits;
 
 use Illuminate\Support\Facades\Cache;
 
-/**
- * Provides centralized rate limiting for API services.
- */
 trait HasRateLimit
 {
     /**
@@ -59,9 +56,7 @@ trait HasRateLimit
 
     /**
      * Check a fixed-window rate limit for a client, optionally split into buckets.
-     *
-     * A null or zero `rate_limit` on the client means unlimited; a client without
-     * the property falls back to the default limit.
+     * A null or zero `rate_limit` on the client means unlimited; a client without.
      *
      * @param  object  $client
      */

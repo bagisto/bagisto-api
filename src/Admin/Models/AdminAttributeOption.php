@@ -14,24 +14,6 @@ use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProcessor;
 use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
 
-/**
- * Sub-resource for attribute options.
- *
- * REST:
- *   POST   /api/admin/catalog/attributes/{attributeId}/options
- *   PUT    /api/admin/catalog/attributes/{attributeId}/options/{optionId}
- *   DELETE /api/admin/catalog/attributes/{attributeId}/options/{optionId}
- *
- * GraphQL:
- *   createAdminCatalogAttributeOption
- *   updateAdminCatalogAttributeOption
- *   deleteAdminCatalogAttributeOption
- *
- * Success response shape: same full attribute detail as GET /api/admin/catalog/attributes/{id}
- * (AdminAttribute DTO via AdminAttributeItemProvider::mapToDtoPublic).
- *
- * Delete returns: { "message": "..." }
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAttributeOption',
@@ -300,18 +282,33 @@ class AdminAttributeOption
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The attribute id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $attribute_id = null;
 
+    /**
+     * The admin name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $admin_name = null;
 
+    /**
+     * The sort order.
+     */
     #[ApiProperty(writable: false)]
     public ?int $sort_order = null;
 
+    /**
+     * The swatch value.
+     */
     #[ApiProperty(writable: false)]
     public ?string $swatch_value = null;
 }

@@ -55,6 +55,7 @@ use Webkul\Product\Models\ProductImageTranslation;
     graphQlOperations: [
         new QueryCollection(
             provider: CursorAwareCollectionProvider::class,
+            description: 'Product images ordered by ID, optionally only those of product `product_id`. The query takes no pagination arguments, so it returns at most the first 10. Needs the X-STOREFRONT-KEY header.',
             args: [
                 'product_id' => [
                     'type' => 'Int',
@@ -101,7 +102,10 @@ use Webkul\Product\Models\ProductImageTranslation;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One product image. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 #[ApiResource(
@@ -156,6 +160,9 @@ class ProductImage extends BaseProductImage
      */
     public $translationModel = ProductImageTranslation::class;
 
+    /**
+     * The visible.
+     */
     protected $visible = [
         'id',
         'type',
@@ -167,6 +174,9 @@ class ProductImage extends BaseProductImage
         'file_name',
     ];
 
+    /**
+     * Get public path attribute.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public function getPublicPathAttribute(): ?string
     {
@@ -175,11 +185,7 @@ class ProductImage extends BaseProductImage
 
     /**
      * The alt text of the image, for the current locale.
-     *
-     * `alt_text` lives on the translation, and a property that is neither a column nor an
-     * accessor is not part of the resource — so this exists to put it there. Translatable
-     * has already resolved the value by the time the accessor runs, which is why it is
-     * handed straight back rather than looked up again.
+     * `alt_text` lives on the translation, and a property that is neither a column nor an.
      */
     #[ApiProperty(readable: true, writable: false, description: 'Description of the image for the current locale.')]
     public function getAltTextAttribute(?string $value = null): ?string
@@ -187,6 +193,9 @@ class ProductImage extends BaseProductImage
         return $value;
     }
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

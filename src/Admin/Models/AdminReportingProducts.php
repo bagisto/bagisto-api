@@ -15,18 +15,6 @@ use Webkul\BagistoApi\Admin\State\AdminReportingProductsExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminReportingProductsProvider;
 use Webkul\BagistoApi\Admin\State\AdminReportingProductsViewProvider;
 
-/**
- * Admin reporting — products (read-only).
- *
- * REST   : GET /api/admin/reporting/products
- * GraphQL: adminReportingProducts query
- *
- * Mirrors `Reporting/ProductController::stats()`. `?type=`:
- *   total-sold-quantities (default), total-products-added-to-wishlist,
- *   top-selling-products-by-revenue, top-selling-products-by-quantity,
- *   products-with-most-reviews,
- *   last-search-terms, top-search-terms.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminReportingProducts',
@@ -148,14 +136,23 @@ class AdminReportingProducts
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The entity.
+     */
     #[ApiProperty(readable: true, writable: false, identifier: true)]
     #[Groups(['query'])]
     public ?string $entity = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $type = null;
 
+    /**
+     * The current and previous date ranges the figures cover.
+     */
     #[ApiProperty(readable: true, writable: false, example: [
         'previous' => '10 Apr 2026 - 10 May 2026',
         'current' => '10 May 2026 - 09 Jun 2026',
@@ -163,7 +160,11 @@ class AdminReportingProducts
     #[Groups(['query'])]
     public ?array $date_range = null;
 
-    /** @var array<string,mixed>|null */
+    /**
+     * The product report figures for the current and previous date ranges.
+     *
+     * @var array<string,mixed>|null
+     */
     #[ApiProperty(readable: true, writable: false, example: [
         'quantities' => [
             'previous' => 82,

@@ -157,9 +157,13 @@ use Webkul\BagistoApi\State\EuWithdrawalProvider;
         ),
     ],
     graphQlOperations: [
-        new Query(provider: EuWithdrawalProvider::class),
+        new Query(
+            provider: EuWithdrawalProvider::class,
+            description: 'One EU withdrawal declaration on an order of the authenticated customer; any other declaration is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
         new QueryCollection(
             provider: EuWithdrawalProvider::class,
+            description: 'EU withdrawal declarations on the authenticated customer\'s orders, newest first. Paginate forward only: `first` (default 30, between 1 and 50) and `after`. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'first' => ['type' => 'Int'],
@@ -171,36 +175,84 @@ use Webkul\BagistoApi\State\EuWithdrawalProvider;
 )]
 class EuWithdrawal implements SnakeCaseFieldsResource
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The uuid.
+     */
     public ?string $uuid = null;
 
+    /**
+     * The order id.
+     */
     public ?int $order_id = null;
 
+    /**
+     * The order increment id.
+     */
     public ?string $order_increment_id = null;
 
+    /**
+     * The is guest.
+     */
     public ?bool $is_guest = null;
 
+    /**
+     * The customer email.
+     */
     public ?string $customer_email = null;
 
+    /**
+     * The status.
+     */
     public ?string $status = null;
 
+    /**
+     * The reason text.
+     */
     public ?string $reason_text = null;
 
+    /**
+     * The received at.
+     */
     public ?string $received_at = null;
 
+    /**
+     * The confirmation sent at.
+     */
     public ?string $confirmation_sent_at = null;
 
+    /**
+     * The declined at.
+     */
     public ?string $declined_at = null;
 
+    /**
+     * The declined reason.
+     */
     public ?string $declined_reason = null;
 
+    /**
+     * The refunded at.
+     */
     public ?string $refunded_at = null;
 
+    /**
+     * The refund note.
+     */
     public ?string $refund_note = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

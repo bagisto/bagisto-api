@@ -1,177 +1,333 @@
-// Wishlist API Test Cases
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendGraphQLRequest } from '../../graphql/helpers/graphqlClient';
 import { getCustomerAuthHeaders } from '../../config/auth';
-import { SHOP_DOCS_QUERIES } from '../../graphql/Queries/shopDocs.queries';
 import {
   CREATE_WISHLIST,
   DELETE_ALL_WISHLISTS,
   DELETE_WISHLIST,
   GET_ALL_WISHLISTS,
   GET_WISHLIST,
-  MOVE_WISHLIST_TO_CART,
+  GET_WISHLIST_ITEM_IDS,
   TOGGLE_WISHLIST,
 } from '../../graphql/Queries/wishlist.queries';
 import { graphQLErrorMessages } from '../../graphql/helpers/testSupport';
+import { findSaleableSimpleProducts } from '../../../restAPI/rest/helpers/coverage/shopCart.helpers';
 
-async function getFirstProductId(request: any) {
-  const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getProducts, { first: 1 });
-  const body = await response.json();
-  const node = body.data?.products?.edges?.[0]?.node;
-  const numericId = Number(String(node?.id ?? '').split('/').pop());
-  return node?._id ?? (Number.isFinite(numericId) && numericId > 0 ? numericId : null);
-}
+const MESSAGES = {
+  UNAUTHENTICATED: 'Unauthenticated. Please login to perform this action',
+  NOT_FOUND: 'Wishlist item not found',
+  ALREADY_EXISTS: 'This product is already in your wishlist',
+  ADDED: 'Item Successfully Added To Wishlist',
+  REMOVED: 'Item Successfully Removed From Wishlist',
+  MOVED_TO_CART: 'Item moved to cart successfully',
+  DELETE_ALL_SUCCESS: 'All wishlist items have been removed successfully',
+  PRODUCT_NOT_FOUND: 'Product not found',
+  ID_ARGUMENT_REQUIRED: 'Field "wishlist" argument "id" of type "ID!" is required but not provided.',
+};
 
-test.describe('Wishlist GraphQL API Tests', () => {
-  
-  // ==================== POSITIVE TESTS ====================
-  
-  test('Should get all wishlists successfully', async ({ request }) => {
-    const response = await sendGraphQLRequest(request, GET_ALL_WISHLISTS, { first: 10 });
-    
-    expect([200, 500]).toContain(response.status());
-    
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(body.data?.wishlists).toBeDefined();
-    }
-  });
-
-  test('Should return wishlist with pagination', async ({ request }) => {
-    const response = await sendGraphQLRequest(request, GET_ALL_WISHLISTS, { first: 5 });
-    
-    expect([200, 500]).toContain(response.status());
-    
-    if (response.status() === 200) {
-      const body = await response.json();
-      const wishlists = body.data?.wishlists;
-      
-      if (wishlists) {
-        expect(wishlists.pageInfo?.hasNextPage !== undefined || wishlists.edges !== undefined).toBeTruthy();
-      }
-    }
-  });
-
-  test('Should get wishlist by valid ID', async ({ request }) => {
-    const allResponse = await sendGraphQLRequest(request, GET_ALL_WISHLISTS, { first: 1 });
-    
-    if (allResponse.status() === 500) {
-      console.log('Server error - skipping test');
-      return;
-    }
-    
-    const allBody = await allResponse.json();
-    
-    if (allBody.data?.wishlists?.edges?.length > 0) {
-      const wishlistId = allBody.data.wishlists.edges[0].node.id;
-      
-      const response = await sendGraphQLRequest(request, GET_WISHLIST, { id: wishlistId });
-      
-      expect([200, 404, 500]).toContain(response.status());
-    }
-  });
-
-  // ==================== NEGATIVE TESTS ====================
-  
-  test('Should handle invalid wishlist ID gracefully', async ({ request }) => {
-    const response = await sendGraphQLRequest(request, GET_WISHLIST, { id: 'invalid-id-99999' });
-    
-    expect([200, 404, 500]).toContain(response.status());
-    
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(body.data?.wishlist === null || body.errors !== undefined).toBeTruthy();
-    }
-  });
-
-  test('Should handle missing ID parameter gracefully', async ({ request }) => {
-    const invalidQuery = `
-      query GetWishlist {
-        wishlist {
-          id
+const TOGGLE_WITH_MESSAGE = `
+  mutation ToggleWishlist($input: toggleWishlistInput!) {
+    toggleWishlist(input: $input) {
+      wishlist {
+        _id
+        message
+        product {
+          _id
         }
       }
-    `;
-    
-    const response = await sendGraphQLRequest(request, invalidQuery);
-    
-    expect([200, 500]).toContain(response.status());
-    
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(body.errors !== undefined).toBeTruthy();
     }
+  }
+`;
+
+const MOVE_TO_CART = `
+  mutation MoveWishlistToCart($input: moveWishlistToCartInput!) {
+    moveWishlistToCart(input: $input) {
+      wishlistToCart {
+        success
+        message
+        itemsQty
+      }
+    }
+  }
+`;
+
+async function runGraphQL(
+  request: APIRequestContext,
+  query: string,
+  variables: Record<string, any> = {},
+  headers: Record<string, string> = {}
+): Promise<any> {
+  const response = await sendGraphQLRequest(request, query, variables, headers);
+
+  expect(response.status()).toBe(200);
+
+  return response.json();
+}
+
+function expectNoErrors(body: any): void {
+  expect(body.errors, graphQLErrorMessages(body).join(' | ')).toBeUndefined();
+}
+
+function wishlistIri(id: number): string {
+  return `/api/shop/wishlists/${id}`;
+}
+
+async function addToWishlist(request: APIRequestContext, productId: number, headers: Record<string, string>): Promise<number> {
+  const body = await runGraphQL(request, CREATE_WISHLIST, { input: { productId } }, headers);
+
+  expectNoErrors(body);
+
+  const id = Number(body.data.createWishlist.wishlist._id);
+
+  expect(id).toBeGreaterThan(0);
+
+  return id;
+}
+
+async function listWishlistIds(request: APIRequestContext, headers: Record<string, string>): Promise<number[]> {
+  const body = await runGraphQL(request, GET_WISHLIST_ITEM_IDS, { first: 50 }, headers);
+
+  expectNoErrors(body);
+
+  return body.data.wishlists.edges.map((edge: any) => Number(edge.node._id));
+}
+
+test.describe('wishlist graphql api tests', () => {
+  test.describe.configure({ timeout: 120_000 });
+
+  test('should refuse to list wishlists without a bearer token', async ({ request }) => {
+    const body = await runGraphQL(request, GET_ALL_WISHLISTS, { first: 10 });
+
+    expect(graphQLErrorMessages(body)).toEqual([MESSAGES.UNAUTHENTICATED]);
+    expect(body.data?.wishlists ?? null).toBeNull();
   });
 
-  test('Should handle invalid cursor in pagination', async ({ request }) => {
-    const response = await sendGraphQLRequest(request, GET_ALL_WISHLISTS, { 
-      first: 5, 
-      after: 'invalid-cursor-string' 
+  test('should page the customer wishlist with first and after', async ({ request }) => {
+    const [firstProductId, secondProductId] = await findSaleableSimpleProducts(request, 2);
+    const headers = await getCustomerAuthHeaders(request);
+    const firstItemId = await addToWishlist(request, firstProductId, headers);
+    const secondItemId = await addToWishlist(request, secondProductId, headers);
+
+    const firstPage = await runGraphQL(request, GET_ALL_WISHLISTS, { first: 1 }, headers);
+    expectNoErrors(firstPage);
+
+    const page = firstPage.data.wishlists;
+
+    expect(page.totalCount).toBe(2);
+    expect(page.edges.map((edge: any) => Number(edge.node._id))).toEqual([firstItemId]);
+    expect(Number(page.edges[0].node.product.id.split('/').pop())).toBe(firstProductId);
+    expect(page.pageInfo.hasNextPage).toBe(true);
+    expect(page.pageInfo.hasPreviousPage).toBe(false);
+
+    const secondPage = await runGraphQL(request, GET_ALL_WISHLISTS, { first: 1, after: page.pageInfo.endCursor }, headers);
+    expectNoErrors(secondPage);
+
+    expect(secondPage.data.wishlists.edges.map((edge: any) => Number(edge.node._id))).toEqual([secondItemId]);
+    expect(secondPage.data.wishlists.pageInfo.hasNextPage).toBe(false);
+  });
+
+  test('should get a wishlist item of the customer by id', async ({ request }) => {
+    const [productId] = await findSaleableSimpleProducts(request, 1);
+    const headers = await getCustomerAuthHeaders(request);
+    const itemId = await addToWishlist(request, productId, headers);
+
+    const body = await runGraphQL(request, GET_WISHLIST, { id: wishlistIri(itemId) }, headers);
+    expectNoErrors(body);
+
+    expect(Number(body.data.wishlist._id)).toBe(itemId);
+    expect(body.data.wishlist.id).toBe(wishlistIri(itemId));
+    expect(Number(body.data.wishlist.product.id.split('/').pop())).toBe(productId);
+  });
+
+  test('should report a wishlist item that does not exist', async ({ request }) => {
+    const headers = await getCustomerAuthHeaders(request);
+
+    const body = await runGraphQL(request, GET_WISHLIST, { id: wishlistIri(999999999) }, headers);
+
+    expect(graphQLErrorMessages(body)).toEqual([MESSAGES.NOT_FOUND]);
+    expect(body.data?.wishlist ?? null).toBeNull();
+  });
+
+  test('should not reveal a wishlist item of another customer', async ({ request }) => {
+    const [productId] = await findSaleableSimpleProducts(request, 1);
+    const owner = await getCustomerAuthHeaders(request);
+    const itemId = await addToWishlist(request, productId, owner);
+    const other = await getCustomerAuthHeaders(request);
+
+    const body = await runGraphQL(request, GET_WISHLIST, { id: wishlistIri(itemId) }, other);
+
+    expect(graphQLErrorMessages(body)).toEqual([MESSAGES.NOT_FOUND]);
+    expect(body.data?.wishlist ?? null).toBeNull();
+  });
+
+  test('should reject a wishlist query without the id argument', async ({ request }) => {
+    const headers = await getCustomerAuthHeaders(request);
+    const body = await runGraphQL(request, `query GetWishlist { wishlist { id } }`, {}, headers);
+
+    expect(graphQLErrorMessages(body)).toEqual([MESSAGES.ID_ARGUMENT_REQUIRED]);
+    expect(body.data).toBeUndefined();
+  });
+
+  test('should fall back to the first page for a cursor that does not encode an offset', async ({ request }) => {
+    const [productId] = await findSaleableSimpleProducts(request, 1);
+    const headers = await getCustomerAuthHeaders(request);
+    const itemId = await addToWishlist(request, productId, headers);
+    const after = Buffer.from('not-an-offset').toString('base64');
+
+    const body = await runGraphQL(request, GET_ALL_WISHLISTS, { first: 5, after }, headers);
+    expectNoErrors(body);
+
+    expect(body.data.wishlists.totalCount).toBe(1);
+    expect(body.data.wishlists.edges.map((edge: any) => Number(edge.node._id))).toEqual([itemId]);
+  });
+
+  test('should refuse to add a product already in the wishlist', async ({ request }) => {
+    const [productId] = await findSaleableSimpleProducts(request, 1);
+    const headers = await getCustomerAuthHeaders(request);
+    const itemId = await addToWishlist(request, productId, headers);
+
+    const body = await runGraphQL(request, CREATE_WISHLIST, { input: { productId } }, headers);
+
+    expect(graphQLErrorMessages(body)).toEqual([MESSAGES.ALREADY_EXISTS]);
+    expect(await listWishlistIds(request, headers)).toEqual([itemId]);
+  });
+
+  test('should toggle a product out of and back into the wishlist', async ({ request }) => {
+    const [productId] = await findSaleableSimpleProducts(request, 1);
+    const headers = await getCustomerAuthHeaders(request);
+    await addToWishlist(request, productId, headers);
+
+    const removed = await runGraphQL(request, TOGGLE_WITH_MESSAGE, { input: { productId } }, headers);
+
+    expect(graphQLErrorMessages(removed)).toEqual([MESSAGES.REMOVED]);
+    expect(await listWishlistIds(request, headers)).toEqual([]);
+
+    const added = await runGraphQL(request, TOGGLE_WITH_MESSAGE, { input: { productId } }, headers);
+    expectNoErrors(added);
+
+    const item = added.data.toggleWishlist.wishlist;
+
+    expect(item.message).toBe(MESSAGES.ADDED);
+    expect(Number(item.product._id)).toBe(productId);
+    expect(await listWishlistIds(request, headers)).toEqual([Number(item._id)]);
+  });
+
+  test('should move a wishlist item into the customer cart', async ({ request }) => {
+    const [productId] = await findSaleableSimpleProducts(request, 1);
+    const headers = await getCustomerAuthHeaders(request);
+    const itemId = await addToWishlist(request, productId, headers);
+
+    const body = await runGraphQL(request, MOVE_TO_CART, { input: { wishlistItemId: itemId, quantity: 1 } }, headers);
+    expectNoErrors(body);
+
+    expect(body.data.moveWishlistToCart.wishlistToCart).toEqual({
+      success: true,
+      message: MESSAGES.MOVED_TO_CART,
+      itemsQty: 1,
     });
-    
-    expect([200, 500]).toContain(response.status());
+    expect(await listWishlistIds(request, headers)).toEqual([]);
   });
 
-  test('Should try wishlist mutations and show the real API response', async ({ request }) => {
-    const headers = (await getCustomerAuthHeaders(request)) ?? {};
-    const productId = await getFirstProductId(request);
+  test('should report a missing wishlist item on move to cart', async ({ request }) => {
+    const headers = await getCustomerAuthHeaders(request);
 
-    const createResponse = await sendGraphQLRequest(
-      request,
-      CREATE_WISHLIST,
-      { input: { productId, clientMutationId: 'wishlist-create-001' } },
-      headers
-    );
-    expect(createResponse.status()).toBe(200);
-    const createBody = await createResponse.json();
-    console.log(`Create wishlist response: ${JSON.stringify(createBody)}`);
-    expect(createBody.data?.createWishlist?.wishlist || graphQLErrorMessages(createBody).length > 0).toBeTruthy();
+    const body = await runGraphQL(request, MOVE_TO_CART, { input: { wishlistItemId: 999999999, quantity: 1 } }, headers);
 
-    const toggleResponse = await sendGraphQLRequest(
+    expect(graphQLErrorMessages(body)).toEqual([MESSAGES.NOT_FOUND]);
+    expect(body.data?.moveWishlistToCart ?? null).toBeNull();
+  });
+
+  test('should delete one wishlist item of the customer', async ({ request }) => {
+    const [firstProductId, secondProductId] = await findSaleableSimpleProducts(request, 2);
+    const headers = await getCustomerAuthHeaders(request);
+    const firstItemId = await addToWishlist(request, firstProductId, headers);
+    const secondItemId = await addToWishlist(request, secondProductId, headers);
+
+    const body = await runGraphQL(request, DELETE_WISHLIST, { input: { id: wishlistIri(firstItemId) } }, headers);
+    expectNoErrors(body);
+
+    expect(body.data.deleteWishlist.wishlist.id).toBe(wishlistIri(firstItemId));
+    expect(await listWishlistIds(request, headers)).toEqual([secondItemId]);
+  });
+
+  test('should delete every wishlist item of the customer', async ({ request }) => {
+    const [firstProductId, secondProductId] = await findSaleableSimpleProducts(request, 2);
+    const headers = await getCustomerAuthHeaders(request);
+    await addToWishlist(request, firstProductId, headers);
+    await addToWishlist(request, secondProductId, headers);
+
+    const body = await runGraphQL(request, DELETE_ALL_WISHLISTS, {}, headers);
+    expectNoErrors(body);
+
+    expect(body.data.createDeleteAllWishlists.deleteAllWishlists).toEqual({
+      message: MESSAGES.DELETE_ALL_SUCCESS,
+      deletedCount: 2,
+    });
+    expect(await listWishlistIds(request, headers)).toEqual([]);
+  });
+});
+
+test.describe('wishlist add and toggle authorization graphql', () => {
+  const MISSING_PRODUCT_ID = 999999999;
+
+  test('should refuse a wishlist add from an anonymous caller before looking up the product', async ({ request }) => {
+    const response = await sendGraphQLRequest(request, CREATE_WISHLIST, { input: { productId: MISSING_PRODUCT_ID } });
+    expect(response.status()).toBe(200);
+
+    const body = await response.json();
+    const messages = graphQLErrorMessages(body);
+    expect(messages).toContain(MESSAGES.UNAUTHENTICATED);
+    expect(messages).not.toContain(MESSAGES.PRODUCT_NOT_FOUND);
+    expect(body.data?.createWishlist ?? null).toBeNull();
+  });
+
+  test('should refuse a wishlist toggle from an anonymous caller before looking up the product', async ({ request }) => {
+    const response = await sendGraphQLRequest(request, TOGGLE_WISHLIST, { input: { productId: MISSING_PRODUCT_ID } });
+    expect(response.status()).toBe(200);
+
+    const body = await response.json();
+    const messages = graphQLErrorMessages(body);
+    expect(messages).toContain(MESSAGES.UNAUTHENTICATED);
+    expect(messages).not.toContain(MESSAGES.PRODUCT_NOT_FOUND);
+    expect(body.data?.toggleWishlist ?? null).toBeNull();
+  });
+
+  test('should report a missing product to an authenticated customer toggling the wishlist', async ({ request }) => {
+    const headers = await getCustomerAuthHeaders(request);
+
+    const response = await sendGraphQLRequest(
       request,
       TOGGLE_WISHLIST,
-      { input: { productId, clientMutationId: 'wishlist-toggle-001' } },
+      { input: { productId: MISSING_PRODUCT_ID } },
       headers
     );
-    expect(toggleResponse.status()).toBe(200);
-    const toggleBody = await toggleResponse.json();
-    console.log(`Toggle wishlist response: ${JSON.stringify(toggleBody)}`);
-    expect(toggleBody.data?.toggleWishlist || graphQLErrorMessages(toggleBody).length > 0).toBeTruthy();
+    expect(response.status()).toBe(200);
 
-    const wishlistId =
-      createBody.data?.createWishlist?.wishlist?.id ??
-      createBody.data?.createWishlist?.wishlist?._id ??
-      'invalid-id-99999';
+    const body = await response.json();
+    expect(graphQLErrorMessages(body)).toEqual([MESSAGES.PRODUCT_NOT_FOUND]);
+    expect(body.data?.toggleWishlist ?? null).toBeNull();
+  });
 
-    const moveResponse = await sendGraphQLRequest(
-      request,
-      MOVE_WISHLIST_TO_CART,
-      { input: { wishlistItemId: Number(wishlistId) || 999999, quantity: 1, clientMutationId: 'wishlist-move-001' } },
-      headers
-    );
-    expect(moveResponse.status()).toBe(200);
-    const moveBody = await moveResponse.json();
-    console.log(`Move wishlist to cart response: ${JSON.stringify(moveBody)}`);
-    expect(moveBody.data?.moveWishlistToCart?.wishlistToCart || graphQLErrorMessages(moveBody).length > 0).toBeTruthy();
+  test('should list a product an authenticated customer adds to the wishlist', async ({ request }) => {
+    const headers = await getCustomerAuthHeaders(request);
+    const [productId] = await findSaleableSimpleProducts(request, 1);
 
-    const deleteResponse = await sendGraphQLRequest(
-      request,
-      DELETE_WISHLIST,
-      { input: { id: wishlistId, clientMutationId: 'wishlist-delete-001' } },
-      headers
-    );
-    expect(deleteResponse.status()).toBe(200);
-    const deleteBody = await deleteResponse.json();
-    console.log(`Delete wishlist response: ${JSON.stringify(deleteBody)}`);
-    expect(deleteBody.data?.deleteWishlist?.wishlist || graphQLErrorMessages(deleteBody).length > 0).toBeTruthy();
+    const createResponse = await sendGraphQLRequest(request, CREATE_WISHLIST, { input: { productId } }, headers);
+    expect(createResponse.status()).toBe(200);
 
-    const deleteAllResponse = await sendGraphQLRequest(request, DELETE_ALL_WISHLISTS, {}, headers);
-    expect(deleteAllResponse.status()).toBe(200);
-    const deleteAllBody = await deleteAllResponse.json();
-    console.log(`Delete all wishlists response: ${JSON.stringify(deleteAllBody)}`);
-    expect(
-      deleteAllBody.data?.createDeleteAllWishlists?.deleteAllWishlists ||
-      graphQLErrorMessages(deleteAllBody).length > 0
-    ).toBeTruthy();
+    const createBody = await createResponse.json();
+    expect(createBody.errors, `create wishlist errored: ${graphQLErrorMessages(createBody).join(' | ')}`).toBeUndefined();
+
+    const wishlistItemId = Number(createBody.data?.createWishlist?.wishlist?._id);
+    expect(wishlistItemId).toBeGreaterThan(0);
+
+    const listResponse = await sendGraphQLRequest(request, GET_WISHLIST_ITEM_IDS, { first: 10 }, headers);
+    expect(listResponse.status()).toBe(200);
+
+    const listBody = await listResponse.json();
+    expect(listBody.errors, `list wishlists errored: ${graphQLErrorMessages(listBody).join(' | ')}`).toBeUndefined();
+
+    const itemIds = (listBody.data?.wishlists?.edges ?? []).map((edge: any) => Number(edge.node._id));
+    expect(itemIds).toEqual([wishlistItemId]);
   });
 });

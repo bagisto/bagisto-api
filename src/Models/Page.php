@@ -9,7 +9,9 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\PageByUrlKeyResolver;
@@ -69,7 +71,19 @@ use Webkul\CMS\Models\Page as BasePage;
             openapi: new Operation(
                 tags: ['CMS Page'],
                 summary: 'List CMS pages',
-                description: 'Returns CMS pages, each with its current-locale `translation` embedded. Public endpoint.',
+                description: 'Returns CMS pages, each with its current-locale `translation` embedded. Filter by `url_key` to find a page using any translation, matching GraphQL `pageByUrlKey`. Public endpoint.',
+                parameters: [
+                    new Parameter(
+                        name: 'url_key',
+                        in: 'query',
+                        description: 'Filter by a URL key present on any page translation.',
+                        required: false,
+                        schema: [
+                            'type' => 'string',
+                            'example' => 'about-us',
+                        ],
+                    ),
+                ],
                 responses: [
                     '200' => new Response(
                         description: 'List of CMS pages.',
@@ -105,10 +119,17 @@ use Webkul\CMS\Models\Page as BasePage;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
-        new QueryCollection(provider: CursorAwareCollectionProvider::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One CMS page of the current channel with its translations. Pass the IRI or the numeric ID as `id`; an unknown ID, or a page of another channel, is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
+        new QueryCollection(
+            provider: CursorAwareCollectionProvider::class,
+            description: 'The CMS pages of the current channel, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
+        ),
         new QueryCollection(
             name: 'pageByUrlKey',
+            description: 'The CMS page of the current channel whose URL key is `urlKey`, as a list holding that page or nothing (not paginated). Needs the X-STOREFRONT-KEY header.',
             args: [
                 'urlKey' => [
                     'type' => 'String!',
@@ -125,12 +146,24 @@ class Page extends BasePage
     use ServesLoadedTranslation;
 
     /**
+     * The relations always eager loaded with the page.
+     *
      * @var list<string>
      */
     protected $with = ['translations'];
 
     /**
-     * Get unique page identifier for API Platform
+     * Limit a query to the pages assigned to the current channel, as the storefront shows them.
+     */
+    public function scopeInCurrentChannel(Builder $query): Builder
+    {
+        return $query->whereHas('channels', function ($channels) {
+            $channels->where('channels.id', core()->getCurrentChannel()->id);
+        });
+    }
+
+    /**
+     * Get unique page identifier for API Platform.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -139,7 +172,7 @@ class Page extends BasePage
     }
 
     /**
-     * Get layout
+     * Get layout.
      */
     #[ApiProperty(writable: false, readable: true)]
     public function getLayout(): ?string
@@ -148,7 +181,7 @@ class Page extends BasePage
     }
 
     /**
-     * Get created at
+     * Get created at.
      */
     #[ApiProperty(writable: false, readable: true)]
     public function getCreatedAt(): ?\DateTime
@@ -157,7 +190,7 @@ class Page extends BasePage
     }
 
     /**
-     * Get updated at
+     * Get updated at.
      */
     #[ApiProperty(writable: false, readable: true)]
     public function getUpdatedAt(): ?\DateTime
@@ -166,7 +199,7 @@ class Page extends BasePage
     }
 
     /**
-     * Get current locale translation for API
+     * Get current locale translation for API.
      */
     #[ApiProperty(readable: true, writable: false, description: 'Current locale translation')]
     public function getCurrentTranslation(): ?Model

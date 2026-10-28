@@ -6,15 +6,6 @@ use ApiPlatform\Metadata\Resource\Factory\ResourceNameCollectionFactoryInterface
 use ApiPlatform\Metadata\Resource\ResourceNameCollection;
 use Webkul\BagistoApi\Support\CoreCapabilities;
 
-/**
- * Keeps only the theme resources the installed core can serve.
- *
- * Discovery drops a resource whose parent class is missing, but the admin resources
- * extend plain Eloquent and name their table directly, so they need dropping here.
- *
- * BACKWARD COMPATIBILITY: remove this class and its extend() call when the minimum
- * supported core is 2.4.10.
- */
 final class VersionGatedResourceNameCollectionFactory implements ResourceNameCollectionFactoryInterface
 {
     /**
@@ -41,11 +32,17 @@ final class VersionGatedResourceNameCollectionFactory implements ResourceNameCol
         'Webkul\BagistoApi\Models\ThemeCustomization',
     ];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ResourceNameCollectionFactoryInterface $inner,
         private readonly CoreCapabilities $capabilities,
     ) {}
 
+    /**
+     * Create.
+     */
     public function create(): ResourceNameCollection
     {
         $appearance = $this->capabilities->hasAppearanceSections();
@@ -75,6 +72,8 @@ final class VersionGatedResourceNameCollectionFactory implements ResourceNameCol
     }
 
     /**
+     * Whether the resource class starts with any of the given namespace prefixes.
+     *
      * @param  list<string>  $prefixes
      */
     private function matches(string $resourceClass, array $prefixes): bool

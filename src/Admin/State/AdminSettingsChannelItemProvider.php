@@ -12,16 +12,11 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Core\Models\Channel;
 
-/**
- * Channel detail — GET /api/admin/settings/channels/{id} + adminSettingsChannel.
- *
- * Branches: GraphQL → the AdminSettingsChannel Eloquent model (translations/
- * locales/currencies/inventorySources connections + homeSeo object resolve);
- * REST → the flat AdminSettingsChannelRestDto built from the core Channel
- * relations (nested data as object arrays).
- */
 class AdminSettingsChannelItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminSettingsChannel|AdminSettingsChannelRestDto
     {
         AdminReadPermissions::authorize($operation, AdminSettingsChannel::class);
@@ -59,9 +54,11 @@ class AdminSettingsChannelItemProvider implements ProviderInterface
         return $this->buildRestDto($channel);
     }
 
+    /**
+     * Build rest dto.
+     */
     protected function buildRestDto(object $channel): AdminSettingsChannelRestDto
     {
-        /** @var Channel $channel */
         $dto = new AdminSettingsChannelRestDto;
 
         $dto->id = (int) $channel->id;
@@ -129,6 +126,9 @@ class AdminSettingsChannelItemProvider implements ProviderInterface
         return $dto;
     }
 
+    /**
+     * Resolve default translation.
+     */
     private function resolveDefaultTranslation(object $channel): ?object
     {
         $localeCode = $channel->default_locale_id

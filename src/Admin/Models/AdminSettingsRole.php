@@ -21,22 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsRoleProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
 
-/**
- * Admin Settings → Roles endpoints (Block B Wave 2).
- *
- * REST:
- *   GET    /api/admin/settings/roles
- *   GET    /api/admin/settings/roles/{id}
- *   POST   /api/admin/settings/roles
- *   PUT    /api/admin/settings/roles/{id}
- *   DELETE /api/admin/settings/roles/{id}    (guards: in-use, last-role)
- *
- * GraphQL:
- *   adminSettingsRoles / adminSettingsRole
- *   createAdminSettingsRole / updateAdminSettingsRole / deleteAdminSettingsRole
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\RoleController 1:1.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsRole',
@@ -101,6 +85,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Roles'],
                 summary: 'Update a role',
+                description: 'Replaces the role\'s name, description and permissions; `permissions` is required (non-empty) when `permission_type` is `custom` and is cleared for `all`. Needs `settings.roles.edit`, and the caller cannot grant, or edit a role holding, a permission they lack (403). Making an all-access role custom while only one admin has all access is refused (400).',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Role ID.', true, schema: [
                         'type' => 'integer',
@@ -144,6 +129,8 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
                 ),
                 responses: [
                     '200' => new Model\Response(description: 'Role updated.'),
+                    '400' => new Model\Response(description: 'Only one admin has all access, so an all-access role cannot become custom.'),
+                    '403' => new Model\Response(description: 'Admin role lacks settings.roles.edit, or the role holds or would grant a permission the caller lacks.'),
                     '404' => new Model\Response(description: 'Role not found.'),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
@@ -179,6 +166,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Roles'],
                 summary: 'Role detail',
+                description: 'One role with its name, description, permission type and, for a custom role, its permission keys. Needs the `settings.roles` permission.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Role ID.', true, schema: [
                         'type' => 'integer',
@@ -270,28 +258,53 @@ class AdminSettingsRole
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false, example: 'Administrator')]
     public ?string $name = null;
 
+    /**
+     * The description.
+     */
     #[ApiProperty(writable: false, example: 'Full access to all modules')]
     public ?string $description = null;
 
+    /**
+     * The permission type.
+     */
     #[ApiProperty(writable: false, example: 'all')]
     public ?string $permission_type = null;
 
-    /** @var array<int, string>|null */
+    /**
+     * The permission keys granted to the role.
+     *
+     * @var array<int, string>|null
+     */
     #[ApiProperty(writable: false, example: ['catalog.products.create', 'sales.orders.view'])]
     public ?array $permissions = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, example: 'Role deleted successfully.')]
     public ?string $message = null;
 }

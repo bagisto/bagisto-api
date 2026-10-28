@@ -12,7 +12,6 @@ use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
-use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
 use Webkul\BagistoApi\Dto\SendCustomerReturnMessageInput;
 use Webkul\BagistoApi\State\CustomerReturnMessageProcessor;
@@ -30,7 +29,7 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
             openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'List the conversation messages of a return request',
-                description: 'Messages on the RMA named by `?return_id=`, newest first. Requires the RMA to belong to the authenticated customer.',
+                description: 'Messages on the RMA named by `?return_id=`, newest first. Requires the RMA to belong to the authenticated customer. `attachmentUrl` points at `GET /api/shop/return-messages/{id}/attachment`, which needs the customer token.',
                 parameters: [
                     new Parameter('return_id', 'query', 'Return (RMA) id', true, schema: ['type' => 'integer']),
                 ],
@@ -53,8 +52,8 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
                                         'rmaId' => 12,
                                         'message' => 'The hoodie zipper is broken.',
                                         'isAdmin' => false,
-                                        'attachment' => 'rma/12/messages/zipper.jpg',
-                                        'attachmentUrl' => 'https://example.com/storage/rma/12/messages/zipper.jpg',
+                                        'attachment' => 'zipper.jpg',
+                                        'attachmentUrl' => 'https://example.com/api/shop/return-messages/87/attachment',
                                         'createdAt' => '2026-07-20T10:20:00+00:00',
                                     ],
                                 ],
@@ -75,7 +74,7 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
             openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'Send a message on a return request',
-                description: 'Sends a message on a return. Attach a file in `file`.',
+                description: 'Sends a message on a return. Attach a file in `file`; it is stored on the private disk and downloaded through `attachmentUrl`.',
                 requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -148,6 +147,7 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
     graphQlOperations: [
         new QueryCollection(
             provider: CustomerReturnMessageProvider::class,
+            description: 'Every message in the conversation of return `returnId`, newest first, as a plain list (not paginated). The return must be on one of the authenticated customer\'s orders, otherwise it is not found. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'returnId' => [
@@ -165,21 +165,45 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
 )]
 class CustomerReturnMessage implements SnakeCaseFieldsResource
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The rma id.
+     */
     public ?int $rma_id = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 
+    /**
+     * The is admin.
+     */
     public ?bool $is_admin = null;
 
+    /**
+     * The attachment.
+     */
     public ?string $attachment = null;
 
+    /**
+     * The attachment url.
+     */
     public ?string $attachment_url = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * From model.
+     */
     public static function fromModel($message): self
     {
         $result = new self;
@@ -189,7 +213,7 @@ class CustomerReturnMessage implements SnakeCaseFieldsResource
         $result->is_admin = (bool) $message->is_admin;
         $result->attachment = $message->attachment;
         $result->attachment_url = $message->attachment_path
-            ? Storage::url($message->attachment_path)
+            ? url('/api/shop/return-messages/'.$result->id.'/attachment')
             : null;
         $result->created_at = $message->created_at?->toIso8601String();
 

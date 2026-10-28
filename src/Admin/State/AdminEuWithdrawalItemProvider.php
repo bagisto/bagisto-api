@@ -13,6 +13,9 @@ class AdminEuWithdrawalItemProvider extends AbstractAdminItemProvider
     use BuildsAdminEuWithdrawal;
     use ChecksAdminPermission;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         $this->authorizedAdmin('sales.eu_withdrawals.view', 'bagistoapi::app.admin.eu-withdrawal.no-permission');
@@ -20,16 +23,25 @@ class AdminEuWithdrawalItemProvider extends AbstractAdminItemProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.eu-withdrawal.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return $this->baseWithdrawalQuery()->where('w.id', $id)->first();
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $entity): AdminEuWithdrawal
     {
         return $this->mapWithdrawalRow($entity);

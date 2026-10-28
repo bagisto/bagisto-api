@@ -6,8 +6,7 @@ class ProductReviewAttachment extends \Webkul\Product\Models\ProductReviewAttach
 {
     /**
      * Override __get to expose Eloquent attributes to Serializer
-     * Removing public property declarations ensures this method is called
-     * instead of property reflection accessing empty declared values.
+     * Removing public property declarations ensures this method is called.
      */
     public function __get($key)
     {
@@ -32,7 +31,7 @@ class ProductReviewAttachment extends \Webkul\Product\Models\ProductReviewAttach
     }
 
     /**
-     * Override __set to handle attribute setting properly
+     * Override __set to handle attribute setting properly.
      */
     public function __set($key, $value)
     {

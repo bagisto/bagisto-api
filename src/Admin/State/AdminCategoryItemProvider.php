@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Models\AdminCategory;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
@@ -9,19 +10,35 @@ use Webkul\Category\Models\Category;
 
 class AdminCategoryItemProvider extends AbstractAdminItemProvider
 {
+    /**
+     * Require the edit permission to read one category, as core opens a category only on its edit screen.
+     */
+    protected function readPermission(Operation $operation): ?string
+    {
+        return 'catalog.categories.edit';
+    }
+
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.category.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return Category::with(['translations', 'filterableAttributes'])->find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $category): AdminCategory
     {
-        /** @var Category $category */
         $dto = new AdminCategory;
         $dto->id = (int) $category->id;
         $dto->position = (int) ($category->position ?? 0);

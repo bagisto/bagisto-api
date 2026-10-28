@@ -9,55 +9,13 @@ use Webkul\Sales\Models\Order;
 class CustomerCheckoutTest extends GraphQLTestCase
 {
     /**
-     * Helper method to get authorization headers with customer token
-     */
-    private function customerHeaders(string $token): array
-    {
-        return [
-            'Authorization' => 'Bearer '.$token,
-        ];
-    }
-
-    /**
-     * Add product to cart first for checkout tests
-     */
-    private function addProductToCart(string $token): int
-    {
-        // Use test product helper to get a product with inventory
-        $productData = $this->createTestProduct();
-        $product = $productData['product'];
-
-        $mutation = <<<'GQL'
-            mutation createAddProductInCart($productId: Int!, $quantity: Int!) {
-              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
-                addProductInCart {
-                  id
-                  itemsCount
-                }
-              }
-            }
-        GQL;
-
-        $response = $this->graphQL($mutation, [
-            'productId' => $product->id,
-            'quantity' => 1,
-        ], $this->customerHeaders($token));
-
-        $response->assertSuccessful();
-
-        return $product->id;
-    }
-
-    /**
-     * Get Checkout Addresses (Customer)
+     * Get Checkout Addresses (Customer).
      */
     public function test_get_checkout_addresses(): void
     {
-        // First add product to cart to create a cart
         $customerData = $this->createTestCustomer();
         $token = $customerData['token'];
 
-        // Add product to cart first to create a cart
         $this->addProductToCart($token);
 
         $query = <<<'GQL'
@@ -104,15 +62,13 @@ class CustomerCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Get Shipping Methods (Customer)
+     * Get Shipping Methods (Customer).
      */
     public function test_get_shipping_methods(): void
     {
-        // Use createTestCustomer to get customer token
         $customerData = $this->createTestCustomer();
         $token = $customerData['token'];
 
-        // Add product to cart first
         $this->addProductToCart($token);
 
         $query = <<<'GQL'
@@ -140,15 +96,13 @@ class CustomerCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Get Payment Methods (Customer)
+     * Get Payment Methods (Customer).
      */
     public function test_get_payment_methods(): void
     {
-        // Use createTestCustomer to get customer token
         $customerData = $this->createTestCustomer();
         $token = $customerData['token'];
 
-        // Add product to cart first
         $this->addProductToCart($token);
 
         $query = <<<'GQL'
@@ -176,15 +130,13 @@ class CustomerCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Set Billing/Shipping Address (Customer)
+     * Set Billing/Shipping Address (Customer).
      */
     public function test_set_checkout_address(): void
     {
-        // Use createTestCustomer to get customer token
         $customerData = $this->createTestCustomer();
         $token = $customerData['token'];
 
-        // First add product to cart
         $this->addProductToCart($token);
 
         $headers = $this->customerHeaders($token);
@@ -262,15 +214,13 @@ class CustomerCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Set Shipping Method (Customer)
+     * Set Shipping Method (Customer).
      */
     public function test_set_shipping_method(): void
     {
-        // Use createTestCustomer to get customer token
         $customerData = $this->createTestCustomer();
         $token = $customerData['token'];
 
-        // First add product to cart and set address
         $this->addProductToCart($token);
         $this->setCheckoutAddress($token);
 
@@ -309,15 +259,13 @@ class CustomerCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Set Payment Method (Customer)
+     * Set Payment Method (Customer).
      */
     public function test_set_payment_method(): void
     {
-        // Use createTestCustomer to get customer token
         $customerData = $this->createTestCustomer();
         $token = $customerData['token'];
 
-        // First add product to cart, set address, and set shipping
         $this->addProductToCart($token);
         $this->setCheckoutAddress($token);
         $this->setShippingMethod($token);
@@ -367,15 +315,13 @@ class CustomerCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Place Order (Customer)
+     * Place Order (Customer).
      */
     public function test_place_order(): void
     {
-        // Use createTestCustomer to get customer token
         $customerData = $this->createTestCustomer();
         $token = $customerData['token'];
 
-        // First add product to cart, set address, shipping and payment
         $this->addProductToCart($token);
         $this->setCheckoutAddress($token);
         $this->setShippingMethod($token);
@@ -406,7 +352,6 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $this->assertArrayHasKey('id', $data);
         $this->assertArrayHasKey('orderId', $data);
 
-        // success/message must be populated on the order-placed path (not null).
         $this->assertTrue($data['success']);
         $this->assertNotEmpty($data['message']);
     }
@@ -430,7 +375,6 @@ class CustomerCheckoutTest extends GraphQLTestCase
             }
         GQL;
 
-        // No Authorization header
         $response = $this->graphQL($query);
 
         $response->assertSuccessful();
@@ -618,7 +562,6 @@ class CustomerCheckoutTest extends GraphQLTestCase
             'billingPhoneNumber' => '2125551234',
         ];
 
-        // No Authorization header
         $response = $this->graphQL($mutation, $variables);
 
         $response->assertSuccessful();
@@ -669,7 +612,6 @@ class CustomerCheckoutTest extends GraphQLTestCase
             }
         GQL;
 
-        // No Authorization header
         $response = $this->graphQL($mutation, ['shippingMethod' => 'flatrate_flatrate']);
 
         $response->assertSuccessful();
@@ -721,7 +663,6 @@ class CustomerCheckoutTest extends GraphQLTestCase
             }
         GQL;
 
-        // No Authorization header
         $response = $this->graphQL($mutation, ['paymentMethod' => 'moneytransfer']);
 
         $response->assertSuccessful();
@@ -741,7 +682,6 @@ class CustomerCheckoutTest extends GraphQLTestCase
             }
         GQL;
 
-        // No Authorization header
         $response = $this->graphQL($mutation);
 
         $response->assertSuccessful();
@@ -756,7 +696,6 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $customerData = $this->createTestCustomer();
         $token = $customerData['token'];
 
-        // Do NOT add any product to cart
         $mutation = <<<'GQL'
             mutation createCheckoutOrder {
               createCheckoutOrder(input:{}) {
@@ -779,7 +718,6 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $customerData = $this->createTestCustomer();
         $token = $customerData['token'];
         $this->addProductToCart($token);
-        // Deliberately skip setCheckoutAddress
 
         $mutation = <<<'GQL'
             mutation createCheckoutOrder {
@@ -805,7 +743,6 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $this->addProductToCart($token);
         $this->setCheckoutAddress($token);
         $this->setShippingMethod($token);
-        // Deliberately skip setPaymentMethod
 
         $mutation = <<<'GQL'
             mutation createCheckoutOrder {
@@ -822,33 +759,8 @@ class CustomerCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Helper to set checkout address
+     * Test payment method resolves a gateway url for a redirect gateway.
      */
-    private function enableStripe(): void
-    {
-        foreach ([
-            'active' => '1',
-            'sandbox' => '1',
-            'api_test_key' => 'sk_test_x',
-            'api_test_publishable_key' => 'pk_test_x',
-        ] as $field => $value) {
-            $code = "sales.payment_methods.stripe.{$field}";
-
-            DB::table('core_config')->where('code', $code)->delete();
-
-            DB::table('core_config')->insert([
-                'code' => $code,
-                'value' => $value,
-                'channel_code' => core()->getRequestedChannelCode(),
-                'locale_code' => core()->getRequestedLocaleCode(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        $this->forgetCoreConfigCache();
-    }
-
     public function test_payment_method_resolves_a_gateway_url_for_a_redirect_gateway(): void
     {
         $customerData = $this->createTestCustomer();
@@ -882,6 +794,9 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $this->assertStringContainsString('/stripe/redirect', (string) $data['paymentGatewayUrl']);
     }
 
+    /**
+     * Test place order returns a redirect and creates no order for a redirect gateway.
+     */
     public function test_place_order_returns_a_redirect_and_creates_no_order_for_a_redirect_gateway(): void
     {
         $customerData = $this->createTestCustomer();
@@ -921,142 +836,10 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $this->assertStringContainsString('/stripe/redirect', (string) $data['redirectUrl']);
         $this->assertNull($data['orderId']);
 
-        // The redirect path must still be a populated, unambiguous result — not all-null.
         $this->assertTrue($data['success']);
         $this->assertNotEmpty($data['message']);
 
         $this->assertSame($ordersBefore, Order::count());
-    }
-
-    private function setCheckoutAddress(string $token): void
-    {
-        $headers = $this->customerHeaders($token);
-
-        $query = <<<'GQL'
-            mutation createCheckoutAddress(
-                $billingFirstName: String!
-                $billingLastName: String!
-                $billingEmail: String!
-                $billingAddress: String!
-                $billingCity: String!
-                $billingCountry: String!
-                $billingState: String!
-                $billingPostcode: String!
-                $billingPhoneNumber: String!
-                $useForShipping: Boolean
-            ) {
-              createCheckoutAddress(
-                input: {
-                  billingFirstName: $billingFirstName
-                  billingLastName: $billingLastName
-                  billingEmail: $billingEmail
-                  billingAddress: $billingAddress
-                  billingCity: $billingCity
-                  billingCountry: $billingCountry
-                  billingState: $billingState
-                  billingPostcode: $billingPostcode
-                  billingPhoneNumber: $billingPhoneNumber
-                  useForShipping: $useForShipping
-                }
-              ) {
-                checkoutAddress {
-                  _id
-                  success
-                }
-              }
-            }
-        GQL;
-
-        $variables = [
-            'billingFirstName' => 'John',
-            'billingLastName' => 'Doe',
-            'billingEmail' => 'john@example.com',
-            'billingAddress' => '123 Main St',
-            'billingCity' => 'Los Angeles',
-            'billingCountry' => 'IN',
-            'billingState' => 'UP',
-            'billingPostcode' => '201301',
-            'billingPhoneNumber' => '2125551234',
-            'useForShipping' => true,
-        ];
-
-        $response = $this->graphQL($query, $variables, $headers);
-
-        $response->assertSuccessful();
-    }
-
-    /**
-     * Helper to set shipping method
-     */
-    private function setShippingMethod(string $token): void
-    {
-        $headers = $this->customerHeaders($token);
-
-        $query = <<<'GQL'
-            mutation createCheckoutShippingMethod(
-                $shippingMethod: String!
-            ) {
-              createCheckoutShippingMethod(
-                input: {
-                  shippingMethod: $shippingMethod
-                }
-              ) {
-                checkoutShippingMethod {
-                  success
-                  id
-                }
-              }
-            }
-        GQL;
-
-        $variables = [
-            'shippingMethod' => 'flatrate_flatrate',
-        ];
-
-        $response = $this->graphQL($query, $variables, $headers);
-
-        $response->assertSuccessful();
-    }
-
-    /**
-     * Helper to set payment method
-     */
-    private function setPaymentMethod(string $token, string $method = 'moneytransfer'): void
-    {
-        $headers = $this->customerHeaders($token);
-
-        $query = <<<'GQL'
-            mutation createCheckoutPaymentMethod(
-                $paymentMethod: String!,
-                $successUrl: String,
-                $failureUrl: String,
-                $cancelUrl: String
-            ) {
-              createCheckoutPaymentMethod(
-                input: {
-                    paymentMethod: $paymentMethod,
-                    paymentSuccessUrl: $successUrl,
-                    paymentFailureUrl: $failureUrl,
-                    paymentCancelUrl: $cancelUrl
-                }
-              ) {
-                checkoutPaymentMethod {
-                  success
-                }
-              }
-            }
-        GQL;
-
-        $variables = [
-            'paymentMethod' => $method,
-            'successUrl' => 'https://myapp.com/payment/success',
-            'failureUrl' => 'https://myapp.com/payment/failure',
-            'cancelUrl' => 'https://myapp.com/payment/cancel',
-        ];
-
-        $response = $this->graphQL($query, $variables, $headers);
-
-        $response->assertSuccessful();
     }
 
     /**
@@ -1214,6 +997,207 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $response->assertSuccessful();
         expect($response->json('errors'))->not->toBeEmpty();
         expect($response->json('data.readCheckoutAddress'))->toBeNull();
+    }
+
+    /**
+     * Helper method to get authorization headers with customer token.
+     */
+    private function customerHeaders(string $token): array
+    {
+        return [
+            'Authorization' => 'Bearer '.$token,
+        ];
+    }
+
+    /**
+     * Add product to cart first for checkout tests.
+     */
+    private function addProductToCart(string $token): int
+    {
+        $productData = $this->createTestProduct();
+        $product = $productData['product'];
+
+        $mutation = <<<'GQL'
+            mutation createAddProductInCart($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
+                addProductInCart {
+                  id
+                  itemsCount
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ], $this->customerHeaders($token));
+
+        $response->assertSuccessful();
+
+        return $product->id;
+    }
+
+    /**
+     * Helper to set checkout address.
+     */
+    private function enableStripe(): void
+    {
+        foreach ([
+            'active' => '1',
+            'sandbox' => '1',
+            'api_test_key' => 'sk_test_x',
+            'api_test_publishable_key' => 'pk_test_x',
+        ] as $field => $value) {
+            $code = "sales.payment_methods.stripe.{$field}";
+
+            DB::table('core_config')->where('code', $code)->delete();
+
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+    }
+
+    /**
+     * Set checkout address.
+     */
+    private function setCheckoutAddress(string $token): void
+    {
+        $headers = $this->customerHeaders($token);
+
+        $query = <<<'GQL'
+            mutation createCheckoutAddress(
+                $billingFirstName: String!
+                $billingLastName: String!
+                $billingEmail: String!
+                $billingAddress: String!
+                $billingCity: String!
+                $billingCountry: String!
+                $billingState: String!
+                $billingPostcode: String!
+                $billingPhoneNumber: String!
+                $useForShipping: Boolean
+            ) {
+              createCheckoutAddress(
+                input: {
+                  billingFirstName: $billingFirstName
+                  billingLastName: $billingLastName
+                  billingEmail: $billingEmail
+                  billingAddress: $billingAddress
+                  billingCity: $billingCity
+                  billingCountry: $billingCountry
+                  billingState: $billingState
+                  billingPostcode: $billingPostcode
+                  billingPhoneNumber: $billingPhoneNumber
+                  useForShipping: $useForShipping
+                }
+              ) {
+                checkoutAddress {
+                  _id
+                  success
+                }
+              }
+            }
+        GQL;
+
+        $variables = [
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
+            'billingPhoneNumber' => '2125551234',
+            'useForShipping' => true,
+        ];
+
+        $response = $this->graphQL($query, $variables, $headers);
+
+        $response->assertSuccessful();
+    }
+
+    /**
+     * Helper to set shipping method.
+     */
+    private function setShippingMethod(string $token): void
+    {
+        $headers = $this->customerHeaders($token);
+
+        $query = <<<'GQL'
+            mutation createCheckoutShippingMethod(
+                $shippingMethod: String!
+            ) {
+              createCheckoutShippingMethod(
+                input: {
+                  shippingMethod: $shippingMethod
+                }
+              ) {
+                checkoutShippingMethod {
+                  success
+                  id
+                }
+              }
+            }
+        GQL;
+
+        $variables = [
+            'shippingMethod' => 'flatrate_flatrate',
+        ];
+
+        $response = $this->graphQL($query, $variables, $headers);
+
+        $response->assertSuccessful();
+    }
+
+    /**
+     * Helper to set payment method.
+     */
+    private function setPaymentMethod(string $token, string $method = 'moneytransfer'): void
+    {
+        $headers = $this->customerHeaders($token);
+
+        $query = <<<'GQL'
+            mutation createCheckoutPaymentMethod(
+                $paymentMethod: String!,
+                $successUrl: String,
+                $failureUrl: String,
+                $cancelUrl: String
+            ) {
+              createCheckoutPaymentMethod(
+                input: {
+                    paymentMethod: $paymentMethod,
+                    paymentSuccessUrl: $successUrl,
+                    paymentFailureUrl: $failureUrl,
+                    paymentCancelUrl: $cancelUrl
+                }
+              ) {
+                checkoutPaymentMethod {
+                  success
+                }
+              }
+            }
+        GQL;
+
+        $variables = [
+            'paymentMethod' => $method,
+            'successUrl' => 'https://myapp.com/payment/success',
+            'failureUrl' => 'https://myapp.com/payment/failure',
+            'cancelUrl' => 'https://myapp.com/payment/cancel',
+        ];
+
+        $response = $this->graphQL($query, $variables, $headers);
+
+        $response->assertSuccessful();
     }
 
     /**

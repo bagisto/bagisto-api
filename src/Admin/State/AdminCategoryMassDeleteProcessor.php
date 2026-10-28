@@ -15,22 +15,19 @@ use Webkul\Category\Models\Category;
 use Webkul\Category\Repositories\CategoryRepository;
 use Webkul\Core\Repositories\ChannelRepository;
 
-/**
- * POST /api/admin/catalog/categories/mass-delete + createAdminCategoryMassDelete.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Catalog\CategoryController::massDestroy:
- *   - For every ID, check the same isCategoryDeletable() guard
- *     (id===1 || channel.root_category_id contains id)
- *   - If any is non-deletable, reject the WHOLE batch with HTTP 400.
- *   - Otherwise delete each one and fire the standard before/after events.
- */
 class AdminCategoryMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CategoryRepository $categoryRepository,
         protected ChannelRepository $channelRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -102,6 +99,9 @@ class AdminCategoryMassDeleteProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -129,6 +129,9 @@ class AdminCategoryMassDeleteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

@@ -6,15 +6,11 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 
-/**
- * PHP only parses `multipart/form-data` bodies for POST, so a genuine PUT/PATCH
- * multipart request arrives with empty `$_POST`/`$_FILES` — every field reads as
- * missing (e.g. "The type field is required" on an import update). This parses the
- * raw body for PUT/PATCH multipart requests and repopulates the request bags, so
- * `request()->input()` / `request()->file()` work exactly as they do on POST.
- */
 class ParseMultipartFormData
 {
+    /**
+     * Handle the request.
+     */
     public function handle(Request $request, Closure $next)
     {
         $method = strtoupper($request->getRealMethod());
@@ -32,6 +28,9 @@ class ParseMultipartFormData
         return $next($request);
     }
 
+    /**
+     * Parse.
+     */
     protected function parse(Request $request, string $contentType): void
     {
         $content = $request->getContent();

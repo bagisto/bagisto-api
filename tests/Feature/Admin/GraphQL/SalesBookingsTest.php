@@ -7,6 +7,9 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class SalesBookingsTest extends AdminApiTestCase
 {
+    /**
+     * Test detail resolves id and multiword fields.
+     */
     public function test_detail_resolves_id_and_multiword_fields(): void
     {
         $bookingId = DB::table('bookings')->value('id');
@@ -25,6 +28,9 @@ class SalesBookingsTest extends AdminApiTestCase
         expect($node['_id'])->toBe((int) $bookingId);
     }
 
+    /**
+     * Test list query.
+     */
     public function test_list_query(): void
     {
         $admin = $this->createAdmin();
@@ -44,6 +50,9 @@ class SalesBookingsTest extends AdminApiTestCase
         expect($response->json('data.adminBookings.edges'))->toBeArray();
     }
 
+    /**
+     * Test detail 404.
+     */
     public function test_detail_404(): void
     {
         $admin = $this->createAdmin();
@@ -56,6 +65,9 @@ class SalesBookingsTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test requires authentication.
+     */
     public function test_requires_authentication(): void
     {
         $response = $this->adminGraphQL('query { adminBookings(first: 1) { edges { node { id } } } }');

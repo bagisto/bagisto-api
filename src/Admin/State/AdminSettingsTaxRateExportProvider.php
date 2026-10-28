@@ -6,32 +6,37 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminExport;
 
-/**
- * CSV export for the admin Settings → Tax Rates datagrid (the Export button).
- *
- * REST only (binary stream); honours the same filters as the listing.
- * Columns mirror the admin TaxRateDataGrid: ID, Identifier, State, Country,
- * Zip Code, Zip From, Zip To, Tax Rate.
- */
 class AdminSettingsTaxRateExportProvider implements ProviderInterface
 {
     use StreamsAdminExport;
 
+    /**
+     * Export permission.
+     */
     protected function exportPermission(): string
     {
         return 'settings.taxes.tax_rates';
     }
 
+    /**
+     * Export filename.
+     */
     protected function exportFilename(): string
     {
         return 'tax-rates';
     }
 
+    /**
+     * Export headers.
+     */
     protected function exportHeaders(): array
     {
         return ['ID', 'Identifier', 'State', 'Country', 'Zip Code', 'Zip From', 'Zip To', 'Tax Rate'];
     }
 
+    /**
+     * Export row.
+     */
     protected function exportRow(object $row): array
     {
         return [
@@ -46,6 +51,9 @@ class AdminSettingsTaxRateExportProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Export query.
+     */
     protected function exportQuery(array $args)
     {
         $query = DB::table('tax_rates')

@@ -8,56 +8,11 @@ use Webkul\Core\Facades\Core;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for Admin Settings → Currencies CRUD (Block B Wave 1).
- *
- * Endpoints:
- *   GET    /api/admin/settings/currencies
- *   GET    /api/admin/settings/currencies/{id}
- *   POST   /api/admin/settings/currencies
- *   PUT    /api/admin/settings/currencies/{id}
- *   DELETE /api/admin/settings/currencies/{id}
- *   POST   /api/admin/settings/currencies/mass-delete
- */
 class SettingsCurrencyTest extends AdminApiTestCase
 {
-    protected function insertCurrency(array $overrides = []): int
-    {
-        return \DB::table('currencies')->insertGetId(array_merge([
-            'code' => strtoupper(substr('T'.uniqid(), 0, 3)),
-            'name' => 'Test Currency',
-            'symbol' => 'T$',
-            'decimal' => 2,
-            'group_separator' => ',',
-            'decimal_separator' => '.',
-            'currency_position' => 'left',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
-    protected function createAdminWithoutPermissions(): Admin
-    {
-        $role = Role::create([
-            'name' => 'Limited '.uniqid(),
-            'description' => 'no currency perms',
-            'permission_type' => 'custom',
-            'permissions' => ['catalog.products'],
-        ]);
-
-        return $this->createAdmin(['role_id' => $role->id]);
-    }
-
+    /**
+     * Test listing requires admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -65,6 +20,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -77,6 +35,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect($response->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total', 'from', 'to']);
     }
 
+    /**
+     * Test listing row shape.
+     */
     public function test_listing_row_shape(): void
     {
         $admin = $this->createAdmin();
@@ -93,6 +54,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test filter by code.
+     */
     public function test_filter_by_code(): void
     {
         $admin = $this->createAdmin();
@@ -112,6 +76,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test filter by name.
+     */
     public function test_filter_by_name(): void
     {
         $admin = $this->createAdmin();
@@ -131,6 +98,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test filter by symbol.
+     */
     public function test_filter_by_symbol(): void
     {
         $admin = $this->createAdmin();
@@ -150,6 +120,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test sort by code asc.
+     */
     public function test_sort_by_code_asc(): void
     {
         $admin = $this->createAdmin();
@@ -177,6 +150,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test per page cap.
+     */
     public function test_per_page_cap(): void
     {
         $admin = $this->createAdmin();
@@ -186,6 +162,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test detail returns full payload.
+     */
     public function test_detail_returns_full_payload(): void
     {
         $admin = $this->createAdmin();
@@ -202,6 +181,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect($response->json('name'))->toBe('Detail');
     }
 
+    /**
+     * Test detail unknown id returns 404.
+     */
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -209,6 +191,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test detail requires admin token.
+     */
     public function test_detail_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -217,6 +202,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test create happy path.
+     */
     public function test_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -237,6 +225,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $this->assertDatabaseHas('currencies', ['code' => 'NEW']);
     }
 
+    /**
+     * Test create code is uppercased.
+     */
     public function test_create_code_is_uppercased(): void
     {
         $admin = $this->createAdmin();
@@ -250,6 +241,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect($response->json('code'))->toBe('LOW');
     }
 
+    /**
+     * Test create missing code returns 422.
+     */
     public function test_create_missing_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -257,6 +251,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create missing name returns 422.
+     */
     public function test_create_missing_name_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -264,6 +261,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create bad code length returns 422.
+     */
     public function test_create_bad_code_length_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -274,6 +274,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create non alpha code returns 422.
+     */
     public function test_create_non_alpha_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -284,6 +287,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create duplicate code returns 422.
+     */
     public function test_create_duplicate_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -297,6 +303,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create requires auth.
+     */
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -307,6 +316,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test create no permission returns 403.
+     */
     public function test_create_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -317,6 +329,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test update happy path.
+     */
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -338,6 +353,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test update missing name returns 422.
+     */
     public function test_update_missing_name_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -346,6 +364,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test update code field is ignored.
+     */
     public function test_update_code_field_is_ignored(): void
     {
         $admin = $this->createAdmin();
@@ -363,6 +384,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test update unknown id returns 404.
+     */
     public function test_update_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -370,6 +394,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test update requires auth.
+     */
     public function test_update_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -378,6 +405,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test update no permission returns 403.
+     */
     public function test_update_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -386,6 +416,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -398,6 +431,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $this->assertDatabaseMissing('currencies', ['id' => $id]);
     }
 
+    /**
+     * Test delete last currency returns 400.
+     */
     public function test_delete_last_currency_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -412,6 +448,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $this->assertDatabaseHas('currencies', ['id' => $id]);
     }
 
+    /**
+     * Test delete channel base currency returns 400.
+     */
     public function test_delete_channel_base_currency_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -425,6 +464,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $this->assertDatabaseHas('currencies', ['id' => $id]);
     }
 
+    /**
+     * Test delete unknown id returns 404.
+     */
     public function test_delete_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -432,6 +474,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test delete requires auth.
+     */
     public function test_delete_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -440,6 +485,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test delete no permission returns 403.
+     */
     public function test_delete_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -449,6 +497,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test mass delete happy path.
+     */
     public function test_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -469,6 +520,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $this->assertDatabaseHas('currencies', ['id' => $keep]);
     }
 
+    /**
+     * Test mass delete empty indices returns 422.
+     */
     public function test_mass_delete_empty_indices_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -476,6 +530,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test mass delete would empty table returns 400.
+     */
     public function test_mass_delete_would_empty_table_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -494,6 +551,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $this->assertDatabaseHas('currencies', ['id' => $id2]);
     }
 
+    /**
+     * Test mass delete channel base returns 400.
+     */
     public function test_mass_delete_channel_base_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -508,5 +568,54 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(400);
         $this->assertDatabaseHas('currencies', ['id' => $id]);
         $this->assertDatabaseHas('currencies', ['id' => $other]);
+    }
+
+    /**
+     * Insert currency.
+     */
+    protected function insertCurrency(array $overrides = []): int
+    {
+        return \DB::table('currencies')->insertGetId(array_merge([
+            'code' => strtoupper(substr('T'.uniqid(), 0, 3)),
+            'name' => 'Test Currency',
+            'symbol' => 'T$',
+            'decimal' => 2,
+            'group_separator' => ',',
+            'decimal_separator' => '.',
+            'currency_position' => 'left',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Create admin without permissions.
+     */
+    protected function createAdminWithoutPermissions(): Admin
+    {
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no currency perms',
+            'permission_type' => 'custom',
+            'permissions' => ['catalog.products'],
+        ]);
+
+        return $this->createAdmin(['role_id' => $role->id]);
     }
 }

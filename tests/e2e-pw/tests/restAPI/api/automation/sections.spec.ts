@@ -1,76 +1,157 @@
-// tests/restAPI/api/automation/sections.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
+import { sendAdminRequest } from '../../rest/helpers/adminClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import { ADMIN_APPEARANCE } from '../../rest/endpoints/admin.appearance.endpoints';
+import {
+  REST_GAPS_MESSAGES as MSG,
+  UNKNOWN_ID,
+  expectDetail,
+  safeJson,
+  uniqueStamp,
+} from '../../rest/helpers/coverage/restGaps.helpers';
 
-function assertStatus(resp: any, debugLabel: string, allowed: number[] = [0, 200, 400, 401, 404, 500]) {
-  expect(allowed).toContain(resp.status());
-  console.log(`${debugLabel}:`, resp.status());
+test.describe.configure({ timeout: 60_000 });
+
+const DEFAULT_CHANNEL_ID = 1;
+
+const SECTIONS_PAGE_SIZE = 50;
+
+function themeOf(body: any): any {
+  return Array.isArray(body) ? body[0] : (body?.data?.[0] ?? body);
 }
 
-test.describe('Sections REST API', () => {
-  test('Should list sections', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.SECTIONS);
-    assertStatus(response, 'GET /api/shop/sections');
-    if (response.status() === 200) {
-      const body = await response.json();
-      const items = Array.isArray(body) ? body : (body.data ?? []);
-      console.log('Sections count:', items.length);
-      if (items.length > 0) {
-        expect(items[0]).toHaveProperty('id');
-        console.log('First section:', JSON.stringify({
-          id: items[0].id,
-          type: items[0].type,
-          themeCode: items[0].themeCode ?? items[0].theme_code,
-        }));
-      }
-    }
-  });
+async function channelThemeCode(request: APIRequestContext): Promise<string> {
+  const response = await sendRestRequest(request, ENDPOINTS.THEME);
+  const body = await safeJson(response);
 
-  test('Should return single section when one exists', async ({ request }) => {
-    const list = await sendRestRequest(request, ENDPOINTS.SECTIONS);
-    if (list.status() !== 200) {
-      test.skip(true, 'List endpoint not available');
-      return;
-    }
-    const body = await list.json();
-    const items = Array.isArray(body) ? body : (body.data ?? []);
-    if (items.length === 0) {
-      test.skip(true, 'No sections seeded');
-      return;
-    }
-    const tcId = items[0].id;
-    const response = await sendRestRequest(request, ENDPOINTS.SECTION(tcId));
-    assertStatus(response, `GET /api/shop/sections/${tcId}`);
-    if (response.status() === 200) {
-      const detail = await response.json();
-      expect(detail.id).toBe(tcId);
-      console.log('Single section:', detail.id);
-    }
-  });
+  expect(response.status(), JSON.stringify(body)).toBe(200);
 
-  test('Should return 404 for non-existent section', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.SECTION(999999));
-    expect([404, 400, 200]).toContain(response.status());
-    console.log('GET /api/shop/sections/999999:', response.status());
-  });
+  const code = themeOf(body)?.code;
 
-  test('Should accept locale parameter', async ({ request }) => {
+  expect(typeof code, JSON.stringify(body)).toBe('string');
+
+  return code;
+}
+
+async function createSection(request: APIRequestContext, themeCode: string, name: string): Promise<number> {
+  const response = await sendAdminRequest(request, ADMIN_APPEARANCE.THEME_SECTIONS(themeCode), {
+    method: 'POST',
+    data: { name, type: 'static_content', channel: DEFAULT_CHANNEL_ID },
+  });
+  const body = await safeJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(201);
+  expect(typeof body?.id, JSON.stringify(body)).toBe('number');
+
+  return body.id;
+}
+
+async function publishSection(request: APIRequestContext, id: number): Promise<void> {
+  const response = await sendAdminRequest(request, ADMIN_APPEARANCE.SECTION(id), {
+    method: 'PUT',
+    data: { status: true, locale: 'en', options: { html: '<p>E2E section</p>', css: '' } },
+  });
+  const body = await safeJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(200);
+  expect(body.status, JSON.stringify(body)).toBe(1);
+}
+
+async function listSections(request: APIRequestContext, params: Record<string, string> = {}): Promise<any[]> {
+  const rows: any[] = [];
+
+  for (let page = 1; page <= 50; page++) {
     const response = await sendRestRequest(request, ENDPOINTS.SECTIONS, {
-      params: { locale: 'en' },
+      params: { ...params, page: String(page), per_page: String(SECTIONS_PAGE_SIZE) },
     });
-    assertStatus(response, 'GET /api/shop/sections?locale=en');
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(Array.isArray(body), JSON.stringify(body)).toBe(true);
+
+    rows.push(...body);
+
+    if (body.length < SECTIONS_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  return rows;
+}
+
+test.describe('sections rest api', () => {
+  let createdIds: number[];
+  let sectionId: number;
+  let sectionName: string;
+
+  test.beforeEach(async ({ request }) => {
+    createdIds = [];
+    sectionName = `E2E Shop Section ${uniqueStamp()}`;
+
+    sectionId = await createSection(request, await channelThemeCode(request), sectionName);
+    createdIds.push(sectionId);
   });
 
-  test('Should return the theme the channel runs', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.THEME);
-    assertStatus(response, 'GET /api/shop/theme', [200]);
+  test.afterEach(async ({ request }) => {
+    for (const id of createdIds) {
+      await sendAdminRequest(request, ADMIN_APPEARANCE.SECTION(id), { method: 'DELETE' });
+    }
+  });
 
-    const body = await response.json();
-    const theme = Array.isArray(body) ? body[0] : (body?.data?.[0] ?? body);
+  test('should hide an unpublished section from the listing and the detail', async ({ request }) => {
+    const rows = await listSections(request);
+
+    expect(rows.find((row: any) => row.id === sectionId)).toBeUndefined();
+
+    await expectDetail(await sendRestRequest(request, ENDPOINTS.SECTION(sectionId)), 404, MSG.GENERIC_NOT_FOUND);
+  });
+
+  test('should list a published section of the channel theme', async ({ request }) => {
+    await publishSection(request, sectionId);
+
+    const listed = (await listSections(request)).find((row: any) => row.id === sectionId);
+
+    expect(listed, 'the published section is listed').toBeTruthy();
+    expect(listed.name).toBe(sectionName);
+    expect(listed.type).toBe('static_content');
+  });
+
+  test('should return a published section by id', async ({ request }) => {
+    await publishSection(request, sectionId);
+
+    const response = await sendRestRequest(request, ENDPOINTS.SECTION(sectionId));
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body.id).toBe(sectionId);
+    expect(body.name).toBe(sectionName);
+    expect(body.type).toBe('static_content');
+  });
+
+  test('should accept the locale parameter on the listing', async ({ request }) => {
+    await publishSection(request, sectionId);
+
+    const listed = (await listSections(request, { locale: 'en' })).find((row: any) => row.id === sectionId);
+
+    expect(listed, 'the published section is listed for the en locale').toBeTruthy();
+  });
+});
+
+test.describe('sections rest api without owned data', () => {
+  test('should return 404 for a section that does not exist', async ({ request }) => {
+    await expectDetail(await sendRestRequest(request, ENDPOINTS.SECTION(UNKNOWN_ID)), 404, MSG.GENERIC_NOT_FOUND);
+  });
+
+  test('should return the theme the channel runs', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.THEME);
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+
+    const theme = themeOf(body);
 
     expect(typeof theme.code).toBe('string');
     expect(Array.isArray(theme.sectionTypes)).toBe(true);
-    console.log('Active theme:', theme.code);
   });
 });

@@ -7,16 +7,26 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminRmaStatusMassDeleteInput
 {
-    /** @var array<int,int>|null */
+    /**
+     * The ids of the RMA statuses to delete.
+     *
+     * @var array<int,int>|null
+     */
     #[ApiProperty(description: 'RMA status ids')]
     #[Groups(['mutation'])]
     public ?array $indices = null;
 
+    /**
+     * Get indices.
+     */
     public function getIndices(): ?array
     {
         return $this->indices;
     }
 
+    /**
+     * Set indices.
+     */
     public function setIndices(?array $value): void
     {
         $this->indices = $value;

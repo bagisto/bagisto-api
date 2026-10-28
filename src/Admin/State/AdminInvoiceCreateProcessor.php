@@ -12,23 +12,22 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Repositories\InvoiceRepository;
 
-/**
- * POST /api/admin/orders/{orderId}/invoices + createAdminInvoice mutation.
- *
- * Eligibility split via AdminOrderActionGuard. Item qty validation mirrors
- * `InvoiceRepository::isValidQuantity()` (rejects qty > qty_to_invoice with a
- * sku-carrying message).
- */
 class AdminInvoiceCreateProcessor implements ProcessorInterface
 {
     use BuildsAdminInvoice;
     use TranslatesActionPayload;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminOrderActionGuard $guard,
         protected InvoiceRepository $invoiceRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminInvoice|AdminInvoiceRestDto
     {
         $admin = $this->guard->resolveAdmin();
@@ -69,6 +68,9 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
         return $this->buildInvoiceRestDto($invoice->fresh(['items', 'items.product', 'order', 'order.addresses']));
     }
 
+    /**
+     * Extract items.
+     */
     protected function extractItems(mixed $data, array $context): array
     {
         if (
@@ -88,6 +90,9 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
         );
     }
 
+    /**
+     * Wants transaction.
+     */
     protected function wantsTransaction(mixed $data, array $context): bool
     {
         $value = null;
@@ -106,6 +111,9 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
         return filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 
+    /**
+     * Validate qty.
+     */
     protected function validateQty(Order $order, array $flat): void
     {
         $byId = $order->items->keyBy('id');

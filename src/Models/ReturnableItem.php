@@ -60,6 +60,7 @@ use Webkul\BagistoApi\State\ReturnableItemProvider;
     graphQlOperations: [
         new QueryCollection(
             provider: ReturnableItemProvider::class,
+            description: 'The items of order `orderId` that can be put on a return, each with its quantity caps (`forReturnQuantity`, `forCancelQuantity`, `currentQuantity`), as a plain list (not paginated). The order must belong to the authenticated customer. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'orderId' => [
@@ -72,32 +73,99 @@ use Webkul\BagistoApi\State\ReturnableItemProvider;
 )]
 class ReturnableItem
 {
+    /**
+     * The order item id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $order_item_id = null;
 
+    /**
+     * The product id.
+     */
     public ?int $product_id = null;
 
+    /**
+     * The sku.
+     */
     public ?string $sku = null;
 
+    /**
+     * The name.
+     */
     public ?string $name = null;
 
+    /**
+     * The type.
+     */
     public ?string $type = null;
 
+    /**
+     * The url key.
+     */
     public ?string $url_key = null;
 
+    /**
+     * The price.
+     */
     public ?float $price = null;
 
+    /**
+     * The base image url.
+     */
     public ?string $base_image_url = null;
 
+    /**
+     * The qty ordered.
+     */
     public ?int $qty_ordered = null;
 
+    /**
+     * The quantity shipped.
+     */
+    public ?int $qty_shipped = null;
+
+    /**
+     * The quantity invoiced.
+     */
+    public ?int $qty_invoiced = null;
+
+    /**
+     * The quantity refunded.
+     */
+    public ?int $qty_refunded = null;
+
+    /**
+     * The quantity canceled.
+     */
+    public ?int $qty_canceled = null;
+
+    /**
+     * The status of the order the item belongs to.
+     */
+    public ?string $order_status = null;
+
+    /**
+     * The current quantity.
+     */
     public ?int $current_quantity = null;
 
+    /**
+     * The for return quantity.
+     */
     public ?int $for_return_quantity = null;
 
+    /**
+     * The for cancel quantity.
+     */
     public ?int $for_cancel_quantity = null;
 
+    /**
+     * The rma quantity.
+     */
     public ?int $rma_quantity = null;
 
+    /**
+     * The rma return period.
+     */
     public ?int $rma_return_period = null;
 }

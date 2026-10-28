@@ -6,21 +6,21 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for the admin Orders listing — GET /api/admin/orders.
- *
- * Verifies the { data, meta } envelope, the 7 filters, date presets,
- * pagination, and auth.
- */
 class OrderTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
+    /**
+     * Test list requires authentication.
+     */
     public function test_list_requires_authentication(): void
     {
         $this->publicGet('/api/admin/orders')->assertStatus(401);
     }
 
+    /**
+     * Test list returns data meta envelope.
+     */
     public function test_list_returns_data_meta_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -35,6 +35,9 @@ class OrderTest extends AdminApiTestCase
         );
     }
 
+    /**
+     * Test per page caps the page size.
+     */
     public function test_per_page_caps_the_page_size(): void
     {
         $admin = $this->createAdmin();
@@ -46,6 +49,9 @@ class OrderTest extends AdminApiTestCase
         expect(count($response->json('data')))->toBeLessThanOrEqual(5);
     }
 
+    /**
+     * Test per page is hard capped at 50.
+     */
     public function test_per_page_is_hard_capped_at_50(): void
     {
         $admin = $this->createAdmin();
@@ -56,6 +62,9 @@ class OrderTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test list row has slim shape.
+     */
     public function test_list_row_has_slim_shape(): void
     {
         $admin = $this->createAdmin();
@@ -82,6 +91,9 @@ class OrderTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test filter by order id.
+     */
     public function test_filter_by_order_id(): void
     {
         $admin = $this->createAdmin();
@@ -103,6 +115,9 @@ class OrderTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test filter by status.
+     */
     public function test_filter_by_status(): void
     {
         $admin = $this->createAdmin();
@@ -115,6 +130,9 @@ class OrderTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test filter by email.
+     */
     public function test_filter_by_email(): void
     {
         $admin = $this->createAdmin();
@@ -139,6 +157,9 @@ class OrderTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test date preset filter is accepted.
+     */
     public function test_date_preset_filter_is_accepted(): void
     {
         $admin = $this->createAdmin();
@@ -147,6 +168,9 @@ class OrderTest extends AdminApiTestCase
         $this->adminGet($admin, '/api/admin/orders?date_range=today')->assertOk();
     }
 
+    /**
+     * Test custom date range filter is accepted.
+     */
     public function test_custom_date_range_filter_is_accepted(): void
     {
         $admin = $this->createAdmin();
@@ -162,17 +186,12 @@ class OrderTest extends AdminApiTestCase
 
     /**
      * The date presets must use the admin datagrid keys (last_three_months,
-     * last_six_months — NOT last_3_months) AND apply the admin grid's range
-     * semantics: "last three months" ends at the end of LAST month, so an order
-     * created today is excluded. Under the old bug, the wrong key fell through to
-     * "no date filter" and the order would wrongly appear.
+     * last_six_months — NOT last_3_months) AND apply the admin grid's range.
      */
     public function test_date_preset_uses_admin_grid_keys_and_range(): void
     {
         $admin = $this->createAdmin();
         $order = $this->bootstrapAdminOrder('pending', false);
-        // Unique increment_id so the order_id LIKE filter isolates exactly this
-        // order from the rest of the dataset; created_at stays "now" (today).
         $inc = 'QADATE'.uniqid();
         $order->update(['increment_id' => $inc]);
 
@@ -189,8 +208,7 @@ class OrderTest extends AdminApiTestCase
 
     /**
      * Grand total filters the base_grand_total column with from/to range support
-     * (matching the admin datagrid). The old listing only did an exact match on
-     * the wrong (grand_total) column and ignored the range params entirely.
+     * (matching the admin datagrid). The old listing only did an exact match on.
      */
     public function test_filter_by_grand_total_range_uses_base_grand_total(): void
     {
@@ -212,6 +230,9 @@ class OrderTest extends AdminApiTestCase
         expect(collect($below->json('data'))->pluck('incrementId'))->not->toContain($inc);
     }
 
+    /**
+     * Test export returns csv.
+     */
     public function test_export_returns_csv(): void
     {
         $admin = $this->createAdmin();
@@ -226,6 +247,9 @@ class OrderTest extends AdminApiTestCase
         expect($response->getContent())->toContain('ID,Status,"Grand Total","Payment Method",Channel,Customer,Email,"Order Date"');
     }
 
+    /**
+     * Test export supports xlsx.
+     */
     public function test_export_supports_xlsx(): void
     {
         $admin = $this->createAdmin();
@@ -241,6 +265,9 @@ class OrderTest extends AdminApiTestCase
         expect($response->headers->get('Content-Disposition'))->toContain('.xlsx');
     }
 
+    /**
+     * Test export unsupported format returns 422.
+     */
     public function test_export_unsupported_format_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -250,11 +277,17 @@ class OrderTest extends AdminApiTestCase
         ))->assertStatus(422);
     }
 
+    /**
+     * Test export requires authentication.
+     */
     public function test_export_requires_authentication(): void
     {
         $this->get('/api/admin/orders/export', ['Accept' => 'text/csv'])->assertStatus(401);
     }
 
+    /**
+     * Test export no permission returns 403.
+     */
     public function test_export_no_permission_returns_403(): void
     {
         $role = Role::factory()->create([

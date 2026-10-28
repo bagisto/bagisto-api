@@ -11,16 +11,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Admin\Resolver\AdminConfigurationValuesQueryResolver;
 use Webkul\BagistoApi\Admin\State\AdminConfigurationValuesProvider;
 
-/**
- * Admin Configuration values — returns the effective values map for a slug.
- *
- * REST   : GET /api/admin/configuration?slug=<section>.<group>
- * GraphQL: adminConfigurationValues(slug:, channel:, locale:)
- *
- * `slug` is required (anti-foot-gun — would otherwise dump the whole
- * core_config table). Channel/locale resolution falls back to the current
- * request's channel/locale per `core()->getConfigData()` semantics.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminConfigurationValues',
@@ -82,19 +72,30 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationValuesProvider;
 )]
 class AdminConfigurationValues
 {
+    /**
+     * The slug.
+     */
     #[ApiProperty(readable: true, writable: false, identifier: true)]
     #[Groups(['query'])]
     public ?string $slug = null;
 
+    /**
+     * The channel.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $channel = null;
 
+    /**
+     * The locale.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $locale = null;
 
     /**
+     * The stored configuration values, keyed by configuration code.
+     *
      * @var array<string, string|null>|null
      */
     #[ApiProperty(readable: true, writable: false)]

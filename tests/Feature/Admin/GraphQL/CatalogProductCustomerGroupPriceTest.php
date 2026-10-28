@@ -6,31 +6,11 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Customer\Models\CustomerGroup;
 
-/**
- * GraphQL coverage for Phase 5.13 — admin product customer-group prices CRUD.
- *
- * Operations:
- *   adminCatalogProductCustomerGroupPrices(productId:)
- *   createAdminCatalogProductCustomerGroupPrice
- *   updateAdminCatalogProductCustomerGroupPrice
- *   deleteAdminCatalogProductCustomerGroupPrice
- */
 class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
 {
-    protected function seedRow(int $productId, int $qty, ?int $groupId): int
-    {
-        return DB::table('product_customer_group_prices')->insertGetId([
-            'product_id' => $productId,
-            'qty' => $qty,
-            'value_type' => 'fixed',
-            'value' => 10.0,
-            'customer_group_id' => $groupId,
-            'unique_id' => implode('|', array_filter([(string) $qty, (string) $productId, $groupId === null ? null : (string) $groupId])),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
+    /**
+     * Test query list happy path.
+     */
     public function test_query_list_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -73,6 +53,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         expect($groupRow['customerGroupName'])->not->toBeNull();
     }
 
+    /**
+     * Test mutation create happy path.
+     */
     public function test_mutation_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -125,6 +108,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test mutation update happy path.
+     */
     public function test_mutation_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -177,6 +163,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -219,5 +208,22 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         expect($node['customerGroupName'])->not->toBeNull();
 
         $this->assertDatabaseMissing('product_customer_group_prices', ['id' => $rowId]);
+    }
+
+    /**
+     * Seed row.
+     */
+    protected function seedRow(int $productId, int $qty, ?int $groupId): int
+    {
+        return DB::table('product_customer_group_prices')->insertGetId([
+            'product_id' => $productId,
+            'qty' => $qty,
+            'value_type' => 'fixed',
+            'value' => 10.0,
+            'customer_group_id' => $groupId,
+            'unique_id' => implode('|', array_filter([(string) $qty, (string) $productId, $groupId === null ? null : (string) $groupId])),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

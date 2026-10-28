@@ -4,19 +4,15 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * REST coverage for the Admin API Authentication surface, post 2026-05-27 refactor.
- *
- * Only the profile-read endpoint (`GET /api/admin/get`) survives — admin
- * clients authenticate via pre-issued integration tokens (AdminPersonalAccessToken
- * → AdminApiGuard). Login / Logout / ForgotPassword / ProfileUpdate were removed.
- */
 class AuthenticationTest extends AdminApiTestCase
 {
+    /**
+     * Test get profile returns admin details.
+     */
     public function test_get_profile_returns_admin_details(): void
     {
         $admin = $this->createAdmin(['name' => 'API Profile Admin']);
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $response = $this->adminGet($admin, '/api/admin/get', $token);
 
@@ -30,6 +26,9 @@ class AuthenticationTest extends AdminApiTestCase
         $this->assertSame($admin->email, $row['email'] ?? null);
     }
 
+    /**
+     * Test get profile requires bearer token.
+     */
     public function test_get_profile_requires_bearer_token(): void
     {
         $response = $this->publicGet('/api/admin/get');
@@ -37,10 +36,13 @@ class AuthenticationTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    /**
+     * Test disabled admin token is rejected.
+     */
     public function test_disabled_admin_token_is_rejected(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $admin->forceFill(['status' => 0])->save();
 
@@ -51,6 +53,9 @@ class AuthenticationTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    /**
+     * Test get profile rejects garbage bearer token.
+     */
     public function test_get_profile_rejects_garbage_bearer_token(): void
     {
         $response = $this->getJson('/api/admin/get', [
@@ -60,6 +65,9 @@ class AuthenticationTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    /**
+     * Test removed login endpoint no longer exists.
+     */
     public function test_removed_login_endpoint_no_longer_exists(): void
     {
         $response = $this->postJson('/api/admin/login', [
@@ -70,10 +78,13 @@ class AuthenticationTest extends AdminApiTestCase
         $this->assertContains($response->getStatusCode(), [404, 405, 500]);
     }
 
+    /**
+     * Test removed logout endpoint no longer exists.
+     */
     public function test_removed_logout_endpoint_no_longer_exists(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $response = $this->postJson('/api/admin/logout', [], [
             'Authorization' => 'Bearer '.$token,
@@ -82,6 +93,9 @@ class AuthenticationTest extends AdminApiTestCase
         $this->assertContains($response->getStatusCode(), [404, 405, 500]);
     }
 
+    /**
+     * Test removed forgot password endpoint no longer exists.
+     */
     public function test_removed_forgot_password_endpoint_no_longer_exists(): void
     {
         $response = $this->postJson('/api/admin/forgot-password', [
@@ -91,10 +105,13 @@ class AuthenticationTest extends AdminApiTestCase
         $this->assertContains($response->getStatusCode(), [404, 405, 500]);
     }
 
+    /**
+     * Test removed update endpoint no longer exists.
+     */
     public function test_removed_update_endpoint_no_longer_exists(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
         $response = $this->postJson('/api/admin/update', [
             'name' => 'Renamed',

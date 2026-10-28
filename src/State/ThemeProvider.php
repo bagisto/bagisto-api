@@ -7,19 +7,19 @@ use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Models\Theme;
 use Webkul\Theme\Models\Section;
 
-/**
- * The theme the current channel is drawn with.
- *
- * A channel records its theme on itself, falling back to the shop default when it has
- * never been pointed at one.
- */
 class ThemeProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         return [self::build()];
     }
 
+    /**
+     * Build.
+     */
     public static function build(): Theme
     {
         $channel = core()->getCurrentChannel();

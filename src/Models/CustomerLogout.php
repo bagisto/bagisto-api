@@ -28,7 +28,7 @@ use Webkul\BagistoApi\State\LogoutProcessor;
                 'groups' => ['mutation'],
             ],
             openapi: new Model\Operation(
-                tags: ['Customer'],
+                tags: ['Customer Authentication'],
                 summary: 'Customer logout',
                 description: 'Logout the authenticated customer and revoke the Bearer token.',
                 requestBody: new Model\RequestBody(
@@ -78,10 +78,16 @@ use Webkul\BagistoApi\State\LogoutProcessor;
 )]
 class CustomerLogout
 {
+    /**
+     * The success.
+     */
     #[ApiProperty(identifier: false, writable: false, readable: true)]
     #[Groups(['mutation'])]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, readable: true)]
     #[Groups(['mutation'])]
     public ?string $message = null;

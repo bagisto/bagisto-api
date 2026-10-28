@@ -8,11 +8,6 @@ use Webkul\BagistoApi\Dto\ShippingRateOutput;
 use Webkul\BagistoApi\State\ShippingRatesProvider;
 use Webkul\Checkout\Models\CartShippingRate;
 
-/**
- * ShippingRates - GraphQL API Resource for Shipping Rates
- *
- * Provides query for fetching available shipping rates during checkout
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'ShippingRates',

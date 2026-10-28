@@ -9,38 +9,30 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Webkul\BagistoApi\Traits\HasRateLimit;
 
-/**
- * ApiKeyService - Unified API key management
- *
- * Handles two types of API keys with clear separation:
- * - X-STOREFRONT-KEY: For shop/customer APIs (getProducts, getCart, etc)
- * - X-Admin-Key: For admin APIs (deleteProduct, updateSettings, etc)
- *
- * Benefits:
- * ✓ Clear intent - key name tells you what it can access
- * ✓ Security - separate keys can be rotated independently
- * ✓ Rate limiting - different limits per key type
- * ✓ Audit - easy to track which key type did what
- * ✓ Least privilege - apps only get keys they need
- */
 class ApiKeyService
 {
     use HasRateLimit;
 
     /**
-     * API Key types and their headers
+     * API Key types and their headers.
      */
     public const KEY_TYPE_SHOP = 'shop';
 
+    /**
+     * The key type admin constant.
+     */
     public const KEY_TYPE_ADMIN = 'admin';
 
+    /**
+     * The header names constant.
+     */
     protected const HEADER_NAMES = [
         self::KEY_TYPE_SHOP => 'X-STOREFRONT-KEY',
         self::KEY_TYPE_ADMIN => 'X-Admin-Key',
     ];
 
     /**
-     * Get the API key from request headers based on key type
+     * Get the API key from request headers based on key type.
      *
      * @param  Request  $request
      * @param  string  $keyType  self::KEY_TYPE_SHOP or self::KEY_TYPE_ADMIN
@@ -57,7 +49,7 @@ class ApiKeyService
     }
 
     /**
-     * Get both keys from request (if present)
+     * Get both keys from request (if present).
      *
      * @param  Request  $request
      * @return array ['shop' => string|null, 'admin' => string|null]
@@ -71,7 +63,7 @@ class ApiKeyService
     }
 
     /**
-     * Validate an API key of specific type
+     * Validate an API key of specific type.
      *
      * @param  string  $keyType  self::KEY_TYPE_SHOP or self::KEY_TYPE_ADMIN
      * @return array ['valid' => bool, 'client' => object|null, 'message' => string]
@@ -205,6 +197,23 @@ class ApiKeyService
     }
 
     /**
+     * Check the per-minute rate limit for an API key.
+     * The key's `rate_limit` is requests per minute, counted separately for each.
+     *
+     * @param  object  $client  The API key object from database
+     * @return array ['allowed' => bool, 'limit' => int, 'remaining' => int, 'reset_at' => int]
+     */
+    public function checkRateLimit($client, ?string $ipAddress = null): array
+    {
+        return $this->checkWindowRateLimit(
+            $client,
+            (int) config('storefront.default_rate_limit', 100),
+            60,
+            $ipAddress ? sha1($ipAddress) : 'no-ip',
+        );
+    }
+
+    /**
      * Determine whether a key row has passed its expiry date.
      *
      * @param  object|null  $client
@@ -237,7 +246,7 @@ class ApiKeyService
     }
 
     /**
-     * Check if IP is allowed
+     * Check if IP is allowed.
      *
      * @param  string  $allowedIps  JSON or comma-separated list
      */
@@ -261,24 +270,5 @@ class ApiKeyService
         }
 
         return in_array($ipAddress, $allowed, true);
-    }
-
-    /**
-     * Check the per-minute rate limit for an API key.
-     *
-     * The key's `rate_limit` is requests per minute, counted separately for each
-     * client IP so one shopper cannot exhaust the budget every visitor shares.
-     *
-     * @param  object  $client  The API key object from database
-     * @return array ['allowed' => bool, 'limit' => int, 'remaining' => int, 'reset_at' => int]
-     */
-    public function checkRateLimit($client, ?string $ipAddress = null): array
-    {
-        return $this->checkWindowRateLimit(
-            $client,
-            (int) config('storefront.default_rate_limit', 100),
-            60,
-            $ipAddress ? sha1($ipAddress) : 'no-ip',
-        );
     }
 }

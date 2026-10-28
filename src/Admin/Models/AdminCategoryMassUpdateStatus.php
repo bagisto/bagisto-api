@@ -10,17 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCategoryMassUpdateStatusInput;
 use Webkul\BagistoApi\Admin\State\AdminCategoryMassUpdateStatusProcessor;
 
-/**
- * One-operation resource for bulk-flipping category status.
- *
- * REST:
- *   POST /api/admin/catalog/categories/mass-update-status
- *     Body: { "indices": [12, 18], "value": 1 }
- *     200:  { "updated": [12, 18], "message": "..." }
- *
- * GraphQL:
- *   createAdminCategoryMassUpdateStatus
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCategoryMassUpdateStatus',
@@ -87,13 +76,23 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryMassUpdateStatusProcessor;
 )]
 class AdminCategoryMassUpdateStatus
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the categories whose status was updated.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $updated = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

@@ -1,72 +1,120 @@
-// Admin Settings — Users (admins) REST e2e.
-// Listing / detail / create / update / delete. No mass-delete.
-// Self-delete + last-admin delete guards (400). We never delete the caller —
-// only fresh users we create with the e2e role.
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_SETTINGS } from '../../../../rest/endpoints/admin.settings.endpoints';
 
 test.describe.configure({ timeout: 60_000 });
 
-const OK_LIST = [200];
-const OK_CREATE = [200, 201, 400, 422, 429];
-const OK_UPDATE = [200, 201, 400, 404, 422, 429];
-const OK_DELETE = [200, 204, 400, 404, 422, 429];
+const ADMINISTRATOR_ROLE_ID = 1;
+const NOT_FOUND = 'Admin user not found.';
+const DELETED = 'Admin user deleted successfully.';
 
-async function safeJson(resp: any): Promise<any> {
-  try { return await resp.json(); } catch { return null; }
+interface UserInput {
+  name: string;
+  email: string;
 }
 
-function uniqueEmail(): string {
-  return `e2e_${Date.now().toString(36).slice(-6)}@example.com`;
+function userInput(): UserInput {
+  const suffix = `${Date.now().toString(36)}${Math.floor(Math.random() * 1_000_000).toString(36)}`;
+
+  return {
+    name: `E2E User ${suffix}`,
+    email: `e2e_${suffix}@example.com`,
+  };
 }
 
-async function createUser(request: any, roleId = 1): Promise<{ id: number | null; email: string }> {
-  const email = uniqueEmail();
+async function createUser(request: APIRequestContext, input: UserInput): Promise<any> {
   const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USERS, {
     method: 'POST',
     data: {
-      name: `E2E User ${Date.now()}`,
-      email,
+      ...input,
       password: 'e2epassword123',
-      role_id: roleId,
+      role_id: ADMINISTRATOR_ROLE_ID,
       status: 1,
     },
   });
-  const body = await safeJson(resp);
-  return { id: body?.id ?? body?.data?.id ?? null, email };
+  const body = await resp.json();
+  expect(resp.status(), JSON.stringify(body)).toBe(201);
+
+  return body;
 }
 
-test.describe('Admin Settings Users REST API', () => {
+async function deleteUser(request: APIRequestContext, id: number): Promise<void> {
+  await sendAdminRequest(request, ADMIN_SETTINGS.USER(id), { method: 'DELETE' });
+}
+
+async function emailMatches(request: APIRequestContext, email: string): Promise<number> {
+  const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USERS, { params: { email } });
+  expect(resp.status()).toBe(200);
+
+  return (await resp.json()).data.length;
+}
+
+test.describe('admin settings users rest api', () => {
+  let input: UserInput;
+
+  test.beforeEach(() => {
+    input = userInput();
+  });
+
   test('listing returns 200', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USERS);
-    expect(OK_LIST).toContain(resp.status());
-    const body = await safeJson(resp);
-    if (body) expect(Array.isArray(body.data) || Array.isArray(body)).toBe(true);
+    expect(resp.status()).toBe(200);
+    const body = await resp.json();
+    expect(Array.isArray(body.data)).toBe(true);
+    expect(typeof body.meta.total).toBe('number');
   });
 
   test('listing with email filter', async ({ request }) => {
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USERS, {
-      params: { email: 'admin' },
-    });
-    expect(OK_LIST).toContain(resp.status());
+    const created = await createUser(request, input);
+
+    try {
+      const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USERS, { params: { email: input.email } });
+      expect(resp.status()).toBe(200);
+      const body = await resp.json();
+      expect(body.data).toHaveLength(1);
+      expect(body.data[0].id).toBe(created.id);
+      expect(body.data[0].email).toBe(input.email);
+    } finally {
+      await deleteUser(request, created.id);
+    }
   });
 
-  test('detail for id=1 returns 200', async ({ request }) => {
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USER(1));
-    expect([200, 404]).toContain(resp.status());
+  test('detail of a created user returns 200', async ({ request }) => {
+    const created = await createUser(request, input);
+
+    try {
+      const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USER(created.id));
+      expect(resp.status()).toBe(200);
+      const body = await resp.json();
+      expect(body.id).toBe(created.id);
+      expect(body.name).toBe(input.name);
+      expect(body.email).toBe(input.email);
+      expect(body.roleId).toBe(ADMINISTRATOR_ROLE_ID);
+      expect(body.status).toBe(1);
+    } finally {
+      await deleteUser(request, created.id);
+    }
   });
 
   test('detail non-existent id returns 404', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USER(99999999));
-    expect([400, 404]).toContain(resp.status());
+    expect(resp.status()).toBe(404);
+    expect((await resp.json()).detail).toBe(NOT_FOUND);
   });
 
   test('create user happy path', async ({ request }) => {
-    const { id } = await createUser(request);
-    if (id) {
-      await sendAdminRequest(request, ADMIN_SETTINGS.USER(id), { method: 'DELETE' });
+    const created = await createUser(request, input);
+
+    try {
+      expect(typeof created.id).toBe('number');
+      expect(created.name).toBe(input.name);
+      expect(created.email).toBe(input.email);
+      expect(created.roleId).toBe(ADMINISTRATOR_ROLE_ID);
+      expect(created.status).toBe(1);
+      expect(created).not.toHaveProperty('password');
+      expect(await emailMatches(request, input.email)).toBe(1);
+    } finally {
+      await deleteUser(request, created.id);
     }
   });
 
@@ -75,39 +123,80 @@ test.describe('Admin Settings Users REST API', () => {
       method: 'POST',
       data: {},
     });
-    expect([400, 422]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('The name field is required.');
   });
 
   test('create user short password returns 422', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USERS, {
       method: 'POST',
       data: {
-        name: 'Short Pass',
-        email: uniqueEmail(),
+        name: input.name,
+        email: input.email,
         password: 'x',
-        role_id: 1,
+        role_id: ADMINISTRATOR_ROLE_ID,
       },
     });
-    expect([400, 422]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('The password field must be at least 6 characters.');
+    expect(await emailMatches(request, input.email)).toBe(0);
   });
 
-  test('update user partial (name)', async ({ request }) => {
-    const { id } = await createUser(request);
-    if (!id) { test.skip(true, 'create failed'); return; }
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USER(id), {
-      method: 'PUT',
-      data: { name: 'Renamed E2E User' },
-    });
-    expect(OK_UPDATE).toContain(resp.status());
-    await sendAdminRequest(request, ADMIN_SETTINGS.USER(id), { method: 'DELETE' });
+  test('update user partial name only', async ({ request }) => {
+    const created = await createUser(request, input);
+
+    try {
+      const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USER(created.id), {
+        method: 'PUT',
+        data: { name: 'Renamed E2E User' },
+      });
+      expect(resp.status()).toBe(200);
+      const body = await resp.json();
+      expect(body.id).toBe(created.id);
+      expect(body.name).toBe('Renamed E2E User');
+      expect(body.email).toBe(input.email);
+      expect(body.roleId).toBe(ADMINISTRATOR_ROLE_ID);
+      expect(body.status).toBe(1);
+
+      const detail = await sendAdminRequest(request, ADMIN_SETTINGS.USER(created.id));
+      expect((await detail.json()).name).toBe('Renamed E2E User');
+    } finally {
+      await deleteUser(request, created.id);
+    }
   });
 
-  test('delete fresh user returns 200/204', async ({ request }) => {
-    const { id } = await createUser(request);
-    if (!id) { test.skip(true, 'create failed'); return; }
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USER(id), {
+  test('delete fresh user returns 200', async ({ request }) => {
+    const created = await createUser(request, input);
+
+    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USER(created.id), {
       method: 'DELETE',
     });
-    expect(OK_DELETE).toContain(resp.status());
+    expect(resp.status()).toBe(200);
+    expect((await resp.json()).message).toBe(DELETED);
+
+    const detail = await sendAdminRequest(request, ADMIN_SETTINGS.USER(created.id));
+    expect(detail.status()).toBe(404);
+  });
+
+  test('should validate a user update before applying the last all-access guard', async ({ request }) => {
+    const created = await createUser(request, input);
+
+    try {
+      const resp = await sendAdminRequest(request, ADMIN_SETTINGS.USER(created.id), {
+        method: 'PUT',
+        data: { name: 'Invalid Update', email: 'not-an-email', role_id: ADMINISTRATOR_ROLE_ID, status: 0 },
+      });
+      expect(resp.status()).toBe(422);
+      expect((await resp.json()).detail).toBe('The email field must be a valid email address.');
+
+      const detail = await sendAdminRequest(request, ADMIN_SETTINGS.USER(created.id));
+      expect(detail.status()).toBe(200);
+      const user = await detail.json();
+      expect(user.email).toBe(input.email);
+      expect(user.name).toBe(input.name);
+      expect(user.status).toBe(1);
+    } finally {
+      await deleteUser(request, created.id);
+    }
   });
 });

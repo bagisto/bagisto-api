@@ -2,17 +2,19 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Webkul\BagistoApi\Models\CustomerApiSession;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Customer\Models\Customer;
 
 class CustomerProfileTest extends GraphQLTestCase
 {
-    // ── Read Profile (Query) ──────────────────────────────────
+    // ============================================================================
+    // Read Profile (Query)
+    // ============================================================================
 
     /**
-     * Test: Read authenticated customer profile returns all fields
+     * Test: Read authenticated customer profile returns all fields.
      */
     public function test_read_customer_profile_returns_all_fields(): void
     {
@@ -67,7 +69,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Read profile without authentication returns error
+     * Test: Read profile without authentication returns error.
      */
     public function test_read_profile_without_auth_returns_error(): void
     {
@@ -95,7 +97,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Read profile returns correct id format
+     * Test: Read profile returns correct id format.
      */
     public function test_read_profile_returns_correct_id_format(): void
     {
@@ -122,7 +124,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Read profile with selective fields
+     * Test: Read profile with selective fields.
      */
     public function test_read_profile_with_selective_fields(): void
     {
@@ -155,10 +157,12 @@ class CustomerProfileTest extends GraphQLTestCase
             ->and($data)->not->toHaveKey('phone');
     }
 
-    // ── Update Profile (Mutation) ─────────────────────────────
+    // ============================================================================
+    // Update Profile (Mutation)
+    // ============================================================================
 
     /**
-     * Test: Update customer first name
+     * Test: Update customer first name.
      */
     public function test_update_customer_first_name(): void
     {
@@ -188,7 +192,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Update multiple profile fields
+     * Test: Update multiple profile fields.
      */
     public function test_update_multiple_profile_fields(): void
     {
@@ -225,7 +229,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Update profile without authentication returns error
+     * Test: Update profile without authentication returns error.
      */
     public function test_update_profile_without_auth_returns_error(): void
     {
@@ -250,7 +254,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Update customer email
+     * Test: Update customer email.
      */
     public function test_update_customer_email(): void
     {
@@ -277,7 +281,32 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Update customer date of birth
+     * Test: An invalid email is refused and the email is unchanged.
+     */
+    public function test_update_customer_email_rejects_an_invalid_address(): void
+    {
+        $customer = $this->createCustomer([
+            'email' => 'kept-'.uniqid().'@example.com',
+        ]);
+
+        $mutation = <<<'GQL'
+            mutation updateProfile($input: createCustomerProfileUpdateInput!) {
+              createCustomerProfileUpdate(input: $input) {
+                clientMutationId
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $mutation, [
+            'input' => ['email' => 'not-an-email'],
+        ]);
+
+        expect($response->json('errors'))->not->toBeNull();
+        expect($customer->fresh()->email)->not->toBe('not-an-email');
+    }
+
+    /**
+     * Test: Update customer date of birth.
      */
     public function test_update_customer_date_of_birth(): void
     {
@@ -304,7 +333,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Update newsletter subscription
+     * Test: Update newsletter subscription.
      */
     public function test_update_newsletter_subscription(): void
     {
@@ -331,7 +360,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Update with empty input does not change data
+     * Test: Update with empty input does not change data.
      */
     public function test_update_with_empty_input_preserves_data(): void
     {
@@ -360,7 +389,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Verify update is confirmed by subsequent read
+     * Test: Verify update is confirmed by subsequent read.
      */
     public function test_update_confirmed_by_read_query(): void
     {
@@ -405,10 +434,12 @@ class CustomerProfileTest extends GraphQLTestCase
             ->and($data['lastName'])->toBe('Change');
     }
 
-    // ── Delete Profile (Mutation) ─────────────────────────────
+    // ============================================================================
+    // Delete Profile (Mutation)
+    // ============================================================================
 
     /**
-     * Test: Delete customer profile removes the customer
+     * Test: Delete customer profile removes the customer.
      */
     public function test_delete_customer_profile(): void
     {
@@ -438,7 +469,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete profile also removes access tokens
+     * Test: Delete profile also ends the customer's API sessions.
      */
     public function test_delete_profile_removes_tokens(): void
     {
@@ -447,15 +478,12 @@ class CustomerProfileTest extends GraphQLTestCase
             'password' => bcrypt('Password123!'),
         ]);
 
-        $customer->createToken('token-1');
-        $customer->createToken('token-2');
+        $this->customerAccessToken($customer);
+        $this->customerAccessToken($customer);
 
-        $tokenCount = DB::table('personal_access_tokens')
-            ->where('tokenable_id', $customer->id)
-            ->where('tokenable_type', Customer::class)
-            ->count();
+        expect(CustomerApiSession::query()->where('customer_id', $customer->id)->count())->toBe(2);
 
-        expect($tokenCount)->toBeGreaterThanOrEqual(2);
+        $this->setForeignKeyChecks(true);
 
         $mutation = <<<'GQL'
             mutation deleteProfile($input: createCustomerProfileDeleteInput!) {
@@ -469,16 +497,11 @@ class CustomerProfileTest extends GraphQLTestCase
             'input' => ['password' => 'Password123!'],
         ]);
 
-        $remainingTokens = DB::table('personal_access_tokens')
-            ->where('tokenable_id', $customer->id)
-            ->where('tokenable_type', Customer::class)
-            ->count();
-
-        expect($remainingTokens)->toBe(0);
+        expect(CustomerApiSession::query()->where('customer_id', $customer->id)->count())->toBe(0);
     }
 
     /**
-     * Test: Delete profile with a wrong password is rejected and keeps the account
+     * Test: Delete profile with a wrong password is rejected and keeps the account.
      */
     public function test_delete_profile_wrong_password_is_rejected(): void
     {
@@ -504,7 +527,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete profile without authentication returns error
+     * Test: Delete profile without authentication returns error.
      */
     public function test_delete_profile_without_auth_returns_error(): void
     {
@@ -529,7 +552,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Read profile after delete returns error
+     * Test: Read profile after delete returns error.
      */
     public function test_read_profile_after_delete_returns_error(): void
     {
@@ -573,10 +596,12 @@ class CustomerProfileTest extends GraphQLTestCase
             ->and($json['errors'])->not->toBeEmpty();
     }
 
-    // ── Schema Introspection ──────────────────────────────────
+    // ============================================================================
+    // Schema Introspection
+    // ============================================================================
 
     /**
-     * Test: CustomerProfile type has expected fields in schema
+     * Test: CustomerProfile type has expected fields in schema.
      */
     public function test_customer_profile_schema_has_expected_fields(): void
     {
@@ -618,7 +643,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Update mutation input has expected fields
+     * Test: Update mutation input has expected fields.
      */
     public function test_update_mutation_input_has_expected_fields(): void
     {
@@ -655,7 +680,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete mutation exists in schema
+     * Test: Delete mutation exists in schema.
      */
     public function test_delete_mutation_exists_in_schema(): void
     {
@@ -708,7 +733,6 @@ class CustomerProfileTest extends GraphQLTestCase
         ]);
 
         $response->assertSuccessful();
-        // No errors should appear when the current password is correct.
         $json = $response->json();
         $this->assertArrayNotHasKey('errors', $json, 'Unexpected errors: '.json_encode($json['errors'] ?? null));
 
@@ -742,7 +766,6 @@ class CustomerProfileTest extends GraphQLTestCase
         $response->assertSuccessful();
         $json = $response->json();
 
-        // Wrong current password must yield an error and not mutate the hash.
         $this->assertArrayHasKey('errors', $json);
         $this->assertNotEmpty($json['errors']);
 

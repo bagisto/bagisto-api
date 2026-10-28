@@ -7,57 +7,11 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for Admin Marketing → URL Rewrites CRUD (Block F3a).
- */
 class MarketingUrlRewriteTest extends AdminApiTestCase
 {
-    protected function insertRewrite(array $overrides = []): int
-    {
-        return \DB::table('url_rewrites')->insertGetId(array_merge([
-            'entity_type' => 'product',
-            'request_path' => 'old-path-'.uniqid(),
-            'target_path' => 'new-path-'.uniqid(),
-            'redirect_type' => '301',
-            'locale' => 'en',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
-    protected function createAdminWithoutPermissions(): Admin
-    {
-        $role = Role::create([
-            'name' => 'Limited '.uniqid(),
-            'description' => 'no url-rewrite perms',
-            'permission_type' => 'custom',
-            'permissions' => ['catalog.products'],
-        ]);
-
-        return $this->createAdmin(['role_id' => $role->id]);
-    }
-
-    protected function basePayload(array $overrides = []): array
-    {
-        return array_merge([
-            'entity_type' => 'product',
-            'request_path' => 'api-old-'.uniqid(),
-            'target_path' => 'api-new-'.uniqid(),
-            'redirect_type' => '301',
-            'locale' => 'en',
-        ], $overrides);
-    }
-
+    /**
+     * Test listing requires admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -65,6 +19,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -77,6 +34,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect($response->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total', 'from', 'to']);
     }
 
+    /**
+     * Test listing row shape.
+     */
     public function test_listing_row_shape(): void
     {
         $admin = $this->createAdmin();
@@ -89,6 +49,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect($row)->toHaveKeys(['id', 'entityType', 'requestPath', 'targetPath', 'redirectType', 'locale']);
     }
 
+    /**
+     * Test filter by entity type.
+     */
     public function test_filter_by_entity_type(): void
     {
         $admin = $this->createAdmin();
@@ -103,6 +66,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect($ids)->not->toContain($product);
     }
 
+    /**
+     * Test filter by locale.
+     */
     public function test_filter_by_locale(): void
     {
         $admin = $this->createAdmin();
@@ -120,6 +86,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect($ids)->toContain($second);
     }
 
+    /**
+     * Test filter by redirect type.
+     */
     public function test_filter_by_redirect_type(): void
     {
         $admin = $this->createAdmin();
@@ -134,6 +103,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect($ids)->not->toContain($a);
     }
 
+    /**
+     * Test filter by request path partial.
+     */
     public function test_filter_by_request_path_partial(): void
     {
         $admin = $this->createAdmin();
@@ -148,6 +120,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect($ids)->not->toContain($other);
     }
 
+    /**
+     * Test per page cap.
+     */
     public function test_per_page_cap(): void
     {
         $admin = $this->createAdmin();
@@ -157,6 +132,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test detail returns payload.
+     */
     public function test_detail_returns_payload(): void
     {
         $admin = $this->createAdmin();
@@ -174,6 +152,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect($response->json('requestPath'))->toBe('detail-request');
     }
 
+    /**
+     * Test detail unknown id returns 404.
+     */
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -181,6 +162,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test detail requires admin token.
+     */
     public function test_detail_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -189,6 +173,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test create happy path.
+     */
     public function test_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -210,6 +197,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test create missing entity type returns 422.
+     */
     public function test_create_missing_entity_type_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -219,6 +209,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create invalid entity type returns 422.
+     */
     public function test_create_invalid_entity_type_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -228,6 +221,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create missing request path returns 422.
+     */
     public function test_create_missing_request_path_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -237,6 +233,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create missing target path returns 422.
+     */
     public function test_create_missing_target_path_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -246,6 +245,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create invalid redirect type returns 422.
+     */
     public function test_create_invalid_redirect_type_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -255,6 +257,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create unknown locale returns 422.
+     */
     public function test_create_unknown_locale_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -264,6 +269,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create both redirect type values accepted.
+     */
     public function test_create_both_redirect_type_values_accepted(): void
     {
         $admin = $this->createAdmin();
@@ -276,6 +284,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test create requires auth.
+     */
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -283,6 +294,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test create no permission returns 403.
+     */
     public function test_create_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -290,6 +304,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test update happy path.
+     */
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -311,6 +328,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test update unknown id returns 404.
+     */
     public function test_update_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -318,6 +338,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test update invalid redirect type returns 422.
+     */
     public function test_update_invalid_redirect_type_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -328,6 +351,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test update requires auth.
+     */
     public function test_update_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -336,6 +362,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test update no permission returns 403.
+     */
     public function test_update_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -344,6 +373,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -355,6 +387,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $this->assertDatabaseMissing('url_rewrites', ['id' => $id]);
     }
 
+    /**
+     * Test delete unknown id returns 404.
+     */
     public function test_delete_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -362,6 +397,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test delete requires auth.
+     */
     public function test_delete_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -370,6 +408,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test delete no permission returns 403.
+     */
     public function test_delete_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -378,6 +419,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test mass delete happy path.
+     */
     public function test_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -393,6 +437,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $this->assertDatabaseMissing('url_rewrites', ['id' => $b]);
     }
 
+    /**
+     * Test mass delete empty indices returns 422.
+     */
     public function test_mass_delete_empty_indices_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -400,6 +447,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test mass delete skips unknown ids.
+     */
     public function test_mass_delete_skips_unknown_ids(): void
     {
         $admin = $this->createAdmin();
@@ -414,11 +464,75 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect($response->json('deleted'))->toBe([$real]);
     }
 
+    /**
+     * Test mass delete no permission returns 403.
+     */
     public function test_mass_delete_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
         $id = $this->insertRewrite();
         $response = $this->adminPost($admin, '/api/admin/marketing/url-rewrites/mass-delete', ['indices' => [$id]]);
         $response->assertStatus(403);
+    }
+
+    /**
+     * Insert rewrite.
+     */
+    protected function insertRewrite(array $overrides = []): int
+    {
+        return \DB::table('url_rewrites')->insertGetId(array_merge([
+            'entity_type' => 'product',
+            'request_path' => 'old-path-'.uniqid(),
+            'target_path' => 'new-path-'.uniqid(),
+            'redirect_type' => '301',
+            'locale' => 'en',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Create admin without permissions.
+     */
+    protected function createAdminWithoutPermissions(): Admin
+    {
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no url-rewrite perms',
+            'permission_type' => 'custom',
+            'permissions' => ['catalog.products'],
+        ]);
+
+        return $this->createAdmin(['role_id' => $role->id]);
+    }
+
+    /**
+     * Base payload.
+     */
+    protected function basePayload(array $overrides = []): array
+    {
+        return array_merge([
+            'entity_type' => 'product',
+            'request_path' => 'api-old-'.uniqid(),
+            'target_path' => 'api-new-'.uniqid(),
+            'redirect_type' => '301',
+            'locale' => 'en',
+        ], $overrides);
     }
 }

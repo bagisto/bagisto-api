@@ -64,6 +64,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeItemProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Themes'],
                 summary: 'Get a theme',
+                description: 'One theme from the gallery by its code, installed or not, with whether it is installed, its status and the channels it is active on. Needs the `appearance.themes` permission; an unknown code is a 404.',
                 parameters: [
                     new Model\Parameter('code', 'path', 'Theme code', true, schema: [
                         'type' => 'string',
@@ -105,9 +106,11 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeItemProvider;
         new Query(
             resolver: AdminAppearanceThemeQueryResolver::class,
             args: ['code' => ['type' => 'String!']],
+            description: 'One theme from the gallery by its `code`, installed or not, with its status and the channels it is active on. Needs the `appearance.themes` permission.',
         ),
         new QueryCollection(
             provider: AdminAppearanceThemeCollectionProvider::class,
+            description: 'The theme gallery as a plain list (not paginated): every installed theme and every theme available to install, active themes first. Needs the `appearance.themes` permission.',
             paginationEnabled: false,
         ),
     ],
@@ -116,30 +119,62 @@ class AdminAppearanceTheme
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $code = null;
 
+    /**
+     * The name.
+     */
     public ?string $name = null;
 
+    /**
+     * The author.
+     */
     public ?string $author = null;
 
+    /**
+     * The version.
+     */
     public ?string $version = null;
 
+    /**
+     * The url.
+     */
     public ?string $url = null;
 
+    /**
+     * The demo url.
+     */
     public ?string $demo_url = null;
 
+    /**
+     * The screenshot.
+     */
     public ?string $screenshot = null;
 
+    /**
+     * The rating.
+     */
     public ?string $rating = null;
 
     /**
+     * The tags that describe the theme in the gallery.
+     *
      * @var array<int, string>
      */
     public array $tags = [];
 
+    /**
+     * The description.
+     */
     public ?string $description = null;
 
+    /**
+     * The is installed.
+     */
     public ?bool $is_installed = null;
 
     /**
@@ -154,5 +189,8 @@ class AdminAppearanceTheme
      */
     public array $active_on = [];
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

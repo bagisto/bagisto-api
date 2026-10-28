@@ -12,6 +12,9 @@ use Webkul\Attribute\Models\AttributeOption;
 use Webkul\BagistoApi\Http\Middleware\LogApiRequests;
 use Webkul\BagistoApi\Http\Middleware\VerifyGraphQLStorefrontKey;
 use Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey;
+use Webkul\BagistoApi\Services\CustomerAuth\CustomerApiTokenPair;
+use Webkul\BagistoApi\Services\CustomerAuth\CustomerApiTokenService;
+use Webkul\BagistoApi\Tests\Concerns\CraftsAdminJwts;
 use Webkul\Category\Models\Category;
 use Webkul\Core\Models\Channel;
 use Webkul\Core\Repositories\CoreConfigRepository;
@@ -22,6 +25,7 @@ use Webkul\Product\Models\ProductAttributeValue;
 
 abstract class BagistoApiTestCase extends BagistoApiTest
 {
+    use CraftsAdminJwts;
     use DatabaseTransactions;
 
     /**
@@ -45,6 +49,8 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         ]);
         $this->setForeignKeyChecks(false);
         $this->storefrontKey = 'pk_test_'.Str::random(32);
+
+        $this->useFixtureJwtKeys();
 
         config([
             'repository.cache.enabled' => false,
@@ -100,12 +106,28 @@ abstract class BagistoApiTestCase extends BagistoApiTest
      */
     protected function authHeaders(Customer $customer): array
     {
-        $token = $customer->createToken('test-token')->plainTextToken;
+        $token = $this->customerAccessToken($customer);
 
         return [
             'Authorization' => "Bearer {$token}",
             'X-STOREFRONT-KEY' => $this->storefrontKey,
         ];
+    }
+
+    /**
+     * Start a session for the customer on the current channel and return its access token.
+     */
+    protected function customerAccessToken(Customer $customer): string
+    {
+        return $this->customerTokenPair($customer)->accessToken;
+    }
+
+    /**
+     * Start a session for the customer on the current channel and return its token pair.
+     */
+    protected function customerTokenPair(Customer $customer): CustomerApiTokenPair
+    {
+        return app(CustomerApiTokenService::class)->issue($customer, (int) core()->getCurrentChannel()->id);
     }
 
     /**
@@ -155,7 +177,7 @@ abstract class BagistoApiTestCase extends BagistoApiTest
 
         return [
             'customer' => $customer,
-            'token' => $customer->createToken('test-token')->plainTextToken,
+            'token' => $this->customerAccessToken($customer),
         ];
     }
 

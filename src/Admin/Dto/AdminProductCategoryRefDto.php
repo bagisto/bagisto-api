@@ -5,10 +5,6 @@ namespace Webkul\BagistoApi\Admin\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 
-/**
- * Schema-only DTO for a category reference embedded inside
- * AdminCatalogProduct detail.
- */
 #[ApiResource(
     operations: [],
     graphQlOperations: [],
@@ -16,12 +12,21 @@ use ApiPlatform\Metadata\ApiResource;
 )]
 class AdminProductCategoryRefDto
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $id = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The slug.
+     */
     #[ApiProperty(writable: false)]
     public ?string $slug = null;
 }

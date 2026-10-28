@@ -12,11 +12,11 @@ use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Payment\Facades\Payment;
 
-/**
- * Provides available payment methods for a cart.
- */
 class PaymentMethodsProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct() {}
 
     /**
@@ -26,7 +26,6 @@ class PaymentMethodsProvider implements ProviderInterface
     {
         $request = Request::instance() ?? ($context['request'] ?? null);
 
-        // Extract Bearer token from Authorization header
         $token = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
 
         if (! $token) {

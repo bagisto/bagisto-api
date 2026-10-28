@@ -16,20 +16,11 @@ use Webkul\Customer\Models\Wishlist;
 use Webkul\Product\Models\ProductReview;
 use Webkul\Sales\Models\Order;
 
-/**
- * POST /api/admin/customers/{customerId}/gdpr-download-data +
- * createAdminCustomerGdprDownloadData mutation.
- *
- * Returns a structured JSON dump of every table that references the
- * customer's id. Mirrors the storefront GDPR PDF endpoint
- * (Shop\Customer\GDPRController::pdfView) but extended — the storefront
- * version only exports orders + addresses; this exports everything an admin
- * would expect for a GDPR data-portability request.
- *
- * Permission: customers.gdpr_requests (read-only inspection).
- */
 class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -67,19 +58,29 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
         $dto->customerId = $customerId;
         $dto->customerEmail = $customer->email;
         $dto->generatedAt = Carbon::now()->toIso8601String();
-        $dto->data = [
+        $dto->data = $this->plainData([
             'customer' => $customerData,
             'addresses' => $addresses,
             'orders' => $orders,
             'reviews' => $reviews,
             'wishlist' => $wishlist,
             'notes' => $notes,
-        ];
+        ]);
 
         return $dto;
     }
 
     /**
+     * The export as plain arrays and scalars, since core's toArray() leaves collections such as downloadable_links inside.
+     */
+    protected function plainData(array $data): array
+    {
+        return json_decode(json_encode($data, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * Collect the customer's orders with their items, addresses and payment.
+     *
      * @return array<int,array<string,mixed>>
      */
     protected function collectOrders(Customer $customer): array
@@ -95,6 +96,9 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Safe query.
+     */
     protected function safeQuery(callable $fn): array
     {
         try {
@@ -106,6 +110,9 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin): void
     {
         $role = $admin->role ?? null;

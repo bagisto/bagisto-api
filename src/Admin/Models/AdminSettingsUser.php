@@ -13,36 +13,16 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Admin\Dto\AdminSessionRevokeInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsUserCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsUserUpdateInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserProcessor;
+use Webkul\BagistoApi\Admin\State\AdminSettingsUserRevokeSessionsProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
 
-/**
- * Admin Settings → Users (admins) endpoints (Block B Wave 2).
- *
- * REST:
- *   GET    /api/admin/settings/users
- *   GET    /api/admin/settings/users/{id}
- *   POST   /api/admin/settings/users
- *   PUT    /api/admin/settings/users/{id}
- *   DELETE /api/admin/settings/users/{id}
- *
- * GraphQL: adminSettingsUsers, adminSettingsUser,
- *          createAdminSettingsUser, updateAdminSettingsUser,
- *          deleteAdminSettingsUser
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\UserController.
- *
- * Notes:
- *  - image upload is intentionally deferred in v1 — accepts a path string only.
- *  - Delete refuses if the admin is deleting themselves (400) or if this is
- *    the last admin (400).
- *  - Password is required on create; optional on update (re-hashed if present).
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsUser',
@@ -56,6 +36,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Users'],
                 summary: 'Create a new admin user',
+                description: 'Creates an admin user. `name`, a unique `email`, a `password` of at least 6 characters and an existing `role_id` are required, and `status` is 0 or 1. A role holding a permission the caller lacks is refused with 403.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -116,6 +97,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Users'],
                 summary: 'Update an admin user',
+                description: 'Partial update: `name`, `email`, `role_id` and `status` keep their stored value when left out, `password` changes only when sent (at least 6 characters), and `image` sets or, with null, clears the stored image path. Needs `settings.users.edit`. Deactivating the user ends their API login sessions; a password change does so when *Admin Authentication* is set to.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Admin ID.', true, schema: [
                         'type' => 'integer',
@@ -130,34 +112,56 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
                                 'type' => 'object',
 
                                 'properties' => [
-                                    'name' => ['type' => 'string'],
-                                    'email' => ['type' => 'string'],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Jane Manager',
+                                    ],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'example' => 'jane.manager@example.com',
+                                    ],
 
                                     'password' => [
                                         'type' => 'string',
                                         'nullable' => true,
+                                        'example' => 'N3wSecret!',
                                     ],
 
-                                    'role_id' => ['type' => 'integer'],
+                                    'role_id' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
 
                                     'status' => [
                                         'type' => 'integer',
                                         'enum' => [0, 1],
+                                        'example' => 1,
                                     ],
 
                                     'image' => [
                                         'type' => 'string',
                                         'nullable' => true,
+                                        'example' => null,
                                     ],
                                 ],
+                            ],
+
+                            'example' => [
+                                'name' => 'Jane Manager',
+                                'email' => 'jane.manager@example.com',
+                                'role_id' => 2,
+                                'status' => 1,
                             ],
                         ],
                     ]),
                 ),
                 responses: [
                     '200' => new Model\Response(description: 'Admin updated.'),
+                    '400' => new Model\Response(description: 'Deactivating the last active all-access admin, or changing the role while only one admin has all access.'),
+                    '403' => new Model\Response(description: 'Admin role lacks settings.users.edit, or the user\'s current or new role holds a permission the caller lacks.'),
                     '404' => new Model\Response(description: 'Admin not found.'),
-                    '422' => new Model\Response(description: 'Validation failure.'),
+                    '422' => new Model\Response(description: 'Validation failure (email taken, unknown role_id, password under 6 characters).'),
                 ],
             ),
         ),
@@ -184,6 +188,39 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
                 ],
             ),
         ),
+        new Post(
+            uriTemplate: '/settings/users/{id}/revoke-sessions',
+            processor: AdminSettingsUserRevokeSessionsProcessor::class,
+            requirements: ['id' => '\d+'],
+            status: 200,
+            read: false,
+            deserialize: false,
+            openapi: new Model\Operation(
+                tags: ['Admin Settings: Users'],
+                summary: 'Revoke every session of an admin user',
+                description: 'Revokes every live login session of the admin user, so their access and refresh tokens stop working at once. API tokens are not affected. Requires `settings.api_sessions.delete`.',
+                parameters: [
+                    new Model\Parameter('id', 'path', 'Admin ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 5,
+                    ]),
+                ],
+                requestBody: new Model\RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => ['type' => 'object'],
+                            'example' => new \stdClass,
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(description: 'Sessions revoked; `message` says how many.'),
+                    '403' => new Model\Response(description: 'The role lacks `settings.api_sessions.delete`.'),
+                    '404' => new Model\Response(description: 'Admin not found.'),
+                ],
+            ),
+        ),
         new Get(
             uriTemplate: '/settings/users/{id}',
             provider: AdminSettingsUserItemProvider::class,
@@ -191,6 +228,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Users'],
                 summary: 'Admin user detail',
+                description: 'One admin user by ID with their role and status. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Admin ID.', true, schema: [
                         'type' => 'integer',
@@ -210,6 +248,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Users'],
                 summary: 'List admin users',
+                description: 'Admin users with their role, in the { data, meta } envelope. Filters: `name` and `email` (partial match), `role_id`, `status`; sortable by id, name or email.',
                 parameters: [
                     new Model\Parameter('page', 'query', 'Page (1-based).', false, schema: [
                         'type' => 'integer',
@@ -274,6 +313,15 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             description: 'Update an admin user. Becomes updateAdminSettingsUser.',
         ),
         new Mutation(
+            name: 'revokeSessions',
+            input: AdminSessionRevokeInput::class,
+            processor: AdminSettingsUserRevokeSessionsProcessor::class,
+            read: false,
+            deserialize: false,
+            write: true,
+            description: 'Revoke every login session of an admin user. Becomes revokeSessionsAdminSettingsUser; requires settings.api_sessions.delete.',
+        ),
+        new Mutation(
             name: 'delete',
             input: AdminSettingsUserUpdateInput::class,
             processor: AdminSettingsUserProcessor::class,
@@ -285,36 +333,69 @@ class AdminSettingsUser
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false, example: 'John Doe')]
     public ?string $name = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(writable: false, example: 'john@example.com')]
     public ?string $email = null;
 
+    /**
+     * The role id.
+     */
     #[ApiProperty(writable: false, example: 1)]
     public ?int $role_id = null;
 
+    /**
+     * The role name.
+     */
     #[ApiProperty(writable: false, example: 'Administrator')]
     public ?string $role_name = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(writable: false, example: 1)]
     public ?int $status = null;
 
+    /**
+     * The image.
+     */
     #[ApiProperty(writable: false, example: 'admins/1/avatar.png')]
     public ?string $image = null;
 
+    /**
+     * The image url.
+     */
     #[ApiProperty(writable: false, example: 'https://your-domain.com/storage/admins/1/avatar.png')]
     public ?string $image_url = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, example: 'User deleted successfully.')]
     public ?string $message = null;
 }

@@ -9,6 +9,9 @@ use Webkul\Customer\Models\Wishlist;
 
 class ProductRelationFlagTest extends GraphQLTestCase
 {
+    /**
+     * The list query.
+     */
     private string $listQuery = <<<'GQL'
         query Products($q: String!) {
           products(query: $q, first: 50) {
@@ -23,6 +26,9 @@ class ProductRelationFlagTest extends GraphQLTestCase
         }
     GQL;
 
+    /**
+     * The detail query.
+     */
     private string $detailQuery = <<<'GQL'
         query Product($id: ID!) {
           product(id: $id) {
@@ -33,30 +39,13 @@ class ProductRelationFlagTest extends GraphQLTestCase
         }
     GQL;
 
-    /** Pull the node for a given product id out of a products() edges response. */
-    private function nodeFor(array $edges, int $productId): ?array
-    {
-        foreach ($edges as $edge) {
-            if ((int) ($edge['node']['_id'] ?? 0) === $productId) {
-                return $edge['node'];
-            }
-        }
-
-        return null;
-    }
+    // ============================================================================
+    // Listing — Wishlist
+    // ============================================================================
 
     /**
-     * Cast a GraphQL relation flag to a real bool. The flags are exposed as 0/1 and render as
-     * "1" / "0" strings over GraphQL (REST returns 1 / 0 integers). PHP casts both "0" and ""
-     * to false and "1" to true, so this stays correct regardless of the scalar rendering.
+     * Test listing marks wishlisted product true for owner.
      */
-    private function flag(mixed $value): bool
-    {
-        return (bool) (int) $value;
-    }
-
-    // ── Listing — wishlist ──────────────────────────────────────
-
     public function test_listing_marks_wishlisted_product_true_for_owner(): void
     {
         $this->seedRequiredData();
@@ -81,6 +70,9 @@ class ProductRelationFlagTest extends GraphQLTestCase
         expect($this->flag($this->nodeFor($edges, $other->id)['isInWishlist']))->toBeFalse();
     }
 
+    /**
+     * Test listing wishlist flag false for guest.
+     */
     public function test_listing_wishlist_flag_false_for_guest(): void
     {
         $this->seedRequiredData();
@@ -102,8 +94,13 @@ class ProductRelationFlagTest extends GraphQLTestCase
         expect($this->flag($node['isInWishlist']))->toBeFalse();
     }
 
-    // ── Listing — compare ───────────────────────────────────────
+    // ============================================================================
+    // Listing — Compare
+    // ============================================================================
 
+    /**
+     * Test listing marks compared product true for owner.
+     */
     public function test_listing_marks_compared_product_true_for_owner(): void
     {
         $this->seedRequiredData();
@@ -126,6 +123,9 @@ class ProductRelationFlagTest extends GraphQLTestCase
         expect($this->flag($this->nodeFor($edges, $other->id)['isInCompare']))->toBeFalse();
     }
 
+    /**
+     * Test listing compare flag false for guest.
+     */
     public function test_listing_compare_flag_false_for_guest(): void
     {
         $this->seedRequiredData();
@@ -145,8 +145,13 @@ class ProductRelationFlagTest extends GraphQLTestCase
         expect($this->flag($node['isInCompare']))->toBeFalse();
     }
 
-    // ── Detail ──────────────────────────────────────────────────
+    // ============================================================================
+    // Detail
+    // ============================================================================
 
+    /**
+     * Test detail carries both flags for owner.
+     */
     public function test_detail_carries_both_flags_for_owner(): void
     {
         $this->seedRequiredData();
@@ -173,6 +178,9 @@ class ProductRelationFlagTest extends GraphQLTestCase
         expect($this->flag($response->json('data.product.isInCompare')))->toBeTrue();
     }
 
+    /**
+     * Test detail flags false for guest.
+     */
     public function test_detail_flags_false_for_guest(): void
     {
         $this->seedRequiredData();
@@ -193,5 +201,28 @@ class ProductRelationFlagTest extends GraphQLTestCase
 
         expect($this->flag($response->json('data.product.isInWishlist')))->toBeFalse();
         expect($this->flag($response->json('data.product.isInCompare')))->toBeFalse();
+    }
+
+    /**
+     * Pull the node for a given product id out of a products() edges response.
+     */
+    private function nodeFor(array $edges, int $productId): ?array
+    {
+        foreach ($edges as $edge) {
+            if ((int) ($edge['node']['_id'] ?? 0) === $productId) {
+                return $edge['node'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Cast a GraphQL relation flag to a real bool. The flags are exposed as 0/1 and render as
+     * "1" / "0" strings over GraphQL (REST returns 1 / 0 integers). PHP casts both "0" and "".
+     */
+    private function flag(mixed $value): bool
+    {
+        return (bool) (int) $value;
     }
 }

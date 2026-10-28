@@ -119,22 +119,41 @@ class AdminMarketingCartRuleCouponGenerate
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The cart rule id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $cart_rule_id = null;
 
+    /**
+     * The generated.
+     */
     #[ApiProperty(writable: false)]
     public ?int $generated = null;
 
-    /** @var array<int, array<string, mixed>>|null */
+    /**
+     * The coupons generated for the cart rule.
+     *
+     * @var array<int, array<string, mixed>>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $coupons = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

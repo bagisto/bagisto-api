@@ -15,6 +15,9 @@ use Webkul\CartRule\Models\CartRule;
 
 class AdminMarketingCartRuleMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -61,6 +64,9 @@ class AdminMarketingCartRuleMassDeleteProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -85,6 +91,9 @@ class AdminMarketingCartRuleMassDeleteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

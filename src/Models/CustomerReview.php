@@ -15,12 +15,6 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CustomerReviewProvider;
 use Webkul\Product\Models\ProductReview;
 
-/**
- * Customer Review API Resource
- *
- * Returns all reviews submitted by the authenticated customer.
- * This is a read-only, customer-scoped resource.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomerReview',
@@ -93,9 +87,11 @@ use Webkul\Product\Models\ProductReview;
     graphQlOperations: [
         new Query(
             resolver: BaseQueryItemResolver::class,
+            description: 'One review written by the authenticated customer, whatever its status; another customer\'s review is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
         ),
         new QueryCollection(
             provider: CustomerReviewProvider::class,
+            description: 'Reviews written by the authenticated customer, newest first. Filters: `status` (pending, approved or disapproved) and `rating`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'status' => [
@@ -133,10 +129,18 @@ use Webkul\Product\Models\ProductReview;
 )]
 class CustomerReview extends ProductReview
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'product_reviews';
 
-    /** @var list<string> */
+    /**
+     * The attributes a customer can fill on a review.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'comment',
         'title',
@@ -147,7 +151,11 @@ class CustomerReview extends ProductReview
         'name',
     ];
 
-    /** @var array<string, string> */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
         'id' => 'int',
         'product_id' => 'int',
@@ -162,7 +170,7 @@ class CustomerReview extends ProductReview
     ];
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -171,7 +179,7 @@ class CustomerReview extends ProductReview
     }
 
     /**
-     * Product relationship for API
+     * Product relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Reviewed product')]
     public function product(): BelongsTo
@@ -180,7 +188,7 @@ class CustomerReview extends ProductReview
     }
 
     /**
-     * Customer relationship for API
+     * Customer relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Customer who wrote the review')]
     public function customer(): BelongsTo

@@ -6,12 +6,6 @@ use Illuminate\Support\Facades\Cache;
 use Webkul\BagistoApi\Models\StorefrontKey;
 use Webkul\BagistoApi\Traits\HasRateLimit;
 
-/**
- * StorefrontKeyService
- *
- * Handles storefront key validation and rate limiting.
- * Provides centralized authentication and rate limit checking for API requests.
- */
 class StorefrontKeyService
 {
     use HasRateLimit;
@@ -23,7 +17,6 @@ class StorefrontKeyService
      */
     public function validate(string $key, ?string $ipAddress = null): array
     {
-        // In testing environment, allow test keys without database validation
         if (
             app()->environment('testing')
             && (
@@ -44,13 +37,11 @@ class StorefrontKeyService
 
         $cacheKey = $this->getCacheKey($key);
 
-        // Check cache first
         $cached = Cache::get($cacheKey);
         if ($cached !== null) {
             return $cached;
         }
 
-        // Validate key against database
         $storefront = StorefrontKey::validateKey($key, $ipAddress);
 
         if (! $storefront) {

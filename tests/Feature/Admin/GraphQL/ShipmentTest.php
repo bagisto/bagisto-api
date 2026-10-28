@@ -7,6 +7,9 @@ use Webkul\Sales\Models\Shipment;
 
 class ShipmentTest extends AdminApiTestCase
 {
+    /**
+     * Test create requires authentication.
+     */
     public function test_create_requires_authentication(): void
     {
         $mutation = 'mutation($input: createAdminShipmentInput!){ createAdminShipment(input:$input){ adminShipment { id } } }';
@@ -20,6 +23,9 @@ class ShipmentTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeArray();
     }
 
+    /**
+     * Test view by id.
+     */
     public function test_view_by_id(): void
     {
         $id = Shipment::query()->value('id');
@@ -38,6 +44,9 @@ class ShipmentTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test detail resolves id and multiword fields.
+     */
     public function test_detail_resolves_id_and_multiword_fields(): void
     {
         $id = Shipment::query()->value('id');

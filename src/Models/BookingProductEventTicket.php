@@ -68,84 +68,126 @@ use Webkul\BookingProduct\Models\BookingProductEventTicket as BaseModel;
 )]
 class BookingProductEventTicket extends BaseModel
 {
+    /**
+     * The appends.
+     */
     protected $appends = ['formatted_price', 'formatted_special_price'];
 
     /**
-     * Get the translations for the event ticket using BagistoApi model
+     * Get the translations for the event ticket using BagistoApi model.
      */
     public function translations(): HasMany
     {
         return $this->hasMany(BookingProductEventTicketTranslation::class, 'booking_product_event_ticket_id');
     }
 
+    /**
+     * Get price attribute.
+     */
     public function getPriceAttribute($value)
     {
         return $value !== null ? (float) core()->convertPrice((float) $value) : null;
     }
 
+    /**
+     * Get special price attribute.
+     */
     public function getSpecialPriceAttribute($value)
     {
         return $value !== null ? (float) core()->convertPrice((float) $value) : null;
     }
 
+    /**
+     * Get price.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getPrice()
     {
         return $this->price;
     }
 
+    /**
+     * Get qty.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getQty()
     {
         return $this->qty;
     }
 
+    /**
+     * Get special price.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getSpecialPrice()
     {
         return $this->special_price;
     }
 
+    /**
+     * Get formatted price attribute.
+     */
     public function getFormattedPriceAttribute(): ?string
     {
         return $this->price !== null ? core()->formatPrice($this->price) : null;
     }
 
+    /**
+     * Get formatted price.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public function getFormatted_price(): ?string
     {
         return $this->getFormattedPriceAttribute();
     }
 
+    /**
+     * Get formatted special price attribute.
+     */
     public function getFormattedSpecialPriceAttribute(): ?string
     {
         return $this->special_price !== null ? core()->formatPrice($this->special_price) : null;
     }
 
+    /**
+     * Get formatted special price.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public function getFormatted_special_price(): ?string
     {
         return $this->getFormattedSpecialPriceAttribute();
     }
 
+    /**
+     * Get special price from.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getSpecialPriceFrom()
     {
         return $this->special_price_from;
     }
 
+    /**
+     * Get special price to.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getSpecialPriceTo()
     {
         return $this->special_price_to;
     }
 
+    /**
+     * Get booking product id.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getBookingProductId()
     {
         return $this->booking_product_id;
     }
 
+    /**
+     * Translation.
+     */
     public function translation(): HasOne
     {
         return $this->hasOne(BookingProductEventTicketTranslation::class, 'booking_product_event_ticket_id');

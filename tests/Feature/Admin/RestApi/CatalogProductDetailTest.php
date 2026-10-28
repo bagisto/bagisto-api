@@ -5,52 +5,13 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Product\Helpers\Indexers\Flat;
+use Webkul\Product\Repositories\ProductRepository;
 
-/**
- * REST coverage for GET /api/admin/catalog/products/{id}
- */
 class CatalogProductDetailTest extends AdminApiTestCase
 {
     /**
-     * Insert a product_flat row for the given Product so the detail provider's
-     * product_flats relation has something to work with.
+     * Test detail requires admin token.
      */
-    protected function insertProductFlat(object $product, array $overrides = []): void
-    {
-        $attributeFamilyId = (int) (DB::table('attribute_families')->value('id') ?? 1);
-
-        DB::table('product_flat')->insertOrIgnore(array_merge([
-            'product_id' => $product->id,
-            'locale' => 'en',
-            'channel' => 'default',
-            'sku' => $product->sku,
-            'name' => 'Test '.$product->sku,
-            'type' => $product->type ?? 'simple',
-            'status' => 1,
-            'price' => 19.99,
-            'url_key' => strtolower($product->sku).'-'.$product->id,
-            'attribute_family_id' => $attributeFamilyId,
-            'visible_individually' => 1,
-            'short_description' => 'Short desc for '.$product->sku,
-            'description' => 'Long description for '.$product->sku,
-            'featured' => 0,
-            'new' => 0,
-        ], $overrides));
-
-        $this->refreshFlatDerived((int) $product->id);
-    }
-
-    protected function refreshFlatDerived(int $productId): void
-    {
-        // BACKWARD COMPATIBILITY: product_flat gained these columns in 2.4.10; an older
-        // core has the listing compute them. Remove when the minimum core is 2.4.10.
-        if (! $this->core()->hasProductFlatDerivedColumns()) {
-            return;
-        }
-
-        app(Flat::class)->refreshDerivedColumns([$productId]);
-    }
-
     public function test_detail_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -62,14 +23,15 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    /**
+     * Test detail revoked token returns 401.
+     */
     public function test_detail_revoked_token_returns_401(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
-        DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->delete();
+        $this->revokeAdminSessions($admin);
 
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product);
@@ -79,14 +41,15 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    /**
+     * Test detail expired token returns 401.
+     */
     public function test_detail_expired_token_returns_401(): void
     {
         $admin = $this->createAdmin();
-        $token = $this->adminToken($admin);
+        $token = $this->adminAccessToken($admin);
 
-        DB::table('admin_personal_access_tokens')
-            ->where('admin_id', $admin->id)
-            ->update(['expires_at' => now()->subDay()]);
+        $this->expireAdminSessions($admin);
 
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product);
@@ -96,6 +59,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    /**
+     * Test detail unknown id returns 404.
+     */
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -105,6 +71,36 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertSame(404, $response->getStatusCode());
     }
 
+    /**
+     * The special price, its dates and the stock flag are read for the requested channel, as the edit form reads them.
+     */
+    public function test_detail_reads_special_price_and_manage_stock_for_the_channel(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+
+        app(ProductRepository::class)->update([
+            'channel' => core()->getDefaultChannelCode(),
+            'locale' => 'en',
+            'special_price' => 7,
+            'special_price_from' => '2026-01-01',
+            'special_price_to' => '2026-12-31',
+            'manage_stock' => 1,
+        ], $product->id, ['special_price', 'special_price_from', 'special_price_to', 'manage_stock']);
+
+        $response = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
+
+        $response->assertOk();
+        expect((float) $response->json('specialPrice'))->toBe(7.0)
+            ->and($response->json('formattedSpecialPrice'))->toBe(core()->formatPrice(7))
+            ->and($response->json('specialPriceFrom'))->toBe('2026-01-01')
+            ->and($response->json('specialPriceTo'))->toBe('2026-12-31')
+            ->and($response->json('manageStock'))->toBeTrue();
+    }
+
+    /**
+     * Test detail zero id returns 404.
+     */
     public function test_detail_zero_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -114,6 +110,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertContains($response->getStatusCode(), [404, 405]);
     }
 
+    /**
+     * Test detail negative id returns 4xx.
+     */
     public function test_detail_negative_id_returns_4xx(): void
     {
         $admin = $this->createAdmin();
@@ -123,6 +122,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
     }
 
+    /**
+     * Test detail simple product returns base fields only.
+     */
     public function test_detail_simple_product_returns_base_fields_only(): void
     {
         $admin = $this->createAdmin();
@@ -167,6 +169,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertNull($body['downloadableSamples']);
     }
 
+    /**
+     * Test detail channels list all with assigned flag.
+     */
     public function test_detail_channels_list_all_with_assigned_flag(): void
     {
         $admin = $this->createAdmin();
@@ -191,6 +196,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertCount((int) DB::table('channels')->count(), $channels);
     }
 
+    /**
+     * Test detail attributes block surfaces family fields including empties.
+     */
     public function test_detail_attributes_block_surfaces_family_fields_including_empties(): void
     {
         $admin = $this->createAdmin();
@@ -224,6 +232,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test detail virtual product returns base fields only.
+     */
     public function test_detail_virtual_product_returns_base_fields_only(): void
     {
         $admin = $this->createAdmin();
@@ -244,6 +255,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertNull($body['downloadableSamples']);
     }
 
+    /**
+     * Test detail configurable product has super attributes and variants keys.
+     */
     public function test_detail_configurable_product_has_super_attributes_and_variants_keys(): void
     {
         $admin = $this->createAdmin();
@@ -264,6 +278,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertNull($body['downloadableSamples']);
     }
 
+    /**
+     * Test detail bundle product has bundle options key.
+     */
     public function test_detail_bundle_product_has_bundle_options_key(): void
     {
         $admin = $this->createAdmin();
@@ -284,6 +301,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertNull($body['downloadableSamples']);
     }
 
+    /**
+     * Test detail grouped product has linked products key.
+     */
     public function test_detail_grouped_product_has_linked_products_key(): void
     {
         $admin = $this->createAdmin();
@@ -304,6 +324,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertNull($body['downloadableSamples']);
     }
 
+    /**
+     * Test detail downloadable product has links and samples keys.
+     */
     public function test_detail_downloadable_product_has_links_and_samples_keys(): void
     {
         $admin = $this->createAdmin();
@@ -324,6 +347,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertNull($body['linkedProducts']);
     }
 
+    /**
+     * Test detail translations array contains seeded locale.
+     */
     public function test_detail_translations_array_contains_seeded_locale(): void
     {
         $admin = $this->createAdmin();
@@ -349,6 +375,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('description', $enTranslation);
     }
 
+    /**
+     * Test detail images array empty when no images.
+     */
     public function test_detail_images_array_empty_when_no_images(): void
     {
         $admin = $this->createAdmin();
@@ -364,6 +393,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertSame(0, count($body['images']));
     }
 
+    /**
+     * Test detail images array populated when images exist.
+     */
     public function test_detail_images_array_populated_when_images_exist(): void
     {
         $admin = $this->createAdmin();
@@ -391,6 +423,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('sortOrder', $img);
     }
 
+    /**
+     * Test detail inventories array populated when inventory exists.
+     */
     public function test_detail_inventories_array_populated_when_inventory_exists(): void
     {
         $admin = $this->createAdmin();
@@ -421,6 +456,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test detail customer group prices array populated.
+     */
     public function test_detail_customer_group_prices_array_populated(): void
     {
         $admin = $this->createAdmin();
@@ -452,6 +490,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('qty', $cgp);
     }
 
+    /**
+     * Test detail categories array populated when category assigned.
+     */
     public function test_detail_categories_array_populated_when_category_assigned(): void
     {
         $admin = $this->createAdmin();
@@ -502,6 +543,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('slug', $cat);
     }
 
+    /**
+     * Test detail configurable super attribute shape.
+     */
     public function test_detail_configurable_super_attribute_shape(): void
     {
         $admin = $this->createAdmin();
@@ -535,6 +579,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test detail bundle options shape.
+     */
     public function test_detail_bundle_options_shape(): void
     {
         $admin = $this->createAdmin();
@@ -581,6 +628,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('isDefault', $bop);
     }
 
+    /**
+     * Test detail grouped linked products shape.
+     */
     public function test_detail_grouped_linked_products_shape(): void
     {
         $admin = $this->createAdmin();
@@ -613,6 +663,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('sortOrder', $lp);
     }
 
+    /**
+     * Test detail downloadable links and samples shape.
+     */
     public function test_detail_downloadable_links_and_samples_shape(): void
     {
         $admin = $this->createAdmin();
@@ -689,6 +742,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('translations', $sample);
     }
 
+    /**
+     * Test detail booking product is null for non booking types.
+     */
     public function test_detail_booking_product_is_null_for_non_booking_types(): void
     {
         $admin = $this->createAdmin();
@@ -704,6 +760,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertNull($body['bookingProduct']);
     }
 
+    /**
+     * Test detail booking product returns booking block.
+     */
     public function test_detail_booking_product_returns_booking_block(): void
     {
         $admin = $this->createAdmin();
@@ -749,6 +808,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('slots', $bp);
     }
 
+    /**
+     * Test detail customizable options empty when none.
+     */
     public function test_detail_customizable_options_empty_when_none(): void
     {
         $admin = $this->createAdmin();
@@ -765,6 +827,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertCount(0, $body['customizableOptions']);
     }
 
+    /**
+     * Test detail returns customizable options when present.
+     */
     public function test_detail_returns_customizable_options_when_present(): void
     {
         $admin = $this->createAdmin();
@@ -812,6 +877,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertSame('text', $opt['type']);
     }
 
+    /**
+     * Test detail videos empty when none.
+     */
     public function test_detail_videos_empty_when_none(): void
     {
         $admin = $this->createAdmin();
@@ -828,6 +896,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertCount(0, $body['videos']);
     }
 
+    /**
+     * Test detail returns videos when present.
+     */
     public function test_detail_returns_videos_when_present(): void
     {
         $admin = $this->createAdmin();
@@ -857,6 +928,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('sortOrder', $video);
     }
 
+    /**
+     * Test detail returns channel assignments.
+     */
     public function test_detail_returns_channel_assignments(): void
     {
         $admin = $this->createAdmin();
@@ -888,6 +962,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test detail returns related upsells crosssells arrays.
+     */
     public function test_detail_returns_related_upsells_crosssells_arrays(): void
     {
         $admin = $this->createAdmin();
@@ -931,5 +1008,46 @@ class CatalogProductDetailTest extends AdminApiTestCase
                 $this->assertArrayHasKey('type', $ref);
             }
         }
+    }
+
+    /**
+     * Insert a product_flat row for the given Product so the detail provider's
+     * product_flats relation has something to work with.
+     */
+    protected function insertProductFlat(object $product, array $overrides = []): void
+    {
+        $attributeFamilyId = (int) (DB::table('attribute_families')->value('id') ?? 1);
+
+        DB::table('product_flat')->insertOrIgnore(array_merge([
+            'product_id' => $product->id,
+            'locale' => 'en',
+            'channel' => 'default',
+            'sku' => $product->sku,
+            'name' => 'Test '.$product->sku,
+            'type' => $product->type ?? 'simple',
+            'status' => 1,
+            'price' => 19.99,
+            'url_key' => strtolower($product->sku).'-'.$product->id,
+            'attribute_family_id' => $attributeFamilyId,
+            'visible_individually' => 1,
+            'short_description' => 'Short desc for '.$product->sku,
+            'description' => 'Long description for '.$product->sku,
+            'featured' => 0,
+            'new' => 0,
+        ], $overrides));
+
+        $this->refreshFlatDerived((int) $product->id);
+    }
+
+    /**
+     * Refresh flat derived.
+     */
+    protected function refreshFlatDerived(int $productId): void
+    {
+        if (! $this->core()->hasProductFlatDerivedColumns()) {
+            return;
+        }
+
+        app(Flat::class)->refreshDerivedColumns([$productId]);
     }
 }

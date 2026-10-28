@@ -13,6 +13,9 @@ class AdminRmaCustomFieldCollectionProvider extends AbstractAdminCollectionProvi
 {
     use ChecksAdminPermission;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin('sales.rma.custom-fields');
@@ -20,16 +23,25 @@ class AdminRmaCustomFieldCollectionProvider extends AbstractAdminCollectionProvi
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'position', 'code'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('rma_custom_fields')->select('id', 'code', 'label', 'type', 'is_required', 'position', 'input_validation', 'status', 'created_at', 'updated_at');
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['code'])) {
@@ -53,6 +65,9 @@ class AdminRmaCustomFieldCollectionProvider extends AbstractAdminCollectionProvi
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -60,6 +75,9 @@ class AdminRmaCustomFieldCollectionProvider extends AbstractAdminCollectionProvi
         $query->orderBy(in_array($column, ['id', 'position', 'code'], true) ? $column : 'id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminRmaCustomField
     {
         return AdminRmaCustomFieldItemProvider::toDto($row, true);

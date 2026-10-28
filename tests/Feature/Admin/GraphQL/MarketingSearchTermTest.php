@@ -5,21 +5,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Marketing\Models\SearchTerm;
 
-/**
- * GraphQL coverage for Admin Marketing → Search Terms (Block F3b).
- */
 class MarketingSearchTermTest extends AdminApiTestCase
 {
-    protected function seedSearchTerm(array $overrides = []): SearchTerm
-    {
-        $this->seedRequiredData();
-
-        return SearchTerm::factory()->create(array_merge([
-            'term' => 'term-'.uniqid(),
-            'uses' => 0,
-        ], $overrides));
-    }
-
+    /**
+     * Test listing resolves display flag and nullable channel.
+     */
     public function test_listing_resolves_display_flag_and_nullable_channel(): void
     {
         $admin = $this->createAdmin();
@@ -45,6 +35,9 @@ class MarketingSearchTermTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeNull();
     }
 
+    /**
+     * Test listing.
+     */
     public function test_listing(): void
     {
         $admin = $this->createAdmin();
@@ -65,6 +58,9 @@ class MarketingSearchTermTest extends AdminApiTestCase
         expect($ids)->toContain($s->id);
     }
 
+    /**
+     * Test listing filter by term.
+     */
     public function test_listing_filter_by_term(): void
     {
         $admin = $this->createAdmin();
@@ -86,6 +82,9 @@ class MarketingSearchTermTest extends AdminApiTestCase
         expect($ids)->not()->toContain($miss->id);
     }
 
+    /**
+     * Test listing requires auth.
+     */
     public function test_listing_requires_auth(): void
     {
         $query = 'query { adminMarketingSearchTerms(first: 5) { edges { node { _id } } } }';
@@ -94,6 +93,9 @@ class MarketingSearchTermTest extends AdminApiTestCase
         expect($resp->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test detail.
+     */
     public function test_detail(): void
     {
         $admin = $this->createAdmin();
@@ -107,6 +109,9 @@ class MarketingSearchTermTest extends AdminApiTestCase
         expect($resp->json('data.adminMarketingSearchTerm._id'))->toBe($s->id);
     }
 
+    /**
+     * Test update mutation.
+     */
     public function test_update_mutation(): void
     {
         $admin = $this->createAdmin();
@@ -129,6 +134,9 @@ class MarketingSearchTermTest extends AdminApiTestCase
         expect(SearchTerm::find($s->id)->term)->toBe('after');
     }
 
+    /**
+     * Test delete mutation.
+     */
     public function test_delete_mutation(): void
     {
         $admin = $this->createAdmin();
@@ -137,7 +145,7 @@ class MarketingSearchTermTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: deleteAdminMarketingSearchTermInput!) {
               deleteAdminMarketingSearchTerm(input: $input) {
-                adminMarketingSearchTerm { id }
+                adminMarketingSearchTerm { id _id }
               }
             }
         GQL;
@@ -145,9 +153,16 @@ class MarketingSearchTermTest extends AdminApiTestCase
             'input' => ['id' => '/api/admin/marketing/search-terms/'.$s->id],
         ], $admin);
         $resp->assertOk();
+
+        expect($resp->json('errors'))->toBeNull()
+            ->and($resp->json('data.deleteAdminMarketingSearchTerm.adminMarketingSearchTerm.id'))->toBe('/api/admin/marketing/search-terms/'.$s->id);
+
         expect(SearchTerm::find($s->id))->toBeNull();
     }
 
+    /**
+     * Test mass delete mutation.
+     */
     public function test_mass_delete_mutation(): void
     {
         $admin = $this->createAdmin();
@@ -169,6 +184,9 @@ class MarketingSearchTermTest extends AdminApiTestCase
         expect(SearchTerm::find($b->id))->toBeNull();
     }
 
+    /**
+     * Test create mutation.
+     */
     public function test_create_mutation(): void
     {
         $this->seedRequiredData();
@@ -206,5 +224,18 @@ class MarketingSearchTermTest extends AdminApiTestCase
             'locale' => $locale,
             'redirect_url' => 'https://example.com/gql',
         ]);
+    }
+
+    /**
+     * Seed search term.
+     */
+    protected function seedSearchTerm(array $overrides = []): SearchTerm
+    {
+        $this->seedRequiredData();
+
+        return SearchTerm::factory()->create(array_merge([
+            'term' => 'term-'.uniqid(),
+            'uses' => 0,
+        ], $overrides));
     }
 }

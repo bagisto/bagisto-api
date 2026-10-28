@@ -11,9 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminAppearanceSectionDiscardInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDiscardProcessor;
 
-/**
- * Throws away every staged edit of a theme and channel, leaving the published content.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAppearanceSectionDiscard',
@@ -26,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDiscardProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Discard staged section edits',
+                description: 'Throws away every staged draft (content, status and order) of the theme\'s sections on one channel, and returns the IDs of the sections that had one. An unknown theme is a 404.',
                 parameters: [
                     new Model\Parameter('code', 'path', 'Theme code', true, schema: [
                         'type' => 'string',
@@ -57,7 +55,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDiscardProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'Staged edits discarded.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -85,15 +83,26 @@ class AdminAppearanceSectionDiscard
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The theme code.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $theme_code = null;
 
+    /**
+     * The channel id.
+     */
     public ?int $channel_id = null;
 
     /**
+     * The ids of the sections whose drafts were discarded.
+     *
      * @var array<int, int>
      */
     public array $section_ids = [];
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

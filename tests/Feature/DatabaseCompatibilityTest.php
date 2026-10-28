@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature;
 
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Finder\Finder;
+use Webkul\BagistoApi\Metadata\DatabaseIndependentColumnTypePropertyMetadataFactory;
 use Webkul\BagistoApi\Support\Sql;
 use Webkul\BagistoApi\Tests\BagistoApiTest;
 
@@ -20,28 +21,6 @@ class DatabaseCompatibilityTest extends BagistoApiTest
         '/[\'"\s(]CONCAT\s*\(/' => 'CONCAT; use db_grammar()->concat()',
         '/\bFIND_IN_SET\s*\(/' => 'FIND_IN_SET; use db_grammar()->findInSet()',
     ];
-
-    /**
-     * Package source files that are checked, excluding migrations that guard on the driver themselves.
-     *
-     * @return array<int, string>
-     */
-    private function sourceFiles(): array
-    {
-        $files = [];
-
-        $finder = Finder::create()
-            ->files()
-            ->name('*.php')
-            ->in(dirname(__DIR__, 2).'/src')
-            ->exclude(['Resources', 'Database']);
-
-        foreach ($finder as $file) {
-            $files[] = $file->getRealPath();
-        }
-
-        return $files;
-    }
 
     /**
      * No source file writes MySQL-only SQL inline.
@@ -107,5 +86,63 @@ class DatabaseCompatibilityTest extends BagistoApiTest
 
         $this->assertStringStartsWith('CASE WHEN', $expression);
         $this->assertStringNotContainsString('IF(', $expression);
+    }
+
+    /**
+     * Column types are mapped to one API type whatever spelling MySQL, MariaDB or PostgreSQL reports.
+     */
+    public function test_column_types_map_to_the_same_api_type_on_every_driver(): void
+    {
+        $factory = (new \ReflectionClass(DatabaseIndependentColumnTypePropertyMetadataFactory::class))
+            ->newInstanceWithoutConstructor();
+
+        $sharedTypeFor = new \ReflectionMethod($factory, 'sharedTypeFor');
+
+        $expected = [
+            'int unsigned' => 'int',
+            'int(10) unsigned' => 'int',
+            'int(11)' => 'int',
+            'integer' => 'int',
+            'tinyint(1)' => 'bool',
+            'boolean' => 'bool',
+            'tinyint(4)' => 'string',
+            'bigint unsigned' => 'string',
+            'bigint(20) unsigned' => 'string',
+            'smallint(6)' => 'string',
+            'bigint' => 'string',
+            'decimal(12,4)' => 'string',
+            'numeric(12,4)' => 'string',
+            'timestamp(0) without time zone' => 'string',
+        ];
+
+        $actual = [];
+
+        foreach (array_keys($expected) as $columnType) {
+            $actual[$columnType] = (string) $sharedTypeFor->invoke($factory, $columnType);
+        }
+
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * Package source files that are checked, excluding migrations that guard on the driver themselves.
+     *
+     * @return array<int, string>
+     */
+    private function sourceFiles(): array
+    {
+        $files = [];
+
+        $finder = Finder::create()
+            ->files()
+            ->name('*.php')
+            ->in(dirname(__DIR__, 2).'/src')
+            ->exclude(['Resources', 'Database']);
+
+        foreach ($finder as $file) {
+            $files[] = $file->getRealPath();
+        }
+
+        return $files;
     }
 }

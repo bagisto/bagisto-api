@@ -22,21 +22,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
 
-/**
- * Admin Marketing → Newsletter Subscribers (Block F2d).
- *
- * REST:
- *   GET    /api/admin/marketing/subscribers
- *   GET    /api/admin/marketing/subscribers/{id}
- *   PUT    /api/admin/marketing/subscribers/{id}     (toggle is_subscribed)
- *   DELETE /api/admin/marketing/subscribers/{id}
- *
- * GraphQL: adminMarketingSubscribers, adminMarketingSubscriber,
- *          updateAdminMarketingSubscriber, deleteAdminMarketingSubscriber
- *
- * Subscriptions are created via storefront; admin only moderates.
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Communications\SubscriptionController.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingSubscriber',
@@ -112,6 +97,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Delete a subscription',
+                description: 'Deletes the newsletter subscription and, when it belongs to a customer, turns that customer\'s newsletter flag off. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Subscriber ID', true, schema: ['type' => 'integer']),
                 ],
@@ -138,6 +124,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Subscription detail',
+                description: 'One newsletter subscription by ID: the email, whether it is subscribed, its channel and the linked customer, if any. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Subscriber ID', true, schema: ['type' => 'integer']),
                 ],
@@ -261,10 +248,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
 )]
 class AdminMarketingSubscriber extends EloquentModel
 {
-    /** @var string */
+    /**
+     * The table that stores the newsletter subscribers.
+     *
+     * @var string
+     */
     protected $table = 'subscribers_list';
 
-    /** @var array */
+    /**
+     * The native types the newsletter subscriber attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'is_subscribed' => 'boolean',
@@ -273,9 +268,16 @@ class AdminMarketingSubscriber extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the newsletter subscriber is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['customer_name'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
@@ -284,8 +286,7 @@ class AdminMarketingSubscriber extends EloquentModel
 
     /**
      * Channel this subscriber belongs to (GraphQL to-one object —
-     * `channel { id _id code name }`). The belongsTo on `channel_id` consumes
-     * that FK column, replacing the old channelId / channelName scalars.
+     * `channel { id _id code name }`). The belongsTo on `channel_id` consumes.
      */
     #[ApiProperty(writable: false)]
     public function channel(): BelongsTo
@@ -295,8 +296,7 @@ class AdminMarketingSubscriber extends EloquentModel
 
     /**
      * Linked customer's full name (kept as a scalar — NOT objectified). String
-     * accessor (safe over GraphQL). Prefers a pre-set value (the listing
-     * forceFills it to avoid N+1) else resolves from `customer_id`.
+     * accessor (safe over GraphQL). Prefers a pre-set value (the listing.
      */
     #[ApiProperty(writable: false)]
     public function getCustomerNameAttribute(): ?string

@@ -1,4 +1,3 @@
-// tests/api/product/getProduct.spec.ts
 import { test, expect, request } from '@playwright/test';
 import { GET_PRODUCT_BY_ID, GET_PRODUCT_BY_SKU, GET_PRODUCT_WITH_VARIANTS, GET_FULL_PRODUCT_DETAILS,
   GET_PRODUCT_BY_URLKEY, GET_PRODUCTS_SEARCH_FILTER, GET_PRODUCTS_WITH_FORMATTED_PRICES,
@@ -33,9 +32,9 @@ async function findBookingProductBySubtype(request: any, subtype: string) {
   return null;
 }
 
-test.describe('Get Products by Search and Filter API', () => {
+test.describe('get products by search and filter api', () => {
 
-  test('Should return products matching search query with valid parameters', async ({ request }) => {
+  test('should return products matching search query with valid parameters', async ({ request }) => {
     const variables = {
       query: "knit",
       sortKey: "TITLE",
@@ -50,7 +49,7 @@ test.describe('Get Products by Search and Filter API', () => {
     assertProductsSearchFilterResponse(body, variables.query);
   });
 
-  test('Should return products sorted by title descending (reverse=true)', async ({ request }) => {
+  test('should return products sorted by title descending (reverse=true)', async ({ request }) => {
     const variables = {
       query: "knit",
       sortKey: "TITLE",
@@ -65,7 +64,7 @@ test.describe('Get Products by Search and Filter API', () => {
     assertProductsSearchFilterResponse(body, variables.query);
   });
 
-  test('Should return limited number of products when first parameter is specified', async ({ request }) => {
+  test('should return limited number of products when first parameter is specified', async ({ request }) => {
     const variables = {
       query: "knit",
       sortKey: "TITLE",
@@ -82,7 +81,7 @@ test.describe('Get Products by Search and Filter API', () => {
     assertProductsSearchFilterResponse(body, variables.query, edges.length);
   });
 
-  test('Should return products without search query (all products)', async ({ request }) => {
+  test('should return products without search query (all products)', async ({ request }) => {
     const variables = {
       query: "",
       sortKey: "TITLE",
@@ -100,7 +99,7 @@ test.describe('Get Products by Search and Filter API', () => {
     });
   });
 
-  test('Should return no products for non-existent search term', async ({ request }) => {
+  test('should return no products for non-existent search term', async ({ request }) => {
     const variables = {
       query: "nonexistentproduct12345",
       sortKey: "TITLE",
@@ -115,7 +114,7 @@ test.describe('Get Products by Search and Filter API', () => {
     assertProductsSearchNoResults(body);
   });
 
-  test('Should handle special characters in search query', async ({ request }) => {
+  test('should handle special characters in search query', async ({ request }) => {
     const variables = {
       query: "!@#$%^&*()",
       sortKey: "TITLE",
@@ -127,12 +126,11 @@ test.describe('Get Products by Search and Filter API', () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
     
-    // Should not throw an error, might return no products
     expect(body.errors).toBeUndefined();
     expect(body.data.products).toBeDefined();
   });
 
-  test('Should handle empty search query gracefully', async ({ request }) => {
+  test('should handle empty search query gracefully', async ({ request }) => {
     const variables = {
       query: null,
       sortKey: "TITLE",
@@ -144,11 +142,10 @@ test.describe('Get Products by Search and Filter API', () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
     
-    // Should not throw an error
     expect(body.errors).toBeUndefined();
   });
 
-  test('Should handle large first parameter value', async ({ request }) => {
+  test('should handle large first parameter value', async ({ request }) => {
     const variables = {
       query: "knit",
       sortKey: "TITLE",
@@ -160,12 +157,11 @@ test.describe('Get Products by Search and Filter API', () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
     
-    // Should return products without errors
     expect(body.errors).toBeUndefined();
     expect(body.data.products.edges.length).toBeGreaterThanOrEqual(0);
   });
 
-  test('Should handle invalid sortKey gracefully', async ({ request }) => {
+  test('should handle invalid sortkey gracefully', async ({ request }) => {
     const variables = {
       query: "",
       sortKey: "INVALID_SORT_KEY",
@@ -177,26 +173,22 @@ test.describe('Get Products by Search and Filter API', () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
     
-    // Should not return an error
     expect(body.errors).toBeUndefined();
-    // Should return products
     expect(body.data.products.edges.length).toBeGreaterThan(0);
-    // Validate each product node structure
     body.data.products.edges.forEach((edge: any) => {
       assertProductNode(edge.node);
     });
   });
 });
 
-test.describe('Get Product by ID API', () => {
+test.describe('get product by id api', () => {
 
-  test('Should fetch product successfully with valid ID', async ({ request }) => {
+  test('should fetch product successfully with valid id', async ({ request }) => {
     const response = await sendGraphQLRequest( request, GET_PRODUCT_BY_ID,
     { id: "1" });
     expect(response.status()).toBe(200);
      const body = await response.json();
   const product = body.data.product;
-  // Pretty print in terminal
   console.log('\n========== PRODUCT DETAILS ==========');
   console.log(`ID      : ${product.id}`);
   console.log(`Name    : ${product.name}`);
@@ -207,7 +199,7 @@ test.describe('Get Product by ID API', () => {
   assertProductResponse(body);
   });
 
-  test('Should return null for invalid product ID', async ({ request }) => {
+  test('should return null for invalid product id', async ({ request }) => {
     const response = await sendGraphQLRequest( request, GET_PRODUCT_BY_ID,
     { id: "999999" });
     expect(response.status()).toBe(200);
@@ -216,8 +208,7 @@ test.describe('Get Product by ID API', () => {
     console.log(body.errors);
   });
 
-  test('Should fetch product successfully with valid SKU', async ({ request }) => {
-    // Fetch a real SKU from the API rather than hardcoding demo data.
+  test('should fetch product successfully with valid sku', async ({ request }) => {
     const listBody = await (await sendGraphQLRequest(request, GET_PRODUCTS_SEARCH_FILTER, { query: "", first: 1 })).json();
     const sku = listBody.data.products.edges[0].node.sku;
 
@@ -227,7 +218,6 @@ test.describe('Get Product by ID API', () => {
     const body = await response.json();
     const product = body.data.product;
     expect(product.sku).toBe(sku);
-    // Print Product Details in Terminal
     console.log('\n========== PRODUCT DETAILS (SKU) ==========');
     console.log(`ID      : ${product.id}`);
     console.log(`Name    : ${product.name}`);
@@ -238,8 +228,7 @@ test.describe('Get Product by ID API', () => {
     assertProductResponse(body);
   });
 
-  test('should fetch product successfully with URL Key', async({request})=>{
-    // Fetch a real product's urlKey from the API rather than hardcoding demo data.
+  test('should fetch product successfully with url key', async({request})=>{
     const cfgBody = await (await sendGraphQLRequest(request, GET_CONFIGURABLE_PRODUCTS, {})).json();
     const urlKey = cfgBody.data.products.edges[0].node.urlKey;
 
@@ -250,25 +239,25 @@ test.describe('Get Product by ID API', () => {
     assertProductResponse(body);
   });
 
-  test('should return error with invalid URL Key', async({request})=>{
+  test('should return error with invalid url key', async({request})=>{
     const response = await sendGraphQLRequest( request, GET_PRODUCT_BY_URLKEY,
-    { urlKey: "omniheat-mee-green-l"});
+    { urlKey: `no-such-product-${Date.now()}-${Math.floor(Math.random() * 1e6)}` });
     expect(response.status()).toBe(200);
     const body = await response.json();
-    expect(body.errors || body.data?.product === null).toBeTruthy();
-
+    expect(graphQLErrorMessages(body)).toEqual(['No product found with URL key']);
+    expect(body.data.product).toBeNull();
   });
 
-  test('Should return null for invalid SKU', async ({ request }) => {
+  test('should return null for invalid sku', async ({ request }) => {
     const response = await sendGraphQLRequest( request, GET_PRODUCT_BY_SKU,
     { sku: "INVALID-SKU-999" });
     expect(response.status()).toBe(200);
     const body = await response.json();
     expect(body.data.product).toBeNull();
+    expect(graphQLErrorMessages(body)).toEqual(['No product found with SKU']);
   });
 
-  test('Should fetch configurable product with its variants successfully', async ({ request }) => {
-    // Fetch a real configurable product's id from the API rather than hardcoding one.
+  test('should fetch configurable product with its variants successfully', async ({ request }) => {
     const cfgBody = await (await sendGraphQLRequest(request, GET_CONFIGURABLE_PRODUCTS, {})).json();
     const id = String(cfgBody.data.products.edges[0].node.id).split('/').pop();
 
@@ -304,7 +293,6 @@ product.variants.edges.forEach((edge: any, index: number) => {
     const code = attr.node.attribute.code;
     let value = attr.node.value;
 
-    // Truncate long text fields
     if (typeof value === 'string' && value.length > 50) {
       value = value.substring(0, 50) + '...';
     }
@@ -321,7 +309,7 @@ product.variants.edges.forEach((edge: any, index: number) => {
     assertProductWithVariantsResponse(body);
   });
 
-  test('Should fetch full product details', async ({ request }) => {
+  test('should fetch full product details', async ({ request }) => {
   const response = await sendGraphQLRequest( request, GET_FULL_PRODUCT_DETAILS,
   { id: "1" });
   expect(response.status()).toBe(200);
@@ -342,7 +330,7 @@ console.log('=======================================\n');
   assertFullProductDetailsResponse(body);
 });
 
-  test('Should fetch products with formatted prices according to docs', async ({ request }) => {
+  test('should fetch products with formatted prices according to docs', async ({ request }) => {
     const response = await sendGraphQLRequest(request, GET_PRODUCTS_WITH_FORMATTED_PRICES, { first: 5 });
     expect(response.status()).toBe(200);
 
@@ -374,7 +362,7 @@ console.log('=======================================\n');
   ];
 
   for (const { label, query } of productTypeCases) {
-    test(`Should cover docs query for ${label} products`, async ({ request }) => {
+    test(`should cover docs query for ${label} products`, async ({ request }) => {
       const response = await sendGraphQLRequest(request, query);
       expect(response.status()).toBe(200);
 
@@ -424,14 +412,10 @@ console.log('=======================================\n');
   ];
 
   for (const { subtype, query, path } of bookingSubtypeCases) {
-    test(`Should cover docs query for ${subtype} booking products`, async ({ request }) => {
+    test(`should cover docs query for ${subtype} booking products`, async ({ request }) => {
       const bookingProduct = await findBookingProductBySubtype(request, subtype);
 
-      if (!bookingProduct) {
-        console.log(`No booking product found for subtype "${subtype}" in current data.`);
-        expect(true).toBeTruthy();
-        return;
-      }
+      test.skip(!bookingProduct, `no ${subtype} booking product is listed by the storefront products query`);
 
       const response = await sendGraphQLRequest(request, query, { id: bookingProduct.id });
       expect(response.status()).toBe(200);
@@ -440,6 +424,8 @@ console.log('=======================================\n');
       logGraphQLMessages(`${subtype} booking product`, body);
       expect(body.errors).toBeUndefined();
       expect(pick(body, 'data.product')).toBeTruthy();
+      expect(pick(body, 'data.product.id')).toBe(bookingProduct.id);
+      expect(pick(body, 'data.product.bookingProducts.edges.0.node.type')).toBe(subtype);
       expect(pick(body, path)).toBeTruthy();
 
       console.log(`\n========== ${subtype.toUpperCase()} BOOKING PRODUCT ==========`);

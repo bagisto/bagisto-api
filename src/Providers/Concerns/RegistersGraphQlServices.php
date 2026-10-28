@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Providers\Concerns;
 
+use ApiPlatform\GraphQl\Error\ErrorHandlerInterface;
 use ApiPlatform\GraphQl\Resolver\Factory\ResolverFactoryInterface;
 use ApiPlatform\GraphQl\Resolver\QueryCollectionResolverInterface;
 use ApiPlatform\GraphQl\Resolver\QueryItemResolverInterface;
@@ -29,18 +30,26 @@ use Webkul\BagistoApi\Admin\Resolver\AdminReportingProductsViewResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminReportingSalesQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminReportingSalesViewResolver;
 use Webkul\BagistoApi\Admin\State\AdminConfigurationSchemaResolver;
+use Webkul\BagistoApi\GraphQl\Error\ClientSafeCursorErrorHandler;
 use Webkul\BagistoApi\GraphQl\Serializer\FixedSerializerContextBuilder;
 use Webkul\BagistoApi\Metadata\CustomIdentifiersExtractor;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\CategoryCollectionResolver;
+use Webkul\BagistoApi\Resolver\CheckoutAddressQueryResolver;
+use Webkul\BagistoApi\Resolver\CheckoutMessageQueryResolver;
 use Webkul\BagistoApi\Resolver\CompareItemQueryResolver;
 use Webkul\BagistoApi\Resolver\CustomerQueryResolver;
 use Webkul\BagistoApi\Resolver\EuWithdrawalStatusQueryResolver;
 use Webkul\BagistoApi\Resolver\Factory\ProductRelationResolverFactory;
+use Webkul\BagistoApi\Resolver\GdprDataPdfQueryResolver;
+use Webkul\BagistoApi\Resolver\GdprDataQueryResolver;
 use Webkul\BagistoApi\Resolver\GdprRequestQueryResolver;
 use Webkul\BagistoApi\Resolver\GdprStatusQueryResolver;
+use Webkul\BagistoApi\Resolver\GuestEuWithdrawalConfirmationQueryResolver;
 use Webkul\BagistoApi\Resolver\PageByUrlKeyResolver;
+use Webkul\BagistoApi\Resolver\ProductAttributeFileQueryResolver;
 use Webkul\BagistoApi\Resolver\ProductCollectionResolver;
+use Webkul\BagistoApi\Resolver\ProductReviewTranslationQueryResolver;
 use Webkul\BagistoApi\Resolver\SingleProductBagistoApiResolver;
 use Webkul\BagistoApi\Resolver\StoreConfigQueryResolver;
 use Webkul\BagistoApi\Resolver\ThemeQueryResolver;
@@ -61,14 +70,20 @@ trait RegistersGraphQlServices
         $this->app->tag(CategoryCollectionResolver::class, QueryCollectionResolverInterface::class);
         $this->app->tag(BaseQueryItemResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CompareItemQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(ProductAttributeFileQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(WishlistQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(GdprStatusQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(StoreConfigQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(EuWithdrawalStatusQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(GdprRequestQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(GdprDataQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(GdprDataPdfQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(GuestEuWithdrawalConfirmationQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(ProductReviewTranslationQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(CheckoutMessageQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(CheckoutAddressQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CustomerQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminProfileQueryResolver::class, QueryItemResolverInterface::class);
-        // Dashboard + Block E — Reporting (read-only providers + resolvers)
         $this->app->tag(AdminDashboardQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminReportingOverviewQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminReportingSalesQueryResolver::class, QueryItemResolverInterface::class);
@@ -80,11 +95,6 @@ trait RegistersGraphQlServices
 
         $this->app->singleton(AdminConfigurationSchemaResolver::class);
         $this->app->tag(AdminConfigurationMenuQueryResolver::class, QueryItemResolverInterface::class);
-        // These resolvers reach the section repository through their providers, and every
-        // tagged resolver is instantiated when the schema is built.
-        //
-        // BACKWARD COMPATIBILITY: unwrap this condition when the minimum supported core is
-        // 2.4.10. The older theme surface has no resolvers — it uses BaseQueryItemResolver.
         if (app(CoreCapabilities::class)->hasAppearanceSections()) {
             $this->app->tag(ThemeQueryResolver::class, QueryItemResolverInterface::class);
             $this->app->tag(AdminAppearanceThemeQueryResolver::class, QueryItemResolverInterface::class);
@@ -121,6 +131,10 @@ trait RegistersGraphQlServices
                 $converter,
                 $app->make(ResourceMetadataCollectionFactoryInterface::class)
             );
+        });
+
+        $this->app->extend(ErrorHandlerInterface::class, function ($handler) {
+            return new ClientSafeCursorErrorHandler($handler);
         });
 
         $this->app->extend(GraphQlSerializerContextBuilder::class, function ($builder, $app) {

@@ -14,6 +14,9 @@ use Webkul\Customer\Models\Customer;
 
 class AdminCustomerNoteCollectionProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         AdminReadPermissions::authorize($operation, AdminCustomerNote::class);
@@ -44,6 +47,9 @@ class AdminCustomerNoteCollectionProvider implements ProviderInterface
         return new Paginator(new LengthAwarePaginator($rows, $total, max($total, 1), 1));
     }
 
+    /**
+     * To dto.
+     */
     protected function toDto($row): AdminCustomerNote
     {
         $dto = new AdminCustomerNote;

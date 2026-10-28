@@ -23,10 +23,16 @@ use Webkul\Marketing\Models\SearchTerm;
 
 class AdminMarketingSearchTermProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminMarketingSearchTermItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -44,7 +50,7 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.search_seo.search_terms.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if (
@@ -83,6 +89,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $payload, bool $isGraphQL = false): AdminMarketingSearchTerm|AdminMarketingSearchTermRestDto
     {
         $value = Validator::make($payload, [
@@ -110,6 +119,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return $this->buildResult((int) $term->id, $isGraphQL);
     }
 
+    /**
+     * Resolve create payload.
+     */
     protected function resolveCreatePayload(mixed $data, array $context, bool $isGraphQL): array
     {
         $payload = [];
@@ -151,6 +163,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return $payload;
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $payload, bool $isGraphQL = false): AdminMarketingSearchTerm|AdminMarketingSearchTermRestDto
     {
         $existing = SearchTerm::find($id);
@@ -186,6 +201,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return $this->buildResult($id, $isGraphQL);
     }
 
+    /**
+     * Build result.
+     */
     protected function buildResult(int $id, bool $isGraphQL): AdminMarketingSearchTerm|AdminMarketingSearchTermRestDto
     {
         if ($isGraphQL) {
@@ -195,20 +213,28 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return $this->itemProvider->buildRestDtoPublic(SearchTerm::find($id));
     }
 
-    protected function handleDelete(int $id): array
+    /**
+     * Handle delete.
+     */
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingSearchTerm
     {
         $existing = SearchTerm::find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.search-term.not-found'));
         }
 
+        $snapshot = $asResource ? $this->buildResult($id, true) : null;
+
         Event::dispatch('marketing.search_seo.search_terms.delete.before', $id);
         $existing->delete();
         Event::dispatch('marketing.search_seo.search_terms.delete.after', $id);
 
-        return ['message' => __('bagistoapi::app.admin.marketing.search-term.deleted')];
+        return $snapshot ?? ['message' => __('bagistoapi::app.admin.marketing.search-term.deleted')];
     }
 
+    /**
+     * Resolve payload.
+     */
     protected function resolvePayload(mixed $data, array $context, bool $isGraphQL): array
     {
         $payload = [];
@@ -251,6 +277,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return $payload;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

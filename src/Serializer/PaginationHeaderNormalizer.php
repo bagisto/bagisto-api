@@ -8,20 +8,18 @@ use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-/**
- * Captures pagination metadata onto the current request so the Laravel
- * middleware can emit X-Total-Count / X-Page / X-Per-Page / X-Total-Pages
- * headers without each REST provider having to do anything.
- *
- * Runs first for any PaginatorInterface, stashes counts on
- * request()->attributes, then delegates to the next normalizer in the chain.
- */
 class PaginationHeaderNormalizer implements NormalizerAwareInterface, NormalizerInterface
 {
     use NormalizerAwareTrait;
 
+    /**
+     * The captured flag constant.
+     */
     private const CAPTURED_FLAG = 'bagistoapi_pagination_captured';
 
+    /**
+     * Normalize.
+     */
     public function normalize(mixed $data, ?string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
     {
         if ($data instanceof PaginatorInterface) {
@@ -39,11 +37,17 @@ class PaginationHeaderNormalizer implements NormalizerAwareInterface, Normalizer
         return $this->normalizer->normalize($data, $format, $context);
     }
 
+    /**
+     * Supports normalization.
+     */
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof PaginatorInterface && empty($context[self::CAPTURED_FLAG]);
     }
 
+    /**
+     * Get supported types.
+     */
     public function getSupportedTypes(?string $format): array
     {
         return [PaginatorInterface::class => false];

@@ -10,11 +10,104 @@ use Webkul\Sales\Models\OrderPayment;
 class OrderActionTest extends GraphQLTestCase
 {
     /**
+     * Test customer can cancel their own pending order.
+     */
+    public function test_customer_can_cancel_their_own_pending_order(): void
+    {
+        $customer = $this->createCustomer();
+        $data = $this->createTestOrder($customer, 'pending');
+        $order = $data['order'];
+
+        $mutation = <<<'GQL'
+            mutation CancelOrder($input: createCancelOrderInput!) {
+                createCancelOrder(input: $input) {
+                    cancelOrder {
+                        success
+                        message
+                        status
+                        orderId
+                    }
+                }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $mutation, [
+            'input' => ['orderId' => (int) $order->id],
+        ]);
+
+        $json = $response->json();
+        if (isset($json['errors'])) {
+            $this->fail('GraphQL errors: '.json_encode($json['errors']));
+        }
+
+        $response->assertOk()
+            ->assertJsonPath('data.createCancelOrder.cancelOrder.success', true)
+            ->assertJsonPath('data.createCancelOrder.cancelOrder.status', 'canceled');
+    }
+
+    /**
+     * Test customer cannot cancel an order that does not belong to them.
+     */
+    public function test_customer_cannot_cancel_an_order_that_does_not_belong_to_them(): void
+    {
+        $customer1 = $this->createCustomer();
+        $customer2 = $this->createCustomer();
+        $data = $this->createTestOrder($customer2);
+
+        $mutation = <<<'GQL'
+            mutation CancelOrder($input: createCancelOrderInput!) {
+                createCancelOrder(input: $input) {
+                    cancelOrder { success }
+                }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer1, $mutation, [
+            'input' => ['orderId' => (int) $data['order']->id],
+        ]);
+
+        $this->assertNotEmpty($response->json('errors'));
+    }
+
+    /**
+     * Test customer can reorder items from a previous order.
+     */
+    public function test_customer_can_reorder_items_from_a_previous_order(): void
+    {
+        $customer = $this->createCustomer();
+        $data = $this->createTestOrder($customer, 'completed');
+
+        $mutation = <<<'GQL'
+            mutation Reorder($input: createReorderOrderInput!) {
+                createReorderOrder(input: $input) {
+                    reorderOrder {
+                        success
+                        message
+                        orderId
+                        itemsAddedCount
+                    }
+                }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $mutation, [
+            'input' => ['orderId' => (int) $data['order']->id],
+        ]);
+
+        $json = $response->json();
+        if (isset($json['errors'])) {
+            $this->fail('GraphQL errors: '.json_encode($json['errors']));
+        }
+
+        $reorder = $json['data']['createReorderOrder']['reorderOrder'] ?? null;
+        $this->assertNotNull($reorder, 'reorderOrder is null. Response: '.json_encode($json));
+        $this->assertTrue($reorder['success'], 'Reorder should succeed. Message: '.($reorder['message'] ?? 'none'));
+        $this->assertGreaterThanOrEqual(1, $reorder['itemsAddedCount']);
+    }
+
+    /**
      * Create a test order for a customer with a fully saleable product.
-     *
-     * OrderItem must have type, sku, name, price, weight set — otherwise
-     * OrderRepository::cancel() fails in returnQtyToProductInventory() and
-     * Cart::addProduct() fails in the reorder flow.
+     * OrderItem must have type, sku, name, price, weight set — otherwise.
      */
     private function createTestOrder($customer, $status = 'pending'): array
     {
@@ -49,92 +142,5 @@ class OrderActionTest extends GraphQLTestCase
             'order' => $order,
             'product' => $product,
         ];
-    }
-
-    public function test_customer_can_cancel_their_own_pending_order(): void
-    {
-        $customer = $this->createCustomer();
-        $data = $this->createTestOrder($customer, 'pending');
-        $order = $data['order'];
-
-        $mutation = <<<'GQL'
-            mutation CancelOrder($input: createCancelOrderInput!) {
-                createCancelOrder(input: $input) {
-                    cancelOrder {
-                        success
-                        message
-                        status
-                        orderId
-                    }
-                }
-            }
-        GQL;
-
-        $response = $this->authenticatedGraphQL($customer, $mutation, [
-            'input' => ['orderId' => (int) $order->id],
-        ]);
-
-        $json = $response->json();
-        if (isset($json['errors'])) {
-            $this->fail('GraphQL errors: '.json_encode($json['errors']));
-        }
-
-        $response->assertOk()
-            ->assertJsonPath('data.createCancelOrder.cancelOrder.success', true)
-            ->assertJsonPath('data.createCancelOrder.cancelOrder.status', 'canceled');
-    }
-
-    public function test_customer_cannot_cancel_an_order_that_does_not_belong_to_them(): void
-    {
-        $customer1 = $this->createCustomer();
-        $customer2 = $this->createCustomer();
-        $data = $this->createTestOrder($customer2);
-
-        $mutation = <<<'GQL'
-            mutation CancelOrder($input: createCancelOrderInput!) {
-                createCancelOrder(input: $input) {
-                    cancelOrder { success }
-                }
-            }
-        GQL;
-
-        $response = $this->authenticatedGraphQL($customer1, $mutation, [
-            'input' => ['orderId' => (int) $data['order']->id],
-        ]);
-
-        $this->assertNotEmpty($response->json('errors'));
-    }
-
-    public function test_customer_can_reorder_items_from_a_previous_order(): void
-    {
-        $customer = $this->createCustomer();
-        $data = $this->createTestOrder($customer, 'completed');
-
-        $mutation = <<<'GQL'
-            mutation Reorder($input: createReorderOrderInput!) {
-                createReorderOrder(input: $input) {
-                    reorderOrder {
-                        success
-                        message
-                        orderId
-                        itemsAddedCount
-                    }
-                }
-            }
-        GQL;
-
-        $response = $this->authenticatedGraphQL($customer, $mutation, [
-            'input' => ['orderId' => (int) $data['order']->id],
-        ]);
-
-        $json = $response->json();
-        if (isset($json['errors'])) {
-            $this->fail('GraphQL errors: '.json_encode($json['errors']));
-        }
-
-        $reorder = $json['data']['createReorderOrder']['reorderOrder'] ?? null;
-        $this->assertNotNull($reorder, 'reorderOrder is null. Response: '.json_encode($json));
-        $this->assertTrue($reorder['success'], 'Reorder should succeed. Message: '.($reorder['message'] ?? 'none'));
-        $this->assertGreaterThanOrEqual(1, $reorder['itemsAddedCount']);
     }
 }

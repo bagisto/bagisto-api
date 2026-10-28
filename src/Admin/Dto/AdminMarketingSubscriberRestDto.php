@@ -6,43 +6,58 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 
-/**
- * REST output for AdminMarketingSubscriber. Snake_case props surface as
- * camelCase via the central converter.
- *
- * The former bare `channelId` / `channelName` scalars are REPLACED by a single
- * `channel` object `{ id, code, name }` (to-one). Name-match trap: the prop must
- * be named `channel` to match the parent Eloquent resource's `channel()` relation.
- *
- * `customerId` / `customerName` are kept as scalars (NOT objectified).
- */
 #[ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
 class AdminMarketingSubscriberRestDto
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $id = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(writable: false)]
     public ?string $email = null;
 
+    /**
+     * The is subscribed.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $is_subscribed = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customer_id = null;
 
+    /**
+     * The customer name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $customer_name = null;
 
-    /** @var array{id:int, code:string|null, name:string|null}|null */
+    /**
+     * The channel the subscriber signed up on.
+     *
+     * @var array{id:int, code:string|null, name:string|null}|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $channel = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 }

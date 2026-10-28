@@ -14,11 +14,6 @@ use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\MoveWishlistToCartInput;
 use Webkul\BagistoApi\State\MoveWishlistToCartProcessor;
 
-/**
- * Move Wishlist to Cart Response Model
- *
- * Response object for move wishlist to cart operations
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'WishlistToCart',
@@ -137,13 +132,22 @@ use Webkul\BagistoApi\State\MoveWishlistToCartProcessor;
 )]
 class MoveWishlistToCart
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, readable: true)]
     public ?int $id = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $message = null;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(?string $message = null, ?int $id = null)
     {
         $this->message = $message;

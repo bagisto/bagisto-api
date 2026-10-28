@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsRoleCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsRoleUpdateInput;
@@ -102,11 +103,11 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
 
         $this->assertCanGrantPermissions($admin, $payload);
 
-        \Event::dispatch('user.role.create.before');
+        Event::dispatch('user.role.create.before');
 
         $role = $this->roleRepository->create($payload);
 
-        \Event::dispatch('user.role.create.after', $role);
+        Event::dispatch('user.role.create.after', $role);
 
         return $this->itemProvider->mapToDtoPublic(Role::find($role->id));
     }
@@ -121,11 +122,11 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.role.not-found'));
         }
 
-        $this->assertCanGrantRole($admin, $role);
-
         $this->validatePayload($input);
 
         $payload = $this->filterRepositoryPayload($input);
+
+        $this->assertCanGrantRole($admin, $role);
 
         $this->assertCanGrantPermissions($admin, $payload);
 
@@ -135,11 +136,11 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             $payload['permissions'] = [];
         }
 
-        \Event::dispatch('user.role.update.before', $id);
+        Event::dispatch('user.role.update.before', $id);
 
         $this->roleRepository->update($payload, $id);
 
-        \Event::dispatch('user.role.update.after', Role::find($id));
+        Event::dispatch('user.role.update.after', Role::find($id));
 
         return $this->itemProvider->mapToDtoPublic(Role::find($id));
     }
@@ -214,9 +215,9 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         }
 
         try {
-            \Event::dispatch('user.role.delete.before', $id);
+            Event::dispatch('user.role.delete.before', $id);
             $this->roleRepository->delete($id);
-            \Event::dispatch('user.role.delete.after', $id);
+            Event::dispatch('user.role.delete.after', $id);
         } catch (\Throwable $exception) {
             report($exception);
             throw new InvalidInputException(

@@ -8,19 +8,35 @@ use Webkul\Core\Models\Currency;
 
 class AdminSettingsCurrencyItemProvider extends AbstractAdminItemProvider
 {
+    /**
+     * Public alias used by the processor to share the mapping logic.
+     */
+    public function mapToDtoPublic(object $currency): AdminSettingsCurrency
+    {
+        return $this->mapToDto($currency);
+    }
+
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.settings.currency.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return Currency::find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $currency): AdminSettingsCurrency
     {
-        /** @var Currency $currency */
         $dto = new AdminSettingsCurrency;
 
         $dto->id = (int) $currency->id;
@@ -35,13 +51,5 @@ class AdminSettingsCurrencyItemProvider extends AbstractAdminItemProvider
         $dto->updatedAt = $currency->updated_at?->toIso8601String();
 
         return $dto;
-    }
-
-    /**
-     * Public alias used by the processor to share the mapping logic.
-     */
-    public function mapToDtoPublic(object $currency): AdminSettingsCurrency
-    {
-        return $this->mapToDto($currency);
     }
 }

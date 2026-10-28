@@ -75,6 +75,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'Get an RMA status',
+                description: 'One RMA status by ID, default or custom. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'The RMA status.',
@@ -223,14 +224,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusWriteProvider;
                 summary: 'Delete an RMA status',
                 description: 'Only non-default statuses can be deleted (422 otherwise). Permission: sales.rma.statuses.delete.',
                 responses: [
-                    '200' => new Model\Response(
-                        description: 'The RMA status was deleted.',
-                        content: new \ArrayObject([
-                            'application/json' => [
-                                'example' => ['message' => 'RMA status deleted successfully.'],
-                            ],
-                        ]),
-                    ),
+                    '204' => new Model\Response(description: 'The RMA status was deleted. No body is returned.'),
+                    '403' => new Model\Response(description: 'Admin role lacks sales.rma.statuses.delete.'),
+                    '404' => new Model\Response(description: 'The RMA status was not found.'),
+                    '422' => new Model\Response(description: 'The RMA status is a default status and cannot be deleted.'),
                 ],
             ),
         ),
@@ -239,6 +236,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusWriteProvider;
         new QueryCollection(
             provider: AdminRmaStatusCollectionProvider::class,
             paginationType: 'cursor',
+            description: 'The return statuses, default and custom. Filters: `title` (partial match), `status` (0 or 1). Sortable by id or title. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page\'s `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.statuses` permission.',
             args: [
                 'title' => ['type' => 'String'],
                 'status' => ['type' => 'Int'],
@@ -248,7 +246,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusWriteProvider;
                 'after' => ['type' => 'String'],
             ],
         ),
-        new Query(provider: AdminRmaStatusItemProvider::class),
+        new Query(
+            provider: AdminRmaStatusItemProvider::class,
+            description: 'One RMA status. Needs the `sales.rma.statuses` permission.',
+        ),
         new Mutation(name: 'create', input: AdminRmaStatusCreateInput::class, processor: AdminRmaStatusProcessor::class),
         new Mutation(name: 'update', input: AdminRmaStatusUpdateInput::class, processor: AdminRmaStatusProcessor::class),
         new Mutation(name: 'delete', input: AdminRmaStatusUpdateInput::class, processor: AdminRmaStatusProcessor::class),
@@ -258,20 +259,44 @@ class AdminRmaStatus
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The title.
+     */
     public ?string $title = null;
 
+    /**
+     * The status.
+     */
     public ?int $status = null;
 
+    /**
+     * The color.
+     */
     public ?string $color = null;
 
+    /**
+     * The default.
+     */
     public ?int $default = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

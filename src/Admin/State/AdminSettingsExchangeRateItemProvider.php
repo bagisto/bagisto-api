@@ -8,19 +8,27 @@ use Webkul\Core\Models\CurrencyExchangeRate;
 
 class AdminSettingsExchangeRateItemProvider extends AbstractAdminItemProvider
 {
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.settings.exchange-rate.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return CurrencyExchangeRate::with('currency')->find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $rate): AdminSettingsExchangeRate
     {
-        /** @var CurrencyExchangeRate $rate */
         $dto = new AdminSettingsExchangeRate;
 
         $dto->id = (int) $rate->id;

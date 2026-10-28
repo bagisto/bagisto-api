@@ -5,41 +5,10 @@ namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 use Webkul\BagistoApi\Models\Section;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
-/**
- * Sections GraphQL API Test Cases
- *
- * Organized by test categories:
- * - Get Sections Basic
- * - Get Sections - Filtered by Type
- * - Get Sections - Complete Details
- * - Single Section by ID
- */
 class SectionsTest extends GraphQLTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // BACKWARD COMPATIBILITY: remove when the minimum supported core is 2.4.10.
-        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
-    }
-
-    private function existingSectionId(): int
-    {
-        $id = Section::query()
-            ->whereHas('translations')
-            ->orderBy('id')
-            ->value('id');
-
-        if (! $id) {
-            $this->markTestSkipped('No section with a translation found. seedRequiredData must run first.');
-        }
-
-        return (int) $id;
-    }
-
     /**
-     * Test: Query sections - Basic
+     * Test: Query sections - Basic.
      */
     public function test_theme_customizations_basic(): void
     {
@@ -105,7 +74,7 @@ class SectionsTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query sections filtered by type
+     * Test: Query sections filtered by type.
      */
     public function test_theme_customizations_filtered_by_type(): void
     {
@@ -218,7 +187,7 @@ class SectionsTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query sections with complete details
+     * Test: Query sections with complete details.
      */
     public function test_theme_customizations_complete_details(): void
     {
@@ -341,7 +310,7 @@ class SectionsTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single section by ID - Basic
+     * Test: Query single section by ID - Basic.
      */
     public function test_get_theme_customization_by_id_basic(): void
     {
@@ -385,7 +354,7 @@ class SectionsTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single section by numeric ID
+     * Test: Query single section by numeric ID.
      */
     public function test_get_theme_customization_by_numeric_id(): void
     {
@@ -431,7 +400,7 @@ class SectionsTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single section with complete details
+     * Test: Query single section with complete details.
      */
     public function test_get_theme_customization_complete_details(): void
     {
@@ -527,5 +496,32 @@ class SectionsTest extends GraphQLTestCase
         ]);
 
         expect($response->json('data.section.translations.totalCount'))->toBeInt();
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
+    }
+
+    /**
+     * Existing section id.
+     */
+    private function existingSectionId(): int
+    {
+        $id = Section::query()
+            ->whereHas('translations')
+            ->orderBy('id')
+            ->value('id');
+
+        if (! $id) {
+            $this->markTestSkipped('No section with a translation found. seedRequiredData must run first.');
+        }
+
+        return (int) $id;
     }
 }

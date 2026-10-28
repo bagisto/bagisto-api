@@ -11,15 +11,8 @@ use Webkul\BagistoApi\Tests\BagistoApiTest;
 class DatabaseQueryLoggingProviderTest extends BagistoApiTest
 {
     /**
-     * Boot the provider and fire one query event.
+     * Test nothing is logged in a local environment without the flag.
      */
-    private function fireQuery(): void
-    {
-        (new DatabaseQueryLoggingProvider($this->app))->boot();
-
-        Event::dispatch(new QueryExecuted('select * from t where a = ?', ['secret'], 1.0, $this->app['db']->connection()));
-    }
-
     public function test_nothing_is_logged_in_a_local_environment_without_the_flag(): void
     {
         config(['api-platform.database.log_queries' => false]);
@@ -31,6 +24,9 @@ class DatabaseQueryLoggingProviderTest extends BagistoApiTest
         $this->fireQuery();
     }
 
+    /**
+     * Test bindings are omitted unless explicitly enabled.
+     */
     public function test_bindings_are_omitted_unless_explicitly_enabled(): void
     {
         config([
@@ -43,6 +39,9 @@ class DatabaseQueryLoggingProviderTest extends BagistoApiTest
         $this->fireQuery();
     }
 
+    /**
+     * Test bindings are logged when enabled.
+     */
     public function test_bindings_are_logged_when_enabled(): void
     {
         config([
@@ -53,5 +52,15 @@ class DatabaseQueryLoggingProviderTest extends BagistoApiTest
         Log::shouldReceive('debug')->once()->withArgs(fn ($message, $context) => $context['bindings'] === ['secret']);
 
         $this->fireQuery();
+    }
+
+    /**
+     * Boot the provider and fire one query event.
+     */
+    private function fireQuery(): void
+    {
+        (new DatabaseQueryLoggingProvider($this->app))->boot();
+
+        Event::dispatch(new QueryExecuted('select * from t where a = ?', ['secret'], 1.0, $this->app['db']->connection()));
     }
 }

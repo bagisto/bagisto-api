@@ -10,17 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCatalogRuleMassDeleteInput;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleMassDeleteProcessor;
 
-/**
- * One-operation resource for mass-deleting catalog rules.
- *
- * REST:
- *   POST /api/admin/marketing/catalog-rules/mass-delete
- *     Body: { "indices": [12, 18] }
- *     200:  { "deleted": [12, 18], "message": "..." }
- *
- * GraphQL:
- *   createAdminMarketingCatalogRuleMassDelete
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingCatalogRuleMassDelete',
@@ -83,17 +72,31 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleMassDeleteProcessor;
 )]
 class AdminMarketingCatalogRuleMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the catalog rules that were deleted.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
-    /** @var int[]|null IDs that did not exist and were skipped. */
+    /**
+     * The ids of the catalog rules that were not found.
+     *
+     * @var int[]|null IDs that did not exist and were skipped.
+     */
     #[ApiProperty(writable: false)]
     public ?array $skipped = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

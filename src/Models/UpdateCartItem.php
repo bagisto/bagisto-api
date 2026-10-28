@@ -13,12 +13,6 @@ use Webkul\BagistoApi\Dto\CartInput;
 use Webkul\BagistoApi\State\CartTokenMutationProvider;
 use Webkul\BagistoApi\State\CartTokenProcessor;
 
-/**
- * UpdateCartItem - GraphQL & REST API Resource for Updating Cart Items
- *
- * Provides mutation for updating cart item quantity without requiring resource ID.
- * Uses 'create' operation name to bypass API Platform's ID requirement.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'UpdateCartItem',
@@ -137,26 +131,44 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
 )]
 class UpdateCartItem
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $id = null;
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $cartToken = null;
 
+    /**
+     * The items count.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $itemsCount = null;
 
+    /**
+     * The subtotal.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?float $subtotal = null;
 
+    /**
+     * The grand total.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?float $grandTotal = null;
 
+    /**
+     * The discount amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?float $discountAmount = null;

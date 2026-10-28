@@ -11,65 +11,9 @@ use Webkul\Sales\Models\OrderItem;
 
 class ReturnableOrderTest extends GraphQLTestCase
 {
-    private function queryDocument(): string
-    {
-        return <<<'GQL'
-            query {
-              returnableOrders {
-                _id
-                incrementId
-                status
-                statusLabel
-                grandTotal
-                formattedGrandTotal
-                orderCurrencyCode
-                paymentMethodTitle
-                totalQtyOrdered
-                totalReturnedQty
-                returnableQty
-                createdAt
-              }
-            }
-        GQL;
-    }
-
-    private function seedEligibleOrder($customer, array $orderAttributes = [], array $itemAttributes = []): Order
-    {
-        $channel = Channel::first();
-        $product = Product::factory()->create();
-
-        $order = Order::factory()->create(array_merge([
-            'customer_id' => $customer->id,
-            'customer_email' => $customer->email,
-            'channel_id' => $channel->id,
-            'status' => 'completed',
-        ], $orderAttributes));
-
-        OrderItem::factory()->create(array_merge([
-            'order_id' => $order->id,
-            'product_id' => $product->id,
-            'sku' => 'RETURNABLE-GQL-'.$order->id,
-            'type' => 'simple',
-            'name' => 'Returnable Product',
-            'qty_ordered' => 2,
-            'qty_invoiced' => 2,
-            'rma_return_period' => 30,
-        ], $itemAttributes));
-
-        return $order;
-    }
-
-    private function rowFor($rows, int $orderId): ?array
-    {
-        foreach ($rows ?? [] as $row) {
-            if ((int) $row['_id'] === $orderId) {
-                return $row;
-            }
-        }
-
-        return null;
-    }
-
+    /**
+     * Test query returns an order that can still be returned.
+     */
     public function test_query_returns_an_order_that_can_still_be_returned(): void
     {
         $this->seedRequiredData();
@@ -92,6 +36,9 @@ class ReturnableOrderTest extends GraphQLTestCase
         expect($row['formattedGrandTotal'])->not->toBeNull();
     }
 
+    /**
+     * Test query counts quantity already returned.
+     */
     public function test_query_counts_quantity_already_returned(): void
     {
         $this->seedRequiredData();
@@ -118,6 +65,9 @@ class ReturnableOrderTest extends GraphQLTestCase
         expect($row['returnableQty'])->toBe(1);
     }
 
+    /**
+     * Test query excludes an order in a state that cannot be returned.
+     */
     public function test_query_excludes_an_order_in_a_state_that_cannot_be_returned(): void
     {
         $this->seedRequiredData();
@@ -131,6 +81,9 @@ class ReturnableOrderTest extends GraphQLTestCase
         expect($this->rowFor($response->json('data.returnableOrders'), (int) $order->id))->toBeNull();
     }
 
+    /**
+     * Test query never returns another customers order.
+     */
     public function test_query_never_returns_another_customers_order(): void
     {
         $this->seedRequiredData();
@@ -145,6 +98,9 @@ class ReturnableOrderTest extends GraphQLTestCase
         expect($this->rowFor($response->json('data.returnableOrders'), (int) $foreign->id))->toBeNull();
     }
 
+    /**
+     * Test query filters by order number.
+     */
     public function test_query_filters_by_order_number(): void
     {
         $this->seedRequiredData();
@@ -175,6 +131,9 @@ class ReturnableOrderTest extends GraphQLTestCase
         expect($this->rowFor($rows, (int) $other->id))->toBeNull();
     }
 
+    /**
+     * Test query requires an authenticated customer.
+     */
     public function test_query_requires_an_authenticated_customer(): void
     {
         $this->seedRequiredData();
@@ -183,5 +142,73 @@ class ReturnableOrderTest extends GraphQLTestCase
 
         $response->assertOk();
         expect($response->json('errors'))->not->toBeNull();
+    }
+
+    /**
+     * Query document.
+     */
+    private function queryDocument(): string
+    {
+        return <<<'GQL'
+            query {
+              returnableOrders {
+                _id
+                incrementId
+                status
+                statusLabel
+                grandTotal
+                formattedGrandTotal
+                orderCurrencyCode
+                paymentMethodTitle
+                totalQtyOrdered
+                totalReturnedQty
+                returnableQty
+                createdAt
+              }
+            }
+        GQL;
+    }
+
+    /**
+     * Seed eligible order.
+     */
+    private function seedEligibleOrder($customer, array $orderAttributes = [], array $itemAttributes = []): Order
+    {
+        $channel = Channel::first();
+        $product = Product::factory()->create();
+
+        $order = Order::factory()->create(array_merge([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
+        ], $orderAttributes));
+
+        OrderItem::factory()->create(array_merge([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'RETURNABLE-GQL-'.$order->id,
+            'type' => 'simple',
+            'name' => 'Returnable Product',
+            'qty_ordered' => 2,
+            'qty_invoiced' => 2,
+            'rma_return_period' => 30,
+        ], $itemAttributes));
+
+        return $order;
+    }
+
+    /**
+     * Row for.
+     */
+    private function rowFor($rows, int $orderId): ?array
+    {
+        foreach ($rows ?? [] as $row) {
+            if ((int) $row['_id'] === $orderId) {
+                return $row;
+            }
+        }
+
+        return null;
     }
 }

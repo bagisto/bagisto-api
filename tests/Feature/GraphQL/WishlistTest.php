@@ -10,33 +10,7 @@ use Webkul\Customer\Models\Wishlist;
 class WishlistTest extends GraphQLTestCase
 {
     /**
-     * Create test data - customer, products and wishlist items
-     */
-    private function createTestData(): array
-    {
-        $this->seedRequiredData();
-
-        $customer = $this->createCustomer();
-        $channel = Channel::first();
-        $product1 = $this->createBaseProduct('simple');
-        $product2 = $this->createBaseProduct('simple');
-
-        $wishlistItem1 = Wishlist::factory()->create([
-            'customer_id' => $customer->id,
-            'product_id' => $product1->id,
-            'channel_id' => $channel->id,
-        ]);
-        $wishlistItem2 = Wishlist::factory()->create([
-            'customer_id' => $customer->id,
-            'product_id' => $product2->id,
-            'channel_id' => $channel->id,
-        ]);
-
-        return compact('customer', 'channel', 'product1', 'product2', 'wishlistItem1', 'wishlistItem2');
-    }
-
-    /**
-     * Test: Query all wishlist items collection
+     * Test: Query all wishlist items collection.
      */
     public function test_get_wishlist_items_collection(): void
     {
@@ -83,6 +57,9 @@ class WishlistTest extends GraphQLTestCase
         expect($data['edges'])->not()->toBeEmpty();
     }
 
+    /**
+     * Test wishlist collection sort created at desc returns newest first.
+     */
     public function test_wishlist_collection_sort_created_at_desc_returns_newest_first(): void
     {
         $testData = $this->createTestData();
@@ -108,7 +85,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single wishlist item by ID
+     * Test: Query single wishlist item by ID.
      */
     public function test_get_wishlist_item_by_id(): void
     {
@@ -146,6 +123,9 @@ class WishlistTest extends GraphQLTestCase
         expect($data['channel'])->toHaveKey('id');
     }
 
+    /**
+     * Test get wishlist item belonging to another customer is not returned.
+     */
     public function test_get_wishlist_item_belonging_to_another_customer_is_not_returned(): void
     {
         $testData = $this->createTestData();
@@ -170,6 +150,9 @@ class WishlistTest extends GraphQLTestCase
         expect($response->json('errors.0.message'))->toContain('Wishlist item not found');
     }
 
+    /**
+     * Test get unknown wishlist id returns friendly not found message.
+     */
     public function test_get_unknown_wishlist_id_returns_friendly_not_found_message(): void
     {
         $this->seedRequiredData();
@@ -191,7 +174,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Wishlist item timestamps are returned in ISO8601 format
+     * Test: Wishlist item timestamps are returned in ISO8601 format.
      */
     public function test_wishlist_item_timestamps_are_iso8601_format(): void
     {
@@ -221,7 +204,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query wishlist items with pagination (first)
+     * Test: Query wishlist items with pagination (first).
      */
     public function test_wishlist_items_pagination_first(): void
     {
@@ -251,7 +234,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query wishlist items with product relationship
+     * Test: Query wishlist items with product relationship.
      */
     public function test_query_wishlist_items_with_product(): void
     {
@@ -281,7 +264,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query all fields of wishlist item
+     * Test: Query all fields of wishlist item.
      */
     public function test_query_all_wishlist_item_fields(): void
     {
@@ -320,7 +303,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query returns appropriate error for invalid ID
+     * Test: Query returns appropriate error for invalid ID.
      */
     public function test_invalid_wishlist_item_id_returns_error(): void
     {
@@ -339,7 +322,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Pagination with cursor
+     * Test: Pagination with cursor.
      */
     public function test_wishlist_items_pagination_with_cursor(): void
     {
@@ -376,7 +359,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Numeric ID is an integer
+     * Test: Numeric ID is an integer.
      */
     public function test_wishlist_item_numeric_id_is_integer(): void
     {
@@ -403,7 +386,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Multiple wishlist items can be queried
+     * Test: Multiple wishlist items can be queried.
      */
     public function test_query_multiple_wishlist_items(): void
     {
@@ -433,7 +416,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Schema introspection for Wishlist
+     * Test: Schema introspection for Wishlist.
      */
     public function test_wishlist_introspection_query(): void
     {
@@ -462,7 +445,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Wishlist items are properly sorted by creation date
+     * Test: Wishlist items are properly sorted by creation date.
      */
     public function test_wishlist_items_sorted_by_created_at(): void
     {
@@ -486,12 +469,11 @@ class WishlistTest extends GraphQLTestCase
         $response->assertOk();
         $edges = $response->json('data.wishlists.edges');
 
-        // Verify we have items
         expect($edges)->not()->toBeEmpty();
     }
 
     /**
-     * Test: Get all wishlist items with variables and full fields (matches spec query)
+     * Test: Get all wishlist items with variables and full fields (matches spec query).
      */
     public function test_get_all_wishlists_with_variables_and_full_fields(): void
     {
@@ -563,7 +545,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Get wishlist items next page using cursor pagination (matches spec)
+     * Test: Get wishlist items next page using cursor pagination (matches spec).
      */
     public function test_get_wishlists_next_page_with_cursor(): void
     {
@@ -594,7 +576,6 @@ class WishlistTest extends GraphQLTestCase
             }
         GQL;
 
-        // Fetch first page to get a cursor
         $firstResponse = $this->authenticatedGraphQL($testData['customer'], $paginatedQuery, [
             'first' => 1,
             'after' => null,
@@ -604,7 +585,6 @@ class WishlistTest extends GraphQLTestCase
         $cursor = $firstResponse->json('data.wishlists.edges.0.cursor');
         expect($cursor)->not()->toBeNull();
 
-        // Fetch next page using cursor
         $nextResponse = $this->authenticatedGraphQL($testData['customer'], $paginatedQuery, [
             'first' => 10,
             'after' => $cursor,
@@ -619,7 +599,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Get single wishlist item with full fields (matches spec query)
+     * Test: Get single wishlist item with full fields (matches spec query).
      */
     public function test_get_single_wishlist_with_full_fields(): void
     {
@@ -665,7 +645,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Create wishlist item via mutation
+     * Test: Create wishlist item via mutation.
      */
     public function test_create_wishlist_item_mutation(): void
     {
@@ -716,7 +696,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Create wishlist item using createWishlistInput variable type (matches spec)
+     * Test: Create wishlist item using createWishlistInput variable type (matches spec).
      */
     public function test_create_wishlist_item_mutation_with_input_variable(): void
     {
@@ -759,7 +739,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Create wishlist item via inline GraphQL input literal
+     * Test: Create wishlist item via inline GraphQL input literal.
      */
     public function test_create_wishlist_item_mutation_with_inline_input_literal(): void
     {
@@ -791,7 +771,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete wishlist item via mutation
+     * Test: Delete wishlist item via mutation.
      */
     public function test_delete_wishlist_item_mutation(): void
     {
@@ -834,7 +814,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete wishlist item via inline GraphQL input literal
+     * Test: Delete wishlist item via inline GraphQL input literal.
      */
     public function test_delete_wishlist_item_mutation_with_inline_input_literal(): void
     {
@@ -869,7 +849,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Toggle wishlist item (add existing removes it)
+     * Test: Toggle wishlist item (add existing removes it).
      */
     public function test_toggle_wishlist_item_mutation(): void
     {
@@ -905,7 +885,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Toggle wishlist item via inline GraphQL input literal
+     * Test: Toggle wishlist item via inline GraphQL input literal.
      */
     public function test_toggle_wishlist_item_mutation_with_inline_input_literal(): void
     {
@@ -942,7 +922,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Toggle wishlist - add item using toggleWishlistInput variable type (matches spec)
+     * Test: Toggle wishlist - add item using toggleWishlistInput variable type (matches spec).
      */
     public function test_toggle_wishlist_add_item_with_input_variable(): void
     {
@@ -972,21 +952,19 @@ class WishlistTest extends GraphQLTestCase
 
         $response->assertOk();
 
-        // When adding a new item, expect the wishlist item to be returned
         $wishlistItem = $response->json('data.toggleWishlist.wishlist');
         if ($wishlistItem !== null) {
             expect($wishlistItem['_id'])->toBeInt();
             expect($wishlistItem['product'])->toHaveKeys(['id', 'name', 'price']);
             expect($wishlistItem['createdAt'])->not()->toBeNull();
         } else {
-            // Some implementations return errors with a "added" message on toggle-add
             $errors = $response->json('errors');
             expect($errors)->not()->toBeEmpty();
         }
     }
 
     /**
-     * Test: Toggle wishlist - remove item using toggleWishlistInput variable type (matches spec)
+     * Test: Toggle wishlist - remove item using toggleWishlistInput variable type (matches spec).
      */
     public function test_toggle_wishlist_remove_item_with_input_variable(): void
     {
@@ -1023,7 +1001,6 @@ class WishlistTest extends GraphQLTestCase
 
         $response->assertOk();
 
-        // When toggling an existing item it gets removed
         $errors = $response->json('errors');
         expect($errors)->not()->toBeEmpty();
         expect(implode(' ', array_column($errors ?? [], 'message')))->toMatch('/removed/i');
@@ -1032,7 +1009,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete wishlist item using deleteWishlistInput variable type (matches spec)
+     * Test: Delete wishlist item using deleteWishlistInput variable type (matches spec).
      */
     public function test_delete_wishlist_item_mutation_with_input_variable(): void
     {
@@ -1072,7 +1049,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Authorization - Cannot delete other user's wishlist item
+     * Test: Authorization - Cannot delete other user's wishlist item.
      */
     public function test_cannot_delete_other_users_wishlist_item(): void
     {
@@ -1114,7 +1091,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Move wishlist item to cart with quantity 2 - only message field (matches spec)
+     * Test: Move wishlist item to cart with quantity 2 - only message field (matches spec).
      */
     public function test_move_wishlist_item_to_cart_with_quantity_2(): void
     {
@@ -1160,7 +1137,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Move wishlist item to cart with default quantity (no quantity field) (matches spec)
+     * Test: Move wishlist item to cart with default quantity (no quantity field) (matches spec).
      */
     public function test_move_wishlist_item_to_cart_default_quantity(): void
     {
@@ -1205,7 +1182,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Move wishlist item to cart successfully
+     * Test: Move wishlist item to cart successfully.
      */
     public function test_move_wishlist_item_to_cart(): void
     {
@@ -1252,7 +1229,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Move wishlist item to cart with quantity
+     * Test: Move wishlist item to cart with quantity.
      */
     public function test_move_wishlist_item_to_cart_with_quantity(): void
     {
@@ -1299,7 +1276,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Move wishlist item to cart requires authentication
+     * Test: Move wishlist item to cart requires authentication.
      */
     public function test_move_wishlist_to_cart_requires_authentication(): void
     {
@@ -1327,7 +1304,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Move non-existent wishlist item to cart returns error
+     * Test: Move non-existent wishlist item to cart returns error.
      */
     public function test_move_non_existent_wishlist_to_cart_returns_error(): void
     {
@@ -1358,7 +1335,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Move wishlist item with invalid quantity returns error
+     * Test: Move wishlist item with invalid quantity returns error.
      */
     public function test_move_wishlist_with_invalid_quantity_returns_error(): void
     {
@@ -1396,7 +1373,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Cannot move other user's wishlist item to cart
+     * Test: Cannot move other user's wishlist item to cart.
      */
     public function test_cannot_move_other_users_wishlist_to_cart(): void
     {
@@ -1438,7 +1415,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete all wishlist items successfully
+     * Test: Delete all wishlist items successfully.
      */
     public function test_delete_all_wishlists(): void
     {
@@ -1469,7 +1446,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete all wishlists requires authentication
+     * Test: Delete all wishlists requires authentication.
      */
     public function test_delete_all_wishlists_requires_authentication(): void
     {
@@ -1492,7 +1469,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete all wishlists with no items returns zero count
+     * Test: Delete all wishlists with no items returns zero count.
      */
     public function test_delete_all_wishlists_with_no_items(): void
     {
@@ -1521,7 +1498,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Create wishlist requires authentication
+     * Test: Create wishlist requires authentication.
      */
     public function test_create_wishlist_requires_authentication(): void
     {
@@ -1545,7 +1522,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Create wishlist with non-existent product returns error
+     * Test: Create wishlist with non-existent product returns error.
      */
     public function test_create_wishlist_with_nonexistent_product_returns_error(): void
     {
@@ -1571,7 +1548,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete wishlist item requires authentication
+     * Test: Delete wishlist item requires authentication.
      */
     public function test_delete_wishlist_requires_authentication(): void
     {
@@ -1594,7 +1571,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Delete non-existent wishlist item returns error
+     * Test: Delete non-existent wishlist item returns error.
      */
     public function test_delete_nonexistent_wishlist_item_returns_error(): void
     {
@@ -1622,7 +1599,7 @@ class WishlistTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Toggle wishlist requires authentication
+     * Test: Toggle wishlist requires authentication.
      */
     public function test_toggle_wishlist_requires_authentication(): void
     {
@@ -1643,5 +1620,90 @@ class WishlistTest extends GraphQLTestCase
 
         $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
+    }
+
+    /**
+     * Last without before returns the final wishlist items with cursors that match them.
+     */
+    public function test_wishlists_last_returns_the_final_items(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGraphQL($testData['customer'], <<<'GQL'
+            query { wishlists(last: 1) { edges { cursor node { _id } } pageInfo { hasPreviousPage } totalCount } }
+        GQL);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $response->json('data.wishlists.edges')))->toBe([$testData['wishlistItem2']->id])
+            ->and(array_column($response->json('data.wishlists.edges'), 'cursor'))->toBe([base64_encode('1')])
+            ->and($response->json('data.wishlists.pageInfo.hasPreviousPage'))->toBeTrue();
+    }
+
+    /**
+     * Last with before returns only the wishlist items that precede the cursor.
+     */
+    public function test_wishlists_last_before_stops_at_the_cursor(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGraphQL(
+            $testData['customer'],
+            'query getWishlists($before: String) { wishlists(last: 5, before: $before) { edges { node { _id } } } }',
+            ['before' => base64_encode('1')]
+        );
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $response->json('data.wishlists.edges')))->toBe([$testData['wishlistItem1']->id]);
+    }
+
+    /**
+     * A zero page size returns an empty wishlist page that still reports the total.
+     */
+    public function test_wishlists_zero_page_size_returns_an_empty_page(): void
+    {
+        $testData = $this->createTestData();
+
+        foreach (['first', 'last'] as $argument) {
+            $response = $this->authenticatedGraphQL(
+                $testData['customer'],
+                'query { wishlists('.$argument.': 0) { edges { node { _id } } totalCount } }'
+            );
+
+            $response->assertOk();
+
+            expect($response->json('errors'))->toBeNull()
+                ->and($response->json('data.wishlists.edges'))->toBe([])
+                ->and($response->json('data.wishlists.totalCount'))->toBe(2);
+        }
+    }
+
+    /**
+     * Create test data - customer, products and wishlist items.
+     */
+    private function createTestData(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $channel = Channel::first();
+        $product1 = $this->createBaseProduct('simple');
+        $product2 = $this->createBaseProduct('simple');
+
+        $wishlistItem1 = Wishlist::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product1->id,
+            'channel_id' => $channel->id,
+        ]);
+        $wishlistItem2 = Wishlist::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product2->id,
+            'channel_id' => $channel->id,
+        ]);
+
+        return compact('customer', 'channel', 'product1', 'product2', 'wishlistItem1', 'wishlistItem2');
     }
 }

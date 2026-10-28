@@ -8,77 +8,10 @@ use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Category\Models\Category;
 use Webkul\Category\Models\CategoryTranslation;
 
-/**
- * Category GraphQL API Test Cases
- *
- * Organized by test categories:
- * - Tree Categories Basic
- * - Tree Categories - Complete Details
- * - Tree Categories - Filter By Parent ID
- * - etc.
- */
 class CategoryTest extends GraphQLTestCase
 {
     /**
-     * Set up the test - seed required category data
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->seedRequiredData();
-
-        // Ensure we have a parent category with ID 1 that has children for treeCategories tests
-        $parentCategory = Category::find(1);
-
-        if ($parentCategory) {
-            // Delete any existing children to ensure clean state
-            $parentCategory->children()->delete();
-
-            // Create a child category under the parent
-            $childCategory = Category::factory()->create([
-                'parent_id' => $parentCategory->id,
-                'position' => 1,
-                'status' => 1,
-            ]);
-
-            // Create translation for the child category
-            CategoryTranslation::factory()->create([
-                'category_id' => $childCategory->id,
-                'locale' => 'en',
-                'name' => 'Test Child Category',
-                'slug' => 'test-child-category',
-            ]);
-
-            // Create a grandchild category under the child (for testing children of children)
-            $grandchildCategory = Category::factory()->create([
-                'parent_id' => $childCategory->id,
-                'position' => 1,
-                'status' => 1,
-            ]);
-
-            // Create translation for the grandchild category
-            CategoryTranslation::factory()->create([
-                'category_id' => $grandchildCategory->id,
-                'locale' => 'en',
-                'name' => 'Test Grandchild Category',
-                'slug' => 'test-grandchild-category',
-            ]);
-
-            // Also ensure parent has translation
-            if ($parentCategory->translations()->count() === 0) {
-                CategoryTranslation::factory()->create([
-                    'category_id' => $parentCategory->id,
-                    'locale' => 'en',
-                    'name' => 'Root Category',
-                    'slug' => 'root-category',
-                ]);
-            }
-        }
-    }
-
-    /**
-     * Test: Query treeCategories with parentId
+     * Test: Query treeCategories with parentId.
      */
     public function test_tree_categories(): void
     {
@@ -154,7 +87,7 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query treeCategories with complete details
+     * Test: Query treeCategories with complete details.
      */
     public function test_tree_categories_complete_details(): void
     {
@@ -302,7 +235,7 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query categories with complete details
+     * Test: Query categories with complete details.
      */
     public function test_get_categories_complete_details(): void
     {
@@ -455,7 +388,7 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query categories with basic details
+     * Test: Query categories with basic details.
      */
     public function test_get_categories_basic_details(): void
     {
@@ -511,7 +444,28 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query categories with cursor pagination
+     * An undecodable cursor is reported to the client as an invalid cursor.
+     */
+    public function test_get_categories_with_an_invalid_cursor_reports_it(): void
+    {
+        $query = <<<'GQL'
+            query getCategories($first: Int, $after: String) {
+              categories(first: $first, after: $after) {
+                edges { cursor node { _id } }
+                pageInfo { endCursor hasNextPage }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, ['first' => 5, 'after' => 'invalid-cursor']);
+
+        $response->assertOk();
+        expect($response->json('errors.0.message'))->toBe('Cursor invalid-cursor is invalid');
+        expect($response->json('data.categories'))->toBeNull();
+    }
+
+    /**
+     * Test: Query categories with cursor pagination.
      */
     public function test_get_categories_cursor_pagination(): void
     {
@@ -584,7 +538,7 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query categories with child categories
+     * Test: Query categories with child categories.
      */
     public function test_get_categories_with_child_categories(): void
     {
@@ -671,7 +625,7 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single category by ID - Basic
+     * Test: Query single category by ID - Basic.
      */
     public function test_get_category_by_id_basic(): void
     {
@@ -715,7 +669,7 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single category by numeric ID
+     * Test: Query single category by numeric ID.
      */
     public function test_get_category_by_numeric_id(): void
     {
@@ -757,7 +711,7 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single category with complete details
+     * Test: Query single category with complete details.
      */
     public function test_get_category_complete_details(): void
     {
@@ -940,7 +894,7 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single category with SEO data
+     * Test: Query single category with SEO data.
      */
     public function test_get_category_with_seo_data(): void
     {
@@ -1014,7 +968,7 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single category with display settings
+     * Test: Query single category with display settings.
      */
     public function test_get_category_with_display_settings(): void
     {
@@ -1076,7 +1030,7 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query single category with all children
+     * Test: Query single category with all children.
      */
     public function test_get_category_with_all_children(): void
     {
@@ -1163,6 +1117,9 @@ class CategoryTest extends GraphQLTestCase
         expect($response->json('data.category.children.totalCount'))->toBeInt();
     }
 
+    /**
+     * Test filterable attributes returns pivot data.
+     */
     public function test_filterable_attributes_returns_pivot_data(): void
     {
         $this->seedRequiredData();
@@ -1270,27 +1227,6 @@ class CategoryTest extends GraphQLTestCase
     }
 
     /**
-     * The categoryTrees query returns the current channel's root category.
-     */
-    public function test_category_trees_returns_the_channel_root_category(): void
-    {
-        $response = $this->graphQL(<<<'GQL'
-            query {
-              categoryTrees {
-                id
-              }
-            }
-        GQL);
-
-        $response->assertOk();
-
-        $ids = collect($response->json('data.categoryTrees'))->pluck('id')->map(fn ($id) => (int) $id)->all();
-
-        expect($response->json('errors'))->toBeNull()
-            ->and($ids)->toBe([(int) core()->getCurrentChannel()->root_category_id]);
-    }
-
-    /**
      * The categoryAttributeFilters query lists every filterable attribute when no category is given.
      */
     public function test_category_attribute_filters_lists_filterable_attributes(): void
@@ -1382,5 +1318,92 @@ class CategoryTest extends GraphQLTestCase
 
         expect($response->json('errors'))->not->toBeEmpty()
             ->and($response->json('data.categoryAttributeFilters'))->toBeNull();
+    }
+
+    /**
+     * Set up the test - seed required category data.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seedRequiredData();
+
+        $parentCategory = Category::find(1);
+
+        if ($parentCategory) {
+            $parentCategory->children()->delete();
+
+            $childCategory = Category::factory()->create([
+                'parent_id' => $parentCategory->id,
+                'position' => 1,
+                'status' => 1,
+            ]);
+
+            CategoryTranslation::factory()->create([
+                'category_id' => $childCategory->id,
+                'locale' => 'en',
+                'name' => 'Test Child Category',
+                'slug' => 'test-child-category',
+            ]);
+
+            $grandchildCategory = Category::factory()->create([
+                'parent_id' => $childCategory->id,
+                'position' => 1,
+                'status' => 1,
+            ]);
+
+            CategoryTranslation::factory()->create([
+                'category_id' => $grandchildCategory->id,
+                'locale' => 'en',
+                'name' => 'Test Grandchild Category',
+                'slug' => 'test-grandchild-category',
+            ]);
+
+            if ($parentCategory->translations()->count() === 0) {
+                CategoryTranslation::factory()->create([
+                    'category_id' => $parentCategory->id,
+                    'locale' => 'en',
+                    'name' => 'Root Category',
+                    'slug' => 'root-category',
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Last without before returns the final categories of the collection, with matching cursors.
+     */
+    public function test_categories_last_returns_the_final_rows(): void
+    {
+        foreach ([97, 98] as $position) {
+            Category::factory()->create(['parent_id' => 1, 'position' => $position, 'status' => 1]);
+        }
+
+        $ids = Category::query()->where('status', 1)->orderBy('id')->pluck('id')->all();
+
+        $response = $this->graphQL('query { categories(last: 2) { edges { node { _id } cursor } totalCount } }');
+
+        $response->assertOk();
+
+        $edges = $response->json('data.categories.edges');
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.categories.totalCount'))->toBe(count($ids))
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $edges))->toBe(array_slice($ids, -2))
+            ->and(array_column($edges, 'cursor'))->toBe([base64_encode((string) (count($ids) - 2)), base64_encode((string) (count($ids) - 1))]);
+    }
+
+    /**
+     * A zero page size returns an empty page rather than a row.
+     */
+    public function test_categories_zero_first_returns_an_empty_page(): void
+    {
+        $response = $this->graphQL('query { categories(first: 0) { edges { node { _id } } totalCount } }');
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.categories.edges'))->toBe([]);
     }
 }

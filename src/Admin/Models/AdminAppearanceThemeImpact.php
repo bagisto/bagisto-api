@@ -11,10 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\Resolver\AdminAppearanceThemeImpactQueryResolver;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeImpactProvider;
 
-/**
- * What switching the named channels over to a theme would leave behind, so a client can
- * spell it out before activating.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAppearanceThemeImpact',
@@ -66,6 +62,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeImpactProvider;
     graphQlOperations: [
         new Query(
             resolver: AdminAppearanceThemeImpactQueryResolver::class,
+            description: 'Which of `channelIds` already hold sections built for their current theme, and how many, so activating theme `code` there would replace them. Needs the `appearance.themes` permission.',
             args: [
                 'code' => ['type' => 'String!'],
                 'channelIds' => ['type' => '[Int!]!'],
@@ -77,10 +74,15 @@ class AdminAppearanceThemeImpact
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $code = null;
 
     /**
+     * The channels whose existing section customizations activating the theme would replace.
+     *
      * @var array<int, array<string, mixed>>
      */
     public array $impact = [];

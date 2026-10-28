@@ -4,34 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * GraphQL coverage for the admin Settings → Tax Rates endpoints (Block B Wave 3).
- *
- * Operations:
- *   - adminSettingsTaxRates  (QueryCollection, cursor)
- *   - adminSettingsTaxRate   (Query)
- *   - createAdminSettingsTaxRate
- *   - updateAdminSettingsTaxRate
- *   - deleteAdminSettingsTaxRate
- */
 class SettingsTaxRateTest extends AdminApiTestCase
 {
-    protected function insertTaxRate(array $overrides = []): int
-    {
-        return \DB::table('tax_rates')->insertGetId(array_merge([
-            'identifier' => 'GQL-'.uniqid(),
-            'is_zip' => 0,
-            'zip_code' => '12345',
-            'zip_from' => null,
-            'zip_to' => null,
-            'state' => 'CA',
-            'country' => 'US',
-            'tax_rate' => 8.5,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
+    /**
+     * Test query listing returns seeded row.
+     */
     public function test_query_listing_returns_seeded_row(): void
     {
         $admin = $this->createAdmin();
@@ -52,6 +29,9 @@ class SettingsTaxRateTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test query listing filter by country.
+     */
     public function test_query_listing_filter_by_country(): void
     {
         $admin = $this->createAdmin();
@@ -74,6 +54,9 @@ class SettingsTaxRateTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test query detail returns row.
+     */
     public function test_query_detail_returns_row(): void
     {
         $admin = $this->createAdmin();
@@ -95,6 +78,33 @@ class SettingsTaxRateTest extends AdminApiTestCase
         expect($r->json('data.adminSettingsTaxRate._id'))->toBe($id);
     }
 
+    /**
+     * The node id of a tax rate is its detail IRI, not the export route declared after it.
+     */
+    public function test_query_detail_returns_the_detail_iri_as_its_id(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertTaxRate([
+            'identifier' => 'GQL-IRI-'.uniqid(),
+            'tax_rate' => 6.7,
+        ]);
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminSettingsTaxRate(id: $id) {
+                id
+              }
+            }
+        GQL;
+
+        $r = $this->adminGraphQL($query, ['id' => '/api/admin/settings/tax-rates/'.$id], $admin);
+        $r->assertOk();
+        expect($r->json('data.adminSettingsTaxRate.id'))->toBe('/api/admin/settings/tax-rates/'.$id);
+    }
+
+    /**
+     * Test query detail multiword fields resolve over graphql.
+     */
     public function test_query_detail_multiword_fields_resolve_over_graphql(): void
     {
         $admin = $this->createAdmin();
@@ -132,6 +142,9 @@ class SettingsTaxRateTest extends AdminApiTestCase
         expect($node['updatedAt'])->not->toBeNull();
     }
 
+    /**
+     * Test create specific zip mutation.
+     */
     public function test_create_specific_zip_mutation(): void
     {
         $admin = $this->createAdmin();
@@ -158,6 +171,9 @@ class SettingsTaxRateTest extends AdminApiTestCase
         expect(\DB::table('tax_rates')->where('identifier', $identifier)->exists())->toBeTrue();
     }
 
+    /**
+     * Test create zip range mutation.
+     */
     public function test_create_zip_range_mutation(): void
     {
         $admin = $this->createAdmin();
@@ -188,6 +204,9 @@ class SettingsTaxRateTest extends AdminApiTestCase
         expect($row->zip_from)->toBe('94000');
     }
 
+    /**
+     * Test update mutation.
+     */
     public function test_update_mutation(): void
     {
         $admin = $this->createAdmin();
@@ -210,6 +229,9 @@ class SettingsTaxRateTest extends AdminApiTestCase
         expect((float) \DB::table('tax_rates')->where('id', $id)->value('tax_rate'))->toBe(4.4);
     }
 
+    /**
+     * Test delete mutation.
+     */
     public function test_delete_mutation(): void
     {
         $admin = $this->createAdmin();
@@ -228,5 +250,24 @@ class SettingsTaxRateTest extends AdminApiTestCase
         ]], $admin);
 
         expect(\DB::table('tax_rates')->where('id', $id)->exists())->toBeFalse();
+    }
+
+    /**
+     * Insert tax rate.
+     */
+    protected function insertTaxRate(array $overrides = []): int
+    {
+        return \DB::table('tax_rates')->insertGetId(array_merge([
+            'identifier' => 'GQL-'.uniqid(),
+            'is_zip' => 0,
+            'zip_code' => '12345',
+            'zip_from' => null,
+            'zip_to' => null,
+            'state' => 'CA',
+            'country' => 'US',
+            'tax_rate' => 8.5,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
     }
 }

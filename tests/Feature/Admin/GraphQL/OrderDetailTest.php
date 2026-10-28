@@ -10,25 +10,15 @@ class OrderDetailTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    /** Resolve an existing order id from the listing, or bootstrap one. */
-    protected function anOrderId(): int
-    {
-        $admin = $this->createAdmin();
-        $rows = $this->adminGet($admin, '/api/admin/orders?per_page=1')->json('data');
-
-        return empty($rows)
-            ? $this->bootstrapAdminOrder('pending', false)->id
-            : $rows[0]['id'];
-    }
-
+    /**
+     * Test order detail query returns the order.
+     */
     public function test_order_detail_query_returns_the_order(): void
     {
         $id = $this->anOrderId();
 
         $admin = $this->createAdmin();
 
-        // Nested data is field-selectable: collections are connections
-        // (items { edges { node } }), customer is a typed object.
         $query = <<<'GQL'
             query orderDetail($id: ID!) {
               adminOrderDetail(id: $id) {
@@ -82,6 +72,9 @@ class OrderDetailTest extends AdminApiTestCase
         expect($data['totalDue'])->not->toBeNull();
     }
 
+    /**
+     * Test order detail resolves customer typed object and addresses connection.
+     */
     public function test_order_detail_resolves_customer_typed_object_and_addresses_connection(): void
     {
         $order = $this->bootstrapInvoiceableOrder('processing');
@@ -116,18 +109,19 @@ class OrderDetailTest extends AdminApiTestCase
 
         $data = $response->json('data.adminOrderDetail');
 
-        // customer is a typed object with a typed group; null only for guest orders.
         if ($data['customer'] !== null) {
             expect($data['customer']['email'])->not->toBeNull();
         }
 
-        // addresses is a connection; each node carries addressType.
         expect($data['addresses']['edges'])->toBeArray();
         foreach ($data['addresses']['edges'] as $edge) {
             expect($edge['node']['addressType'])->not->toBeNull();
         }
     }
 
+    /**
+     * Test order detail items connection carries the product type.
+     */
     public function test_order_detail_items_connection_carries_the_product_type(): void
     {
         $id = $this->anOrderId();
@@ -154,10 +148,47 @@ class OrderDetailTest extends AdminApiTestCase
 
         expect($edges)->toBeArray()->not->toBeEmpty();
         expect($edges[0]['node'])->toHaveKeys(['type', 'sku']);
-        // Catalog type, not the morph class.
         expect($edges[0]['node']['type'])->not->toContain('\\');
     }
 
+    /**
+     * Test order detail items resolve their JSON child and downloadable links.
+     */
+    public function test_order_detail_items_resolve_child_and_downloadable_links(): void
+    {
+        $id = $this->anOrderId();
+
+        $admin = $this->createAdmin();
+
+        $query = <<<'GQL'
+            query orderDetail($id: ID!) {
+              adminOrderDetail(id: $id) {
+                items {
+                  edges {
+                    node {
+                      sku
+                      child
+                      downloadableLinks
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['id' => '/api/admin/orders/'.$id], $admin);
+
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.adminOrderDetail.items.edges.0.node');
+
+        expect($node)->toHaveKeys(['child', 'downloadableLinks']);
+        expect($node['downloadableLinks'])->toBeArray();
+    }
+
+    /**
+     * Test order detail embeds comments and refunds connections.
+     */
     public function test_order_detail_embeds_comments_and_refunds_connections(): void
     {
         $order = $this->bootstrapAdminOrder('pending', false);
@@ -200,6 +231,9 @@ class OrderDetailTest extends AdminApiTestCase
         expect(collect($data['comments']['edges'])->pluck('node.comment'))->toContain('GQL QA comment');
     }
 
+    /**
+     * Test order detail query requires authentication.
+     */
     public function test_order_detail_query_requires_authentication(): void
     {
         $query = <<<'GQL'
@@ -211,5 +245,18 @@ class OrderDetailTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query);
 
         expect($response->json('errors'))->not->toBeNull();
+    }
+
+    /**
+     * Resolve an existing order id from the listing, or bootstrap one.
+     */
+    protected function anOrderId(): int
+    {
+        $admin = $this->createAdmin();
+        $rows = $this->adminGet($admin, '/api/admin/orders?per_page=1')->json('data');
+
+        return empty($rows)
+            ? $this->bootstrapAdminOrder('pending', false)->id
+            : $rows[0]['id'];
     }
 }

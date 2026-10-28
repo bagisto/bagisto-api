@@ -21,27 +21,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Core\Models\Currency;
 use Webkul\Core\Repositories\CurrencyRepository;
 
-/**
- * Handles POST, PUT, DELETE on AdminSettingsCurrency.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\CurrencyController:
- *   store / update / destroy
- *
- * Permission resolution mirrors AdminCategoryProcessor — read
- * role->permission_type / role->permissions directly. No bouncer() calls.
- *
- * Delete guards (parity with monolith + the extra channel-base check requested
- * for this milestone):
- *   1. Refuse if this is the only currency in the table (HTTP 400).
- *   2. Refuse if any channel references it as channels.base_currency_id (HTTP 400).
- */
 class AdminSettingsCurrencyProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CurrencyRepository $currencyRepository,
         protected AdminSettingsCurrencyItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -97,6 +89,9 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminSettingsCurrency
     {
         $this->validateCreatePayload($input);
@@ -108,6 +103,9 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($fresh);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminSettingsCurrency
     {
         $currency = Currency::find($id);
@@ -125,6 +123,9 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic(Currency::find($id));
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsCurrency
     {
         $currency = Currency::find($id);
@@ -166,6 +167,9 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.settings.currency.deleted')];
     }
 
+    /**
+     * Validate create payload.
+     */
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
@@ -184,6 +188,9 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Validate update payload.
+     */
     protected function validateUpdatePayload(array $input): void
     {
         $rules = [
@@ -196,6 +203,9 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -223,6 +233,9 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -238,6 +251,9 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -250,6 +266,9 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -298,6 +317,9 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Filter repository payload.
+     */
     protected function filterRepositoryPayload(array $input): array
     {
         unset($input['id']);

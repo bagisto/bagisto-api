@@ -10,11 +10,17 @@ use Webkul\User\Models\Role;
 
 class ConfigurationTest extends AdminApiTestCase
 {
+    /**
+     * Test menu requires authentication.
+     */
     public function test_menu_requires_authentication(): void
     {
         $this->publicGet('/api/admin/configuration/menu')->assertStatus(401);
     }
 
+    /**
+     * Test menu returns full tree.
+     */
     public function test_menu_returns_full_tree(): void
     {
         $admin = $this->createAdmin();
@@ -33,6 +39,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($keys)->toContain('sales');
     }
 
+    /**
+     * Test menu scoped by slug.
+     */
     public function test_menu_scoped_by_slug(): void
     {
         $admin = $this->createAdmin();
@@ -49,6 +58,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($childKeys)->toContain('sales.order_settings.reorder');
     }
 
+    /**
+     * Test menu nonexistent slug 404.
+     */
     public function test_menu_nonexistent_slug_404(): void
     {
         $admin = $this->createAdmin();
@@ -58,6 +70,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test menu fields carry full metadata.
+     */
     public function test_menu_fields_carry_full_metadata(): void
     {
         $admin = $this->createAdmin();
@@ -79,6 +94,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($adminField['type'])->toBe('boolean');
     }
 
+    /**
+     * Test menu include values embeds effective value.
+     */
     public function test_menu_include_values_embeds_effective_value(): void
     {
         $admin = $this->createAdmin();
@@ -103,6 +121,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect((string) $adminField['value'])->toBe('0');
     }
 
+    /**
+     * Test slugs endpoint lists all slugs.
+     */
     public function test_slugs_endpoint_lists_all_slugs(): void
     {
         $admin = $this->createAdmin();
@@ -122,16 +143,25 @@ class ConfigurationTest extends AdminApiTestCase
         expect($slugs)->toContain('general');
     }
 
+    /**
+     * Test slugs endpoint requires authentication.
+     */
     public function test_slugs_endpoint_requires_authentication(): void
     {
         $this->publicGet('/api/admin/configuration/slugs')->assertStatus(401);
     }
 
+    /**
+     * Test values requires authentication.
+     */
     public function test_values_requires_authentication(): void
     {
         $this->publicGet('/api/admin/configuration?slug=sales.order_settings')->assertStatus(401);
     }
 
+    /**
+     * Test values missing slug 422.
+     */
     public function test_values_missing_slug_422(): void
     {
         $admin = $this->createAdmin();
@@ -139,6 +169,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test values nonexistent slug 404.
+     */
     public function test_values_nonexistent_slug_404(): void
     {
         $admin = $this->createAdmin();
@@ -146,6 +179,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test values returns defaults when no db row.
+     */
     public function test_values_returns_defaults_when_no_db_row(): void
     {
         $admin = $this->createAdmin();
@@ -160,6 +196,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($row['values'])->toHaveKey('sales.order_settings.reorder.admin');
     }
 
+    /**
+     * Test values reads db row.
+     */
     public function test_values_reads_db_row(): void
     {
         $admin = $this->createAdmin();
@@ -179,6 +218,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect((string) $values['sales.order_settings.reorder.admin'])->toBe('1');
     }
 
+    /**
+     * Test update requires authentication.
+     */
     public function test_update_requires_authentication(): void
     {
         $response = $this->publicPost('/api/admin/configuration', [
@@ -188,6 +230,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
+    /**
+     * Test update requires slug.
+     */
     public function test_update_requires_slug(): void
     {
         $admin = $this->createAdmin();
@@ -197,6 +242,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update requires values.
+     */
     public function test_update_requires_values(): void
     {
         $admin = $this->createAdmin();
@@ -206,6 +254,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update nonexistent slug 404.
+     */
     public function test_update_nonexistent_slug_404(): void
     {
         $admin = $this->createAdmin();
@@ -216,6 +267,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test update persists boolean value.
+     */
     public function test_update_persists_boolean_value(): void
     {
         $admin = $this->createAdmin();
@@ -242,6 +296,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect((string) $row->value)->toBe('1');
     }
 
+    /**
+     * Test update returns freshly resolved values.
+     */
     public function test_update_returns_freshly_resolved_values(): void
     {
         $admin = $this->createAdmin();
@@ -261,6 +318,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($values['sales.order_settings.reorder.shop'])->toBe('1');
     }
 
+    /**
+     * Test update scope escape rejected.
+     */
     public function test_update_scope_escape_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -275,6 +335,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect((string) $response->json('detail'))->toContain('catalog.inventory.something');
     }
 
+    /**
+     * Test update unknown field rejected.
+     */
     public function test_update_unknown_field_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -288,6 +351,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update validation failure rejected.
+     */
     public function test_update_validation_failure_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -304,6 +370,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update channel scoped field writes with channel column.
+     */
     public function test_update_channel_scoped_field_writes_with_channel_column(): void
     {
         $admin = $this->createAdmin();
@@ -327,6 +396,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect((string) $row->value)->toBe('lbs');
     }
 
+    /**
+     * Test update upserts replacing existing value.
+     */
     public function test_update_upserts_replacing_existing_value(): void
     {
         $admin = $this->createAdmin();
@@ -360,6 +432,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect((string) $row->value)->toBe('0');
     }
 
+    /**
+     * Test update permission denied for role without edit.
+     */
     public function test_update_permission_denied_for_role_without_edit(): void
     {
         $role = Role::create([
@@ -381,6 +456,9 @@ class ConfigurationTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(403);
     }
 
+    /**
+     * Test update permission allowed for configuration perm.
+     */
     public function test_update_permission_allowed_for_configuration_perm(): void
     {
         $role = Role::create([
@@ -402,6 +480,9 @@ class ConfigurationTest extends AdminApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test update multipart file upload.
+     */
     public function test_update_multipart_file_upload(): void
     {
         $admin = $this->createAdmin();
@@ -449,7 +530,7 @@ class ConfigurationTest extends AdminApiTestCase
             [],
             ['values' => [$fileField => $file]],
             [
-                'HTTP_AUTHORIZATION' => 'Bearer '.$this->adminToken($admin),
+                'HTTP_AUTHORIZATION' => 'Bearer '.$this->adminAccessToken($admin),
                 'HTTP_ACCEPT' => 'application/json',
             ],
         );

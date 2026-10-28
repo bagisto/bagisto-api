@@ -22,6 +22,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCompareItemProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: "Get a customer's compare list",
+                description: 'The products in the customer\'s compare list. An unknown customer is a 404.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],
@@ -60,6 +61,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCompareItemProvider;
         new QueryCollection(
             provider: AdminCustomerCompareItemProvider::class,
             paginationType: 'cursor',
+            description: 'Every product in the compare list of customer `customerId`, all in one page (no pagination arguments). It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error.',
 
             args: ['customerId' => [
                 'type' => 'Int!',
@@ -72,24 +74,69 @@ class AdminCustomerCompareItem
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The product id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $product_id = null;
 
+    /**
+     * The sku.
+     */
     #[ApiProperty(writable: false)]
     public ?string $sku = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The price.
+     */
     #[ApiProperty(writable: false)]
     public ?float $price = null;
 
+    /**
+     * The formatted price.
+     */
     #[ApiProperty(writable: false)]
     public ?string $formatted_price = null;
 
+    /**
+     * The product image.
+     */
     #[ApiProperty(writable: false)]
     public ?string $product_image = null;
+
+    /**
+     * The product type.
+     */
+    #[ApiProperty(writable: false)]
+    public ?string $type = null;
+
+    /**
+     * Whether the product can be bought.
+     */
+    #[ApiProperty(writable: false)]
+    public ?bool $is_saleable = null;
+
+    /**
+     * The quantity available for sale, or null where stock does not apply.
+     */
+    #[ApiProperty(writable: false)]
+    public ?int $qty_available = null;
+
+    /**
+     * Whether the product needs options chosen before it can be added to a cart.
+     */
+    #[ApiProperty(writable: false)]
+    public ?bool $is_options_required = null;
 }

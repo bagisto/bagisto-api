@@ -7,16 +7,19 @@ use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Models\EuWithdrawalStatus;
 use Webkul\BagistoApi\Models\GdprStatus;
 
-/**
- * Whether an optional storefront feature is enabled on the current channel.
- */
 class FeatureStatusProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         return [self::build($operation->getClass())];
     }
 
+    /**
+     * Build.
+     */
     public static function build(string $class): GdprStatus|EuWithdrawalStatus
     {
         $channel = core()->getCurrentChannel();

@@ -9,15 +9,11 @@ use Webkul\BagistoApi\Admin\Models\AdminCart;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Checkout\Facades\Cart;
 
-/**
- * POST /api/admin/carts/{id}/payment-methods — save the selected payment
- * method on the draft cart.
- *
- * Mirrors CartController::storePaymentMethod. Sequence: items + addresses +
- * shipping method must already be set, otherwise HTTP 409.
- */
 class AdminCartSetPaymentMethodProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminCart
     {
         $cart = AdminCartGuard::resolve(AdminCartGuard::resolveId($uriVariables, $context));
@@ -53,6 +49,9 @@ class AdminCartSetPaymentMethodProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve payment method.
+     */
     protected function resolvePaymentMethod(mixed $data, array $context): ?string
     {
         if (

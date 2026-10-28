@@ -8,15 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsLocale;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Minimal placeholder provider for PUT / DELETE on AdminSettingsLocale.
- *
- * API Platform requires a provider on PUT/DELETE so it can resolve the resource
- * before passing it to the processor. The real lookup lives inside the
- * processor.
- */
 class AdminSettingsLocaleWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminSettingsLocale
     {
         if (! AdminAuthHelper::resolveAdmin()) {

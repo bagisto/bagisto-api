@@ -15,16 +15,6 @@ use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerNoteCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
 
-/**
- * Customer Notes — append-only.
- *
- * REST    : POST /api/admin/customers/{customerId}/notes
- * GraphQL : createAdminCustomerNote
- *
- * Mirrors CustomerController::storeNotes — writes into the `customer_notes`
- * table (a separate table; the legacy `customers.notes` text column was
- * dropped in 2023). One row per note; never overwrites.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerNote',
@@ -37,6 +27,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: "List a customer's notes",
+                description: 'The notes admins left on the customer, newest first. An unknown customer is a 404.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],
@@ -80,6 +71,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Add a note to a customer',
+                description: 'Adds an admin note to the customer and returns it; an empty note is a 422. An unknown customer is a 404.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],
@@ -147,18 +139,33 @@ class AdminCustomerNote
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customer_id = null;
 
+    /**
+     * The note.
+     */
     #[ApiProperty(writable: false)]
     public ?string $note = null;
 
+    /**
+     * The customer notified.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $customer_notified = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 }

@@ -2,22 +2,11 @@
 
 namespace Webkul\BagistoApi\Admin\State\Concerns;
 
-/**
- * Shared helpers for translating the API's clean array body shape into the
- * nested-map shape the monolith repositories consume.
- *
- * Invoice / Refund: `items: [{orderItemId, quantity}]` -> `[itemId => qty]`.
- * Shipment       : `items: [{orderItemId, inventorySourceId, quantity}]` ->
- *                  `[itemId => [sourceId => qty]]`.
- */
 trait TranslatesActionPayload
 {
     /**
      * Flat `[orderItemId => qty]` map (Invoice / Refund body shape).
-     *
-     * Accepts an already-flat assoc map as well — passes it through unchanged
-     * so callers that came from the REST body (denormalized via DTO) and those
-     * that came from `request()->input('items')` (raw assoc) both work.
+     * Accepts an already-flat assoc map as well — passes it through unchanged.
      */
     protected function flatItemsMap(mixed $items): array
     {

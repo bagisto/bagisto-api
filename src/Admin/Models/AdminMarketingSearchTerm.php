@@ -23,21 +23,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
 
-/**
- * Admin Marketing → Search Terms (Block F3b).
- *
- * REST:
- *   GET    /api/admin/marketing/search-terms
- *   GET    /api/admin/marketing/search-terms/{id}
- *   PUT    /api/admin/marketing/search-terms/{id}
- *   DELETE /api/admin/marketing/search-terms/{id}
- *
- * GraphQL: adminMarketingSearchTerms, adminMarketingSearchTerm,
- *          updateAdminMarketingSearchTerm, deleteAdminMarketingSearchTerm
- *
- * Search terms are auto-recorded by storefront searches; admin only edits/deletes.
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\SearchSEO\SearchTermController.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingSearchTerm',
@@ -192,6 +177,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a search term',
+                description: 'Deletes the search term. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Search term ID', true, schema: ['type' => 'integer']),
                 ],
@@ -216,6 +202,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Search term detail',
+                description: 'One search term by ID with its channel, locale, redirect URL and use and result counts. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Search term ID', true, schema: ['type' => 'integer']),
                 ],
@@ -353,10 +340,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
 )]
 class AdminMarketingSearchTerm extends EloquentModel
 {
-    /** @var string */
+    /**
+     * The table that stores the search terms.
+     *
+     * @var string
+     */
     protected $table = 'search_terms';
 
-    /** @var array */
+    /**
+     * The native types the search term attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'results' => 'int',
@@ -365,6 +360,9 @@ class AdminMarketingSearchTerm extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
@@ -373,8 +371,7 @@ class AdminMarketingSearchTerm extends EloquentModel
 
     /**
      * Channel this term was searched in (GraphQL to-one object —
-     * `channel { id _id code name }`). The belongsTo on `channel_id` consumes
-     * that FK column, replacing the old channelId / channelName scalars.
+     * `channel { id _id code name }`). The belongsTo on `channel_id` consumes.
      */
     #[ApiProperty(writable: false)]
     public function channel(): BelongsTo

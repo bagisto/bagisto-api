@@ -17,8 +17,14 @@ use Webkul\Customer\Repositories\CustomerNoteRepository;
 
 class AdminCustomerNoteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected CustomerNoteRepository $noteRepository) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -76,6 +82,9 @@ class AdminCustomerNoteProcessor implements ProcessorInterface
         return $dto;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin): void
     {
         $role = $admin->role ?? null;

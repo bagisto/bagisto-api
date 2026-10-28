@@ -8,16 +8,19 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsUser;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/settings/users + adminSettingsUsers GraphQL query.
- */
 class AdminSettingsUserCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'name', 'email'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('admins')
@@ -35,6 +38,9 @@ class AdminSettingsUserCollectionProvider extends AbstractAdminCollectionProvide
             );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
@@ -62,6 +68,9 @@ class AdminSettingsUserCollectionProvider extends AbstractAdminCollectionProvide
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -75,6 +84,9 @@ class AdminSettingsUserCollectionProvider extends AbstractAdminCollectionProvide
         $query->orderBy($columnMap[$column] ?? 'admins.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminSettingsUser
     {
         $dto = new AdminSettingsUser;

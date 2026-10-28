@@ -8,11 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerGroup;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Placeholder provider for PUT / DELETE on AdminCustomerGroup.
- */
 class AdminCustomerGroupWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminCustomerGroup
     {
         if (! AdminAuthHelper::resolveAdmin()) {

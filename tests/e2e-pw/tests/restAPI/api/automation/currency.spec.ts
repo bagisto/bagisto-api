@@ -1,69 +1,77 @@
-// tests/restAPI/api/automation/currency.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import { REST_GAPS_MESSAGES, numericIdOf } from '../../rest/helpers/coverage/restGaps.helpers';
 
-function assertStatus(resp: any, debugLabel: string, allowed: number[] = [0, 200, 400, 401, 404, 500]) {
-  expect(allowed).toContain(resp.status());
-  console.log(`${debugLabel}:`, resp.status());
+const BASE_CURRENCY_CODE = 'USD';
+
+async function findCurrencyByCode(request: APIRequestContext, code: string): Promise<any> {
+  const response = await sendRestRequest(request, ENDPOINTS.CURRENCIES, { params: { per_page: '50' } });
+  const body = await response.json();
+
+  expect(response.status(), JSON.stringify(body)).toBe(200);
+
+  const currency = body.find((row: any) => row.code === code);
+
+  expect(currency, `currency ${code} missing from ${JSON.stringify(body)}`).toBeTruthy();
+
+  return currency;
 }
 
-test.describe('Currencies REST API', () => {
-  test('Should list all currencies', async ({ request }) => {
+test.describe('currencies rest api', () => {
+  test('should list all currencies', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CURRENCIES);
-    assertStatus(response, 'GET /api/shop/currencies');
-    if (response.status() === 200) {
-      const body = await response.json();
-      const items = Array.isArray(body) ? body : (body.data ?? []);
-      expect(items.length).toBeGreaterThan(0);
-      items.forEach((c: any) => {
-        expect(c).toHaveProperty('id');
-        expect(c).toHaveProperty('code');
-      });
-      console.log('Currencies count:', items.length, 'first code:', items[0].code);
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(Array.isArray(body)).toBe(true);
+    expect(body.length).toBeGreaterThan(0);
+    expect(body.length).toBeLessThanOrEqual(10);
+
+    for (const currency of body) {
+      expect(numericIdOf(currency.id)).toBeGreaterThan(0);
+      expect(typeof currency.code).toBe('string');
     }
   });
 
-  test('Should return paginated currency list', async ({ request }) => {
+  test('should return paginated currency list', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CURRENCIES, {
-      params: { per_page: '5', page: '1' },
+      params: { per_page: '1', page: '1' },
     });
-    assertStatus(response, 'GET /api/shop/currencies (paginated)');
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body).toHaveLength(1);
+    expect(response.headers()['x-per-page']).toBe('1');
   });
 
-  test('Should return single currency by ID', async ({ request }) => {
-    const list = await sendRestRequest(request, ENDPOINTS.CURRENCIES);
-    if (list.status() !== 200) {
-      test.skip(true, 'List endpoint unavailable');
-      return;
-    }
-    const body = await list.json();
-    const items = Array.isArray(body) ? body : (body.data ?? []);
-    if (items.length === 0) {
-      test.skip(true, 'No currencies seeded');
-      return;
-    }
-    const ccyId = items[0].id;
-    const response = await sendRestRequest(request, ENDPOINTS.CURRENCY(ccyId));
+  test('should return single currency by id', async ({ request }) => {
+    const currency = await findCurrencyByCode(request, BASE_CURRENCY_CODE);
+
+    const response = await sendRestRequest(request, ENDPOINTS.CURRENCY(numericIdOf(currency.id)));
+
     expect(response.status()).toBe(200);
-    const detail = await response.json();
-    expect(detail.id).toBe(ccyId);
-    expect(detail).toHaveProperty('code');
-    console.log('Currency detail:', detail.code);
+    expect(await response.json()).toEqual(currency);
   });
 
-  test('Should return 404 for non-existent currency', async ({ request }) => {
+  test('should return 404 for non-existent currency', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CURRENCY(999999));
-    expect([404, 400]).toContain(response.status());
-    console.log('GET /api/shop/currencies/999999:', response.status());
+
+    expect(response.status()).toBe(404);
+    expect((await response.json()).detail).toBe(REST_GAPS_MESSAGES.GENERIC_NOT_FOUND);
   });
 
-  test('Should reject POST on currencies (read-only)', async ({ request }) => {
+  test('should reject post on currencies as read only', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CURRENCIES, {
       method: 'POST',
       data: { code: 'XYZ', name: 'Hack Coin' },
     });
-    expect([401, 403, 404, 405, 422, 500]).toContain(response.status());
-    console.log('POST /api/shop/currencies:', response.status());
+    const body = await response.json();
+
+    expect(response.status(), JSON.stringify(body)).toBe(405);
+    expect(body.message).toContain('The POST method is not supported for route api/shop/currencies.');
+
+    const listing = await sendRestRequest(request, ENDPOINTS.CURRENCIES, { params: { per_page: '50' } });
+    expect((await listing.json()).some((row: any) => row.code === 'XYZ')).toBe(false);
   });
 });

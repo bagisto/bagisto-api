@@ -7,21 +7,18 @@ use ApiPlatform\Metadata\Operation;
 use Webkul\BagistoApi\Dto\UpdateProductReviewInput;
 use Webkul\BagistoApi\Models\ProductReview;
 
-/**
- * Custom ReadProvider for ProductReview mutations
- * Handles reading ProductReview items for update mutations
- */
 class ProductReviewReadProvider extends BaseReadProvider
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        // Check if this is an update mutation with UpdateProductReviewInput
         $input = $context['input'] ?? null;
 
         if ($input instanceof UpdateProductReviewInput) {
             $reviewId = $input->id;
 
-            // Extract numeric ID if IRI format
             if (
                 is_string($reviewId)
                 && preg_match('/\/(\d+)$/', $reviewId, $matches)
@@ -31,7 +28,6 @@ class ProductReviewReadProvider extends BaseReadProvider
                 $reviewId = (int) $reviewId;
             }
 
-            // Load the existing review
             $review = ProductReview::find($reviewId);
 
             if ($review) {

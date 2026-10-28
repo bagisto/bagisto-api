@@ -4,26 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * GraphQL coverage for Admin Settings → Roles CRUD (Block B Wave 2).
- */
 class SettingsRoleTest extends AdminApiTestCase
 {
-    protected function insertRole(array $overrides = []): int
-    {
-        $perms = $overrides['permissions'] ?? ['catalog.products'];
-        unset($overrides['permissions']);
-
-        return \DB::table('roles')->insertGetId(array_merge([
-            'name' => 'GQL Role '.uniqid(),
-            'description' => 'gql',
-            'permission_type' => 'custom',
-            'permissions' => json_encode($perms),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
+    /**
+     * Test query listing.
+     */
     public function test_query_listing(): void
     {
         $admin = $this->createAdmin();
@@ -43,6 +28,9 @@ class SettingsRoleTest extends AdminApiTestCase
         expect($response->json('data.adminSettingsRoles.edges'))->toBeArray();
     }
 
+    /**
+     * Test query detail.
+     */
     public function test_query_detail(): void
     {
         $admin = $this->createAdmin();
@@ -63,6 +51,9 @@ class SettingsRoleTest extends AdminApiTestCase
         expect($edges !== null || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test query detail multiword fields resolve over graphql.
+     */
     public function test_query_detail_multiword_fields_resolve_over_graphql(): void
     {
         $admin = $this->createAdmin();
@@ -94,6 +85,9 @@ class SettingsRoleTest extends AdminApiTestCase
         expect($node['updatedAt'])->not->toBeNull();
     }
 
+    /**
+     * Test mutation create.
+     */
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();
@@ -123,6 +117,9 @@ class SettingsRoleTest extends AdminApiTestCase
         expect($exists || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test mutation update.
+     */
     public function test_mutation_update(): void
     {
         $admin = $this->createAdmin();
@@ -152,6 +149,9 @@ class SettingsRoleTest extends AdminApiTestCase
         expect($updated || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test mutation delete in use returns error.
+     */
     public function test_mutation_delete_in_use_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -176,6 +176,9 @@ class SettingsRoleTest extends AdminApiTestCase
         expect($hasErrors || $stillHere)->toBeTrue();
     }
 
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -197,5 +200,23 @@ class SettingsRoleTest extends AdminApiTestCase
         $gone = ! \DB::table('roles')->where('id', $id)->exists();
         $hasErrors = ! empty($response->json('errors'));
         expect($gone || $hasErrors)->toBeTrue();
+    }
+
+    /**
+     * Insert role.
+     */
+    protected function insertRole(array $overrides = []): int
+    {
+        $perms = $overrides['permissions'] ?? ['catalog.products'];
+        unset($overrides['permissions']);
+
+        return \DB::table('roles')->insertGetId(array_merge([
+            'name' => 'GQL Role '.uniqid(),
+            'description' => 'gql',
+            'permission_type' => 'custom',
+            'permissions' => json_encode($perms),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
     }
 }

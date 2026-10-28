@@ -4,22 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * GraphQL coverage for Admin Marketing → Events CRUD (Block F2b).
- */
 class MarketingEventTest extends AdminApiTestCase
 {
-    protected function insertEvent(array $overrides = []): int
-    {
-        return \DB::table('marketing_events')->insertGetId(array_merge([
-            'name' => 'gqlevt-'.uniqid(),
-            'description' => 'desc',
-            'date' => '2026-12-20',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
+    /**
+     * Test query listing.
+     */
     public function test_query_listing(): void
     {
         $admin = $this->createAdmin();
@@ -40,6 +29,9 @@ class MarketingEventTest extends AdminApiTestCase
         expect($edges)->toBeArray();
     }
 
+    /**
+     * Test query detail.
+     */
     public function test_query_detail(): void
     {
         $admin = $this->createAdmin();
@@ -68,6 +60,9 @@ class MarketingEventTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test mutation create.
+     */
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();
@@ -92,6 +87,9 @@ class MarketingEventTest extends AdminApiTestCase
         $this->assertDatabaseHas('marketing_events', ['name' => 'gqlcr-event']);
     }
 
+    /**
+     * Test mutation update.
+     */
     public function test_mutation_update(): void
     {
         $admin = $this->createAdmin();
@@ -121,6 +119,9 @@ class MarketingEventTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -129,7 +130,7 @@ class MarketingEventTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation Del($input: deleteAdminMarketingEventInput!) {
               deleteAdminMarketingEvent(input: $input) {
-                adminMarketingEvent { _id }
+                adminMarketingEvent { id _id }
               }
             }
         GQL;
@@ -139,9 +140,16 @@ class MarketingEventTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.deleteAdminMarketingEvent.adminMarketingEvent.id'))->toBe("/api/admin/marketing/events/{$id}");
+
         $this->assertDatabaseMissing('marketing_events', ['id' => $id]);
     }
 
+    /**
+     * Test query listing requires auth.
+     */
     public function test_query_listing_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -150,5 +158,19 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertOk();
         $errors = $response->json('errors');
         expect($errors)->toBeArray();
+    }
+
+    /**
+     * Insert event.
+     */
+    protected function insertEvent(array $overrides = []): int
+    {
+        return \DB::table('marketing_events')->insertGetId(array_merge([
+            'name' => 'gqlevt-'.uniqid(),
+            'description' => 'desc',
+            'date' => '2026-12-20',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
     }
 }

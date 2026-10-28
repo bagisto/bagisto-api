@@ -8,21 +8,33 @@ use Webkul\GDPR\Models\GDPRDataRequest;
 
 class AdminCustomerGdprItemProvider extends AbstractAdminItemProvider
 {
-    protected function getNotFoundLangKey(): string
-    {
-        return 'bagistoapi::app.admin.customer.gdpr.not-found';
-    }
-
-    protected function findEntity(int $id): ?object
-    {
-        return GDPRDataRequest::with(['customer'])->find($id);
-    }
-
+    /**
+     * Map to dto.
+     */
     public function mapToDto(object $entity): object
     {
         return $this->doMap($entity);
     }
 
+    /**
+     * Get not found lang key.
+     */
+    protected function getNotFoundLangKey(): string
+    {
+        return 'bagistoapi::app.admin.customer.gdpr.not-found';
+    }
+
+    /**
+     * Find entity.
+     */
+    protected function findEntity(int $id): ?object
+    {
+        return GDPRDataRequest::with(['customer'])->find($id);
+    }
+
+    /**
+     * Do map.
+     */
     protected function doMap(GDPRDataRequest $gDPRDataRequest): AdminCustomerGdprRequest
     {
         $dto = new AdminCustomerGdprRequest;
@@ -33,6 +45,7 @@ class AdminCustomerGdprItemProvider extends AbstractAdminItemProvider
             : null;
         $dto->email = $gDPRDataRequest->email;
         $dto->type = $gDPRDataRequest->type;
+        $dto->typeLabel = AdminCustomerGdprRequest::labelForType($gDPRDataRequest->type);
         $dto->status = $gDPRDataRequest->status;
         $dto->message = $gDPRDataRequest->message;
         $dto->revokedAt = $gDPRDataRequest->revoked_at?->toIso8601String();

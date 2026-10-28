@@ -10,11 +10,17 @@ use Webkul\Product\Helpers\ProductType;
 
 class ProductFormRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized.
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * Get the validation rules.
+     */
     public function rules(): array
     {
         $productTypes = implode(',', array_keys(config('product_types', [])));
@@ -44,6 +50,9 @@ class ProductFormRequest extends FormRequest
         ];
     }
 
+    /**
+     * Messages.
+     */
     public function messages(): array
     {
         return [
@@ -60,11 +69,9 @@ class ProductFormRequest extends FormRequest
         ];
     }
 
-    protected function failedValidation(Validator $validator)
-    {
-        throw new ValidationException($validator);
-    }
-
+    /**
+     * Attributes.
+     */
     public function attributes(): array
     {
         return [
@@ -89,6 +96,9 @@ class ProductFormRequest extends FormRequest
         ];
     }
 
+    /**
+     * Validated.
+     */
     public function validated($key = null, $default = null)
     {
         $validated = parent::validated($key, $default);
@@ -107,5 +117,13 @@ class ProductFormRequest extends FormRequest
         }
 
         return $validated;
+    }
+
+    /**
+     * Failed validation.
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        throw new ValidationException($validator);
     }
 }

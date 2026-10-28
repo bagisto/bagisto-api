@@ -13,11 +13,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\State\CheckoutProcessor;
 
-/**
- * CheckoutPaymentMethod - GraphQL API Resource for Checkout Payment Method
- *
- * Provides mutation for selecting and saving payment method during checkout
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CheckoutPaymentMethod',
@@ -37,6 +32,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
             openapi: new Operation(
                 tags: ['Checkout'],
                 summary: 'Save selected payment method for checkout',
+                description: 'Saves `paymentMethod` on the cart the bearer token names (a guest cart token or a customer token); it must be a method available for that cart. For a redirect gateway the answer carries `paymentGatewayUrl` and `paymentData`, which include the optional `paymentSuccessUrl`, `paymentFailureUrl` and `paymentCancelUrl`.',
                 requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -112,30 +108,51 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
 )]
 class CheckoutPaymentMethod
 {
+    /**
+     * The success.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public bool $success = false;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public string $message = '';
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $cartToken = null;
 
+    /**
+     * The payment method.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $paymentMethod = null;
 
+    /**
+     * The payment redirect url.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $paymentRedirectUrl = null;
 
+    /**
+     * The payment gateway url.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $paymentGatewayUrl = null;
 
+    /**
+     * The payment data.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $paymentData = null;

@@ -21,25 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
 
-/**
- * Admin Marketing → Email Templates endpoints (Block F2a).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Communications\TemplateController 1:1.
- *
- * REST:
- *   GET    /api/admin/marketing/templates
- *   GET    /api/admin/marketing/templates/{id}
- *   POST   /api/admin/marketing/templates
- *   PUT    /api/admin/marketing/templates/{id}
- *   DELETE /api/admin/marketing/templates/{id}
- *
- * GraphQL:
- *   adminMarketingTemplates           — cursor listing
- *   adminMarketingTemplate(id:)       — detail
- *   createAdminMarketingTemplate
- *   updateAdminMarketingTemplate
- *   deleteAdminMarketingTemplate
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingTemplate',
@@ -53,6 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Create an email template',
+                description: 'Creates an email template for campaigns. `name`, `content` (HTML) and `status` (active, inactive or draft) are required.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -111,6 +93,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Update an email template',
+                description: 'Updates the email template; `name`, `content` and `status` are validated as on create. An unknown ID is a 404.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -169,6 +152,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Delete an email template',
+                description: 'Deletes the email template. A template a campaign still uses is refused with 400; an unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Deleted.',
@@ -189,6 +173,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Email template detail',
+                description: 'One email template by ID with its name, status and HTML content. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Single template with content.',
@@ -313,21 +298,39 @@ class AdminMarketingTemplate
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(writable: false)]
     public ?string $status = null;
 
+    /**
+     * The content.
+     */
     #[ApiProperty(writable: false)]
     public ?string $content = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 }

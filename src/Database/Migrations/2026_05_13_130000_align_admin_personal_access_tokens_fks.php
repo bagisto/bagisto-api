@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Coerce the admin id columns to unsigned int, drop orphaned rows and add the missing foreign keys.
+     * Run the migrations.
      */
     public function up(): void
     {
@@ -81,7 +81,7 @@ return new class extends Migration
     }
 
     /**
-     * Drop the foreign keys this migration manages that are present on the table.
+     * Reverse the migrations.
      */
     public function down(): void
     {
@@ -103,7 +103,7 @@ return new class extends Migration
     }
 
     /**
-     * Foreign keys the table must carry: column => [referenced table, on-delete action].
+     * The foreign keys of the token table, each with the table it references and its on-delete action.
      */
     private function foreignKeys(): array
     {

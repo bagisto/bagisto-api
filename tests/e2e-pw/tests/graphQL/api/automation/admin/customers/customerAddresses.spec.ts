@@ -1,50 +1,125 @@
-// tests/graphQL/api/automation/admin/customers/customerAddresses.spec.ts
-//
-// Admin Customer Addresses (W2 GraphQL) — sub-resource CRUD under the
-// customer. `adminCustomerAddresses(customerId: Int)` keys by the parent's
-// INTEGER id (not IRI), per introspection 2026-05-26.
-
 import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminGraphQLRequest } from '../../../../graphql/helpers/adminGraphqlClient';
-import {
-  ADMIN_CUSTOMER_CREATE,
-  ADMIN_CUSTOMER_DELETE,
-} from '../../../../graphql/Queries/admin/customers/customers.queries';
-import {
-  ADMIN_CUSTOMER_ADDRESSES_LIST,
-  ADMIN_CUSTOMER_ADDRESS_DETAIL,
-  ADMIN_CUSTOMER_ADDRESS_CREATE,
-  ADMIN_CUSTOMER_ADDRESS_UPDATE,
-  ADMIN_CUSTOMER_ADDRESS_DELETE,
-} from '../../../../graphql/Queries/admin/customers/customerAddresses.queries';
+import { ADMIN_CUSTOMER_CREATE } from '../../../../graphql/Queries/admin/customers/customers.queries';
 
 test.describe.configure({ timeout: 120_000 });
 
-async function createCustomer(request: APIRequestContext) {
-  const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_CREATE, {
-    firstName: 'Addr',
-    lastName: 'Owner',
-    email: `e2e_gql_addr_${Date.now()}_${Math.floor(Math.random() * 100000)}@example.com`,
-    customerGroupId: 2,
-    channelId: 1,
-    sendPassword: false,
-    password: 'e2epass123',
-  });
-  const body = await resp.json();
-  return body?.data?.createAdminCustomer?.adminCustomer;
-}
+const ADDRESS_NOT_FOUND = 'Address not found.';
 
-async function dropCustomer(request: APIRequestContext, id: string) {
-  try {
-    await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_DELETE, { id });
-  } catch {
-    // ignore
+const ADDRESS_FIELDS = `
+  _id
+  customerId
+  firstName
+  lastName
+  companyName
+  address
+  city
+  state
+  country
+  postcode
+  phone
+  defaultAddress
+`;
+
+const LIST_ADDRESSES = `
+  query adminCustomerAddresses($customerId: Int!) {
+    adminCustomerAddresses(customerId: $customerId) {
+      edges {
+        node {
+          _id
+          firstName
+          city
+          companyName
+        }
+      }
+    }
   }
+`;
+
+const ADDRESS_DETAIL = `
+  query adminCustomerAddress($customerId: Int!, $id: ID!) {
+    adminCustomerAddress(customerId: $customerId, id: $id) {
+      ${ADDRESS_FIELDS}
+    }
+  }
+`;
+
+const CREATE_ADDRESS = `
+  mutation createAdminCustomerAddress(
+    $customerId: Int!
+    $firstName: String!
+    $lastName: String!
+    $companyName: String
+    $address: String!
+    $city: String!
+    $state: String!
+    $country: String!
+    $postcode: String!
+    $phone: String!
+  ) {
+    createAdminCustomerAddress(
+      input: {
+        customerId: $customerId
+        firstName: $firstName
+        lastName: $lastName
+        companyName: $companyName
+        address: $address
+        city: $city
+        state: $state
+        country: $country
+        postcode: $postcode
+        phone: $phone
+      }
+    ) {
+      adminCustomerAddress {
+        ${ADDRESS_FIELDS}
+      }
+    }
+  }
+`;
+
+const UPDATE_ADDRESS = `
+  mutation updateAdminCustomerAddress($id: ID!, $customerId: Int, $city: String) {
+    updateAdminCustomerAddress(input: { id: $id, customerId: $customerId, city: $city }) {
+      adminCustomerAddress {
+        _id
+        city
+        companyName
+      }
+    }
+  }
+`;
+
+const DELETE_ADDRESS = `
+  mutation deleteAdminCustomerAddress($id: ID!) {
+    deleteAdminCustomerAddress(input: { id: $id }) {
+      adminCustomerAddress {
+        _id
+        city
+      }
+    }
+  }
+`;
+
+const DELETE_CUSTOMER = `
+  mutation deleteAdminCustomer($id: ID!) {
+    deleteAdminCustomer(input: { id: $id }) {
+      adminCustomer {
+        _id
+      }
+    }
+  }
+`;
+
+let customerId: number;
+
+function addressIri(ownerId: number, addressId: number): string {
+  return `/api/admin/customers/${ownerId}/addresses/${addressId}`;
 }
 
-function addressVars(customerId: number, overrides: Record<string, any> = {}) {
+function addressVariables(ownerId: number, overrides: Record<string, any> = {}): Record<string, any> {
   return {
-    customerId,
+    customerId: ownerId,
     firstName: 'Addr',
     lastName: 'Owner',
     companyName: 'ACME Inc',
@@ -58,92 +133,123 @@ function addressVars(customerId: number, overrides: Record<string, any> = {}) {
   };
 }
 
-test.describe('Admin Customer Addresses GraphQL API', () => {
-  test('list returns edges (even when empty)', async ({ request }) => {
-    const customer = await createCustomer(request);
-    expect(customer).toBeTruthy();
+async function gql(request: APIRequestContext, query: string, variables: Record<string, any> = {}): Promise<any> {
+  const response = await sendAdminGraphQLRequest(request, query, variables);
+  expect(response.status()).toBe(200);
 
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_ADDRESSES_LIST, {
-      customerId: customer._id,
-    });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    // The sub-resource cursor pagination may surface schema-level errors
-    // (project-wide quirk on cursor-paginated sub-resources). Accept that.
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const edges = body?.data?.adminCustomerAddresses?.edges;
-    expect(hasErrors || Array.isArray(edges)).toBe(true);
+  return response.json();
+}
 
-    await dropCustomer(request, customer.id);
+function expectGraphQLError(body: any, field: string, message: string): void {
+  expect(body.data?.[field] ?? null).toBeNull();
+  expect(body.errors?.[0]?.message).toBe(message);
+}
+
+async function createCustomer(request: APIRequestContext): Promise<number> {
+  const body = await gql(request, ADMIN_CUSTOMER_CREATE, {
+    firstName: 'Addr',
+    lastName: 'Owner',
+    email: `e2e_gql_addr_${Date.now()}_${Math.floor(Math.random() * 100000)}@example.com`,
+    customerGroupId: 2,
+    channelId: 1,
+    sendPassword: false,
+    password: 'e2epass123',
+  });
+  expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+
+  return body.data.createAdminCustomer.adminCustomer._id;
+}
+
+async function createAddress(request: APIRequestContext, overrides: Record<string, any> = {}): Promise<any> {
+  const variables = addressVariables(customerId, overrides);
+  const body = await gql(request, CREATE_ADDRESS, variables);
+  expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+
+  const created = body.data.createAdminCustomerAddress.adminCustomerAddress;
+  expect(created._id).toBeGreaterThan(0);
+  expect(created.customerId).toBe(customerId);
+  expect(created.firstName).toBe(variables.firstName);
+  expect(created.companyName).toBe(variables.companyName);
+  expect(created.city).toBe(variables.city);
+  expect(created.country).toBe(variables.country);
+  expect(created.defaultAddress).toBe(false);
+
+  return created;
+}
+
+async function listedAddressIds(request: APIRequestContext): Promise<number[]> {
+  const body = await gql(request, LIST_ADDRESSES, { customerId });
+  expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+
+  return body.data.adminCustomerAddresses.edges.map((edge: any) => edge.node._id);
+}
+
+test.describe('admin customer addresses graphql api', () => {
+  test.beforeEach(async ({ request }) => {
+    customerId = await createCustomer(request);
   });
 
-  test('create + detail + delete round-trip', async ({ request }) => {
-    const customer = await createCustomer(request);
-    expect(customer).toBeTruthy();
-
-    const createResp = await sendAdminGraphQLRequest(
-      request,
-      ADMIN_CUSTOMER_ADDRESS_CREATE,
-      addressVars(customer._id)
-    );
-    const createBody = await createResp.json();
-    expect(createBody.errors, `create errors: ${JSON.stringify(createBody.errors)}`).toBeUndefined();
-    const created = createBody?.data?.createAdminCustomerAddress?.adminCustomerAddress;
-    expect(created).toBeTruthy();
-    expect(created._id).toBeGreaterThan(0);
-
-    // Detail
-    const detailResp = await sendAdminGraphQLRequest(
-      request,
-      ADMIN_CUSTOMER_ADDRESS_DETAIL,
-      { customerId: customer._id, id: created.id }
-    );
-    const detailBody = await detailResp.json();
-    const hasErrors = Array.isArray(detailBody?.errors) && detailBody.errors.length > 0;
-    const detail = detailBody?.data?.adminCustomerAddress;
-    // Accept either populated detail or schema-quirk errors.
-    expect(hasErrors || (detail && detail._id === created._id)).toBe(true);
-
-    // Delete
-    const delResp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_ADDRESS_DELETE, {
-      id: created.id,
-    });
-    expect(delResp.status()).toBe(200);
-
-    await dropCustomer(request, customer.id);
+  test.afterEach(async ({ request }) => {
+    await sendAdminGraphQLRequest(request, DELETE_CUSTOMER, { id: `/api/admin/customers/${customerId}` });
   });
 
-  test('update persists changes', async ({ request }) => {
-    const customer = await createCustomer(request);
-    const createResp = await sendAdminGraphQLRequest(
-      request,
-      ADMIN_CUSTOMER_ADDRESS_CREATE,
-      addressVars(customer._id)
-    );
-    const created = (await createResp.json())?.data?.createAdminCustomerAddress?.adminCustomerAddress;
-    expect(created).toBeTruthy();
+  test('list of a customer without addresses is empty', async ({ request }) => {
+    expect(await listedAddressIds(request)).toEqual([]);
+  });
 
+  test('list returns the address the test created', async ({ request }) => {
+    const created = await createAddress(request);
+
+    const body = await gql(request, LIST_ADDRESSES, { customerId });
+    expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+    expect(body.data.adminCustomerAddresses.edges.map((edge: any) => edge.node)).toEqual([
+      { _id: created._id, firstName: 'Addr', city: 'NYC', companyName: 'ACME Inc' },
+    ]);
+  });
+
+  test('create detail and delete round trip', async ({ request }) => {
+    const created = await createAddress(request);
+
+    const detail = await gql(request, ADDRESS_DETAIL, { customerId, id: addressIri(customerId, created._id) });
+    expect(detail.errors, JSON.stringify(detail.errors)).toBeUndefined();
+    expect(detail.data.adminCustomerAddress).toEqual(created);
+
+    const removal = await gql(request, DELETE_ADDRESS, { id: addressIri(customerId, created._id) });
+    expect(removal.errors, JSON.stringify(removal.errors)).toBeUndefined();
+    expect(removal.data.deleteAdminCustomerAddress.adminCustomerAddress._id).toBe(created._id);
+
+    expect(await listedAddressIds(request)).toEqual([]);
+    expectGraphQLError(
+      await gql(request, ADDRESS_DETAIL, { customerId, id: addressIri(customerId, created._id) }),
+      'adminCustomerAddress',
+      ADDRESS_NOT_FOUND
+    );
+  });
+
+  test('update persists the new city', async ({ request }) => {
+    const created = await createAddress(request);
     const newCity = `City${Date.now()}`;
-    const updResp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_ADDRESS_UPDATE, {
-      id: created.id,
-      customerId: customer._id,
+
+    const body = await gql(request, UPDATE_ADDRESS, {
+      id: addressIri(customerId, created._id),
+      customerId,
       city: newCity,
     });
-    const updBody = await updResp.json();
-    // Mutation responses may surface IRI-generation warnings; tolerate.
-    const hasErrors = Array.isArray(updBody?.errors) && updBody.errors.length > 0;
-    const updated = updBody?.data?.updateAdminCustomerAddress?.adminCustomerAddress;
-    expect(hasErrors || (updated && (updated.city === newCity || updated.city === null))).toBe(true);
 
-    await dropCustomer(request, customer.id);
+    expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+    expect(body.data.updateAdminCustomerAddress.adminCustomerAddress).toEqual({
+      _id: created._id,
+      city: newCity,
+      companyName: 'ACME Inc',
+    });
+
+    const detail = await gql(request, ADDRESS_DETAIL, { customerId, id: addressIri(customerId, created._id) });
+    expect(detail.data.adminCustomerAddress.city).toBe(newCity);
+    expect(detail.data.adminCustomerAddress.address).toBe('1 Main Street');
   });
 
-  test('create rejects missing required fields', async ({ request }) => {
-    const customer = await createCustomer(request);
-
-    // Send minimum-shape with deliberately bogus blanks
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_ADDRESS_CREATE, {
-      customerId: customer._id,
+  test('create rejects blank required fields', async ({ request }) => {
+    const body = await gql(request, CREATE_ADDRESS, addressVariables(customerId, {
       firstName: '',
       lastName: '',
       address: '',
@@ -152,29 +258,15 @@ test.describe('Admin Customer Addresses GraphQL API', () => {
       country: '',
       postcode: '',
       phone: '',
-    });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const isNull = body?.data?.createAdminCustomerAddress?.adminCustomerAddress === null;
-    expect(hasErrors || isNull).toBe(true);
+    }));
 
-    await dropCustomer(request, customer.id);
+    expectGraphQLError(body, 'createAdminCustomerAddress', 'The first name field is required.');
+    expect(await listedAddressIds(request)).toEqual([]);
   });
 
-  test('detail returns null/errors for unknown address id', async ({ request }) => {
-    const customer = await createCustomer(request);
+  test('detail of an unknown address reports address not found', async ({ request }) => {
+    const body = await gql(request, ADDRESS_DETAIL, { customerId, id: addressIri(customerId, 99999999) });
 
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_ADDRESS_DETAIL, {
-      customerId: customer._id,
-      id: `/api/admin/customers/${customer._id}/addresses/99999999`,
-    });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const isNull = body?.data?.adminCustomerAddress === null;
-    expect(hasErrors || isNull).toBe(true);
-
-    await dropCustomer(request, customer.id);
+    expectGraphQLError(body, 'adminCustomerAddress', ADDRESS_NOT_FOUND);
   });
 });

@@ -1,107 +1,120 @@
-// tests/restAPI/api/automation/productVariants.spec.ts
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
-import { assertProductCard } from '../../rest/assertions/product.assertions';
 import { assertProductVariantFields } from '../../rest/assertions/productVariant.assertions';
+import {
+  UNKNOWN_ID,
+  createAdminProduct,
+  deleteAdminProducts,
+  safeJson,
+  shopBookingProductId,
+  updateAdminProduct,
+} from '../../rest/helpers/coverage/restGaps.helpers';
 
-// Discovery beforeEach hits the product collection; under parallel load the
-// 30s default can be too tight. Extend to 60s.
-test.describe.configure({ timeout: 60_000 });
+test.describe.configure({ timeout: 120_000 });
 
-test.describe('Product Variants & Booking Slots REST API', () => {
-  let configurableProductId: number | null = null;
+function dateOffset(days: number): string {
+  return new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+}
 
-  test.beforeEach(async ({ request }) => {
-    // per_page=100 took ~12s and was timing out under parallel load. The
-    // first configurable product is enough — we don't iterate the list.
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
+test.describe('product variants rest api', () => {
+  test('should return variants for a configurable product', async ({ request }) => {
+    const listResponse = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
       params: { per_page: '10', type: 'configurable' },
     });
-    if (response.status() === 429) {
-      test.skip(true, 'Rate limited - skipping test');
-      return;
-    }
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    if (Array.isArray(body) && body.length > 0) {
-      configurableProductId = body[0].id;
-    }
+    const listBody = await safeJson(listResponse);
+
+    expect(listResponse.status(), JSON.stringify(listBody)).toBe(200);
+
+    const configurable = Array.isArray(listBody) ? listBody.find((row: any) => row.type === 'configurable') : undefined;
+
+    test.skip(!configurable, 'the catalog has no configurable product');
+
+    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_VARIANTS(configurable.id));
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(Array.isArray(body)).toBe(true);
+    body.forEach((variant: any) => assertProductVariantFields(variant));
   });
 
-  test('Should return variants for a configurable product', async ({ request }) => {
-    if (!configurableProductId) {
-      test.skip(true, 'No configurable product found');
-      return;
-    }
+  test('should return an empty variant list for the variants of a missing product', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_VARIANTS(UNKNOWN_ID));
+    const body = await safeJson(response);
 
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_VARIANTS(configurableProductId));
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(Array.isArray(body)).toBeTruthy();
-    console.log(`Variants for product ${configurableProductId}:`, body.length);
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body).toEqual([]);
+  });
+});
 
-    if (body.length > 0) {
-      body.forEach((variant: any) => assertProductVariantFields(variant));
-      console.log('First variant:', { id: body[0].id, sku: body[0].sku, name: body[0].name });
-    }
+test.describe('product variants of a simple product rest api', () => {
+  let createdIds: number[];
+  let productId: number;
+
+  test.beforeEach(async ({ request }) => {
+    createdIds = [];
+    productId = (await createAdminProduct(request, 'simple')).id;
+    createdIds.push(productId);
   });
 
-  test('Should return 404 for variants of a non-configurable product', async ({ request }) => {
-    const allResp = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '10', type: 'simple' },
+  test.afterEach(async ({ request }) => {
+    await deleteAdminProducts(request, createdIds);
+  });
+
+  test('should return an empty variant list for a simple product', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_VARIANTS(productId));
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body).toEqual([]);
+  });
+});
+
+test.describe('booking slots of a booking product rest api', () => {
+  let createdIds: number[];
+  let bookingProductId: number;
+
+  test.beforeEach(async ({ request }) => {
+    createdIds = [];
+
+    const productId = (await createAdminProduct(request, 'booking')).id;
+    createdIds.push(productId);
+
+    const updated = await updateAdminProduct(request, productId, {
+      booking: {
+        type: 'appointment',
+        qty: '1',
+        location: 'E2E Clinic',
+        available_every_week: '1',
+        duration: '45',
+        break_time: '15',
+        same_slot_all_days: '1',
+        slots: [{ from: '10:00', to: '12:00' }],
+      },
     });
-    const body = await allResp.json();
-    if (!Array.isArray(body) || body.length === 0) {
-      test.skip(true, 'No simple product found');
-      return;
-    }
-    const simpleId = body[0].id;
 
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_VARIANTS(simpleId));
-    expect([200, 404]).toContain(response.status());
-    console.log(`Variants for simple product ${simpleId} status:`, response.status());
+    expect(updated.bookingProduct?.type).toBe('appointment');
+
+    bookingProductId = await shopBookingProductId(request, productId);
   });
 
-  test('Should return 200 empty array for variants of a non-existent product', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_VARIANTS(999999));
-    expect([200, 404]).toContain(response.status());
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(body).toBeDefined();
-    }
-    console.log(`Variants for non-existent product:`, response.status());
+  test.afterEach(async ({ request }) => {
+    await deleteAdminProducts(request, createdIds);
   });
 
-  test('Should return booking slots for a booking product', async ({ request }) => {
-    // Server-side type filter + smaller page keeps this fast (per_page=100
-    // alone took ~12s on this dev DB and timed out under load).
-    const productsResp = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '25', type: 'booking' },
-    });
-    if (productsResp.status() !== 200) {
-      test.skip(true, `Products listing returned ${productsResp.status()}`);
-      return;
-    }
-    const allProducts = await productsResp.json();
-    const booking = Array.isArray(allProducts) ? allProducts.filter((p: any) => p.type === 'booking') : [];
-    if (booking.length === 0) {
-      test.skip(true, 'No booking product found');
-      return;
-    }
-
-    const today = new Date().toISOString().split('T')[0];
+  test('should return the booking slots of a booking product for a date', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.BOOKING_SLOTS, {
-      params: { id: String(booking[0].id), date: today },
+      params: { id: String(bookingProductId), date: dateOffset(7) },
     });
-    // GET /api/shop/booking-slots requires both id + date params; without
-    // valid combinations the slot helper can return 400. Allow that.
-    expect([200, 400, 404, 422]).toContain(response.status());
-    if (response.status() === 200) {
-      const body = await response.json();
-      console.log(`Booking slots for product ${booking[0].id} on ${today}:`, JSON.stringify(body).length, 'bytes');
-    } else {
-      console.log(`Booking slots for product ${booking[0].id} on ${today}:`, response.status());
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(Array.isArray(body), JSON.stringify(body)).toBe(true);
+
+    for (const slot of body) {
+      expect(typeof slot.from).toBe('string');
+      expect(typeof slot.to).toBe('string');
+      expect(typeof slot.timestamp).toBe('string');
     }
   });
 });

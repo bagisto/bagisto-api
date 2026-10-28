@@ -5,20 +5,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Core\Models\SubscribersList;
 
-/**
- * GraphQL coverage for Admin Marketing → Newsletter Subscribers (Block F2d).
- */
 class MarketingSubscriberTest extends AdminApiTestCase
 {
-    protected function seedSubscriber(array $overrides = []): SubscribersList
-    {
-        $this->seedRequiredData();
-
-        return SubscribersList::factory()->create(array_merge([
-            'is_subscribed' => 1,
-        ], $overrides));
-    }
-
+    /**
+     * Test listing.
+     */
     public function test_listing(): void
     {
         $admin = $this->createAdmin();
@@ -39,6 +30,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($ids)->toContain($s->id);
     }
 
+    /**
+     * Test listing filter by is subscribed.
+     */
     public function test_listing_filter_by_is_subscribed(): void
     {
         $admin = $this->createAdmin();
@@ -60,6 +54,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($ids)->not()->toContain($on->id);
     }
 
+    /**
+     * Test listing requires auth.
+     */
     public function test_listing_requires_auth(): void
     {
         $query = 'query { adminMarketingSubscribers(first: 5) { edges { node { _id } } } }';
@@ -68,6 +65,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($resp->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test detail.
+     */
     public function test_detail(): void
     {
         $admin = $this->createAdmin();
@@ -92,6 +92,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($resp->json('data.adminMarketingSubscriber._id'))->toBe($s->id);
     }
 
+    /**
+     * Test detail resolves channel object.
+     */
     public function test_detail_resolves_channel_object(): void
     {
         $admin = $this->createAdmin();
@@ -113,6 +116,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($resp->json('data.adminMarketingSubscriber.channel.code'))->not()->toBeNull();
     }
 
+    /**
+     * Test update mutation.
+     */
     public function test_update_mutation(): void
     {
         $admin = $this->createAdmin();
@@ -135,6 +141,9 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect((int) SubscribersList::find($s->id)->is_subscribed)->toBe(0);
     }
 
+    /**
+     * Test delete mutation.
+     */
     public function test_delete_mutation(): void
     {
         $admin = $this->createAdmin();
@@ -143,7 +152,7 @@ class MarketingSubscriberTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: deleteAdminMarketingSubscriberInput!) {
               deleteAdminMarketingSubscriber(input: $input) {
-                adminMarketingSubscriber { id }
+                adminMarketingSubscriber { id _id }
               }
             }
         GQL;
@@ -151,6 +160,22 @@ class MarketingSubscriberTest extends AdminApiTestCase
             'input' => ['id' => '/api/admin/marketing/subscribers/'.$s->id],
         ], $admin);
         $resp->assertOk();
+
+        expect($resp->json('errors'))->toBeNull()
+            ->and($resp->json('data.deleteAdminMarketingSubscriber.adminMarketingSubscriber.id'))->toBe('/api/admin/marketing/subscribers/'.$s->id);
+
         expect(SubscribersList::find($s->id))->toBeNull();
+    }
+
+    /**
+     * Seed subscriber.
+     */
+    protected function seedSubscriber(array $overrides = []): SubscribersList
+    {
+        $this->seedRequiredData();
+
+        return SubscribersList::factory()->create(array_merge([
+            'is_subscribed' => 1,
+        ], $overrides));
     }
 }

@@ -29,20 +29,6 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
 use Webkul\Product\Models\Product;
 
-/**
- * Admin Catalog → Products datagrid listing.
- *
- * REST   : GET /api/admin/catalog/products
- * GraphQL: adminCatalogProducts (added in a later task)
- *
- * 1:1 parity with Webkul\Admin\DataGrids\Catalog\ProductDataGrid — same
- * columns, same filters, same sort columns, same dual DB / Elasticsearch
- * branch (gated by the same two core config flags the datagrid uses).
- *
- * This is distinct from src/Admin/Models/AdminProduct.php (the slim picker
- * used by the Create-Order modal). The two endpoints coexist and serve
- * different surfaces.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCatalogProduct',
@@ -1124,8 +1110,14 @@ use Webkul\Product\Models\Product;
 )]
 class AdminCatalogProduct extends EloquentModel
 {
+    /**
+     * The table.
+     */
     protected $table = 'products';
 
+    /**
+     * The appends.
+     */
     protected $appends = [
         'name', 'status', 'price', 'formatted_price', 'special_price', 'formatted_special_price',
         'special_price_from', 'special_price_to', 'quantity', 'base_image_url', 'images_count',
@@ -1134,249 +1126,378 @@ class AdminCatalogProduct extends EloquentModel
         'meta_keywords', 'weight', 'tax_category_id', 'manage_stock', 'in_stock', 'featured', 'new',
     ];
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'id' => 'int',
         'attribute_family_id' => 'int',
     ];
 
+    /**
+     * The flat row.
+     */
     private ?object $flatRow = null;
 
+    /**
+     * The flat loaded.
+     */
     private bool $flatLoaded = false;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Images.
+     */
     #[ApiProperty(writable: false)]
     public function images(): HasMany
     {
         return $this->hasMany(AdminProductDetailImage::class, 'product_id')->orderBy('position');
     }
 
+    /**
+     * Videos.
+     */
     #[ApiProperty(writable: false)]
     public function videos(): HasMany
     {
         return $this->hasMany(AdminProductDetailVideo::class, 'product_id')->orderBy('position');
     }
 
+    /**
+     * Categories.
+     */
     #[ApiProperty(writable: false)]
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(AdminProductDetailCategory::class, 'product_categories', 'product_id', 'category_id');
     }
 
+    /**
+     * Inventories.
+     */
     #[ApiProperty(writable: false)]
     public function inventories(): HasMany
     {
         return $this->hasMany(AdminProductDetailInventory::class, 'product_id');
     }
 
+    /**
+     * Customer group prices.
+     */
     #[ApiProperty(writable: false)]
     public function customer_group_prices(): HasMany
     {
         return $this->hasMany(AdminProductDetailCgp::class, 'product_id')->orderBy('qty');
     }
 
+    /**
+     * Translations.
+     */
     #[ApiProperty(writable: false)]
     public function translations(): HasMany
     {
         return $this->hasMany(AdminProductDetailTranslation::class, 'product_id');
     }
 
+    /**
+     * Super attributes.
+     */
     #[ApiProperty(writable: false)]
     public function super_attributes(): BelongsToMany
     {
         return $this->belongsToMany(AdminProductDetailSuperAttribute::class, 'product_super_attributes', 'product_id', 'attribute_id');
     }
 
+    /**
+     * Variants.
+     */
     #[ApiProperty(writable: false)]
     public function variants(): HasMany
     {
         return $this->hasMany(AdminProductDetailVariant::class, 'parent_id');
     }
 
+    /**
+     * Bundle options.
+     */
     #[ApiProperty(writable: false)]
     public function bundle_options(): HasMany
     {
         return $this->hasMany(AdminProductDetailBundleOption::class, 'product_id')->orderBy('sort_order');
     }
 
+    /**
+     * Linked products.
+     */
     #[ApiProperty(writable: false)]
     public function linked_products(): HasMany
     {
         return $this->hasMany(AdminProductDetailGroupedProduct::class, 'product_id')->orderBy('sort_order');
     }
 
+    /**
+     * Downloadable links.
+     */
     #[ApiProperty(writable: false)]
     public function downloadable_links(): HasMany
     {
         return $this->hasMany(AdminProductDetailDownloadableLink::class, 'product_id')->orderBy('sort_order');
     }
 
+    /**
+     * Downloadable samples.
+     */
     #[ApiProperty(writable: false)]
     public function downloadable_samples(): HasMany
     {
         return $this->hasMany(AdminProductDetailDownloadableSample::class, 'product_id')->orderBy('sort_order');
     }
 
+    /**
+     * Customizable options.
+     */
     #[ApiProperty(writable: false)]
     public function customizable_options(): HasMany
     {
         return $this->hasMany(AdminProductDetailCustomizableOption::class, 'product_id')->orderBy('sort_order');
     }
 
+    /**
+     * Attribute values.
+     */
     #[ApiProperty(writable: false)]
     public function attribute_values(): HasMany
     {
         return $this->hasMany(AdminProductDetailAttributeValue::class, 'product_id');
     }
 
+    /**
+     * Channels.
+     */
     #[ApiProperty(writable: false)]
     public function channels(): BelongsToMany
     {
         return $this->belongsToMany(AdminProductDetailChannel::class, 'product_channels', 'product_id', 'channel_id');
     }
 
+    /**
+     * Related products.
+     */
     #[ApiProperty(writable: false)]
     public function related_products(): BelongsToMany
     {
         return $this->belongsToMany(AdminProductDetailProductRef::class, 'product_relations', 'parent_id', 'child_id');
     }
 
+    /**
+     * Up sells.
+     */
     #[ApiProperty(writable: false)]
     public function up_sells(): BelongsToMany
     {
         return $this->belongsToMany(AdminProductDetailProductRef::class, 'product_up_sells', 'parent_id', 'child_id');
     }
 
+    /**
+     * Cross sells.
+     */
     #[ApiProperty(writable: false)]
     public function cross_sells(): BelongsToMany
     {
         return $this->belongsToMany(AdminProductDetailProductRef::class, 'product_cross_sells', 'parent_id', 'child_id');
     }
 
+    /**
+     * Get name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getNameAttribute(): ?string
     {
         return $this->scalar('name', fn () => $this->flat()->name ?? null);
     }
 
+    /**
+     * Get status attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getStatusAttribute(): ?int
     {
         return $this->scalar('status', fn () => isset($this->flat()->status) ? (int) $this->flat()->status : null);
     }
 
+    /**
+     * Get price attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getPriceAttribute(): ?string
     {
         return $this->scalar('price', fn () => isset($this->flat()->price) ? (string) $this->flat()->price : null);
     }
 
+    /**
+     * Get formatted price attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedPriceAttribute(): ?string
     {
         return $this->scalar('formatted_price', fn () => isset($this->flat()->price) ? core()->formatBasePrice((float) $this->flat()->price) : null);
     }
 
+    /**
+     * Get special price attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getSpecialPriceAttribute(): ?string
     {
         return $this->scalar('special_price', fn () => isset($this->flat()->special_price) ? (string) $this->flat()->special_price : null);
     }
 
+    /**
+     * Get formatted special price attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedSpecialPriceAttribute(): ?string
     {
         return $this->scalar('formatted_special_price', fn () => isset($this->flat()->special_price) ? core()->formatBasePrice((float) $this->flat()->special_price) : null);
     }
 
+    /**
+     * Get special price from attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getSpecialPriceFromAttribute(): ?string
     {
         return $this->scalar('special_price_from', fn () => $this->flat()->special_price_from ?? null);
     }
 
+    /**
+     * Get special price to attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getSpecialPriceToAttribute(): ?string
     {
         return $this->scalar('special_price_to', fn () => $this->flat()->special_price_to ?? null);
     }
 
+    /**
+     * Get url key attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getUrlKeyAttribute(): ?string
     {
         return $this->scalar('url_key', fn () => $this->flat()->url_key ?? null);
     }
 
+    /**
+     * Get short description attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getShortDescriptionAttribute(): ?string
     {
         return $this->scalar('short_description', fn () => $this->flat()->short_description ?? null);
     }
 
+    /**
+     * Get description attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getDescriptionAttribute(): ?string
     {
         return $this->scalar('description', fn () => $this->flat()->description ?? null);
     }
 
+    /**
+     * Get meta title attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getMetaTitleAttribute(): ?string
     {
         return $this->scalar('meta_title', fn () => $this->flat()->meta_title ?? null);
     }
 
+    /**
+     * Get meta description attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getMetaDescriptionAttribute(): ?string
     {
         return $this->scalar('meta_description', fn () => $this->flat()->meta_description ?? null);
     }
 
+    /**
+     * Get meta keywords attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getMetaKeywordsAttribute(): ?string
     {
         return $this->scalar('meta_keywords', fn () => $this->flat()->meta_keywords ?? null);
     }
 
+    /**
+     * Get weight attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getWeightAttribute(): ?float
     {
         return $this->scalar('weight', fn () => isset($this->flat()->weight) ? (float) $this->flat()->weight : null);
     }
 
+    /**
+     * Get visible individually attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getVisibleIndividuallyAttribute(): ?bool
     {
         return $this->scalar('visible_individually', fn () => isset($this->flat()->visible_individually) ? (bool) $this->flat()->visible_individually : null);
     }
 
+    /**
+     * Get featured attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFeaturedAttribute(): ?bool
     {
         return $this->scalar('featured', fn () => isset($this->flat()->featured) ? (bool) $this->flat()->featured : null);
     }
 
+    /**
+     * Get new attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getNewAttribute(): ?bool
     {
         return $this->scalar('new', fn () => isset($this->flat()->new) ? (bool) $this->flat()->new : null);
     }
 
+    /**
+     * Get quantity attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getQuantityAttribute(): ?int
     {
         return $this->scalar('quantity', fn () => (int) DB::table('product_inventories')->where('product_id', $this->id)->sum('qty'));
     }
 
+    /**
+     * Get images count attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getImagesCountAttribute(): ?int
     {
         return $this->scalar('images_count', fn () => (int) DB::table('product_images')->where('product_id', $this->id)->count());
     }
 
+    /**
+     * Get base image url attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getBaseImageUrlAttribute(): ?string
     {
@@ -1387,6 +1508,9 @@ class AdminCatalogProduct extends EloquentModel
         });
     }
 
+    /**
+     * Get category id attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getCategoryIdAttribute(): ?int
     {
@@ -1397,6 +1521,9 @@ class AdminCatalogProduct extends EloquentModel
         });
     }
 
+    /**
+     * Get category name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getCategoryNameAttribute(): ?string
     {
@@ -1408,18 +1535,27 @@ class AdminCatalogProduct extends EloquentModel
         });
     }
 
+    /**
+     * Get channel attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getChannelAttribute(): ?string
     {
         return $this->scalar('channel', fn () => core()->getCurrentChannelCode());
     }
 
+    /**
+     * Get locale attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getLocaleAttribute(): ?string
     {
         return $this->scalar('locale', fn () => app()->getLocale());
     }
 
+    /**
+     * Get attribute family name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getAttributeFamilyNameAttribute(): ?string
     {
@@ -1427,6 +1563,9 @@ class AdminCatalogProduct extends EloquentModel
             ? DB::table('attribute_families')->where('id', $this->attribute_family_id)->value('name') : null);
     }
 
+    /**
+     * Get tax category id attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getTaxCategoryIdAttribute(): ?int
     {
@@ -1441,6 +1580,9 @@ class AdminCatalogProduct extends EloquentModel
         });
     }
 
+    /**
+     * Get manage stock attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getManageStockAttribute(): ?bool
     {
@@ -1455,6 +1597,9 @@ class AdminCatalogProduct extends EloquentModel
         });
     }
 
+    /**
+     * Get in stock attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getInStockAttribute(): ?bool
     {
@@ -1467,24 +1612,36 @@ class AdminCatalogProduct extends EloquentModel
         });
     }
 
+    /**
+     * Get attributes attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getAttributesAttribute(): ?string
     {
         return null;
     }
 
+    /**
+     * Get booking product attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getBookingProductAttribute(): ?string
     {
         return null;
     }
 
+    /**
+     * Get warnings attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getWarningsAttribute(): ?string
     {
         return null;
     }
 
+    /**
+     * Scalar.
+     */
     private function scalar(string $key, callable $compute): mixed
     {
         if (array_key_exists($key, $this->attributes)) {
@@ -1494,6 +1651,9 @@ class AdminCatalogProduct extends EloquentModel
         return $compute();
     }
 
+    /**
+     * Flat.
+     */
     private function flat(): object
     {
         if (! $this->flatLoaded) {

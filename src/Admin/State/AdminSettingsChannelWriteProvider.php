@@ -8,14 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsChannel;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Minimal placeholder provider for AdminSettingsChannel PUT/DELETE.
- *
- * API Platform requires a provider on PUT/DELETE so it can resolve the resource
- * before passing it to the processor. The actual lookup happens in the processor.
- */
 class AdminSettingsChannelWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminSettingsChannel
     {
         if (! AdminAuthHelper::resolveAdmin()) {

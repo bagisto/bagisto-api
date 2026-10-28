@@ -5,10 +5,6 @@ namespace Webkul\BagistoApi\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-/**
- * Injects application/json Content-Type and an empty JSON body for bodyless
- * POST endpoints where API Platform still requires a Content-Type header.
- */
 class EnsureJsonContentType
 {
     /**
@@ -19,6 +15,9 @@ class EnsureJsonContentType
         'api/shop/delete-all-wishlists',
     ];
 
+    /**
+     * Handle the request.
+     */
     public function handle(Request $request, Closure $next)
     {
         if (! $request->isMethod('POST')) {

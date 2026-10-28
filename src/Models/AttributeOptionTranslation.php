@@ -12,7 +12,7 @@ use ApiPlatform\Metadata\ApiResource;
 class AttributeOptionTranslation extends \Webkul\Attribute\Models\AttributeOptionTranslation
 {
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int

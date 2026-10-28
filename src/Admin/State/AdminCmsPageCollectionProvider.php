@@ -14,23 +14,18 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsCmsPagePreviewUrl;
 use Webkul\BagistoApi\Support\Sql;
 
-/**
- * Provider for the admin CMS → Pages datagrid endpoint.
- *
- * REST: GET /api/admin/cms/pages    — maps each row to AdminCmsPageListDto.
- * GraphQL: adminCmsPages            — hydrates AdminCmsPage Eloquent models so
- *                                      translations and channels are field-selectable.
- *
- * Mirrors Webkul\Admin\DataGrids\CMS\CMSPageDataGrid — same join
- * (cms_pages × cms_page_translations on the active locale × cms_page_channels × channels),
- * same filters, same sort columns.
- */
 class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
 {
     use BuildsCmsPagePreviewUrl;
 
+    /**
+     * The graphql.
+     */
     protected bool $graphql = false;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         AdminReadPermissions::authorize($operation, AdminCmsPage::class);
@@ -58,6 +53,9 @@ class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
         ));
     }
 
+    /**
+     * Map rows.
+     */
     protected function mapRows($rows): array
     {
         if (! $this->graphql) {
@@ -82,11 +80,17 @@ class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
             ->all();
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'page_title', 'url_key', 'created_at'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         $locale = $args['locale'] ?? app()->getLocale();
@@ -125,6 +129,9 @@ class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
             );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['id'])) {
@@ -144,6 +151,9 @@ class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -160,6 +170,9 @@ class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
         $query->orderBy($orderColumn, $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminCmsPageListDto
     {
         $dto = new AdminCmsPageListDto;

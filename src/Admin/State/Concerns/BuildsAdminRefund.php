@@ -10,6 +10,9 @@ trait BuildsAdminRefund
     use MapsOrderActionItems;
     use MapsOrderAddress;
 
+    /**
+     * Build admin refund.
+     */
     protected function buildAdminRefund(Refund $refund): AdminRefund
     {
         $order = $refund->order;
@@ -105,6 +108,9 @@ trait BuildsAdminRefund
         return $dto;
     }
 
+    /**
+     * Refund money.
+     */
     private function refundMoney($amount, string $currency): string
     {
         try {

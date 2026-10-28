@@ -13,6 +13,9 @@ class AdminRmaReasonItemProvider extends AbstractAdminItemProvider
 {
     use ChecksAdminPermission;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         $this->authorizedAdmin('sales.rma.reasons');
@@ -20,16 +23,25 @@ class AdminRmaReasonItemProvider extends AbstractAdminItemProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.rma.reason-not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return DB::table('rma_reasons')->where('id', $id)->first();
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $entity): AdminRmaReason
     {
         $dto = new AdminRmaReason;

@@ -117,10 +117,16 @@ use Webkul\Product\Models\ProductCustomizableOption as BaseProductCustomizableOp
 class ProductCustomizableOption extends BaseProductCustomizableOption
 {
     /**
-     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
-     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     * The required flag is cast so the value is typed identically on every database engine.
      */
-    protected $casts = [];
+    protected $casts = [
+        'is_required' => 'boolean',
+    ];
+
+    /**
+     * The accessors appended to the serialized option.
+     */
+    protected $appends = ['label'];
 
     /**
      * Get the product that owns the option.
@@ -140,7 +146,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get id
+     * Get id.
      */
     #[ApiProperty(
         identifier: true,
@@ -154,7 +160,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get type
+     * Get type.
      */
     #[ApiProperty(
         writable: false,
@@ -167,24 +173,20 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get label (translated attribute)
+     * Get the label of the current locale, falling back to the first translation.
      */
     #[ApiProperty(
         writable: false,
         readable: true
     )]
     #[Groups(['read'])]
-    public function getLabel(): ?string
+    public function getLabelAttribute(?string $value): ?string
     {
-        // For TranslatableModel, label is stored in translations table
-        // Try to get from current locale first
-        $translation = $this->translations()->first();
-
-        return $translation ? $translation->label : null;
+        return $value ?? $this->translations->first()?->label;
     }
 
     /**
-     * Get is_required
+     * Get is_required.
      */
     #[ApiProperty(
         writable: false,
@@ -197,7 +199,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get max_characters
+     * Get max_characters.
      */
     #[ApiProperty(
         writable: false,
@@ -210,7 +212,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get sort_order
+     * Get sort_order.
      */
     #[ApiProperty(
         writable: false,
@@ -223,7 +225,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get supported_file_extensions
+     * Get supported_file_extensions.
      */
     #[ApiProperty(
         writable: false,
@@ -236,7 +238,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get the customizable option prices with explicit constraint
+     * Get the customizable option prices with explicit constraint.
      */
     #[ApiProperty(
         writable: false,
@@ -246,7 +248,6 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     #[Groups(['read'])]
     public function getCustomizable_option_prices()
     {
-        // Fetch with explicit constraint to ensure we get only prices for this option
         return $this->customizable_option_prices()
             ->where('product_customizable_option_id', $this->id)
             ->orderBy('sort_order')
@@ -254,7 +255,7 @@ class ProductCustomizableOption extends BaseProductCustomizableOption
     }
 
     /**
-     * Get translations
+     * Get translations.
      */
     #[ApiProperty(
         writable: false,

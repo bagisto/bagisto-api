@@ -8,16 +8,19 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsLocale;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/settings/locales + adminSettingsLocales GraphQL query.
- */
 class AdminSettingsLocaleCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'code', 'name'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('locales')->select(
@@ -31,6 +34,9 @@ class AdminSettingsLocaleCollectionProvider extends AbstractAdminCollectionProvi
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['id'])) {
@@ -56,6 +62,9 @@ class AdminSettingsLocaleCollectionProvider extends AbstractAdminCollectionProvi
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -69,6 +78,9 @@ class AdminSettingsLocaleCollectionProvider extends AbstractAdminCollectionProvi
         $query->orderBy($columnMap[$column] ?? 'id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminSettingsLocale
     {
         $dto = new AdminSettingsLocale;

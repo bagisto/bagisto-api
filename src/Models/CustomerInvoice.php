@@ -16,13 +16,6 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CustomerInvoiceProvider;
 use Webkul\Sales\Models\Order;
 
-/**
- * Customer Invoice API Resource
- *
- * Returns invoices belonging to authenticated customer's orders.
- * Read-only, customer-scoped via order relationship.
- * Supports PDF download via separate route.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomerInvoice',
@@ -59,15 +52,21 @@ use Webkul\Sales\Models\Order;
         new Get(
             uriTemplate: '/customer-invoices/{id}',
             provider: CustomerInvoiceProvider::class,
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'Get an invoice of the customer',
+                description: 'One invoice of an order placed by the authenticated customer; any other invoice or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
     ],
     graphQlOperations: [
         new Query(
             resolver: BaseQueryItemResolver::class,
+            description: 'One invoice of an order placed by the authenticated customer; any other invoice is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
         ),
         new QueryCollection(
             provider: CustomerInvoiceProvider::class,
+            description: 'Invoices of the authenticated customer\'s orders, newest first. Filters: `orderId`, and `state` (paid, pending, pending_payment, overdue or refunded). Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'orderId' => [
@@ -105,10 +104,18 @@ use Webkul\Sales\Models\Order;
 )]
 class CustomerInvoice extends Model
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'invoices';
 
-    /** @var array */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'order_id' => 'int',
@@ -133,17 +140,20 @@ class CustomerInvoice extends Model
         'reminders' => 'int',
     ];
 
-    /** @var array */
+    /**
+     * The accessors appended to the invoice's array form.
+     *
+     * @var array
+     */
     protected $appends = ['downloadUrl'];
 
     /**
      * Download URL for the invoice PDF
-     * Using Eloquent accessor pattern so it's automatically included in toArray()
-     * Routes through BagistoApi endpoint with bearer token authentication
+     * Using Eloquent accessor pattern so it's automatically included in toArray().
      */
     public function getDownloadUrlAttribute(): string
     {
-        return route('bagistoapi.customer-invoice-pdf', ['id' => $this->id]);
+        return route('bagistoapi.customer_invoice_pdf', ['id' => $this->id]);
     }
 
     /**
@@ -156,7 +166,7 @@ class CustomerInvoice extends Model
 
     /**
      * Get the invoice items (top-level only).
-     * Returns HasMany relationship for queries, but provides array access via toArray()
+     * Returns HasMany relationship for queries, but provides array access via toArray().
      */
     public function items(): HasMany
     {
@@ -174,7 +184,7 @@ class CustomerInvoice extends Model
     }
 
     /**
-     * Ensure downloadUrl is included in array serialization for GraphQL
+     * Ensure downloadUrl is included in array serialization for GraphQL.
      */
     public function toArray(): array
     {

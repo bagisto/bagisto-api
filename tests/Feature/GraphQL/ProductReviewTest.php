@@ -2,12 +2,48 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Customer\Models\Customer;
+use Webkul\MagicAI\Facades\MagicAI;
 use Webkul\Product\Models\ProductReview;
 
 class ProductReviewTest extends GraphQLTestCase
 {
+    /**
+     * Test translate approved review through graphql.
+     */
+    public function test_translate_approved_review_through_graphql(): void
+    {
+        $this->seedRequiredData();
+        $this->enableReviewTranslation();
+        $product = $this->createBaseProduct('simple');
+        $review = ProductReview::factory()->create([
+            'product_id' => $product->id,
+            'status' => 'approved',
+            'comment' => 'A very nice product.',
+        ]);
+
+        MagicAI::shouldReceive('translate')
+            ->once()
+            ->andReturn('Un très bon produit.');
+
+        $response = $this->graphQL(<<<'GQL'
+            query ($productId: Int!, $reviewId: Int!) {
+              productReviewTranslation(productId: $productId, reviewId: $reviewId) {
+                content
+              }
+            }
+            GQL, [
+            'productId' => $product->id,
+            'reviewId' => $review->id,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.productReviewTranslation.content'))->toBe('Un très bon produit.');
+    }
+
     /**
      * A created review stays pending and takes the customer's id and name, ignoring the client's status and name.
      */
@@ -160,6 +196,51 @@ class ProductReviewTest extends GraphQLTestCase
     }
 
     /**
+     * Deleting a review returns the deleted review, so its fields can be selected.
+     */
+    public function test_delete_own_review_returns_the_deleted_review(): void
+    {
+        $customer = $this->createCustomer();
+        $review = $this->createReviewFor($customer, 'approved');
+
+        $mutation = <<<'GQL'
+            mutation deleteProductReview($input: deleteProductReviewInput!) {
+              deleteProductReview(input: $input) {
+                productReview { id _id title }
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $mutation, [
+            'input' => ['id' => '/api/shop/reviews/'.$review->id],
+        ]);
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.deleteProductReview.productReview'))->toBe([
+            'id' => '/api/shop/reviews/'.$review->id,
+            '_id' => $review->id,
+            'title' => $review->title,
+        ]);
+        $this->assertDatabaseMissing('product_reviews', ['id' => $review->id]);
+    }
+
+    /**
+     * Deleting a review that does not exist reports it as not found, not as someone else's review.
+     */
+    public function test_delete_missing_review_is_reported_as_not_found(): void
+    {
+        $customer = $this->createCustomer();
+        $iri = '/api/shop/reviews/999999999';
+
+        $response = $this->authenticatedGraphQL($customer, $this->deleteReviewMutation(), [
+            'input' => ['id' => $iri],
+        ]);
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.graphql.product-review.item-not-found', ['id' => $iri]));
+        expect($response->json('data.deleteProductReview'))->toBeNull();
+    }
+
+    /**
      * A customer cannot delete another customer's review.
      */
     public function test_delete_another_customers_review_is_refused(): void
@@ -230,6 +311,160 @@ class ProductReviewTest extends GraphQLTestCase
     }
 
     /**
+     * The reviewer name is censored for other readers and shown in full to its author.
+     */
+    public function test_product_reviews_censor_the_reviewer_name(): void
+    {
+        $customer = $this->createCustomer(['first_name' => 'John', 'last_name' => 'Doe']);
+        $product = $this->createBaseProduct('simple');
+
+        $this->createReviewFor($customer, 'approved', $product->id);
+
+        $query = <<<'GQL'
+            query productReviews($productId: Int) {
+              productReviews(product_id: $productId, first: 5) {
+                edges {
+                  node {
+                    name
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $guest = $this->graphQL($query, ['productId' => $product->id]);
+
+        expect($guest->json('errors'))->toBeNull();
+        expect($guest->json('data.productReviews.edges.0.node.name'))->toBe('J*** D**');
+
+        $author = $this->authenticatedGraphQL($customer, $query, ['productId' => $product->id]);
+
+        expect($author->json('data.productReviews.edges.0.node.name'))->toBe('John Doe');
+    }
+
+    /**
+     * A product's nested approvedReviews and bundleOptions list only that product's records.
+     */
+    public function test_product_nested_reviews_and_bundle_options_are_scoped_to_the_product(): void
+    {
+        $customer = $this->createCustomer();
+        $product = $this->createBaseProduct('simple');
+        $other = $this->createBaseProduct('simple');
+
+        $own = $this->createReviewFor($customer, 'approved', $product->id);
+        $foreign = $this->createReviewFor($customer, 'approved', $other->id);
+
+        $response = $this->graphQL(<<<GQL
+            query {
+              product(id: "/api/shop/products/{$product->id}") {
+                approvedReviews {
+                  edges {
+                    node {
+                      _id
+                    }
+                  }
+                }
+                bundleOptions {
+                  edges {
+                    node {
+                      _id
+                    }
+                  }
+                }
+              }
+            }
+        GQL);
+
+        expect($response->json('errors'))->toBeNull();
+
+        $reviewIds = array_map('intval', array_column(array_column($response->json('data.product.approvedReviews.edges') ?? [], 'node'), '_id'));
+
+        expect($reviewIds)->toBe([(int) $own->id]);
+        expect($reviewIds)->not->toContain((int) $foreign->id);
+        expect($response->json('data.product.bundleOptions.edges'))->toBe([]);
+    }
+
+    /**
+     * Last without before returns the final approved reviews of a product.
+     */
+    public function test_product_reviews_last_returns_the_final_reviews(): void
+    {
+        [$product, , $second] = $this->createTwoApprovedReviews();
+
+        $response = $this->graphQL(
+            'query productReviews($productId: Int) { productReviews(product_id: $productId, last: 1) { edges { cursor node { _id } } pageInfo { hasPreviousPage } } }',
+            ['productId' => $product->id]
+        );
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $response->json('data.productReviews.edges')))->toBe([$second->id])
+            ->and(array_column($response->json('data.productReviews.edges'), 'cursor'))->toBe([base64_encode('1')])
+            ->and($response->json('data.productReviews.pageInfo.hasPreviousPage'))->toBeTrue();
+    }
+
+    /**
+     * Last with before returns only the reviews that precede the cursor.
+     */
+    public function test_product_reviews_last_before_stops_at_the_cursor(): void
+    {
+        [$product, $first] = $this->createTwoApprovedReviews();
+
+        $response = $this->graphQL(
+            'query productReviews($productId: Int, $before: String) { productReviews(product_id: $productId, last: 5, before: $before) { edges { node { _id } } } }',
+            ['productId' => $product->id, 'before' => base64_encode('1')]
+        );
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $response->json('data.productReviews.edges')))->toBe([$first->id]);
+    }
+
+    /**
+     * A zero page size returns an empty review page that still reports the total.
+     */
+    public function test_product_reviews_zero_page_size_returns_an_empty_page(): void
+    {
+        [$product] = $this->createTwoApprovedReviews();
+
+        $response = $this->graphQL(
+            'query productReviews($productId: Int) { productReviews(product_id: $productId, first: 0) { edges { node { _id } } totalCount } }',
+            ['productId' => $product->id]
+        );
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.productReviews.edges'))->toBe([])
+            ->and($response->json('data.productReviews.totalCount'))->toBe(2);
+    }
+
+    /**
+     * Enable review translation.
+     */
+    private function enableReviewTranslation(): void
+    {
+        foreach ([
+            'magic_ai.general.settings.enabled' => '1',
+            'magic_ai.storefront_features.review_translation.enabled' => '1',
+        ] as $code => $value) {
+            DB::table('core_config')->where('code', $code)->delete();
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+    }
+
+    /**
      * Create a review owned by the customer.
      */
     private function createReviewFor(Customer $customer, string $status, ?int $productId = null): ProductReview
@@ -243,6 +478,23 @@ class ProductReviewTest extends GraphQLTestCase
             'rating' => 3,
             'status' => $status,
         ]);
+    }
+
+    /**
+     * Create a product with two approved reviews, returning the product and both reviews.
+     */
+    private function createTwoApprovedReviews(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $product = $this->createBaseProduct('simple');
+
+        return [
+            $product,
+            $this->createReviewFor($customer, 'approved', $product->id),
+            $this->createReviewFor($customer, 'approved', $product->id),
+        ];
     }
 
     /**

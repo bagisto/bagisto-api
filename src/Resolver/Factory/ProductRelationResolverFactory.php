@@ -12,20 +12,32 @@ use Webkul\BagistoApi\Dto\DownloadLinkOutput;
 use Webkul\BagistoApi\Models\Attribute;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\ReadCart;
+use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
 use Webkul\BagistoApi\State\ProductRelationProvider;
 use Webkul\Checkout\Models\Cart;
 
 class ProductRelationResolverFactory implements ResolverFactoryInterface
 {
+    use ResolvesCursorWindow;
+
     /**
      * Product connection fields that are rebuilt by hand when the inner resolver returns nothing.
      */
     private const RELATION_FIELDS = ['upSells', 'crossSells', 'relatedProducts', 'superAttributes', 'reviews', 'bookingProducts'];
 
+    /**
+     * The inner factory.
+     */
     private readonly ResolverFactoryInterface $innerFactory;
 
+    /**
+     * The relation provider.
+     */
     private readonly ProductRelationProvider $relationProvider;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         ResolverFactoryInterface $innerFactory,
         ProductRelationProvider $relationProvider
@@ -216,24 +228,28 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
             return $paginator;
         }
 
+        $total = (int) $paginator->getTotalItems();
+
+        [$offset] = $this->resolveCursorWindow($args, $total, $paginator->count());
+
         $edges = [];
 
         foreach ($paginator as $index => $item) {
             $edges[] = [
                 'node' => $this->productRelationNode($item),
-                'cursor' => base64_encode((string) $index),
+                'cursor' => base64_encode((string) ($offset + $index)),
             ];
         }
 
         return [
-            'totalCount' => (int) $paginator->getTotalItems(),
+            'totalCount' => $total,
             'edges' => $edges,
 
             'pageInfo' => [
-                'startCursor' => base64_encode('0'),
-                'endCursor' => base64_encode((string) max(0, $paginator->count() - 1)),
-                'hasNextPage' => $paginator->hasNextPage(),
-                'hasPreviousPage' => $paginator->getCurrentPage() > 1,
+                'startCursor' => base64_encode((string) $offset),
+                'endCursor' => base64_encode((string) max(0, $offset + $paginator->count() - 1)),
+                'hasNextPage' => $offset + $paginator->count() < $total,
+                'hasPreviousPage' => $offset > 0,
             ],
         ];
     }
@@ -362,6 +378,9 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
         return $camel;
     }
 
+    /**
+     * Whether sequential array.
+     */
     private function isSequentialArray(mixed $value): bool
     {
         return is_array($value) && array_values($value) === $value;

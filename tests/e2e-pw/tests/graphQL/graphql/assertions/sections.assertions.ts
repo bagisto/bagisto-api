@@ -1,35 +1,18 @@
 import { expect } from '@playwright/test';
 
-/* ---------------------------------------------------
- * COMMON
- * --------------------------------------------------- */
-
 export function assertNoGraphQLErrors(body: any) {
   expect(body.errors, 'GraphQL errors found').toBeUndefined();
   expect(body.data).toBeTruthy();
 }
 
-
-/* ---------------------------------------------------
- * ATOMIC ASSERTIONS (Reusable)
- * --------------------------------------------------- */
-
-/**
- * Validate section translation (single object)
- */
 export function assertSectionTranslation(translation: any) {
   expect(translation).toBeTruthy();
   expect(typeof translation.locale).toBe('string');
   expect(typeof translation.options).toBe('string');
 
-  // Validate JSON format only
   expect(() => JSON.parse(translation.options)).not.toThrow();
 }
 
-
-/**
- * Validate basic section fields
- */
 export function assertBasicSection(node: any) {
   expect(node).toBeTruthy();
 
@@ -46,18 +29,13 @@ export function assertBasicSection(node: any) {
   expect(typeof node._id).toBe('number');
   expect(typeof node.type).toBe('string');
   expect(typeof node.name).toBe('string');
-  expect(typeof node.status).toBe('string');
+  expect(typeof node.status).toBe('boolean');
   expect(typeof node.themeCode).toBe('string');
-  // ✅ Validate translation ONLY if it exists
   if (node.translation !== undefined && node.translation !== null) {
     assertSectionTranslation(node.translation);
   }
 }
 
-
-/**
- * Validate translations connection (like category translations)
- */
 export function assertTranslationsConnection(translations: any) {
   expect(translations).toBeDefined();
   expect(Array.isArray(translations.edges)).toBeTruthy();
@@ -77,7 +55,7 @@ export function assertTranslationsConnection(translations: any) {
 
     expect(typeof node.id).toBe('string');
     expect(typeof node._id).toBe('number');
-    expect(typeof node.sectionId).toBe('string');
+    expect(typeof node.sectionId).toBe('number');
     expect(typeof node.locale).toBe('string');
     expect(typeof node.options).toBe('string');
 
@@ -85,10 +63,6 @@ export function assertTranslationsConnection(translations: any) {
   });
 }
 
-
-/**
- * Validate GraphQL connection (sections)
- */
 export function assertSectionsConnection(connection: any) {
   expect(connection).toBeDefined();
   expect(Array.isArray(connection.edges)).toBeTruthy();
@@ -105,15 +79,6 @@ export function assertSectionsConnection(connection: any) {
     expect(typeof connection.pageInfo.hasNextPage).toBe('boolean');
 }
 
-
-/* ---------------------------------------------------
- * QUERY-SPECIFIC CONTRACT ASSERTIONS
- * --------------------------------------------------- */
-
-/**
- * For GET_SECTIONS_BASIC
- * (No filter, no enforced translations connection)
- */
 export function assertGetSectionsBasicResponse(body: any) {
   assertNoGraphQLErrors(body);
 
@@ -122,11 +87,6 @@ export function assertGetSectionsBasicResponse(body: any) {
   assertSectionsConnection(connection);
 }
 
-
-/**
- * For GET_SECTIONS_FILTERED (type filter)
- * Must enforce filter + translations connection
- */
 export function assertGetSectionsFilteredResponse(
   body: any,
   expectedType: string
@@ -140,24 +100,17 @@ export function assertGetSectionsFilteredResponse(
   connection.edges.forEach((edge: any) => {
     const node = edge.node;
 
-    // ✅ Validate filter applied
     expect(node.type).toBe(expectedType);
 
-    // ✅ Enforce translations connection exists
     assertTranslationsConnection(node.translations);
   });
 }
 
-/**
- * For GET_SECTIONS_COMPLETE_DETAILS
- * Must enforce all fields + translations connection + pagination
- */
 export function assertGetSectionsCompleteResponse(body: any) {
   assertNoGraphQLErrors(body);
 
   const connection = body.data.sections;
 
-  // Connection-level validations
   expect(connection).toBeDefined();
   expect(Array.isArray(connection.edges)).toBeTruthy();
   expect(typeof connection.totalCount).toBe('number');
@@ -173,31 +126,22 @@ export function assertGetSectionsCompleteResponse(body: any) {
 
     const node = edge.node;
 
-    // Reuse basic validation
     assertBasicSection(node);
 
-    // 🔥 Enforce extra fields required for complete details
-    expect(typeof node.channelId).toBe('string');
+    expect(typeof node.channelId).toBe('number');
     expect(typeof node.createdAt).toBe('string');
     expect(typeof node.updatedAt).toBe('string');
 
-    // Ensure valid ISO date format
     expect(() => new Date(node.createdAt)).not.toThrow();
     expect(() => new Date(node.updatedAt)).not.toThrow();
 
-    // Enforce translation object (must exist in complete query)
     expect(node.translation).toBeDefined();
     assertSectionTranslation(node.translation);
 
-    // Enforce translations connection (must exist)
     assertTranslationsConnection(node.translations);
   });
 }
 
-/**
- * For GET_SECTION_BY_ID_BASIC
- * Single object response (no connection)
- */
 export function assertGetSectionByIdBasicResponse(body: any) {
   assertNoGraphQLErrors(body);
 
@@ -205,14 +149,11 @@ export function assertGetSectionByIdBasicResponse(body: any) {
 
   expect(node).toBeDefined();
 
-  // Use BASE only (not extended)
   assertBasicSection(node);
 
-  // Translation must exist in this query
   expect(node.translation).toBeDefined();
   assertSectionTranslation(node.translation);
 
-  // Ensure fields NOT requested do not exist
   expect(node.sortOrder).toBeUndefined();
   expect(node.channelId).toBeUndefined();
   expect(node.createdAt).toBeUndefined();
@@ -220,17 +161,13 @@ export function assertGetSectionByIdBasicResponse(body: any) {
   expect(node.translations).toBeUndefined();
 }
 
-
-/**
- * Validate extended fields (used in list + complete queries)
- */
 export function assertExtendedSection(node: any) {
   assertBasicSection(node);
 
   expect(typeof node.sortOrder).toBe('number');
 
   if (node.channelId !== undefined)
-    expect(typeof node.channelId).toBe('string');
+    expect(typeof node.channelId).toBe('number');
 
   if (node.createdAt !== undefined)
     expect(typeof node.createdAt).toBe('string');
@@ -249,17 +186,13 @@ export function assertGetSectionByNumericIdResponse(body: any) {
 
   expect(node).toBeDefined();
 
-  // Base fields
   assertBasicSection(node);
 
-  // sortOrder is REQUIRED in this query
   expect(typeof node.sortOrder).toBe('number');
 
-  // Translation (single object)
   expect(node.translation).toBeDefined();
   assertSectionTranslation(node.translation);
 
-  // Fields NOT requested must be undefined
   expect(node.channelId).toBeUndefined();
   expect(node.createdAt).toBeUndefined();
   expect(node.updatedAt).toBeUndefined();
@@ -270,7 +203,6 @@ export function assertGraphQLError( body: any, expectedMessage?: string) {
   expect(body.errors, 'Expected GraphQL errors but none were returned')
     .toBeDefined();
   const messages = body.errors.map((e: any) => e.message);
-  // Print clean error output to terminal
   console.log('\n===== GRAPHQL ERROR =====');
   body.errors.forEach((error: any, index: number) => {
     console.log(`Error ${index + 1}:`);

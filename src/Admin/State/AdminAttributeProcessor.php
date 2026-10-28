@@ -26,18 +26,11 @@ use Webkul\BagistoApi\Support\CoreCapabilities;
 use Webkul\Core\Rules\Code;
 use Webkul\Core\Rules\Regex;
 
-/**
- * Handles POST, PUT, DELETE on AdminAttribute resource.
- *
- * Routes by DTO type / Operation instance:
- *   - AdminAttributeCreateInput → handleCreate()
- *   - AdminAttribute (REST POST body)  → handleCreate()
- *   - AdminAttributeUpdateInput → handleUpdate()
- *   - AdminAttribute (REST PUT body)   → handleUpdate()
- *   - Delete op → handleDelete()
- */
 class AdminAttributeProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AttributeRepository $attributeRepository,
         protected AttributeOptionRepository $attributeOptionRepository,
@@ -46,23 +39,8 @@ class AdminAttributeProcessor implements ProcessorInterface
     ) {}
 
     /**
-     * A pattern is run by the server and written into the storefront form, so one the
-     * browser cannot compile takes the product form down rather than failing here.
-     *
-     * BACKWARD COMPATIBILITY: core ships the rule from 2.4.10. Drop the condition when
-     * the minimum supported core is 2.4.10.
+     * Process.
      */
-    protected function regexRules(): array
-    {
-        $rules = ['nullable', 'required_if:validation,regex'];
-
-        if ($this->capabilities->hasAttributeRegexRule()) {
-            $rules[] = new Regex;
-        }
-
-        return $rules;
-    }
-
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         AdminReadPermissions::authorize(null, null, match (true) {
@@ -114,6 +92,24 @@ class AdminAttributeProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * A pattern is run by the server and written into the storefront form, so one the
+     * browser cannot compile takes the product form down rather than failing here.
+     */
+    protected function regexRules(): array
+    {
+        $rules = ['nullable', 'required_if:validation,regex'];
+
+        if ($this->capabilities->hasAttributeRegexRule()) {
+            $rules[] = new Regex;
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminAttribute
     {
         $rules = [
@@ -152,6 +148,9 @@ class AdminAttributeProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($fresh);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminAttribute
     {
         $attribute = Attribute::find($id);
@@ -251,6 +250,9 @@ class AdminAttributeProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($fresh);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminAttribute
     {
         $attribute = Attribute::with(['translations', 'options.translations'])->find($id);
@@ -416,6 +418,9 @@ class AdminAttributeProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -431,6 +436,9 @@ class AdminAttributeProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): string
     {
         if (
@@ -443,6 +451,9 @@ class AdminAttributeProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (

@@ -12,12 +12,6 @@ use Webkul\BagistoApi\Dto\CartInput;
 use Webkul\BagistoApi\State\CartTokenMutationProvider;
 use Webkul\BagistoApi\State\CartTokenProcessor;
 
-/**
- * AddProductInCart - GraphQL & REST API Resource for Adding Products to Cart
- *
- * Provides mutation for adding products to an existing shopping cart.
- * Uses token-based authentication for guest users or bearer token for authenticated users.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'AddProductInCart',
@@ -342,84 +336,165 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
 )]
 class AddProductInCart
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $cartToken = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?int $customerId = null;
 
+    /**
+     * The channel id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?int $channelId = null;
 
+    /**
+     * The items count.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?int $itemsCount = null;
 
+    /**
+     * The items.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?array $items = null;
 
+    /**
+     * The subtotal.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?float $subtotal = null;
 
+    /**
+     * The base subtotal.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?float $baseSubtotal = null;
 
+    /**
+     * The discount amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?float $discountAmount = null;
 
+    /**
+     * The base discount amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?float $baseDiscountAmount = null;
 
+    /**
+     * The tax amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?float $taxAmount = null;
 
+    /**
+     * The base tax amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?float $baseTaxAmount = null;
 
+    /**
+     * The shipping amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?float $shippingAmount = null;
 
+    /**
+     * The base shipping amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?float $baseShippingAmount = null;
 
+    /**
+     * The grand total.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?float $grandTotal = null;
 
+    /**
+     * The base grand total.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?float $baseGrandTotal = null;
 
+    /**
+     * The formatted subtotal.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $formattedSubtotal = null;
 
+    /**
+     * The formatted discount amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $formattedDiscountAmount = null;
 
+    /**
+     * The formatted tax amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $formattedTaxAmount = null;
 
+    /**
+     * The formatted shipping amount.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $formattedShippingAmount = null;
 
+    /**
+     * The formatted grand total.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $formattedGrandTotal = null;
 
+    /**
+     * The coupon code.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $couponCode = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $message = null;
 
+    /**
+     * The carts.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?array $carts = null;
 
+    /**
+     * The session token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $sessionToken = null;
 
+    /**
+     * The is guest.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?bool $isGuest = null;
 }

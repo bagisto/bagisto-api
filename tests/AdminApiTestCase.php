@@ -2,30 +2,63 @@
 
 namespace Webkul\BagistoApi\Tests;
 
+use Carbon\CarbonInterface;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
-use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
+use Webkul\BagistoApi\Admin\Models\AdminApiSession;
+use Webkul\BagistoApi\Admin\Services\AdminApiAuthSettings;
+use Webkul\BagistoApi\Admin\Services\AdminApiTokenIssuer;
+use Webkul\BagistoApi\Admin\Services\AdminApiTokenPair;
+use Webkul\BagistoApi\Admin\Services\AdminApiTokenService;
+use Webkul\BagistoApi\Admin\Services\DomainResolver;
+use Webkul\BagistoApi\Admin\Services\IssuedAdminApiToken;
+use Webkul\BagistoApi\Tests\Concerns\CraftsAdminJwts;
+use Webkul\BagistoApi\Tests\Fakes\FakeDomainResolver;
+use Webkul\Core\Models\CoreConfig;
 use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
-/**
- * Base test case for the Admin API (REST + GraphQL).
- *
- * As of the 2026-05-27 auth refactor, admin endpoints authenticate via
- * pre-issued AdminPersonalAccessToken rows (table `admin_personal_access_tokens`)
- * resolved by the `admin-api` guard (AdminApiGuard). This base class issues
- * a fresh token per test admin via createToken() / actingAsAdminViaToken().
- *
- * This is distinct from Sanctum's `personal_access_tokens` table, which still
- * powers the storefront customer API.
- */
 abstract class AdminApiTestCase extends BagistoApiTestCase
 {
-    /** GraphQL endpoint URL */
+    use CraftsAdminJwts;
+
+    /**
+     * GraphQL endpoint URL.
+     */
     protected string $graphqlUrl = '/api/graphql';
 
-    /** Known plaintext password for admins created in tests. */
+    /**
+     * The admin GraphQL endpoint, where the public auth mutations are allowlisted.
+     */
+    protected string $adminGraphqlUrl = '/api/admin/graphql';
+
+    /**
+     * Known plaintext password for admins created in tests.
+     */
     protected string $adminPassword = 'admin123';
+
+    /**
+     * The DNS resolver the domain binding uses in tests.
+     */
+    protected FakeDomainResolver $domainResolver;
+
+    /**
+     * Sign with the test JWT key pair and resolve domains through a fake resolver.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->useFixtureJwtKeys();
+
+        $this->domainResolver = new FakeDomainResolver([
+            'localhost' => ['127.0.0.1', '::1'],
+        ]);
+
+        $this->app->instance(DomainResolver::class, $this->domainResolver);
+    }
 
     /**
      * Create an admin with a known password.
@@ -41,64 +74,90 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
     }
 
     /**
-     * Issue a fresh admin integration token (AdminPersonalAccessToken) for
-     * an admin and return the plaintext Bearer token (`<id>|<random>`).
-     *
-     * Tokens issued by this helper:
-     *   - status = active, permission_type = all (passes every role check)
-     *   - expires_at = +1 day so they never auto-expire mid-test
-     *   - no rate limits so parallel test runs don't hit throttles
+     * Create an admin whose custom role grants exactly the given permissions.
      */
-    protected function adminToken(Admin $admin): string
+    protected function createAdminWithRolePermissions(array $permissions, array $attributes = []): Admin
     {
-        $plain = Str::random(40);
-
-        $row = AdminPersonalAccessToken::create([
-            'admin_id' => $admin->id,
-            'name' => 'admin-api-test-'.Str::random(6),
-            'token' => hash('sha256', $plain),
-            'token_preview' => substr($plain, 0, 8),
-            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_ALL,
-            'abilities' => [],
-            'rate_limit_per_minute' => null,
-            'rate_limit_per_day' => null,
-            'expires_at' => now()->addDay(),
-            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
-            'created_by_admin_id' => $admin->id,
+        $role = Role::create([
+            'name' => 'API test role '.Str::random(8),
+            'description' => 'Created by an admin API test.',
+            'permission_type' => 'custom',
+            'permissions' => $permissions,
         ]);
 
-        return $row->id.'|'.$plain;
+        return $this->createAdmin(array_merge(['role_id' => $role->id], $attributes));
     }
 
     /**
-     * Issue a role-bound admin token. The token's `permission_type='same_as_web'`
-     * means it inherits the admin's current role permissions at runtime — every
-     * permission check on the API goes through the admin's role.
-     *
-     * Use this when the test is verifying that a specific role permission is
-     * enforced (e.g. an admin without `sales.orders.cancel` should get 403).
-     * Use the default `adminToken()` (permission_type=all) when the test is
-     * verifying API behaviour itself and doesn't care about role gating.
+     * Start a real login session for an admin and return its access and refresh tokens.
      */
-    protected function adminTokenSameAsWeb(Admin $admin): string
+    protected function adminTokenPair(Admin $admin, array $client = []): AdminApiTokenPair
     {
-        $plain = Str::random(40);
+        return app(AdminApiTokenService::class)->issue($admin, array_merge([
+            'name' => 'admin-api-test-'.Str::random(6),
+            'client_type' => AdminApiSession::CLIENT_TYPE_OTHER,
+        ], $client));
+    }
 
-        $row = AdminPersonalAccessToken::create([
-            'admin_id' => $admin->id,
-            'name' => 'admin-api-test-saw-'.Str::random(6),
-            'token' => hash('sha256', $plain),
-            'token_preview' => substr($plain, 0, 8),
-            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_SAME_AS_WEB,
-            'abilities' => [],
-            'rate_limit_per_minute' => null,
-            'rate_limit_per_day' => null,
-            'expires_at' => now()->addDay(),
-            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
-            'created_by_admin_id' => $admin->id,
+    /**
+     * Start a real login session for an admin and return its JWT access token.
+     */
+    protected function adminAccessToken(Admin $admin, array $client = []): string
+    {
+        return $this->adminTokenPair($admin, $client)->accessToken;
+    }
+
+    /**
+     * Start a real login session for an admin and return its refresh token.
+     */
+    protected function adminRefreshToken(Admin $admin, array $client = []): string
+    {
+        return $this->adminTokenPair($admin, $client)->refreshToken;
+    }
+
+    /**
+     * Create an API token for an admin, bound to a domain, and return the stored row with its string.
+     */
+    protected function issueAdminApiToken(Admin $admin, string $domain = 'localhost', ?CarbonInterface $expiresAt = null, string $name = 'Test integration'): IssuedAdminApiToken
+    {
+        return app(AdminApiTokenIssuer::class)->create(null, $admin, $name, $domain, $expiresAt, Request::create('/'));
+    }
+
+    /**
+     * Create an API token for an admin, bound to a domain, and return its JWT string.
+     */
+    protected function adminApiToken(Admin $admin, string $domain = 'localhost', ?CarbonInterface $expiresAt = null): string
+    {
+        return $this->issueAdminApiToken($admin, $domain, $expiresAt)->plainText;
+    }
+
+    /**
+     * Move the clock past the configured access token lifetime and the verification leeway.
+     */
+    protected function expireAccessToken(): void
+    {
+        $seconds = app(AdminApiAuthSettings::class)->accessTokenTtl() * 60
+            + (int) config('bagistoapi.admin_auth.jwt.leeway', 30)
+            + 1;
+
+        $this->travel($seconds)->seconds();
+    }
+
+    /**
+     * Store an admin authentication setting, such as "security.domain_binding_mode".
+     */
+    protected function setAdminAuthConfig(string $field, mixed $value): void
+    {
+        $code = AdminApiAuthSettings::CONFIG_PREFIX.'.'.$field;
+
+        CoreConfig::query()->where('code', $code)->delete();
+
+        CoreConfig::query()->create([
+            'code' => $code,
+            'value' => is_bool($value) ? (string) (int) $value : (string) $value,
         ]);
 
-        return $row->id.'|'.$plain;
+        $this->forgetCoreConfigCache();
     }
 
     /**
@@ -108,7 +167,7 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
     protected function actingAsAdminViaToken(?Admin $admin = null, ?string $token = null): Admin
     {
         $admin ??= $this->createAdmin();
-        $token ??= $this->adminToken($admin);
+        $token ??= $this->adminAccessToken($admin);
 
         $this->withHeader('Authorization', 'Bearer '.$token);
 
@@ -121,7 +180,7 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
     protected function adminHeaders(Admin $admin, ?string $token = null): array
     {
         return [
-            'Authorization' => 'Bearer '.($token ?? $this->adminToken($admin)),
+            'Authorization' => 'Bearer '.($token ?? $this->adminAccessToken($admin)),
         ];
     }
 
@@ -174,10 +233,59 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
     }
 
     /**
+     * Execute a request on the admin GraphQL endpoint with an optional raw Bearer token.
+     */
+    protected function adminEndpointGraphQL(string $query, array $variables = [], ?string $token = null, array $headers = []): TestResponse
+    {
+        $payload = ['query' => $query];
+
+        if (! empty($variables)) {
+            $payload['variables'] = $variables;
+        }
+
+        if ($token !== null) {
+            $headers['Authorization'] = 'Bearer '.$token;
+        }
+
+        return $this->postJson($this->adminGraphqlUrl, $payload, $headers);
+    }
+
+    /**
+     * Send a REST request with a raw Bearer token.
+     */
+    protected function withBearer(string $method, string $url, string $token, array $data = [], array $headers = []): TestResponse
+    {
+        return $this->json($method, $url, $data, array_merge($headers, [
+            'Authorization' => 'Bearer '.$token,
+        ]));
+    }
+
+    /**
+     * Revoke every login session of an admin, so their access tokens stop working.
+     */
+    protected function revokeAdminSessions(Admin $admin): void
+    {
+        AdminApiSession::query()
+            ->where('admin_id', $admin->id)
+            ->update([
+                'revoked_at' => now(),
+                'revoked_reason' => 'test',
+            ]);
+    }
+
+    /**
+     * Move every login session of an admin past its absolute lifetime.
+     */
+    protected function expireAdminSessions(Admin $admin): void
+    {
+        AdminApiSession::query()
+            ->where('admin_id', $admin->id)
+            ->update(['expires_at' => now()->subDay()]);
+    }
+
+    /**
      * Keep only the keys that are real columns on the running core's schema.
-     *
-     * Fixtures written against one core version carry columns another version dropped
-     * (core 2.5.0 removed marketing_campaigns.type and .mail_to).
+     * Fixtures written against one core version carry columns another version dropped.
      */
     protected function existingColumns(string $table, array $row): array
     {

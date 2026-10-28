@@ -21,28 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
 
-/**
- * Admin Settings → Locales endpoints (Block B Wave 1).
- *
- * REST:
- *   GET    /api/admin/settings/locales
- *   GET    /api/admin/settings/locales/{id}
- *   POST   /api/admin/settings/locales
- *   PUT    /api/admin/settings/locales/{id}
- *   DELETE /api/admin/settings/locales/{id}
- *
- * GraphQL: adminSettingsLocales, adminSettingsLocale,
- *          createAdminSettingsLocale, updateAdminSettingsLocale,
- *          deleteAdminSettingsLocale
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\LocaleController.
- *
- * Notes:
- *  - logo_path image upload is intentionally deferred in v1 — accepts a path
- *    string only. Use the admin panel for now if a real upload is needed.
- *  - Delete refuses if the locale is the only remaining locale (400) or
- *    if it is any channel's default_locale_id (400).
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsLocale',
@@ -223,6 +201,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Locales'],
                 summary: 'Locale detail',
+                description: 'One locale with its code, name, text direction and logo. Needs the `settings.locales` permission.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Locale ID.', true, schema: [
                         'type' => 'integer',
@@ -381,30 +360,57 @@ class AdminSettingsLocale
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(writable: false, example: 'en')]
     public ?string $code = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false, example: 'English')]
     public ?string $name = null;
 
+    /**
+     * The direction.
+     */
     #[ApiProperty(writable: false, example: 'ltr')]
     public ?string $direction = null;
 
+    /**
+     * The logo path.
+     */
     #[ApiProperty(writable: false, example: 'locales/1/flag.png')]
     public ?string $logo_path = null;
 
+    /**
+     * The logo url.
+     */
     #[ApiProperty(writable: false, example: 'https://your-domain.com/storage/locales/1/flag.png')]
     public ?string $logo_url = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, example: 'Locale deleted successfully.')]
     public ?string $message = null;
 }

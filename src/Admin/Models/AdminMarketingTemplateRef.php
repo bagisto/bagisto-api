@@ -6,12 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Email template — shared nested sub-resource for Marketing resources that
- * reference a template (campaigns `marketingTemplate` to-one). Backed by
- * `marketing_templates`; used as a BelongsTo typed object. `name`/`status` are
- * real columns.
- */
 #[ApiResource(
     shortName: 'AdminMarketingTemplateRef',
     operations: [],
@@ -20,17 +14,32 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminMarketingTemplateRef extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the marketing templates.
+     *
+     * @var string
+     */
     protected $table = 'marketing_templates';
 
-    /** @var bool */
+    /**
+     * Indicates the marketing template reference does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The native types the marketing template reference attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

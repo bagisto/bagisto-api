@@ -21,27 +21,18 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Core\Models\Locale;
 
-/**
- * Handles POST / PUT / DELETE for the AdminSettingsLocale resource.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\LocaleController.
- *
- * Notes:
- *  - logo_path image upload is deferred — only a string path is accepted in v1.
- *    The Bagisto LocaleRepository expects logo_path as an UploadedFile[]; this
- *    processor writes via the Eloquent model directly to avoid that contract
- *    and fires the same before/after events the repository would have.
- *  - Permission resolution mirrors AdminSettingsExchangeRateProcessor — reads
- *    role->permission_type / role->permissions directly, never calls bouncer().
- *  - Delete refuses if it's the only remaining locale (400) or if any channel
- *    references it as default_locale_id (400).
- */
 class AdminSettingsLocaleProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminSettingsLocaleItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -97,6 +88,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminSettingsLocale
     {
         $payload = $this->normaliseCreatePayload($input);
@@ -119,6 +113,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         return $this->fetchAndMap((int) $locale->id);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminSettingsLocale
     {
         $existing = Locale::find($id);
@@ -147,6 +144,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsLocale
     {
         $existing = Locale::find($id);
@@ -180,6 +180,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.settings.locale.deleted')];
     }
 
+    /**
+     * Assert deletable.
+     */
     protected function assertDeletable(int $id): void
     {
         if (Locale::count() <= 1) {
@@ -191,6 +194,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Validate create payload.
+     */
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
@@ -205,6 +211,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Validate update payload.
+     */
     protected function validateUpdatePayload(array $input, int $excludeId): void
     {
         $rules = [
@@ -219,6 +228,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -246,6 +258,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -261,6 +276,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -273,6 +291,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -344,6 +365,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         return $out;
     }
 
+    /**
+     * Normalise update payload.
+     */
     protected function normaliseUpdatePayload(array $input, Locale $existing): array
     {
         return [
@@ -359,11 +383,17 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         ];
     }
 
+    /**
+     * Fetch and map.
+     */
     protected function fetchAndMap(int $id): AdminSettingsLocale
     {
         return $this->mapModel(Locale::find($id));
     }
 
+    /**
+     * Map model.
+     */
     protected function mapModel(object $model): AdminSettingsLocale
     {
         $reflection = new \ReflectionClass($this->itemProvider);

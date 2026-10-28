@@ -7,24 +7,11 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * GraphQL coverage for Admin Marketing → URL Rewrites CRUD (Block F3a).
- */
 class MarketingUrlRewriteTest extends AdminApiTestCase
 {
-    protected function insertRewrite(array $overrides = []): int
-    {
-        return \DB::table('url_rewrites')->insertGetId(array_merge([
-            'entity_type' => 'product',
-            'request_path' => 'gqlurr-'.uniqid(),
-            'target_path' => 'gqlurr-tgt-'.uniqid(),
-            'redirect_type' => '301',
-            'locale' => 'en',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
+    /**
+     * Test query listing.
+     */
     public function test_query_listing(): void
     {
         $admin = $this->createAdmin();
@@ -45,6 +32,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect($edges)->toBeArray();
     }
 
+    /**
+     * Test query detail.
+     */
     public function test_query_detail(): void
     {
         $admin = $this->createAdmin();
@@ -73,6 +63,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test mutation create.
+     */
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();
@@ -101,6 +94,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect($exists || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test mutation update.
+     */
     public function test_mutation_update(): void
     {
         $admin = $this->createAdmin();
@@ -135,6 +131,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect($updated || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -143,7 +142,7 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation Del($input: deleteAdminMarketingUrlRewriteInput!) {
               deleteAdminMarketingUrlRewrite(input: $input) {
-                adminMarketingUrlRewrite { _id }
+                adminMarketingUrlRewrite { id _id }
               }
             }
         GQL;
@@ -153,9 +152,16 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.deleteAdminMarketingUrlRewrite.adminMarketingUrlRewrite.id'))->toBe("/api/admin/marketing/url-rewrites/{$id}");
+
         $this->assertDatabaseMissing('url_rewrites', ['id' => $id]);
     }
 
+    /**
+     * Test query listing requires auth.
+     */
     public function test_query_listing_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -208,7 +214,7 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
 
-        $response = $this->massDeleteRewrites([$id], $admin, $this->adminTokenSameAsWeb($admin));
+        $response = $this->massDeleteRewrites([$id], $admin, $this->adminAccessToken($admin));
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.marketing.url-rewrite.no-permission'));
         $this->assertDatabaseHas('url_rewrites', ['id' => $id]);
@@ -225,6 +231,22 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
 
         expect($response->json('errors'))->not->toBeNull();
         $this->assertDatabaseHas('url_rewrites', ['id' => $id]);
+    }
+
+    /**
+     * Insert rewrite.
+     */
+    protected function insertRewrite(array $overrides = []): int
+    {
+        return \DB::table('url_rewrites')->insertGetId(array_merge([
+            'entity_type' => 'product',
+            'request_path' => 'gqlurr-'.uniqid(),
+            'target_path' => 'gqlurr-tgt-'.uniqid(),
+            'redirect_type' => '301',
+            'locale' => 'en',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
     }
 
     /**

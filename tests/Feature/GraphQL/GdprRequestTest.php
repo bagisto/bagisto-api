@@ -8,42 +8,9 @@ use Webkul\Customer\Models\Customer;
 
 class GdprRequestTest extends GraphQLTestCase
 {
-    private function enableGdpr(): void
-    {
-        DB::table('core_config')->where('code', 'general.gdpr.settings.enabled')->delete();
-
-        DB::table('core_config')->insert([
-            'code' => 'general.gdpr.settings.enabled',
-            'value' => '1',
-            'channel_code' => core()->getRequestedChannelCode(),
-            'locale_code' => core()->getRequestedLocaleCode(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $this->forgetCoreConfigCache();
-    }
-
-    private function disableGdpr(): void
-    {
-        DB::table('core_config')->where('code', 'general.gdpr.settings.enabled')->delete();
-
-        $this->forgetCoreConfigCache();
-    }
-
-    private function seedRequest(Customer $customer, array $overrides = []): int
-    {
-        return (int) DB::table('gdpr_data_request')->insertGetId(array_merge([
-            'customer_id' => $customer->id,
-            'email' => $customer->email,
-            'status' => 'pending',
-            'type' => 'delete',
-            'message' => 'Please remove my data',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
+    /**
+     * Test create mutation happy path.
+     */
     public function test_create_mutation_happy_path(): void
     {
         $this->enableGdpr();
@@ -93,6 +60,9 @@ class GdprRequestTest extends GraphQLTestCase
         ]);
     }
 
+    /**
+     * Test create mutation invalid type.
+     */
     public function test_create_mutation_invalid_type(): void
     {
         $this->enableGdpr();
@@ -116,6 +86,9 @@ class GdprRequestTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test create mutation missing message.
+     */
     public function test_create_mutation_missing_message(): void
     {
         $this->enableGdpr();
@@ -139,6 +112,9 @@ class GdprRequestTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test collection query returns only own.
+     */
     public function test_collection_query_returns_only_own(): void
     {
         $this->enableGdpr();
@@ -179,6 +155,9 @@ class GdprRequestTest extends GraphQLTestCase
         }
     }
 
+    /**
+     * Test item query returns own.
+     */
     public function test_item_query_returns_own(): void
     {
         $this->enableGdpr();
@@ -215,6 +194,9 @@ class GdprRequestTest extends GraphQLTestCase
         expect((int) $node['customer']['_id'])->toBe($customer->id);
     }
 
+    /**
+     * Test item query cross customer errors.
+     */
     public function test_item_query_cross_customer_errors(): void
     {
         $this->enableGdpr();
@@ -237,6 +219,9 @@ class GdprRequestTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test revoke mutation happy path.
+     */
     public function test_revoke_mutation_happy_path(): void
     {
         $this->enableGdpr();
@@ -273,6 +258,9 @@ class GdprRequestTest extends GraphQLTestCase
         ]);
     }
 
+    /**
+     * Test revoke mutation not allowed when approved.
+     */
     public function test_revoke_mutation_not_allowed_when_approved(): void
     {
         $this->enableGdpr();
@@ -294,6 +282,9 @@ class GdprRequestTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test revoke mutation cross customer errors.
+     */
     public function test_revoke_mutation_cross_customer_errors(): void
     {
         $this->enableGdpr();
@@ -316,6 +307,9 @@ class GdprRequestTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test delete mutation happy path.
+     */
     public function test_delete_mutation_happy_path(): void
     {
         $this->enableGdpr();
@@ -343,6 +337,9 @@ class GdprRequestTest extends GraphQLTestCase
         $this->assertDatabaseMissing('gdpr_data_request', ['id' => $id]);
     }
 
+    /**
+     * Test delete mutation cross customer errors.
+     */
     public function test_delete_mutation_cross_customer_errors(): void
     {
         $this->enableGdpr();
@@ -366,6 +363,9 @@ class GdprRequestTest extends GraphQLTestCase
         $this->assertDatabaseHas('gdpr_data_request', ['id' => $id]);
     }
 
+    /**
+     * Test collection query requires authentication.
+     */
     public function test_collection_query_requires_authentication(): void
     {
         $this->enableGdpr();
@@ -383,6 +383,9 @@ class GdprRequestTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test create when disabled returns disabled error.
+     */
     public function test_create_when_disabled_returns_disabled_error(): void
     {
         $this->disableGdpr();
@@ -407,6 +410,9 @@ class GdprRequestTest extends GraphQLTestCase
         expect(strtolower(json_encode($response->json('errors'))))->toContain('disabled');
     }
 
+    /**
+     * Test list when disabled returns disabled error.
+     */
     public function test_list_when_disabled_returns_disabled_error(): void
     {
         $this->disableGdpr();
@@ -424,5 +430,50 @@ class GdprRequestTest extends GraphQLTestCase
 
         expect($response->json('errors'))->not->toBeNull();
         expect(strtolower(json_encode($response->json('errors'))))->toContain('disabled');
+    }
+
+    /**
+     * Enable gdpr.
+     */
+    private function enableGdpr(): void
+    {
+        DB::table('core_config')->where('code', 'general.gdpr.settings.enabled')->delete();
+
+        DB::table('core_config')->insert([
+            'code' => 'general.gdpr.settings.enabled',
+            'value' => '1',
+            'channel_code' => core()->getRequestedChannelCode(),
+            'locale_code' => core()->getRequestedLocaleCode(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->forgetCoreConfigCache();
+    }
+
+    /**
+     * Disable gdpr.
+     */
+    private function disableGdpr(): void
+    {
+        DB::table('core_config')->where('code', 'general.gdpr.settings.enabled')->delete();
+
+        $this->forgetCoreConfigCache();
+    }
+
+    /**
+     * Seed request.
+     */
+    private function seedRequest(Customer $customer, array $overrides = []): int
+    {
+        return (int) DB::table('gdpr_data_request')->insertGetId(array_merge([
+            'customer_id' => $customer->id,
+            'email' => $customer->email,
+            'status' => 'pending',
+            'type' => 'delete',
+            'message' => 'Please remove my data',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
     }
 }

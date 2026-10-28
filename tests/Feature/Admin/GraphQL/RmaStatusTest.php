@@ -10,18 +10,9 @@ use Webkul\User\Models\Role;
 
 class RmaStatusTest extends AdminApiTestCase
 {
-    private function createStatus(string $title, int $default = 0): int
-    {
-        return DB::table('rma_statuses')->insertGetId([
-            'title' => $title,
-            'status' => 1,
-            'color' => '#abcdef',
-            'default' => $default,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
+    /**
+     * Test create and list.
+     */
     public function test_create_and_list(): void
     {
         $admin = $this->createAdmin();
@@ -45,10 +36,14 @@ class RmaStatusTest extends AdminApiTestCase
         expect($list->json('data.adminRmaStatuses.edges'))->toBeArray();
     }
 
+    /**
+     * Test update and delete.
+     */
     public function test_update_and_delete(): void
     {
         $admin = $this->createAdmin();
         $id = $this->createStatus('Old-'.uniqid());
+        $other = $this->createStatus('Bystander-'.uniqid());
 
         $update = <<<GQL
             mutation {
@@ -73,13 +68,18 @@ class RmaStatusTest extends AdminApiTestCase
         $deleteResponse = $this->adminGraphQL($delete, [], $admin);
         $deleteResponse->assertOk();
         $this->assertDatabaseMissing('rma_statuses', ['id' => $id]);
+        $this->assertDatabaseHas('rma_statuses', ['id' => $other]);
     }
 
+    /**
+     * Test mass delete skips default.
+     */
     public function test_mass_delete_skips_default(): void
     {
         $admin = $this->createAdmin();
         $keep = $this->createStatus('DefaultKeep-'.uniqid(), 1);
         $gone = $this->createStatus('Gone-'.uniqid());
+        $other = $this->createStatus('Bystander-'.uniqid());
 
         $mutation = <<<GQL
             mutation {
@@ -93,6 +93,7 @@ class RmaStatusTest extends AdminApiTestCase
         $response->assertOk();
         $this->assertDatabaseHas('rma_statuses', ['id' => $keep]);
         $this->assertDatabaseMissing('rma_statuses', ['id' => $gone]);
+        $this->assertDatabaseHas('rma_statuses', ['id' => $other]);
     }
 
     /**
@@ -158,7 +159,7 @@ class RmaStatusTest extends AdminApiTestCase
         $response = $this->massUpdateStatusStatus([
             'indices' => [$id],
             'value' => 0,
-        ], $admin, $this->adminTokenSameAsWeb($admin));
+        ], $admin, $this->adminAccessToken($admin));
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.rma.no-permission'));
         $this->assertDatabaseHas('rma_statuses', [
@@ -200,5 +201,20 @@ class RmaStatusTest extends AdminApiTestCase
         GQL;
 
         return $this->adminGraphQL($mutation, ['input' => $input], $admin, $token);
+    }
+
+    /**
+     * Create status.
+     */
+    private function createStatus(string $title, int $default = 0): int
+    {
+        return DB::table('rma_statuses')->insertGetId([
+            'title' => $title,
+            'status' => 1,
+            'color' => '#abcdef',
+            'default' => $default,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

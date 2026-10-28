@@ -3,14 +3,13 @@
 namespace Webkul\BagistoApi\State\Concerns;
 
 use Illuminate\Support\Str;
-use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CartInput;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
-use Webkul\BagistoApi\Exception\OperationFailedException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Checkout\Facades\Cart as CartFacade;
 use Webkul\Checkout\Models\Cart as CartModel;
 use Webkul\Customer\Models\Customer;
@@ -34,6 +33,10 @@ trait HandlesCartLifecycle
             throw new AuthorizationException(__('bagistoapi::app.graphql.cart.unauthorized-access'));
         }
 
+        if (! $cart->items()->exists()) {
+            return (array) CartData::fromModel($cart->load('items.product'));
+        }
+
         CartFacade::setCart($cart);
 
         if (
@@ -46,6 +49,11 @@ trait HandlesCartLifecycle
         CartFacade::collectTotals();
 
         $cart = CartFacade::getCart();
+
+        if (! $cart) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.cart-not-found'));
+        }
+
         $cart->load('items.product');
 
         $cartData = CartData::fromModel($cart);
@@ -84,20 +92,13 @@ trait HandlesCartLifecycle
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.guest-cart-not-found'));
         }
 
-        $customerCart = $this->cartRepository->findOneWhere([
-            'customer_id' => $customer->id,
-            'is_active' => 1,
-        ]);
+        $mergedCart = $this->guestCartMerger->merge($guestCart, $customer);
 
-        if ($customerCart) {
-            $this->mergeIntoCustomerCart($customerCart, $guestCart);
-        } else {
-            $customerCart = $this->adoptGuestCart($guestCart, $customer);
+        if (! $mergedCart) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.guest-cart-not-found'));
         }
 
-        $customerCart = CartModel::find($customerCart->id);
-
-        $cartData = CartData::fromModel($customerCart);
+        $cartData = CartData::fromModel($mergedCart);
         $cartData->success = true;
         $cartData->message = __('bagistoapi::app.graphql.cart.guest-cart-merged');
 
@@ -105,70 +106,17 @@ trait HandlesCartLifecycle
     }
 
     /**
-     * Turn a guest cart into the customer's cart when the customer has none.
-     */
-    private function adoptGuestCart(CartModel $guestCart, Customer $customer): CartModel
-    {
-        $this->cartRepository->update([
-            'customer_id' => $customer->id,
-            'is_guest' => 0,
-            'customer_first_name' => $customer->first_name,
-            'customer_last_name' => $customer->last_name,
-            'customer_email' => $customer->email,
-        ], $guestCart->id);
-
-        $this->guestCartTokensRepository->deleteWhere(['cart_id' => $guestCart->id]);
-
-        $customerCart = CartModel::find($guestCart->id);
-
-        CartFacade::setCart($customerCart);
-
-        CartFacade::collectTotals();
-
-        return $customerCart;
-    }
-
-    /**
-     * Add the guest cart's items to the customer's existing cart and drop the guest cart.
-     */
-    private function mergeIntoCustomerCart(CartModel $customerCart, CartModel $guestCart): void
-    {
-        CartFacade::setCart($customerCart);
-
-        foreach ($guestCart->items as $guestCartItem) {
-            try {
-                CartFacade::addProduct($guestCartItem->product, $guestCartItem->additional ?? []);
-            } catch (\Exception) {
-                continue;
-            }
-        }
-
-        CartFacade::collectTotals();
-
-        CartFacade::removeCart($guestCart);
-    }
-
-    /**
-     * Resolve the customer from a bearer token and act as them for the cart.
+     * Resolve the customer from a bearer access token and act as them for the cart.
      */
     private function getCustomerFromToken(string $token): ?Customer
     {
-        try {
-            $personalAccessToken = PersonalAccessToken::findToken($token);
+        $customer = CurrentCustomer::fromToken($token);
 
-            if (
-                $personalAccessToken
-                && $personalAccessToken->tokenable instanceof Customer
-            ) {
-                CartTokenFacade::actAsCustomer($personalAccessToken->tokenable);
-
-                return $personalAccessToken->tokenable;
-            }
-        } catch (\Exception $exception) {
-            throw new OperationFailedException($exception->getMessage(), 0, $exception);
+        if ($customer) {
+            CartTokenFacade::actAsCustomer($customer);
         }
 
-        return null;
+        return $customer;
     }
 
     /**

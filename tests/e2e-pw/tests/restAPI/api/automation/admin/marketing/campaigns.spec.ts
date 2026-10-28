@@ -1,21 +1,14 @@
-// Admin Marketing — Campaigns REST e2e.
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_MARKETING } from '../../../../rest/endpoints/admin.marketing.endpoints';
 
 test.describe.configure({ timeout: 60_000 });
 
-const OK_LIST = [200];
-const OK_CREATE = [200, 201, 400, 422, 429];
-const OK_UPDATE = [200, 201, 400, 404, 422, 429];
-const OK_DELETE = [200, 204, 400, 404, 422, 429];
-
-async function safeJson(resp: any): Promise<any> {
-  try { return await resp.json(); } catch { return null; }
+function uniqueStamp(): string {
+  return `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
 }
 
-async function makeTemplate(request: any, ts: number): Promise<number | null> {
+async function makeTemplate(request: APIRequestContext, ts: string): Promise<number> {
   const r = await sendAdminRequest(request, ADMIN_MARKETING.TEMPLATES, {
     method: 'POST',
     data: {
@@ -24,46 +17,44 @@ async function makeTemplate(request: any, ts: number): Promise<number | null> {
       content: '<p>e2e</p>',
     },
   });
-  if (r.status() !== 200 && r.status() !== 201) return null;
-  const body = await safeJson(r);
-  return body?.id ?? body?.data?.id ?? null;
+  expect(r.status()).toBe(201);
+
+  return (await r.json()).id;
 }
 
-test.describe('Admin Marketing — Campaigns', () => {
-  test('listing returns 200 + envelope', async ({ request }) => {
+test.describe('admin marketing campaigns', () => {
+  test('listing returns 200 and envelope', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_MARKETING.CAMPAIGNS);
-    expect(OK_LIST).toContain(resp.status());
-    const body = await safeJson(resp);
-    if (body) expect(Array.isArray(body.data) || Array.isArray(body)).toBe(true);
+    expect(resp.status()).toBe(200);
+    expect(Array.isArray((await resp.json()).data)).toBe(true);
   });
 
   test('listing with pagination', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_MARKETING.CAMPAIGNS, {
       params: { page: '1', per_page: '5' },
     });
-    expect(OK_LIST).toContain(resp.status());
+    expect(resp.status()).toBe(200);
+    expect((await resp.json()).meta.perPage).toBe(5);
   });
 
-  test('detail non-existent → 404', async ({ request }) => {
+  test('detail non-existent returns 404', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_MARKETING.CAMPAIGN(99999999));
-    expect([404, 400]).toContain(resp.status());
+    expect(resp.status()).toBe(404);
+    expect((await resp.json()).detail).toBe('Campaign not found.');
   });
 
-  test('create with empty body → 422', async ({ request }) => {
+  test('create with empty body returns 422', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_MARKETING.CAMPAIGNS, {
       method: 'POST',
       data: {},
     });
-    expect([400, 422, 500]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('The name field is required.');
   });
 
-  test('create + detail + update + delete round trip', async ({ request }) => {
-    const ts = Date.now();
+  test('create detail update and delete round trip', async ({ request }) => {
+    const ts = uniqueStamp();
     const tplId = await makeTemplate(request, ts);
-    if (!tplId) {
-      test.skip();
-      return;
-    }
 
     const createResp = await sendAdminRequest(request, ADMIN_MARKETING.CAMPAIGNS, {
       method: 'POST',
@@ -76,23 +67,15 @@ test.describe('Admin Marketing — Campaigns', () => {
         status: 0,
       },
     });
-    const status = createResp.status();
-    console.log('campaign create:', status);
-    expect(OK_CREATE).toContain(status);
-
-    if (status !== 200 && status !== 201) {
-      await sendAdminRequest(request, ADMIN_MARKETING.TEMPLATE(tplId), { method: 'DELETE' });
-      return;
-    }
-    const body = await safeJson(createResp);
-    const id = body?.id ?? body?.data?.id;
-    if (!id) {
-      await sendAdminRequest(request, ADMIN_MARKETING.TEMPLATE(tplId), { method: 'DELETE' });
-      return;
-    }
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json();
+    expect(created).toEqual(expect.objectContaining({ name: `E2E Camp ${ts}`, subject: `Test subject ${ts}`, status: 0 }));
+    expect(created.marketingTemplate.id).toBe(tplId);
+    const id = created.id;
 
     const detail = await sendAdminRequest(request, ADMIN_MARKETING.CAMPAIGN(id));
-    expect([200, 404]).toContain(detail.status());
+    expect(detail.status()).toBe(200);
+    expect((await detail.json()).name).toBe(`E2E Camp ${ts}`);
 
     const updateResp = await sendAdminRequest(request, ADMIN_MARKETING.CAMPAIGN(id), {
       method: 'PUT' as any,
@@ -105,15 +88,21 @@ test.describe('Admin Marketing — Campaigns', () => {
         status: 0,
       },
     });
-    expect(OK_UPDATE).toContain(updateResp.status());
+    expect(updateResp.status()).toBe(200);
+    expect(await updateResp.json()).toEqual(expect.objectContaining({ id, name: `E2E Camp ${ts} updated`, subject: `Updated subject ${ts}` }));
+
+    const reread = await sendAdminRequest(request, ADMIN_MARKETING.CAMPAIGN(id));
+    expect((await reread.json()).subject).toBe(`Updated subject ${ts}`);
 
     const delResp = await sendAdminRequest(request, ADMIN_MARKETING.CAMPAIGN(id), {
       method: 'DELETE',
     });
-    expect(OK_DELETE).toContain(delResp.status());
+    expect(delResp.status()).toBe(200);
+    expect((await delResp.json()).message).toBe('Campaign deleted successfully.');
+
+    const gone = await sendAdminRequest(request, ADMIN_MARKETING.CAMPAIGN(id));
+    expect(gone.status()).toBe(404);
 
     await sendAdminRequest(request, ADMIN_MARKETING.TEMPLATE(tplId), { method: 'DELETE' });
   });
-
-  test.skip('send action queues emails (skipped — side effect)', async () => {});
 });

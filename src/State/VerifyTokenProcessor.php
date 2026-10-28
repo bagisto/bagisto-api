@@ -5,12 +5,15 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Dto\VerifyTokenInput;
 use Webkul\BagistoApi\Models\VerifyToken;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class VerifyTokenProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         $defaultResponse = [
@@ -47,7 +50,7 @@ class VerifyTokenProcessor implements ProcessorInterface
             return $this->output($defaultResponse);
         }
 
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.token-verification.unauthenticated');
@@ -56,9 +59,9 @@ class VerifyTokenProcessor implements ProcessorInterface
         }
 
         try {
-            $token = $customer->currentAccessToken();
+            $session = CurrentCustomer::session();
 
-            if (! $token) {
+            if (! $session) {
                 $defaultResponse['message'] = __('bagistoapi::app.graphql.token-verification.token-not-found-or-expired');
 
                 return $this->output($defaultResponse);
@@ -76,6 +79,8 @@ class VerifyTokenProcessor implements ProcessorInterface
                 'lastName' => $customer->last_name,
                 'email' => $customer->email,
                 'isValid' => true,
+                'sessionId' => (int) $session->id,
+                'sessionExpiresAt' => $session->expires_at?->toIso8601String(),
                 'message' => __('bagistoapi::app.graphql.token-verification.token-is-valid'),
             ]);
 
@@ -86,6 +91,9 @@ class VerifyTokenProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Output.
+     */
     private function output(array $data): VerifyToken
     {
         $output = new VerifyToken;

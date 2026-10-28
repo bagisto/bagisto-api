@@ -21,25 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingEventProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
 
-/**
- * Admin Marketing → Events endpoints (Block F2b).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Communications\EventController 1:1.
- *
- * REST:
- *   GET    /api/admin/marketing/events
- *   GET    /api/admin/marketing/events/{id}
- *   POST   /api/admin/marketing/events
- *   PUT    /api/admin/marketing/events/{id}
- *   DELETE /api/admin/marketing/events/{id}
- *
- * GraphQL:
- *   adminMarketingEvents             — cursor listing
- *   adminMarketingEvent(id:)         — detail
- *   createAdminMarketingEvent
- *   updateAdminMarketingEvent
- *   deleteAdminMarketingEvent
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingEvent',
@@ -53,6 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Create a marketing event',
+                description: 'Creates a marketing event that campaigns can be scheduled on. `name`, `description` and `date` are required.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -110,6 +92,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Update a marketing event',
+                description: 'Updates the marketing event; `name`, `description` and `date` are validated as on create. An unknown ID is a 404.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -167,6 +150,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Delete a marketing event',
+                description: 'Deletes the marketing event. An event a campaign still uses is refused with 400; an unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Marketing event deleted.',
@@ -187,6 +171,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Marketing event detail',
+                description: 'One marketing event by ID with its name, description and date. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Single marketing event.',
@@ -310,21 +295,39 @@ class AdminMarketingEvent
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The description.
+     */
     #[ApiProperty(writable: false)]
     public ?string $description = null;
 
+    /**
+     * The date.
+     */
     #[ApiProperty(writable: false)]
     public ?string $date = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 }

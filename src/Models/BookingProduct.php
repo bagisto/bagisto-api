@@ -151,6 +151,9 @@ class BookingProduct extends BaseBookingProduct
         'available_to' => 'datetime',
     ];
 
+    /**
+     * The appends.
+     */
     protected $appends = [
         'slots',
         'starting_price',
@@ -159,14 +162,19 @@ class BookingProduct extends BaseBookingProduct
         'formatted_starting_regular_price',
     ];
 
+    /**
+     * The starting resolved.
+     */
     private bool $startingResolved = false;
 
+    /**
+     * The starting data.
+     */
     private ?array $startingData = null;
 
     /**
      * Eloquent accessor — surfaced via $appends so API Platform sees `slots`
-     * as a regular model attribute. Returns the type-specific slot config
-     * inline as a nested object/array.
+     * as a regular model attribute. Returns the type-specific slot config.
      */
     public function getSlotsAttribute(): array
     {
@@ -243,26 +251,88 @@ class BookingProduct extends BaseBookingProduct
         return $slots;
     }
 
+    /**
+     * Get starting price attribute.
+     */
     public function getStartingPriceAttribute(): ?float
     {
         return $this->startingData()['final'] ?? null;
     }
 
+    /**
+     * Get formatted starting price attribute.
+     */
     public function getFormattedStartingPriceAttribute(): ?string
     {
         return $this->startingData()['formattedFinal'] ?? null;
     }
 
+    /**
+     * Get starting regular price attribute.
+     */
     public function getStartingRegularPriceAttribute(): ?float
     {
         return $this->startingData()['regular'] ?? null;
     }
 
+    /**
+     * Get formatted starting regular price attribute.
+     */
     public function getFormattedStartingRegularPriceAttribute(): ?string
     {
         return $this->startingData()['formattedRegular'] ?? null;
     }
 
+    /**
+     * Backing slot relations. Kept readable so the GraphQL schema continues
+     * to expose `defaultSlot` / `appointmentSlot` / `eventTickets` /.
+     */
+    #[ApiProperty(writable: false, readable: true, required: false)]
+    public function default_slot(): HasOne
+    {
+        return $this->hasOne(BookingProductDefaultSlot::class, 'booking_product_id');
+    }
+
+    /**
+     * Appointment slot.
+     */
+    #[ApiProperty(writable: false, readable: true, required: false)]
+    public function appointment_slot(): HasOne
+    {
+        return $this->hasOne(BookingProductAppointmentSlot::class, 'booking_product_id');
+    }
+
+    /**
+     * Event tickets.
+     */
+    #[ApiProperty(writable: false, readable: true, required: false)]
+    public function event_tickets(): HasMany
+    {
+        return $this->hasMany(BookingProductEventTicket::class, 'booking_product_id')
+            ->with(['translation', 'translations']);
+    }
+
+    /**
+     * Rental slot.
+     */
+    #[ApiProperty(writable: false, readable: true, required: false)]
+    public function rental_slot(): HasOne
+    {
+        return $this->hasOne(BookingProductRentalSlot::class, 'booking_product_id');
+    }
+
+    /**
+     * Table slot.
+     */
+    #[ApiProperty(writable: false, readable: true, required: false)]
+    public function table_slot(): HasOne
+    {
+        return $this->hasOne(BookingProductTableSlot::class, 'booking_product_id');
+    }
+
+    /**
+     * Starting data.
+     */
     private function startingData(): ?array
     {
         if (! $this->startingResolved) {
@@ -271,46 +341,5 @@ class BookingProduct extends BaseBookingProduct
         }
 
         return $this->startingData;
-    }
-
-    /**
-     * Backing slot relations. Kept readable so the GraphQL schema continues
-     * to expose `defaultSlot` / `appointmentSlot` / `eventTickets` /
-     * `rentalSlot` / `tableSlot` as fields on the BookingProduct type.
-     *
-     * For REST these will surface as IRIs to /api/shop/booking_product_*_slots/{id}
-     * — the slot models declare matching Get/GetCollection operations so the
-     * IRIs resolve. The new `slots` accessor above also inlines the same data
-     * for REST clients that prefer one-shot access.
-     */
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    public function default_slot(): HasOne
-    {
-        return $this->hasOne(BookingProductDefaultSlot::class, 'booking_product_id');
-    }
-
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    public function appointment_slot(): HasOne
-    {
-        return $this->hasOne(BookingProductAppointmentSlot::class, 'booking_product_id');
-    }
-
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    public function event_tickets(): HasMany
-    {
-        return $this->hasMany(BookingProductEventTicket::class, 'booking_product_id')
-            ->with(['translation', 'translations']);
-    }
-
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    public function rental_slot(): HasOne
-    {
-        return $this->hasOne(BookingProductRentalSlot::class, 'booking_product_id');
-    }
-
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    public function table_slot(): HasOne
-    {
-        return $this->hasOne(BookingProductTableSlot::class, 'booking_product_id');
     }
 }

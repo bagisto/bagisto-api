@@ -4,26 +4,32 @@ namespace Webkul\BagistoApi\Console\Commands;
 
 use Illuminate\Console\Command;
 use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
+use Webkul\BagistoApi\Admin\Services\AdminApiAuthSettings;
 
-/**
- * Deletes admin-API audit history older than the configured retention period.
- * Schedule it (or run manually) to keep the audit table from growing forever.
- */
 class PruneAuditsCommand extends Command
 {
-    protected $signature = 'bagisto-api:prune-audits {--days= : Override bagistoapi.audit.retention_days}';
+    /**
+     * The signature.
+     */
+    protected $signature = 'bagisto-api:prune-audits {--days= : Override the configured audit retention}';
 
+    /**
+     * The description.
+     */
     protected $description = 'Delete admin-API audit history older than the retention period.';
 
-    public function handle(): int
+    /**
+     * Handle the request.
+     */
+    public function handle(AdminApiAuthSettings $settings): int
     {
-        $days = $this->option('days') ?? config('bagistoapi.audit.retention_days');
+        $days = $this->option('days') ?? $settings->auditRetentionDays();
 
         if (
             $days === null
             || ! is_numeric($days)
         ) {
-            $this->info('No retention period configured (bagistoapi.audit.retention_days is null). Nothing pruned.');
+            $this->info('No audit retention period configured. Nothing pruned.');
 
             return self::SUCCESS;
         }

@@ -24,11 +24,17 @@ use Webkul\Customer\Repositories\CustomerGroupRepository;
 
 class AdminCustomerGroupProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminCustomerGroupItemProvider $itemProvider,
         protected CustomerGroupRepository $customerGroupRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -84,6 +90,9 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminCustomerGroup
     {
         $value = Validator::make($input, [
@@ -109,6 +118,9 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDto(CustomerGroup::find($group->id));
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminCustomerGroup
     {
         $existing = CustomerGroup::find($id);
@@ -173,6 +185,9 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDto($group);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminCustomerGroup
     {
         $existing = CustomerGroup::find($id);
@@ -208,6 +223,9 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.customer.group.deleted')];
     }
 
+    /**
+     * Resolve input.
+     */
     protected function resolveInput(mixed $data, array $context, bool $isGraphQL): array
     {
         if ($isGraphQL) {
@@ -220,6 +238,9 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Normalize keys.
+     */
     protected function normalizeKeys(array $args): array
     {
         $map = [
@@ -233,6 +254,9 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
         return $out;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

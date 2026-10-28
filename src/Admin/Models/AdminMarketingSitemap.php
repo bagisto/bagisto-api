@@ -21,25 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
 
-/**
- * Admin Marketing → Sitemaps CRUD (Block F3d).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\SearchSEO\SitemapController 1:1.
- *
- * REST:
- *   GET    /api/admin/marketing/sitemaps
- *   GET    /api/admin/marketing/sitemaps/{id}
- *   POST   /api/admin/marketing/sitemaps
- *   PUT    /api/admin/marketing/sitemaps/{id}
- *   DELETE /api/admin/marketing/sitemaps/{id}
- *
- * GraphQL:
- *   adminMarketingSitemaps         — cursor listing
- *   adminMarketingSitemap(id:)     — detail
- *   createAdminMarketingSitemap
- *   updateAdminMarketingSitemap
- *   deleteAdminMarketingSitemap
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingSitemap',
@@ -53,6 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Create a sitemap',
+                description: 'Creates a sitemap definition. `file_name` must end in .xml, `path` must start and end with a slash, and `channels` lists existing channel IDs. The XML is built by the generate endpoint, not here.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -116,6 +98,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Update a sitemap',
+                description: 'Updates the sitemap definition; `file_name`, `path` and `channels` are validated as on create. An unknown ID is a 404.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -189,6 +172,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a sitemap (removes the DB row and generated XML files).',
+                description: 'Deletes the sitemap definition and the XML files generated for it. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Sitemap deleted.',
@@ -209,6 +193,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Sitemap detail',
+                description: 'One sitemap with its channels, its public URLs and, once it has been generated, `generatedAt`, the index file and the sitemap files written per channel. Needs the `marketing.search_seo.sitemaps` permission.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Sitemap row with generated_at and generated index/sitemap file paths.',
@@ -350,36 +335,69 @@ class AdminMarketingSitemap
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The file name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $file_name = null;
 
+    /**
+     * The path.
+     */
     #[ApiProperty(writable: false)]
     public ?string $path = null;
 
+    /**
+     * The channels.
+     */
     #[ApiProperty(writable: false, description: 'Channel ids the sitemap covers. A sitemap generates one index plus its child files per channel.')]
     public ?array $channels = null;
 
+    /**
+     * The urls.
+     */
     #[ApiProperty(writable: false, description: 'Public index URL per channel — the link to submit to a search engine.')]
     public ?array $urls = null;
 
+    /**
+     * The generated at.
+     */
     #[ApiProperty(writable: false, description: 'ISO8601 timestamp of the most recent successful generate, or null.')]
     public ?string $generated_at = null;
 
+    /**
+     * The generated files.
+     */
     #[ApiProperty(writable: false, description: 'Detail-only: what the last generate wrote, one entry per channel — { channelId, channelCode, hostname, index, sitemaps }.')]
     public ?array $generated_files = null;
 
+    /**
+     * The index file.
+     */
     #[ApiProperty(writable: false, description: 'Detail-only, legacy: index path of a sitemap generated before generation became channel-aware. Null for anything generated since; read generatedFiles instead.')]
     public ?string $index_file = null;
 
+    /**
+     * The generated sitemaps.
+     */
     #[ApiProperty(writable: false, description: 'Detail-only, legacy: child file paths of a sitemap generated before generation became channel-aware. Empty for anything generated since; read generatedFiles instead.')]
     public ?array $generated_sitemaps = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 }

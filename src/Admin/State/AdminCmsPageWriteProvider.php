@@ -8,15 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCmsPage;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Minimal item provider for AdminCmsPage PUT and DELETE operations.
- *
- * API Platform requires a provider on PUT/DELETE so it can resolve the resource
- * before passing it to the processor. The actual entity lookup and validation
- * lives inside the processor (which reads from $uriVariables / context).
- */
 class AdminCmsPageWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminCmsPage
     {
         if (! AdminAuthHelper::resolveAdmin()) {

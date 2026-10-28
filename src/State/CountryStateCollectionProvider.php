@@ -9,28 +9,28 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Webkul\BagistoApi\Models\CountryState;
+use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
 
-/**
- * Collection provider for CountryState
- *
- * Provides cursor-based pagination for country states
- * - Subresource: /countries/{country_id}/states (country_id provided via URI)
- * - Direct query: countryStates(countryId: 244) (countryId REQUIRED in args for GraphQL and REST)
- */
 class CountryStateCollectionProvider implements ProviderInterface
 {
+    use ResolvesCursorWindow;
+
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        // Handle both 'country_id' (snake_case from URI) and 'countryId' (camelCase from args)
         $countryId = $uriVariables['country_id'] ?? $uriVariables['countryId'] ?? null;
 
         $args = $context['args'] ?? [];
 
-        // Also check for countryId in GraphQL args (for direct countryStates query)
         if (
             ! $countryId
             && isset($args['countryId'])
@@ -38,7 +38,6 @@ class CountryStateCollectionProvider implements ProviderInterface
             $countryId = (int) $args['countryId'];
         }
 
-        // Enforce: countryId is REQUIRED when querying country states directly
         if (! $countryId) {
             throw new BadRequestHttpException(
                 __('bagistoapi::app.graphql.country-state.country-id-required')
@@ -47,32 +46,6 @@ class CountryStateCollectionProvider implements ProviderInterface
 
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
-        $after = $args['after'] ?? null;
-        $before = $args['before'] ?? null;
-
-        $defaultPerPage = 10;
-
-        // Determine page size
-        if ($first !== null) {
-            $perPage = $first;
-        } elseif ($last !== null) {
-            $perPage = $last;
-        } else {
-            $perPage = $defaultPerPage;
-        }
-
-        $offset = 0;
-
-        if ($after) {
-            $decoded = base64_decode($after, true);
-            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
-        }
-
-        if ($before) {
-            $decoded = base64_decode($before, true);
-            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset = max(0, $cursor - $perPage);
-        }
 
         $query = CountryState::where('country_id', $countryId)
             ->with('translations')
@@ -80,15 +53,13 @@ class CountryStateCollectionProvider implements ProviderInterface
 
         $total = (clone $query)->count();
 
-        if ($offset > $total) {
-            $offset = max(0, $total - $perPage);
-        }
+        [$offset, $limit] = $this->resolveCursorWindow($args, $total, max(0, $first ?? $last ?? 10));
 
-        $items = $query
-            ->offset($offset)
-            ->limit($perPage)
-            ->get();
+        $items = $limit > 0
+            ? $query->offset($offset)->limit($limit)->get()
+            : $query->getModel()->newCollection();
 
+        $perPage = max(1, $limit);
         $currentPage = $total > 0 ? (int) floor($offset / $perPage) + 1 : 1;
 
         return new Paginator(

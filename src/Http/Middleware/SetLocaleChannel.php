@@ -5,27 +5,22 @@ namespace Webkul\BagistoApi\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Webkul\Core\Repositories\ChannelRepository;
+use Webkul\BagistoApi\Support\RequestChannel;
 
 class SetLocaleChannel
 {
-    /**
-     * Create a new middleware instance.
-     */
-    public function __construct(protected ChannelRepository $channelRepository) {}
-
     /**
      * Apply the X-Channel, X-Locale and X-Currency headers to the request.
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $channelCode = $request->header('X-Channel');
+        $channelCode = $request->header(RequestChannel::HEADER);
 
         if (
             is_string($channelCode)
             && $channelCode !== ''
         ) {
-            $requestedChannel = $this->channelRepository->findOneByField('code', $channelCode);
+            $requestedChannel = RequestChannel::fromHeader($request);
 
             if (! $requestedChannel) {
                 return response()->json([

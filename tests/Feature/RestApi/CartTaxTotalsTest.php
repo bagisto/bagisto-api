@@ -8,6 +8,9 @@ use Webkul\Checkout\Models\Cart;
 
 class CartTaxTotalsTest extends RestApiTestCase
 {
+    /**
+     * Test cart tax amount is read from the tax total columns.
+     */
     public function test_cart_tax_amount_is_read_from_the_tax_total_columns(): void
     {
         $this->seedRequiredData();

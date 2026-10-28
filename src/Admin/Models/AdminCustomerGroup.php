@@ -21,23 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGroupProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
 
-/**
- * Admin Customer Groups — full CRUD (Block C C2).
- *
- * REST:
- *   GET    /api/admin/customers/groups
- *   GET    /api/admin/customers/groups/{id}
- *   POST   /api/admin/customers/groups
- *   PUT    /api/admin/customers/groups/{id}
- *   DELETE /api/admin/customers/groups/{id}
- *
- * GraphQL: adminCustomerGroups, adminCustomerGroup,
- *          createAdminCustomerGroup, updateAdminCustomerGroup, deleteAdminCustomerGroup
- *
- * Mirrors Webkul\Admin\Http\Controllers\Customers\CustomerGroupController.
- *
- * System groups (is_user_defined = 0) cannot be deleted or have code/is_user_defined changed.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerGroup',
@@ -175,6 +158,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customer Groups'],
                 summary: 'Customer group detail',
+                description: 'One customer group by ID, with whether it is user-defined and how many customers belong to it. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Customer group ID', true, schema: ['type' => 'integer']),
                 ],
@@ -289,29 +273,51 @@ class AdminCustomerGroup
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(writable: false)]
     public ?string $code = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The is user defined.
+     */
     #[ApiProperty(writable: false)]
     public ?int $is_user_defined = null;
 
-    /** Detail-only — null on listing rows */
+    /**
+     * Detail-only — null on listing rows.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customers_count = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 
-    /** Success signal — populated only on the delete mutation result. */
+    /**
+     * Success signal — populated only on the delete mutation result.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

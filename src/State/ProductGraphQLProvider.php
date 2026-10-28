@@ -7,24 +7,38 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator as LaravelPaginator;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
+use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Marketing\Jobs\UpdateCreateSearchTerm;
 
 class ProductGraphQLProvider implements ProviderInterface
 {
     use ClampsPageSize;
+    use ResolvesCursorWindow;
 
+    /**
+     * The attribute type cache.
+     */
+    private ?array $attributeTypeCache = null;
+
+    /**
+     * The attribute scope cache.
+     */
+    private ?array $attributeScopeCache = null;
+
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
-    private ?array $attributeTypeCache = null;
-
-    private ?array $attributeScopeCache = null;
-
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $this->loadAttributeCaches();
@@ -37,10 +51,14 @@ class ProductGraphQLProvider implements ProviderInterface
 
         $this->applySearch($query, $args['query'] ?? null);
 
+        [$sortKey, $reverse] = isset($args['sortKey'])
+            ? [strtoupper($args['sortKey']), (bool) ($args['reverse'] ?? false)]
+            : $this->defaultSort();
+
         $sortSelects = $this->applySort(
             $query,
-            strtoupper($args['sortKey'] ?? 'ID'),
-            ($args['reverse'] ?? false) ? 'desc' : 'asc',
+            $sortKey,
+            $reverse ? 'desc' : 'asc',
             $locale,
             $channel,
         );
@@ -68,23 +86,19 @@ class ProductGraphQLProvider implements ProviderInterface
             'booking_products' => fn ($query) => $query->select('id', 'product_id', 'type'),
         ]);
 
-        [$limit, $offset] = $this->resolveWindow($args);
-        $isFirstPage = $offset === 0;
-
         $total = (clone $query)
             ->reorder()
             ->distinct()
             ->count('products.id');
 
-        if ($offset > $total) {
-            $offset = max(0, $total - $limit);
-        }
+        [$offset, $limit] = $this->resolveCursorWindow($args, $total, $this->requestedPageSize($args));
+        $isFirstPage = $offset === 0;
 
-        $items = $query
-            ->distinct()
-            ->offset($offset)
-            ->limit($limit)
-            ->get();
+        Product::withReviewSummary($query);
+
+        $items = $limit > 0
+            ? $query->distinct()->offset($offset)->limit($limit)->get()
+            : $query->getModel()->newCollection();
 
         $this->propagateContext($items, $locale, $channel);
 
@@ -99,8 +113,8 @@ class ProductGraphQLProvider implements ProviderInterface
             new LaravelPaginator(
                 $items,
                 $total,
-                $limit,
-                $total > 0 ? (int) floor($offset / $limit) + 1 : 1,
+                max(1, $limit),
+                $total > 0 ? (int) floor($offset / max(1, $limit)) + 1 : 1,
                 ['path' => request()->url()]
             )
         );
@@ -149,7 +163,7 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Match the search term against the SKU and the product name.
+     * Match the search term against the SKU and the name of the product or of one of its variants, as core does.
      */
     private function applySearch($query, mixed $searchTerm): void
     {
@@ -157,12 +171,15 @@ class ProductGraphQLProvider implements ProviderInterface
             return;
         }
 
-        $query->where(function ($query) use ($searchTerm) {
+        $matchesName = function ($attribute) use ($searchTerm) {
+            $attribute->where('attribute_id', 2)
+                ->where('text_value', db_grammar()->caseInsensitiveLike(), "%{$searchTerm}%");
+        };
+
+        $query->where(function ($query) use ($searchTerm, $matchesName) {
             $query->where('sku', db_grammar()->caseInsensitiveLike(), "%{$searchTerm}%")
-                ->orWhereHas('attribute_values', function ($attribute) use ($searchTerm) {
-                    $attribute->where('attribute_id', 2)
-                        ->where('text_value', db_grammar()->caseInsensitiveLike(), "%{$searchTerm}%");
-                });
+                ->orWhereHas('attribute_values', $matchesName)
+                ->orWhereHas('variants.attribute_values', $matchesName);
         });
     }
 
@@ -180,6 +197,28 @@ class ProductGraphQLProvider implements ProviderInterface
             'PRICE' => $this->sortByPrice($query, $direction),
             default => $this->sortById($query, $direction),
         };
+    }
+
+    /**
+     * Resolve the storefront's configured default sort as a (sortKey, reverse) pair.
+     */
+    private function defaultSort(): array
+    {
+        $value = (string) (core()->getConfigData('catalog.products.storefront.sort_by') ?: 'price-desc');
+
+        $position = strrpos($value, '-');
+
+        $sort = $position === false ? $value : substr($value, 0, $position);
+
+        $order = $position === false ? 'desc' : substr($value, $position + 1);
+
+        $sortKey = match ($sort) {
+            'name' => 'NAME',
+            'created_at' => 'CREATED_AT',
+            default => 'PRICE',
+        };
+
+        return [$sortKey, $order !== 'asc'];
     }
 
     /**
@@ -232,6 +271,8 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
+     * Sort by a product column, with the product id as a tie-breaker.
+     *
      * @return string[]
      */
     private function sortByColumn($query, string $column, string $direction): array
@@ -243,6 +284,8 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
+     * Sort by product id.
+     *
      * @return string[]
      */
     private function sortById($query, string $direction): array
@@ -253,7 +296,7 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Sort by the minimal price of the customer's group.
+     * Sort by the minimal price of the customer's group on the current channel, one index row per product.
      *
      * @return string[]
      */
@@ -261,9 +304,12 @@ class ProductGraphQLProvider implements ProviderInterface
     {
         $customerGroup = $this->currentCustomerGroup();
 
-        $query->leftJoin('product_price_indices', function ($join) use ($customerGroup) {
+        $channelId = (int) core()->getCurrentChannel()->id;
+
+        $query->leftJoin('product_price_indices', function ($join) use ($customerGroup, $channelId) {
             $join->on('products.id', '=', 'product_price_indices.product_id')
-                ->where('product_price_indices.customer_group_id', $customerGroup->id);
+                ->where('product_price_indices.customer_group_id', $customerGroup->id)
+                ->where('product_price_indices.channel_id', $channelId);
         })
             ->orderBy('sort_price', $direction)
             ->orderBy('products.id', $direction)
@@ -291,7 +337,14 @@ class ProductGraphQLProvider implements ProviderInterface
 
         $decoded = json_decode($filter, true);
 
-        return json_last_error() === JSON_ERROR_NONE && is_array($decoded) ? $decoded : [];
+        if (
+            json_last_error() !== JSON_ERROR_NONE
+            || ! is_array($decoded)
+        ) {
+            return [];
+        }
+
+        return $decoded;
     }
 
     /**
@@ -301,7 +354,7 @@ class ProductGraphQLProvider implements ProviderInterface
     {
         foreach (['type', 'sku'] as $column) {
             if (! empty($filters[$column])) {
-                $query->where($column, $filters[$column]);
+                $query->where('products.'.$column, $filters[$column]);
                 unset($filters[$column]);
             }
         }
@@ -334,6 +387,9 @@ class ProductGraphQLProvider implements ProviderInterface
         unset($filters['new'], $filters['featured']);
     }
 
+    /**
+     * Apply category filter.
+     */
     private function applyCategoryFilter($query, array &$filters): void
     {
         if (empty($filters['category_id'])) {
@@ -418,6 +474,8 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
+     * Collect the filters that target filterable attributes, keyed by attribute code.
+     *
      * @return array<string, array{term: mixed, matchType: string}>
      */
     private function collectAttributeFilters(array $filters): array
@@ -491,29 +549,15 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Resolve the page size and the offset from the cursor arguments.
-     *
-     * @return array{0: int, 1: int}
+     * The page size the first or last argument asks for, clamped, or zero for an empty page.
      */
-    private function resolveWindow(array $args): array
+    private function requestedPageSize(array $args): int
     {
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
-        $limit = $this->clampPageSize($first ?? $last ?? 30);
-        $offset = 0;
+        $requested = $first ?? $last ?? 30;
 
-        if (! empty($args['after'])) {
-            $decoded = base64_decode($args['after'], true);
-            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
-        }
-
-        if (! empty($args['before'])) {
-            $decoded = base64_decode($args['before'], true);
-            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset = max(0, $cursor - $limit);
-        }
-
-        return [$limit, $offset];
+        return $requested > 0 ? $this->clampPageSize($requested) : 0;
     }
 
     /**
@@ -544,22 +588,18 @@ class ProductGraphQLProvider implements ProviderInterface
      */
     private function currentCustomerGroup(): object
     {
-        return Auth::guard('sanctum')->user()?->group ?? core()->getGuestCustomerGroup();
+        return CurrentCustomer::user()?->group ?? core()->getGuestCustomerGroup();
     }
 
     /**
-     * Apply attribute filter logic to a query based on attribute type
+     * Apply attribute filter logic to a query based on attribute type.
      */
     private function applyAttributeFilter($query, $term, $matchType, $locale, $channel, $alias, $attributeType = null, $attrCode = null)
     {
-        // Fallback to text_value if attribute type not provided
         if (! $attributeType) {
             $attributeType = 'text';
         }
 
-        // Only constrain locale/channel when the attribute is actually scoped —
-        // non-scoped attributes store NULL in locale/channel columns, so adding
-        // a WHERE locale = 'en' would exclude every match.
         $scope = $attrCode ? ($this->attributeScopeCache[$attrCode] ?? null) : null;
 
         if (
@@ -584,7 +624,7 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Get the correct column name based on attribute type
+     * Get the correct column name based on attribute type.
      */
     private function getColumnForType($attributeType)
     {
@@ -602,7 +642,7 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Apply partial (LIKE) filter based on attribute type
+     * Apply partial (LIKE) filter based on attribute type.
      */
     private function applyPartialFilter($query, $term, $alias, $attributeType)
     {
@@ -611,50 +651,61 @@ class ProductGraphQLProvider implements ProviderInterface
     }
 
     /**
-     * Apply exact match filter based on attribute type
+     * Apply an exact match filter, matching nothing when an integer column gets no numeric term.
      */
     private function applyExactFilter($query, $term, $alias, $attributeType)
     {
         $column = $this->getColumnForType($attributeType);
+
+        $values = [$term];
 
         if (
             is_string($term)
             && str_contains($term, ',')
         ) {
             $values = array_filter(array_map('trim', explode(',', $term)));
-
-            // Convert values based on attribute type
-            $convertedValues = $this->convertValuesForType($values, $attributeType);
-
-            $query->whereIn($alias.'.'.$column, $convertedValues);
-        } else {
-            $convertedValue = $this->convertValueForType($term, $attributeType);
-
-            $query->where($alias.'.'.$column, $convertedValue);
         }
+
+        if ($column === 'integer_value') {
+            $values = array_filter($values, fn ($value) => is_numeric($value));
+        }
+
+        if (count($values) > 1) {
+            $query->whereIn($alias.'.'.$column, $this->convertValuesForType(array_values($values), $attributeType));
+
+            return;
+        }
+
+        if (! $values) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->where($alias.'.'.$column, $this->convertValueForType(reset($values), $attributeType));
     }
 
     /**
-     * Convert a single value based on attribute type
+     * Convert a single value based on attribute type.
      */
     private function convertValueForType($value, $attributeType)
     {
         return match ($attributeType) {
             'decimal', 'price' => (float) $value,
-            'integer' => (int) $value,
+            'integer', 'select', 'multiselect', 'dropdown' => (int) $value,
             'boolean' => $value ? '1' : '0',
             default => $value,
         };
     }
 
     /**
-     * Convert multiple values based on attribute type
+     * Convert multiple values based on attribute type.
      */
     private function convertValuesForType($values, $attributeType)
     {
         return match ($attributeType) {
             'decimal', 'price' => array_map('floatval', $values),
-            'integer' => array_map('intval', $values),
+            'integer', 'select', 'multiselect', 'dropdown' => array_map('intval', $values),
             'boolean' => array_map(fn ($value) => (int) filter_var($value, FILTER_VALIDATE_BOOLEAN), $values),
             default => $values,
         };

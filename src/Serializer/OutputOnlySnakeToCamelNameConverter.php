@@ -7,13 +7,22 @@ use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
 class OutputOnlySnakeToCamelNameConverter implements NameConverterInterface
 {
     /**
+     * Camel-case names already converted from snake-case property names.
+     *
      * @var array<string, string>
      */
     private static array $normalized = [];
 
-    /** @var array<string, string> */
+    /**
+     * Snake-case property names already converted from camel-case names.
+     *
+     * @var array<string, string>
+     */
     private static array $denormalized = [];
 
+    /**
+     * Normalize.
+     */
     public function normalize(string $propertyName, ?string $class = null, ?string $format = null, array $context = []): string
     {
         if (isset(self::$normalized[$propertyName])) {
@@ -30,6 +39,9 @@ class OutputOnlySnakeToCamelNameConverter implements NameConverterInterface
         return self::$normalized[$propertyName] = $prefix.lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $name))));
     }
 
+    /**
+     * Denormalize.
+     */
     public function denormalize(string $propertyName, ?string $class = null, ?string $format = null, array $context = []): string
     {
         if (isset(self::$denormalized[$propertyName])) {

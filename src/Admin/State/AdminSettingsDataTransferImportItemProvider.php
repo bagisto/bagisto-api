@@ -8,19 +8,35 @@ use Webkul\DataTransfer\Models\Import;
 
 class AdminSettingsDataTransferImportItemProvider extends AbstractAdminItemProvider
 {
+    /**
+     * Public alias used by processors to share the mapping logic.
+     */
+    public function mapToDtoPublic(object $import): AdminSettingsDataTransferImport
+    {
+        return $this->mapToDto($import);
+    }
+
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.settings.data-transfer.import.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return Import::find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $import): AdminSettingsDataTransferImport
     {
-        /** @var Import $import */
         $dto = new AdminSettingsDataTransferImport;
 
         $dto->id = (int) $import->id;
@@ -47,13 +63,5 @@ class AdminSettingsDataTransferImportItemProvider extends AbstractAdminItemProvi
         $dto->updatedAt = $import->updated_at?->toIso8601String();
 
         return $dto;
-    }
-
-    /**
-     * Public alias used by processors to share the mapping logic.
-     */
-    public function mapToDtoPublic(object $import): AdminSettingsDataTransferImport
-    {
-        return $this->mapToDto($import);
     }
 }

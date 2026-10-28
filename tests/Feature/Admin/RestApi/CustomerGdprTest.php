@@ -4,101 +4,75 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerGroup;
 use Webkul\GDPR\Models\GDPRDataRequest;
+use Webkul\Product\Models\Product;
+use Webkul\Sales\Models\DownloadableLinkPurchased;
+use Webkul\Sales\Models\Order;
+use Webkul\Sales\Models\OrderItem;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for the admin Customer GDPR Requests endpoints (Block C C4).
- */
 class CustomerGdprTest extends AdminApiTestCase
 {
-    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
-    protected function group(): CustomerGroup
-    {
-        $this->seedRequiredData();
-
-        return CustomerGroup::where('code', 'general')->first();
-    }
-
-    protected function uniqueEmail(string $prefix = 'gdpr'): string
-    {
-        return strtolower($prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99)).'@example.test';
-    }
-
-    protected function seedCustomer(array $overrides = []): Customer
-    {
-        return Customer::factory()->create(array_merge([
-            'customer_group_id' => $this->group()->id,
-            'status' => 1,
-        ], $overrides));
-    }
-
-    protected function seedRequest(array $overrides = []): GDPRDataRequest
-    {
-        $this->seedRequiredData();
-
-        $customer = $overrides['customer'] ?? null;
-        unset($overrides['customer']);
-        if (! $customer) {
-            $customer = $this->seedCustomer();
-        }
-
-        return GDPRDataRequest::create(array_merge([
-            'customer_id' => $customer->id,
-            'email' => $customer->email,
-            'type' => 'delete',
-            'status' => 'pending',
-            'message' => 'Please delete my account.',
-        ], $overrides));
-    }
-
+    /**
+     * Test listing requires auth.
+     */
     public function test_listing_requires_auth(): void
     {
         $this->seedRequiredData();
         $this->publicGet('/api/admin/customers/gdpr-requests')->assertStatus(401);
     }
 
+    /**
+     * Test detail requires auth.
+     */
     public function test_detail_requires_auth(): void
     {
         $r = $this->seedRequest();
         $this->publicGet('/api/admin/customers/gdpr-requests/'.$r->id)->assertStatus(401);
     }
 
+    /**
+     * Test update requires auth.
+     */
     public function test_update_requires_auth(): void
     {
         $r = $this->seedRequest();
         $this->putJson('/api/admin/customers/gdpr-requests/'.$r->id, ['status' => 'processing'])->assertStatus(401);
     }
 
+    /**
+     * Test delete requires auth.
+     */
     public function test_delete_requires_auth(): void
     {
         $r = $this->seedRequest();
         $this->deleteJson('/api/admin/customers/gdpr-requests/'.$r->id)->assertStatus(401);
     }
 
+    /**
+     * Test process requires auth.
+     */
     public function test_process_requires_auth(): void
     {
         $r = $this->seedRequest();
         $this->postJson('/api/admin/customers/gdpr-requests/'.$r->id.'/process')->assertStatus(401);
     }
 
+    /**
+     * Test download requires auth.
+     */
     public function test_download_requires_auth(): void
     {
         $c = $this->seedCustomer();
         $this->postJson('/api/admin/customers/'.$c->id.'/gdpr-download-data')->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -116,8 +90,15 @@ class CustomerGdprTest extends AdminApiTestCase
         expect($body['data'])->toBeArray();
         expect(count($body['data']))->toBeGreaterThanOrEqual(2);
         expect($body['meta'])->toHaveKey('total');
+
+        $labels = collect($body['data'])->pluck('typeLabel', 'type')->all();
+        expect($labels['update'] ?? null)->toBe(trans('admin::app.customers.gdpr.index.datagrid.edit'))
+            ->and($labels['delete'] ?? null)->toBe(trans('admin::app.customers.gdpr.index.datagrid.delete'));
     }
 
+    /**
+     * Test listing filter by status.
+     */
     public function test_listing_filter_by_status(): void
     {
         $admin = $this->createAdmin();
@@ -134,6 +115,9 @@ class CustomerGdprTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test listing filter by type.
+     */
     public function test_listing_filter_by_type(): void
     {
         $admin = $this->createAdmin();
@@ -148,6 +132,9 @@ class CustomerGdprTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test listing filter by customer id.
+     */
     public function test_listing_filter_by_customer_id(): void
     {
         $admin = $this->createAdmin();
@@ -165,6 +152,9 @@ class CustomerGdprTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test detail returns request.
+     */
     public function test_detail_returns_request(): void
     {
         $admin = $this->createAdmin();
@@ -178,12 +168,18 @@ class CustomerGdprTest extends AdminApiTestCase
         expect($response->json('status'))->toBe('pending');
     }
 
+    /**
+     * Test detail unknown returns 404.
+     */
     public function test_detail_unknown_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/customers/gdpr-requests/9999999')->assertStatus(404);
     }
 
+    /**
+     * Test update status success.
+     */
     public function test_update_status_success(): void
     {
         $admin = $this->createAdmin();
@@ -202,6 +198,9 @@ class CustomerGdprTest extends AdminApiTestCase
         expect($fresh->status)->toBe('processing');
     }
 
+    /**
+     * Test update invalid status returns 422.
+     */
     public function test_update_invalid_status_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -212,6 +211,9 @@ class CustomerGdprTest extends AdminApiTestCase
         ])->assertStatus(422);
     }
 
+    /**
+     * Test update no changes returns 422.
+     */
     public function test_update_no_changes_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -221,6 +223,9 @@ class CustomerGdprTest extends AdminApiTestCase
             ->assertStatus(422);
     }
 
+    /**
+     * Test update unknown returns 404.
+     */
     public function test_update_unknown_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -228,6 +233,9 @@ class CustomerGdprTest extends AdminApiTestCase
             ->assertStatus(404);
     }
 
+    /**
+     * Test delete success.
+     */
     public function test_delete_success(): void
     {
         $admin = $this->createAdmin();
@@ -238,12 +246,18 @@ class CustomerGdprTest extends AdminApiTestCase
         expect(GDPRDataRequest::find($r->id))->toBeNull();
     }
 
+    /**
+     * Test delete unknown returns 404.
+     */
     public function test_delete_unknown_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminDelete($admin, '/api/admin/customers/gdpr-requests/9999999')->assertStatus(404);
     }
 
+    /**
+     * Test process delete cascades customer.
+     */
     public function test_process_delete_cascades_customer(): void
     {
         $admin = $this->createAdmin();
@@ -263,6 +277,9 @@ class CustomerGdprTest extends AdminApiTestCase
         expect(Customer::find($customer->id))->toBeNull();
     }
 
+    /**
+     * Test process update marks approved without deletion.
+     */
     public function test_process_update_marks_approved_without_deletion(): void
     {
         $admin = $this->createAdmin();
@@ -281,6 +298,9 @@ class CustomerGdprTest extends AdminApiTestCase
         expect(Customer::find($customer->id))->not()->toBeNull();
     }
 
+    /**
+     * Test process already approved returns 422.
+     */
     public function test_process_already_approved_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -290,12 +310,18 @@ class CustomerGdprTest extends AdminApiTestCase
             ->assertStatus(422);
     }
 
+    /**
+     * Test process unknown returns 404.
+     */
     public function test_process_unknown_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/customers/gdpr-requests/9999999/process')->assertStatus(404);
     }
 
+    /**
+     * Test download data returns expected shape.
+     */
     public function test_download_data_returns_expected_shape(): void
     {
         $admin = $this->createAdmin();
@@ -312,12 +338,65 @@ class CustomerGdprTest extends AdminApiTestCase
         expect($data['customer'])->not()->toHaveKey('password');
     }
 
+    /**
+     * Test download data works for a customer who bought a downloadable product.
+     */
+    public function test_download_data_includes_downloadable_order_items(): void
+    {
+        $admin = $this->createAdmin();
+        $customer = $this->seedCustomer();
+
+        $order = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'customer_first_name' => $customer->first_name,
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => Channel::query()->first()->id,
+            'status' => 'completed',
+        ]);
+
+        $item = OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => Product::factory()->create()->id,
+            'sku' => 'GDPR-DOWNLOAD',
+            'type' => 'downloadable',
+            'name' => 'GDPR Download',
+        ]);
+
+        DownloadableLinkPurchased::create([
+            'product_name' => 'GDPR Download',
+            'name' => 'GDPR Link',
+            'type' => 'file',
+            'file' => 'downloadable/gdpr.pdf',
+            'file_name' => 'gdpr.pdf',
+            'download_bought' => 1,
+            'download_used' => 0,
+            'status' => 'available',
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'order_item_id' => $item->id,
+            'download_canceled' => 0,
+        ]);
+
+        $response = $this->adminPost($admin, '/api/admin/customers/'.$customer->id.'/gdpr-download-data');
+
+        $response->assertOk();
+        expect($response->json('data.orders.0.items.0.sku'))->toBe('GDPR-DOWNLOAD');
+        expect($response->json('data.orders.0.items.0.downloadable_links.0.name'))->toBe('GDPR Link');
+    }
+
+    /**
+     * Test download data unknown customer returns 404.
+     */
     public function test_download_data_unknown_customer_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/customers/9999999/gdpr-download-data')->assertStatus(404);
     }
 
+    /**
+     * Test download data allowed for custom role with core gdpr key.
+     */
     public function test_download_data_allowed_for_custom_role_with_core_gdpr_key(): void
     {
         $role = Role::factory()->create([
@@ -330,6 +409,9 @@ class CustomerGdprTest extends AdminApiTestCase
         $this->adminPost($admin, '/api/admin/customers/'.$customer->id.'/gdpr-download-data')->assertOk();
     }
 
+    /**
+     * Test download data refused for custom role without gdpr key.
+     */
     public function test_download_data_refused_for_custom_role_without_gdpr_key(): void
     {
         $role = Role::factory()->create([
@@ -340,5 +422,72 @@ class CustomerGdprTest extends AdminApiTestCase
         $customer = $this->seedCustomer();
 
         $this->adminPost($admin, '/api/admin/customers/'.$customer->id.'/gdpr-download-data')->assertStatus(403);
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Group.
+     */
+    protected function group(): CustomerGroup
+    {
+        $this->seedRequiredData();
+
+        return CustomerGroup::where('code', 'general')->first();
+    }
+
+    /**
+     * Unique email.
+     */
+    protected function uniqueEmail(string $prefix = 'gdpr'): string
+    {
+        return strtolower($prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99)).'@example.test';
+    }
+
+    /**
+     * Seed customer.
+     */
+    protected function seedCustomer(array $overrides = []): Customer
+    {
+        return Customer::factory()->create(array_merge([
+            'customer_group_id' => $this->group()->id,
+            'status' => 1,
+        ], $overrides));
+    }
+
+    /**
+     * Seed request.
+     */
+    protected function seedRequest(array $overrides = []): GDPRDataRequest
+    {
+        $this->seedRequiredData();
+
+        $customer = $overrides['customer'] ?? null;
+        unset($overrides['customer']);
+        if (! $customer) {
+            $customer = $this->seedCustomer();
+        }
+
+        return GDPRDataRequest::create(array_merge([
+            'customer_id' => $customer->id,
+            'email' => $customer->email,
+            'type' => 'delete',
+            'status' => 'pending',
+            'message' => 'Please delete my account.',
+        ], $overrides));
     }
 }

@@ -2,12 +2,14 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
+use Webkul\Core\Models\CountryState;
 
 class CountryTest extends GraphQLTestCase
 {
     /**
-     * Get Country By ID - Basic
+     * Get Country By ID - Basic.
      */
     public function test_get_country_by_id_basic(): void
     {
@@ -38,7 +40,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Country with States
+     * Get Country with States.
      */
     public function test_get_country_with_states(): void
     {
@@ -93,18 +95,15 @@ class CountryTest extends GraphQLTestCase
         $this->assertArrayHasKey('code', $node);
         $this->assertArrayHasKey('name', $node);
 
-        // Verify states
         $this->assertArrayHasKey('states', $node);
         $states = $node['states'];
         $this->assertIsArray($states['edges'] ?? []);
         $this->assertArrayHasKey('pageInfo', $states);
         $this->assertArrayHasKey('totalCount', $states);
 
-        // pageInfo assertions
         $this->assertArrayHasKey('hasNextPage', $states['pageInfo']);
         $this->assertArrayHasKey('endCursor', $states['pageInfo']);
 
-        // Verify state edges
         foreach ($states['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
 
@@ -117,7 +116,6 @@ class CountryTest extends GraphQLTestCase
             $this->assertArrayHasKey('countryId', $state);
             $this->assertArrayHasKey('countryCode', $state);
 
-            // Verify translations
             $this->assertArrayHasKey('translations', $state);
             $translations = $state['translations'];
             $this->assertIsArray($translations['edges'] ?? []);
@@ -133,7 +131,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Country with Translations
+     * Get Country with Translations.
      */
     public function test_get_country_with_translations(): void
     {
@@ -178,18 +176,15 @@ class CountryTest extends GraphQLTestCase
         $this->assertArrayHasKey('code', $node);
         $this->assertArrayHasKey('name', $node);
 
-        // Verify translations
         $this->assertArrayHasKey('translations', $node);
         $translations = $node['translations'];
         $this->assertIsArray($translations['edges'] ?? []);
         $this->assertArrayHasKey('pageInfo', $translations);
         $this->assertArrayHasKey('totalCount', $translations);
 
-        // pageInfo assertions
         $this->assertArrayHasKey('hasNextPage', $translations['pageInfo']);
         $this->assertArrayHasKey('endCursor', $translations['pageInfo']);
 
-        // Verify translation edges
         foreach ($translations['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
             $this->assertArrayHasKey('cursor', $edge);
@@ -204,7 +199,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Country - Complete Details
+     * Get Country - Complete Details.
      */
     public function test_get_country_complete_details(): void
     {
@@ -274,18 +269,15 @@ class CountryTest extends GraphQLTestCase
         $this->assertArrayHasKey('code', $node);
         $this->assertArrayHasKey('name', $node);
 
-        // Verify states
         $this->assertArrayHasKey('states', $node);
         $states = $node['states'];
         $this->assertIsArray($states['edges'] ?? []);
         $this->assertArrayHasKey('pageInfo', $states);
         $this->assertArrayHasKey('totalCount', $states);
 
-        // pageInfo assertions for states
         $this->assertArrayHasKey('hasNextPage', $states['pageInfo']);
         $this->assertArrayHasKey('endCursor', $states['pageInfo']);
 
-        // Verify state edges
         foreach ($states['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
 
@@ -298,7 +290,6 @@ class CountryTest extends GraphQLTestCase
             $this->assertArrayHasKey('countryId', $state);
             $this->assertArrayHasKey('countryCode', $state);
 
-            // Verify state translations
             $this->assertArrayHasKey('translations', $state);
             $stateTranslations = $state['translations'];
             $this->assertIsArray($stateTranslations['edges'] ?? []);
@@ -312,18 +303,15 @@ class CountryTest extends GraphQLTestCase
             }
         }
 
-        // Verify country translations
         $this->assertArrayHasKey('translations', $node);
         $countryTranslations = $node['translations'];
         $this->assertIsArray($countryTranslations['edges'] ?? []);
         $this->assertArrayHasKey('pageInfo', $countryTranslations);
         $this->assertArrayHasKey('totalCount', $countryTranslations);
 
-        // pageInfo assertions for translations
         $this->assertArrayHasKey('hasNextPage', $countryTranslations['pageInfo']);
         $this->assertArrayHasKey('endCursor', $countryTranslations['pageInfo']);
 
-        // Verify country translation edges
         foreach ($countryTranslations['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
 
@@ -337,7 +325,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Countries - Basic
+     * Get Countries - Basic.
      */
     public function test_get_countries_basic(): void
     {
@@ -372,11 +360,9 @@ class CountryTest extends GraphQLTestCase
         $this->assertArrayHasKey('pageInfo', $data);
         $this->assertArrayHasKey('totalCount', $data);
 
-        // pageInfo assertions
         $this->assertArrayHasKey('hasNextPage', $data['pageInfo']);
         $this->assertArrayHasKey('endCursor', $data['pageInfo']);
 
-        // Verify country edges
         if (! empty($data['edges'])) {
             foreach ($data['edges'] as $edge) {
                 $this->assertArrayHasKey('node', $edge);
@@ -392,7 +378,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Countries with States
+     * Get Countries with States.
      */
     public function test_get_countries_with_states(): void
     {
@@ -459,11 +445,9 @@ class CountryTest extends GraphQLTestCase
         $this->assertArrayHasKey('pageInfo', $data);
         $this->assertArrayHasKey('totalCount', $data);
 
-        // pageInfo assertions
         $this->assertArrayHasKey('hasNextPage', $data['pageInfo']);
         $this->assertArrayHasKey('endCursor', $data['pageInfo']);
 
-        // Verify country edges
         foreach ($data['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
 
@@ -474,18 +458,15 @@ class CountryTest extends GraphQLTestCase
             $this->assertArrayHasKey('code', $node);
             $this->assertArrayHasKey('name', $node);
 
-            // Verify states
             $this->assertArrayHasKey('states', $node);
             $states = $node['states'];
             $this->assertIsArray($states['edges'] ?? []);
             $this->assertArrayHasKey('pageInfo', $states);
             $this->assertArrayHasKey('totalCount', $states);
 
-            // pageInfo assertions for states
             $this->assertArrayHasKey('hasNextPage', $states['pageInfo']);
             $this->assertArrayHasKey('endCursor', $states['pageInfo']);
 
-            // Verify state edges
             foreach ($states['edges'] ?? [] as $stateEdge) {
                 $this->assertArrayHasKey('node', $stateEdge);
 
@@ -498,7 +479,6 @@ class CountryTest extends GraphQLTestCase
                 $this->assertArrayHasKey('countryId', $state);
                 $this->assertArrayHasKey('countryCode', $state);
 
-                // Verify state translation (singular)
                 $this->assertArrayHasKey('translation', $state);
                 $translation = $state['translation'];
                 if ($translation) {
@@ -508,13 +488,11 @@ class CountryTest extends GraphQLTestCase
                 }
             }
 
-            // Verify country translations
             $this->assertArrayHasKey('translations', $node);
             $translations = $node['translations'];
             $this->assertIsArray($translations['edges'] ?? []);
             $this->assertArrayHasKey('totalCount', $translations);
 
-            // Verify translation edges
             foreach ($translations['edges'] ?? [] as $tEdge) {
                 $t = $tEdge['node'] ?? null;
                 $this->assertNotNull($t, 'translation node is null');
@@ -526,7 +504,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Countries with Pagination
+     * Get Countries with Pagination.
      */
     public function test_get_countries_with_pagination(): void
     {
@@ -569,13 +547,11 @@ class CountryTest extends GraphQLTestCase
         $this->assertArrayHasKey('pageInfo', $data);
         $this->assertArrayHasKey('totalCount', $data);
 
-        // pageInfo assertions
         $this->assertArrayHasKey('endCursor', $data['pageInfo']);
         $this->assertArrayHasKey('startCursor', $data['pageInfo']);
         $this->assertArrayHasKey('hasNextPage', $data['pageInfo']);
         $this->assertArrayHasKey('hasPreviousPage', $data['pageInfo']);
 
-        // Verify country edges with cursor
         foreach ($data['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
             $this->assertArrayHasKey('cursor', $edge);
@@ -590,7 +566,30 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Countries with All Translations
+     * An empty or undecodable cursor is reported to the client as an invalid cursor.
+     */
+    public function test_get_countries_with_an_invalid_cursor_reports_it(): void
+    {
+        $query = <<<'GQL'
+            query countries($first: Int, $after: String) {
+              countries(first: $first, after: $after) {
+                edges { cursor node { _id } }
+                totalCount
+              }
+            }
+        GQL;
+
+        foreach (['' => 'Empty cursor is invalid', 'invalid-cursor' => 'Cursor invalid-cursor is invalid'] as $cursor => $message) {
+            $response = $this->graphQL($query, ['first' => 5, 'after' => (string) $cursor]);
+
+            $response->assertOk();
+            expect($response->json('errors.0.message'))->toBe($message);
+            expect($response->json('data.countries'))->toBeNull();
+        }
+    }
+
+    /**
+     * Get Countries with All Translations.
      */
     public function test_get_countries_with_all_translations(): void
     {
@@ -629,7 +628,6 @@ class CountryTest extends GraphQLTestCase
         $this->assertIsArray($data['edges'] ?? [], 'countries.edges is not an array');
         $this->assertArrayHasKey('totalCount', $data);
 
-        // Verify country edges
         foreach ($data['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
 
@@ -639,13 +637,11 @@ class CountryTest extends GraphQLTestCase
             $this->assertArrayHasKey('_id', $node);
             $this->assertArrayHasKey('code', $node);
 
-            // Verify translations
             $this->assertArrayHasKey('translations', $node);
             $translations = $node['translations'];
             $this->assertIsArray($translations['edges'] ?? []);
             $this->assertArrayHasKey('totalCount', $translations);
 
-            // Verify translation edges
             foreach ($translations['edges'] ?? [] as $tEdge) {
                 $t = $tEdge['node'] ?? null;
                 $this->assertNotNull($t, 'translation node is null');
@@ -657,7 +653,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Countries for address form
+     * Get Countries for address form.
      */
     public function test_get_countries_for_address_form(): void
     {
@@ -704,11 +700,9 @@ class CountryTest extends GraphQLTestCase
         $this->assertArrayHasKey('pageInfo', $data);
         $this->assertArrayHasKey('totalCount', $data);
 
-        // pageInfo assertions
         $this->assertArrayHasKey('hasNextPage', $data['pageInfo']);
         $this->assertArrayHasKey('endCursor', $data['pageInfo']);
 
-        // Verify country edges with cursor
         foreach ($data['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
             $this->assertArrayHasKey('cursor', $edge);
@@ -720,13 +714,11 @@ class CountryTest extends GraphQLTestCase
             $this->assertArrayHasKey('code', $node);
             $this->assertArrayHasKey('name', $node);
 
-            // Verify states
             $this->assertArrayHasKey('states', $node);
             $states = $node['states'];
             $this->assertIsArray($states['edges'] ?? []);
             $this->assertArrayHasKey('totalCount', $states);
 
-            // Verify state edges
             foreach ($states['edges'] ?? [] as $stateEdge) {
                 $this->assertArrayHasKey('node', $stateEdge);
 
@@ -741,7 +733,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Country States - Basic
+     * Get Country States - Basic.
      */
     public function test_get_country_states_basic(): void
     {
@@ -775,7 +767,6 @@ class CountryTest extends GraphQLTestCase
         $this->assertIsArray($data['edges'] ?? [], 'countryStates.edges is not an array');
         $this->assertArrayHasKey('totalCount', $data);
 
-        // Verify state edges
         foreach ($data['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
 
@@ -791,7 +782,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Country States with Translations
+     * Get Country States with Translations.
      */
     public function test_get_country_states_with_translations(): void
     {
@@ -835,7 +826,6 @@ class CountryTest extends GraphQLTestCase
         $this->assertIsArray($data['edges'] ?? [], 'countryStates.edges is not an array');
         $this->assertArrayHasKey('totalCount', $data);
 
-        // Verify state edges
         foreach ($data['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
 
@@ -848,13 +838,11 @@ class CountryTest extends GraphQLTestCase
             $this->assertArrayHasKey('countryId', $state);
             $this->assertArrayHasKey('countryCode', $state);
 
-            // Verify translations
             $this->assertArrayHasKey('translations', $state);
             $translations = $state['translations'];
             $this->assertIsArray($translations['edges'] ?? []);
             $this->assertArrayHasKey('totalCount', $translations);
 
-            // Verify translation edges
             foreach ($translations['edges'] ?? [] as $tEdge) {
                 $t = $tEdge['node'] ?? null;
                 $this->assertNotNull($t, 'translation node is null');
@@ -866,7 +854,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Country States with Pagination
+     * Get Country States with Pagination.
      */
     public function test_get_country_states_with_pagination(): void
     {
@@ -912,13 +900,11 @@ class CountryTest extends GraphQLTestCase
         $this->assertArrayHasKey('pageInfo', $data);
         $this->assertArrayHasKey('totalCount', $data);
 
-        // pageInfo assertions
         $this->assertArrayHasKey('endCursor', $data['pageInfo']);
         $this->assertArrayHasKey('startCursor', $data['pageInfo']);
         $this->assertArrayHasKey('hasNextPage', $data['pageInfo']);
         $this->assertArrayHasKey('hasPreviousPage', $data['pageInfo']);
 
-        // Verify state edges with cursor
         foreach ($data['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
             $this->assertArrayHasKey('cursor', $edge);
@@ -935,7 +921,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Country States for dropdown form
+     * Get Country States for dropdown form.
      */
     public function test_get_country_states_for_dropdown_form(): void
     {
@@ -967,7 +953,6 @@ class CountryTest extends GraphQLTestCase
         $this->assertIsArray($data['edges'] ?? [], 'countryStates.edges is not an array');
         $this->assertArrayHasKey('totalCount', $data);
 
-        // Verify state edges
         foreach ($data['edges'] ?? [] as $edge) {
             $this->assertArrayHasKey('node', $edge);
 
@@ -981,7 +966,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Country State - Basic
+     * Get Country State - Basic.
      */
     public function test_get_country_state_basic(): void
     {
@@ -1016,7 +1001,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Country State with Translations
+     * Get Country State with Translations.
      */
     public function test_get_country_state_with_translations(): void
     {
@@ -1059,13 +1044,11 @@ class CountryTest extends GraphQLTestCase
         $this->assertArrayHasKey('countryId', $node);
         $this->assertArrayHasKey('countryCode', $node);
 
-        // Verify translations
         $this->assertArrayHasKey('translations', $node);
         $translations = $node['translations'];
         $this->assertIsArray($translations['edges'] ?? []);
         $this->assertArrayHasKey('totalCount', $translations);
 
-        // Verify translation edges
         foreach ($translations['edges'] ?? [] as $tEdge) {
             $t = $tEdge['node'] ?? null;
             $this->assertNotNull($t, 'translation node is null');
@@ -1076,7 +1059,7 @@ class CountryTest extends GraphQLTestCase
     }
 
     /**
-     * Get Country State for address validation
+     * Get Country State for address validation.
      */
     public function test_get_country_state_for_address_validation(): void
     {
@@ -1108,5 +1091,75 @@ class CountryTest extends GraphQLTestCase
         $this->assertArrayHasKey('defaultName', $node);
         $this->assertArrayHasKey('countryId', $node);
         $this->assertArrayHasKey('countryCode', $node);
+    }
+
+    /**
+     * Last without before returns the final states of the country, with matching cursors.
+     */
+    public function test_country_states_last_returns_the_final_rows(): void
+    {
+        $ids = CountryState::query()->where('country_id', 16)->orderBy('id')->pluck('id')->all();
+
+        expect(count($ids))->toBeGreaterThan(2);
+
+        $response = $this->graphQL(<<<'GQL'
+            query { countryStates(countryId: 16, last: 2) { edges { node { _id } cursor } pageInfo { hasPreviousPage } totalCount } }
+        GQL);
+
+        $response->assertOk();
+
+        $edges = $response->json('data.countryStates.edges');
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $edges))->toBe(array_slice($ids, -2))
+            ->and(array_column($edges, 'cursor'))->toBe([base64_encode((string) (count($ids) - 2)), base64_encode((string) (count($ids) - 1))])
+            ->and($response->json('data.countryStates.pageInfo.hasPreviousPage'))->toBeTrue();
+    }
+
+    /**
+     * Last with before returns only the states that precede the cursor.
+     */
+    public function test_country_states_last_before_stops_at_the_cursor(): void
+    {
+        $firstId = CountryState::query()->where('country_id', 16)->orderBy('id')->value('id');
+
+        $response = $this->graphQL(
+            'query getStates($before: String) { countryStates(countryId: 16, last: 5, before: $before) { edges { node { _id } } } }',
+            ['before' => base64_encode('1')]
+        );
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and(array_map(fn ($edge) => (int) $edge['node']['_id'], $response->json('data.countryStates.edges')))->toBe([$firstId]);
+    }
+
+    /**
+     * A zero page size returns an empty page rather than an error.
+     */
+    public function test_country_states_zero_page_size_returns_an_empty_page(): void
+    {
+        foreach (['first', 'last'] as $argument) {
+            $response = $this->graphQL(
+                'query { countryStates(countryId: 16, '.$argument.': 0) { edges { node { _id } } pageInfo { hasNextPage } totalCount } }'
+            );
+
+            $response->assertOk();
+
+            expect($response->json('errors'))->toBeNull()
+                ->and($response->json('data.countryStates.edges'))->toBe([])
+                ->and($response->json('data.countryStates.totalCount'))->toBeGreaterThan(0);
+        }
+    }
+
+    /**
+     * Every country fits in one countries query.
+     */
+    public function test_every_country_fits_in_one_query(): void
+    {
+        $response = $this->graphQL('{ countries(first: 300) { edges { node { _id } } } }');
+
+        expect($response->json('errors'))->toBeNull();
+        expect(count($response->json('data.countries.edges')))->toBe(min(DB::table('countries')->count(), 300));
     }
 }

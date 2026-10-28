@@ -8,19 +8,27 @@ use Webkul\Tax\Models\TaxRate;
 
 class AdminSettingsTaxRateItemProvider extends AbstractAdminItemProvider
 {
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.settings.tax-rate.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return TaxRate::find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $taxRate): AdminSettingsTaxRate
     {
-        /** @var TaxRate $taxRate */
         $dto = new AdminSettingsTaxRate;
         $dto->id = (int) $taxRate->id;
         $dto->identifier = $taxRate->identifier;

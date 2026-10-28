@@ -8,41 +8,11 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Customer\Models\CustomerGroup;
 use Webkul\User\Models\Admin;
 
-/**
- * REST coverage for Phase 5.13 — admin product customer-group prices CRUD.
- *
- * Endpoints:
- *   GET    /api/admin/catalog/products/{productId}/customer-group-prices
- *   POST   /api/admin/catalog/products/{productId}/customer-group-prices
- *   PUT    /api/admin/catalog/products/{productId}/customer-group-prices/{id}
- *   DELETE /api/admin/catalog/products/{productId}/customer-group-prices/{id}
- */
 class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
 {
-    protected function adminPut(Admin $admin, string $url, array $data = []): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin));
-    }
-
-    protected function adminDelete(Admin $admin, string $url): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin));
-    }
-
-    protected function seedRow(int $productId, int $qty, ?int $groupId, string $valueType = 'fixed', float $value = 10.0): int
-    {
-        return DB::table('product_customer_group_prices')->insertGetId([
-            'product_id' => $productId,
-            'qty' => $qty,
-            'value_type' => $valueType,
-            'value' => $value,
-            'customer_group_id' => $groupId,
-            'unique_id' => implode('|', array_filter([(string) $qty, (string) $productId, $groupId === null ? null : (string) $groupId])),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
+    /**
+     * Test list happy path.
+     */
     public function test_list_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -63,6 +33,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         expect($first)->toHaveKeys(['id', 'productId', 'qty', 'valueType', 'value', 'customerGroupId', 'customerGroupName']);
     }
 
+    /**
+     * Test list for nonexistent product returns 404.
+     */
     public function test_list_for_nonexistent_product_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -72,6 +45,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test list requires auth.
+     */
     public function test_list_requires_auth(): void
     {
         $product = $this->createBaseProduct('simple');
@@ -81,6 +57,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test create fixed with group returns 201.
+     */
     public function test_create_fixed_with_group_returns_201(): void
     {
         $admin = $this->createAdmin();
@@ -109,6 +88,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test create discount without group returns 201.
+     */
     public function test_create_discount_without_group_returns_201(): void
     {
         $admin = $this->createAdmin();
@@ -129,6 +111,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         expect($row->unique_id)->toBe('10|'.$product->id);
     }
 
+    /**
+     * Test create duplicate qty group returns 422.
+     */
     public function test_create_duplicate_qty_group_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -147,6 +132,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create qty less than one returns 422.
+     */
     public function test_create_qty_less_than_one_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -161,6 +149,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create invalid value type returns 422.
+     */
     public function test_create_invalid_value_type_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -175,6 +166,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create unknown customer group returns 422.
+     */
     public function test_create_unknown_customer_group_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -190,6 +184,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create on nonexistent product returns 404.
+     */
     public function test_create_on_nonexistent_product_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -203,6 +200,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test create requires auth.
+     */
     public function test_create_requires_auth(): void
     {
         $product = $this->createBaseProduct('simple');
@@ -216,11 +216,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
-    protected function publicPost(string $url, array $data = []): TestResponse
-    {
-        return $this->postJson($url, $data);
-    }
-
+    /**
+     * Test update happy path.
+     */
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -244,6 +242,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         expect($row->unique_id)->toBe('8|'.$product->id.'|'.$group->id);
     }
 
+    /**
+     * Test update violates uniqueness returns 422.
+     */
     public function test_update_violates_uniqueness_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -259,6 +260,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test update on cross product row returns 404.
+     */
     public function test_update_on_cross_product_row_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -273,6 +277,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -287,6 +294,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $this->assertDatabaseMissing('product_customer_group_prices', ['id' => $rowId]);
     }
 
+    /**
+     * Test delete on cross product id returns 404.
+     */
     public function test_delete_on_cross_product_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -301,6 +311,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $this->assertDatabaseHas('product_customer_group_prices', ['id' => $rowOnA]);
     }
 
+    /**
+     * Test delete nonexistent row returns 404.
+     */
     public function test_delete_nonexistent_row_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -309,5 +322,46 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $response = $this->adminDelete($admin, "/api/admin/catalog/products/{$product->id}/customer-group-prices/9999999");
 
         $response->assertStatus(404);
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = []): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin));
+    }
+
+    /**
+     * Seed row.
+     */
+    protected function seedRow(int $productId, int $qty, ?int $groupId, string $valueType = 'fixed', float $value = 10.0): int
+    {
+        return DB::table('product_customer_group_prices')->insertGetId([
+            'product_id' => $productId,
+            'qty' => $qty,
+            'value_type' => $valueType,
+            'value' => $value,
+            'customer_group_id' => $groupId,
+            'unique_id' => implode('|', array_filter([(string) $qty, (string) $productId, $groupId === null ? null : (string) $groupId])),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Public post.
+     */
+    protected function publicPost(string $url, array $data = []): TestResponse
+    {
+        return $this->postJson($url, $data);
     }
 }

@@ -10,13 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
 
-/**
- * Items in the customer's OWN active storefront cart — the right-sidebar
- * "Cart Items" panel on the Create-Order screen.
- *
- * Reads `carts.is_active = 1` for the given customer; not the admin draft
- * cart. Returns only top-level items (`cart_items.parent_id IS NULL`).
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerCartItem',
@@ -69,6 +62,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
         new QueryCollection(
             provider: AdminCustomerCartItemProvider::class,
             paginationType: 'cursor',
+            description: 'Top-level items in the active cart of customer `customerId`, all in one page (no pagination arguments); empty when the customer has no active cart. It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error.',
             args: [
                 'customerId' => [
                     'type' => 'Int!',
@@ -82,36 +76,129 @@ class AdminCustomerCartItem
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The product id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $product_id = null;
 
+    /**
+     * The sku.
+     */
     #[ApiProperty(writable: false)]
     public ?string $sku = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $type = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The quantity.
+     */
     #[ApiProperty(writable: false)]
     public ?int $quantity = null;
 
+    /**
+     * The price.
+     */
     #[ApiProperty(writable: false)]
     public ?float $price = null;
 
+    /**
+     * The formatted price.
+     */
     #[ApiProperty(writable: false)]
     public ?string $formatted_price = null;
 
+    /**
+     * The total.
+     */
     #[ApiProperty(writable: false)]
     public ?float $total = null;
 
+    /**
+     * The formatted total.
+     */
     #[ApiProperty(writable: false)]
     public ?string $formatted_total = null;
 
+    /**
+     * The additional.
+     */
     #[ApiProperty(writable: false)]
     public ?array $additional = null;
+
+    /**
+     * The id of the cart the item is in.
+     */
+    #[ApiProperty(writable: false)]
+    public ?int $cart_id = null;
+
+    /**
+     * The unit price including tax.
+     */
+    #[ApiProperty(writable: false)]
+    public ?float $price_incl_tax = null;
+
+    /**
+     * The unit price including tax, formatted.
+     */
+    #[ApiProperty(writable: false)]
+    public ?string $formatted_price_incl_tax = null;
+
+    /**
+     * The row total including tax.
+     */
+    #[ApiProperty(writable: false)]
+    public ?float $total_incl_tax = null;
+
+    /**
+     * The row total including tax, formatted.
+     */
+    #[ApiProperty(writable: false)]
+    public ?string $formatted_total_incl_tax = null;
+
+    /**
+     * The chosen options, as the admin cart panel lists them.
+     */
+    #[ApiProperty(writable: false)]
+    public ?array $options = null;
+
+    /**
+     * The URL of the product's first image.
+     */
+    #[ApiProperty(writable: false)]
+    public ?string $product_image = null;
+
+    /**
+     * Whether the product can be bought.
+     */
+    #[ApiProperty(writable: false)]
+    public ?bool $is_saleable = null;
+
+    /**
+     * The quantity available for sale, or null where stock does not apply.
+     */
+    #[ApiProperty(writable: false)]
+    public ?int $qty_available = null;
+
+    /**
+     * Whether the product needs options chosen before it can be added to a cart.
+     */
+    #[ApiProperty(writable: false)]
+    public ?bool $is_options_required = null;
 }

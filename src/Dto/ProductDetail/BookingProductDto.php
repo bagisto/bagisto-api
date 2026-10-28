@@ -9,56 +9,88 @@ use Webkul\BagistoApi\Service\BookingStartingPriceCalculator;
 #[ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
 class BookingProductDto
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The type.
+     */
     public ?string $type = null;
 
+    /**
+     * The qty.
+     */
     public ?int $qty = null;
 
+    /**
+     * The location.
+     */
     public ?string $location = null;
 
+    /**
+     * The available every week.
+     */
     public ?bool $available_every_week = null;
 
+    /**
+     * The available from.
+     */
     public ?string $available_from = null;
 
+    /**
+     * The available to.
+     */
     public ?string $available_to = null;
 
     /**
      * Slot configuration. Shape varies by booking type:
-     *  - appointment: { duration, breakTime, sameSlotAllDays, slots: [{from,to,...}] }
-     *  - default:     { bookingType, sameSlotAllDays, slots: [...] }
-     *  - rental:      { rentingType, dailyPrice, hourlyPrice, sameSlotAllDays, slots: [...] }
-     *  - table:       { guestCapacity, prepTime, sameSlotAllDays, slots: [...] }
-     *  - event:       { tickets: [{id,price,qtyAvailable,...}] }
+     * - appointment: { duration, breakTime, sameSlotAllDays, slots: [{from,to,...}] }.
      */
     #[ApiProperty(openapiContext: ['type' => 'object'])]
     public mixed $slots = [];
 
+    /**
+     * The starting price.
+     */
     #[ApiProperty(openapiContext: [
         'type' => 'number',
         'example' => 250,
     ])]
     public ?float $starting_price = null;
 
+    /**
+     * The formatted starting price.
+     */
     #[ApiProperty(openapiContext: [
         'type' => 'string',
         'example' => '$250.00',
     ])]
     public ?string $formatted_starting_price = null;
 
+    /**
+     * The starting regular price.
+     */
     #[ApiProperty(openapiContext: [
         'type' => 'number',
         'example' => 250,
     ])]
     public ?float $starting_regular_price = null;
 
+    /**
+     * The formatted starting regular price.
+     */
     #[ApiProperty(openapiContext: [
         'type' => 'string',
         'example' => '$250.00',
     ])]
     public ?string $formatted_starting_regular_price = null;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         ?int $id = null,
         ?string $type = null,
@@ -81,8 +113,7 @@ class BookingProductDto
 
     /**
      * Build a DTO from a Bagisto BookingProduct model with its slot relations
-     * already loaded. Shared between ProductDetailProvider (PDP embed) and
-     * BookingProductDetailProvider (standalone /booking-products/{id} endpoint).
+     * already loaded. Shared between ProductDetailProvider (PDP embed) and.
      */
     public static function fromModel($bookingProduct): self
     {

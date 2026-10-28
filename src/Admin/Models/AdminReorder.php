@@ -55,15 +55,27 @@ class AdminReorder
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 
+    /**
+     * The cart id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $cart_id = null;
 }

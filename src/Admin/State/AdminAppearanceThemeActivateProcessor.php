@@ -14,20 +14,22 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Core\Repositories\ChannelRepository;
 use Webkul\Theme\ThemeCatalog;
 
-/**
- * Mirrors Appearance\ThemeController::activate — same guard, same four events per
- * channel, so anything listening for a theme switch keeps working.
- */
 class AdminAppearanceThemeActivateProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ThemeCatalog $themeCatalog,
         protected ChannelRepository $channelRepository,
         protected AppearanceScopeGuard $scope,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $this->authorizedAdmin('appearance.themes.activate', 'bagistoapi::app.admin.appearance.no-permission');
@@ -73,6 +75,8 @@ class AdminAppearanceThemeActivateProcessor implements ProcessorInterface
     }
 
     /**
+     * Resolve the ids of the channels to activate the theme on.
+     *
      * @return array<int, int>
      */
     protected function resolveChannelIds(mixed $data, array $args): array
@@ -98,6 +102,9 @@ class AdminAppearanceThemeActivateProcessor implements ProcessorInterface
         return $ids;
     }
 
+    /**
+     * Activate on.
+     */
     protected function activateOn(object $channel, string $code): void
     {
         Event::dispatch('appearance.theme.activate.before', $channel->id);

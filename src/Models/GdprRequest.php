@@ -233,9 +233,13 @@ use Webkul\GDPR\Models\GDPRDataRequest;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: GdprRequestQueryResolver::class),
+        new Query(
+            resolver: GdprRequestQueryResolver::class,
+            description: 'One GDPR data request of the authenticated customer; another customer\'s request is not found. Fails while GDPR is switched off in the store settings. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
         new QueryCollection(
             provider: GdprRequestProvider::class,
+            description: 'The authenticated customer\'s GDPR data requests. `sort` is `id` or `created_at` (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default). Fails while GDPR is switched off. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             extraArgs: [
                 'sort' => ['type' => 'String'],
@@ -263,27 +267,45 @@ use Webkul\GDPR\Models\GDPRDataRequest;
 )]
 class GdprRequest extends GDPRDataRequest
 {
+    /**
+     * The appends.
+     */
     protected $appends = ['success_message'];
 
+    /**
+     * The response message.
+     */
     public ?string $responseMessage = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
     {
         return $this->id;
     }
 
+    /**
+     * Customer.
+     */
     #[ApiProperty(writable: false, description: 'The customer who owns the request')]
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
 
+    /**
+     * Get success message attribute.
+     */
     public function getSuccessMessageAttribute(): ?string
     {
         return $this->responseMessage;
     }
 
+    /**
+     * Set response message.
+     */
     public function setResponseMessage(string $message): self
     {
         $this->responseMessage = $message;

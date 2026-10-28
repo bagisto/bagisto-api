@@ -10,25 +10,9 @@ use Webkul\User\Models\Role;
 
 class RmaReasonTest extends AdminApiTestCase
 {
-    private function createReason(string $title = 'Wrong size'): int
-    {
-        $id = DB::table('rma_reasons')->insertGetId([
-            'title' => $title,
-            'status' => 1,
-            'position' => 1,
-            'is_admin' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        DB::table('rma_reason_resolutions')->insert([
-            'rma_reason_id' => $id,
-            'resolution_type' => 'return',
-        ]);
-
-        return $id;
-    }
-
+    /**
+     * Test create and list.
+     */
     public function test_create_and_list(): void
     {
         $admin = $this->createAdmin();
@@ -52,6 +36,9 @@ class RmaReasonTest extends AdminApiTestCase
         expect($list->json('data.adminReturnReasonsList.edges'))->toBeArray();
     }
 
+    /**
+     * Test update and delete.
+     */
     public function test_update_and_delete(): void
     {
         $admin = $this->createAdmin();
@@ -83,6 +70,9 @@ class RmaReasonTest extends AdminApiTestCase
         $this->assertDatabaseMissing('rma_reasons', ['id' => $id]);
     }
 
+    /**
+     * Test mass delete.
+     */
     public function test_mass_delete(): void
     {
         $admin = $this->createAdmin();
@@ -169,7 +159,7 @@ class RmaReasonTest extends AdminApiTestCase
         $response = $this->massUpdateReasonStatus([
             'indices' => [$id],
             'value' => 0,
-        ], $admin, $this->adminTokenSameAsWeb($admin));
+        ], $admin, $this->adminAccessToken($admin));
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.rma.no-permission'));
         $this->assertDatabaseHas('rma_reasons', [
@@ -211,5 +201,27 @@ class RmaReasonTest extends AdminApiTestCase
         GQL;
 
         return $this->adminGraphQL($mutation, ['input' => $input], $admin, $token);
+    }
+
+    /**
+     * Create reason.
+     */
+    private function createReason(string $title = 'Wrong size'): int
+    {
+        $id = DB::table('rma_reasons')->insertGetId([
+            'title' => $title,
+            'status' => 1,
+            'position' => 1,
+            'is_admin' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('rma_reason_resolutions')->insert([
+            'rma_reason_id' => $id,
+            'resolution_type' => 'return',
+        ]);
+
+        return $id;
     }
 }

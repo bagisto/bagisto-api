@@ -22,8 +22,14 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
     description: 'Product attribute resource',
     routePrefix: '/api/shop',
     graphQlOperations: [
-        new QueryCollection(provider: CursorAwareCollectionProvider::class),
-        new Query(resolver: BaseQueryItemResolver::class),
+        new QueryCollection(
+            provider: CursorAwareCollectionProvider::class,
+            description: 'Every product attribute, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
+        ),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One product attribute. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
     ],
     operations: [
         new GetCollection(
@@ -134,22 +140,40 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
     use ServesLoadedTranslation;
 
     /**
-     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
-     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     * The boolean flags are cast so the value is typed identically on every database engine.
      */
-    protected $casts = [];
+    protected $casts = [
+        'is_required' => 'boolean',
+        'is_unique' => 'boolean',
+        'is_filterable' => 'boolean',
+        'is_configurable' => 'boolean',
+        'is_visible_on_front' => 'boolean',
+        'is_comparable' => 'boolean',
+        'is_user_defined' => 'boolean',
+        'value_per_locale' => 'boolean',
+        'value_per_channel' => 'boolean',
+        'enable_wysiwyg' => 'boolean',
+    ];
 
     /**
+     * The relations always eager loaded with the attribute.
+     *
      * @var list<string>
      */
     protected $with = ['translations'];
 
+    /**
+     * Get translation.
+     */
     #[ApiProperty(readableLink: true, description: 'Current locale translation')]
     public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
     {
         return $this->translation;
     }
 
+    /**
+     * Boot the package services.
+     */
     public static function boot()
     {
         parent::boot();
@@ -161,12 +185,18 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
         });
     }
 
+    /**
+     * Options.
+     */
     #[ApiProperty(readableLink: true, writable: false, readable: true)]
     public function options(): HasMany
     {
         return $this->hasMany(AttributeOption::class);
     }
 
+    /**
+     * Get options.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public function getOptions()
     {
@@ -190,7 +220,7 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
     }
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int

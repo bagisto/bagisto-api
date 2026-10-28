@@ -9,36 +9,11 @@ use Webkul\Product\Models\ProductImage;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * GraphQL coverage for Phase 5.11 — Admin Catalog Product image mutations.
- *
- * Mutations exposed:
- *   - reorderAdminCatalogProductImage(input: { productId, order })
- *   - deleteAdminCatalogProductImage(input: { productId, imageId })
- *
- * The upload mutation (createAdminCatalogProductImage) is a placeholder — binary
- * file upload is REST-only. Asserting that path is documented in the REST test
- * file; covering it here would either require a custom multipart GraphQL setup
- * or just re-asserting the placeholder error path.
- */
 class CatalogProductImageTest extends AdminApiTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        Storage::fake('public');
-    }
-
-    protected function seedImage(int $productId, int $position = 1): ProductImage
-    {
-        return ProductImage::create([
-            'type' => 'images',
-            'path' => 'product/'.$productId.'/'.uniqid('img_').'.webp',
-            'product_id' => $productId,
-            'position' => $position,
-        ]);
-    }
-
+    /**
+     * Test reorder images happy path updates positions.
+     */
     public function test_reorder_images_happy_path_updates_positions(): void
     {
         $admin = $this->createAdmin();
@@ -78,6 +53,9 @@ class CatalogProductImageTest extends AdminApiTestCase
         expect(ProductImage::find($b->id)->position)->toBe(4);
     }
 
+    /**
+     * Test delete image happy path removes row.
+     */
     public function test_delete_image_happy_path_removes_row(): void
     {
         $admin = $this->createAdmin();
@@ -112,6 +90,9 @@ class CatalogProductImageTest extends AdminApiTestCase
         expect(ProductImage::find($image->id))->toBeNull();
     }
 
+    /**
+     * Test reorder requires admin token.
+     */
     public function test_reorder_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -139,53 +120,6 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
-    }
-
-    /**
-     * Create an admin whose role holds only the given permissions, with a role-bound token.
-     */
-    protected function customRoleAdmin(array $permissions = []): array
-    {
-        $this->seedRequiredData();
-
-        $role = Role::create([
-            'name' => 'img-gql-'.uniqid(),
-            'description' => 'image-test',
-            'permission_type' => 'custom',
-            'permissions' => $permissions,
-        ]);
-
-        $admin = $this->createAdmin(['role_id' => $role->id]);
-
-        return [$admin, $this->adminTokenSameAsWeb($admin)];
-    }
-
-    /**
-     * Run the update mutation for the given image with the given fields.
-     */
-    protected function runUpdate(ProductImage $image, array $fields, ?Admin $admin = null, ?string $token = null): TestResponse
-    {
-        $mutation = <<<'GQL'
-            mutation($input: updateAdminCatalogProductImageInput!) {
-              updateAdminCatalogProductImage(input: $input) {
-                adminCatalogProductImage {
-                  _id
-                  productId
-                  position
-                  altText
-                  message
-                }
-              }
-            }
-        GQL;
-
-        return $this->adminGraphQL($mutation, [
-            'input' => array_merge([
-                'id' => '/api/admin/catalog/product-images/'.$image->id,
-                'productId' => $image->product_id,
-                'imageId' => $image->id,
-            ], $fields),
-        ], $admin, $token);
     }
 
     /**
@@ -265,5 +199,132 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.product.image.no-permission'));
         expect(ProductImage::find($image->id)->position)->toBe(2);
+    }
+
+    /**
+     * The create mutation refuses the upload with its unchanged error and stores nothing.
+     */
+    public function test_create_mutation_refuses_upload_over_graphql(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+
+        $response = $this->runCreate($product->id, $admin);
+
+        $response->assertOk();
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.product.image.graphql-upload-unsupported'));
+        expect(ProductImage::where('product_id', $product->id)->exists())->toBeFalse();
+    }
+
+    /**
+     * The create mutation refuses a request without an admin token.
+     */
+    public function test_create_mutation_requires_authentication(): void
+    {
+        $product = $this->createBaseProduct('simple');
+
+        $response = $this->runCreate($product->id);
+
+        expect($response->getStatusCode() === 401 || $response->json('errors') !== null)->toBeTrue();
+        expect(ProductImage::where('product_id', $product->id)->exists())->toBeFalse();
+    }
+
+    /**
+     * The create mutation refuses a role without the product edit permission.
+     */
+    public function test_create_mutation_requires_the_edit_permission(): void
+    {
+        [$admin, $token] = $this->customRoleAdmin(['catalog', 'catalog.products']);
+        $product = $this->createBaseProduct('simple');
+
+        $response = $this->runCreate($product->id, $admin, $token);
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.product.image.no-permission'));
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake('public');
+    }
+
+    /**
+     * Seed image.
+     */
+    protected function seedImage(int $productId, int $position = 1): ProductImage
+    {
+        return ProductImage::create([
+            'type' => 'images',
+            'path' => 'product/'.$productId.'/'.uniqid('img_').'.webp',
+            'product_id' => $productId,
+            'position' => $position,
+        ]);
+    }
+
+    /**
+     * Create an admin whose role holds only the given permissions, with a role-bound token.
+     */
+    protected function customRoleAdmin(array $permissions = []): array
+    {
+        $this->seedRequiredData();
+
+        $role = Role::create([
+            'name' => 'img-gql-'.uniqid(),
+            'description' => 'image-test',
+            'permission_type' => 'custom',
+            'permissions' => $permissions,
+        ]);
+
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        return [$admin, $this->adminAccessToken($admin)];
+    }
+
+    /**
+     * Run the create (upload placeholder) mutation.
+     */
+    protected function runCreate(int $productId, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $mutation = <<<'GQL'
+            mutation($input: createAdminCatalogProductImageInput!) {
+              createAdminCatalogProductImage(input: $input) {
+                adminCatalogProductImage { _id }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, ['input' => ['productId' => $productId]], $admin, $token);
+    }
+
+    /**
+     * Run the update mutation for the given image with the given fields.
+     */
+    protected function runUpdate(ProductImage $image, array $fields, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminCatalogProductImageInput!) {
+              updateAdminCatalogProductImage(input: $input) {
+                adminCatalogProductImage {
+                  _id
+                  productId
+                  position
+                  altText
+                  message
+                }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, [
+            'input' => array_merge([
+                'id' => '/api/admin/catalog/product-images/'.$image->id,
+                'productId' => $image->product_id,
+                'imageId' => $image->id,
+            ], $fields),
+        ], $admin, $token);
     }
 }

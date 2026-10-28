@@ -12,21 +12,16 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\DataTransfer\Models\Import;
 
-/**
- * Binary download endpoints (REST-only — binary streams aren't transportable
- * over JSON GraphQL):
- *   GET /settings/data-transfer/imports/{id}/download
- *   GET /settings/data-transfer/imports/{id}/download-error-report
- *   GET /settings/data-transfer/imports/sample/{type}/{format}
- *
- * The concrete download is selected by the operation shortName.
- * Returns an Illuminate\Http\Response so API Platform's SerializeProcessor
- * short-circuits (mirrors the CSV-export / invoice-print pattern).
- */
 class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterface
 {
+    /**
+     * The supported formats constant.
+     */
     protected const SUPPORTED_FORMATS = ['csv', 'xls', 'xlsx', 'xml'];
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Response
     {
         AdminReadPermissions::authorize($operation, AdminSettingsDataTransferImportDownload::class);
@@ -53,6 +48,9 @@ class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterfa
         return $this->downloadFile($uriVariables);
     }
 
+    /**
+     * Download file.
+     */
     protected function downloadFile(array $uriVariables): Response
     {
         $import = $this->resolveImport($uriVariables);
@@ -67,6 +65,9 @@ class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterfa
         return $this->stream(Storage::disk('private')->path($import->file_path), basename($import->file_path));
     }
 
+    /**
+     * Download error report.
+     */
     protected function downloadErrorReport(array $uriVariables): Response
     {
         $import = $this->resolveImport($uriVariables);
@@ -81,6 +82,9 @@ class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterfa
         return $this->stream(Storage::disk('private')->path($import->error_file_path), basename($import->error_file_path));
     }
 
+    /**
+     * Download sample.
+     */
     protected function downloadSample(array $uriVariables): Response
     {
         $type = (string) ($uriVariables['type'] ?? request()->route('type') ?? '');
@@ -102,6 +106,9 @@ class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterfa
         return $this->stream(Storage::path($samplePath), basename($samplePath));
     }
 
+    /**
+     * Resolve import.
+     */
     protected function resolveImport(array $uriVariables): Import
     {
         $id = (int) ($uriVariables['id'] ?? request()->route('id') ?? 0);
@@ -114,6 +121,9 @@ class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterfa
         return $import;
     }
 
+    /**
+     * Stream.
+     */
     protected function stream(string $absolutePath, string $filename): Response
     {
         $contents = file_get_contents($absolutePath);

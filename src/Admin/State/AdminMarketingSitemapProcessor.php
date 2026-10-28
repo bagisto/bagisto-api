@@ -21,16 +21,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Sitemap\Models\Sitemap;
 use Webkul\Sitemap\Repositories\SitemapRepository;
 
-/**
- * Handles POST, PUT, DELETE on AdminMarketingSitemap.
- */
 class AdminMarketingSitemapProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SitemapRepository $sitemapRepository,
         protected AdminMarketingSitemapItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -48,7 +51,7 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.search_seo.sitemaps.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if (
@@ -86,6 +89,9 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminMarketingSitemap
     {
         $this->validatePayload($input);
@@ -105,6 +111,9 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($sitemap);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminMarketingSitemap
     {
         $sitemap = Sitemap::find($id);
@@ -133,12 +142,17 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($sitemap);
     }
 
-    protected function handleDelete(int $id): array
+    /**
+     * Handle delete.
+     */
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingSitemap
     {
         $sitemap = Sitemap::find($id);
         if (! $sitemap) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.sitemap.not-found'));
         }
+
+        $snapshot = $asResource ? $this->itemProvider->mapToDtoPublic($sitemap) : null;
 
         try {
             $sitemap->deleteFromStorage();
@@ -160,9 +174,12 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
 
         Event::dispatch('marketing.search_seo.sitemap.delete.after', $id);
 
-        return ['message' => __('bagistoapi::app.admin.marketing.sitemap.deleted')];
+        return $snapshot ?? ['message' => __('bagistoapi::app.admin.marketing.sitemap.deleted')];
     }
 
+    /**
+     * Validate payload.
+     */
     protected function validatePayload(array $input): void
     {
         $rules = [
@@ -188,6 +205,9 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         return array_values(array_map('intval', (array) ($input['channels'] ?? [])));
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -215,6 +235,9 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve input.
+     */
     protected function resolveInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -233,6 +256,9 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         return $this->normaliseArgs(request()->all());
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -245,7 +271,9 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
-    /** Map camelCase → snake_case and strip extraneous keys. */
+    /**
+     * Map camelCase → snake_case and strip extraneous keys.
+     */
     protected function normaliseArgs(array $input): array
     {
         $camelToSnake = [
@@ -267,6 +295,9 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         return $input;
     }
 
+    /**
+     * Dto to array.
+     */
     protected function dtoToArray(object $dto, array $rawArgs = []): array
     {
         $result = [];

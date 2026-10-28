@@ -13,12 +13,14 @@ use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Webkul\BagistoApi\Contracts\PreloadsCollection;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\CategoryCollectionResolver;
 use Webkul\BagistoApi\State\CategoryRestProvider;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Category\Models\Category as BaseCategory;
 
 #[ApiResource(
@@ -128,10 +130,17 @@ use Webkul\Category\Models\Category as BaseCategory;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
-        new QueryCollection(provider: CursorAwareCollectionProvider::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One active category; a disabled category is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
+        new QueryCollection(
+            provider: CursorAwareCollectionProvider::class,
+            description: 'Active categories as a flat list ordered by ID; disabled categories are never returned. Use `treeCategories` for a nested tree. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
+        ),
         new QueryCollection(
             name: 'tree',
+            description: 'Active categories as a nested tree, ordered by position, as a plain list (not paginated). With `parentId` it returns the descendants of that category, without the category itself; without it, every active category tree. Needs the X-STOREFRONT-KEY header.',
             args: [
                 'parentId' => [
                     'type' => 'Int',
@@ -143,16 +152,24 @@ use Webkul\Category\Models\Category as BaseCategory;
         ),
     ],
 )]
-class Category extends BaseCategory
+class Category extends BaseCategory implements PreloadsCollection
 {
     /**
-     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
-     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     * The status and position are cast so the value is typed identically on every database engine.
      */
-    protected $casts = [];
+    protected $casts = [
+        'status' => 'boolean',
+        'position' => 'integer',
+    ];
 
+    /**
+     * The appends.
+     */
     protected $appends = ['logo_url', 'banner_url', 'url', 'min_price', 'max_price'];
 
+    /**
+     * The category price range.
+     */
     private ?array $categoryPriceRange = null;
 
     /**
@@ -173,49 +190,33 @@ class Category extends BaseCategory
         return $this->resolvePriceRange()['max'];
     }
 
-    private function resolvePriceRange(): array
+    /**
+     * Resolve the translation relation from the loaded translations instead of a query per category.
+     */
+    public function getAttribute($key)
     {
-        if ($this->categoryPriceRange !== null) {
-            return $this->categoryPriceRange;
+        if (
+            $key === 'translation'
+            && ! $this->relationLoaded('translation')
+        ) {
+            $this->setRelation('translation', $this->getTranslation());
         }
 
-        $customer = Auth::guard('sanctum')->user();
-
-        $customerGroup = ($customer && $customer->group)
-            ? $customer->group
-            : core()->getGuestCustomerGroup();
-
-        $range = DB::table('product_price_indices')
-            ->join('product_categories', 'product_categories.product_id', '=', 'product_price_indices.product_id')
-            ->where('product_price_indices.customer_group_id', $customerGroup->id)
-            ->where('product_categories.category_id', $this->id)
-            ->selectRaw('MIN(min_price) as min_price, MAX(min_price) as max_price')
-            ->first();
-
-        return $this->categoryPriceRange = [
-            'min' => (float) ($range->min_price ?? 0),
-            'max' => (float) ($range->max_price ?? 0),
-        ];
+        return parent::getAttribute($key);
     }
 
     /**
-     * Get category translation for the current locale
+     * Get category translation for the current locale.
      */
     #[ApiProperty(readableLink: true, description: 'Current locale translation')]
     public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
     {
-        return $this->translation;
+        return parent::getTranslation($locale, $withFallback);
     }
 
     /**
      * Override core Category::getUrlAttribute() — when the translated slug is
-     * null (no translation row, common for newly-created categories or admin
-     * locales other than the default), core's `url($null)` returns the
-     * UrlGenerator object instead of a string. Symfony Serializer then tries to
-     * normalize that UrlGenerator → reaches Request::getSession() → throws
-     * SessionNotFoundException on the stateless API.
-     *
-     * Always return a string (or empty string) — never an object.
+     * null (no translation row, common for newly-created categories or admin.
      */
     public function getUrlAttribute(): string
     {
@@ -230,7 +231,7 @@ class Category extends BaseCategory
     }
 
     /**
-     * Unique category identifier
+     * Unique category identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -238,17 +239,22 @@ class Category extends BaseCategory
         return $this->id;
     }
 
-    /** IDs only — a nested object tree here makes the serializer recurse the whole catalogue; use /category-trees instead. */
+    /**
+     * IDs only — a nested object tree here makes the serializer recurse the whole catalogue; use /category-trees instead.
+     */
     #[ApiProperty(readableLink: false, description: 'Direct child category IDs (use /category-trees for the full nested tree)')]
     public function getChildren(): array
     {
         try {
-            return $this->children()->pluck('id')->all();
+            return $this->children->pluck('id')->all();
         } catch (\Throwable $exception) {
             return [];
         }
     }
 
+    /**
+     * Filterable attributes.
+     */
     #[ApiProperty(readableLink: true, description: 'Filterable attributes assigned to this category')]
     public function filterable_attributes(): BelongsToMany
     {
@@ -260,9 +266,66 @@ class Category extends BaseCategory
             ]);
     }
 
-    /** Overrides the core relation of the same name so the API's Attribute resource is the related class. */
+    /**
+     * Overrides the core relation of the same name so the API's Attribute resource is the related class.
+     */
     public function filterableAttributes(): BelongsToMany
     {
         return $this->filterable_attributes();
+    }
+
+    /**
+     * Load the price range of every given category in one query.
+     */
+    public static function preloadCollection(Collection $categories): void
+    {
+        if ($categories->isEmpty()) {
+            return;
+        }
+
+        $ranges = self::priceRanges($categories->pluck('id')->all());
+
+        foreach ($categories as $category) {
+            $category->categoryPriceRange = $ranges[$category->id] ?? ['min' => 0.0, 'max' => 0.0];
+        }
+    }
+
+    /**
+     * Resolve price range.
+     */
+    private function resolvePriceRange(): array
+    {
+        if ($this->categoryPriceRange !== null) {
+            return $this->categoryPriceRange;
+        }
+
+        return $this->categoryPriceRange = self::priceRanges([$this->id])[$this->id] ?? ['min' => 0.0, 'max' => 0.0];
+    }
+
+    /**
+     * Price ranges keyed by category id, for the requesting customer's group.
+     */
+    private static function priceRanges(array $categoryIds): array
+    {
+        $customer = CurrentCustomer::user();
+
+        $customerGroup = ($customer && $customer->group)
+            ? $customer->group
+            : core()->getGuestCustomerGroup();
+
+        return DB::table('product_price_indices')
+            ->join('product_categories', 'product_categories.product_id', '=', 'product_price_indices.product_id')
+            ->where('product_price_indices.customer_group_id', $customerGroup->id)
+            ->whereIn('product_categories.category_id', $categoryIds)
+            ->groupBy('product_categories.category_id')
+            ->selectRaw('product_categories.category_id, MIN(min_price) as min_price, MAX(min_price) as max_price')
+            ->get()
+            ->mapWithKeys(fn ($range) => [
+                $range->category_id => [
+                    'min' => (float) ($range->min_price ?? 0),
+                    'max' => (float) ($range->max_price ?? 0),
+                ],
+            ])
+            ->all();
     }
 }

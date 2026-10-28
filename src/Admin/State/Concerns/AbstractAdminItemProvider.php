@@ -7,22 +7,31 @@ use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
-/**
- * Centralised scaffolding for admin single-item providers.
- *
- * Handles: auth check, id resolution from uriVariables / GraphQL args,
- * 404 throw when the entity is not found.
- *
- * Concrete providers implement only:
- *   - getNotFoundLangKey() → the lang key used in ResourceNotFoundException
- *   - findEntity(int $id)  → look up the entity (with eager loads); return null if missing
- *   - mapToDto($entity)    → convert the Eloquent model to the DTO / resource class
- */
 abstract class AbstractAdminItemProvider implements ProviderInterface
 {
+    /**
+     * The translation key passed to ResourceNotFoundException.
+     * Example: 'bagistoapi::app.admin.category.not-found'.
+     */
+    abstract protected function getNotFoundLangKey(): string;
+
+    /**
+     * Look up the entity by primary key.
+     * Return null if not found — the base class handles the 404 throw.
+     */
+    abstract protected function findEntity(int $id): ?object;
+
+    /**
+     * Map the Eloquent model / entity to the API resource DTO.
+     */
+    abstract protected function mapToDto(object $entity): object;
+
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
-        AdminReadPermissions::authorize($operation, null, $this->readPermission());
+        AdminReadPermissions::authorize($operation, null, $this->readPermission($operation));
 
         $id = (int) ($uriVariables['id'] ?? $context['args']['id'] ?? 0);
 
@@ -40,26 +49,9 @@ abstract class AbstractAdminItemProvider implements ProviderInterface
     }
 
     /**
-     * The translation key passed to ResourceNotFoundException.
-     * Example: 'bagistoapi::app.admin.category.not-found'
+     * Override to require a specific ACL key for the operation instead of the resource map entry.
      */
-    abstract protected function getNotFoundLangKey(): string;
-
-    /**
-     * Look up the entity by primary key.
-     * Return null if not found — the base class handles the 404 throw.
-     */
-    abstract protected function findEntity(int $id): ?object;
-
-    /**
-     * Map the Eloquent model / entity to the API resource DTO.
-     */
-    abstract protected function mapToDto(object $entity): object;
-
-    /**
-     * Override to require a specific ACL key instead of the resource map entry.
-     */
-    protected function readPermission(): ?string
+    protected function readPermission(Operation $operation): ?string
     {
         return null;
     }

@@ -10,17 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsExchangeRateUpdateRatesInput;
 use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateUpdateRatesProcessor;
 
-/**
- * Auto-sync admin settings exchange rates from the configured external provider
- * (the admin "Update Rates" button — Webkul\Admin ExchangeRateController::updateRates).
- *
- * REST:    POST /api/admin/settings/exchange-rates/update-rates
- * GraphQL: createAdminSettingsExchangeRateUpdateRates
- *
- * Resolves the provider via services.exchange_api.<default>.class and runs its
- * updateRates(). Provider/network failures surface as HTTP 422 with the
- * provider's own message.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsExchangeRateUpdateRates',
@@ -77,15 +66,27 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateUpdateRatesProcessor;
 )]
 class AdminSettingsExchangeRateUpdateRates
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The updated.
+     */
     #[ApiProperty(writable: false)]
     public ?int $updated = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

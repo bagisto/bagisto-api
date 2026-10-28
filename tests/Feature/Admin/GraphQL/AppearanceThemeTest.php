@@ -4,26 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * GraphQL coverage for Admin Appearance → Themes.
- */
 class AppearanceThemeTest extends AdminApiTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // BACKWARD COMPATIBILITY: remove when the minimum supported core is 2.4.10.
-        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
-    }
-
-    private function channelId(): int
-    {
-        $this->seedRequiredData();
-
-        return (int) \DB::table('channels')->orderBy('id')->value('id');
-    }
-
+    /**
+     * Test query lists themes.
+     */
     public function test_query_lists_themes(): void
     {
         $admin = $this->createAdmin();
@@ -61,6 +46,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         expect(array_column($themes, 'code'))->toContain('default');
     }
 
+    /**
+     * Test query resolves a single theme.
+     */
     public function test_query_resolves_a_single_theme(): void
     {
         $admin = $this->createAdmin();
@@ -86,6 +74,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         expect($response->json('data.adminAppearanceTheme.isInstalled'))->toBeTrue();
     }
 
+    /**
+     * Test query unknown theme returns an error.
+     */
     public function test_query_unknown_theme_returns_an_error(): void
     {
         $admin = $this->createAdmin();
@@ -103,6 +94,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
+    /**
+     * Test query impact resolves.
+     */
     public function test_query_impact_resolves(): void
     {
         $admin = $this->createAdmin();
@@ -127,6 +121,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         expect($response->json('data.adminAppearanceThemeImpact.code'))->toBe('default');
     }
 
+    /**
+     * Test mutation activates a theme.
+     */
     public function test_mutation_activates_a_theme(): void
     {
         $admin = $this->createAdmin();
@@ -160,6 +157,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         expect(\DB::table('channels')->where('id', $channelId)->value('theme'))->toBe('default');
     }
 
+    /**
+     * Test query requires authentication.
+     */
     public function test_query_requires_authentication(): void
     {
         $this->seedRequiredData();
@@ -175,5 +175,25 @@ class AppearanceThemeTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query);
 
         expect($response->getStatusCode() === 401 || $response->json('errors') !== null)->toBeTrue();
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
+    }
+
+    /**
+     * Channel id.
+     */
+    private function channelId(): int
+    {
+        $this->seedRequiredData();
+
+        return (int) \DB::table('channels')->orderBy('id')->value('id');
     }
 }

@@ -7,31 +7,18 @@ use Webkul\Customer\Models\CompareItem;
 
 class CompareItemTest extends RestApiTestCase
 {
+    /**
+     * The base url.
+     */
     private string $baseUrl = '/api/shop/compare_items';
 
-    private function createTestData(): array
-    {
-        $this->seedRequiredData();
+    // ============================================================================
+    // GET Collection
+    // ============================================================================
 
-        $customer = $this->createCustomer();
-        $product1 = $this->createBaseProduct('simple');
-        $product2 = $this->createBaseProduct('simple');
-
-        $compareItem1 = CompareItem::factory()->create([
-            'customer_id' => $customer->id,
-            'product_id' => $product1->id,
-        ]);
-
-        $compareItem2 = CompareItem::factory()->create([
-            'customer_id' => $customer->id,
-            'product_id' => $product2->id,
-        ]);
-
-        return compact('customer', 'product1', 'product2', 'compareItem1', 'compareItem2');
-    }
-
-    // ── GET Collection ────────────────────────────────────────
-
+    /**
+     * Test get compare items collection.
+     */
     public function test_get_compare_items_collection(): void
     {
         $testData = $this->createTestData();
@@ -45,16 +32,41 @@ class CompareItemTest extends RestApiTestCase
         expect(count($data))->toBeGreaterThanOrEqual(2);
     }
 
+    /**
+     * Each compare item carries the product card, so the compare page needs no further call.
+     */
+    public function test_compare_items_embed_the_product_card(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet($testData['customer'], $this->baseUrl);
+
+        $response->assertOk();
+
+        $item = collect($response->json())->firstWhere('id', $testData['compareItem1']->id);
+
+        expect($item['product'])->toBeArray()
+            ->and($item['product']['id'])->toBe($testData['product1']->id)
+            ->and($item['product']['sku'])->toBe($testData['product1']->sku)
+            ->and($item['product'])->toHaveKeys(['name', 'price', 'formattedPrice', 'baseImageUrl'])
+            ->and($item)->toHaveKeys(['createdAt', 'updatedAt']);
+    }
+
+    /**
+     * Test get compare items collection requires auth.
+     */
     public function test_get_compare_items_collection_requires_auth(): void
     {
         $this->seedRequiredData();
 
         $response = $this->publicGet($this->baseUrl);
 
-        // AuthorizationException has no HttpExceptionInterface — REST maps it to 500
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Test get compare items collection only returns own items.
+     */
     public function test_get_compare_items_collection_only_returns_own_items(): void
     {
         $testData = $this->createTestData();
@@ -76,8 +88,13 @@ class CompareItemTest extends RestApiTestCase
         }
     }
 
-    // ── GET Single ────────────────────────────────────────────
+    // ============================================================================
+    // GET Single
+    // ============================================================================
 
+    /**
+     * Test get single compare item.
+     */
     public function test_get_single_compare_item(): void
     {
         $testData = $this->createTestData();
@@ -98,6 +115,9 @@ class CompareItemTest extends RestApiTestCase
         expect($data['id'])->toBe($testData['compareItem1']->id);
     }
 
+    /**
+     * Test get non existent compare item returns 404.
+     */
     public function test_get_non_existent_compare_item_returns_404(): void
     {
         $this->seedRequiredData();
@@ -108,6 +128,9 @@ class CompareItemTest extends RestApiTestCase
         $response->assertNotFound();
     }
 
+    /**
+     * Test get single compare item requires auth.
+     */
     public function test_get_single_compare_item_requires_auth(): void
     {
         $testData = $this->createTestData();
@@ -117,6 +140,9 @@ class CompareItemTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test get single compare item rejects other customer.
+     */
     public function test_get_single_compare_item_rejects_other_customer(): void
     {
         $testData = $this->createTestData();
@@ -130,6 +156,9 @@ class CompareItemTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([403, 404]);
     }
 
+    /**
+     * Test compare item id is integer.
+     */
     public function test_compare_item_id_is_integer(): void
     {
         $testData = $this->createTestData();
@@ -143,6 +172,9 @@ class CompareItemTest extends RestApiTestCase
         expect($response->json('id'))->toBeInt();
     }
 
+    /**
+     * Test compare item timestamps are iso8601.
+     */
     public function test_compare_item_timestamps_are_iso8601(): void
     {
         $testData = $this->createTestData();
@@ -157,8 +189,13 @@ class CompareItemTest extends RestApiTestCase
         expect($response->json('updatedAt'))->toMatch('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
     }
 
-    // ── POST Create ───────────────────────────────────────────
+    // ============================================================================
+    // POST Create
+    // ============================================================================
 
+    /**
+     * Test create compare item.
+     */
     public function test_create_compare_item(): void
     {
         $this->seedRequiredData();
@@ -181,6 +218,9 @@ class CompareItemTest extends RestApiTestCase
         )->toBeTrue();
     }
 
+    /**
+     * Test create compare item with snake case key.
+     */
     public function test_create_compare_item_with_snake_case_key(): void
     {
         $this->seedRequiredData();
@@ -195,6 +235,9 @@ class CompareItemTest extends RestApiTestCase
         expect($response->json('id'))->toBeInt();
     }
 
+    /**
+     * Test create compare item requires auth.
+     */
     public function test_create_compare_item_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -205,6 +248,9 @@ class CompareItemTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Test create compare item without product id returns error.
+     */
     public function test_create_compare_item_without_product_id_returns_error(): void
     {
         $this->seedRequiredData();
@@ -215,6 +261,9 @@ class CompareItemTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 422, 500]);
     }
 
+    /**
+     * Test create compare item with nonexistent product returns error.
+     */
     public function test_create_compare_item_with_nonexistent_product_returns_error(): void
     {
         $this->seedRequiredData();
@@ -227,6 +276,9 @@ class CompareItemTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
     }
 
+    /**
+     * Test create duplicate compare item returns error.
+     */
     public function test_create_duplicate_compare_item_returns_error(): void
     {
         $testData = $this->createTestData();
@@ -238,8 +290,13 @@ class CompareItemTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 409, 422]);
     }
 
-    // ── DELETE Single ─────────────────────────────────────────
+    // ============================================================================
+    // DELETE Single
+    // ============================================================================
 
+    /**
+     * Test delete compare item.
+     */
     public function test_delete_compare_item(): void
     {
         $testData = $this->createTestData();
@@ -254,16 +311,21 @@ class CompareItemTest extends RestApiTestCase
         expect(CompareItem::find($itemId))->toBeNull();
     }
 
+    /**
+     * Test delete compare item requires auth.
+     */
     public function test_delete_compare_item_requires_auth(): void
     {
         $testData = $this->createTestData();
 
         $response = $this->publicDelete($this->baseUrl.'/'.$testData['compareItem1']->id);
 
-        // AuthorizationException has no HttpExceptionInterface — REST maps it to 500
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Test delete non existent compare item returns 404.
+     */
     public function test_delete_non_existent_compare_item_returns_404(): void
     {
         $this->seedRequiredData();
@@ -274,6 +336,9 @@ class CompareItemTest extends RestApiTestCase
         $response->assertNotFound();
     }
 
+    /**
+     * Test cannot delete other customers compare item.
+     */
     public function test_cannot_delete_other_customers_compare_item(): void
     {
         $testData = $this->createTestData();
@@ -284,12 +349,16 @@ class CompareItemTest extends RestApiTestCase
             $this->baseUrl.'/'.$testData['compareItem1']->id
         );
 
-        // AuthorizationException returned as 500 (no HttpExceptionInterface)
         expect($response->getStatusCode())->toBeIn([403, 404, 500]);
     }
 
-    // ── POST Delete All ───────────────────────────────────────
+    // ============================================================================
+    // POST Delete All
+    // ============================================================================
 
+    /**
+     * Test delete all compare items.
+     */
     public function test_delete_all_compare_items(): void
     {
         $testData = $this->createTestData();
@@ -310,6 +379,9 @@ class CompareItemTest extends RestApiTestCase
         )->toBe(0);
     }
 
+    /**
+     * Test delete all compare items requires auth.
+     */
     public function test_delete_all_compare_items_requires_auth(): void
     {
         $response = $this->publicPost('/api/shop/delete-all-compare-items');
@@ -317,6 +389,9 @@ class CompareItemTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Test delete all compare items when empty returns zero count.
+     */
     public function test_delete_all_compare_items_when_empty_returns_zero_count(): void
     {
         $this->seedRequiredData();
@@ -328,6 +403,9 @@ class CompareItemTest extends RestApiTestCase
         expect($response->json('deletedCount'))->toBe(0);
     }
 
+    /**
+     * Test delete all compare items only removes own items.
+     */
     public function test_delete_all_compare_items_only_removes_own_items(): void
     {
         $testData = $this->createTestData();
@@ -346,6 +424,9 @@ class CompareItemTest extends RestApiTestCase
         )->toBe(1);
     }
 
+    /**
+     * Test delete all compare items message is string.
+     */
     public function test_delete_all_compare_items_message_is_string(): void
     {
         $this->seedRequiredData();
@@ -355,5 +436,29 @@ class CompareItemTest extends RestApiTestCase
 
         $response->assertCreated();
         expect($response->json('message'))->toBeString();
+    }
+
+    /**
+     * Create test data.
+     */
+    private function createTestData(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $product1 = $this->createBaseProduct('simple');
+        $product2 = $this->createBaseProduct('simple');
+
+        $compareItem1 = CompareItem::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product1->id,
+        ]);
+
+        $compareItem2 = CompareItem::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product2->id,
+        ]);
+
+        return compact('customer', 'product1', 'product2', 'compareItem1', 'compareItem2');
     }
 }

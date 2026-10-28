@@ -55,6 +55,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnReasonProvider;
         new QueryCollection(
             provider: AdminReturnReasonProvider::class,
             paginationType: 'cursor',
+            description: 'The active return reasons offered for `resolutionType` (`return` or `cancel_items`), as a plain list (not paginated). Needs the `sales.rma.requests.create` permission; any other resolution type is an error.',
             args: [
                 'resolutionType' => [
                     'type' => 'String!',
@@ -66,10 +67,19 @@ use Webkul\BagistoApi\Admin\State\AdminReturnReasonProvider;
 )]
 class AdminReturnReason
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The title.
+     */
     public ?string $title = null;
 
+    /**
+     * The position.
+     */
     public ?int $position = null;
 }

@@ -3,17 +3,20 @@
 namespace Webkul\BagistoApi\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\QueryItemResolverInterface;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CompareItem;
 use Webkul\BagistoApi\Service\GenericIdNormalizer;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class CompareItemQueryResolver implements QueryItemResolverInterface
 {
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?object $item, array $context): object
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

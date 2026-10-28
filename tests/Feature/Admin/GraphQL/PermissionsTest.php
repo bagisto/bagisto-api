@@ -8,6 +8,9 @@ use Webkul\User\Models\Role;
 
 class PermissionsTest extends AdminApiTestCase
 {
+    /**
+     * Test permissions query returns effective set.
+     */
     public function test_permissions_query_returns_effective_set(): void
     {
         $admin = $this->createAdmin();
@@ -31,6 +34,9 @@ class PermissionsTest extends AdminApiTestCase
         expect($data['permissions'])->toBe(['*']);
     }
 
+    /**
+     * Test permissions query custom role.
+     */
     public function test_permissions_query_custom_role(): void
     {
         $role = Role::create([
@@ -41,7 +47,7 @@ class PermissionsTest extends AdminApiTestCase
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->adminTokenSameAsWeb($admin);
+        $token = $this->adminAccessToken($admin);
 
         $query = 'query { getAdminPermissions { permissionType permissions } }';
 
@@ -54,6 +60,9 @@ class PermissionsTest extends AdminApiTestCase
         expect($data['permissions'])->toContain('catalog.products');
     }
 
+    /**
+     * Test permissions query requires authentication.
+     */
     public function test_permissions_query_requires_authentication(): void
     {
         $response = $this->adminGraphQL('query { getAdminPermissions { permissionType } }');

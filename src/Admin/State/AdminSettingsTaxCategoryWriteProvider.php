@@ -8,12 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTaxCategory;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Placeholder provider for AdminSettingsTaxCategory PUT/DELETE so API Platform
- * can resolve the resource before dispatching to the processor.
- */
 class AdminSettingsTaxCategoryWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminSettingsTaxCategory
     {
         if (! AdminAuthHelper::resolveAdmin()) {

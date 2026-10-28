@@ -14,18 +14,18 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\CatalogRule\Models\CatalogRule;
 use Webkul\CatalogRule\Repositories\CatalogRuleRepository;
 
-/**
- * POST /api/admin/marketing/catalog-rules/mass-delete + createAdminMarketingCatalogRuleMassDelete.
- *
- * Iterates the indices and deletes each, firing the standard before/after events.
- * Non-existent IDs are silently skipped.
- */
 class AdminMarketingCatalogRuleMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CatalogRuleRepository $catalogRuleRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -80,6 +80,9 @@ class AdminMarketingCatalogRuleMassDeleteProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -107,6 +110,9 @@ class AdminMarketingCatalogRuleMassDeleteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

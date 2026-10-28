@@ -5,25 +5,25 @@ namespace Webkul\BagistoApi\Admin\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * Input DTO for PUT /api/admin/catalog/families/{id} (also used as deleteAdminAttributeFamily input).
- *
- * `attribute_groups` is keyed for repository update semantics:
- *   - numeric keys (existing group id)  → update that group, replacing custom_attributes
- *   - keys starting with `group_*`      → create new group
- *   - omitted existing group ids        → group is deleted
- * Inside `custom_attributes`, items must include `id` and `position`.
- */
 class AdminAttributeFamilyUpdateInput
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(description: 'Family IRI, e.g. /api/admin/catalog/families/1.')]
     #[Groups(['mutation'])]
     public ?string $id = null;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(description: 'Family code (must be unique among other families).')]
     #[Groups(['mutation'])]
     public ?string $code = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(description: 'Family display name.')]
     #[Groups(['mutation'])]
     public ?string $name = null;

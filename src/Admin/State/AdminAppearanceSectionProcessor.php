@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\GraphQl\Operation as GraphQlOperation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
@@ -16,19 +17,22 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Theme\Models\Section;
 use Webkul\Theme\Repositories\SectionRepository;
 
-/**
- * Create / update / delete for appearance sections.
- */
 class AdminAppearanceSectionProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
     use MapsAppearanceSection;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SectionRepository $sectionRepository,
         protected AppearanceScopeGuard $scope,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if (
@@ -42,17 +46,20 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
         }
 
         if ($data instanceof AdminAppearanceSectionUpdateInput) {
-            return $this->handleUpdate($data, $uriVariables, $context);
+            return $this->handleUpdate($data, $operation, $uriVariables, $context);
         }
 
         if ($data instanceof AdminAppearanceSectionCreateInput) {
-            return $this->handleCreate($data, $uriVariables, $context);
+            return $this->handleCreate($data, $operation, $uriVariables, $context);
         }
 
         throw new InvalidInputException(__('bagistoapi::app.admin.appearance.section.invalid-payload'), 422);
     }
 
-    protected function handleCreate(AdminAppearanceSectionCreateInput $input, array $uriVariables, array $context): mixed
+    /**
+     * Handle create.
+     */
+    protected function handleCreate(AdminAppearanceSectionCreateInput $input, Operation $operation, array $uriVariables, array $context): mixed
     {
         $this->authorizedAdmin('appearance.sections.create', 'bagistoapi::app.admin.appearance.no-permission');
 
@@ -74,7 +81,7 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
 
         $channel = $this->scope->channel(array_filter(['channel' => $this->requestedChannelId($input->channel, $args)]));
 
-        $this->guardSingleFooter($payload['type'], $theme['code'], (int) $channel->id);
+        $this->scope->guardSingleton($payload['type'], $theme['code'], (int) $channel->id);
 
         Event::dispatch('section.create.before');
 
@@ -92,12 +99,15 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
 
         return $this->present(
             $this->scope->sectionOrFail((int) $section->id),
-            $context,
+            $operation,
             __('bagistoapi::app.admin.appearance.section.created'),
         );
     }
 
-    protected function handleUpdate(AdminAppearanceSectionUpdateInput $input, array $uriVariables, array $context): mixed
+    /**
+     * Handle update.
+     */
+    protected function handleUpdate(AdminAppearanceSectionUpdateInput $input, Operation $operation, array $uriVariables, array $context): mixed
     {
         $this->authorizedAdmin('appearance.sections.edit', 'bagistoapi::app.admin.appearance.no-permission');
 
@@ -123,7 +133,7 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
             'theme_code' => 'required',
         ]);
 
-        $this->guardSingleFooter($payload['type'], $payload['theme_code'], (int) $payload['channel_id'], $section->id);
+        $this->scope->guardSingleton($payload['type'], $payload['theme_code'], (int) $payload['channel_id'], $section->id);
 
         $channel = $this->scope->channel(['channel' => $payload['channel_id']]);
 
@@ -169,11 +179,14 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
 
         return $this->present(
             $this->scope->sectionOrFail((int) $updated->id),
-            $context,
+            $operation,
             __('bagistoapi::app.admin.appearance.section.updated'),
         );
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(mixed $data, Operation $operation, array $uriVariables, array $context): mixed
     {
         $this->authorizedAdmin('appearance.sections.delete', 'bagistoapi::app.admin.appearance.no-permission');
@@ -202,6 +215,9 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Requested channel id.
+     */
     protected function requestedChannelId(?int $fromInput, array $args): ?int
     {
         $channel = $fromInput
@@ -237,24 +253,9 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
         return is_array($options) ? $options : [];
     }
 
-    protected function guardSingleFooter(?string $type, ?string $themeCode, int $channelId, ?int $ignoreId = null): void
-    {
-        if ($type !== Section::FOOTER_LINKS) {
-            return;
-        }
-
-        $exists = Section::query()
-            ->where('type', Section::FOOTER_LINKS)
-            ->where('theme_code', $themeCode)
-            ->where('channel_id', $channelId)
-            ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
-            ->exists();
-
-        if ($exists) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.appearance.section.footer-links-exists'), 422);
-        }
-    }
-
+    /**
+     * Validate payload.
+     */
     protected function validatePayload(array $payload, array $rules): void
     {
         $validator = Validator::make($payload, $rules);
@@ -264,9 +265,12 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
         }
     }
 
-    protected function present(Section $section, array $context, string $message): mixed
+    /**
+     * Present the section as the GraphQL resource or the REST body, depending on the transport.
+     */
+    protected function present(Section $section, Operation $operation, string $message): mixed
     {
-        if ($this->isGraphQL($context)) {
+        if ($operation instanceof GraphQlOperation) {
             $resource = $this->toEloquent($section);
 
             $resource->actionMessage = $message;

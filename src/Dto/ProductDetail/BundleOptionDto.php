@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\ApiResource;
 class BundleOptionDto
 {
     /**
+     * Create a new bundle option with its selectable products.
+     *
      * @param  BundleOptionProductDto[]  $products
      */
     public function __construct(

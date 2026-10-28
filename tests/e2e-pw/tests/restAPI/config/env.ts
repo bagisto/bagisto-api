@@ -5,20 +5,15 @@ function readEnv(name: string, required = false): string | undefined {
     throw new Error(`❌ ${name} is not defined`);
   }
 
-  return value;
+  return value || undefined;
 }
 
-// Admin API auth model (post 2026-05-27 refactor):
-//   - Single pre-issued AdminPersonalAccessToken in ADMIN_INTEGRATION_TOKEN.
-//   - No X-Admin-Key, no login round-trip, no token regeneration mid-run.
-//   - ADMIN_EMAIL is kept only so the profile-read test can assert on it.
-//
-// The old ADMIN_PASSWORD / ADMIN_ACCESS_KEY env vars are no longer consumed.
-// They may still appear in the shell environment for legacy tooling, but are
-// not exported on this object.
 export const env = {
   baseUrl: readEnv('BAGISTO_URL', true)!,
   storefrontAccessKey: readEnv('STOREFRONT_ACCESS_KEY', true)!,
-  adminIntegrationToken: readEnv('ADMIN_INTEGRATION_TOKEN', true)!,
   adminEmail: readEnv('ADMIN_EMAIL', true)!,
+  adminPassword: readEnv('ADMIN_PASSWORD', true)!,
+  adminApiToken: readEnv('ADMIN_API_TOKEN'),
+  adminApiTokenOtherDomain: readEnv('ADMIN_API_TOKEN_OTHER_DOMAIN'),
+  adminApiTokenRevocable: readEnv('ADMIN_API_TOKEN_REVOCABLE_REST'),
 };

@@ -8,8 +8,14 @@ use Webkul\RMA\Repositories\RMARepository;
 
 trait BuildsCustomerReturn
 {
+    /**
+     * The return relations constant.
+     */
     public const RETURN_RELATIONS = ['status', 'item.orderItem', 'item.reason', 'images', 'order', 'additionalFields.customField'];
 
+    /**
+     * Build customer return.
+     */
     protected function buildCustomerReturn($rma, bool $detail, RMARepository $rmaRepository): CustomerReturn
     {
         $customerReturn = new CustomerReturn;
@@ -58,6 +64,9 @@ trait BuildsCustomerReturn
         ])->values()->all();
     }
 
+    /**
+     * Build return item.
+     */
     protected function buildReturnItem($item): ?array
     {
         if (! $item) {

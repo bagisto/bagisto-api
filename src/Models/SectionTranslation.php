@@ -12,6 +12,9 @@ use ApiPlatform\Metadata\ApiResource;
 )]
 class SectionTranslation extends \Webkul\Theme\Models\SectionTranslation
 {
+    /**
+     * The casts.
+     */
     protected $casts = [
         'options' => 'string',
     ];
@@ -26,7 +29,7 @@ class SectionTranslation extends \Webkul\Theme\Models\SectionTranslation
     ];
 
     /**
-     * Get unique translation identifier for API
+     * Get unique translation identifier for API.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int

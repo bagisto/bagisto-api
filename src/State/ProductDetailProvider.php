@@ -24,9 +24,15 @@ use Webkul\BagistoApi\Dto\ProductDetail\SuperAttributeOptionDto;
 use Webkul\BagistoApi\Dto\ProductDetail\VariantSummaryDto;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Product;
+use Webkul\Product\Helpers\ConfigurableOption;
+use Webkul\Product\Helpers\View;
+use Webkul\Product\Models\Product as CoreProduct;
 
 class ProductDetailProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?ProductDetailDto
     {
         $id = $uriVariables['id'] ?? null;
@@ -64,6 +70,9 @@ class ProductDetailProvider implements ProviderInterface
         return $this->buildDto($product);
     }
 
+    /**
+     * Build dto.
+     */
     private function buildDto(Product $product): ProductDetailDto
     {
         $dto = new ProductDetailDto;
@@ -91,6 +100,9 @@ class ProductDetailProvider implements ProviderInterface
         $dto->status = (bool) $product->status;
         $dto->description = $product->description;
         $dto->short_description = $product->short_description;
+        $dto->meta_title = $product->meta_title;
+        $dto->meta_description = $product->meta_description;
+        $dto->meta_keywords = $product->meta_keywords;
         $dto->price = $product->price !== null ? (float) $product->price : null;
         $dto->special_price = $product->special_price !== null ? (float) $product->special_price : null;
         $dto->new = (bool) $product->new;
@@ -105,12 +117,30 @@ class ProductDetailProvider implements ProviderInterface
         $dto->created_at = $product->created_at?->toAtomString();
         $dto->updated_at = $product->updated_at?->toAtomString();
         $dto->is_saleable = $product->isSaleable();
+        $dto->guest_checkout = (bool) $product->guest_checkout;
+        $dto->visible_individually = (bool) $product->visible_individually;
+        $dto->on_sale = $product->on_sale;
+        $dto->average_rating = $product->average_rating;
+        $dto->total_rating = $product->total_rating;
+        $dto->reviews_count = $product->reviews_count;
+        $dto->additional_attributes = collect(app(View::class)->getAdditionalData($this->coreProduct($product)))
+            ->map(fn (array $attribute) => [
+                'id' => $attribute['id'] ?? null,
+                'code' => $attribute['code'] ?? null,
+                'label' => $attribute['label'] ?? null,
+                'adminName' => $attribute['admin_name'] ?? null,
+                'type' => $attribute['type'] ?? null,
+                'value' => $attribute['value'] ?? null,
+            ])
+            ->values()
+            ->all();
+        $dto->customer_group_offers = $product->getTypeInstance()->getCustomerGroupPricingOffers();
         $dto->is_in_wishlist = app(ProductRelationFlagResolver::class)->isInWishlist((int) $product->id) ? 1 : 0;
         $dto->is_in_compare = app(ProductRelationFlagResolver::class)->isInCompare((int) $product->id) ? 1 : 0;
         $dto->attributes = $this->buildAttributes($product);
-        $dto->color = $this->intOrNull($product->color);
-        $dto->size = $this->intOrNull($product->size);
-        $dto->brand = $this->intOrNull($product->brand);
+        $dto->color = $this->labelOrNull($product->color);
+        $dto->size = $this->labelOrNull($product->size);
+        $dto->brand = $this->labelOrNull($product->brand);
     }
 
     /**
@@ -192,6 +222,8 @@ class ProductDetailProvider implements ProviderInterface
      */
     private function fillConfigurable(ProductDetailDto $dto, Product $product): void
     {
+        $dto->configurable_config = app(ConfigurableOption::class)->getConfigurationConfig($this->coreProduct($product));
+
         $superAttributeIds = $product->super_attributes->pluck('id')->toArray();
         $superAttributeCodeMap = $product->super_attributes->pluck('code', 'id')->toArray();
 
@@ -226,6 +258,9 @@ class ProductDetailProvider implements ProviderInterface
         return $usedOptions;
     }
 
+    /**
+     * Build super attribute.
+     */
     private function buildSuperAttribute($attribute, array $usedOptions): SuperAttributeDto
     {
         $used = array_unique($usedOptions[$attribute->id] ?? []);
@@ -250,6 +285,9 @@ class ProductDetailProvider implements ProviderInterface
         );
     }
 
+    /**
+     * Build variant summary.
+     */
     private function buildVariantSummary($variant, array $superAttributeIds, array $superAttributeCodeMap): VariantSummaryDto
     {
         $optionMap = [];
@@ -278,6 +316,9 @@ class ProductDetailProvider implements ProviderInterface
         );
     }
 
+    /**
+     * Fill booking.
+     */
     private function fillBooking(ProductDetailDto $dto, Product $product): void
     {
         $dto->booking_products = $product->booking_products
@@ -285,6 +326,9 @@ class ProductDetailProvider implements ProviderInterface
             ->values()->all();
     }
 
+    /**
+     * Fill bundle.
+     */
     private function fillBundle(ProductDetailDto $dto, Product $product): void
     {
         $dto->bundle_options = $product->bundle_options
@@ -306,6 +350,9 @@ class ProductDetailProvider implements ProviderInterface
             ))->values()->all();
     }
 
+    /**
+     * Fill grouped.
+     */
     private function fillGrouped(ProductDetailDto $dto, Product $product): void
     {
         $dto->grouped_products = $product->grouped_products
@@ -318,6 +365,9 @@ class ProductDetailProvider implements ProviderInterface
             ))->values()->all();
     }
 
+    /**
+     * Fill downloadable.
+     */
     private function fillDownloadable(ProductDetailDto $dto, Product $product): void
     {
         $dto->downloadable_links = $product->downloadable_links
@@ -347,6 +397,9 @@ class ProductDetailProvider implements ProviderInterface
             ))->values()->all();
     }
 
+    /**
+     * Fill customizable options.
+     */
     private function fillCustomizableOptions(ProductDetailDto $dto, Product $product): void
     {
         $dto->customizable_options = $product->customizable_options
@@ -367,6 +420,9 @@ class ProductDetailProvider implements ProviderInterface
             ))->values()->all();
     }
 
+    /**
+     * Fill related products.
+     */
     private function fillRelatedProducts(ProductDetailDto $dto, Product $product): void
     {
         $dto->related_products = $product->related_products
@@ -377,6 +433,9 @@ class ProductDetailProvider implements ProviderInterface
             ->map(fn ($crossSell) => $this->buildProductSummary($crossSell))->values()->all();
     }
 
+    /**
+     * Build product summary.
+     */
     private function buildProductSummary($product): ProductSummaryDto
     {
         return new ProductSummaryDto(
@@ -389,34 +448,35 @@ class ProductDetailProvider implements ProviderInterface
         );
     }
 
+    /**
+     * Build booking product.
+     */
     private function buildBookingProduct($bookingProduct): BookingProductDto
     {
         return BookingProductDto::fromModel($bookingProduct);
     }
 
-    private function intOrNull($value): ?int
+    /**
+     * The product as core's model, whose option attributes read as option ids rather than the labels this API returns.
+     */
+    private function coreProduct(Product $product): CoreProduct
     {
-        if (
-            $value === null
-            || $value === ''
-            || $value === false
-        ) {
-            return null;
-        }
-        if (is_numeric($value)) {
-            return (int) $value;
-        }
+        return (new CoreProduct)->newFromBuilder($product->getAttributes())->setRelations($product->getRelations());
+    }
 
-        return null;
+    /**
+     * An option attribute's label, or null when the product has none.
+     */
+    private function labelOrNull(mixed $value): ?string
+    {
+        return filled($value)
+            ? (string) $value
+            : null;
     }
 
     /**
      * Dynamic storefront attribute list. Iterates the product's attribute family
-     * and emits every attribute flagged "Visible on Front" (is_visible_on_front),
-     * channel/locale-aware. Because it is driven by the attribute definition, any
-     * attribute — allow_rma, material, or a merchant-added custom one — appears
-     * automatically once its "Visible on Front" flag is on, with no package change.
-     * Internal fields (cost, sku, price, ...) stay hidden (is_visible_on_front = 0).
+     * and emits every attribute flagged "Visible on Front" (is_visible_on_front),.
      *
      * @return array<int, array<string, mixed>>
      */

@@ -1,9 +1,13 @@
 <?php
 
 return [
+
     'graphql' => [
         'headers' => [
             'unknown-channel' => 'Канал ":code" із заголовка X-Channel не існує.',
+            'storefront-key-required' => 'Потрібен заголовок X-STOREFRONT-KEY',
+            'storefront-key-invalid' => 'Недійсний ключ вітрини',
+            'storefront-key-rate-limited' => 'Перевищено ліміт запитів. Повторіть спробу через :seconds с',
         ],
 
         'cart' => [
@@ -20,20 +24,36 @@ return [
 
             'product-id-quantity-required' => 'Потрібні ідентифікатор продукту та кількість',
             'cart-item-id-quantity-required' => 'Потрібні ідентифікатор елемента кошика та кількість',
+
+            'file-token-invalid' => 'Посилання на завантажений файл недійсне або прострочене. Завантажте файл ще раз.',
+            'file-token-forbidden' => 'Цей завантажений файл не належить до вашого кошика.',
+            'customizable-option-required' => 'Налаштовувана опція ":label" є обов\'язковою.',
+            'customizable-file-option-invalid' => 'Вибрана опція не є файловою опцією для цього продукту.',
+            'customizable-file-invalid' => 'Файл відсутній, має непідтримуване розширення або завеликий.',
             'cart-item-id-required' => 'Потрібен ідентифікатор елемента кошика',
             'item-ids-required' => 'Потрібен масив ідентифікаторів елементів',
+
+            'event-booking-quantity-not-changeable' => 'Кількість продукту бронювання події не можна змінити. Кількість визначається вибором квитків.',
+            'appointment-booking-quantity-not-changeable' => 'Кількість продукту бронювання зустрічі не можна змінити.',
             'coupon-code-required' => 'Потрібен код купона',
             'address-data-required' => 'Потрібні країна, область та поштовий індекс',
+            'grouped-qty-required' => 'Для групового продукту потрібно вказати вибрані кількості. Передайте groupedQty як рядок JSON, наприклад {"101":2,"102":1}.',
+            'grouped-qty-must-include-all' => 'Для групового продукту потрібні кількості для всіх пов\'язаних продуктів. Відсутні ідентифікатори: :ids.',
+            'grouped-qty-invalid-associated' => 'Кількості групового продукту містять недійсні ідентифікатори пов\'язаних продуктів: :ids.',
+            'grouped-qty-invalid-quantity' => 'Указано недійсну кількість для пов\'язаного продукту з ідентифікатором :id. Кількість має бути невід\'ємним цілим числом.',
+            'bundle-qty-not-changeable' => 'Кількість для опції комплекту ":option" не можна змінити. Дозволена кількість — :qty.',
 
             'add-product-failed' => 'Не вдалося додати продукт до кошика',
             'update-item-failed' => 'Не вдалося оновити елемент кошика',
             'remove-item-failed' => 'Не вдалося видалити елемент кошика',
-            'apply-coupon-failed' => 'Не вдалося застосувати купон',
             'remove-coupon-failed' => 'Не вдалося видалити купон',
+            'coupon-applied' => 'Купон успішно застосовано',
+            'coupon-removed' => 'Купон успішно видалено',
             'move-to-wishlist-failed' => 'Не вдалося перемістити елемент до списку бажань',
             'estimate-shipping-failed' => 'Не вдалося розрахувати вартість доставки',
 
             'product-added-successfully' => 'Продукт успішно додано до кошика',
+            'cart-item-updated-successfully' => 'Елемент кошика успішно оновлено',
             'guest-cart-merged' => 'Гостьовий кошик успішно об\'єднано',
             'using-authenticated-cart' => 'Використовується кошик автентифікованого клієнта',
             'cart-item-not-found' => 'Елемент кошика не знайдено',
@@ -42,6 +62,15 @@ return [
             'select-items-to-move-wishlist' => 'Будь ласка, виберіть елементи для переміщення до списку бажань',
             'invalid-or-expired-token' => 'Токен кошика недійсний або прострочений. Будь ласка, створіть новий кошик.',
             'invalid-token-of-login-user' => 'Токен користувача, який увійшов, недійсний.',
+            'booking-note-required' => 'Для бронювання столика потрібне booking.note.',
+            'booking-date-required' => 'booking.date є обов\'язковим, коли booking.slot — це відформатований часовий проміжок.',
+            'booking-qty-required' => 'Для бронювання події потрібне booking.qty.',
+            'booking-ticket-qty-invalid' => 'Кількість квитків на подію має бути невід\'ємним числом.',
+            'booking-ticket-required' => 'Виберіть кількість хоча б для одного квитка для бронювання події.',
+            'booking-slot-unavailable' => 'Вибраний слот недоступний на вказану дату.',
+            'invalid-quantity' => 'Кількість має бути не менше 1',
+            'product-id-required' => 'Потрібен ідентифікатор товару',
+            'shipping-address-required' => 'Для розрахунку доставки потрібні країна та поштовий індекс',
         ],
 
         'token-verification' => [
@@ -54,6 +83,7 @@ return [
             'customer-account-suspended' => 'Обліковий запис клієнта призупинено',
             'error-verifying-token' => 'Помилка перевірки токена',
             'token-is-valid' => 'Токен дійсний',
+            'unauthenticated' => 'Не автентифіковано. Будь ласка, увійдіть, щоб виконати цю дію',
         ],
 
         'forgot-password' => [
@@ -62,7 +92,16 @@ return [
             'email-required' => 'Потрібна електронна пошта',
             'reset-link-sent' => 'Посилання для скидання успішно надіслано на вашу електронну пошту',
             'email-not-found' => 'Адресу електронної пошти не знайдено',
+            'throttled' => 'Забагато спроб скидання. Будь ласка, зачекайте, перш ніж спробувати знову.',
             'error-sending-reset-link' => 'Під час надсилання посилання для скидання сталася помилка',
+        ],
+
+        'reset-password' => [
+            'failed' => 'Не вдалося скинути пароль. Будь ласка, спробуйте ще раз.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Забагато спроб. Спробуйте ще раз через :seconds с.',
         ],
 
         'logout' => [
@@ -73,6 +112,7 @@ return [
             'logged-out-successfully' => 'Успішний вихід із системи',
             'token-not-found-or-expired' => 'Токен не знайдено або він уже прострочений',
             'error-during-logout' => 'Помилка під час виходу',
+            'unauthenticated' => 'Не автентифіковано. Будь ласка, увійдіть, щоб виконати цю дію',
         ],
 
         'address' => [
@@ -84,32 +124,147 @@ return [
             'address-not-found' => 'Адресу не знайдено або вона не належить цьому клієнту',
             'retrieved' => 'Адреси успішно отримано',
             'fetch-failed' => 'Не вдалося отримати адреси:',
+            'field-required' => 'Поле :field є обов\'язковим',
         ],
 
         'customer-profile' => [
             'authentication-required' => 'Потрібен токен автентифікації. Будь ласка, вкажіть токен у вхідних даних запиту',
             'invalid-token' => 'Недійсний або прострочений токен',
+            'profile-updated' => 'Профіль клієнта успішно оновлено',
         ],
 
         'customer' => [
             'password-mismatch' => 'Пароль і підтвердження пароля не збігаються',
             'confirm-password-required' => 'Підтвердження пароля обов\'язкове під час зміни пароля',
+            'current-password-required' => 'Для зміни пароля потрібен поточний пароль',
+            'current-password-incorrect' => 'Введений поточний пароль неправильний',
+            'verify-email-to-login' => 'Ваш обліковий запис створено. Будь ласка, підтвердьте адресу електронної пошти, щоб увійти.',
+            'delete-password-required' => 'Для видалення облікового запису потрібен ваш пароль',
+            'delete-password-incorrect' => 'Введений пароль неправильний',
+            'delete-has-active-orders' => 'Ваш обліковий запис не можна видалити, поки у вас є замовлення в очікуванні або в обробці',
             'unauthenticated' => 'Не автентифіковано. Будь ласка, увійдіть, щоб виконати цю дію',
+            'id-required' => 'Потрібен ідентифікатор клієнта',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/admin/customers/1", або числовий ідентифікатор',
+            'not-found' => 'Клієнта не знайдено',
+            'phone-special-chars-not-allowed' => 'Номер мобільного телефону може містити лише цифри. Спеціальні символи не дозволені',
+            'email-already-taken' => 'Ця адреса електронної пошти вже зареєстрована для іншого облікового запису',
+            'invalid-gender' => 'Недійсне значення статі ":gender". Дозволені значення: :valid',
         ],
 
         'product-review' => [
+            'id-required' => 'Потрібен ідентифікатор відгуку про продукт',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/reviews/1", або числовий ідентифікатор',
+            'not-found' => 'Відгук про продукт з ідентифікатором ":id" не знайдено',
+            'item-not-found' => 'Елемент ":id" не знайдено.',
             'product-id-required' => 'Потрібен ідентифікатор продукту',
             'product-not-found' => 'Продукт не знайдено',
             'rating-invalid' => 'Оцінка має бути від 1 до 5',
             'title-required' => 'Потрібен заголовок відгуку',
             'comment-required' => 'Потрібен коментар відгуку',
+            'review-disabled' => 'Відгуки про продукти наразі вимкнено',
+            'guest-review-disabled' => 'Відгуки від гостей не дозволені. Будь ласка, увійдіть, щоб надіслати відгук',
+            'owner-required' => 'Будь ласка, увійдіть, щоб керувати своїм відгуком',
+            'not-owned' => 'Цей відгук написали не ви, тому його не можна змінити або видалити',
+            'invalid-attachments' => 'Недійсний формат вкладень.',
+            'invalid-product-id-format' => 'Недійсний формат ідентифікатора товару. Очікується формат IRI, наприклад "/api/shop/products/1", або числовий ідентифікатор',
         ],
 
-        'product' => [
-            'not-found' => 'Продукт не знайдено',
-            'not-found-with-sku' => 'No product found with SKU',
-            'not-found-with-url-key' => 'No product found with URL key',
-            'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
+        'customer-review' => [
+            'id-required' => 'Потрібен ідентифікатор відгуку клієнта',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/customer-reviews/1", або числовий ідентифікатор',
+            'not-found' => 'Відгук клієнта з ідентифікатором ":id" не знайдено',
+        ],
+
+        'newsletter' => [
+            'error-during-subscription' => 'Наразі не вдається оформити підписку. Будь ласка, спробуйте пізніше',
+        ],
+
+        'contact-us' => [
+            'success' => 'Ваш запит успішно надіслано. Ми незабаром зв\'яжемося з вами',
+            'failed' => 'Наразі не вдається надіслати ваш запит. Будь ласка, спробуйте пізніше',
+            'invalid-input' => 'Недійсні дані контактної форми',
+        ],
+
+        'customer-order' => [
+            'id-required' => 'Потрібен ідентифікатор замовлення клієнта',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/customer-orders/1", або числовий ідентифікатор',
+            'not-found' => 'Замовлення клієнта з ідентифікатором ":id" не знайдено',
+        ],
+
+        'return' => [
+            'not-found' => 'Запит на повернення не знайдено.',
+            'disabled' => 'Повернення не ввімкнено для цього магазину.',
+            'invalid-input' => 'Відсутні або недійсні дані повернення.',
+            'invalid-resolution-type' => 'Тип вирішення має бути "return" або "cancel_items".',
+            'agreement-required' => 'Ви повинні прийняти політику повернення.',
+            'invalid-order' => 'Вибране замовлення недійсне.',
+            'invalid-item' => 'Вибраний товар не підлягає поверненню.',
+            'qty-exceeds' => 'Запитана кількість перевищує кількість, доступну для повернення.',
+            'invalid-package-condition' => 'Стан упаковки має бути "open" або "packed".',
+            'invalid-image' => 'Один або кілька завантажених файлів мають непідтримуваний тип.',
+            'invalid-custom-field' => 'Невідоме користувацьке поле ":id".',
+            'custom-field-required' => 'Поле ":field" є обов\'язковим.',
+            'invalid-custom-field-value' => 'Значення для ":field" не входить до дозволених варіантів.',
+            'created' => 'Запит на повернення успішно створено.',
+            'canceled' => 'Запит на повернення успішно скасовано.',
+            'already-canceled' => 'Запит на повернення вже скасовано.',
+            'cancel-not-allowed' => 'Цей запит на повернення не можна скасувати.',
+            'close-not-allowed' => 'Цей запит на повернення не можна закрити.',
+            'reopened' => 'Запит на повернення успішно відкрито повторно.',
+            'reopen-not-allowed' => 'Цей запит на повернення не можна відкрити повторно.',
+            'closed' => 'Запит на повернення успішно закрито.',
+            'message-sent' => 'Повідомлення успішно надіслано.',
+            'attachment-not-found' => 'Вкладення повідомлення не знайдено.',
+        ],
+
+        'eu-withdrawal' => [
+            'not-found' => 'Заяву про відмову не знайдено.',
+            'order-not-found' => 'Замовлення не знайдено або воно не підлягає відмові.',
+            'too-many-attempts' => 'Забагато спроб. Будь ласка, спробуйте ще раз через :seconds с.',
+            'created' => 'Заяву про відмову успішно подано.',
+        ],
+
+        'customer-order-shipment' => [
+            'id-required' => 'Потрібен ідентифікатор відвантаження',
+            'not-found' => 'Відвантаження з ідентифікатором ":id" не знайдено або воно не належить цьому клієнту',
+            'item-not-found' => 'Елемент відвантаження з ідентифікатором ":id" не знайдено або він не належить цьому клієнту',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/customer-order-shipments/1", або числовий ідентифікатор',
+        ],
+
+        'cancel-order' => [
+            'order-id-required' => 'Для скасування замовлення потрібен ідентифікатор замовлення',
+            'not-found' => 'Замовлення з ідентифікатором ":id" не знайдено або воно не належить цьому клієнту',
+            'cancel-success' => 'Замовлення успішно скасовано',
+            'cancel-failed' => 'Замовлення не можна скасувати. Можливо, його вже оброблено, відвантажено або скасовано',
+        ],
+
+        'reorder' => [
+            'order-id-required' => 'Для повторного замовлення потрібен ідентифікатор замовлення',
+            'not-found' => 'Замовлення з ідентифікатором ":id" не знайдено або воно не належить цьому клієнту',
+            'reorder-success' => 'До вашого кошика додано товари з попереднього замовлення: :count',
+            'no-items-added' => 'Не вдалося додати жодного товару до кошика. Продукти можуть бути відсутні на складі або недоступні',
+        ],
+
+        'customer-downloadable-product' => [
+            'id-required' => 'Потрібен ідентифікатор завантажуваного продукту клієнта',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/customer-downloadable-products/1", або числовий ідентифікатор',
+            'not-found' => 'Завантажуваний продукт клієнта з ідентифікатором ":id" не знайдено',
+
+            'download' => [
+                'unauthenticated' => 'Неавторизовано: потрібна автентифікація клієнта.',
+                'not-found' => 'Завантажуваний товар не знайдено.',
+                'pending' => 'Завантаження очікує. Будь ласка, зачекайте, доки для замовлення буде виставлено рахунок.',
+                'limit-exceeded' => 'Перевищено ліміт завантажень.',
+                'no-downloads-remaining' => 'Більше завантажень немає.',
+                'file-not-found' => 'Файл не знайдено.',
+                'link-not-found' => 'Посилання для завантаження не знайдено.',
+            ],
+        ],
+
+        'customer-invoice' => [
+            'id-required' => 'Потрібен ідентифікатор рахунку клієнта',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/customer-invoices/1", або числовий ідентифікатор',
+            'not-found' => 'Рахунок клієнта з ідентифікатором ":id" не знайдено',
         ],
 
         'auth' => [
@@ -119,6 +274,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
             'unknown-resource' => 'Невідомий ресурс',
             'cannot-update-other-profile' => 'Несанкціоновано: Неможливо оновити профіль іншого клієнта',
+            'refresh-token-invalid' => 'Токен оновлення недійсний або прострочений. Увійдіть знову.',
+            'too-many-login-attempts' => 'Забагато спроб входу. Спробуйте ще раз через :seconds с.',
+            'too-many-refresh-requests' => 'Забагато оновлень токена. Спробуйте ще раз через :seconds секунд.',
+            'rate-limit-exceeded' => 'Забагато спроб.',
+            'access-token-expired' => 'Термін дії токена доступу закінчився. Оновіть його, щоб продовжити.',
+            'logged-out-all' => 'Ви вийшли з усіх сеансів.',
+            'session-not-found' => 'Сеанс не знайдено.',
+            'session-revoked' => 'Сеанс відкликано.',
         ],
 
         'upload' => [
@@ -130,6 +293,35 @@ return [
 
         'attribute' => [
             'code-already-exists' => 'Код атрибута вже існує',
+            'option-id-required' => 'Параметр "attributeId" є обов\'язковим під час прямого запиту опцій атрибута',
+            'id-required' => 'Потрібен ідентифікатор атрибута',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/attributes/1", або числовий ідентифікатор',
+            'not-found' => 'Атрибут не знайдено',
+        ],
+
+        'attribute-option' => [
+            'id-required' => 'Потрібен ідентифікатор опції атрибута',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/attribute-options/1", або числовий ідентифікатор',
+            'not-found' => 'Опцію атрибута не знайдено',
+        ],
+
+        'channel' => [
+            'id-required' => 'Потрібен ідентифікатор каналу',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/channels/1", або числовий ідентифікатор',
+            'not-found' => 'Канал не знайдено',
+        ],
+
+        'country-state' => [
+            'id-required' => 'Потрібен ідентифікатор області країни',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/country-states/1", або числовий ідентифікатор',
+            'not-found' => 'Область країни не знайдено',
+            'country-id-required' => 'Потрібен ідентифікатор країни',
+        ],
+
+        'country' => [
+            'id-required' => 'Потрібен ідентифікатор країни',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/countries/1", або числовий ідентифікатор',
+            'not-found' => 'Країну не знайдено',
         ],
 
         'login' => [
@@ -145,6 +337,7 @@ return [
             'signed-in' => 'Вхід виконано успішно.',
             'token-required' => 'Потрібен токен соціального входу.',
             'invalid-token' => 'Токен соціального входу недійсний або прострочений. Спробуйте ще раз.',
+            'google-not-configured' => 'Вхід через Google не налаштовано для цього магазину.',
             'wrong-audience' => 'Цей токен було видано для іншого застосунку.',
             'email-required' => 'Постачальник не надав адресу електронної пошти. Зареєструйтеся за допомогою електронної пошти.',
             'account-inactive' => 'Ваш активний запит очікує схвалення адміністратора',
@@ -168,6 +361,8 @@ return [
             'payment-method-save-failed' => 'Не вдалося зберегти спосіб оплати',
             'payment-method-saved' => 'Спосіб оплати успішно збережено',
             'payment-method-error' => 'Помилка збереження способу оплати',
+            'order-placed' => 'Замовлення успішно оформлено',
+            'order-redirect-required' => 'Цей спосіб оплати вимагає, щоб покупець завершив оплату на платіжному шлюзі. Перенаправте його на redirectUrl; замовлення буде створено після підтвердження оплати шлюзом.',
             'order-creation-failed' => 'Не вдалося створити замовлення: ідентифікатор замовлення порожній або замовлення не збережено',
             'order-retrieval-failed' => 'Не вдалося отримати створене замовлення',
             'order-creation-error' => 'Не вдалося створити замовлення',
@@ -187,6 +382,10 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'Продукт не знайдено',
+            'not-found-with-sku' => 'Не знайдено продукту з таким SKU',
+            'not-found-with-url-key' => 'Не знайдено продукту з таким URL-ключем',
+            'parameters-required' => 'Потрібно вказати принаймні один із таких параметрів: "sku", "id", "urlKey"',
             'type' => 'Тип продукту',
             'attribute-family' => 'Сімейство атрибутів',
             'sku' => 'SKU',
@@ -207,17 +406,8 @@ return [
             'size' => 'Розмір',
             'brand' => 'Бренд',
             'super-attributes' => 'Супер-атрибути',
-        ],
-
-        'compare-item' => [
-            'id-required' => 'Ідентифікатор елемента порівняння обов\'язковий',
-            'invalid-id-format' => 'Невірний формат ідентифікатора. Очікується формат IRI як "/api/shop/compare-items/1" або числовий ідентифікатор',
-            'not-found' => 'Елемент порівняння не знайдено',
-            'product-id-required' => 'Ідентифікатор продукту обов\'язковий',
-            'customer-id-required' => 'Ідентифікатор клієнта обов\'язковий',
-            'product-not-found' => 'Продукт не знайдено',
-            'customer-not-found' => 'Клієнта не знайдено',
-            'already-exists' => 'Цей продукт уже в вашому списку порівняння',
+            'id-required' => 'Потрібен ідентифікатор товару',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/products/1", або числовий ідентифікатор',
         ],
 
         'downloadable-product' => [
@@ -232,48 +422,1558 @@ return [
             'redirect-external-url' => 'Переспрямування на зовнішню URL завантаження',
             'file-error' => 'При обробці вашого запиту на завантаження сталася помилка',
             'unauthorized-access' => 'Несанкціонований доступ до ресурсу завантаження',
+            'unauthenticated' => 'Неавторизовано: потрібна автентифікація клієнта',
+            'link-id-required' => 'Потрібен downloadableLinkPurchasedId',
+            'link-not-found' => 'Посилання для завантаження не знайдено',
+            'not-owner' => 'Неавторизовано: це посилання для завантаження не належить вам',
+            'pending' => 'Завантаження очікує. Будь ласка, зачекайте, доки для замовлення буде виставлено рахунок.',
+            'limit-exceeded' => 'Перевищено ліміт завантажень',
+            'no-downloads-left' => 'Більше завантажень немає',
+        ],
+
+        'booking-slot' => [
+            'id-required' => 'Потрібен ідентифікатор продукту бронювання.',
+            'date-required' => 'Потрібна дата.',
+            'product-not-found' => 'Продукт бронювання не знайдено.',
+            'invalid-type' => 'Цей тип бронювання не підтримується.',
+            'invalid-time-range' => 'Недійсний часовий проміжок.',
+            'invalid-time-format' => 'Недійсний формат часу.',
+        ],
+
+        'resolver' => [
+            'no-resolve-info' => 'GraphQL ResolveInfo недоступний у контексті. Неможливо визначити клас моделі.',
+            'unknown-resource-class' => 'Неможливо визначити клас ресурсу з типу повернення GraphQL',
+        ],
+
+        'docs' => [
+            'openapi-unavailable' => 'Не вдалося створити екземпляр OpenAPI Factory',
+        ],
+
+        'locale' => [
+            'id-required' => 'Потрібен ідентифікатор локалі',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/locales/1", або числовий ідентифікатор',
+            'not-found' => 'Локаль не знайдено',
+        ],
+
+        'category' => [
+            'id-required' => 'Потрібен ідентифікатор категорії',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/categories/1", або числовий ідентифікатор',
+            'not-found' => 'Категорію не знайдено',
+        ],
+
+        'compare-item' => [
+            'id-required' => 'Ідентифікатор елемента порівняння обов\'язковий',
+            'invalid-id-format' => 'Невірний формат ідентифікатора. Очікується формат IRI як "/api/shop/compare-items/1" або числовий ідентифікатор',
+            'not-found' => 'Елемент порівняння не знайдено',
+            'product-id-required' => 'Ідентифікатор продукту обов\'язковий',
+            'customer-id-required' => 'Ідентифікатор клієнта обов\'язковий',
+            'product-not-found' => 'Продукт не знайдено',
+            'customer-not-found' => 'Клієнта не знайдено',
+            'already-exists' => 'Цей продукт уже в вашому списку порівняння',
+            'delete-all-success' => 'Усі елементи порівняння успішно видалено',
+        ],
+
+        'wishlist' => [
+            'id-required' => 'Потрібен ідентифікатор елемента списку бажань',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/wishlists/1", або числовий ідентифікатор',
+            'not-found' => 'Елемент списку бажань не знайдено',
+            'product-id-required' => 'Потрібен ідентифікатор продукту',
+            'customer-id-required' => 'Потрібен ідентифікатор клієнта',
+            'product-not-found' => 'Продукт не знайдено',
+            'product-disabled' => 'Цей продукт наразі вимкнено',
+            'customer-not-found' => 'Клієнта не знайдено',
+            'already-exists' => 'Цей продукт уже є у вашому списку бажань',
+            'added' => 'Елемент успішно додано до списку бажань',
+            'removed' => 'Елемент успішно видалено зі списку бажань',
+            'product-removed' => 'Продукт видалено',
+            'wishlist-item-id-required' => 'Потрібен ідентифікатор елемента списку бажань',
+            'invalid-quantity' => 'Кількість має бути більшою за 0',
+            'move-to-cart-missing-options' => 'У продукту відсутні обов\'язкові опції. Будь ласка, налаштуйте його вручну',
+            'moved-to-cart-success' => 'Елемент успішно переміщено до кошика',
+            'delete-all-success' => 'Усі елементи списку бажань успішно видалено',
+        ],
+
+        'gdpr' => [
+            'disabled' => 'Запити даних GDPR вимкнено. Будь ласка, увімкніть GDPR у конфігурації адміністратора.',
+            'unauthenticated' => 'Ви повинні увійти, щоб керувати запитами даних GDPR.',
+            'not-found' => 'Запит даних GDPR не знайдено',
+            'type-required' => 'Потрібен тип запиту',
+            'type-invalid' => 'Тип запиту має бути "delete" або "update"',
+            'message-required' => 'Потрібне повідомлення',
+            'raised' => 'Ваш запит даних GDPR успішно створено.',
+            'revoked' => 'Ваш запит даних GDPR успішно відкликано.',
+            'revoke-not-allowed' => 'Цей запит даних GDPR більше не можна відкликати.',
+            'deleted' => 'Ваш запит даних GDPR успішно видалено.',
+        ],
+
+        'section' => [
+            'id-required' => 'Потрібен ідентифікатор розділу',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/sections/1", або числовий ідентифікатор',
+            'not-found' => 'Розділ не знайдено',
         ],
 
         'install' => [
+            'starting' => 'Початок встановлення API Platform...',
+            'completed-success' => '✓ Встановлення API Platform успішно завершено!',
+            'failed' => '✗ Помилка встановлення:',
+
             'provider-already-registered' => 'ℹ Service Provider вже зареєстровано',
+            'provider-not-registered' => '⚠ Не вдалося автоматично зареєструвати Service Provider. Додайте :provider до bootstrap/providers.php вручну.',
+            'provider-registered' => '✓ Service Provider зареєстровано в bootstrap/providers.php',
+            'provider-file-not-found' => 'Файл не знайдено: :file',
+            'provider-permission-denied' => 'Доступ заборонено: неможливо записати в :file. Будь ласка, перевірте права доступу до файлу.',
+
+            'config-already-exists' => 'ℹ Файл конфігурації вже існує',
+            'config-published' => '✓ Конфігурацію API Platform опубліковано в config/',
+            'config-source-not-found' => 'Вихідний файл конфігурації не знайдено: :file',
+            'config-permission-denied' => 'Доступ заборонено: неможливо записати в :directory. Будь ласка, перевірте права доступу до каталогу.',
+
+            'translatable-not-found' => 'ℹ TranslatableModel не знайдено — пропускаємо',
+            'translatable-already-abstract' => 'ℹ TranslatableModel уже абстрактний',
+            'translatable-made-abstract' => '✓ TranslatableModel зроблено абстрактним',
+            'translatable-permission-denied' => 'Доступ заборонено: неможливо записати в :file. Будь ласка, перевірте права доступу до файлу.',
+
+            'providers-already-registered' => 'ℹ Провайдери API Platform уже зареєстровано',
+            'providers-registered' => '✓ Провайдери API Platform зареєстровано в bootstrap/app.php',
+            'providers-file-not-found' => 'Файл не знайдено: :file',
+            'providers-permission-denied' => 'Доступ заборонено: неможливо записати в :file. Будь ласка, перевірте права доступу до файлу.',
+            'providers-not-found' => 'Не вдалося знайти створення Application у bootstrap/app.php',
+
+            'assets-published' => '✓ Ресурси пакета опубліковано',
+            'running-migrations' => 'Виконання міграцій бази даних...',
+            'migrations-completed' => '✓ Міграції бази даних завершено',
             'clearing-caches' => 'Очищення та оптимізація кешу...',
             'caches-optimized' => '✓ Кеш очищено та оптимізовано',
+            'generating-api-key' => 'Генерація API-ключа...',
+            'api-key-generated' => '✓ API-ключ успішно згенеровано',
+            'api-key-already-exists' => 'ℹ API-ключ магазину за замовчуванням уже існує — генерацію пропущено',
+
+            'migrations-error' => 'Помилка міграцій бази даних.',
+            'migrations-error-running' => 'Помилка під час виконання міграцій бази даних: :error',
             'cache-clear-error' => 'Не вдалося очистити кеш.',
             'cache-optimize-error' => 'Не вдалося виконати оптимізацію.',
             'cache-error' => 'Помилка під час очищення та оптимізації кешу: :error',
+            'api-key-generation-error' => 'Не вдалося згенерувати API-ключ.',
+            'api-key-error' => 'Помилка генерації API-ключа: :error',
+
+            'key-management-required' => '--key є обов\'язковим для дії :action',
+            'key-rotation-error' => 'Помилка ротації ключа: :error',
+            'key-deactivation-error' => 'Помилка деактивації ключа: :error',
+            'key-not-found' => 'API-ключ не знайдено: :identifier',
+
+            'maintenance-starting' => '🔄 Початок обслуговування API-ключів...',
+            'maintenance-complete' => '✅ Обслуговування API-ключів завершено',
+            'cleanup-expired-keys' => '🧹 Очищення прострочених ключів...',
+            'cleanup-expired-none' => '   ℹ️ Немає прострочених ключів для очищення',
+            'invalidate-deprecated' => '⚠️ Анулювання застарілих ключів...',
+            'invalidate-deprecated-none' => '   ℹ️ Немає застарілих ключів для анулювання',
+            'notify-expiring' => '📧 Надсилання сповіщень про закінчення терміну дії...',
+            'notify-expiring-none' => '   ℹ️ Немає ключів, що потребують сповіщень',
+
+            'key-rotated-success' => '✅ Ключ успішно ротовано!',
+            'key-deactivated-success' => '✅ Ключ успішно деактивовано!',
+            'deactivation-cancelled' => 'Деактивацію скасовано.',
+            'cleanup-cancelled' => 'Очищення скасовано.',
+
+            'key-status-title' => 'Стан ключа: :name',
+            'key-status-active' => 'Активний: :status',
+            'key-status-usable' => 'Придатний до використання: :status',
+            'key-status-expired' => 'Прострочений: :status',
+            'key-status-deprecated' => 'Застарілий: :status',
+            'key-status-expires-at' => 'Термін дії до: :expires',
+            'key-status-days-until-expiry' => 'Днів до закінчення терміну дії: :days',
+            'key-status-last-used' => 'Останнє використання: :date',
+            'key-status-rotated-from' => 'Ротовано з: :key',
+            'key-status-rotated-keys' => 'Ключів, ротованих із цього: :count',
+
+            'policy-compliance-summary' => 'Зведення відповідності політиці ротації API-ключів',
+            'available-actions' => 'Доступні дії: rotate, deactivate, cleanup, status, expiring, unused, summary',
+
+            'asset-linked-success' => '✓ Ресурси API Platform успішно зв\'язано',
+            'symlink-create-failed' => 'Не вдалося створити символьне посилання, натомість копіюємо ресурси...',
+            'asset-copy-warning' => 'Попередження: не вдалося зв\'язати або скопіювати ресурси API Platform. Можливо, знадобиться ручне налаштування.',
+            'asset-copied-success' => '✓ Ресурси API Platform успішно скопійовано',
+
+            'key-name-required' => 'Назва ключа вітрини не може бути порожньою.',
+            'key-generated-success' => 'Ключ вітрини успішно згенеровано!',
+            'key-details' => 'Дані ключа:',
+            'key-secure-warning' => 'Зберігайте цей ключ у безпеці! Він використовуватиметься в заголовку X-STOREFRONT-KEY.',
+            'key-share-warning' => 'Не поширюйте цей ключ публічно та не додавайте його до системи контролю версій.',
+
+            'key-already-exists' => 'Ключ вітрини з назвою \':name\' уже існує.',
+            'cleanup-success' => '✅ Очищено прострочених ключів: :count',
+            'confirm-cleanup' => 'Буде виконано м\'яке видалення всіх прострочених ключів. Продовжити?',
+            'confirm-deactivate' => 'Ви впевнені, що хочете деактивувати ключ: :name?',
+
+            'old-key' => 'Старий ключ: :name',
+            'old-key-id' => 'ID старого ключа: :id',
+            'deprecation-date' => 'Дата застарівання: :date',
+            'new-key' => 'Новий ключ: :name',
+            'new-key-id' => 'ID нового ключа: :id',
+            'new-key-value' => 'Значення нового ключа: :key',
+            'expires-at' => 'Термін дії до: :date',
+            'invalid-action' => 'Недійсна дія: :action',
+            'key-active' => 'Активний: :status',
+            'key-usable' => 'Придатний до використання: :status',
+            'key-expired' => 'Прострочений: :status',
+            'key-deprecated' => 'Застарілий: :status',
+            'key-field-id' => 'ID',
+            'key-field-name' => 'Назва',
+            'key-field-key' => 'Ключ',
+            'key-field-rate-limit' => 'Ліміт запитів',
+            'key-field-status' => 'Стан',
+            'key-days' => ' днів',
+            'key-never' => 'Ніколи',
+            'key-requests-minute' => ' запитів/хвилину',
+            'key-unlimited' => 'Без обмежень',
+            'rate-limit-exceeded' => 'Запитаний ліміт перевищує максимально дозволений :max. Встановлено :max запитів/хвилину.',
+
+            'vendor-path-not-found' => 'Шлях vendor для API Platform не знайдено: :path',
+            'assets-already-linked' => 'Ресурси API Platform уже зв\'язано: :path',
+            'no-keys-expiring' => 'Немає ключів, термін дії яких закінчується протягом наступних :days днів',
+            'keys-expiring-title' => 'Ключі, термін дії яких закінчується протягом наступних :days днів:',
+            'key-display-format' => '• :name (ID: :id)',
+            'key-expires-display' => '  Закінчується: :date (залишилося днів: :days)',
+            'no-unused-keys' => 'Невикористаних ключів не знайдено (> :days днів)',
+            'unused-keys-title' => 'Невикористані ключі (> :days днів):',
+            'key-last-used-display' => '  Останнє використання: :date',
+            'total-keys' => 'Усього ключів: :count',
+            'valid-keys' => 'Дійсних ключів: :count',
+            'expired-keys' => 'Прострочених ключів: :count',
+            'deprecated-keys' => 'Застарілих ключів: :count',
+            'keys-expiring-soon' => 'Ключів, що незабаром закінчуються (7 днів): :count',
+            'unused-keys-summary' => 'Невикористаних ключів (90 днів): :count',
+            'recently-rotated' => 'Нещодавно ротованих (30 днів): :count',
+            'cleanup-success-message' => '   ✅ Очищено прострочених ключів: :count',
+            'invalidate-success-message' => '   ✅ Анульовано застарілих ключів: :count',
+            'notify-success-message' => '   ✅ Надіслано сповіщень про закінчення терміну дії: :count',
+            'notify-failed-message' => '   ⚠️ Не вдалося надіслати сповіщення щодо :key: :error',
+            'publish-assets-warning' => 'Попередження: не вдалося опублікувати ресурси пакета. :error',
+            'env-file-not-found' => 'Файл .env не знайдено. Створіть його перед встановленням.',
+            'env-permission-denied' => 'Файл .env недоступний для запису. Перевірте його права доступу.',
+            'env-config-saved' => '✓ Конфігурацію середовища API Platform успішно збережено',
+            'api-endpoints' => 'Кінцеві точки API:',
+            'api-documentation' => 'Документація API: :url',
+            'api-landing-page' => 'Цільова сторінка API: :url',
+            'graphql-playground' => 'GraphQL Playground: :url',
+            'rest-api-storefront' => 'Rest API Storefront Swagger: :url',
+            'rest-api-admin' => 'Rest API Admin Swagger: :url',
+            'generating-jwt-keys' => 'Створення ключів підпису JWT для токенів API адміністратора...',
+            'jwt-keys-generated' => '✓ Ключі підпису JWT готові',
+            'jwt-keys-warning' => 'Попередження: не вдалося створити ключі підпису JWT. Виконайте php artisan bagisto-api:jwt-keys вручну. :error',
+            'admin-login' => 'Вхід до API адміністратора: :url',
+            'admin-api-tokens' => 'Токени API адміністратора (серверні інтеграції): :url',
+            'key-rotation-invalid-key' => 'Неможливо ротувати недійсний або прострочений ключ',
+            'env-file-not-found' => 'Файл .env не знайдено',
+            'env-permission-denied' => 'Доступ заборонено: неможливо записати у файл .env. Перевірте права доступу до файлу.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'Потрібен ідентифікатор перекладу атрибута',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/attribute-translations/1", або числовий ідентифікатор',
+            'not-found' => 'Переклад атрибута не знайдено',
+        ],
+
+        'currency' => [
+            'id-required' => 'Потрібен ідентифікатор валюти',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/currencies/1", або числовий ідентифікатор',
+            'not-found' => 'Валюту не знайдено',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'Потрібен ідентифікатор адреси клієнта',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/customer-addresses/1", або числовий ідентифікатор',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'Потрібен ідентифікатор позиції відвантаження',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/customer-order-shipment-items/1", або числовий ідентифікатор',
+            'not-found' => 'Позицію відвантаження не знайдено',
+        ],
+
+        'page' => [
+            'id-required' => 'Потрібен ідентифікатор сторінки',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/pages/1", або числовий ідентифікатор',
+            'not-found' => 'Сторінку не знайдено',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'Потрібен ідентифікатор перекладу сторінки',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/page-translations/1", або числовий ідентифікатор',
+            'not-found' => 'Переклад сторінки не знайдено',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'Потрібен ідентифікатор опції комплекту',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/product-bundle-options/1", або числовий ідентифікатор',
+            'not-found' => 'Опцію комплекту не знайдено',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'Потрібен ідентифікатор товару опції комплекту',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/product-bundle-option-products/1", або числовий ідентифікатор',
+            'not-found' => 'Товар опції комплекту не знайдено',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'Потрібен ідентифікатор посилання для завантаження',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/product-downloadable-links/1", або числовий ідентифікатор',
+            'not-found' => 'Посилання для завантаження не знайдено',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'Потрібен ідентифікатор зразка для завантаження',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/product-downloadable-samples/1", або числовий ідентифікатор',
+            'not-found' => 'Зразок для завантаження не знайдено',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'Потрібен ідентифікатор згрупованого товару',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/product-grouped-products/1", або числовий ідентифікатор',
+            'not-found' => 'Згрупований товар не знайдено',
+        ],
+
+        'product-images' => [
+            'id-required' => 'Потрібен ідентифікатор зображення товару',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/product-images/1", або числовий ідентифікатор',
+            'not-found' => 'Зображення товару не знайдено',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'Потрібен ідентифікатор відео товару',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/product-videos/1", або числовий ідентифікатор',
+            'not-found' => 'Відео товару не знайдено',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'Потрібен ідентифікатор налаштування теми',
+            'invalid-id-format' => 'Недійсний формат ідентифікатора. Очікується формат IRI, наприклад "/api/shop/theme-customizations/1", або числовий ідентифікатор',
+            'not-found' => 'Налаштування теми не знайдено',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'Потрібен ідентифікатор ресурсу',
+            'not-found' => 'Ресурс не знайдено',
         ],
     ],
 
     'admin' => [
+        'profile' => [
+            'unauthenticated' => 'Ви не автентифіковані.',
+        ],
+
         'dashboard' => [
             'invalid-type' => 'Невідомий тип статистики панелі керування. Допустимі типи: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
         ],
 
+        'rma' => [
+            'not-found' => 'Запит на повернення не знайдено.',
+            'invalid-input' => 'Відсутні або недійсні дані повернення.',
+            'invalid-order' => 'Вибране замовлення недійсне.',
+            'invalid-item' => 'Вибраний товар не підлягає поверненню.',
+            'invalid-resolution-type' => 'Тип вирішення має бути "return" або "cancel_items".',
+            'qty-exceeds' => 'Запитана кількість перевищує кількість, доступну для повернення.',
+            'created' => 'Запит на повернення успішно створено.',
+            'status-updated' => 'Статус повернення успішно оновлено.',
+            'invalid-status' => 'Недійсний статус повернення.',
+            'reopened' => 'Запит на повернення успішно відкрито повторно.',
+            'reopen-not-allowed' => 'Цей запит на повернення не можна відкрити повторно.',
+            'refund-failed' => 'Не вдалося створити відшкодування для цього повернення.',
+            'message-sent' => 'Повідомлення успішно надіслано.',
+            'no-permission' => 'У вас немає дозволу на виконання цієї дії.',
+            'reason-not-found' => 'Причину повернення не знайдено.',
+            'reason-deleted' => 'Причину повернення успішно видалено.',
+            'status-not-found' => 'Статус повернення не знайдено.',
+            'status-deleted' => 'Статус повернення успішно видалено.',
+            'status-default-undeletable' => 'Статус повернення за замовчуванням не можна видалити.',
+            'rule-not-found' => 'Правило повернення не знайдено.',
+            'rule-deleted' => 'Правило повернення успішно видалено.',
+            'custom-field-not-found' => 'Користувацьке поле повернення не знайдено.',
+            'custom-field-deleted' => 'Користувацьке поле повернення успішно видалено.',
+            'custom-field-options-required' => 'Для цього типу поля потрібна принаймні одна опція.',
+            'mass-indices-required' => 'Потрібен принаймні один ідентифікатор.',
+            'mass-delete-success' => 'Вибрані елементи видалено.',
+            'mass-update-success' => 'Вибрані елементи оновлено.',
+            'mass-value-invalid' => 'Значення статусу має бути 0 або 1.',
+            'image-not-found' => 'Зображення повернення не знайдено.',
+            'attachment-not-found' => 'Вкладення повідомлення не знайдено.',
+        ],
+
+        'eu-withdrawal' => [
+            'not-found' => 'Заяву про відмову не знайдено.',
+            'no-permission' => 'У вас немає дозволу на керування відмовами ЄС.',
+            'declined' => 'Відмову позначено як відхилену.',
+            'refunded' => 'Відмову позначено як відшкодовану.',
+            'confirmation-resent' => 'Лист-підтвердження успішно надіслано повторно.',
+            'confirmation-failed' => 'Не вдалося надіслати лист-підтвердження.',
+        ],
+
+        'reporting' => [
+            'invalid-entity' => 'Невідома сутність звітності.',
+            'invalid-type' => 'Невідомий тип статистики звітності для цієї сутності.',
+            'export-format-unsupported' => 'Підтримуються лише формати експорту csv, xls і xlsx.',
+        ],
+
+        'configuration' => [
+            'unauthenticated' => 'Ви не автентифіковані.',
+            'no-permission' => 'У вас немає дозволу на оновлення конфігурації.',
+            'slug-required' => 'Параметр запиту `slug` є обов\'язковим.',
+            'slug-not-found' => 'Для вказаного slug не зареєстровано жодного розділу конфігурації.',
+            'values-required' => 'У `values` потрібно вказати принаймні одне значення.',
+            'scope-escape' => 'Ключ `:key` знаходиться поза межами піддерева запитаного slug.',
+            'unknown-field' => 'Ключ `:key` не є зареєстрованим полем конфігурації.',
+            'validation-failed' => 'Одне або кілька значень конфігурації не пройшли перевірку.',
+            'file-upload-rest-only' => 'Завантаження бінарних файлів для поля `:field` підтримується лише через REST-ендпоінт multipart, а не через GraphQL.',
+            'custom-view-readonly' => 'Поле `:field` є користувацьким полем, що відображається через blade, і не може бути оновлене через API.',
+            'update-success' => 'Конфігурацію успішно оновлено.',
+        ],
+
+        'customer' => [
+            'not-found' => 'Клієнта не знайдено.',
+            'no-permission' => 'У вас немає дозволу на виконання цієї дії.',
+            'has-active-orders' => 'У клієнта є замовлення в очікуванні або в обробці, тому його не можна видалити.',
+            'deleted' => 'Клієнта успішно видалено.',
+            'mass-delete-indices-required' => 'Потрібен принаймні один ідентифікатор клієнта.',
+            'mass-delete-success' => 'Клієнтів видалено.',
+            'mass-update-indices-required' => 'Потрібен принаймні один ідентифікатор клієнта.',
+            'mass-update-value-invalid' => 'Значення статусу має бути 0 або 1.',
+            'mass-update-success' => 'Статус клієнта оновлено.',
+
+            'address' => [
+                'not-found' => 'Адресу не знайдено.',
+                'not-owned' => 'Ця адреса не належить указаному клієнту.',
+                'customer-id-required' => 'Для визначення власника адреси потрібен customerId.',
+                'deleted' => 'Адресу успішно видалено.',
+            ],
+
+            'note' => [
+                'empty' => 'Потрібен текст примітки.',
+                'created' => 'Примітку успішно додано.',
+            ],
+
+            'review' => [
+                'not-found' => 'Відгук не знайдено.',
+                'no-permission' => 'У вас немає дозволу на виконання цієї дії.',
+                'invalid-status' => 'Статус має бути одним із: pending, approved, disapproved.',
+                'updated' => 'Відгук успішно оновлено.',
+                'deleted' => 'Відгук успішно видалено.',
+                'mass-delete-indices-required' => 'Потрібен принаймні один ідентифікатор відгуку.',
+                'mass-delete-success' => 'Відгуки видалено.',
+                'mass-update-indices-required' => 'Потрібен принаймні один ідентифікатор відгуку.',
+                'mass-update-value-invalid' => 'Значення статусу має бути одним із: pending, approved, disapproved.',
+                'mass-update-success' => 'Статус відгуку оновлено.',
+            ],
+
+            'group' => [
+                'not-found' => 'Групу клієнтів не знайдено.',
+                'deleted' => 'Групу клієнтів успішно видалено.',
+                'is-system' => 'Системні групи клієнтів не можна видалити.',
+                'has-customers' => 'До групи клієнтів прив\'язано клієнтів, тому її не можна видалити.',
+                'system-code-immutable' => 'Код системної групи клієнтів не можна змінити.',
+                'system-flag-immutable' => 'Прапорець is_user_defined системної групи клієнтів не можна змінити.',
+                'mass-delete-indices-required' => 'Потрібен принаймні один ідентифікатор групи клієнтів.',
+                'mass-delete-success' => 'Групи клієнтів видалено.',
+            ],
+
+            'gdpr' => [
+                'not-found' => 'Запит GDPR не знайдено.',
+                'no-permission' => 'У вас немає дозволу на виконання цієї дії.',
+                'deleted' => 'Запит GDPR успішно видалено.',
+                'invalid-status' => 'Статус має бути одним із: pending, processing, declined, approved, revoked.',
+                'no-changes' => 'Потрібно вказати принаймні статус або повідомлення.',
+                'already-processed' => 'Цей запит GDPR уже оброблено, і його не можна виконати повторно.',
+
+                'process' => [
+                    'approved' => 'Запит GDPR схвалено.',
+                    'deleted' => 'Запит GDPR схвалено, клієнта видалено.',
+                ],
+            ],
+        ],
+
+        'order' => [
+            'not-found' => 'Замовлення не знайдено.',
+
+            'reorder' => [
+                'success' => 'Повторне замовлення успішне. Створено новий чернетковий кошик.',
+                'cannot-reorder' => 'Це замовлення не можна повторити (гостьове замовлення або один чи кілька товарів більше недоступні для продажу).',
+                'failed' => 'Не вдалося повторити замовлення. Будь ласка, спробуйте ще раз.',
+                'guest-not-supported' => 'Повторне замовлення не підтримується для гостьових замовлень.',
+                'items-not-saleable' => 'Один або кілька товарів у цьому замовленні більше недоступні для придбання.',
+                'no-permission' => 'У вас немає дозволу на створення замовлень.',
+                'disabled-in-settings' => 'Повторне замовлення адміністратором вимкнено в налаштуваннях магазину.',
+            ],
+
+            'actions' => [
+                'cancel' => [
+                    'closed' => 'Закриті замовлення не можна скасувати.',
+                    'fraud' => 'Шахрайські замовлення не можна скасувати.',
+                    'nothing-to-cancel' => 'У цьому замовленні немає нічого для скасування.',
+                    'already-processed' => 'Для цього замовлення вже виставлено рахунок або його відвантажено, тому його більше не можна скасувати. Натомість можна оформити відшкодування.',
+                    'no-permission' => 'У вас немає дозволу на скасування замовлень.',
+                    'success' => 'Замовлення успішно скасовано.',
+                    'failed' => 'Не вдалося скасувати замовлення.',
+                ],
+
+                'comment' => [
+                    'empty' => 'Потрібен коментар.',
+                    'success' => 'Коментар додано до замовлення.',
+                    'failed' => 'Не вдалося додати коментар.',
+                ],
+
+                'invoice' => [
+                    'closed' => 'Для закритих замовлень не можна виставити рахунок.',
+                    'fraud' => 'Для шахрайських замовлень не можна виставити рахунок.',
+                    'nothing-to-invoice' => 'У цьому замовленні немає нічого для виставлення рахунку.',
+                    'already-invoiced' => 'Для цього замовлення вже створено рахунок.',
+                    'paypal-standard-blocked' => 'Рахунки не можна створювати для замовлень, оплачених через PayPal Standard.',
+                    'no-permission' => 'У вас немає дозволу на створення рахунків.',
+                    'items-required' => 'Потрібен принаймні один товар із додатною кількістю.',
+                    'qty-exceeds' => 'Запитана кількість (:requested) перевищує доступну кількість (:available) для SKU :sku.',
+                    'not-found' => 'Рахунок не знайдено.',
+                    'success' => 'Рахунок успішно створено.',
+                    'failed' => 'Не вдалося створити рахунок.',
+                    'pdf-failed' => 'Не вдалося згенерувати PDF рахунку.',
+                    'email-invalid' => 'Потрібна дійсна електронна адреса одержувача.',
+                    'duplicate-sent' => 'Рахунок надіслано на :email.',
+                    'mass-status-indices-required' => 'Потрібен принаймні один ідентифікатор рахунку.',
+                    'mass-status-value-invalid' => 'Статус має бути одним із: pending, paid, overdue.',
+                    'mass-status-success' => 'Статус рахунку успішно оновлено.',
+                ],
+
+                'shipment' => [
+                    'closed' => 'Закриті замовлення не можна відвантажити.',
+                    'fraud' => 'Шахрайські замовлення не можна відвантажити.',
+                    'nothing-to-ship' => 'У цьому замовленні немає нічого для відвантаження.',
+                    'no-permission' => 'У вас немає дозволу на відвантаження замовлень.',
+                    'source-required' => 'Потрібне джерело запасів.',
+                    'items-required' => 'Потрібен принаймні один товар із додатною кількістю.',
+                    'qty-exceeds' => 'Запитана кількість (:requested) перевищує доступну кількість (:available) для SKU :sku.',
+                    'inventory-insufficient' => 'Запасів у вибраному джерелі недостатньо для SKU :sku.',
+                    'not-found' => 'Відвантаження не знайдено.',
+                    'success' => 'Відвантаження успішно створено.',
+                    'failed' => 'Не вдалося створити відвантаження.',
+                ],
+
+                'refund' => [
+                    'closed' => 'Для закритих замовлень не можна оформити відшкодування.',
+                    'fraud' => 'Для шахрайських замовлень не можна оформити відшкодування.',
+                    'nothing-to-refund' => 'У цьому замовленні не залишилося нічого для відшкодування.',
+                    'no-permission' => 'У вас немає дозволу на створення відшкодувань.',
+                    'qty-exceeds' => 'Запитана кількість (:requested) перевищує доступну кількість (:available) для SKU :sku.',
+                    'amount-zero' => 'Розрахована сума відшкодування дорівнює нулю. Змініть кількість, доставку або значення коригування.',
+                    'amount-exceeds-max' => 'Сума відшкодування (:amount) перевищує максимальну суму, доступну для відшкодування (:max).',
+                    'not-found' => 'Відшкодування не знайдено.',
+                    'success' => 'Відшкодування успішно створено.',
+                    'failed' => 'Не вдалося створити відшкодування.',
+                ],
+            ],
+        ],
+
+        'appearance' => [
+            'no-permission' => 'У вас немає дозволу на керування оформленням.',
+
+            'theme' => [
+                'not-found' => 'Тему не знайдено.',
+                'not-installed' => 'Цю тему не встановлено.',
+                'channel-ids-required' => 'Потрібен принаймні один канал.',
+                'unknown-channel' => 'Один або кілька каналів не існують.',
+                'activated' => 'Тему успішно активовано.',
+            ],
+
+            'section' => [
+                'not-found' => 'Розділ не знайдено.',
+                'invalid-payload' => 'Непідтримуване корисне навантаження розділу.',
+                'options-required' => 'Потрібні опції.',
+                'status-required' => 'Потрібен статус.',
+                'section-ids-required' => 'Потрібен принаймні один розділ.',
+                'reorder-single-scope' => 'Розділи можна впорядковувати лише в межах однієї теми та одного каналу за раз.',
+                'reorder-incomplete' => 'Для впорядкування потрібні всі розділи теми та каналу в тому порядку, у якому вони мають відображатися.',
+                'unknown-section' => 'Один або кілька розділів не існують.',
+                'file-required' => 'Потрібен файл.',
+                'created' => 'Розділ успішно створено.',
+                'updated' => 'Розділ успішно оновлено.',
+                'deleted' => 'Розділ успішно видалено.',
+                'draft-saved' => 'Зміни розділу успішно підготовлено до публікації.',
+                'status-staged' => 'Статус розділу успішно підготовлено до публікації.',
+                'order-staged' => 'Порядок розділів успішно підготовлено до публікації.',
+                'duplicated' => 'Розділ успішно скопійовано.',
+                'published' => 'Зміни розділу успішно опубліковано.',
+                'discarded' => 'Зміни розділу успішно скасовано.',
+                'media-uploaded' => 'Медіафайл успішно завантажено.',
+            ],
+        ],
+
+        'sales' => [
+            'no-permission' => 'У вас немає дозволу на перегляд цього ресурсу продажів.',
+
+            'invoice' => [
+                'not-found' => 'Рахунок не знайдено.',
+                'no-permission' => 'У вас немає дозволу на перегляд рахунків.',
+            ],
+
+            'shipment' => [
+                'not-found' => 'Відвантаження не знайдено.',
+                'no-permission' => 'У вас немає дозволу на перегляд відвантажень.',
+            ],
+
+            'refund' => [
+                'not-found' => 'Відшкодування не знайдено.',
+                'no-permission' => 'У вас немає дозволу на перегляд відшкодувань.',
+                'export-format-unsupported' => 'Підтримується лише експорт у csv, xls і xlsx.',
+            ],
+
+            'transaction' => [
+                'not-found' => 'Транзакцію не знайдено.',
+                'no-permission' => 'У вас немає дозволу на перегляд транзакцій.',
+
+                'create' => [
+                    'invoice-required' => 'Поле invoiceId є обов\'язковим.',
+                    'payment-method-required' => 'Поле paymentMethod є обов\'язковим.',
+                    'amount-invalid' => 'Поле amount є обов\'язковим і має бути числом.',
+                    'invoice-missing' => 'Указаний рахунок не знайдено.',
+                    'already-paid' => 'Цей рахунок уже повністю оплачено.',
+                    'amount-exceeds' => 'Сума платежу перевищує загальну суму рахунку.',
+                    'amount-zero' => 'Сума платежу має бути більшою за нуль.',
+                ],
+            ],
+
+            'booking' => [
+                'not-found' => 'Бронювання не знайдено.',
+                'no-permission' => 'У вас немає дозволу на перегляд бронювань.',
+            ],
+
+            'export' => [
+                'format-unsupported' => 'Підтримується лише експорт у csv, xls і xlsx.',
+            ],
+        ],
+
+        'cart' => [
+            'not-found' => 'Кошик не знайдено.',
+            'not-draft' => 'Цей кошик не можна змінити через адміністративний API.',
+            'product-required' => 'Потрібен productId.',
+            'product-not-found' => 'Продукт не знайдено.',
+            'booking-unsupported' => 'Продукти бронювання не можна додати до чернетки замовлення адміністратора. Бронювання мають оформлюватися клієнтом через вітрину магазину.',
+            'product-not-saleable' => 'Цей продукт недоступний для продажу (немає в наявності або вимкнено) і не може бути доданий до замовлення.',
+            'qty-required' => 'Поле qty є обов\'язковим і має бути непорожнім об\'єктом виду itemId => кількість.',
+            'cart-item-required' => 'Потрібен cartItemId.',
+            'item-added' => 'Товар додано до кошика.',
+            'item-add-failed' => 'Не вдалося додати товар до кошика.',
+            'item-updated' => 'Товари в кошику оновлено.',
+            'item-update-failed' => 'Не вдалося оновити товари в кошику.',
+            'item-removed' => 'Товар видалено з кошика.',
+            'item-remove-failed' => 'Не вдалося видалити товар із кошика.',
+            'address-saved' => 'Адресу збережено.',
+            'address-required' => 'Потрібна платіжна адреса.',
+            'address-incomplete' => 'Для збереження адреси потрібне :field.',
+            'coupon-code-required' => 'Потрібен код купона.',
+            'coupon-applied' => 'Купон застосовано.',
+            'coupon-already-applied' => 'Купон уже застосовано до цього кошика.',
+            'coupon-not-found' => 'Купон не знайдено або він неактивний.',
+            'coupon-removed' => 'Купон видалено.',
+            'coupon-error' => 'Під час застосування купона сталася помилка.',
+            'unknown-error' => 'Щось пішло не так.',
+            'draft-created' => 'Чернетковий кошик створено.',
+            'draft-failed' => 'Не вдалося створити чернетковий кошик.',
+            'addresses-required-for-shipping' => 'Перед вибором способу доставки потрібно зберегти адреси.',
+            'shipping-required-for-payment' => 'Спосіб доставки має бути вибраний перед способом оплати.',
+            'shipping-method-required' => 'Потрібен спосіб доставки.',
+            'shipping-method-saved' => 'Спосіб доставки збережено.',
+            'shipping-method-failed' => 'Не вдалося зберегти спосіб доставки.',
+            'payment-method-required' => 'Потрібен спосіб оплати.',
+            'payment-method-saved' => 'Спосіб оплати збережено.',
+            'payment-method-failed' => 'Не вдалося зберегти спосіб оплати.',
+
+            'place-order' => [
+                'success' => 'Замовлення успішно оформлено.',
+                'failed' => 'Не вдалося оформити замовлення.',
+                'error' => 'Не вдалося оформити замовлення: у кошику є помилки.',
+                'minimum-order-error' => 'Мінімальна сума замовлення — :amount. Додайте більше товарів перед оформленням замовлення.',
+                'empty-cart' => 'Кошик порожній — додайте товари перед оформленням замовлення.',
+                'addresses-required' => 'Перед оформленням замовлення потрібно зберегти платіжну адресу та адресу доставки.',
+                'shipping-required' => 'Перед оформленням замовлення потрібно вибрати спосіб доставки.',
+                'payment-required' => 'Перед оформленням замовлення потрібно вибрати спосіб оплати.',
+                'payment-method-unsupported' => 'Для замовлень, оформлених адміністратором, підтримуються лише cashondelivery і moneytransfer.',
+            ],
+        ],
+
+        'product' => [
+            'not-found' => 'Продукт не знайдено.',
+
+            'mass-delete-success' => 'Продукти успішно видалено.',
+            'mass-update-status-success' => 'Статус продуктів успішно оновлено.',
+            'indices-required' => 'Поле indices є обов\'язковим і має бути непорожнім масивом.',
+            'indices-invalid' => 'Поле indices має бути масивом цілочисельних ідентифікаторів продуктів.',
+            'value-invalid' => 'Поле value є обов\'язковим і має бути 0 або 1.',
+            'mass-delete-failed' => 'Не вдалося видалити один або кілька продуктів.',
+            'no-permission' => 'У вас немає дозволу на керування продуктами.',
+
+            'copy-success' => 'Продукт успішно скопійовано.',
+            'copy-failed' => 'Не вдалося скопіювати продукт.',
+            'copy-variant-not-supported' => 'Варіанти configurable-продуктів не можна копіювати. Натомість скопіюйте батьківський configurable-продукт.',
+
+            'create' => [
+                'created' => 'Продукт успішно створено.',
+                'create-failed' => 'Не вдалося створити продукт.',
+                'sku-required' => 'Поле sku є обов\'язковим.',
+                'sku-unique' => 'Такий sku уже зайнятий.',
+                'sku-invalid' => 'sku може містити лише літери, цифри та дефіси (наприклад, "sp-001").',
+                'attribute-family-required' => 'Поле attribute_family_id є обов\'язковим.',
+                'attribute-family-not-found' => 'Вибрана родина атрибутів не існує.',
+                'type-required' => 'Поле type є обов\'язковим.',
+                'type-not-yet-supported' => 'Тип продукту ":type" не підтримується цим API. Дозволені типи: simple, virtual, downloadable, grouped, bundle, configurable, booking.',
+                'super-attributes-required' => 'Поле super_attributes є обов\'язковим, коли type=configurable. Передайте відповідність коду (або id) атрибута до option_ids, наприклад { "color": [1,2], "size": [4,5] }.',
+                'super-attributes-invalid' => 'Поле super_attributes має бути непорожньою відповідністю коду (або id) атрибута до непорожнього списку option_ids.',
+                'no-permission' => 'У вас немає дозволу на створення продуктів.',
+            ],
+
+            'update' => [
+                'updated' => 'Продукт успішно оновлено.',
+                'update-failed' => 'Не вдалося оновити продукт.',
+                'id-required' => 'Потрібен id продукту.',
+                'url-key-required' => 'Поле url_key не може бути порожнім.',
+                'url-key-unique' => 'Такий url_key уже використовується іншим продуктом.',
+                'special-price-invalid' => 'special_price має бути числом, меншим за price.',
+                'special-price-date-range-invalid' => 'special_price_to має бути не раніше за special_price_from.',
+                'boolean-field-invalid' => 'Поле :field має бути 0 або 1.',
+                'categories-invalid' => 'Поле categories має бути масивом id категорій.',
+                'channels-invalid' => 'Поле channels має бути масивом id каналів.',
+                'super-attributes-cannot-change' => 'super_attributes не можна змінити після створення продукту.',
+                'sub-resource-stripped-images' => 'Зображеннями потрібно керувати через POST /api/admin/catalog/products/{id}/images. Поле images проігноровано.',
+                'sub-resource-stripped-inventories' => 'Запасами потрібно керувати через PUT /api/admin/catalog/products/{id}/inventories. Поле inventories проігноровано.',
+                'sub-resource-stripped-customer-group-prices' => 'Цінами для груп клієнтів потрібно керувати через /api/admin/catalog/products/{id}/customer-group-prices. Поле customer_group_prices проігноровано.',
+                'translations-single-locale' => 'Оновлено лише запитану локаль. Щоб оновити локаль(і) :locales, надішліть окремий запит із ?locale=<code> для кожної.',
+            ],
+
+            'delete' => [
+                'deleted' => 'Продукт успішно видалено.',
+                'delete-failed' => 'Не вдалося видалити продукт.',
+            ],
+
+            'image' => [
+                'uploaded' => 'Зображення продукту успішно завантажено.',
+                'updated' => 'Зображення продукту успішно оновлено.',
+                'update-empty' => 'Для оновлення надішліть альтернативний текст або позицію.',
+                'reordered' => 'Порядок зображень продукту успішно змінено.',
+                'deleted' => 'Зображення продукту успішно видалено.',
+                'image-required' => 'Потрібен файл зображення (поле multipart "image").',
+                'image-invalid-type' => 'Тип зображення має бути одним із: bmp, jpeg, jpg, png, webp.',
+                'image-too-large' => 'Зображення завелике. Максимально дозволений розмір — 4 МБ.',
+                'not-found' => 'Зображення продукту не знайдено.',
+                'no-permission' => 'У вас немає дозволу на керування зображеннями продуктів.',
+                'upload-failed' => 'Не вдалося завантажити зображення продукту.',
+                'reorder-failed' => 'Не вдалося змінити порядок зображень продукту.',
+                'delete-failed' => 'Не вдалося видалити зображення продукту.',
+                'order-required' => 'Масив "order" є обов\'язковим і не може бути порожнім.',
+                'order-invalid' => 'Кожен елемент у "order" має бути об\'єктом з id та position.',
+                'id-not-on-product' => 'Зображення :id не належить цьому продукту.',
+                'graphql-upload-unsupported' => 'Завантаження зображень через GraphQL не підтримується. Використовуйте POST /api/admin/catalog/products/{productId}/images з multipart/form-data.',
+            ],
+
+            'downloadable' => [
+                'file-required' => 'Потрібен файл (поле multipart "file").',
+                'file-too-large' => 'Файл завеликий. Максимально дозволений розмір — 128 МБ.',
+                'upload-failed' => 'Не вдалося завантажити файл для завантажуваного продукту.',
+                'file-not-found' => 'Для цього продукту та атрибута не знайдено збереженого файлу.',
+                'no-permission' => 'У вас немає дозволу на керування файлами завантажуваних продуктів.',
+            ],
+
+            'video' => [
+                'uploaded' => 'Відео продукту успішно завантажено.',
+                'deleted' => 'Відео продукту успішно видалено.',
+                'video-required' => 'Потрібен відеофайл (поле multipart "video").',
+                'video-invalid-type' => 'Тип відео має бути одним із: mp4, webm, ogg, mov.',
+                'video-too-large' => 'Відео завелике. Максимально дозволений розмір — 100 МБ.',
+                'not-found' => 'Відео продукту не знайдено.',
+                'no-permission' => 'У вас немає дозволу на керування відео продуктів.',
+                'upload-failed' => 'Не вдалося завантажити відео продукту.',
+                'delete-failed' => 'Не вдалося видалити відео продукту.',
+                'graphql-upload-unsupported' => 'Завантаження відео через GraphQL не підтримується. Використовуйте POST /api/admin/catalog/products/{productId}/videos з multipart/form-data.',
+            ],
+
+            'inventory' => [
+                'updated' => 'Запаси продукту успішно збережено.',
+                'inventories-required' => 'Поле inventories є обов\'язковим і має бути непорожньою відповідністю inventory_source_id до кількості.',
+                'inventories-invalid' => 'Поле inventories має бути відповідністю inventory_source_id (додатне ціле число) до кількості (невід\'ємне ціле число).',
+                'source-not-found' => 'Джерело запасів :id не існує.',
+                'qty-invalid' => 'Кожна кількість має бути невід\'ємним цілим числом.',
+                'no-permission' => 'У вас немає дозволу на керування запасами продуктів.',
+                'not-found' => 'Продукт не знайдено.',
+            ],
+
+            'customer-group-price' => [
+                'created' => 'Ціну для групи клієнтів успішно додано.',
+                'updated' => 'Ціну для групи клієнтів успішно оновлено.',
+                'deleted' => 'Ціну для групи клієнтів успішно видалено.',
+                'qty-required' => 'Поле qty є обов\'язковим.',
+                'qty-invalid' => 'Поле qty має бути цілим числом, більшим або рівним 1.',
+                'value-type-required' => 'Поле value_type є обов\'язковим.',
+                'value-type-invalid' => 'Поле value_type має бути або "fixed", або "discount".',
+                'value-required' => 'Поле value є обов\'язковим.',
+                'value-invalid' => 'Поле value має бути невід\'ємним числом.',
+                'customer-group-not-found' => 'Вибрана група клієнтів не існує.',
+                'duplicate-qty-group' => 'Ціна для групи клієнтів із такою комбінацією (qty, customer_group_id) уже існує для цього продукту.',
+                'not-found' => 'Ціну для групи клієнтів не знайдено.',
+                'no-permission' => 'У вас немає дозволу на керування цінами продуктів для груп клієнтів.',
+            ],
+        ],
+
+        'category' => [
+            'not-found' => 'Категорію не знайдено.',
+
+            'created' => 'Категорію успішно створено.',
+            'updated' => 'Категорію успішно оновлено.',
+            'deleted' => 'Категорію успішно видалено.',
+            'slug-required' => 'Поле slug є обов\'язковим.',
+            'slug-unique' => 'Такий slug уже зайнятий.',
+            'name-required' => 'Поле name є обов\'язковим.',
+            'position-required' => 'Поле position є обов\'язковим.',
+            'attributes-required' => 'Потрібен принаймні один атрибут для фільтрації.',
+            'description-required-for-mode' => 'Для вибраного режиму відображення потрібен опис.',
+            'cannot-delete-root' => 'Кореневі категорії та кореневі категорії каналів не можна видалити.',
+            'cannot-delete-channel-root' => 'Ця категорія є кореневою для каналу і не може бути видалена.',
+            'delete-failed' => 'Не вдалося видалити категорію.',
+            'no-permission' => 'У вас немає дозволу на керування категоріями.',
+            'mass-delete-success' => 'Категорії успішно видалено.',
+            'mass-update-status-success' => 'Статус категорій успішно оновлено.',
+            'mass-delete-indices-required' => 'Поле indices є обов\'язковим і має бути непорожнім масивом.',
+            'mass-update-status-value-required' => 'Поле value є обов\'язковим і має бути 0 або 1.',
+        ],
+
+        'attribute' => [
+            'not-found' => 'Атрибут не знайдено.',
+
+            'create-success' => 'Атрибут успішно створено.',
+            'update-success' => 'Атрибут успішно оновлено.',
+            'delete-success' => 'Атрибут успішно видалено.',
+            'delete-failed' => 'Не вдалося видалити атрибут.',
+            'mass-delete-success' => 'Атрибути успішно видалено.',
+            'mass-delete-indices-required' => 'Поле indices є обов\'язковим і має бути непорожнім масивом.',
+
+            'code-immutable' => 'Код атрибута не можна змінити після створення атрибута.',
+            'type-immutable' => 'Тип атрибута не можна змінити, поки в нього є значення в продуктах.',
+            'locale-scope-immutable' => 'Неможливо змінити область локалі, поки атрибут має значення в продуктах.',
+            'system-attribute' => 'Системні атрибути не можна видалити.',
+            'in-use-family' => 'Атрибут входить до однієї або кількох родин атрибутів (ID груп: :ids). Спочатку видаліть його з цих родин.',
+
+            'option-not-found' => 'Опцію атрибута не знайдено.',
+            'option-not-supported' => 'Тип атрибута ":type" не підтримує опції. Опції можуть мати лише атрибути select, multiselect і checkbox.',
+            'option-in-use' => 'Ця опція використовується в продуктах (:count) і не може бути видалена.',
+            'option-delete-success' => 'Опцію атрибута успішно видалено.',
+        ],
+
+        'family' => [
+            'not-found' => 'Родину атрибутів не знайдено.',
+
+            'created' => 'Родину атрибутів успішно створено.',
+            'updated' => 'Родину атрибутів успішно оновлено.',
+            'deleted' => 'Родину атрибутів успішно видалено.',
+            'code-required' => 'Потрібен код родини.',
+            'code-unique' => 'Код родини має бути унікальним.',
+            'name-required' => 'Потрібна назва родини.',
+            'group-code-required' => 'Кожна група атрибутів повинна мати код.',
+            'group-name-required' => 'Кожна група атрибутів повинна мати назву.',
+            'group-column-invalid' => 'Колонка кожної групи атрибутів має бути 1 або 2.',
+            'group-name-duplicate' => 'Назва групи атрибутів має бути унікальною в межах родини атрибутів.',
+            'update-failed' => 'Не вдалося оновити родину атрибутів.',
+            'create-failed' => 'Не вдалося створити родину атрибутів.',
+            'default-delete-error' => 'Родину атрибутів за замовчуванням не можна видалити.',
+            'last-delete-error' => 'Потрібна принаймні одна родина атрибутів.',
+            'attribute-product-error' => 'Ця родина атрибутів використовується одним або кількома продуктами. Перепризначте ці продукти перед її видаленням.',
+            'delete-failed' => 'Не вдалося видалити родину атрибутів.',
+            'no-permission' => 'У вас немає дозволу на керування родинами атрибутів.',
+        ],
+
         'settings' => [
+            'locale' => [
+                'not-found' => 'Локаль не знайдено.',
+                'created' => 'Локаль успішно створено.',
+                'updated' => 'Локаль успішно оновлено.',
+                'deleted' => 'Локаль успішно видалено.',
+                'cannot-delete-last' => 'Потрібна принаймні одна локаль — неможливо видалити останню локаль.',
+                'cannot-delete-channel-default' => 'Ця локаль є локаллю за замовчуванням для одного або кількох каналів і не може бути видалена.',
+                'delete-failed' => 'Не вдалося видалити локаль.',
+                'no-permission' => 'У вас немає дозволу на керування локалями.',
+                'mass-delete-success' => 'Локалі успішно видалено.',
+                'mass-delete-indices-required' => 'Поле indices є обов\'язковим і має бути непорожнім масивом.',
+            ],
+
+            'theme' => [
+                'not-found' => 'Налаштування теми не знайдено.',
+                'created' => 'Налаштування теми успішно створено.',
+                'updated' => 'Налаштування теми успішно оновлено.',
+                'deleted' => 'Налаштування теми успішно видалено.',
+                'delete-failed' => 'Не вдалося видалити налаштування теми.',
+                'no-permission' => 'У вас немає дозволу на керування налаштуваннями теми.',
+                'mass-delete-success' => 'Налаштування теми успішно видалено.',
+                'mass-delete-indices-required' => 'Поле indices є обов\'язковим і має бути непорожнім масивом.',
+                'mass-update-success' => 'Налаштування теми успішно оновлено.',
+                'mass-update-indices-required' => 'Поле indices є обов\'язковим і має бути непорожнім масивом.',
+                'mass-update-value-invalid' => 'Поле value має бути 0 або 1.',
+            ],
+
+            'inventory-source' => [
+                'not-found' => 'Джерело запасів не знайдено.',
+                'created' => 'Джерело запасів успішно створено.',
+                'updated' => 'Джерело запасів успішно оновлено.',
+                'deleted' => 'Джерело запасів успішно видалено.',
+                'code-unique' => 'Джерело запасів із таким кодом уже існує.',
+                'last-delete-error' => 'Потрібне принаймні одне джерело запасів — неможливо видалити останнє джерело.',
+                'in-use' => 'На це джерело запасів посилаються запаси продуктів, тому його не можна видалити.',
+                'delete-failed' => 'Не вдалося видалити джерело запасів.',
+                'no-permission' => 'У вас немає дозволу на керування джерелами запасів.',
+                'mass-delete-success' => 'Джерела запасів успішно видалено.',
+                'mass-delete-indices-required' => 'Поле indices є обов\'язковим і має бути непорожнім масивом.',
+            ],
+
+            'exchange-rate' => [
+                'not-found' => 'Курс обміну не знайдено.',
+                'created' => 'Курс обміну успішно створено.',
+                'updated' => 'Курс обміну успішно оновлено.',
+                'deleted' => 'Курс обміну успішно видалено.',
+                'duplicate-pair' => 'Курс обміну для цієї цільової валюти вже існує. Оновіть наявний запис або спочатку видаліть його.',
+                'delete-failed' => 'Не вдалося видалити курс обміну.',
+                'no-permission' => 'У вас немає дозволу на керування курсами обміну.',
+                'mass-delete-success' => 'Курси обміну успішно видалено.',
+                'mass-delete-indices-required' => 'Поле indices є обов\'язковим і має бути непорожнім масивом.',
+                'update-rates-success' => 'Курси обміну успішно оновлено.',
+                'update-rates-failed' => 'Не вдалося оновити курси обміну від зовнішнього постачальника.',
+                'provider-not-configured' => 'Зовнішнього постачальника курсів обміну не налаштовано.',
+            ],
+
+            'tax-rate' => [
+                'not-found' => 'Податкову ставку не знайдено.',
+                'created' => 'Податкову ставку успішно створено.',
+                'updated' => 'Податкову ставку успішно оновлено.',
+                'deleted' => 'Податкову ставку успішно видалено.',
+                'delete-failed' => 'Не вдалося видалити податкову ставку.',
+                'no-permission' => 'У вас немає дозволу на керування податковими ставками.',
+                'zip-code-required' => 'Поле zip_code є обов\'язковим, коли is_zip має значення false.',
+                'zip-range-required' => 'Поля zip_from і zip_to є обов\'язковими, коли is_zip має значення true.',
+            ],
+
+            'tax-category' => [
+                'not-found' => 'Податкову категорію не знайдено.',
+                'created' => 'Податкову категорію успішно створено.',
+                'updated' => 'Податкову категорію успішно оновлено.',
+                'deleted' => 'Податкову категорію успішно видалено.',
+                'code-unique' => 'Такий код уже зайнятий.',
+                'cannot-delete-in-use' => 'До цієї податкової категорії досі прив\'язані податкові ставки, тому її не можна видалити.',
+                'delete-failed' => 'Не вдалося видалити податкову категорію.',
+                'no-permission' => 'У вас немає дозволу на керування податковими категоріями.',
+            ],
+
             'role' => [
+                'not-found' => 'Роль не знайдено.',
+                'created' => 'Роль успішно створено.',
+                'updated' => 'Роль успішно оновлено.',
+                'deleted' => 'Роль успішно видалено.',
+                'permissions-required' => 'Поле permissions є обов\'язковим, коли permission_type має значення custom.',
+                'cannot-delete-in-use' => 'Ця роль призначена одному або кільком адміністраторам і не може бути видалена.',
+                'cannot-delete-last-role' => 'Потрібна принаймні одна роль — неможливо видалити останню роль.',
+                'cannot-change-last-all-access' => 'Єдину роль із повним доступом не можна змінити на користувацьку роль.',
+                'delete-failed' => 'Не вдалося видалити роль.',
                 'no-permission' => 'У вас немає дозволу на керування ролями.',
             ],
 
+            'currency' => [
+                'not-found' => 'Валюту не знайдено.',
+                'created' => 'Валюту успішно створено.',
+                'updated' => 'Валюту успішно оновлено.',
+                'deleted' => 'Валюту успішно видалено.',
+                'code-required' => 'Поле code є обов\'язковим.',
+                'code-size' => 'Код має складатися рівно з 3 літер.',
+                'code-unique' => 'Такий код уже зайнятий.',
+                'name-required' => 'Поле name є обов\'язковим.',
+                'cannot-delete-last' => 'Потрібна принаймні одна валюта — неможливо видалити останню валюту.',
+                'cannot-delete-channel-base' => 'Ця валюта є базовою валютою одного або кількох каналів і не може бути видалена.',
+                'delete-failed' => 'Не вдалося видалити валюту.',
+                'no-permission' => 'У вас немає дозволу на керування валютами.',
+
+                'mass-delete-success' => 'Валюти успішно видалено.',
+                'mass-delete-indices-required' => 'Поле indices є обов\'язковим і має бути непорожнім масивом.',
+            ],
+
+            'channel' => [
+                'not-found' => 'Канал не знайдено.',
+
+                'created' => 'Канал успішно створено.',
+                'updated' => 'Канал успішно оновлено.',
+                'deleted' => 'Канал успішно видалено.',
+                'code-unique' => 'Такий код уже зайнятий.',
+                'hostname-unique' => 'Таке ім\'я хоста вже зайняте.',
+                'default-locale-mismatch' => 'default_locale_id має бути в списку локалей.',
+                'base-currency-mismatch' => 'base_currency_id має бути в списку валют.',
+                'unknown-locale' => 'Один або кілька id локалей не існують.',
+                'unknown-currency' => 'Один або кілька id валют не існують.',
+                'unknown-inventory-source' => 'Один або кілька id inventory_source не існують.',
+                'unknown-root-category' => 'root_category_id не існує.',
+                'cannot-delete-last' => 'Потрібен принаймні один канал — неможливо видалити останній канал.',
+                'cannot-delete-default' => 'Неможливо видалити канал застосунку за замовчуванням.',
+                'delete-failed' => 'Не вдалося видалити канал.',
+                'no-permission' => 'У вас немає дозволу на керування каналами.',
+            ],
+
             'user' => [
+                'not-found' => 'Адміністратора не знайдено.',
+                'created' => 'Адміністратора успішно створено.',
+                'updated' => 'Адміністратора успішно оновлено.',
+                'deleted' => 'Адміністратора успішно видалено.',
+                'name-required' => 'Поле name є обов\'язковим.',
+                'email-required' => 'Поле email є обов\'язковим.',
+                'email-invalid' => 'email має бути дійсною адресою електронної пошти.',
+                'email-unique' => 'Такий email уже зайнятий.',
+                'password-required' => 'Поле password є обов\'язковим.',
+                'password-min' => 'Пароль має містити щонайменше 6 символів.',
+                'role-required' => 'Поле role_id є обов\'язковим.',
+                'role-not-found' => 'Вибрана роль не існує.',
+                'status-invalid' => 'Статус має бути 0 або 1.',
+                'cannot-delete-self' => 'Ви не можете видалити власний обліковий запис адміністратора.',
+                'cannot-delete-last-admin' => 'Потрібен принаймні один адміністратор — неможливо видалити останнього адміністратора.',
+                'cannot-change' => ':name останнього адміністратора з повним доступом не можна змінити.',
+                'delete-failed' => 'Не вдалося видалити адміністратора.',
                 'no-permission' => 'У вас немає дозволу на керування адміністраторами.',
+                'self-delete-password-required' => 'Для видалення власного облікового запису потрібне поле password.',
+                'self-delete-incorrect-password' => 'Неправильний пароль.',
+                'self-deleted' => 'Ваш обліковий запис адміністратора видалено.',
+            ],
+
+            'data-transfer' => [
+                'import' => [
+                    'not-found' => 'Імпорт не знайдено.',
+                    'deleted' => 'Імпорт успішно видалено.',
+                    'cancelled' => 'Імпорт успішно скасовано.',
+                    'cannot-cancel' => 'Скасувати можна лише імпорт, що очікує або обробляється. Поточний стан: :state.',
+                    'no-permission' => 'У вас немає дозволу на керування імпортом даних.',
+                    'delete-failed' => 'Не вдалося видалити імпорт.',
+                    'created' => 'Імпорт успішно створено.',
+                    'updated' => 'Імпорт успішно оновлено.',
+                    'type-invalid' => 'Вибраний тип недійсний.',
+                    'action-invalid' => 'Дія має бути однією з: append, delete.',
+                    'validation-strategy-invalid' => 'Стратегія перевірки має бути однією з: stop-on-errors, skip-errors.',
+                    'allowed-errors-invalid' => 'Допустима кількість помилок має бути цілим числом, що дорівнює 0 або більше.',
+                    'field-separator-required' => 'Потрібен роздільник полів.',
+                    'file-required' => 'Потрібен файл.',
+                    'file-invalid-type' => 'Файл має бути одного з форматів: csv, xls, xlsx, xml.',
+                    'nothing-to-import' => 'Немає чого імпортувати.',
+                    'not-valid' => 'Імпорт недійсний.',
+                    'setup-queue-error' => 'Для з\'єднання черги встановлено sync; налаштуйте справжню чергу для фонової обробки імпорту.',
+                    'file-not-found' => 'Немає файлу, доступного для завантаження.',
+                    'error-report-not-found' => 'Немає звіту про помилки, доступного для завантаження.',
+                    'sample-not-found' => 'Для запитаного типу та формату немає файлу-зразка.',
+                    'sample-format-invalid' => 'Формат зразка має бути одним із: csv, xls, xlsx, xml.',
+                    'images-archive-too-large' => 'Архів зображень може містити не більше :entries файлів і розпаковуватися не більше ніж до :size МБ.',
+                ],
             ],
         ],
-    ],
 
-    'integration' => [
-        'menu' => [
-            'title' => 'Інтеграція',
-            'tokens' => 'Жетони',
+        'cms' => [
+            'page' => [
+                'not-found' => 'CMS-сторінку не знайдено.',
+
+                'created' => 'CMS-сторінку успішно створено.',
+                'url-key-required' => 'Поле url_key є обов\'язковим.',
+                'url-key-unique' => 'Такий url_key уже зайнятий.',
+                'url-key-invalid' => 'Недійсний формат url_key. Використовуйте лише малі літери, цифри та дефіси.',
+                'page-title-required' => 'Поле page_title є обов\'язковим.',
+                'html-content-required' => 'Поле html_content є обов\'язковим.',
+                'channels-required' => 'Потрібно вибрати принаймні один канал.',
+                'channels-invalid' => 'Один або кілька каналів недійсні.',
+
+                'updated' => 'CMS-сторінку успішно оновлено.',
+
+                'deleted' => 'CMS-сторінку успішно видалено.',
+                'delete-failed' => 'Не вдалося видалити CMS-сторінку.',
+
+                'mass-deleted' => 'CMS-сторінки успішно видалено.',
+                'indices-required' => 'Поле indices є обов\'язковим і має бути непорожнім масивом.',
+                'indices-invalid' => 'Поле indices має бути масивом ID CMS-сторінок.',
+
+                'no-permission' => 'У вас немає дозволу на керування CMS-сторінками.',
+            ],
         ],
 
-        'history' => [
+        'marketing' => [
+            'catalog-rule' => [
+                'not-found' => 'Правило каталогу не знайдено.',
+                'created' => 'Правило каталогу успішно створено.',
+                'updated' => 'Правило каталогу успішно оновлено.',
+                'deleted' => 'Правило каталогу успішно видалено.',
+                'delete-failed' => 'Не вдалося видалити правило каталогу.',
+                'mass-delete-indices-required' => 'Не передано ID правил каталогу для масового видалення.',
+                'mass-delete-success' => 'Вибрані правила каталогу успішно видалено.',
+                'no-permission' => 'У вас немає дозволу на керування правилами каталогу.',
+            ],
+
+            'campaign' => [
+                'not-found' => 'Кампанію не знайдено.',
+                'created' => 'Кампанію успішно створено.',
+                'updated' => 'Кампанію успішно оновлено.',
+                'deleted' => 'Кампанію успішно видалено.',
+                'delete-failed' => 'Не вдалося видалити кампанію.',
+                'no-permission' => 'У вас немає дозволу на керування кампаніями.',
+
+                'send' => [
+                    'id-required' => 'Потрібен id кампанії.',
+                    'inactive' => 'Неможливо надіслати неактивну кампанію. Спочатку увімкніть її.',
+                    'queued' => 'Кампанію поставлено в чергу для одержувачів: :count.',
+                ],
+            ],
+
+            'sitemap' => [
+                'not-found' => 'Карту сайту не знайдено.',
+                'created' => 'Карту сайту успішно створено.',
+                'updated' => 'Карту сайту успішно оновлено.',
+                'deleted' => 'Карту сайту успішно видалено.',
+                'delete-failed' => 'Не вдалося видалити карту сайту.',
+                'no-permission' => 'У вас немає дозволу на керування картами сайту.',
+
+                'generate' => [
+                    'id-required' => 'Потрібен id карти сайту.',
+                    'no-channels' => 'Ця карта сайту не охоплює жодного каналу, тому генерувати нічого. Спочатку призначте їй принаймні один канал.',
+                    'success' => 'Карту сайту успішно згенеровано повторно.',
+                    'failed' => 'Не вдалося згенерувати карту сайту: :message',
+                ],
+            ],
+
+            'cart-rule' => [
+                'not-found' => 'Правило кошика не знайдено.',
+                'id-required' => 'Потрібен id правила кошика.',
+                'copy-of' => 'Копія :value',
+                'copied' => 'Правило кошика успішно скопійовано.',
+                'created' => 'Правило кошика успішно створено.',
+                'updated' => 'Правило кошика успішно оновлено.',
+                'deleted' => 'Правило кошика успішно видалено.',
+                'delete-failed' => 'Не вдалося видалити правило кошика.',
+                'no-permission' => 'У вас немає дозволу на керування правилами кошика.',
+                'mass-delete-success' => 'Правила кошика успішно видалено.',
+                'mass-delete-indices-required' => 'Поле indices є обов\'язковим і має бути непорожнім масивом.',
+                'action-type-invalid' => 'action_type має бути одним із: by_percent, by_fixed, cart_fixed, buy_x_get_y.',
+                'coupon-code-required' => 'coupon_code є обов\'язковим, коли coupon_type=1 і use_auto_generation=0.',
+                'coupon-code-unique' => 'Цей код купона вже використовується.',
+            ],
+
+            'template' => [
+                'campaign-associated' => 'Цей шаблон листа використовується кампанією, тому його не можна видалити. Спочатку вилучіть його з кампанії.',
+                'not-found' => 'Шаблон листа не знайдено.',
+                'created' => 'Шаблон листа успішно створено.',
+                'updated' => 'Шаблон листа успішно оновлено.',
+                'deleted' => 'Шаблон листа успішно видалено.',
+                'delete-failed' => 'Не вдалося видалити шаблон листа.',
+                'status-invalid' => 'Статус має бути одним із: active, inactive, draft.',
+                'no-permission' => 'У вас немає дозволу на керування шаблонами листів.',
+            ],
+
+            'event' => [
+                'campaign-associated' => 'Ця подія використовується кампанією, тому її не можна видалити. Спочатку вилучіть її з кампанії.',
+                'not-found' => 'Маркетингову подію не знайдено.',
+                'created' => 'Маркетингову подію успішно створено.',
+                'updated' => 'Маркетингову подію успішно оновлено.',
+                'deleted' => 'Маркетингову подію успішно видалено.',
+                'delete-failed' => 'Не вдалося видалити маркетингову подію.',
+                'no-permission' => 'У вас немає дозволу на керування маркетинговими подіями.',
+            ],
+
+            'search-synonym' => [
+                'not-found' => 'Синонім пошуку не знайдено.',
+                'created' => 'Синонім пошуку успішно створено.',
+                'updated' => 'Синонім пошуку успішно оновлено.',
+                'deleted' => 'Синонім пошуку успішно видалено.',
+                'mass-deleted' => 'Синоніми пошуку успішно видалено.',
+                'delete-failed' => 'Не вдалося видалити синонім пошуку.',
+                'indices-required' => 'Поле indices є обов\'язковим і має бути непорожнім масивом ID синонімів пошуку.',
+                'no-permission' => 'У вас немає дозволу на керування синонімами пошуку.',
+            ],
+
+            'url-rewrite' => [
+                'not-found' => 'Перезапис URL не знайдено.',
+                'created' => 'Перезапис URL успішно створено.',
+                'updated' => 'Перезапис URL успішно оновлено.',
+                'deleted' => 'Перезапис URL успішно видалено.',
+                'delete-failed' => 'Не вдалося видалити перезапис URL.',
+                'mass-deleted' => 'Перезаписи URL успішно видалено.',
+                'indices-required' => 'Потрібен принаймні один id перезапису URL.',
+                'no-permission' => 'У вас немає дозволу на керування перезаписами URL.',
+            ],
+
+            'cart-rule-coupon' => [
+                'cart-rule-not-found' => 'Правило кошика не знайдено.',
+                'not-found' => 'Купон не знайдено.',
+                'code-taken' => 'Купон із таким кодом уже існує.',
+                'format-invalid' => 'Формат має бути одним із: alphabetic, alphanumeric, numeric.',
+                'indices-required' => 'Поле indices є обов\'язковим і має бути непорожнім масивом ID купонів.',
+                'created' => 'Купон успішно створено.',
+                'generated' => 'Успішно згенеровано купонів: :count.',
+                'deleted' => 'Купон успішно видалено.',
+                'mass-deleted' => 'Успішно видалено купонів: :count.',
+                'no-permission' => 'У вас немає дозволу на керування купонами правил кошика.',
+            ],
+
+            'subscriber' => [
+                'not-found' => 'Підписника розсилки не знайдено.',
+                'updated' => 'Підписку успішно оновлено.',
+                'deleted' => 'Підписку успішно видалено.',
+                'is-subscribed-required' => 'Поле is_subscribed є обов\'язковим.',
+                'no-permission' => 'У вас немає дозволу на керування підписниками розсилки.',
+            ],
+
+            'search-term' => [
+                'not-found' => 'Пошуковий запит не знайдено.',
+                'updated' => 'Пошуковий запит успішно оновлено.',
+                'deleted' => 'Пошуковий запит успішно видалено.',
+                'mass-deleted' => 'Пошукові запити успішно видалено.',
+                'term-required' => 'Поле term є обов\'язковим.',
+                'redirect-url-invalid' => 'redirect_url має бути дійсною URL-адресою.',
+                'indices-required' => 'У indices потрібно вказати принаймні один ID.',
+                'no-permission' => 'У вас немає дозволу на керування пошуковими запитами.',
+            ],
+        ],
+        'customer-api-sessions' => [
             'menu' => [
-                'title' => 'історія',
+                'title' => 'API-сеанси',
+            ],
+
+            'acl' => [
+                'title' => 'API-сеанси',
+                'delete' => 'Відкликання',
+            ],
+
+            'index' => [
+                'title' => 'API-сеанси покупців',
+                'info' => 'Покупці, що увійшли в API магазину з веб-, мобільних, касових або настільних застосунків. Відкликання сеансу одразу виводить цей пристрій із системи.',
+            ],
+
+            'fields' => [
+                'customer' => 'Покупець',
+                'email' => 'Ел. пошта',
+                'channel' => 'Канал',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'Відкликати всі сеанси покупця',
+            ],
+
+            'card' => [
+                'title' => 'API-сеанси (:count)',
+                'empty' => 'Цей покупець не має активних API-сеансів.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'У вас немає дозволу керувати API-сеансами покупців.',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'Автентифікація покупців',
+                'info' => 'Терміни дії токенів, обмеження та правила сеансів для входу покупців магазину.',
+
+                'tokens' => [
+                    'title' => 'Терміни дії токенів',
+                    'info' => 'Як довго діють токени доступу, токени оновлення та сесії. Зміни застосовуються до токенів, виданих після них.',
+                    'access-token-ttl' => 'Термін дії токена доступу (хвилини)',
+                    'access-token-ttl-info' => 'Від 5 до 60 хвилин. За замовчуванням 15.',
+                    'refresh-token-ttl' => 'Термін дії токена оновлення (дні)',
+                    'refresh-token-ttl-info' => 'Від 1 до 90 днів. За замовчуванням 30.',
+                    'session-lifetime' => 'Максимальна тривалість сесії (дні)',
+                    'session-lifetime-info' => 'Від 1 до 365 днів. За замовчуванням 90. Після цього клієнт має увійти знову, скільки б разів не оновлювалася сесія.',
+                    'max-sessions' => 'Максимум активних сеансів на покупця',
+                    'max-sessions-info' => 'Після досягнення ліміту найстаріший сеанс завершується. Від 0 до 100. 0 означає без обмеження.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Обмеження частоти',
+                    'info' => 'Максимум запитів до API магазину за хвилину для кожного покупця, що увійшов.',
+                    'requests-per-minute' => 'Запитів за хвилину на покупця, що увійшов',
+                    'requests-per-minute-info' => 'Від 1 до 100000. За замовчуванням 120.',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Захист входу',
+                    'info' => 'Скільки невдалих входів і оновлень токена дозволено, перш ніж клієнту доведеться зачекати.',
+                    'login-max-attempts' => 'Невдалих входів до блокування',
+                    'login-max-attempts-info' => 'На адресу електронної пошти та IP-адресу. Від 3 до 20. За замовчуванням 5.',
+                    'login-lockout-seconds' => 'Блокування входу (секунди)',
+                    'login-lockout-seconds-info' => 'Від 60 до 3600. За замовчуванням 60.',
+                    'refresh-requests-per-minute' => 'Оновлень токена за хвилину на сеанс',
+                    'refresh-requests-per-minute-info' => 'Від 1 до 60. За замовчуванням 10.',
+                ],
+
+                'security' => [
+                    'title' => 'Безпека',
+                    'info' => 'Що завершує інші сеанси покупця.',
+                    'revoke-sessions-on-password-change' => 'Відкликати сесії під час зміни пароля',
+                ],
+
+                'retention' => [
+                    'title' => 'Зберігання даних',
+                    'info' => 'Як довго зберігаються завершені сеанси покупців.',
+                    'session-prune-days' => 'Зберігати завершені сеанси (дні)',
+                    'session-prune-days-info' => 'Відкликані або прострочені сеанси видаляються через вказану кількість днів. Від 1 до 365. За замовчуванням 30.',
+                ],
+            ],
+        ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Автентифікація адміністратора',
+                'info' => 'Терміни дії токенів, обмеження частоти запитів і правила безпеки для входу в API адміністратора та API-токенів.',
+
+                'tokens' => [
+                    'title' => 'Терміни дії токенів',
+                    'info' => 'Як довго діють токени доступу, токени оновлення та сесії. Зміни застосовуються до токенів, виданих після них.',
+                    'access-token-ttl' => 'Термін дії токена доступу (хвилини)',
+                    'access-token-ttl-info' => 'Від 5 до 60 хвилин. За замовчуванням 15.',
+                    'refresh-token-ttl' => 'Термін дії токена оновлення (дні)',
+                    'refresh-token-ttl-info' => 'Від 1 до 90 днів. За замовчуванням 30.',
+                    'session-lifetime' => 'Максимальна тривалість сесії (дні)',
+                    'session-lifetime-info' => 'Від 1 до 365 днів. За замовчуванням 90. Після цього адміністратор має увійти знову, скільки б разів не оновлювалася сесія.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Обмеження частоти',
+                    'info' => 'Максимум запитів до API адміністратора за хвилину.',
+                    'session-requests-per-minute' => 'Запитів за хвилину на адміністратора, що увійшов',
+                    'api-token-requests-per-minute' => 'Запитів за хвилину на API-токен',
+                    'session-requests-per-minute-info' => 'Від 1 до 100000. За замовчуванням 60.',
+                    'api-token-requests-per-minute-info' => 'Від 1 до 100000. За замовчуванням 60.',
+                    'unauthenticated-requests-per-minute' => 'Запитів за хвилину без токена на IP-адресу',
+                    'unauthenticated-requests-per-minute-info' => 'Від 10 до 1000. За замовчуванням 60. Охоплює запити входу, двофакторної перевірки, оновлення та пароля.',
+                ],
+
+                'security' => [
+                    'title' => 'Безпека',
+                    'info' => 'Правила відкликання, термін дії API-токенів і прив\'язка до домену.',
+                    'revoke-sessions-on-password-change' => 'Відкликати сесії під час зміни пароля',
+                    'revoke-api-tokens-on-password-change' => 'Відкликати API-токени під час зміни пароля',
+                    'allow-non-expiring-api-tokens' => 'Дозволити API-токени без терміну дії',
+                    'domain-binding-mode' => 'Режим прив\'язки до домену',
+                    'domain-binding-mode-info' => 'DNS перевіряє, що запит надходить з IP-адреси, на яку вказує домен токена. Origin перевіряє заголовок Origin або Referer і підходить лише для браузерів.',
+                    'domain-binding-dns' => 'DNS (IP-адреса клієнта)',
+                    'domain-binding-origin' => 'Заголовок Origin',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Захист входу',
+                    'info' => 'Скільки невдалих входів, неправильних двофакторних кодів і запитів пароля дозволено, перш ніж клієнту доведеться зачекати.',
+                    'login-max-attempts' => 'Невдалих входів до блокування',
+                    'login-max-attempts-info' => 'На адресу електронної пошти та IP-адресу. Від 3 до 20. За замовчуванням 5.',
+                    'login-lockout-seconds' => 'Блокування входу (секунди)',
+                    'login-lockout-seconds-info' => 'Від 60 до 3600. За замовчуванням 60.',
+                    'two-factor-challenge-lifetime' => 'Термін дії двофакторної перевірки (хвилини)',
+                    'two-factor-challenge-lifetime-info' => 'Від 1 до 15. За замовчуванням 5.',
+                    'two-factor-max-failures' => 'Неправильних двофакторних кодів за хвилину',
+                    'two-factor-max-failures-info' => 'На адміністратора, за всіма перевірками. Від 3 до 20. За замовчуванням 5.',
+                    'password-requests-per-minute' => 'Запитів пароля за хвилину',
+                    'password-requests-per-minute-info' => 'Запити відновлення та скидання пароля на IP-адресу. Від 1 до 20. За замовчуванням 5.',
+                ],
+
+                'retention' => [
+                    'title' => 'Зберігання даних',
+                    'info' => 'Як довго зберігаються завершені сеанси та історія аудиту API.',
+                    'session-prune-days' => 'Зберігати завершені сеанси (дні)',
+                    'session-prune-days-info' => 'Відкликані або прострочені сеанси видаляються через вказану кількість днів. Від 1 до 365. За замовчуванням 30.',
+                    'audit-retention-days' => 'Зберігати історію аудиту API (дні)',
+                    'audit-retention-days-info' => 'Старіші записи видаляються щодня. Від 0 до 3650. Порожнє значення або 0 зберігає їх назавжди.',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'Ви не автентифіковані.',
+                'access-token-expired' => 'Термін дії токена доступу закінчився. Оновіть його, щоб продовжити.',
+                'api-token-expired' => 'Термін дії API-токена закінчився.',
+                'refresh-token-invalid' => 'Токен оновлення недійсний або прострочений. Увійдіть знову.',
+                'api-token-revoked' => 'API-токен відкликано.',
+                'api-token-domain-mismatch' => 'API-токен не можна використовувати з цього домену.',
+                'access-token-required' => 'Для цієї дії потрібен токен доступу сеансу входу; API-токени не можуть її використовувати.',
+                'two-factor-required' => 'Введіть 6-значний код із застосунку автентифікації або один із резервних кодів, щоб завершити вхід.',
+                'too-many-login-attempts' => 'Забагато спроб входу. Спробуйте ще раз через :seconds с.',
+                'two-factor-challenge-invalid' => 'Запит двофакторної перевірки недійсний або минув. Увійдіть знову.',
+                'two-factor-attempts-exceeded' => 'Забагато неправильних кодів. Увійдіть знову.',
+                'password-reset-token-invalid' => 'Цей токен скидання пароля недійсний або минув.',
+                'too-many-password-requests' => 'Забагато запитів пароля. Повторіть спробу через :seconds с.',
+                'rate-limit-exceeded' => 'Забагато спроб.',
+                'no-permission' => 'У вас немає дозволу керувати сеансами API адміністраторів.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'Ви вийшли з системи.',
+                'logged-out-all' => 'Ви вийшли з усіх сеансів.',
+                'not-found' => 'Сеанс не знайдено.',
+                'revoked' => 'Сеанс відкликано.',
+                'revoked-for-admin' => 'Відкликано сеансів: :count.',
+            ],
+
+            'password' => [
+                'reset' => 'Ваш пароль скинуто. Увійдіть знову.',
+            ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'API-токени',
+            ],
+
+            'acl' => [
+                'title' => 'API-токени',
+                'create' => 'Створення',
+                'delete' => 'Відкликання',
+                'manage-others' => 'Керування токенами інших адміністраторів',
+            ],
+
+            'index' => [
+                'title' => 'API-токени',
+                'info' => 'Серверні інтеграції, як-от ERP, PIM, складська чи бухгалтерська система, автентифікуються за допомогою API-токенів. Кожен токен діє від імені одного адміністратора з правами його ролі й працює лише з домену, до якого прив\'язаний.',
+                'create-btn' => 'Створити API-токен',
+            ],
+
+            'create' => [
+                'title' => 'Створення API-токена',
+                'back-btn' => 'Назад',
+                'save-btn' => 'Створити токен',
+                'general' => 'Загальне',
+                'expiry' => 'Термін дії',
+                'admin-info' => 'Токен діє від імені цього адміністратора й має саме права його ролі.',
+                'domain-info' => 'Хост, з якого звертається інтеграція, наприклад erp.example.com. URL скорочується до хоста. IP-адреси та символи підстановки не приймаються, а домен не можна змінити пізніше.',
+                'expires-on-date' => 'Спливає в указану дату',
+                'never-expires' => 'Ніколи не спливає',
+                'no-expiry-warning' => 'Токен без терміну дії працює, доки його не відкличуть. Зберігайте його в сховищі секретів і відкличте, щойно він стане непотрібним.',
+                'no-expiry-confirm' => 'Я розумію, що цей токен ніколи не спливає.',
+                'no-admins' => 'Немає адміністратора, для якого ви можете створити API-токен.',
+            ],
+
+            'view' => [
+                'title' => 'API-токен',
+                'back-btn' => 'Назад',
+                'save-btn' => 'Зберегти',
+                'revoke-btn' => 'Відкликати',
+                'details' => 'Відомості',
+                'usage' => 'Використання',
+                'token-once-title' => 'Скопіюйте API-токен зараз',
+                'token-once-info' => 'Токен показується лише один раз. Зберігайте його в сховищі секретів; якщо його втрачено, відкличте його та створіть новий.',
+                'copy-btn' => 'Копіювати',
+                'copied' => 'Токен скопійовано.',
+                'usage-info' => 'Передавайте його як Bearer-токен у заголовку Authorization запитів REST і GraphQL.',
+                'not-yet' => 'Ще ні',
+                'revoke-confirm' => 'Відкликати цей API-токен? Інтеграція, що його використовує, одразу перестане працювати.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Назва',
+                'admin' => 'Адміністратор',
+                'token' => 'Токен',
+                'domain' => 'Домен',
+                'expiry' => 'Термін дії',
+                'expires-at' => 'Спливає',
+                'no-expiry-confirmation' => 'Підтвердження безстроковості',
+                'status' => 'Статус',
+                'created-by' => 'Створив',
+                'created-at' => 'Створено',
+                'last-used-at' => 'Останнє використання',
+                'last-ip-address' => 'Остання IP-адреса',
+                'last-user-agent' => 'Останній user agent',
+                'last-channel' => 'Останній канал',
+                'resolved-ips' => 'Розв\'язані IP-адреси',
+                'resolved-at' => 'Розв\'язано',
+                'domain-mismatches' => 'Запити з інших доменів',
+                'last-domain-mismatch-at' => 'Останній запит з іншого домену',
+                'revoked-at' => 'Відкликано',
+                'revoked-by' => 'Відкликав',
+            ],
+
+            'datagrid' => [
+                'never' => 'Ніколи',
+                'console' => 'Консольна команда',
+                'view' => 'Переглянути',
+                'revoke' => 'Відкликати',
+            ],
+
+            'status' => [
+                'active' => 'Активний',
+                'expired' => 'Сплив',
+                'revoked' => 'Відкликаний',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'API-токен створено.',
+                'updated' => 'API-токен оновлено.',
+                'revoked' => 'API-токен відкликано.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'У вас немає прав на керування API-токенами.',
+                'not-found' => 'API-токен не знайдено.',
+                'cannot-create-for-admin' => 'Ви не можете створити API-токен для цього адміністратора: його роль має права, яких немає у вашої, або ви не можете керувати токенами інших адміністраторів.',
+                'cannot-manage' => 'Ви не можете керувати цим API-токеном.',
+                'already-revoked' => 'API-токен уже відкликано.',
+                'invalid-name' => 'Назва обов\'язкова й може містити не більше 100 символів.',
+                'invalid-domain' => 'Введіть доменне ім\'я, наприклад erp.example.com. IP-адреси та символи підстановки не приймаються.',
+                'expiry-required' => 'API-токени повинні мати дату спливання.',
+                'expiry-in-past' => 'Дата спливання має бути в майбутньому.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'API-сеанси',
+            ],
+
+            'acl' => [
+                'title' => 'API-сеанси',
+                'delete' => 'Відкликання',
+            ],
+
+            'index' => [
+                'title' => 'API-сеанси',
+                'info' => 'Адміністратори, що увійшли до адміністративного API з вебзастосунків, мобільних, касових або настільних застосунків. Відкликання сеансу одразу виводить цей пристрій із системи.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Адміністратор',
+                'device' => 'Пристрій',
+                'client-type' => 'Тип клієнта',
+                'ip-address' => 'IP-адреса входу',
+                'user-agent' => 'User agent під час входу',
+                'last-ip-address' => 'Остання IP-адреса',
+                'last-user-agent' => 'Останній user agent',
+                'last-used-at' => 'Останнє використання',
+                'last-channel' => 'Останній канал',
+                'refresh-expires-at' => 'Оновлення спливає',
+                'expires-at' => 'Спливає',
+                'status' => 'Статус',
+                'created-at' => 'Вхід виконано',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Відкликати',
+                'revoke-all' => 'Відкликати всі сеанси цього адміністратора',
+            ],
+
+            'client-types' => [
+                'web' => 'Веб',
+                'mobile' => 'Мобільний',
+                'pos' => 'Каса',
+                'desktop' => 'Настільний',
+                'other' => 'Інший',
+            ],
+
+            'errors' => [
+                'not-active' => 'Цей сеанс уже відкликано або він сплив.',
+            ],
+        ],
+
+        'api-audit' => [
+            'menu' => [
+                'title' => 'Аудит API',
             ],
 
             'acl' => [
                 'title' => 'Історія змін API',
-                'view' => 'Перегляд',
                 'delete' => 'Видалити історію',
             ],
 
@@ -312,10 +2012,10 @@ return [
                 'date' => 'Дата',
                 'admin' => 'адмін',
                 'token' => 'Токен',
-                'action' => 'Дія',
+                'token-kind' => 'Тип токена',
+                'channel' => 'Канал',
                 'operation' => 'Операція',
                 'resource' => 'Ресурс',
-                'version' => 'Версія',
                 'method' => 'метод',
                 'ip' => 'IP',
                 'view' => 'Переглянути',
@@ -328,189 +2028,27 @@ return [
                 'deleted' => 'Видалено',
             ],
 
+            'token-kinds' => [
+                'session' => 'Сеанс входу',
+                'api-token' => 'API-токен',
+                'integration' => 'Токен інтеграції (вилучено)',
+                'customer-session' => 'Сеанс входу покупця',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => 'Панель адміністратора',
+                'cli' => 'Консольна команда',
+            ],
+
             'deleted' => ':count записів історії видалено.',
             'cleanup-input-required' => 'Вкажіть кількість днів або дату для прибирання.',
         ],
 
-        'acl' => [
-            'title' => 'Інтеграція',
-            'view' => 'Перегляд',
-            'create' => 'Створити інтеграцію',
-            'edit' => 'Редагувати інтеграцію',
-            'delete' => 'Відкликати маркер інтеграції',
-            'generate' => 'Згенерувати маркер інтеграції',
-            'regenerate' => 'Регенерувати маркер інтеграції',
-        ],
-
-        'index' => [
-            'title' => 'Інтеграції',
-            'create-btn' => 'Створити інтеграцію',
-        ],
-
-        'create' => [
-            'title' => 'Створити інтеграцію',
-            'save-btn' => 'зберегти',
-            'back-btn' => 'Назад',
-        ],
-
-        'edit' => [
-            'title' => 'Редагувати інтеграцію',
-            'save-btn' => 'зберегти',
-            'back-btn' => 'Назад',
-            'generate-btn' => 'Згенерувати маркер',
-            'regenerate-btn' => 'Регенерувати маркер',
-            'revoke-btn' => 'Відкликати маркер',
-            'copy-btn' => 'Копіювати',
-            'token-warning' => 'Збережіть цей маркер зараз — він більше не відображатиметься.',
-            'token-label' => 'Токен',
-            'not-generated' => 'Ще не створено',
-            'masked' => '(Зберігається — відображається лише один раз під час створення)',
-            'history-banner' => 'Цей маркер більше не активний.',
-        ],
-
-        'fields' => [
-            'name' => 'Ім\'я',
-            'description' => 'опис',
-            'assign-user' => 'Призначити користувача',
-            'permission-type' => 'Тип дозволу',
-            'access-control' => 'Контроль доступу',
-            'general' => 'Загальний',
-            'token-settings' => 'Налаштування маркера',
-            'valid-till' => 'Діє до',
-            'rate-limit-per-minute' => 'Обмеження швидкості (за хвилину)',
-            'rate-limit-per-day' => 'Ліміт швидкості (на день)',
-            'never-expires' => 'Ніколи не закінчується',
-            'expires-on' => 'Термін дії закінчується',
-            'unlimited' => 'Необмежений',
-            'limit-to' => 'Обмеження до',
-            'requests-per-minute' => 'запитів / хв',
-            'requests-per-day' => 'запитів / день',
-            'select-admin' => 'Виберіть адміністратора',
-            'no-available-admins' => 'Немає доступних адміністраторів — кожен адміністратор уже має активний маркер.',
-            'same-as-web-hint' => 'Маркер відображатиме дозволи поточної ролі призначеного адміністратора в реальному часі.',
-            'ip-allowlist' => 'Білий список IP-адрес',
-            'ip-any' => 'Будь-який IP (за замовчуванням)',
-            'ip-restricted' => 'Обмежено певними IP-адресами',
-            'ip-list-hint' => 'Один запис на рядок. Підтримує IPv4, IPv6 і CIDR (наприклад, 10.0.0.0/24 або 2001:db8::/32). Залиште поле пустим, щоб дозволити всі IP-адреси.',
-        ],
-
-        'permission_type' => [
-            'all' => 'всі',
-            'custom' => 'Спеціальний',
-            'same_as_web' => 'Те саме, що веб-дозвіл',
-        ],
-
-        'status' => [
-            'draft' => 'Чернетка',
-            'active' => 'Активний',
-            'revoked' => 'Відкликано',
-            'regenerated' => 'Регенерований',
-        ],
-
-        'datagrid' => [
-            'id' => 'ID',
-            'name' => 'Ім\'я',
-            'admin' => 'адмін',
-            'token' => 'Токен',
-            'status' => 'Статус',
-            'permission-type' => 'Тип дозволу',
-            'expires-at' => 'Діє до',
-            'last-used-at' => 'Останнє використання',
-            'created-at' => 'Створено Ат',
-            'edit' => 'Редагувати',
-            'revoke' => 'Відкликати',
-        ],
-
-        'messages' => [
-            'draft-created' => 'Інтеграція створена. Згенеруйте маркер, щоб почати його використовувати.',
-            'updated' => 'Інтеграцію успішно оновлено.',
-            'generated' => 'Згенерований маркер. Скопіюйте його зараз — воно більше не відображатиметься.',
-            'regenerated' => 'Токен відновлено. Скопіюйте новий маркер зараз — він більше не відображатиметься.',
-            'revoked' => 'Маркер успішно відкликано.',
-            'generate-only-draft' => 'Лише проекти інтеграції можуть мати свій маркер.',
-            'regenerate-only-active' => 'Лише активні токени можна відновити.',
-            'cannot-edit-historic' => 'Відкликані чи повторно згенеровані маркери не можна редагувати.',
-            'already-inactive' => 'Цей маркер уже неактивний.',
-        ],
-
-        'errors' => [
-            'admin-has-token' => 'Вибраний адміністратор уже має активний маркер інтеграції.',
-        ],
-
-        'validation' => [
-            'ip-invalid' => 'Кожна дозволена IP-адреса має бути дійсною адресою IPv4 або IPv6 (підтримується нотація CIDR).',
-            'cidr-prefix-invalid' => 'Префікс CIDR недійсний для даної версії IP.',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => 'API',
-                'info' => 'Налаштування для API Bagisto та його модулів адміністрування.',
-            ],
-
-            'integration' => [
-                'title' => 'Інтеграція',
-                'info' => 'Керуйте плагіном інтеграції API, який використовується для видачі маркерів API адміністратора.',
-            ],
-
-            'settings' => [
-                'title' => 'Налаштування модуля',
-                'info' => 'Увімкніть або вимкніть плагін інтеграції API. Якщо вимкнено, меню бічної панелі приховано, а сторінки повертають 404.',
-                'enable' => 'Увімкнути модуль інтеграції API',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => 'Було створено новий маркер API: :name',
-                'greeting' => 'У вашому обліковому записі щойно згенеровано маркер інтеграції API під назвою ":name".',
-            ],
-
-            'regenerated' => [
-                'subject' => 'Ваш маркер API було відновлено: :name',
-                'greeting' => 'Маркер інтеграції API під назвою ":name" щойно було створено повторно. Попередній маркер перестав працювати — дійсний лише новий.',
-            ],
-
-            'revoked' => [
-                'subject' => 'Ваш маркер API відкликано: :name',
-                'greeting' => 'Маркер інтеграції API під назвою ":name" було відкликано. Будь-який клієнт, який використовує його, втрачає доступ.',
-            ],
-
-            'details' => [
-                'name' => 'Назва маркера',
-                'date' => 'Дата',
-                'ip' => 'Від IP',
-            ],
-
-            'revoke-hint' => 'Якщо ви цього не очікували, негайно відкликайте маркер, натиснувши кнопку нижче.',
-            'revoke-btn' => 'Відкликати цей маркер',
-            'revoke-expiry' => 'Це посилання для відкликання дійсне протягом 7 днів. Після цього увійдіть в панель адміністратора, щоб керувати маркером.',
-            'no-action' => 'Не потрібно нічого робити — цей електронний лист є лише підтвердженням.',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => 'Відкликати маркер API',
-            'success-title' => 'Маркер відкликано',
-            'success-message' => 'Маркер ":name" було відкликано. Будь-який клієнт, який використовує його, негайно втрачає доступ.',
-            'already-inactive-title' => 'Маркер уже неактивний',
-            'already-inactive-message' => 'Маркер ":name" уже відкликано або створено повторно. Подальші дії не потрібні.',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => 'Згенерувати маркер',
-                'message' => 'Згенерувати маркер зараз? Відкритий текст буде показано лише один раз — скопіюйте його, перш ніж покинути сторінку.',
-            ],
-
-            'regenerate' => [
-                'title' => 'Регенерувати маркер',
-                'message' => 'Відновити токен? Старий маркер негайно припинить роботу, а новий відкритий текст буде показано лише один раз.',
-            ],
-
-            'revoke' => [
-                'title' => 'Відкликати маркер',
-                'message' => 'Відкликати цей маркер? Будь-який клієнт, який використовує його, негайно втрачає доступ. Цю дію не можна скасувати.',
-            ],
+        'api-configuration' => [
+            'title' => 'API',
+            'info' => 'Налаштування для API Bagisto та його модулів адміністрування.',
         ],
     ],
 ];

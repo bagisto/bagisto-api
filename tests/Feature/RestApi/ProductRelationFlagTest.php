@@ -9,20 +9,13 @@ use Webkul\Customer\Models\Wishlist;
 
 class ProductRelationFlagTest extends RestApiTestCase
 {
-    /** Find a product row (by id) in the REST listing array. */
-    private function rowFor(array $rows, int $productId): ?array
-    {
-        foreach ($rows as $row) {
-            if ((int) ($row['id'] ?? 0) === $productId) {
-                return $row;
-            }
-        }
+    // ============================================================================
+    // Listing
+    // ============================================================================
 
-        return null;
-    }
-
-    // ── Listing ─────────────────────────────────────────────────
-
+    /**
+     * Test listing marks flags true for owner.
+     */
     public function test_listing_marks_flags_true_for_owner(): void
     {
         $this->seedRequiredData();
@@ -49,13 +42,15 @@ class ProductRelationFlagTest extends RestApiTestCase
         $taggedRow = $this->rowFor($rows, $tagged->id);
         $otherRow = $this->rowFor($rows, $other->id);
 
-        // 0/1 integers over REST.
         expect($taggedRow['isInWishlist'])->toBe(1);
         expect($taggedRow['isInCompare'])->toBe(1);
         expect($otherRow['isInWishlist'])->toBe(0);
         expect($otherRow['isInCompare'])->toBe(0);
     }
 
+    /**
+     * Test listing flags false for guest.
+     */
     public function test_listing_flags_false_for_guest(): void
     {
         $this->seedRequiredData();
@@ -83,8 +78,13 @@ class ProductRelationFlagTest extends RestApiTestCase
         expect($row['isInCompare'])->toBe(0);
     }
 
-    // ── Detail ──────────────────────────────────────────────────
+    // ============================================================================
+    // Detail
+    // ============================================================================
 
+    /**
+     * Test detail carries both flags for owner.
+     */
     public function test_detail_carries_both_flags_for_owner(): void
     {
         $this->seedRequiredData();
@@ -109,6 +109,9 @@ class ProductRelationFlagTest extends RestApiTestCase
         expect($response->json('isInCompare'))->toBe(1);
     }
 
+    /**
+     * Test detail flags false for guest.
+     */
     public function test_detail_flags_false_for_guest(): void
     {
         $this->seedRequiredData();
@@ -127,5 +130,19 @@ class ProductRelationFlagTest extends RestApiTestCase
 
         expect($response->json('isInWishlist'))->toBe(0);
         expect($response->json('isInCompare'))->toBe(0);
+    }
+
+    /**
+     * Find a product row (by id) in the REST listing array.
+     */
+    private function rowFor(array $rows, int $productId): ?array
+    {
+        foreach ($rows as $row) {
+            if ((int) ($row['id'] ?? 0) === $productId) {
+                return $row;
+            }
+        }
+
+        return null;
     }
 }

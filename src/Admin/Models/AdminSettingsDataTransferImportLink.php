@@ -10,13 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsDataTransferImportActionInput;
 use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor;
 
-/**
- * POST /api/admin/settings/data-transfer/imports/{id}/link
- * + linkAdminSettingsDataTransferImportLink mutation.
- *
- * Links one processed batch and returns { stats, import }. Permission:
- * settings.data_transfer.imports.import.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsDataTransferImportLink',
@@ -59,6 +52,9 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor
 )]
 class AdminSettingsDataTransferImportLink
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 }

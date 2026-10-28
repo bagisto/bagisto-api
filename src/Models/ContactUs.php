@@ -111,28 +111,49 @@ use Webkul\BagistoApi\State\Processor\ContactUsProcessor;
 )]
 class ContactUs
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(readable: false, writable: true)]
     #[Groups(['query', 'mutation'])]
     public ?string $name;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(readable: false, writable: true)]
     #[Groups(['query', 'mutation'])]
     public ?string $email;
 
+    /**
+     * The contact.
+     */
     #[ApiProperty(readable: false, writable: true)]
     #[Groups(['query', 'mutation'])]
     public ?string $contact;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: false, writable: true)]
     #[Groups(['query', 'mutation'])]
     public ?string $message;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public bool $success;
 
+    /**
+     * The message response.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public ?string $message_response;
 }

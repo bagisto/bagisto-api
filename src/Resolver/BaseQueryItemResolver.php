@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\QueryItemResolverInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
@@ -15,9 +14,11 @@ use Webkul\BagistoApi\Models\CustomerInvoice;
 use Webkul\BagistoApi\Models\CustomerOrderShipment;
 use Webkul\BagistoApi\Models\CustomerOrderShipmentItem;
 use Webkul\BagistoApi\Models\CustomerReview;
+use Webkul\BagistoApi\Models\Page;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\ProductReview;
 use Webkul\BagistoApi\Service\GenericIdNormalizer;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Customer\Models\Customer;
 
 class BaseQueryItemResolver implements QueryItemResolverInterface
@@ -96,7 +97,7 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
      */
     protected function findOwnedResource(string $modelClass, int $numericId, mixed $id): object
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer instanceof Customer) {
             throw new AuthenticationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -136,12 +137,16 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
     }
 
     /**
-     * Build a query limited to the rows the storefront shows: active categories, approved reviews, reachable products.
+     * Build a query limited to the rows the storefront shows: active categories, current-channel pages, approved reviews, reachable products.
      */
     protected function publicQuery(string $modelClass): Builder
     {
         if (is_a($modelClass, Category::class, true)) {
             return $modelClass::query()->where('status', 1);
+        }
+
+        if (is_a($modelClass, Page::class, true)) {
+            return $modelClass::query()->inCurrentChannel();
         }
 
         if (is_a($modelClass, ProductReview::class, true)) {
@@ -195,7 +200,7 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
 
         if (! $info) {
             throw new BadRequestHttpException(
-                'GraphQL ResolveInfo not available in context. Cannot determine model class.'
+                __('bagistoapi::app.graphql.resolver.no-resolve-info')
             );
         }
 
@@ -203,7 +208,7 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
 
         if (! $resourceClass) {
             throw new BadRequestHttpException(
-                'Unable to determine resource class from GraphQL return type'
+                __('bagistoapi::app.graphql.resolver.unknown-resource-class')
             );
         }
 

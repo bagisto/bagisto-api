@@ -12,10 +12,19 @@ use Webkul\BagistoApi\GraphQl\QueryScopedSchemaBuilder;
 
 class WarmApiPlatformCacheCommand extends Command
 {
+    /**
+     * The signature.
+     */
     protected $signature = 'bagisto-api-platform:warm-cache';
 
+    /**
+     * The description.
+     */
     protected $description = 'Pre-build the API Platform resource-metadata cache so the first request after a deploy/cache-clear does not pay the full metadata rebuild cost.';
 
+    /**
+     * Handle the request.
+     */
     public function handle(): int
     {
         $nameFactory = app(ResourceNameCollectionFactoryInterface::class);

@@ -23,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassUpdateStatusProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Customer Reviews'],
                 summary: 'Mass update review status',
+                description: 'Sets the status of the product reviews in `indices` to `value` (pending, approved or disapproved), and returns the IDs updated. An empty `indices` or another value is a 422.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -79,16 +80,29 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassUpdateStatusProcessor;
 )]
 class AdminCustomerReviewMassUpdateStatus
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the product reviews whose status was updated.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $updated = null;
 
+    /**
+     * The value.
+     */
     #[ApiProperty(writable: false)]
     public ?string $value = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

@@ -23,21 +23,24 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\CartRule\Models\CartRule;
 use Webkul\CartRule\Repositories\CartRuleRepository;
 
-/**
- * Handles POST / PUT / DELETE for the AdminMarketingCartRule resource.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Promotions\CartRuleController.
- * Permission resolution: Sanctum admin-role check, never bouncer().
- */
 class AdminMarketingCartRuleProcessor implements ProcessorInterface
 {
+    /**
+     * The allowed action types constant.
+     */
     public const ALLOWED_ACTION_TYPES = ['by_percent', 'by_fixed', 'cart_fixed', 'buy_x_get_y'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CartRuleRepository $repository,
         protected AdminMarketingCartRuleItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -55,7 +58,7 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if (
@@ -93,6 +96,9 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input, bool $isGraphQL = false): AdminMarketingCartRule|AdminMarketingCartRuleRestDto
     {
         $payload = $this->normalisePayload($input);
@@ -105,6 +111,9 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         return $this->buildResult((int) $cartRule->id, $isGraphQL);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): AdminMarketingCartRule|AdminMarketingCartRuleRestDto
     {
         $existing = $this->repository->find($id);
@@ -158,8 +167,7 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
 
     /**
      * Build the write response: GraphQL → the AdminMarketingCartRule Eloquent
-     * model (channels / customerGroups connections resolve), the flat RestDto for
-     * REST (channels / customer_groups as object arrays).
+     * model (channels / customerGroups connections resolve), the flat RestDto for.
      */
     protected function buildResult(int $id, bool $isGraphQL): AdminMarketingCartRule|AdminMarketingCartRuleRestDto
     {
@@ -172,12 +180,17 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         return $this->itemProvider->buildRestDtoPublic($fresh);
     }
 
-    protected function handleDelete(int $id): array
+    /**
+     * Handle delete.
+     */
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingCartRule
     {
         $existing = $this->repository->find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule.not-found'));
         }
+
+        $snapshot = $asResource ? $this->buildResult($id, true) : null;
 
         try {
             Event::dispatch('promotions.cart_rule.delete.before', $id);
@@ -188,9 +201,12 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.marketing.cart-rule.delete-failed'), 500);
         }
 
-        return ['message' => __('bagistoapi::app.admin.marketing.cart-rule.deleted')];
+        return $snapshot ?? ['message' => __('bagistoapi::app.admin.marketing.cart-rule.deleted')];
     }
 
+    /**
+     * Validate payload.
+     */
     protected function validatePayload(array $input, ?int $excludeId): void
     {
         $rules = [
@@ -231,6 +247,9 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Normalise payload.
+     */
     protected function normalisePayload(array $input): array
     {
         $out = $input;
@@ -254,6 +273,9 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         return $out;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -278,6 +300,9 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -293,6 +318,9 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -305,6 +333,9 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (

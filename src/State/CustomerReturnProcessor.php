@@ -5,8 +5,6 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Webkul\BagistoApi\Dto\CreateCustomerReturnInput;
@@ -16,8 +14,10 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerReturn;
 use Webkul\BagistoApi\State\Concerns\BuildsCustomerReturn;
+use Webkul\BagistoApi\State\Concerns\ReadsReturnImages;
 use Webkul\BagistoApi\State\Concerns\ResolvesReturnableItems;
 use Webkul\BagistoApi\State\Concerns\ResolvesReturnCustomFields;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\RMA\Enums\DefaultRMAResolution;
 use Webkul\RMA\Enums\DefaultRMAStatusEnum;
 use Webkul\RMA\Helpers\Helper as RMAHelper;
@@ -33,6 +33,7 @@ use Webkul\Shop\Mail\Customer\RMA\CustomerRMARequestNotification;
 class CustomerReturnProcessor implements ProcessorInterface
 {
     use BuildsCustomerReturn;
+    use ReadsReturnImages;
     use ResolvesReturnableItems;
     use ResolvesReturnCustomFields;
 
@@ -41,6 +42,9 @@ class CustomerReturnProcessor implements ProcessorInterface
      */
     public const PACKAGE_CONDITIONS = ['open', 'packed'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private readonly RMARepository $rmaRepository,
@@ -53,6 +57,9 @@ class CustomerReturnProcessor implements ProcessorInterface
         private readonly RMAAdditionalFieldRepository $rmaAdditionalFieldRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof CreateCustomerReturnInput) {
@@ -70,11 +77,7 @@ class CustomerReturnProcessor implements ProcessorInterface
                 return $this->handleAction($action, $uriVariables['id'] ?? null);
             }
 
-            /**
-             * The create operation is not deserialized, so that the same route
-             * accepts JSON and the multipart body carrying `images[]`.
-             */
-            return $this->handleCreate($this->inputFromRequest(), $this->imagesFromRequest());
+            return $this->handleCreate($this->inputFromRequest(), $this->returnImagesFromRequest());
         }
 
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
@@ -108,40 +111,11 @@ class CustomerReturnProcessor implements ProcessorInterface
     }
 
     /**
-     * Uploaded evidence images, checked against the configured mime types.
-     *
-     * @return array<int,UploadedFile>
+     * Handle create.
      */
-    private function imagesFromRequest(): array
-    {
-        if (! request()->hasFile('images')) {
-            return [];
-        }
-
-        $images = request()->file('images');
-
-        $images = is_array($images) ? $images : [$images];
-
-        $allowed = array_filter(array_map(
-            'trim',
-            explode(',', (string) core()->getConfigData('sales.rma.setting.allowed_file_extension'))
-        ));
-
-        foreach ($images as $image) {
-            if (
-                ! empty($allowed)
-                && ! in_array($image->getMimeType(), $allowed, true)
-            ) {
-                throw new InvalidInputException(__('bagistoapi::app.graphql.return.invalid-image'));
-            }
-        }
-
-        return array_values($images);
-    }
-
     private function handleCreate(CreateCustomerReturnInput $input, array $images): CustomerReturn
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -257,9 +231,12 @@ class CustomerReturnProcessor implements ProcessorInterface
         return $this->buildCustomerReturn($fresh, true, $this->rmaRepository);
     }
 
+    /**
+     * Handle action.
+     */
     private function handleAction(?string $action, mixed $id): CustomerReturn
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -347,6 +324,9 @@ class CustomerReturnProcessor implements ProcessorInterface
         ]);
     }
 
+    /**
+     * Action from template.
+     */
     private function actionFromTemplate(?string $template): ?string
     {
         foreach (['cancel', 'reopen', 'close'] as $action) {
@@ -361,11 +341,17 @@ class CustomerReturnProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Basename.
+     */
     private static function basename(?string $value): ?string
     {
         return $value === null ? null : basename($value);
     }
 
+    /**
+     * Int or null.
+     */
     private static function intOrNull($value): ?int
     {
         return $value === null || $value === '' ? null : (int) $value;

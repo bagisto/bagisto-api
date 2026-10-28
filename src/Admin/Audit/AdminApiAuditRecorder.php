@@ -4,23 +4,23 @@ namespace Webkul\BagistoApi\Admin\Audit;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
-use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
+use Webkul\BagistoApi\Admin\Repositories\AdminApiAuditRepository;
 
-/**
- * Records admin-API writes as audit rows by listening to Eloquent model events.
- *
- * Only acts when AdminApiAuditContext is active (i.e. an admin-API write request)
- * — so normal web-panel changes and reads are never recorded, with zero
- * per-model code and no Bagisto core edits.
- *
- * Bound as a singleton so the updating→updated diff stash survives within a
- * request. Every write is wrapped so auditing can never break the real change.
- */
 class AdminApiAuditRecorder
 {
-    /** Pre-save diffs keyed by spl_object_id, captured on `updating`. */
+    /**
+     * Pre-save diffs keyed by spl_object_id, captured on `updating`.
+     */
     protected array $pending = [];
 
+    /**
+     * The audit repository, resolved on first write so registering the listeners at boot builds no model.
+     */
+    protected ?AdminApiAuditRepository $audits = null;
+
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected AdminApiAuditContext $context) {}
 
     /**
@@ -34,6 +34,9 @@ class AdminApiAuditRecorder
         Event::listen('eloquent.deleted: *', [$this, 'onDeleted']);
     }
 
+    /**
+     * Capture the pre-save diff of an audited model about to be updated.
+     */
     public function onUpdating(string $event, array $payload): void
     {
         $model = $payload[0] ?? null;
@@ -55,6 +58,9 @@ class AdminApiAuditRecorder
         ];
     }
 
+    /**
+     * Write the audit row of an audited model that was updated.
+     */
     public function onUpdated(string $event, array $payload): void
     {
         $model = $payload[0] ?? null;
@@ -75,6 +81,9 @@ class AdminApiAuditRecorder
         $this->persist($model, 'updated', $diff['old'], $diff['new']);
     }
 
+    /**
+     * Write the audit row of an audited model that was created.
+     */
     public function onCreated(string $event, array $payload): void
     {
         $model = $payload[0] ?? null;
@@ -88,6 +97,9 @@ class AdminApiAuditRecorder
         $this->persist($model, 'created', null, $model->getAttributes());
     }
 
+    /**
+     * Write the audit row of an audited model that was deleted.
+     */
     public function onDeleted(string $event, array $payload): void
     {
         $model = $payload[0] ?? null;
@@ -111,7 +123,7 @@ class AdminApiAuditRecorder
         }
 
         try {
-            AdminApiAudit::create(array_merge($this->context->baseAttributes(), [
+            $this->audits()->record(array_merge($this->context->baseAttributes(), [
                 'version_id' => $auditableId ? $this->nextVersion($auditableType, $auditableId) : 1,
                 'event' => $event,
                 'auditable_type' => $auditableType,
@@ -127,13 +139,35 @@ class AdminApiAuditRecorder
         }
     }
 
+    /**
+     * Write one audit row for an authentication event, with or without an audited request.
+     */
+    public function writeEvent(array $attributes): void
+    {
+        try {
+            $this->audits()->record(array_merge($attributes, [
+                'version_id' => $this->nextVersion($attributes['auditable_type'] ?? null, $attributes['auditable_id'] ?? null),
+                'created_at' => now(),
+            ]));
+
+            if ($this->context->isActive()) {
+                $this->context->recordWritten();
+            }
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
+    }
+
+    /**
+     * Write the audit row of a model event under the active request context.
+     */
     protected function persist(Model $model, string $event, ?array $old, ?array $new): void
     {
         try {
             $type = get_class($model);
             $id = $model->getKey();
 
-            AdminApiAudit::create(array_merge($this->context->baseAttributes(), [
+            $this->audits()->record(array_merge($this->context->baseAttributes(), [
                 'version_id' => $this->nextVersion($type, $id),
                 'event' => $event,
                 'auditable_type' => $type,
@@ -145,11 +179,13 @@ class AdminApiAuditRecorder
 
             $this->context->recordWritten();
         } catch (\Throwable $exception) {
-            // Auditing must never break the underlying write.
             report($exception);
         }
     }
 
+    /**
+     * Whether a model change is audited: auditing is on, a request context is active and the model is not excluded.
+     */
     protected function shouldAudit(Model $model): bool
     {
         if (! config('bagistoapi.audit.enabled', true)) {
@@ -169,22 +205,24 @@ class AdminApiAuditRecorder
         return true;
     }
 
+    /**
+     * The version the next audit row of a record gets, or 1 when it cannot be read.
+     */
     protected function nextVersion(?string $type, $id): int
     {
-        if (
-            ! $type
-            || $id === null
-        ) {
-            return 1;
-        }
-
         try {
-            return (int) AdminApiAudit::where('auditable_type', $type)
-                ->where('auditable_id', $id)
-                ->max('version_id') + 1;
+            return $this->audits()->nextVersion($type, $id);
         } catch (\Throwable) {
             return 1;
         }
+    }
+
+    /**
+     * The audit repository.
+     */
+    protected function audits(): AdminApiAuditRepository
+    {
+        return $this->audits ??= app(AdminApiAuditRepository::class);
     }
 
     /**

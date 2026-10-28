@@ -11,9 +11,6 @@ use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Resolver\ThemeQueryResolver;
 use Webkul\BagistoApi\State\ThemeProvider;
 
-/**
- * The theme the current channel runs, and the section types it draws.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'Theme',
@@ -58,18 +55,27 @@ use Webkul\BagistoApi\State\ThemeProvider;
     graphQlOperations: [
         new Query(
             resolver: ThemeQueryResolver::class,
+            description: 'The theme the current channel\'s storefront is drawn with and the section types it can hold; read the sections themselves with `sections`. Takes no arguments. Needs the X-STOREFRONT-KEY header.',
             args: [],
         ),
     ],
 )]
 class Theme
 {
+    /**
+     * The code.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $code = null;
 
+    /**
+     * The name.
+     */
     public ?string $name = null;
 
     /**
+     * The section types the theme supports.
+     *
      * @var array<int, string>
      */
     #[ApiProperty(

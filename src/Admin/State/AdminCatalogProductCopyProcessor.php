@@ -14,27 +14,18 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Product\Repositories\ProductRepository;
 
-/**
- * POST /api/admin/catalog/products/{sourceId}/copy + createAdminCatalogProductCopy.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Catalog\ProductController::copy:
- *   - Fire catalog.product.create.before
- *   - $productRepository->copy($id)
- *   - Fire catalog.product.create.after
- *
- * ProductRepository::copy throws if $product->parent_id is set (variants
- * cannot be copied); we surface that as HTTP 422 with a specific lang key.
- * Anything else from the repository surfaces as HTTP 500.
- *
- * Permission gate: catalog.products.create (Sanctum-pattern; reads
- * $admin->role->permission_type / ->permissions directly — never bouncer()).
- */
 class AdminCatalogProductCopyProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ProductRepository $productRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -96,6 +87,9 @@ class AdminCatalogProductCopyProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -123,6 +117,9 @@ class AdminCatalogProductCopyProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve source id.
+     */
     protected function resolveSourceId(mixed $data, array $uriVariables, array $context): int
     {
         if (isset($uriVariables['sourceId'])) {

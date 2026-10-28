@@ -5,14 +5,11 @@ namespace Webkul\BagistoApi\Service;
 use Webkul\BookingProduct\Helpers\Booking as BookingHelper;
 use Webkul\Product\Models\Product;
 
-/**
- * Booking "starting from" price = base price + cheapest bookable extra (event
- * ticket / rental unit rate). Mirrors core Booking::getPriceHtml(). Shared by
- * the REST DTO and the GraphQL Eloquent BookingProduct resource.
- */
 class BookingStartingPriceCalculator
 {
     /**
+     * Compute the starting price of a booking product, or null when it has none.
+     *
      * @return array{regular:float,final:float,formattedRegular:string,formattedFinal:string}|null
      */
     public static function compute($bookingProduct): ?array
@@ -44,11 +41,7 @@ class BookingStartingPriceCalculator
 
     /**
      * Smallest additional amount charged on top of the base price, split into
-     * regular (pre-discount) and final (post-discount). Mirrors core
-     * `Booking::getCheapestBookingExtras()`:
-     *   - event  → cheapest ticket (final is sale-aware via the core EventTicket helper)
-     *   - rental → minimum unit rate (hourly or daily, whichever is set and smallest)
-     *   - other  → null
+     * regular (pre-discount) and final (post-discount). Mirrors core.
      *
      * @return array{regular:float,final:float}|null
      */

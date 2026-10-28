@@ -13,15 +13,11 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Category\Models\Category;
 
-/**
- * POST /api/admin/catalog/categories/mass-update-status + createAdminCategoryMassUpdateStatus.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Catalog\CategoryController::massUpdate:
- *   - For each ID, fire catalog.categories.mass-update.before/after
- *   - Set category.status = value, save
- */
 class AdminCategoryMassUpdateStatusProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -73,6 +69,9 @@ class AdminCategoryMassUpdateStatusProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -100,6 +99,9 @@ class AdminCategoryMassUpdateStatusProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve array.
+     */
     protected function resolveArray(mixed $data, array $context, string $key): array
     {
         if (
@@ -122,6 +124,9 @@ class AdminCategoryMassUpdateStatusProcessor implements ProcessorInterface
         return [];
     }
 
+    /**
+     * Resolve scalar.
+     */
     protected function resolveScalar(mixed $data, array $context, string $key): mixed
     {
         if (

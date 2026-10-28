@@ -10,21 +10,16 @@ use Webkul\BagistoApi\Admin\Dto\AdminMarketingSubscriberRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSubscriber;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * GET /api/admin/marketing/subscribers + adminMarketingSubscribers GraphQL.
- *
- * Filters: email (LIKE), channel_id, is_subscribed (0/1).
- * Sort: id (default desc), email.
- *
- * Branches: GraphQL → an AdminMarketingSubscriber Eloquent row per result (the
- * `channel` to-one is detail-only, null on listing rows — no N+1); REST → the
- * flat AdminMarketingSubscriberRestDto (`channel` omitted on listing rows;
- * customerId/customerName scalars kept).
- */
 class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * The listing is graph ql.
+     */
     protected bool $listingIsGraphQL = false;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
@@ -32,11 +27,17 @@ class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollection
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'email'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('subscribers_list')
@@ -54,6 +55,9 @@ class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollection
             );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['email'])) {
@@ -77,6 +81,9 @@ class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollection
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -89,6 +96,9 @@ class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollection
         $query->orderBy($map[$column] ?? 'subscribers_list.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): object
     {
         if ($this->listingIsGraphQL) {
@@ -104,15 +114,12 @@ class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollection
         $dto->createdAt = $row->created_at ? Carbon::parse($row->created_at)->toIso8601String() : null;
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
 
-        // channel is detail-only — null on list rows.
-
         return $dto;
     }
 
     /**
      * GraphQL listing row → Eloquent AdminMarketingSubscriber. The `channel`
-     * to-one is set null (detail-only — no per-row N+1). The customer_name is
-     * forceFilled so the parent accessor's fast-path returns it without N+1.
+     * to-one is set null (detail-only — no per-row N+1). The customer_name is.
      */
     protected function mapRowToEloquent(object $row): AdminMarketingSubscriber
     {

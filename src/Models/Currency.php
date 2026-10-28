@@ -72,14 +72,20 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
-        new QueryCollection(provider: CursorAwareCollectionProvider::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One currency. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
+        new QueryCollection(
+            provider: CursorAwareCollectionProvider::class,
+            description: 'Every currency set up in the store, ordered by ID; the current channel\'s currencies are on the channel. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 class Currency extends \Webkul\Core\Models\Currency
 {
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int

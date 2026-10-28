@@ -9,26 +9,11 @@ use Webkul\Sales\Models\OrderTransaction;
 use Webkul\Sales\Models\Refund;
 use Webkul\Sales\Models\Shipment;
 
-/**
- * Regression guard for the camelCase-over-GraphQL bug.
- *
- * The admin Sales output classes (the AdminInvoice resource, …) must declare
- * snake_case properties so multi-word camelCase fields resolve over
- * GraphQL — API Platform reads a GraphQL field value by snake-casing the field
- * name with no class context, so camelCase DTO properties come back null.
- *
- * Earlier admin GraphQL tests only ever queried single-token fields (`id`,
- * `state`), which always resolved, so this whole class of bug went unnoticed.
- * These tests deliberately query multi-word camelCase fields and assert they
- * are populated (not null).
- */
 class SalesFieldResolutionTest extends AdminApiTestCase
 {
-    private function seedOrder(): Order
-    {
-        return Order::factory()->create(['increment_id' => 'ORD-FIELDRES-1']);
-    }
-
+    /**
+     * Test admin invoice detail resolves camel case fields.
+     */
     public function test_admin_invoice_detail_resolves_camel_case_fields(): void
     {
         $admin = $this->createAdmin();
@@ -55,6 +40,9 @@ class SalesFieldResolutionTest extends AdminApiTestCase
         expect($node['createdAt'])->not->toBeNull();
     }
 
+    /**
+     * Test admin invoices list resolves camel case fields.
+     */
     public function test_admin_invoices_list_resolves_camel_case_fields(): void
     {
         $admin = $this->createAdmin();
@@ -69,11 +57,6 @@ class SalesFieldResolutionTest extends AdminApiTestCase
             'created_at' => '2026-01-10 10:00:00',
         ]);
 
-        // The listing's GraphQL node shares the detail type, so BOTH grandTotal
-        // (detail-named) and baseGrandTotal (list-named) must resolve + populate.
-        // The nested `order` object is detail-only on the listing (it resolves null
-        // there); the listing exposes the order linkage via the flat orderIncrementId
-        // scalar. The detail test above covers the nested order object.
         $query = 'query($orderId:String){ adminInvoices(first:50, order_id:$orderId){ edges{ node{ _id incrementId orderIncrementId state grandTotal formattedGrandTotal baseGrandTotal formattedBaseGrandTotal createdAt } } } }';
         $edges = $this->adminGraphQL($query, ['orderId' => 'ORD-FIELDRES-1'], $admin)->json('data.adminInvoices.edges');
         $node = collect($edges)->pluck('node')->firstWhere('_id', $invoice->id);
@@ -89,6 +72,9 @@ class SalesFieldResolutionTest extends AdminApiTestCase
         expect($node['createdAt'])->not->toBeNull();
     }
 
+    /**
+     * Test admin shipment detail resolves camel case fields.
+     */
     public function test_admin_shipment_detail_resolves_camel_case_fields(): void
     {
         $admin = $this->createAdmin();
@@ -110,6 +96,9 @@ class SalesFieldResolutionTest extends AdminApiTestCase
         expect($node['createdAt'])->not->toBeNull();
     }
 
+    /**
+     * Test admin refund detail resolves camel case fields.
+     */
     public function test_admin_refund_detail_resolves_camel_case_fields(): void
     {
         $admin = $this->createAdmin();
@@ -133,6 +122,9 @@ class SalesFieldResolutionTest extends AdminApiTestCase
         expect($node['createdAt'])->not->toBeNull();
     }
 
+    /**
+     * Test admin transaction resolves camel case fields on list and detail.
+     */
     public function test_admin_transaction_resolves_camel_case_fields_on_list_and_detail(): void
     {
         $admin = $this->createAdmin();
@@ -149,7 +141,6 @@ class SalesFieldResolutionTest extends AdminApiTestCase
             'created_at' => '2026-01-13 10:00:00',
         ]);
 
-        // Detail
         $detail = $this->adminGraphQL(
             'query($id:ID!){ adminTransaction(id:$id){ transactionId orderId orderIncrementId amount status type paymentMethod createdAt } }',
             ['id' => "/api/admin/transactions/{$txn->id}"],
@@ -162,7 +153,6 @@ class SalesFieldResolutionTest extends AdminApiTestCase
         expect($detail['paymentMethod'])->toBe('cashondelivery');
         expect($detail['createdAt'])->not->toBeNull();
 
-        // List (transactions: list ⊆ detail, so the full field set resolves)
         $edges = $this->adminGraphQL(
             'query{ adminTransactions(first:50){ edges{ node{ _id transactionId orderId orderIncrementId paymentMethod createdAt } } } }',
             [],
@@ -174,5 +164,13 @@ class SalesFieldResolutionTest extends AdminApiTestCase
         expect($node['transactionId'])->toBe('TXN-FR');
         expect($node['orderIncrementId'])->toBe('ORD-FIELDRES-1');
         expect($node['paymentMethod'])->toBe('cashondelivery');
+    }
+
+    /**
+     * Seed order.
+     */
+    private function seedOrder(): Order
+    {
+        return Order::factory()->create(['increment_id' => 'ORD-FIELDRES-1']);
     }
 }

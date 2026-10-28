@@ -3,8 +3,8 @@
 namespace Webkul\BagistoApi\Services;
 
 use Illuminate\Support\Facades\Auth;
-use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Repositories\GuestCartTokensRepository;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Checkout\Contracts\Cart;
 use Webkul\Checkout\Repositories\CartRepository;
 use Webkul\Customer\Models\Customer;
@@ -98,15 +98,11 @@ class CartTokenService
     }
 
     /**
-     * Resolve the customer behind a Sanctum bearer token; core's email-verification token is never accepted.
+     * Resolve the customer behind a customer access token; a guest cart token or core's email-verification token is never accepted.
      */
     public function getCustomerByToken(string $token): ?object
     {
-        $personalAccessToken = PersonalAccessToken::findToken($token);
-
-        return $personalAccessToken?->tokenable instanceof Customer
-            ? $personalAccessToken->tokenable
-            : null;
+        return CurrentCustomer::fromToken($token);
     }
 
     /**

@@ -6,10 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Super-attribute option — nested in the `superAttributes` connection
- * (`superAttributes { edges { node { options { edges { node } } } } }`).
- */
 #[ApiResource(
     shortName: 'AdminProductDetailSuperAttributeOption',
     operations: [],
@@ -18,15 +14,26 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminProductDetailSuperAttributeOption extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the attribute options.
+     *
+     * @var string
+     */
     protected $table = 'attribute_options';
 
-    /** @var array */
+    /**
+     * The native types the configurable attribute option attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'sort_order' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

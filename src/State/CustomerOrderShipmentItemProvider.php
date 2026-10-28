@@ -9,11 +9,12 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Models\CustomerOrderShipment;
 use Webkul\BagistoApi\Models\CustomerOrderShipmentItem;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Customer\Models\Customer;
 
 class CustomerOrderShipmentItemProvider implements ProviderInterface
@@ -30,7 +31,7 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
@@ -42,7 +43,7 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
             return $this->provideItem($customer, $uriVariables);
         }
 
-        return $this->provideCollection($customer, $context);
+        return $this->provideCollection($customer, $context, $uriVariables);
     }
 
     /**
@@ -71,7 +72,7 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
     /**
      * Paginate the customer's shipment items with a clamped page size.
      */
-    private function provideCollection(object $customer, array $context): Paginator
+    private function provideCollection(object $customer, array $context, array $uriVariables = []): Paginator
     {
         $args = $context['args'] ?? [];
         $perPage = $this->clampPageSize((int) ($args['first'] ?? 30));
@@ -89,6 +90,10 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
             })
             ->orderBy('id', 'desc');
 
+        if ($parentShipmentId = $this->parentShipmentId($context, $uriVariables)) {
+            $query->where('shipment_id', $parentShipmentId);
+        }
+
         $total = (clone $query)->count();
         $items = $query->offset($offset)->limit($perPage)->get();
         $page = $total > 0 ? (int) floor($offset / $perPage) + 1 : 1;
@@ -96,5 +101,23 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
         return new Paginator(
             new LengthAwarePaginator($items, $total, $perPage, $page, ['path' => request()->url()])
         );
+    }
+
+    /**
+     * The parent shipment id when the collection is nested under a shipment.
+     */
+    private function parentShipmentId(array $context, array $uriVariables): ?int
+    {
+        $isNested = ($context['linkClass'] ?? null) === CustomerOrderShipment::class
+            && ($context['linkProperty'] ?? null) === 'items';
+
+        if (
+            ! $isNested
+            || ! isset($uriVariables['id'])
+        ) {
+            return null;
+        }
+
+        return (int) $uriVariables['id'];
     }
 }

@@ -38,6 +38,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Create a new customer',
+                description: 'Creates a verified customer on the given channel (the current one by default). `first_name`, `last_name`, a unique `email` and `customer_group_id` are required; by default a password is generated and emailed, or send `send_password: false` with a `password` of at least 6 characters.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -149,6 +150,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Update a customer',
+                description: 'Partial update: only the fields sent change (`first_name`, `last_name`, `email`, `phone`, `gender`, `date_of_birth`, `customer_group_id`, `status`, `is_suspended`, `subscribed_to_news_letter`, and `password` when not empty). The email must stay unique on the customer\'s channel. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],
@@ -415,8 +417,19 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
 )]
 class AdminCustomer extends EloquentModel
 {
+    /**
+     * The table.
+     */
     protected $table = 'customers';
 
+    /**
+     * The secret customer columns that are never serialized.
+     */
+    protected $hidden = ['password', 'api_token', 'remember_token', 'token'];
+
+    /**
+     * The casts.
+     */
     protected $casts = [
         'id' => 'int',
         'customer_group_id' => 'int',
@@ -429,34 +442,55 @@ class AdminCustomer extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
+    /**
+     * The appends.
+     */
     protected $appends = ['name', 'total_addresses', 'total_orders', 'total_amount_spent', 'message'];
 
+    /**
+     * The action message.
+     */
     public ?string $actionMessage = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get message attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getMessageAttribute(): ?string
     {
         return $this->actionMessage;
     }
 
+    /**
+     * Group.
+     */
     #[ApiProperty(writable: false, required: false)]
     public function group(): BelongsTo
     {
         return $this->belongsTo(AdminCustomerGroupRef::class, 'customer_group_id');
     }
 
+    /**
+     * Get name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getNameAttribute(): ?string
     {
         return trim((string) ($this->first_name ?? '').' '.(string) ($this->last_name ?? '')) ?: null;
     }
 
+    /**
+     * Get total addresses attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getTotalAddressesAttribute(): int
     {
@@ -466,12 +500,18 @@ class AdminCustomer extends EloquentModel
             ->count();
     }
 
+    /**
+     * Get total orders attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getTotalOrdersAttribute(): int
     {
         return (int) DB::table('orders')->where('customer_id', $this->id)->count();
     }
 
+    /**
+     * Get total amount spent attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getTotalAmountSpentAttribute(): float
     {

@@ -1,9 +1,13 @@
 <?php
 
 return [
+
     'graphql' => [
         'headers' => [
             'unknown-channel' => 'Le canal ":code" de l\'en-tête X-Channel n\'existe pas.',
+            'storefront-key-required' => 'L\'en-tête X-STOREFRONT-KEY est requis',
+            'storefront-key-invalid' => 'Clé de boutique invalide',
+            'storefront-key-rate-limited' => 'Limite de débit dépassée. Veuillez réessayer dans :seconds secondes',
         ],
 
         'cart' => [
@@ -20,20 +24,36 @@ return [
 
             'product-id-quantity-required' => 'L\'ID du produit et la quantité sont requis',
             'cart-item-id-quantity-required' => 'L\'ID de l\'article du panier et la quantité sont requis',
+
+            'file-token-invalid' => 'La référence du fichier téléversé est invalide ou a expiré. Téléversez à nouveau le fichier.',
+            'file-token-forbidden' => 'Ce fichier téléversé n\'appartient pas à votre panier.',
+            'customizable-option-required' => 'L\'option personnalisable ":label" est requise.',
+            'customizable-file-option-invalid' => 'L\'option sélectionnée n\'est pas une option de fichier pour ce produit.',
+            'customizable-file-invalid' => 'Le fichier est manquant, possède une extension non prise en charge ou est trop volumineux.',
             'cart-item-id-required' => 'L\'ID de l\'article du panier est requis',
             'item-ids-required' => 'Le tableau des ID d\'articles est requis',
+
+            'event-booking-quantity-not-changeable' => 'La quantité d\'un produit de réservation d\'événement ne peut pas être modifiée. La quantité est déterminée par la sélection des billets.',
+            'appointment-booking-quantity-not-changeable' => 'La quantité d\'un produit de réservation de rendez-vous ne peut pas être modifiée.',
             'coupon-code-required' => 'Le code de coupon est requis',
             'address-data-required' => 'Le pays, la région et le code postal sont requis',
+            'grouped-qty-required' => 'Le produit groupé nécessite des quantités sélectionnées. Transmettez groupedQty sous forme de chaîne JSON, par ex. {"101":2,"102":1}.',
+            'grouped-qty-must-include-all' => 'Le produit groupé nécessite des quantités pour tous les produits associés. ID manquants : :ids.',
+            'grouped-qty-invalid-associated' => 'Les quantités du produit groupé contiennent des ID de produits associés invalides : :ids.',
+            'grouped-qty-invalid-quantity' => 'Quantité invalide fournie pour le produit associé avec l\'ID :id. La quantité doit être un entier non négatif.',
+            'bundle-qty-not-changeable' => 'La quantité de l\'option de lot ":option" ne peut pas être modifiée. La quantité autorisée est :qty.',
 
             'add-product-failed' => 'Échec de l\'ajout du produit au panier',
             'update-item-failed' => 'Échec de la mise à jour de l\'article du panier',
             'remove-item-failed' => 'Échec de la suppression de l\'article du panier',
-            'apply-coupon-failed' => 'Échec de l\'application du coupon',
             'remove-coupon-failed' => 'Échec de la suppression du coupon',
+            'coupon-applied' => 'Coupon appliqué avec succès',
+            'coupon-removed' => 'Coupon supprimé avec succès',
             'move-to-wishlist-failed' => 'Échec du déplacement de l\'article vers la liste de souhaits',
             'estimate-shipping-failed' => 'Échec de l\'estimation des frais de livraison',
 
             'product-added-successfully' => 'Produit ajouté au panier avec succès',
+            'cart-item-updated-successfully' => 'Article du panier mis à jour avec succès',
             'guest-cart-merged' => 'Panier invité fusionné avec succès',
             'using-authenticated-cart' => 'Utilisation du panier du client authentifié',
             'cart-item-not-found' => 'Article du panier introuvable',
@@ -42,6 +62,15 @@ return [
             'select-items-to-move-wishlist' => 'Veuillez sélectionner les articles à déplacer vers la liste de souhaits',
             'invalid-or-expired-token' => 'Le jeton du panier est invalide ou expiré. Veuillez créer un nouveau panier.',
             'invalid-token-of-login-user' => 'Le jeton de l\'utilisateur connecté est invalide.',
+            'booking-note-required' => 'booking.note est requis pour la réservation de table.',
+            'booking-date-required' => 'booking.date est requis lorsque booking.slot est une plage horaire formatée.',
+            'booking-qty-required' => 'booking.qty est requis pour la réservation d\'événement.',
+            'booking-ticket-qty-invalid' => 'La quantité de billets de l\'événement doit être un nombre non négatif.',
+            'booking-ticket-required' => 'Sélectionnez au moins une quantité de billets pour la réservation d\'événement.',
+            'booking-slot-unavailable' => 'Le créneau sélectionné n\'est pas disponible pour la date indiquée.',
+            'invalid-quantity' => 'La quantité doit être au moins égale à 1',
+            'product-id-required' => 'L\'ID du produit est requis',
+            'shipping-address-required' => 'Le pays et le code postal sont requis pour estimer la livraison',
         ],
 
         'token-verification' => [
@@ -54,6 +83,7 @@ return [
             'customer-account-suspended' => 'Le compte client est suspendu',
             'error-verifying-token' => 'Erreur lors de la vérification du jeton',
             'token-is-valid' => 'Le jeton est valide',
+            'unauthenticated' => 'Non authentifié. Veuillez vous connecter pour effectuer cette action',
         ],
 
         'forgot-password' => [
@@ -62,7 +92,16 @@ return [
             'email-required' => 'L\'adresse e-mail est requise',
             'reset-link-sent' => 'Lien de réinitialisation envoyé avec succès à votre adresse e-mail',
             'email-not-found' => 'Adresse e-mail introuvable',
+            'throttled' => 'Trop de tentatives de réinitialisation. Veuillez patienter avant de réessayer.',
             'error-sending-reset-link' => 'Une erreur s\'est produite lors de l\'envoi du lien de réinitialisation',
+        ],
+
+        'reset-password' => [
+            'failed' => 'Le mot de passe n\'a pas pu être réinitialisé. Veuillez réessayer.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Trop de tentatives. Veuillez réessayer dans :seconds secondes.',
         ],
 
         'logout' => [
@@ -73,6 +112,7 @@ return [
             'logged-out-successfully' => 'Déconnexion réussie',
             'token-not-found-or-expired' => 'Jeton introuvable ou déjà expiré',
             'error-during-logout' => 'Erreur lors de la déconnexion',
+            'unauthenticated' => 'Non authentifié. Veuillez vous connecter pour effectuer cette action',
         ],
 
         'address' => [
@@ -84,32 +124,147 @@ return [
             'address-not-found' => 'Adresse introuvable ou n\'appartenant pas à ce client',
             'retrieved' => 'Adresses récupérées avec succès',
             'fetch-failed' => 'Échec de la récupération des adresses :',
+            'field-required' => 'Le champ :field est requis',
         ],
 
         'customer-profile' => [
             'authentication-required' => 'Le jeton d\'authentification est requis. Veuillez fournir le jeton dans l\'entrée de la requête',
             'invalid-token' => 'Jeton invalide ou expiré',
+            'profile-updated' => 'Profil client mis à jour avec succès',
         ],
 
         'customer' => [
             'password-mismatch' => 'Le mot de passe et sa confirmation ne correspondent pas',
             'confirm-password-required' => 'La confirmation du mot de passe est requise lors du changement de mot de passe',
+            'current-password-required' => 'Le mot de passe actuel est requis pour changer votre mot de passe',
+            'current-password-incorrect' => 'Le mot de passe actuel que vous avez saisi est incorrect',
+            'verify-email-to-login' => 'Votre compte a été créé. Veuillez vérifier votre adresse e-mail pour vous connecter.',
+            'delete-password-required' => 'Votre mot de passe est requis pour supprimer votre compte',
+            'delete-password-incorrect' => 'Le mot de passe que vous avez saisi est incorrect',
+            'delete-has-active-orders' => 'Votre compte ne peut pas être supprimé tant que vous avez des commandes en attente ou en cours de traitement',
             'unauthenticated' => 'Non authentifié. Veuillez vous connecter pour effectuer cette action',
+            'id-required' => 'L\'ID du client est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/admin/customers/1" ou ID numérique',
+            'not-found' => 'Client introuvable',
+            'phone-special-chars-not-allowed' => 'Le numéro de mobile ne peut contenir que des chiffres. Les caractères spéciaux ne sont pas autorisés',
+            'email-already-taken' => 'Cette adresse e-mail est déjà associée à un autre compte',
+            'invalid-gender' => 'Valeur de genre invalide ":gender". Les valeurs autorisées sont : :valid',
         ],
 
         'product-review' => [
+            'id-required' => 'L\'ID de l\'avis produit est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/reviews/1" ou ID numérique',
+            'not-found' => 'Avis produit avec l\'ID ":id" introuvable',
+            'item-not-found' => 'Élément ":id" introuvable.',
             'product-id-required' => 'L\'ID du produit est requis',
             'product-not-found' => 'Produit introuvable',
             'rating-invalid' => 'La note doit être comprise entre 1 et 5',
             'title-required' => 'Le titre de l\'avis est requis',
             'comment-required' => 'Le commentaire de l\'avis est requis',
+            'review-disabled' => 'Les avis produits sont actuellement désactivés',
+            'guest-review-disabled' => 'Les avis des invités ne sont pas autorisés. Veuillez vous connecter pour soumettre un avis',
+            'owner-required' => 'Veuillez vous connecter pour gérer votre avis',
+            'not-owned' => 'Cet avis n\'a pas été rédigé par vous et ne peut être ni modifié ni supprimé',
+            'invalid-attachments' => 'Format des pièces jointes invalide.',
+            'invalid-product-id-format' => 'Format d\'ID de produit invalide. Format IRI attendu comme "/api/shop/products/1" ou ID numérique',
         ],
 
-        'product' => [
-            'not-found' => 'Produit introuvable',
-            'not-found-with-sku' => 'No product found with SKU',
-            'not-found-with-url-key' => 'No product found with URL key',
-            'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
+        'customer-review' => [
+            'id-required' => 'L\'ID de l\'avis client est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/customer-reviews/1" ou ID numérique',
+            'not-found' => 'Avis client avec l\'ID ":id" introuvable',
+        ],
+
+        'newsletter' => [
+            'error-during-subscription' => 'Impossible de finaliser l\'abonnement pour le moment. Veuillez réessayer plus tard',
+        ],
+
+        'contact-us' => [
+            'success' => 'Votre demande a été envoyée avec succès. Nous vous répondrons rapidement',
+            'failed' => 'Impossible d\'envoyer votre demande pour le moment. Veuillez réessayer plus tard',
+            'invalid-input' => 'Données du formulaire de contact invalides',
+        ],
+
+        'customer-order' => [
+            'id-required' => 'L\'ID de la commande client est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/customer-orders/1" ou ID numérique',
+            'not-found' => 'Commande client avec l\'ID ":id" introuvable',
+        ],
+
+        'return' => [
+            'not-found' => 'Demande de retour introuvable.',
+            'disabled' => 'Les retours ne sont pas activés pour cette boutique.',
+            'invalid-input' => 'Détails du retour manquants ou invalides.',
+            'invalid-resolution-type' => 'Le type de résolution doit être "return" ou "cancel_items".',
+            'agreement-required' => 'Vous devez accepter la politique de retour.',
+            'invalid-order' => 'La commande sélectionnée n\'est pas valide.',
+            'invalid-item' => 'L\'article sélectionné n\'est pas éligible au retour.',
+            'qty-exceeds' => 'La quantité demandée dépasse la quantité retournable.',
+            'invalid-package-condition' => 'L\'état du colis doit être "open" ou "packed".',
+            'invalid-image' => 'Un ou plusieurs des fichiers téléversés ont un type de fichier non pris en charge.',
+            'invalid-custom-field' => 'Champ personnalisé inconnu ":id".',
+            'custom-field-required' => 'Le champ ":field" est requis.',
+            'invalid-custom-field-value' => 'La valeur de ":field" ne fait pas partie des options autorisées.',
+            'created' => 'Demande de retour créée avec succès.',
+            'canceled' => 'Demande de retour annulée avec succès.',
+            'already-canceled' => 'La demande de retour est déjà annulée.',
+            'cancel-not-allowed' => 'Cette demande de retour ne peut pas être annulée.',
+            'close-not-allowed' => 'Cette demande de retour ne peut pas être clôturée.',
+            'reopened' => 'Demande de retour rouverte avec succès.',
+            'reopen-not-allowed' => 'Cette demande de retour ne peut pas être rouverte.',
+            'closed' => 'Demande de retour clôturée avec succès.',
+            'message-sent' => 'Message envoyé avec succès.',
+            'attachment-not-found' => 'Pièce jointe du message introuvable.',
+        ],
+
+        'eu-withdrawal' => [
+            'not-found' => 'Déclaration de rétractation introuvable.',
+            'order-not-found' => 'La commande est introuvable ou n\'est pas éligible à la rétractation.',
+            'too-many-attempts' => 'Trop de tentatives. Veuillez réessayer dans :seconds secondes.',
+            'created' => 'Déclaration de rétractation déposée avec succès.',
+        ],
+
+        'customer-order-shipment' => [
+            'id-required' => 'L\'ID de l\'expédition est requis',
+            'not-found' => 'Expédition avec l\'ID ":id" introuvable ou n\'appartenant pas à ce client',
+            'item-not-found' => 'Article d\'expédition avec l\'ID ":id" introuvable ou n\'appartenant pas à ce client',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/customer-order-shipments/1" ou ID numérique',
+        ],
+
+        'cancel-order' => [
+            'order-id-required' => 'L\'ID de la commande est requis pour annuler une commande',
+            'not-found' => 'Commande avec l\'ID ":id" introuvable ou n\'appartenant pas à ce client',
+            'cancel-success' => 'La commande a été annulée avec succès',
+            'cancel-failed' => 'La commande ne peut pas être annulée. Elle a peut-être déjà été traitée, expédiée ou annulée',
+        ],
+
+        'reorder' => [
+            'order-id-required' => 'L\'ID de la commande est requis pour recommander',
+            'not-found' => 'Commande avec l\'ID ":id" introuvable ou n\'appartenant pas à ce client',
+            'reorder-success' => ':count article(s) de votre commande précédente ont été ajoutés à votre panier',
+            'no-items-added' => 'Aucun article n\'a pu être ajouté au panier. Les produits sont peut-être en rupture de stock ou indisponibles',
+        ],
+
+        'customer-downloadable-product' => [
+            'id-required' => 'L\'ID du produit téléchargeable du client est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/customer-downloadable-products/1" ou ID numérique',
+            'not-found' => 'Produit téléchargeable du client avec l\'ID ":id" introuvable',
+
+            'download' => [
+                'unauthenticated' => 'Non autorisé : authentification du client requise.',
+                'not-found' => 'Produit téléchargeable introuvable.',
+                'pending' => 'Le téléchargement est en attente. Veuillez attendre que la commande soit facturée.',
+                'limit-exceeded' => 'Limite de téléchargement dépassée.',
+                'no-downloads-remaining' => 'Plus aucun téléchargement disponible.',
+                'file-not-found' => 'Fichier introuvable.',
+                'link-not-found' => 'Lien téléchargeable introuvable.',
+            ],
+        ],
+
+        'customer-invoice' => [
+            'id-required' => 'L\'ID de la facture client est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/customer-invoices/1" ou ID numérique',
+            'not-found' => 'Facture client avec l\'ID ":id" introuvable',
         ],
 
         'auth' => [
@@ -119,6 +274,14 @@ return [
             'token-required' => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
             'unknown-resource' => 'Ressource inconnue',
             'cannot-update-other-profile' => 'Non autorisé : impossible de mettre à jour le profil d\'un autre client',
+            'refresh-token-invalid' => 'Le jeton de rafraîchissement est invalide ou a expiré. Veuillez vous reconnecter.',
+            'too-many-login-attempts' => 'Trop de tentatives de connexion. Veuillez réessayer dans :seconds secondes.',
+            'too-many-refresh-requests' => 'Trop de renouvellements de jeton. Veuillez réessayer dans :seconds secondes.',
+            'rate-limit-exceeded' => 'Trop de tentatives.',
+            'access-token-expired' => 'Le jeton d\'accès a expiré. Rafraîchissez-le pour continuer.',
+            'logged-out-all' => 'Vous avez été déconnecté de toutes les sessions.',
+            'session-not-found' => 'Session introuvable.',
+            'session-revoked' => 'La session a été révoquée.',
         ],
 
         'upload' => [
@@ -130,6 +293,35 @@ return [
 
         'attribute' => [
             'code-already-exists' => 'Le code d\'attribut existe déjà',
+            'option-id-required' => 'Le paramètre "attributeId" est requis lors de l\'interrogation directe des options d\'attribut',
+            'id-required' => 'L\'ID de l\'attribut est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/attributes/1" ou ID numérique',
+            'not-found' => 'Attribut introuvable',
+        ],
+
+        'attribute-option' => [
+            'id-required' => 'L\'ID de l\'option d\'attribut est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/attribute-options/1" ou ID numérique',
+            'not-found' => 'Option d\'attribut introuvable',
+        ],
+
+        'channel' => [
+            'id-required' => 'L\'ID du canal est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/channels/1" ou ID numérique',
+            'not-found' => 'Canal introuvable',
+        ],
+
+        'country-state' => [
+            'id-required' => 'L\'ID de la région du pays est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/country-states/1" ou ID numérique',
+            'not-found' => 'Région du pays introuvable',
+            'country-id-required' => 'L\'ID du pays est requis',
+        ],
+
+        'country' => [
+            'id-required' => 'L\'ID du pays est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/countries/1" ou ID numérique',
+            'not-found' => 'Pays introuvable',
         ],
 
         'login' => [
@@ -145,6 +337,7 @@ return [
             'signed-in' => 'Connexion réussie.',
             'token-required' => 'Un jeton de connexion sociale est requis.',
             'invalid-token' => 'Le jeton de connexion sociale est invalide ou expiré. Veuillez réessayer.',
+            'google-not-configured' => 'La connexion avec Google n\'est pas configurée pour cette boutique.',
             'wrong-audience' => 'Ce jeton a été émis pour une autre application.',
             'email-required' => 'Le fournisseur n’a pas communiqué d’adresse e-mail. Veuillez vous inscrire avec un e-mail.',
             'account-inactive' => 'Votre activation nécessite l\'approbation de l\'administrateur',
@@ -168,6 +361,8 @@ return [
             'payment-method-save-failed' => 'Échec de l\'enregistrement de la méthode de paiement',
             'payment-method-saved' => 'Méthode de paiement enregistrée avec succès',
             'payment-method-error' => 'Erreur lors de l\'enregistrement de la méthode de paiement',
+            'order-placed' => 'Commande passée avec succès',
+            'order-redirect-required' => 'Ce mode de paiement exige que l\'acheteur finalise le paiement sur la passerelle. Redirigez-le vers redirectUrl ; la commande est créée une fois que la passerelle a confirmé le paiement.',
             'order-creation-failed' => 'Échec de la création de la commande : l\'ID de commande est nul ou la commande n\'a pas été enregistrée',
             'order-retrieval-failed' => 'Échec de la récupération de la commande créée',
             'order-creation-error' => 'Échec de la création de la commande',
@@ -187,6 +382,10 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'Produit introuvable',
+            'not-found-with-sku' => 'Aucun produit trouvé avec ce SKU',
+            'not-found-with-url-key' => 'Aucun produit trouvé avec cette clé d\'URL',
+            'parameters-required' => 'Au moins l\'un des paramètres suivants doit être fourni : "sku", "id", "urlKey"',
             'type' => 'Type de produit',
             'attribute-family' => 'Famille d\'attributs',
             'sku' => 'SKU',
@@ -207,17 +406,8 @@ return [
             'size' => 'Taille',
             'brand' => 'Marque',
             'super-attributes' => 'Super attributs',
-        ],
-
-        'compare-item' => [
-            'id-required' => 'L\'ID de l\'article de comparaison est requis',
-            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/compare-items/1" ou ID numérique',
-            'not-found' => 'Article de comparaison non trouvé',
-            'product-id-required' => 'L\'ID du produit est requis',
-            'customer-id-required' => 'L\'ID du client est requis',
-            'product-not-found' => 'Produit non trouvé',
-            'customer-not-found' => 'Client non trouvé',
-            'already-exists' => 'Ce produit se trouve déjà dans votre liste de comparaison',
+            'id-required' => 'L\'ID du produit est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/products/1" ou ID numérique',
         ],
 
         'downloadable-product' => [
@@ -232,48 +422,1558 @@ return [
             'redirect-external-url' => 'Redirection vers l\'URL de téléchargement externe',
             'file-error' => 'Une erreur s\'est produite lors du traitement de votre demande de téléchargement',
             'unauthorized-access' => 'Accès non autorisé à la ressource de téléchargement',
+            'unauthenticated' => 'Non autorisé : authentification du client requise',
+            'link-id-required' => 'downloadableLinkPurchasedId est requis',
+            'link-not-found' => 'Lien téléchargeable introuvable',
+            'not-owner' => 'Non autorisé : ce lien de téléchargement ne vous appartient pas',
+            'pending' => 'Le téléchargement est en attente. Veuillez attendre que la commande soit facturée.',
+            'limit-exceeded' => 'Limite de téléchargement dépassée',
+            'no-downloads-left' => 'Plus aucun téléchargement disponible',
+        ],
+
+        'booking-slot' => [
+            'id-required' => 'L\'ID du produit de réservation est requis.',
+            'date-required' => 'La date est requise.',
+            'product-not-found' => 'Produit de réservation introuvable.',
+            'invalid-type' => 'Ce type de réservation n\'est pas pris en charge.',
+            'invalid-time-range' => 'Plage horaire invalide.',
+            'invalid-time-format' => 'Format d\'heure invalide.',
+        ],
+
+        'resolver' => [
+            'no-resolve-info' => 'GraphQL ResolveInfo n\'est pas disponible dans le contexte. Impossible de déterminer la classe du modèle.',
+            'unknown-resource-class' => 'Impossible de déterminer la classe de ressource à partir du type de retour GraphQL',
+        ],
+
+        'docs' => [
+            'openapi-unavailable' => 'La fabrique OpenAPI n\'a pas pu être instanciée',
+        ],
+
+        'locale' => [
+            'id-required' => 'L\'ID de la langue est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/locales/1" ou ID numérique',
+            'not-found' => 'Langue introuvable',
+        ],
+
+        'category' => [
+            'id-required' => 'L\'ID de la catégorie est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/categories/1" ou ID numérique',
+            'not-found' => 'Catégorie introuvable',
+        ],
+
+        'compare-item' => [
+            'id-required' => 'L\'ID de l\'article de comparaison est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/compare-items/1" ou ID numérique',
+            'not-found' => 'Article de comparaison non trouvé',
+            'product-id-required' => 'L\'ID du produit est requis',
+            'customer-id-required' => 'L\'ID du client est requis',
+            'product-not-found' => 'Produit non trouvé',
+            'customer-not-found' => 'Client non trouvé',
+            'already-exists' => 'Ce produit se trouve déjà dans votre liste de comparaison',
+            'delete-all-success' => 'Tous les articles de comparaison ont été supprimés avec succès',
+        ],
+
+        'wishlist' => [
+            'id-required' => 'L\'ID de l\'article de la liste de souhaits est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/wishlists/1" ou ID numérique',
+            'not-found' => 'Article de la liste de souhaits introuvable',
+            'product-id-required' => 'L\'ID du produit est requis',
+            'customer-id-required' => 'L\'ID du client est requis',
+            'product-not-found' => 'Produit introuvable',
+            'product-disabled' => 'Ce produit est actuellement désactivé',
+            'customer-not-found' => 'Client introuvable',
+            'already-exists' => 'Ce produit se trouve déjà dans votre liste de souhaits',
+            'added' => 'Article ajouté à la liste de souhaits avec succès',
+            'removed' => 'Article supprimé de la liste de souhaits avec succès',
+            'product-removed' => 'Le produit a été supprimé',
+            'wishlist-item-id-required' => 'L\'ID de l\'article de la liste de souhaits est requis',
+            'invalid-quantity' => 'La quantité doit être supérieure à 0',
+            'move-to-cart-missing-options' => 'Des options requises du produit sont manquantes. Veuillez le configurer manuellement',
+            'moved-to-cart-success' => 'Article déplacé vers le panier avec succès',
+            'delete-all-success' => 'Tous les articles de la liste de souhaits ont été supprimés avec succès',
+        ],
+
+        'gdpr' => [
+            'disabled' => 'Les demandes de données RGPD sont désactivées. Veuillez activer le RGPD dans la configuration d\'administration.',
+            'unauthenticated' => 'Vous devez être connecté pour gérer les demandes de données RGPD.',
+            'not-found' => 'Demande de données RGPD introuvable',
+            'type-required' => 'Le type de demande est requis',
+            'type-invalid' => 'Le type de demande doit être "delete" ou "update"',
+            'message-required' => 'Le message est requis',
+            'raised' => 'Votre demande de données RGPD a été soumise avec succès.',
+            'revoked' => 'Votre demande de données RGPD a été révoquée avec succès.',
+            'revoke-not-allowed' => 'Cette demande de données RGPD ne peut plus être révoquée.',
+            'deleted' => 'Votre demande de données RGPD a été supprimée avec succès.',
+        ],
+
+        'section' => [
+            'id-required' => 'L\'ID de la section est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/sections/1" ou ID numérique',
+            'not-found' => 'Section introuvable',
         ],
 
         'install' => [
+            'starting' => 'Démarrage de l\'installation d\'API Platform...',
+            'completed-success' => '✓ Installation d\'API Platform terminée avec succès !',
+            'failed' => '✗ Échec de l\'installation : ',
+
             'provider-already-registered' => 'ℹ Service Provider déjà enregistré',
+            'provider-not-registered' => '⚠ Impossible d\'enregistrer automatiquement le Service Provider. Ajoutez :provider manuellement à bootstrap/providers.php.',
+            'provider-registered' => '✓ Service Provider enregistré dans bootstrap/providers.php',
+            'provider-file-not-found' => 'Fichier introuvable : :file',
+            'provider-permission-denied' => 'Permission refusée : impossible d\'écrire dans :file. Veuillez vérifier les permissions du fichier.',
+
+            'config-already-exists' => 'ℹ Le fichier de configuration existe déjà',
+            'config-published' => '✓ Configuration d\'API Platform publiée dans config/',
+            'config-source-not-found' => 'Fichier de configuration source introuvable : :file',
+            'config-permission-denied' => 'Permission refusée : impossible d\'écrire dans :directory. Veuillez vérifier les permissions du répertoire.',
+
+            'translatable-not-found' => 'ℹ TranslatableModel introuvable - ignoré',
+            'translatable-already-abstract' => 'ℹ TranslatableModel est déjà abstrait',
+            'translatable-made-abstract' => '✓ TranslatableModel rendu abstrait',
+            'translatable-permission-denied' => 'Permission refusée : impossible d\'écrire dans :file. Veuillez vérifier les permissions du fichier.',
+
+            'providers-already-registered' => 'ℹ Les providers d\'API Platform sont déjà enregistrés',
+            'providers-registered' => '✓ Providers d\'API Platform enregistrés dans bootstrap/app.php',
+            'providers-file-not-found' => 'Fichier introuvable : :file',
+            'providers-permission-denied' => 'Permission refusée : impossible d\'écrire dans :file. Veuillez vérifier les permissions du fichier.',
+            'providers-not-found' => 'Impossible de trouver la création de l\'Application dans bootstrap/app.php',
+
+            'assets-published' => '✓ Ressources du package publiées',
+            'running-migrations' => 'Exécution des migrations de la base de données...',
+            'migrations-completed' => '✓ Migrations de la base de données terminées',
             'clearing-caches' => 'Vidage et optimisation des caches...',
             'caches-optimized' => '✓ Caches vidés et optimisés',
+            'generating-api-key' => 'Génération de la clé API...',
+            'api-key-generated' => '✓ Clé API générée avec succès',
+            'api-key-already-exists' => 'ℹ La clé API de la boutique par défaut existe déjà - génération ignorée',
+
+            'migrations-error' => 'Échec des migrations de la base de données.',
+            'migrations-error-running' => 'Erreur lors de l\'exécution des migrations de la base de données : :error',
             'cache-clear-error' => 'Échec du vidage du cache.',
             'cache-optimize-error' => 'Échec de l\'optimisation.',
             'cache-error' => 'Erreur lors du vidage et de l\'optimisation des caches : :error',
+            'api-key-generation-error' => 'Échec de la génération de la clé API.',
+            'api-key-error' => 'Erreur lors de la génération de la clé API : :error',
+
+            'key-management-required' => '--key est requis pour l\'action :action',
+            'key-rotation-error' => 'Erreur lors de la rotation de la clé : :error',
+            'key-deactivation-error' => 'Erreur lors de la désactivation de la clé : :error',
+            'key-not-found' => 'Clé API introuvable : :identifier',
+
+            'maintenance-starting' => '🔄 Démarrage de la maintenance des clés API...',
+            'maintenance-complete' => '✅ Maintenance des clés API terminée',
+            'cleanup-expired-keys' => '🧹 Nettoyage des clés expirées...',
+            'cleanup-expired-none' => '   ℹ️ Aucune clé expirée à nettoyer',
+            'invalidate-deprecated' => '⚠️ Invalidation des clés obsolètes...',
+            'invalidate-deprecated-none' => '   ℹ️ Aucune clé obsolète à invalider',
+            'notify-expiring' => '📧 Envoi des notifications d\'expiration...',
+            'notify-expiring-none' => '   ℹ️ Aucune clé ne nécessite de notification',
+
+            'key-rotated-success' => '✅ Rotation de la clé effectuée avec succès !',
+            'key-deactivated-success' => '✅ Clé désactivée avec succès !',
+            'deactivation-cancelled' => 'Désactivation annulée.',
+            'cleanup-cancelled' => 'Nettoyage annulé.',
+
+            'key-status-title' => 'Statut de la clé : :name',
+            'key-status-active' => 'Active : :status',
+            'key-status-usable' => 'Utilisable : :status',
+            'key-status-expired' => 'Expirée : :status',
+            'key-status-deprecated' => 'Obsolète : :status',
+            'key-status-expires-at' => 'Expire le : :expires',
+            'key-status-days-until-expiry' => 'Jours avant expiration : :days',
+            'key-status-last-used' => 'Dernière utilisation : :date',
+            'key-status-rotated-from' => 'Issue de la rotation de : :key',
+            'key-status-rotated-keys' => 'Clés issues de la rotation de celle-ci : :count',
+
+            'policy-compliance-summary' => 'Résumé de conformité à la politique de rotation des clés API',
+            'available-actions' => 'Actions disponibles : rotate, deactivate, cleanup, status, expiring, unused, summary',
+
+            'asset-linked-success' => '✓ Ressources d\'API Platform liées avec succès',
+            'symlink-create-failed' => 'Impossible de créer le lien symbolique, copie des ressources à la place...',
+            'asset-copy-warning' => 'Avertissement : impossible de lier ou de copier les ressources d\'API Platform. Une configuration manuelle peut être nécessaire.',
+            'asset-copied-success' => '✓ Ressources d\'API Platform copiées avec succès',
+
+            'key-name-required' => 'Le nom de la clé de boutique ne peut pas être vide.',
+            'key-generated-success' => 'Clé de boutique générée avec succès !',
+            'key-details' => 'Détails de la clé :',
+            'key-secure-warning' => 'Conservez cette clé en sécurité ! Elle sera utilisée dans l\'en-tête X-STOREFRONT-KEY.',
+            'key-share-warning' => 'Ne partagez pas cette clé publiquement et ne la versionnez pas dans un système de contrôle de version.',
+
+            'key-already-exists' => 'Une clé de boutique nommée \':name\' existe déjà.',
+            'cleanup-success' => '✅ :count clés expirées nettoyées',
+            'confirm-cleanup' => 'Cette opération supprimera de manière réversible (soft-delete) toutes les clés expirées. Continuer ?',
+            'confirm-deactivate' => 'Êtes-vous sûr de vouloir désactiver la clé : :name ?',
+
+            'old-key' => 'Ancienne clé : :name',
+            'old-key-id' => 'ID de l\'ancienne clé : :id',
+            'deprecation-date' => 'Date d\'obsolescence : :date',
+            'new-key' => 'Nouvelle clé : :name',
+            'new-key-id' => 'ID de la nouvelle clé : :id',
+            'new-key-value' => 'Valeur de la nouvelle clé : :key',
+            'expires-at' => 'Expire le : :date',
+            'invalid-action' => 'Action invalide : :action',
+            'key-active' => 'Active : :status',
+            'key-usable' => 'Utilisable : :status',
+            'key-expired' => 'Expirée : :status',
+            'key-deprecated' => 'Obsolète : :status',
+            'key-field-id' => 'ID',
+            'key-field-name' => 'Nom',
+            'key-field-key' => 'Clé',
+            'key-field-rate-limit' => 'Limite de débit',
+            'key-field-status' => 'Statut',
+            'key-days' => ' jours',
+            'key-never' => 'Jamais',
+            'key-requests-minute' => ' requêtes/minute',
+            'key-unlimited' => 'Illimité',
+            'rate-limit-exceeded' => 'La limite de débit demandée dépasse le maximum autorisé de :max. Définie à :max requêtes/minute.',
+
+            'vendor-path-not-found' => 'Chemin vendor d\'API Platform introuvable à : :path',
+            'assets-already-linked' => 'Ressources d\'API Platform déjà liées à : :path',
+            'no-keys-expiring' => 'Aucune clé n\'expire dans les :days prochains jours',
+            'keys-expiring-title' => 'Clés expirant dans les :days prochains jours :',
+            'key-display-format' => '• :name (ID : :id)',
+            'key-expires-display' => '  Expire le : :date (:days jours restants)',
+            'no-unused-keys' => 'Aucune clé inutilisée trouvée (> :days jours)',
+            'unused-keys-title' => 'Clés inutilisées (> :days jours) :',
+            'key-last-used-display' => '  Dernière utilisation : :date',
+            'total-keys' => 'Total des clés : :count',
+            'valid-keys' => 'Clés valides : :count',
+            'expired-keys' => 'Clés expirées : :count',
+            'deprecated-keys' => 'Clés obsolètes : :count',
+            'keys-expiring-soon' => 'Clés expirant bientôt (7 jours) : :count',
+            'unused-keys-summary' => 'Clés inutilisées (90 jours) : :count',
+            'recently-rotated' => 'Rotations récentes (30 jours) : :count',
+            'cleanup-success-message' => '   ✅ :count clés expirées nettoyées',
+            'invalidate-success-message' => '   ✅ :count clés obsolètes invalidées',
+            'notify-success-message' => '   ✅ :count notifications d\'expiration envoyées',
+            'notify-failed-message' => '   ⚠️ Échec de la notification pour :key : :error',
+            'publish-assets-warning' => 'Avertissement : impossible de publier les ressources du package. :error',
+            'env-file-not-found' => 'Le fichier .env est introuvable. Créez-le avant l\'installation.',
+            'env-permission-denied' => 'Le fichier .env n\'est pas accessible en écriture. Vérifiez ses permissions.',
+            'env-config-saved' => '✓ Configuration d\'environnement d\'API Platform enregistrée avec succès',
+            'api-endpoints' => 'Points de terminaison de l\'API :',
+            'api-documentation' => 'Documentation de l\'API : :url',
+            'api-landing-page' => 'Page d\'accueil de l\'API : :url',
+            'graphql-playground' => 'GraphQL Playground : :url',
+            'rest-api-storefront' => 'Swagger de l\'API REST de la boutique : :url',
+            'rest-api-admin' => 'Swagger de l\'API REST d\'administration : :url',
+            'generating-jwt-keys' => 'Génération des clés de signature JWT pour les jetons de l\'API d\'administration...',
+            'jwt-keys-generated' => '✓ Les clés de signature JWT sont prêtes',
+            'jwt-keys-warning' => 'Avertissement : impossible de générer les clés de signature JWT. Exécutez php artisan bagisto-api:jwt-keys manuellement. :error',
+            'admin-login' => 'Connexion à l\'API d\'administration : :url',
+            'admin-api-tokens' => 'Jetons de l\'API d\'administration (intégrations serveur) : :url',
+            'key-rotation-invalid-key' => 'Impossible d\'effectuer la rotation d\'une clé invalide ou expirée',
+            'env-file-not-found' => 'Le fichier .env est introuvable',
+            'env-permission-denied' => 'Permission refusée : impossible d\'écrire dans le fichier .env. Veuillez vérifier les permissions du fichier.',
+        ],
+
+        'attribute-translation' => [
+            'id-required' => 'L\'ID de la traduction d\'attribut est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/attribute-translations/1" ou ID numérique',
+            'not-found' => 'Traduction d\'attribut introuvable',
+        ],
+
+        'currency' => [
+            'id-required' => 'L\'ID de la devise est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/currencies/1" ou ID numérique',
+            'not-found' => 'Devise introuvable',
+        ],
+
+        'customer-address' => [
+            'id-required' => 'L\'ID de l\'adresse client est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/customer-addresses/1" ou ID numérique',
+        ],
+
+        'customer-order-shipment-item' => [
+            'id-required' => 'L\'ID de l\'article d\'expédition est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/customer-order-shipment-items/1" ou ID numérique',
+            'not-found' => 'Article d\'expédition introuvable',
+        ],
+
+        'page' => [
+            'id-required' => 'L\'ID de la page est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/pages/1" ou ID numérique',
+            'not-found' => 'Page introuvable',
+        ],
+
+        'page-translation' => [
+            'id-required' => 'L\'ID de la traduction de page est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/page-translations/1" ou ID numérique',
+            'not-found' => 'Traduction de page introuvable',
+        ],
+
+        'product-bundle-option' => [
+            'id-required' => 'L\'ID de l\'option de lot est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-bundle-options/1" ou ID numérique',
+            'not-found' => 'Option de lot introuvable',
+        ],
+
+        'product-bundle-option-product' => [
+            'id-required' => 'L\'ID du produit de l\'option de lot est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-bundle-option-products/1" ou ID numérique',
+            'not-found' => 'Produit de l\'option de lot introuvable',
+        ],
+
+        'product-downloadable-link' => [
+            'id-required' => 'L\'ID du lien téléchargeable est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-downloadable-links/1" ou ID numérique',
+            'not-found' => 'Lien téléchargeable introuvable',
+        ],
+
+        'product-downloadable-sample' => [
+            'id-required' => 'L\'ID de l\'échantillon téléchargeable est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-downloadable-samples/1" ou ID numérique',
+            'not-found' => 'Échantillon téléchargeable introuvable',
+        ],
+
+        'product-grouped-product' => [
+            'id-required' => 'L\'ID du produit groupé est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-grouped-products/1" ou ID numérique',
+            'not-found' => 'Produit groupé introuvable',
+        ],
+
+        'product-images' => [
+            'id-required' => 'L\'ID de l\'image du produit est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-images/1" ou ID numérique',
+            'not-found' => 'Image du produit introuvable',
+        ],
+
+        'product-videos' => [
+            'id-required' => 'L\'ID de la vidéo du produit est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/product-videos/1" ou ID numérique',
+            'not-found' => 'Vidéo du produit introuvable',
+        ],
+
+        'theme-customization' => [
+            'id-required' => 'L\'ID de la personnalisation du thème est requis',
+            'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/shop/theme-customizations/1" ou ID numérique',
+            'not-found' => 'Personnalisation du thème introuvable',
+        ],
+
+        'unknown-resource' => [
+            'id-required' => 'L\'ID de la ressource est requis',
+            'not-found' => 'Ressource introuvable',
         ],
     ],
 
     'admin' => [
+        'profile' => [
+            'unauthenticated' => 'Vous n\'êtes pas authentifié.',
+        ],
+
         'dashboard' => [
             'invalid-type' => 'Type de statistique du tableau de bord inconnu. Types valides : over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
         ],
 
+        'rma' => [
+            'not-found' => 'Demande de retour introuvable.',
+            'invalid-input' => 'Détails du retour manquants ou invalides.',
+            'invalid-order' => 'La commande sélectionnée n\'est pas valide.',
+            'invalid-item' => 'L\'article sélectionné n\'est pas éligible au retour.',
+            'invalid-resolution-type' => 'Le type de résolution doit être "return" ou "cancel_items".',
+            'qty-exceeds' => 'La quantité demandée dépasse la quantité retournable.',
+            'created' => 'Demande de retour créée avec succès.',
+            'status-updated' => 'Statut du retour mis à jour avec succès.',
+            'invalid-status' => 'Statut de retour invalide.',
+            'reopened' => 'Demande de retour rouverte avec succès.',
+            'reopen-not-allowed' => 'Cette demande de retour ne peut pas être rouverte.',
+            'refund-failed' => 'Le remboursement n\'a pas pu être créé pour ce retour.',
+            'message-sent' => 'Message envoyé avec succès.',
+            'no-permission' => 'Vous n\'avez pas la permission d\'effectuer cette action.',
+            'reason-not-found' => 'Motif de retour introuvable.',
+            'reason-deleted' => 'Motif de retour supprimé avec succès.',
+            'status-not-found' => 'Statut de retour introuvable.',
+            'status-deleted' => 'Statut de retour supprimé avec succès.',
+            'status-default-undeletable' => 'Un statut de retour par défaut ne peut pas être supprimé.',
+            'rule-not-found' => 'Règle de retour introuvable.',
+            'rule-deleted' => 'Règle de retour supprimée avec succès.',
+            'custom-field-not-found' => 'Champ personnalisé de retour introuvable.',
+            'custom-field-deleted' => 'Champ personnalisé de retour supprimé avec succès.',
+            'custom-field-options-required' => 'Au moins une option est requise pour ce type de champ.',
+            'mass-indices-required' => 'Au moins un id est requis.',
+            'mass-delete-success' => 'Éléments sélectionnés supprimés.',
+            'mass-update-success' => 'Éléments sélectionnés mis à jour.',
+            'mass-value-invalid' => 'La valeur du statut doit être 0 ou 1.',
+            'image-not-found' => 'Image de retour introuvable.',
+            'attachment-not-found' => 'Pièce jointe du message introuvable.',
+        ],
+
+        'eu-withdrawal' => [
+            'not-found' => 'Déclaration de rétractation introuvable.',
+            'no-permission' => 'Vous n\'avez pas la permission de gérer les rétractations UE.',
+            'declined' => 'Rétractation marquée comme refusée.',
+            'refunded' => 'Rétractation marquée comme remboursée.',
+            'confirmation-resent' => 'E-mail de confirmation renvoyé avec succès.',
+            'confirmation-failed' => 'L\'e-mail de confirmation n\'a pas pu être envoyé.',
+        ],
+
+        'reporting' => [
+            'invalid-entity' => 'Entité de rapport inconnue.',
+            'invalid-type' => 'Type de statistique de rapport inconnu pour cette entité.',
+            'export-format-unsupported' => 'Seuls les formats d\'export csv, xls et xlsx sont pris en charge.',
+        ],
+
+        'configuration' => [
+            'unauthenticated' => 'Vous n\'êtes pas authentifié.',
+            'no-permission' => 'Vous n\'avez pas la permission de mettre à jour la configuration.',
+            'slug-required' => 'Le paramètre de requête `slug` est requis.',
+            'slug-not-found' => 'Aucune section de configuration n\'est enregistrée pour le slug indiqué.',
+            'values-required' => 'Au moins une valeur est requise sous `values`.',
+            'scope-escape' => 'La clé `:key` se trouve en dehors de l\'arborescence du slug demandé.',
+            'unknown-field' => 'La clé `:key` n\'est pas un champ de configuration enregistré.',
+            'validation-failed' => 'Une ou plusieurs valeurs de configuration n\'ont pas passé la validation.',
+            'file-upload-rest-only' => 'Le téléversement de fichiers binaires pour le champ `:field` n\'est pris en charge que via le point de terminaison REST multipart, et non via GraphQL.',
+            'custom-view-readonly' => 'Le champ `:field` est un champ personnalisé rendu par Blade et ne peut pas être mis à jour via l\'API.',
+            'update-success' => 'Configuration mise à jour avec succès.',
+        ],
+
+        'customer' => [
+            'not-found' => 'Client introuvable.',
+            'no-permission' => 'Vous n\'avez pas la permission d\'effectuer cette action.',
+            'has-active-orders' => 'Le client a des commandes en attente ou en cours de traitement et ne peut pas être supprimé.',
+            'deleted' => 'Client supprimé avec succès.',
+            'mass-delete-indices-required' => 'Au moins un id de client est requis.',
+            'mass-delete-success' => 'Clients supprimés.',
+            'mass-update-indices-required' => 'Au moins un id de client est requis.',
+            'mass-update-value-invalid' => 'La valeur du statut doit être 0 ou 1.',
+            'mass-update-success' => 'Statut du client mis à jour.',
+
+            'address' => [
+                'not-found' => 'Adresse introuvable.',
+                'not-owned' => 'Cette adresse n\'appartient pas au client indiqué.',
+                'customer-id-required' => 'customerId est requis pour identifier le propriétaire de l\'adresse.',
+                'deleted' => 'Adresse supprimée avec succès.',
+            ],
+
+            'note' => [
+                'empty' => 'Le texte de la note est requis.',
+                'created' => 'Note ajoutée avec succès.',
+            ],
+
+            'review' => [
+                'not-found' => 'Avis introuvable.',
+                'no-permission' => 'Vous n\'avez pas la permission d\'effectuer cette action.',
+                'invalid-status' => 'Le statut doit être l\'un des suivants : pending, approved, disapproved.',
+                'updated' => 'Avis mis à jour avec succès.',
+                'deleted' => 'Avis supprimé avec succès.',
+                'mass-delete-indices-required' => 'Au moins un id d\'avis est requis.',
+                'mass-delete-success' => 'Avis supprimés.',
+                'mass-update-indices-required' => 'Au moins un id d\'avis est requis.',
+                'mass-update-value-invalid' => 'La valeur du statut doit être l\'une des suivantes : pending, approved, disapproved.',
+                'mass-update-success' => 'Statut des avis mis à jour.',
+            ],
+
+            'group' => [
+                'not-found' => 'Groupe de clients introuvable.',
+                'deleted' => 'Groupe de clients supprimé avec succès.',
+                'is-system' => 'Les groupes de clients système ne peuvent pas être supprimés.',
+                'has-customers' => 'Le groupe de clients comporte des clients associés et ne peut pas être supprimé.',
+                'system-code-immutable' => 'Le code d\'un groupe de clients système ne peut pas être modifié.',
+                'system-flag-immutable' => 'L\'indicateur is_user_defined d\'un groupe de clients système ne peut pas être modifié.',
+                'mass-delete-indices-required' => 'Au moins un id de groupe de clients est requis.',
+                'mass-delete-success' => 'Groupes de clients supprimés.',
+            ],
+
+            'gdpr' => [
+                'not-found' => 'Demande RGPD introuvable.',
+                'no-permission' => 'Vous n\'avez pas la permission d\'effectuer cette action.',
+                'deleted' => 'Demande RGPD supprimée avec succès.',
+                'invalid-status' => 'Le statut doit être l\'un des suivants : pending, processing, declined, approved, revoked.',
+                'no-changes' => 'Au moins le statut ou le message est requis.',
+                'already-processed' => 'Cette demande RGPD a déjà été traitée et ne peut pas être relancée.',
+
+                'process' => [
+                    'approved' => 'Demande RGPD approuvée.',
+                    'deleted' => 'Demande RGPD approuvée et client supprimé.',
+                ],
+            ],
+        ],
+
+        'order' => [
+            'not-found' => 'Commande introuvable.',
+
+            'reorder' => [
+                'success' => 'Nouvelle commande réussie. Un nouveau panier brouillon a été créé.',
+                'cannot-reorder' => 'Cette commande ne peut pas être recommandée (commande invité ou un ou plusieurs articles ne sont plus vendables).',
+                'failed' => 'Échec de la nouvelle commande. Veuillez réessayer.',
+                'guest-not-supported' => 'La nouvelle commande n\'est pas prise en charge pour les commandes invité.',
+                'items-not-saleable' => 'Un ou plusieurs articles de cette commande ne sont plus disponibles à l\'achat.',
+                'no-permission' => 'Vous n\'avez pas la permission de créer des commandes.',
+                'disabled-in-settings' => 'La nouvelle commande par l\'administrateur est désactivée dans les paramètres de la boutique.',
+            ],
+
+            'actions' => [
+                'cancel' => [
+                    'closed' => 'Les commandes clôturées ne peuvent pas être annulées.',
+                    'fraud' => 'Les commandes frauduleuses ne peuvent pas être annulées.',
+                    'nothing-to-cancel' => 'Il n\'y a rien à annuler sur cette commande.',
+                    'already-processed' => 'Cette commande a déjà été facturée ou expédiée et ne peut plus être annulée. Vous pouvez effectuer un remboursement à la place.',
+                    'no-permission' => 'Vous n\'avez pas la permission d\'annuler des commandes.',
+                    'success' => 'Commande annulée avec succès.',
+                    'failed' => 'Impossible d\'annuler la commande.',
+                ],
+
+                'comment' => [
+                    'empty' => 'Le commentaire est requis.',
+                    'success' => 'Commentaire ajouté à la commande.',
+                    'failed' => 'Impossible d\'ajouter le commentaire.',
+                ],
+
+                'invoice' => [
+                    'closed' => 'Les commandes clôturées ne peuvent pas être facturées.',
+                    'fraud' => 'Les commandes frauduleuses ne peuvent pas être facturées.',
+                    'nothing-to-invoice' => 'Il n\'y a rien à facturer sur cette commande.',
+                    'already-invoiced' => 'Une facture a déjà été générée pour cette commande.',
+                    'paypal-standard-blocked' => 'Les factures ne peuvent pas être créées pour les commandes payées via PayPal Standard.',
+                    'no-permission' => 'Vous n\'avez pas la permission de créer des factures.',
+                    'items-required' => 'Au moins un article avec une quantité positive est requis.',
+                    'qty-exceeds' => 'La quantité demandée (:requested) dépasse la quantité disponible (:available) pour le SKU :sku.',
+                    'not-found' => 'Facture introuvable.',
+                    'success' => 'Facture créée avec succès.',
+                    'failed' => 'Impossible de créer la facture.',
+                    'pdf-failed' => 'Impossible de générer le PDF de la facture.',
+                    'email-invalid' => 'Une adresse e-mail de destinataire valide est requise.',
+                    'duplicate-sent' => 'E-mail de la facture envoyé à :email.',
+                    'mass-status-indices-required' => 'Au moins un id de facture est requis.',
+                    'mass-status-value-invalid' => 'Le statut doit être l\'un des suivants : pending, paid, overdue.',
+                    'mass-status-success' => 'Statut de la facture mis à jour avec succès.',
+                ],
+
+                'shipment' => [
+                    'closed' => 'Les commandes clôturées ne peuvent pas être expédiées.',
+                    'fraud' => 'Les commandes frauduleuses ne peuvent pas être expédiées.',
+                    'nothing-to-ship' => 'Il n\'y a rien à expédier sur cette commande.',
+                    'no-permission' => 'Vous n\'avez pas la permission d\'expédier des commandes.',
+                    'source-required' => 'La source d\'inventaire est requise.',
+                    'items-required' => 'Au moins un article avec une quantité positive est requis.',
+                    'qty-exceeds' => 'La quantité demandée (:requested) dépasse la quantité disponible (:available) pour le SKU :sku.',
+                    'inventory-insufficient' => 'Le stock de la source sélectionnée est insuffisant pour le SKU :sku.',
+                    'not-found' => 'Expédition introuvable.',
+                    'success' => 'Expédition créée avec succès.',
+                    'failed' => 'Impossible de créer l\'expédition.',
+                ],
+
+                'refund' => [
+                    'closed' => 'Les commandes clôturées ne peuvent pas être remboursées.',
+                    'fraud' => 'Les commandes frauduleuses ne peuvent pas être remboursées.',
+                    'nothing-to-refund' => 'Il ne reste rien à rembourser sur cette commande.',
+                    'no-permission' => 'Vous n\'avez pas la permission de créer des remboursements.',
+                    'qty-exceeds' => 'La quantité demandée (:requested) dépasse la quantité disponible (:available) pour le SKU :sku.',
+                    'amount-zero' => 'Le montant du remboursement calculé est nul. Ajustez la quantité, la livraison ou les valeurs d\'ajustement.',
+                    'amount-exceeds-max' => 'Le montant du remboursement (:amount) dépasse le montant maximal remboursable (:max).',
+                    'not-found' => 'Remboursement introuvable.',
+                    'success' => 'Remboursement créé avec succès.',
+                    'failed' => 'Impossible de créer le remboursement.',
+                ],
+            ],
+        ],
+
+        'appearance' => [
+            'no-permission' => 'Vous n\'avez pas la permission de gérer l\'apparence.',
+
+            'theme' => [
+                'not-found' => 'Thème introuvable.',
+                'not-installed' => 'Ce thème n\'est pas installé.',
+                'channel-ids-required' => 'Au moins un canal est requis.',
+                'unknown-channel' => 'Un ou plusieurs canaux n\'existent pas.',
+                'activated' => 'Thème activé avec succès.',
+            ],
+
+            'section' => [
+                'not-found' => 'Section introuvable.',
+                'invalid-payload' => 'Contenu de section non pris en charge.',
+                'options-required' => 'Les options sont requises.',
+                'status-required' => 'Le statut est requis.',
+                'section-ids-required' => 'Au moins une section est requise.',
+                'reorder-single-scope' => 'Les sections ne peuvent être réordonnées qu\'au sein d\'un seul thème et d\'un seul canal à la fois.',
+                'reorder-incomplete' => 'La réorganisation nécessite toutes les sections du thème et du canal, dans l\'ordre où elles doivent être affichées.',
+                'unknown-section' => 'Une ou plusieurs sections n\'existent pas.',
+                'file-required' => 'Un fichier est requis.',
+                'created' => 'Section créée avec succès.',
+                'updated' => 'Section mise à jour avec succès.',
+                'deleted' => 'Section supprimée avec succès.',
+                'draft-saved' => 'Modifications de la section mises en attente avec succès.',
+                'status-staged' => 'Statut de la section mis en attente avec succès.',
+                'order-staged' => 'Ordre des sections mis en attente avec succès.',
+                'duplicated' => 'Section copiée avec succès.',
+                'published' => 'Modifications de la section publiées avec succès.',
+                'discarded' => 'Modifications de la section abandonnées avec succès.',
+                'media-uploaded' => 'Média téléversé avec succès.',
+            ],
+        ],
+
+        'sales' => [
+            'no-permission' => 'Vous n\'avez pas la permission de consulter cette ressource de ventes.',
+
+            'invoice' => [
+                'not-found' => 'Facture introuvable.',
+                'no-permission' => 'Vous n\'avez pas la permission de consulter les factures.',
+            ],
+
+            'shipment' => [
+                'not-found' => 'Expédition introuvable.',
+                'no-permission' => 'Vous n\'avez pas la permission de consulter les expéditions.',
+            ],
+
+            'refund' => [
+                'not-found' => 'Remboursement introuvable.',
+                'no-permission' => 'Vous n\'avez pas la permission de consulter les remboursements.',
+                'export-format-unsupported' => 'Seuls les exports csv, xls et xlsx sont pris en charge.',
+            ],
+
+            'transaction' => [
+                'not-found' => 'Transaction introuvable.',
+                'no-permission' => 'Vous n\'avez pas la permission de consulter les transactions.',
+
+                'create' => [
+                    'invoice-required' => 'Le champ invoiceId est requis.',
+                    'payment-method-required' => 'Le champ paymentMethod est requis.',
+                    'amount-invalid' => 'Le champ montant est requis et doit être numérique.',
+                    'invoice-missing' => 'La facture indiquée est introuvable.',
+                    'already-paid' => 'Cette facture est déjà entièrement payée.',
+                    'amount-exceeds' => 'Le montant du paiement dépasse le total général de la facture.',
+                    'amount-zero' => 'Le montant du paiement doit être supérieur à zéro.',
+                ],
+            ],
+
+            'booking' => [
+                'not-found' => 'Réservation introuvable.',
+                'no-permission' => 'Vous n\'avez pas la permission de consulter les réservations.',
+            ],
+
+            'export' => [
+                'format-unsupported' => 'Seuls les exports csv, xls et xlsx sont pris en charge.',
+            ],
+        ],
+
+        'cart' => [
+            'not-found' => 'Panier introuvable.',
+            'not-draft' => 'Ce panier ne peut pas être modifié via l\'API d\'administration.',
+            'product-required' => 'productId est requis.',
+            'product-not-found' => 'Produit introuvable.',
+            'booking-unsupported' => 'Les produits de réservation ne peuvent pas être ajoutés à une commande brouillon d\'administration. Les achats de réservation doivent être effectués via la boutique client.',
+            'product-not-saleable' => 'Ce produit n\'est pas disponible à la vente (en rupture de stock ou désactivé) et ne peut pas être ajouté à la commande.',
+            'qty-required' => 'qty est requis et doit être un objet non vide de type itemId => quantité.',
+            'cart-item-required' => 'cartItemId est requis.',
+            'item-added' => 'Article ajouté au panier.',
+            'item-add-failed' => 'Impossible d\'ajouter l\'article au panier.',
+            'item-updated' => 'Articles du panier mis à jour.',
+            'item-update-failed' => 'Impossible de mettre à jour les articles du panier.',
+            'item-removed' => 'Article supprimé du panier.',
+            'item-remove-failed' => 'Impossible de supprimer l\'article du panier.',
+            'address-saved' => 'Adresse enregistrée.',
+            'address-required' => 'Une adresse de facturation est requise.',
+            'address-incomplete' => 'Le champ :field est requis pour enregistrer l\'adresse.',
+            'coupon-code-required' => 'Un code de coupon est requis.',
+            'coupon-applied' => 'Coupon appliqué.',
+            'coupon-already-applied' => 'Le coupon est déjà appliqué à ce panier.',
+            'coupon-not-found' => 'Coupon introuvable ou inactif.',
+            'coupon-removed' => 'Coupon supprimé.',
+            'coupon-error' => 'Une erreur s\'est produite lors de l\'application du coupon.',
+            'unknown-error' => 'Une erreur s\'est produite.',
+            'draft-created' => 'Panier brouillon créé.',
+            'draft-failed' => 'Impossible de créer le panier brouillon.',
+            'addresses-required-for-shipping' => 'Les adresses doivent être enregistrées avant de sélectionner une méthode de livraison.',
+            'shipping-required-for-payment' => 'La méthode de livraison doit être sélectionnée avant la méthode de paiement.',
+            'shipping-method-required' => 'La méthode de livraison est requise.',
+            'shipping-method-saved' => 'Méthode de livraison enregistrée.',
+            'shipping-method-failed' => 'Impossible d\'enregistrer la méthode de livraison.',
+            'payment-method-required' => 'La méthode de paiement est requise.',
+            'payment-method-saved' => 'Méthode de paiement enregistrée.',
+            'payment-method-failed' => 'Impossible d\'enregistrer la méthode de paiement.',
+
+            'place-order' => [
+                'success' => 'Commande passée avec succès.',
+                'failed' => 'Impossible de passer la commande.',
+                'error' => 'Impossible de passer la commande : le panier contient des erreurs.',
+                'minimum-order-error' => 'Le montant minimum de commande est de :amount. Ajoutez d\'autres articles avant de passer la commande.',
+                'empty-cart' => 'Le panier est vide — ajoutez des articles avant de passer une commande.',
+                'addresses-required' => 'Les adresses de facturation et de livraison doivent être enregistrées avant de passer la commande.',
+                'shipping-required' => 'Une méthode de livraison doit être sélectionnée avant de passer la commande.',
+                'payment-required' => 'Une méthode de paiement doit être sélectionnée avant de passer la commande.',
+                'payment-method-unsupported' => 'Seuls cashondelivery et moneytransfer sont pris en charge pour les commandes passées par l\'administrateur.',
+            ],
+        ],
+
+        'product' => [
+            'not-found' => 'Produit introuvable.',
+
+            'mass-delete-success' => 'Produits supprimés avec succès.',
+            'mass-update-status-success' => 'Statut des produits mis à jour avec succès.',
+            'indices-required' => 'Le champ indices est requis et doit être un tableau non vide.',
+            'indices-invalid' => 'Le champ indices doit être un tableau d\'ID de produits entiers.',
+            'value-invalid' => 'Le champ value est requis et doit être 0 ou 1.',
+            'mass-delete-failed' => 'Un ou plusieurs produits n\'ont pas pu être supprimés.',
+            'no-permission' => 'Vous n\'avez pas la permission de gérer les produits.',
+
+            'copy-success' => 'Produit copié avec succès.',
+            'copy-failed' => 'Échec de la copie du produit.',
+            'copy-variant-not-supported' => 'Les variantes de produits configurables ne peuvent pas être copiées. Copiez plutôt le produit configurable parent.',
+
+            'create' => [
+                'created' => 'Produit créé avec succès.',
+                'create-failed' => 'Échec de la création du produit.',
+                'sku-required' => 'Le champ sku est requis.',
+                'sku-unique' => 'Ce sku est déjà utilisé.',
+                'sku-invalid' => 'Le sku ne peut contenir que des lettres, des chiffres et des tirets (par ex. "sp-001").',
+                'attribute-family-required' => 'Le champ attribute_family_id est requis.',
+                'attribute-family-not-found' => 'La famille d\'attributs sélectionnée n\'existe pas.',
+                'type-required' => 'Le champ type est requis.',
+                'type-not-yet-supported' => 'Le type de produit ":type" n\'est pas pris en charge par cette API. Types autorisés : simple, virtual, downloadable, grouped, bundle, configurable, booking.',
+                'super-attributes-required' => 'Le champ super_attributes est requis lorsque type=configurable. Fournissez une correspondance entre le code d\'attribut (ou l\'id) et les option_ids, par ex. { "color": [1,2], "size": [4,5] }.',
+                'super-attributes-invalid' => 'Le champ super_attributes doit être une correspondance non vide entre le code d\'attribut (ou l\'id) et une liste non vide d\'option_ids.',
+                'no-permission' => 'Vous n\'avez pas la permission de créer des produits.',
+            ],
+
+            'update' => [
+                'updated' => 'Produit mis à jour avec succès.',
+                'update-failed' => 'Échec de la mise à jour du produit.',
+                'id-required' => 'Un id de produit est requis.',
+                'url-key-required' => 'Le champ url_key ne peut pas être vide.',
+                'url-key-unique' => 'Cette url_key est déjà utilisée par un autre produit.',
+                'special-price-invalid' => 'Le special_price doit être un nombre inférieur au prix.',
+                'special-price-date-range-invalid' => 'Le special_price_to doit être égal ou postérieur au special_price_from.',
+                'boolean-field-invalid' => 'Le champ :field doit être 0 ou 1.',
+                'categories-invalid' => 'Le champ categories doit être un tableau d\'ids de catégories.',
+                'channels-invalid' => 'Le champ channels doit être un tableau d\'ids de canaux.',
+                'super-attributes-cannot-change' => 'super_attributes ne peut pas être modifié après la création du produit.',
+                'sub-resource-stripped-images' => 'Les images doivent être gérées via POST /api/admin/catalog/products/{id}/images. Le champ images a été ignoré.',
+                'sub-resource-stripped-inventories' => 'Les inventaires doivent être gérés via PUT /api/admin/catalog/products/{id}/inventories. Le champ inventories a été ignoré.',
+                'sub-resource-stripped-customer-group-prices' => 'Les prix par groupe de clients doivent être gérés via /api/admin/catalog/products/{id}/customer-group-prices. Le champ customer_group_prices a été ignoré.',
+                'translations-single-locale' => 'Seule la langue demandée a été mise à jour. Pour mettre à jour la ou les langues :locales, envoyez une requête distincte avec ?locale=<code> pour chacune.',
+            ],
+
+            'delete' => [
+                'deleted' => 'Produit supprimé avec succès.',
+                'delete-failed' => 'Échec de la suppression du produit.',
+            ],
+
+            'image' => [
+                'uploaded' => 'Image du produit téléversée avec succès.',
+                'updated' => 'Image du produit mise à jour avec succès.',
+                'update-empty' => 'Envoyez un texte alternatif ou une position à mettre à jour.',
+                'reordered' => 'Images du produit réordonnées avec succès.',
+                'deleted' => 'Image du produit supprimée avec succès.',
+                'image-required' => 'Un fichier image est requis (champ multipart "image").',
+                'image-invalid-type' => 'Le type d\'image doit être l\'un des suivants : bmp, jpeg, jpg, png, webp.',
+                'image-too-large' => 'L\'image est trop volumineuse. La taille maximale autorisée est de 4 Mo.',
+                'not-found' => 'Image du produit introuvable.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les images des produits.',
+                'upload-failed' => 'Échec du téléversement de l\'image du produit.',
+                'reorder-failed' => 'Échec de la réorganisation des images du produit.',
+                'delete-failed' => 'Échec de la suppression de l\'image du produit.',
+                'order-required' => 'Le tableau "order" est requis et ne doit pas être vide.',
+                'order-invalid' => 'Chaque entrée de "order" doit être un objet avec id et position.',
+                'id-not-on-product' => 'L\'image :id n\'appartient pas à ce produit.',
+                'graphql-upload-unsupported' => 'Le téléversement d\'images via GraphQL n\'est pas pris en charge. Utilisez POST /api/admin/catalog/products/{productId}/images avec multipart/form-data.',
+            ],
+
+            'downloadable' => [
+                'file-required' => 'Un fichier est requis (champ multipart "file").',
+                'file-too-large' => 'Le fichier est trop volumineux. La taille maximale autorisée est de 128 Mo.',
+                'upload-failed' => 'Échec du téléversement du fichier téléchargeable.',
+                'file-not-found' => 'Aucun fichier stocké trouvé pour ce produit et cet attribut.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les fichiers des produits téléchargeables.',
+            ],
+
+            'video' => [
+                'uploaded' => 'Vidéo du produit téléversée avec succès.',
+                'deleted' => 'Vidéo du produit supprimée avec succès.',
+                'video-required' => 'Un fichier vidéo est requis (champ multipart "video").',
+                'video-invalid-type' => 'Le type de vidéo doit être l\'un des suivants : mp4, webm, ogg, mov.',
+                'video-too-large' => 'La vidéo est trop volumineuse. La taille maximale autorisée est de 100 Mo.',
+                'not-found' => 'Vidéo du produit introuvable.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les vidéos des produits.',
+                'upload-failed' => 'Échec du téléversement de la vidéo du produit.',
+                'delete-failed' => 'Échec de la suppression de la vidéo du produit.',
+                'graphql-upload-unsupported' => 'Le téléversement de vidéos via GraphQL n\'est pas pris en charge. Utilisez POST /api/admin/catalog/products/{productId}/videos avec multipart/form-data.',
+            ],
+
+            'inventory' => [
+                'updated' => 'Inventaires du produit enregistrés avec succès.',
+                'inventories-required' => 'Le champ inventories est requis et doit être une correspondance non vide entre inventory_source_id et la quantité.',
+                'inventories-invalid' => 'Le champ inventories doit être une correspondance entre inventory_source_id (entier positif) et la quantité (entier non négatif).',
+                'source-not-found' => 'La source d\'inventaire :id n\'existe pas.',
+                'qty-invalid' => 'Chaque quantité doit être un entier non négatif.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les inventaires des produits.',
+                'not-found' => 'Produit introuvable.',
+            ],
+
+            'customer-group-price' => [
+                'created' => 'Prix par groupe de clients ajouté avec succès.',
+                'updated' => 'Prix par groupe de clients mis à jour avec succès.',
+                'deleted' => 'Prix par groupe de clients supprimé avec succès.',
+                'qty-required' => 'Le champ qty est requis.',
+                'qty-invalid' => 'Le champ qty doit être un entier supérieur ou égal à 1.',
+                'value-type-required' => 'Le champ value_type est requis.',
+                'value-type-invalid' => 'Le champ value_type doit être "fixed" ou "discount".',
+                'value-required' => 'Le champ value est requis.',
+                'value-invalid' => 'Le champ value doit être un nombre non négatif.',
+                'customer-group-not-found' => 'Le groupe de clients sélectionné n\'existe pas.',
+                'duplicate-qty-group' => 'Un prix par groupe de clients pour cette combinaison (qty, customer_group_id) existe déjà pour ce produit.',
+                'not-found' => 'Prix par groupe de clients introuvable.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les prix par groupe de clients des produits.',
+            ],
+        ],
+
+        'category' => [
+            'not-found' => 'Catégorie introuvable.',
+
+            'created' => 'Catégorie créée avec succès.',
+            'updated' => 'Catégorie mise à jour avec succès.',
+            'deleted' => 'Catégorie supprimée avec succès.',
+            'slug-required' => 'Le champ slug est requis.',
+            'slug-unique' => 'Ce slug est déjà utilisé.',
+            'name-required' => 'Le champ name est requis.',
+            'position-required' => 'Le champ position est requis.',
+            'attributes-required' => 'Au moins un attribut filtrable est requis.',
+            'description-required-for-mode' => 'Une description est requise pour le mode d\'affichage choisi.',
+            'cannot-delete-root' => 'Les catégories racines et racines de canal ne peuvent pas être supprimées.',
+            'cannot-delete-channel-root' => 'Cette catégorie est une racine de canal et ne peut pas être supprimée.',
+            'delete-failed' => 'La catégorie n\'a pas pu être supprimée.',
+            'no-permission' => 'Vous n\'avez pas la permission de gérer les catégories.',
+            'mass-delete-success' => 'Catégories supprimées avec succès.',
+            'mass-update-status-success' => 'Statut des catégories mis à jour avec succès.',
+            'mass-delete-indices-required' => 'Le champ indices est requis et doit être un tableau non vide.',
+            'mass-update-status-value-required' => 'Le champ value est requis et doit être 0 ou 1.',
+        ],
+
+        'attribute' => [
+            'not-found' => 'Attribut introuvable.',
+
+            'create-success' => 'Attribut créé avec succès.',
+            'update-success' => 'Attribut mis à jour avec succès.',
+            'delete-success' => 'Attribut supprimé avec succès.',
+            'delete-failed' => 'L\'attribut n\'a pas pu être supprimé.',
+            'mass-delete-success' => 'Attributs supprimés avec succès.',
+            'mass-delete-indices-required' => 'Le champ indices est requis et doit être un tableau non vide.',
+
+            'code-immutable' => 'Le code d\'attribut ne peut pas être modifié une fois l\'attribut créé.',
+            'type-immutable' => 'Le type d\'attribut ne peut pas être modifié tant qu\'il possède des valeurs de produit.',
+            'locale-scope-immutable' => 'Impossible de modifier la portée par langue tant que l\'attribut possède des valeurs de produit.',
+            'system-attribute' => 'Les attributs système ne peuvent pas être supprimés.',
+            'in-use-family' => 'L\'attribut fait partie d\'une ou plusieurs familles d\'attributs (ID de groupes : :ids). Retirez-le d\'abord de ces familles.',
+
+            'option-not-found' => 'Option d\'attribut introuvable.',
+            'option-not-supported' => 'Le type d\'attribut ":type" ne prend pas en charge les options. Seuls les attributs select, multiselect et checkbox peuvent avoir des options.',
+            'option-in-use' => 'Cette option est utilisée par :count produit(s) et ne peut pas être supprimée.',
+            'option-delete-success' => 'Option d\'attribut supprimée avec succès.',
+        ],
+
+        'family' => [
+            'not-found' => 'Famille d\'attributs introuvable.',
+
+            'created' => 'Famille d\'attributs créée avec succès.',
+            'updated' => 'Famille d\'attributs mise à jour avec succès.',
+            'deleted' => 'Famille d\'attributs supprimée avec succès.',
+            'code-required' => 'Le code de la famille est requis.',
+            'code-unique' => 'Le code de la famille doit être unique.',
+            'name-required' => 'Le nom de la famille est requis.',
+            'group-code-required' => 'Chaque groupe d\'attributs doit avoir un code.',
+            'group-name-required' => 'Chaque groupe d\'attributs doit avoir un nom.',
+            'group-column-invalid' => 'Chaque colonne de groupe d\'attributs doit être 1 ou 2.',
+            'group-name-duplicate' => 'Le nom d\'un groupe d\'attributs doit être unique au sein de la famille d\'attributs.',
+            'update-failed' => 'La famille d\'attributs n\'a pas pu être mise à jour.',
+            'create-failed' => 'La famille d\'attributs n\'a pas pu être créée.',
+            'default-delete-error' => 'La famille d\'attributs par défaut ne peut pas être supprimée.',
+            'last-delete-error' => 'Au moins une famille d\'attributs est requise.',
+            'attribute-product-error' => 'Cette famille d\'attributs est utilisée par un ou plusieurs produits. Réaffectez ces produits avant de la supprimer.',
+            'delete-failed' => 'La famille d\'attributs n\'a pas pu être supprimée.',
+            'no-permission' => 'Vous n\'avez pas la permission de gérer les familles d\'attributs.',
+        ],
+
         'settings' => [
+            'locale' => [
+                'not-found' => 'Langue introuvable.',
+                'created' => 'Langue créée avec succès.',
+                'updated' => 'Langue mise à jour avec succès.',
+                'deleted' => 'Langue supprimée avec succès.',
+                'cannot-delete-last' => 'Au moins une langue est requise — impossible de supprimer la dernière langue restante.',
+                'cannot-delete-channel-default' => 'Cette langue est la langue par défaut d\'un ou plusieurs canaux et ne peut pas être supprimée.',
+                'delete-failed' => 'La langue n\'a pas pu être supprimée.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les langues.',
+                'mass-delete-success' => 'Langues supprimées avec succès.',
+                'mass-delete-indices-required' => 'Le champ indices est requis et doit être un tableau non vide.',
+            ],
+
+            'theme' => [
+                'not-found' => 'Personnalisation du thème introuvable.',
+                'created' => 'Personnalisation du thème créée avec succès.',
+                'updated' => 'Personnalisation du thème mise à jour avec succès.',
+                'deleted' => 'Personnalisation du thème supprimée avec succès.',
+                'delete-failed' => 'La personnalisation du thème n\'a pas pu être supprimée.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les personnalisations du thème.',
+                'mass-delete-success' => 'Personnalisations du thème supprimées avec succès.',
+                'mass-delete-indices-required' => 'Le champ indices est requis et doit être un tableau non vide.',
+                'mass-update-success' => 'Personnalisations du thème mises à jour avec succès.',
+                'mass-update-indices-required' => 'Le champ indices est requis et doit être un tableau non vide.',
+                'mass-update-value-invalid' => 'Le champ value doit être 0 ou 1.',
+            ],
+
+            'inventory-source' => [
+                'not-found' => 'Source d\'inventaire introuvable.',
+                'created' => 'Source d\'inventaire créée avec succès.',
+                'updated' => 'Source d\'inventaire mise à jour avec succès.',
+                'deleted' => 'Source d\'inventaire supprimée avec succès.',
+                'code-unique' => 'Une source d\'inventaire avec ce code existe déjà.',
+                'last-delete-error' => 'Au moins une source d\'inventaire est requise — impossible de supprimer la dernière source restante.',
+                'in-use' => 'Cette source d\'inventaire est référencée par des inventaires de produits et ne peut pas être supprimée.',
+                'delete-failed' => 'La source d\'inventaire n\'a pas pu être supprimée.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les sources d\'inventaire.',
+                'mass-delete-success' => 'Sources d\'inventaire supprimées avec succès.',
+                'mass-delete-indices-required' => 'Le champ indices est requis et doit être un tableau non vide.',
+            ],
+
+            'exchange-rate' => [
+                'not-found' => 'Taux de change introuvable.',
+                'created' => 'Taux de change créé avec succès.',
+                'updated' => 'Taux de change mis à jour avec succès.',
+                'deleted' => 'Taux de change supprimé avec succès.',
+                'duplicate-pair' => 'Un taux de change pour cette devise cible existe déjà. Mettez à jour la ligne existante ou supprimez-la d\'abord.',
+                'delete-failed' => 'Le taux de change n\'a pas pu être supprimé.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les taux de change.',
+                'mass-delete-success' => 'Taux de change supprimés avec succès.',
+                'mass-delete-indices-required' => 'Le champ indices est requis et doit être un tableau non vide.',
+                'update-rates-success' => 'Taux de change mis à jour avec succès.',
+                'update-rates-failed' => 'Les taux de change n\'ont pas pu être mis à jour depuis le fournisseur externe.',
+                'provider-not-configured' => 'Aucun fournisseur externe de taux de change n\'est configuré.',
+            ],
+
+            'tax-rate' => [
+                'not-found' => 'Taux de taxe introuvable.',
+                'created' => 'Taux de taxe créé avec succès.',
+                'updated' => 'Taux de taxe mis à jour avec succès.',
+                'deleted' => 'Taux de taxe supprimé avec succès.',
+                'delete-failed' => 'Le taux de taxe n\'a pas pu être supprimé.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les taux de taxe.',
+                'zip-code-required' => 'Le champ zip_code est requis lorsque is_zip vaut false.',
+                'zip-range-required' => 'zip_from et zip_to sont tous deux requis lorsque is_zip vaut true.',
+            ],
+
+            'tax-category' => [
+                'not-found' => 'Catégorie de taxe introuvable.',
+                'created' => 'Catégorie de taxe créée avec succès.',
+                'updated' => 'Catégorie de taxe mise à jour avec succès.',
+                'deleted' => 'Catégorie de taxe supprimée avec succès.',
+                'code-unique' => 'Ce code est déjà utilisé.',
+                'cannot-delete-in-use' => 'Cette catégorie de taxe possède encore des taux de taxe associés et ne peut pas être supprimée.',
+                'delete-failed' => 'La catégorie de taxe n\'a pas pu être supprimée.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les catégories de taxe.',
+            ],
+
             'role' => [
+                'not-found' => 'Rôle introuvable.',
+                'created' => 'Rôle créé avec succès.',
+                'updated' => 'Rôle mis à jour avec succès.',
+                'deleted' => 'Rôle supprimé avec succès.',
+                'permissions-required' => 'Le champ permissions est requis lorsque permission_type vaut custom.',
+                'cannot-delete-in-use' => 'Ce rôle est attribué à un ou plusieurs administrateurs et ne peut pas être supprimé.',
+                'cannot-delete-last-role' => 'Au moins un rôle est requis — impossible de supprimer le dernier rôle restant.',
+                'cannot-change-last-all-access' => 'Le seul rôle à accès complet ne peut pas être transformé en rôle personnalisé.',
+                'delete-failed' => 'Le rôle n\'a pas pu être supprimé.',
                 'no-permission' => 'Vous n\'avez pas la permission de gérer les rôles.',
             ],
 
+            'currency' => [
+                'not-found' => 'Devise introuvable.',
+                'created' => 'Devise créée avec succès.',
+                'updated' => 'Devise mise à jour avec succès.',
+                'deleted' => 'Devise supprimée avec succès.',
+                'code-required' => 'Le champ code est requis.',
+                'code-size' => 'Le code doit comporter exactement 3 caractères alphabétiques.',
+                'code-unique' => 'Ce code est déjà utilisé.',
+                'name-required' => 'Le champ name est requis.',
+                'cannot-delete-last' => 'Au moins une devise est requise — impossible de supprimer la dernière devise restante.',
+                'cannot-delete-channel-base' => 'Cette devise est la devise de base d\'un ou plusieurs canaux et ne peut pas être supprimée.',
+                'delete-failed' => 'La devise n\'a pas pu être supprimée.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les devises.',
+
+                'mass-delete-success' => 'Devises supprimées avec succès.',
+                'mass-delete-indices-required' => 'Le champ indices est requis et doit être un tableau non vide.',
+            ],
+
+            'channel' => [
+                'not-found' => 'Canal introuvable.',
+
+                'created' => 'Canal créé avec succès.',
+                'updated' => 'Canal mis à jour avec succès.',
+                'deleted' => 'Canal supprimé avec succès.',
+                'code-unique' => 'Ce code est déjà utilisé.',
+                'hostname-unique' => 'Ce nom d\'hôte est déjà utilisé.',
+                'default-locale-mismatch' => 'Le default_locale_id doit figurer dans la liste des langues.',
+                'base-currency-mismatch' => 'Le base_currency_id doit figurer dans la liste des devises.',
+                'unknown-locale' => 'Un ou plusieurs ids de langue n\'existent pas.',
+                'unknown-currency' => 'Un ou plusieurs ids de devise n\'existent pas.',
+                'unknown-inventory-source' => 'Un ou plusieurs ids inventory_source n\'existent pas.',
+                'unknown-root-category' => 'Le root_category_id n\'existe pas.',
+                'cannot-delete-last' => 'Au moins un canal est requis — impossible de supprimer le dernier canal restant.',
+                'cannot-delete-default' => 'Impossible de supprimer le canal par défaut de l\'application.',
+                'delete-failed' => 'Le canal n\'a pas pu être supprimé.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les canaux.',
+            ],
+
             'user' => [
+                'not-found' => 'Utilisateur administrateur introuvable.',
+                'created' => 'Utilisateur administrateur créé avec succès.',
+                'updated' => 'Utilisateur administrateur mis à jour avec succès.',
+                'deleted' => 'Utilisateur administrateur supprimé avec succès.',
+                'name-required' => 'Le champ name est requis.',
+                'email-required' => 'Le champ email est requis.',
+                'email-invalid' => 'L\'e-mail doit être une adresse e-mail valide.',
+                'email-unique' => 'Cet e-mail est déjà utilisé.',
+                'password-required' => 'Le champ password est requis.',
+                'password-min' => 'Le mot de passe doit comporter au moins 6 caractères.',
+                'role-required' => 'Le champ role_id est requis.',
+                'role-not-found' => 'Le rôle sélectionné n\'existe pas.',
+                'status-invalid' => 'Le statut doit être 0 ou 1.',
+                'cannot-delete-self' => 'Vous ne pouvez pas supprimer votre propre compte administrateur.',
+                'cannot-delete-last-admin' => 'Au moins un utilisateur administrateur est requis — impossible de supprimer le dernier administrateur restant.',
+                'cannot-change' => 'Le champ :name du dernier administrateur à accès complet ne peut pas être modifié.',
+                'delete-failed' => 'L\'utilisateur administrateur n\'a pas pu être supprimé.',
                 'no-permission' => 'Vous n\'avez pas la permission de gérer les utilisateurs administrateurs.',
+                'self-delete-password-required' => 'Le champ password est requis pour supprimer votre propre compte.',
+                'self-delete-incorrect-password' => 'Le mot de passe est incorrect.',
+                'self-deleted' => 'Votre compte administrateur a été supprimé.',
+            ],
+
+            'data-transfer' => [
+                'import' => [
+                    'not-found' => 'Importation introuvable.',
+                    'deleted' => 'Importation supprimée avec succès.',
+                    'cancelled' => 'Importation annulée avec succès.',
+                    'cannot-cancel' => 'Seules les importations en attente ou en cours de traitement peuvent être annulées. État actuel : :state.',
+                    'no-permission' => 'Vous n\'avez pas la permission de gérer les importations de transfert de données.',
+                    'delete-failed' => 'L\'importation n\'a pas pu être supprimée.',
+                    'created' => 'Importation créée avec succès.',
+                    'updated' => 'Importation mise à jour avec succès.',
+                    'type-invalid' => 'Le type sélectionné est invalide.',
+                    'action-invalid' => 'L\'action doit être l\'une des suivantes : append, delete.',
+                    'validation-strategy-invalid' => 'La stratégie de validation doit être l\'une des suivantes : stop-on-errors, skip-errors.',
+                    'allowed-errors-invalid' => 'Le nombre d\'erreurs autorisées doit être un entier supérieur ou égal à 0.',
+                    'field-separator-required' => 'Le séparateur de champs est requis.',
+                    'file-required' => 'Un fichier est requis.',
+                    'file-invalid-type' => 'Le fichier doit être de l\'un des types suivants : csv, xls, xlsx, xml.',
+                    'nothing-to-import' => 'Il n\'y a rien à importer.',
+                    'not-valid' => 'L\'importation n\'est pas valide.',
+                    'setup-queue-error' => 'La connexion de file d\'attente est définie sur sync ; configurez une véritable file d\'attente pour traiter les importations en arrière-plan.',
+                    'file-not-found' => 'Aucun fichier n\'est disponible au téléchargement.',
+                    'error-report-not-found' => 'Aucun rapport d\'erreurs n\'est disponible au téléchargement.',
+                    'sample-not-found' => 'Aucun fichier d\'exemple n\'est disponible pour le type et le format demandés.',
+                    'sample-format-invalid' => 'Le format d\'exemple doit être l\'un des suivants : csv, xls, xlsx, xml.',
+                    'images-archive-too-large' => 'L\'archive d\'images peut contenir au maximum :entries fichiers et ne doit pas dépasser :size Mo une fois décompressée.',
+                ],
             ],
         ],
-    ],
 
-    'integration' => [
-        'menu' => [
-            'title' => 'Intégration',
-            'tokens' => 'Jetons',
+        'cms' => [
+            'page' => [
+                'not-found' => 'Page CMS introuvable.',
+
+                'created' => 'Page CMS créée avec succès.',
+                'url-key-required' => 'Le champ url_key est requis.',
+                'url-key-unique' => 'Cette url_key est déjà utilisée.',
+                'url-key-invalid' => 'Le format de url_key est invalide. Utilisez uniquement des lettres minuscules, des chiffres et des tirets.',
+                'page-title-required' => 'Le champ page_title est requis.',
+                'html-content-required' => 'Le champ html_content est requis.',
+                'channels-required' => 'Au moins un canal doit être sélectionné.',
+                'channels-invalid' => 'Un ou plusieurs canaux sont invalides.',
+
+                'updated' => 'Page CMS mise à jour avec succès.',
+
+                'deleted' => 'Page CMS supprimée avec succès.',
+                'delete-failed' => 'La page CMS n\'a pas pu être supprimée.',
+
+                'mass-deleted' => 'Pages CMS supprimées avec succès.',
+                'indices-required' => 'Le champ indices est requis et doit être un tableau non vide.',
+                'indices-invalid' => 'Le champ indices doit être un tableau d\'ID de pages CMS.',
+
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les pages CMS.',
+            ],
         ],
 
-        'history' => [
+        'marketing' => [
+            'catalog-rule' => [
+                'not-found' => 'Règle de catalogue introuvable.',
+                'created' => 'Règle de catalogue créée avec succès.',
+                'updated' => 'Règle de catalogue mise à jour avec succès.',
+                'deleted' => 'Règle de catalogue supprimée avec succès.',
+                'delete-failed' => 'La règle de catalogue n\'a pas pu être supprimée.',
+                'mass-delete-indices-required' => 'Aucun ID de règle de catalogue fourni pour la suppression en masse.',
+                'mass-delete-success' => 'Règles de catalogue sélectionnées supprimées avec succès.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les règles de catalogue.',
+            ],
+
+            'campaign' => [
+                'not-found' => 'Campagne introuvable.',
+                'created' => 'Campagne créée avec succès.',
+                'updated' => 'Campagne mise à jour avec succès.',
+                'deleted' => 'Campagne supprimée avec succès.',
+                'delete-failed' => 'La campagne n\'a pas pu être supprimée.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les campagnes.',
+
+                'send' => [
+                    'id-required' => 'L\'id de la campagne est requis.',
+                    'inactive' => 'Impossible d\'envoyer une campagne inactive. Activez-la d\'abord.',
+                    'queued' => 'Campagne mise en file d\'attente pour :count destinataire(s).',
+                ],
+            ],
+
+            'sitemap' => [
+                'not-found' => 'Plan du site introuvable.',
+                'created' => 'Plan du site créé avec succès.',
+                'updated' => 'Plan du site mis à jour avec succès.',
+                'deleted' => 'Plan du site supprimé avec succès.',
+                'delete-failed' => 'Le plan du site n\'a pas pu être supprimé.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les plans du site.',
+
+                'generate' => [
+                    'id-required' => 'L\'id du plan du site est requis.',
+                    'no-channels' => 'Ce plan du site ne couvre aucun canal, il n\'y a donc rien à générer. Attribuez-lui d\'abord au moins un canal.',
+                    'success' => 'Plan du site régénéré avec succès.',
+                    'failed' => 'Échec de la génération du plan du site : :message',
+                ],
+            ],
+
+            'cart-rule' => [
+                'not-found' => 'Règle de panier introuvable.',
+                'id-required' => 'Un id de règle de panier est requis.',
+                'copy-of' => 'Copie de :value',
+                'copied' => 'Règle de panier copiée avec succès.',
+                'created' => 'Règle de panier créée avec succès.',
+                'updated' => 'Règle de panier mise à jour avec succès.',
+                'deleted' => 'Règle de panier supprimée avec succès.',
+                'delete-failed' => 'La règle de panier n\'a pas pu être supprimée.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les règles de panier.',
+                'mass-delete-success' => 'Règles de panier supprimées avec succès.',
+                'mass-delete-indices-required' => 'Le champ indices est requis et doit être un tableau non vide.',
+                'action-type-invalid' => 'L\'action_type doit être l\'un des suivants : by_percent, by_fixed, cart_fixed, buy_x_get_y.',
+                'coupon-code-required' => 'Un coupon_code est requis lorsque coupon_type=1 et use_auto_generation=0.',
+                'coupon-code-unique' => 'Ce code de coupon est déjà utilisé.',
+            ],
+
+            'template' => [
+                'campaign-associated' => 'Ce modèle d\'e-mail est utilisé par une campagne et ne peut donc pas être supprimé. Retirez-le d\'abord de la campagne.',
+                'not-found' => 'Modèle d\'e-mail introuvable.',
+                'created' => 'Modèle d\'e-mail créé avec succès.',
+                'updated' => 'Modèle d\'e-mail mis à jour avec succès.',
+                'deleted' => 'Modèle d\'e-mail supprimé avec succès.',
+                'delete-failed' => 'Le modèle d\'e-mail n\'a pas pu être supprimé.',
+                'status-invalid' => 'Le statut doit être l\'un des suivants : active, inactive, draft.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les modèles d\'e-mail.',
+            ],
+
+            'event' => [
+                'campaign-associated' => 'Cet événement est utilisé par une campagne et ne peut donc pas être supprimé. Retirez-le d\'abord de la campagne.',
+                'not-found' => 'Événement marketing introuvable.',
+                'created' => 'Événement marketing créé avec succès.',
+                'updated' => 'Événement marketing mis à jour avec succès.',
+                'deleted' => 'Événement marketing supprimé avec succès.',
+                'delete-failed' => 'L\'événement marketing n\'a pas pu être supprimé.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les événements marketing.',
+            ],
+
+            'search-synonym' => [
+                'not-found' => 'Synonyme de recherche introuvable.',
+                'created' => 'Synonyme de recherche créé avec succès.',
+                'updated' => 'Synonyme de recherche mis à jour avec succès.',
+                'deleted' => 'Synonyme de recherche supprimé avec succès.',
+                'mass-deleted' => 'Synonymes de recherche supprimés avec succès.',
+                'delete-failed' => 'Le synonyme de recherche n\'a pas pu être supprimé.',
+                'indices-required' => 'Le champ indices est requis et doit être un tableau non vide d\'ID de synonymes de recherche.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les synonymes de recherche.',
+            ],
+
+            'url-rewrite' => [
+                'not-found' => 'Réécriture d\'URL introuvable.',
+                'created' => 'Réécriture d\'URL créée avec succès.',
+                'updated' => 'Réécriture d\'URL mise à jour avec succès.',
+                'deleted' => 'Réécriture d\'URL supprimée avec succès.',
+                'delete-failed' => 'La réécriture d\'URL n\'a pas pu être supprimée.',
+                'mass-deleted' => 'Réécritures d\'URL supprimées avec succès.',
+                'indices-required' => 'Au moins un id de réécriture d\'URL est requis.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les réécritures d\'URL.',
+            ],
+
+            'cart-rule-coupon' => [
+                'cart-rule-not-found' => 'Règle de panier introuvable.',
+                'not-found' => 'Coupon introuvable.',
+                'code-taken' => 'Un coupon avec ce code existe déjà.',
+                'format-invalid' => 'Le format doit être l\'un des suivants : alphabetic, alphanumeric, numeric.',
+                'indices-required' => 'Le champ indices est requis et doit être un tableau non vide d\'ID de coupons.',
+                'created' => 'Coupon créé avec succès.',
+                'generated' => ':count coupon(s) généré(s) avec succès.',
+                'deleted' => 'Coupon supprimé avec succès.',
+                'mass-deleted' => ':count coupon(s) supprimé(s) avec succès.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les coupons des règles de panier.',
+            ],
+
+            'subscriber' => [
+                'not-found' => 'Abonné à la newsletter introuvable.',
+                'updated' => 'Abonnement mis à jour avec succès.',
+                'deleted' => 'Abonnement supprimé avec succès.',
+                'is-subscribed-required' => 'Le champ is_subscribed est requis.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les abonnés à la newsletter.',
+            ],
+
+            'search-term' => [
+                'not-found' => 'Terme de recherche introuvable.',
+                'updated' => 'Terme de recherche mis à jour avec succès.',
+                'deleted' => 'Terme de recherche supprimé avec succès.',
+                'mass-deleted' => 'Termes de recherche supprimés avec succès.',
+                'term-required' => 'Le champ term est requis.',
+                'redirect-url-invalid' => 'Le redirect_url doit être une URL valide.',
+                'indices-required' => 'Au moins un ID doit être fourni dans indices.',
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les termes de recherche.',
+            ],
+        ],
+        'customer-api-sessions' => [
             'menu' => [
-                'title' => 'Histoire',
+                'title' => 'Sessions API',
+            ],
+
+            'acl' => [
+                'title' => 'Sessions API',
+                'delete' => 'Révoquer',
+            ],
+
+            'index' => [
+                'title' => 'Sessions API des clients',
+                'info' => 'Clients connectés à l\'API de la boutique depuis des applications web, mobiles, de caisse ou de bureau. Révoquer une session déconnecte cet appareil immédiatement.',
+            ],
+
+            'fields' => [
+                'customer' => 'Client',
+                'email' => 'E-mail',
+                'channel' => 'Canal',
+            ],
+
+            'datagrid' => [
+                'revoke-all' => 'Révoquer toutes les sessions du client',
+            ],
+
+            'card' => [
+                'title' => 'Sessions API (:count)',
+                'empty' => 'Ce client n\'a aucune session API active.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Vous n\'avez pas l\'autorisation de gérer les sessions API des clients.',
+            ],
+        ],
+
+        'customer-auth' => [
+            'configuration' => [
+                'title' => 'Authentification des clients',
+                'info' => 'Durées des jetons, limites et règles de session pour les connexions des clients de la boutique.',
+
+                'tokens' => [
+                    'title' => 'Durées des jetons',
+                    'info' => 'Durée de validité des jetons d\'accès, des jetons de rafraîchissement et des sessions. Les modifications s\'appliquent aux jetons émis ensuite.',
+                    'access-token-ttl' => 'Durée du jeton d\'accès (minutes)',
+                    'access-token-ttl-info' => 'Entre 5 et 60 minutes. Par défaut 15.',
+                    'refresh-token-ttl' => 'Durée du jeton de rafraîchissement (jours)',
+                    'refresh-token-ttl-info' => 'Entre 1 et 90 jours. Par défaut 30.',
+                    'session-lifetime' => 'Durée maximale de la session (jours)',
+                    'session-lifetime-info' => 'Entre 1 et 365 jours. Par défaut 90. Ensuite, le client doit se reconnecter, quel que soit le nombre de rafraîchissements.',
+                    'max-sessions' => 'Nombre maximal de sessions actives par client',
+                    'max-sessions-info' => 'Une fois la limite atteinte, la session la plus ancienne est fermée. Entre 0 et 100. 0 signifie aucune limite.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Limites de requêtes',
+                    'info' => 'Nombre maximal de requêtes à l\'API de la boutique par minute pour chaque client connecté.',
+                    'requests-per-minute' => 'Requêtes par minute par client connecté',
+                    'requests-per-minute-info' => 'Entre 1 et 100000. Par défaut 120.',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Protection de la connexion',
+                    'info' => 'Nombre de connexions échouées et de renouvellements de jeton autorisés avant que le client doive patienter.',
+                    'login-max-attempts' => 'Connexions échouées avant blocage',
+                    'login-max-attempts-info' => 'Par adresse e-mail et adresse IP. Entre 3 et 20. Par défaut 5.',
+                    'login-lockout-seconds' => 'Blocage de la connexion (secondes)',
+                    'login-lockout-seconds-info' => 'Entre 60 et 3600. Par défaut 60.',
+                    'refresh-requests-per-minute' => 'Renouvellements de jeton par minute par session',
+                    'refresh-requests-per-minute-info' => 'Entre 1 et 60. Par défaut 10.',
+                ],
+
+                'security' => [
+                    'title' => 'Sécurité',
+                    'info' => 'Ce qui ferme les autres sessions d\'un client.',
+                    'revoke-sessions-on-password-change' => 'Révoquer les sessions lors d\'un changement de mot de passe',
+                ],
+
+                'retention' => [
+                    'title' => 'Conservation des données',
+                    'info' => 'Durée de conservation des sessions terminées des clients.',
+                    'session-prune-days' => 'Conserver les sessions terminées (jours)',
+                    'session-prune-days-info' => 'Les sessions révoquées ou expirées sont supprimées après ce nombre de jours. Entre 1 et 365. Par défaut 30.',
+                ],
+            ],
+        ],
+        'auth' => [
+            'configuration' => [
+                'title' => 'Authentification administrateur',
+                'info' => 'Durées des jetons, limites de requêtes et règles de sécurité pour les connexions à l\'API d\'administration et les jetons d\'API.',
+
+                'tokens' => [
+                    'title' => 'Durées des jetons',
+                    'info' => 'Durée de validité des jetons d\'accès, des jetons de rafraîchissement et des sessions. Les modifications s\'appliquent aux jetons émis ensuite.',
+                    'access-token-ttl' => 'Durée du jeton d\'accès (minutes)',
+                    'access-token-ttl-info' => 'Entre 5 et 60 minutes. Par défaut 15.',
+                    'refresh-token-ttl' => 'Durée du jeton de rafraîchissement (jours)',
+                    'refresh-token-ttl-info' => 'Entre 1 et 90 jours. Par défaut 30.',
+                    'session-lifetime' => 'Durée maximale de la session (jours)',
+                    'session-lifetime-info' => 'Entre 1 et 365 jours. Par défaut 90. Ensuite, l\'administrateur doit se reconnecter, quel que soit le nombre de rafraîchissements.',
+                ],
+
+                'rate-limits' => [
+                    'title' => 'Limites de requêtes',
+                    'info' => 'Nombre maximal de requêtes à l\'API d\'administration par minute.',
+                    'session-requests-per-minute' => 'Requêtes par minute par administrateur connecté',
+                    'api-token-requests-per-minute' => 'Requêtes par minute par jeton d\'API',
+                    'session-requests-per-minute-info' => 'Entre 1 et 100000. Par défaut 60.',
+                    'api-token-requests-per-minute-info' => 'Entre 1 et 100000. Par défaut 60.',
+                    'unauthenticated-requests-per-minute' => 'Requêtes par minute sans jeton, par adresse IP',
+                    'unauthenticated-requests-per-minute-info' => 'Entre 10 et 1000. Par défaut 60. Couvre les requêtes de connexion, de double authentification, de renouvellement et de mot de passe.',
+                ],
+
+                'security' => [
+                    'title' => 'Sécurité',
+                    'info' => 'Règles de révocation, expiration des jetons d\'API et liaison de domaine.',
+                    'revoke-sessions-on-password-change' => 'Révoquer les sessions lors d\'un changement de mot de passe',
+                    'revoke-api-tokens-on-password-change' => 'Révoquer les jetons d\'API lors d\'un changement de mot de passe',
+                    'allow-non-expiring-api-tokens' => 'Autoriser les jetons d\'API sans expiration',
+                    'domain-binding-mode' => 'Mode de liaison de domaine',
+                    'domain-binding-mode-info' => 'DNS vérifie que la requête provient d\'une adresse IP vers laquelle pointe le domaine du jeton. Origin vérifie l\'en-tête Origin ou Referer et ne convient qu\'aux navigateurs.',
+                    'domain-binding-dns' => 'DNS (adresse IP du client)',
+                    'domain-binding-origin' => 'En-tête Origin',
+                ],
+
+                'login-protection' => [
+                    'title' => 'Protection de la connexion',
+                    'info' => 'Nombre de connexions échouées, de codes de double authentification erronés et de requêtes de mot de passe autorisés avant que le client doive patienter.',
+                    'login-max-attempts' => 'Connexions échouées avant blocage',
+                    'login-max-attempts-info' => 'Par adresse e-mail et adresse IP. Entre 3 et 20. Par défaut 5.',
+                    'login-lockout-seconds' => 'Blocage de la connexion (secondes)',
+                    'login-lockout-seconds-info' => 'Entre 60 et 3600. Par défaut 60.',
+                    'two-factor-challenge-lifetime' => 'Durée du défi de double authentification (minutes)',
+                    'two-factor-challenge-lifetime-info' => 'Entre 1 et 15. Par défaut 5.',
+                    'two-factor-max-failures' => 'Codes de double authentification erronés par minute',
+                    'two-factor-max-failures-info' => 'Par administrateur, sur tous les défis. Entre 3 et 20. Par défaut 5.',
+                    'password-requests-per-minute' => 'Requêtes de mot de passe par minute',
+                    'password-requests-per-minute-info' => 'Requêtes d\'oubli et de réinitialisation du mot de passe par adresse IP. Entre 1 et 20. Par défaut 5.',
+                ],
+
+                'retention' => [
+                    'title' => 'Conservation des données',
+                    'info' => 'Durée de conservation des sessions terminées et de l\'historique d\'audit de l\'API.',
+                    'session-prune-days' => 'Conserver les sessions terminées (jours)',
+                    'session-prune-days-info' => 'Les sessions révoquées ou expirées sont supprimées après ce nombre de jours. Entre 1 et 365. Par défaut 30.',
+                    'audit-retention-days' => 'Conserver l\'historique d\'audit de l\'API (jours)',
+                    'audit-retention-days-info' => 'Les entrées plus anciennes sont supprimées chaque jour. Entre 0 et 3650. Vide ou 0 les conserve indéfiniment.',
+                ],
+            ],
+
+            'errors' => [
+                'unauthenticated' => 'Vous n\'êtes pas authentifié.',
+                'access-token-expired' => 'Le jeton d\'accès a expiré. Rafraîchissez-le pour continuer.',
+                'api-token-expired' => 'Le jeton d\'API a expiré.',
+                'refresh-token-invalid' => 'Le jeton de rafraîchissement est invalide ou a expiré. Veuillez vous reconnecter.',
+                'api-token-revoked' => 'Le jeton d\'API a été révoqué.',
+                'api-token-domain-mismatch' => 'Le jeton d\'API ne peut pas être utilisé depuis ce domaine.',
+                'access-token-required' => 'Cette action nécessite le jeton d\'accès d\'une session connectée ; les jetons d\'API ne peuvent pas l\'utiliser.',
+                'two-factor-required' => 'Saisissez le code à 6 chiffres de votre application d\'authentification, ou l\'un de vos codes de secours, pour terminer la connexion.',
+                'too-many-login-attempts' => 'Trop de tentatives de connexion. Veuillez réessayer dans :seconds secondes.',
+                'two-factor-challenge-invalid' => 'La vérification à deux facteurs est invalide ou a expiré. Veuillez vous reconnecter.',
+                'two-factor-attempts-exceeded' => 'Trop de codes erronés. Veuillez vous reconnecter.',
+                'password-reset-token-invalid' => 'Ce jeton de réinitialisation du mot de passe est invalide ou a expiré.',
+                'too-many-password-requests' => 'Trop de demandes de mot de passe. Veuillez réessayer dans :seconds secondes.',
+                'rate-limit-exceeded' => 'Trop de tentatives.',
+                'no-permission' => 'Vous n\'avez pas l\'autorisation de gérer les sessions de l\'API d\'administration.',
+            ],
+
+            'sessions' => [
+                'logged-out' => 'Vous avez été déconnecté.',
+                'logged-out-all' => 'Vous avez été déconnecté de toutes les sessions.',
+                'not-found' => 'Session introuvable.',
+                'revoked' => 'La session a été révoquée.',
+                'revoked-for-admin' => 'Sessions révoquées : :count.',
+            ],
+
+            'password' => [
+                'reset' => 'Votre mot de passe a été réinitialisé. Veuillez vous reconnecter.',
+            ],
+        ],
+
+        'api-tokens' => [
+            'menu' => [
+                'title' => 'Jetons d\'API',
+            ],
+
+            'acl' => [
+                'title' => 'Jetons d\'API',
+                'create' => 'Créer',
+                'delete' => 'Révoquer',
+                'manage-others' => 'Gérer les jetons des autres administrateurs',
+            ],
+
+            'index' => [
+                'title' => 'Jetons d\'API',
+                'info' => 'Les intégrations serveur, comme un ERP, un PIM, un entrepôt ou un logiciel de comptabilité, s\'authentifient avec des jetons d\'API. Chaque jeton agit en tant qu\'un administrateur, avec les permissions de son rôle, et ne fonctionne que depuis le domaine auquel il est lié.',
+                'create-btn' => 'Créer un jeton d\'API',
+            ],
+
+            'create' => [
+                'title' => 'Créer un jeton d\'API',
+                'back-btn' => 'Retour',
+                'save-btn' => 'Créer le jeton',
+                'general' => 'Général',
+                'expiry' => 'Expiration',
+                'admin-info' => 'Le jeton agit en tant que cet administrateur et a exactement les permissions de son rôle.',
+                'domain-info' => 'L\'hôte depuis lequel l\'intégration appelle, par exemple erp.example.com. Une URL est réduite à son hôte. Les adresses IP et les jokers ne sont pas acceptés, et le domaine ne peut pas être modifié ensuite.',
+                'expires-on-date' => 'Expire à une date',
+                'never-expires' => 'N\'expire jamais',
+                'no-expiry-warning' => 'Un jeton sans expiration fonctionne jusqu\'à sa révocation. Conservez-le dans un coffre de secrets et révoquez-le dès qu\'il n\'est plus utile.',
+                'no-expiry-confirm' => 'Je comprends que ce jeton n\'expire jamais.',
+                'no-admins' => 'Il n\'y a aucun administrateur pour lequel vous pouvez créer un jeton d\'API.',
+            ],
+
+            'view' => [
+                'title' => 'Jeton d\'API',
+                'back-btn' => 'Retour',
+                'save-btn' => 'Enregistrer',
+                'revoke-btn' => 'Révoquer',
+                'details' => 'Détails',
+                'usage' => 'Utilisation',
+                'token-once-title' => 'Copiez votre jeton d\'API maintenant',
+                'token-once-info' => 'Le jeton n\'est affiché que cette fois. Conservez-le dans un coffre de secrets ; s\'il est perdu, révoquez-le et créez-en un nouveau.',
+                'copy-btn' => 'Copier',
+                'copied' => 'Le jeton a été copié.',
+                'usage-info' => 'Envoyez-le comme jeton Bearer dans l\'en-tête Authorization des requêtes REST et GraphQL.',
+                'not-yet' => 'Pas encore',
+                'revoke-confirm' => 'Révoquer ce jeton d\'API ? L\'intégration qui l\'utilise cesse de fonctionner immédiatement.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'name' => 'Nom',
+                'admin' => 'Administrateur',
+                'token' => 'Jeton',
+                'domain' => 'Domaine',
+                'expiry' => 'Expiration',
+                'expires-at' => 'Expire le',
+                'no-expiry-confirmation' => 'Confirmation sans expiration',
+                'status' => 'Statut',
+                'created-by' => 'Créé par',
+                'created-at' => 'Créé le',
+                'last-used-at' => 'Dernière utilisation le',
+                'last-ip-address' => 'Dernière adresse IP',
+                'last-user-agent' => 'Dernier agent utilisateur',
+                'last-channel' => 'Dernier canal',
+                'resolved-ips' => 'Adresses IP résolues',
+                'resolved-at' => 'Résolu le',
+                'domain-mismatches' => 'Requêtes depuis d\'autres domaines',
+                'last-domain-mismatch-at' => 'Dernière requête depuis un autre domaine',
+                'revoked-at' => 'Révoqué le',
+                'revoked-by' => 'Révoqué par',
+            ],
+
+            'datagrid' => [
+                'never' => 'Jamais',
+                'console' => 'Commande console',
+                'view' => 'Voir',
+                'revoke' => 'Révoquer',
+            ],
+
+            'status' => [
+                'active' => 'Actif',
+                'expired' => 'Expiré',
+                'revoked' => 'Révoqué',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+            ],
+
+            'messages' => [
+                'created' => 'Le jeton d\'API a été créé.',
+                'updated' => 'Le jeton d\'API a été mis à jour.',
+                'revoked' => 'Le jeton d\'API a été révoqué.',
+            ],
+
+            'errors' => [
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les jetons d\'API.',
+                'not-found' => 'Jeton d\'API introuvable.',
+                'cannot-create-for-admin' => 'Vous ne pouvez pas créer de jeton d\'API pour cet administrateur : son rôle a des permissions que le vôtre n\'a pas, ou vous ne pouvez pas gérer les jetons des autres administrateurs.',
+                'cannot-manage' => 'Vous ne pouvez pas gérer ce jeton d\'API.',
+                'already-revoked' => 'Le jeton d\'API est déjà révoqué.',
+                'invalid-name' => 'Le nom est obligatoire et ne peut pas dépasser 100 caractères.',
+                'invalid-domain' => 'Saisissez un nom de domaine comme erp.example.com. Les adresses IP et les jokers ne sont pas acceptés.',
+                'expiry-required' => 'Les jetons d\'API doivent avoir une date d\'expiration.',
+                'expiry-in-past' => 'La date d\'expiration doit être dans le futur.',
+            ],
+        ],
+
+        'api-sessions' => [
+            'menu' => [
+                'title' => 'Sessions API',
+            ],
+
+            'acl' => [
+                'title' => 'Sessions API',
+                'delete' => 'Révoquer',
+            ],
+
+            'index' => [
+                'title' => 'Sessions API',
+                'info' => 'Administrateurs connectés à l\'API d\'administration depuis des applications web, mobiles, de caisse ou de bureau. Révoquer une session déconnecte cet appareil immédiatement.',
+            ],
+
+            'fields' => [
+                'id' => 'ID',
+                'admin' => 'Administrateur',
+                'device' => 'Appareil',
+                'client-type' => 'Type de client',
+                'ip-address' => 'Adresse IP de connexion',
+                'user-agent' => 'Agent utilisateur de connexion',
+                'last-ip-address' => 'Dernière adresse IP',
+                'last-user-agent' => 'Dernier agent utilisateur',
+                'last-used-at' => 'Dernière utilisation le',
+                'last-channel' => 'Dernier canal',
+                'refresh-expires-at' => 'Rafraîchissement expire le',
+                'expires-at' => 'Expire le',
+                'status' => 'Statut',
+                'created-at' => 'Connecté le',
+            ],
+
+            'datagrid' => [
+                'revoke' => 'Révoquer',
+                'revoke-all' => 'Révoquer toutes les sessions de cet administrateur',
+            ],
+
+            'client-types' => [
+                'web' => 'Web',
+                'mobile' => 'Mobile',
+                'pos' => 'Caisse',
+                'desktop' => 'Bureau',
+                'other' => 'Autre',
+            ],
+
+            'errors' => [
+                'not-active' => 'Cette session est déjà révoquée ou expirée.',
+            ],
+        ],
+
+        'api-audit' => [
+            'menu' => [
+                'title' => 'Audit de l\'API',
             ],
 
             'acl' => [
                 'title' => 'Historique des modifications de l\'API',
-                'view' => 'Voir',
                 'delete' => 'Supprimer l\'historique',
             ],
 
@@ -312,10 +2012,10 @@ return [
                 'date' => 'Date',
                 'admin' => 'Administrateur',
                 'token' => 'Jeton',
-                'action' => 'Action',
+                'token-kind' => 'Type de jeton',
+                'channel' => 'Canal',
                 'operation' => 'Fonctionnement',
                 'resource' => 'Ressource',
-                'version' => 'Version',
                 'method' => 'Méthode',
                 'ip' => 'PI',
                 'view' => 'Voir',
@@ -328,189 +2028,27 @@ return [
                 'deleted' => 'Supprimé',
             ],
 
+            'token-kinds' => [
+                'session' => 'Session de connexion',
+                'api-token' => 'Jeton d\'API',
+                'integration' => 'Jeton d\'intégration (supprimé)',
+                'customer-session' => 'Session de connexion client',
+            ],
+
+            'channels' => [
+                'rest' => 'REST',
+                'graphql' => 'GraphQL',
+                'panel' => 'Panneau d\'administration',
+                'cli' => 'Commande console',
+            ],
+
             'deleted' => ':count enregistrement(s) d\'historique supprimé(s).',
             'cleanup-input-required' => 'Fournissez un certain nombre de jours ou une date pour nettoyer.',
         ],
 
-        'acl' => [
-            'title' => 'Intégration',
-            'view' => 'Voir',
-            'create' => 'Créer une intégration',
-            'edit' => 'Modifier l\'intégration',
-            'delete' => 'Révoquer le jeton d\'intégration',
-            'generate' => 'Générer un jeton d\'intégration',
-            'regenerate' => 'Régénérer le jeton d\'intégration',
-        ],
-
-        'index' => [
-            'title' => 'Intégrations',
-            'create-btn' => 'Créer une intégration',
-        ],
-
-        'create' => [
-            'title' => 'Créer une intégration',
-            'save-btn' => 'Enregistrer',
-            'back-btn' => 'Retour',
-        ],
-
-        'edit' => [
-            'title' => 'Modifier l\'intégration',
-            'save-btn' => 'Enregistrer',
-            'back-btn' => 'Retour',
-            'generate-btn' => 'Générer un jeton',
-            'regenerate-btn' => 'Régénérer le jeton',
-            'revoke-btn' => 'Révoquer le jeton',
-            'copy-btn' => 'Copier',
-            'token-warning' => 'Enregistrez ce jeton maintenant – il ne sera plus affiché.',
-            'token-label' => 'Jeton',
-            'not-generated' => 'Pas encore généré',
-            'masked' => '(Stocké - affiché une seule fois à la génération)',
-            'history-banner' => 'Ce jeton n\'est plus actif.',
-        ],
-
-        'fields' => [
-            'name' => 'Nom',
-            'description' => 'Descriptif',
-            'assign-user' => 'Attribuer un utilisateur',
-            'permission-type' => 'Type d\'autorisation',
-            'access-control' => 'Contrôle d\'accès',
-            'general' => 'Général',
-            'token-settings' => 'Paramètres des jetons',
-            'valid-till' => 'Valable jusqu\'à',
-            'rate-limit-per-minute' => 'Limite de débit (par minute)',
-            'rate-limit-per-day' => 'Limite de tarif (par jour)',
-            'never-expires' => 'N\'expire jamais',
-            'expires-on' => 'Expire le',
-            'unlimited' => 'Illimité',
-            'limit-to' => 'Limiter à',
-            'requests-per-minute' => 'requêtes / minute',
-            'requests-per-day' => 'demandes / jour',
-            'select-admin' => 'Sélectionnez un administrateur',
-            'no-available-admins' => 'Aucun administrateur disponible : chaque administrateur dispose déjà d\'un jeton actif.',
-            'same-as-web-hint' => 'Le jeton reflétera en direct les autorisations de rôle actuelles de l\'administrateur attribué.',
-            'ip-allowlist' => 'Liste d\'adresses IP autorisées',
-            'ip-any' => 'N\'importe quelle adresse IP (par défaut)',
-            'ip-restricted' => 'Limité à des adresses IP spécifiques',
-            'ip-list-hint' => 'Une entrée par ligne. Prend en charge IPv4, IPv6 et CIDR (par exemple 10.0.0.0/24 ou 2001:db8::/32). Laissez vide pour autoriser toutes les adresses IP.',
-        ],
-
-        'permission_type' => [
-            'all' => 'Tout',
-            'custom' => 'Personnalisé',
-            'same_as_web' => 'Identique à l\'autorisation Web',
-        ],
-
-        'status' => [
-            'draft' => 'Brouillon',
-            'active' => 'Actif',
-            'revoked' => 'Révoqué',
-            'regenerated' => 'Régénéré',
-        ],
-
-        'datagrid' => [
-            'id' => 'pièce d\'identité',
-            'name' => 'Nom',
-            'admin' => 'Administrateur',
-            'token' => 'Jeton',
-            'status' => 'Statut',
-            'permission-type' => 'Type d\'autorisation',
-            'expires-at' => 'Valable jusqu\'à',
-            'last-used-at' => 'Dernière utilisation',
-            'created-at' => 'Créé à',
-            'edit' => 'Modifier',
-            'revoke' => 'Révoquer',
-        ],
-
-        'messages' => [
-            'draft-created' => 'Intégration créée. Générez le jeton pour commencer à l\'utiliser.',
-            'updated' => 'Intégration mise à jour avec succès.',
-            'generated' => 'Jeton généré. Copiez-le maintenant – il ne sera plus affiché.',
-            'regenerated' => 'Jeton régénéré. Copiez le nouveau jeton maintenant : il ne sera plus affiché.',
-            'revoked' => 'Jeton révoqué avec succès.',
-            'generate-only-draft' => 'Seuls les brouillons d\'intégrations peuvent voir leur jeton généré.',
-            'regenerate-only-active' => 'Seuls les jetons actifs peuvent être régénérés.',
-            'cannot-edit-historic' => 'Les jetons révoqués ou régénérés ne peuvent pas être modifiés.',
-            'already-inactive' => 'Ce jeton est déjà inactif.',
-        ],
-
-        'errors' => [
-            'admin-has-token' => 'L\'administrateur sélectionné dispose déjà d\'un jeton d\'intégration actif.',
-        ],
-
-        'validation' => [
-            'ip-invalid' => 'Chaque adresse IP autorisée doit être une adresse IPv4 ou IPv6 valide (notation CIDR prise en charge).',
-            'cidr-prefix-invalid' => 'Le préfixe CIDR n\'est pas valide pour la version IP donnée.',
-        ],
-
-        'configuration' => [
-            'api' => [
-                'title' => 'API',
-                'info' => 'Paramètres de l\'API Bagisto et de ses modules d\'administration.',
-            ],
-
-            'integration' => [
-                'title' => 'Intégration',
-                'info' => 'Gérez le plug-in d\'intégration d\'API utilisé pour émettre des jetons d\'API d\'administrateur.',
-            ],
-
-            'settings' => [
-                'title' => 'Paramètres des modules',
-                'info' => 'Activez ou désactivez le plug-in d\'intégration API. Lorsqu\'il est désactivé, son menu de barre latérale est masqué et ses pages renvoient 404.',
-                'enable' => 'Activer le module d\'intégration API',
-            ],
-        ],
-
-        'emails' => [
-            'generated' => [
-                'subject' => 'Un nouveau jeton API a été généré : :name',
-                'greeting' => 'Un jeton d\'intégration API nommé ":name" vient d\'être généré sur votre compte.',
-            ],
-
-            'regenerated' => [
-                'subject' => 'Votre jeton API a été régénéré : :name',
-                'greeting' => 'Le jeton d\'intégration d\'API nommé ":name" vient d\'être régénéré. Le jeton précédent a cessé de fonctionner : seul le nouveau est valide.',
-            ],
-
-            'revoked' => [
-                'subject' => 'Votre jeton API a été révoqué : :name',
-                'greeting' => 'Le jeton d\'intégration d\'API nommé ":name" a été révoqué. Tout client qui l\'utilise a perdu l\'accès.',
-            ],
-
-            'details' => [
-                'name' => 'Nom du jeton',
-                'date' => 'Date',
-                'ip' => 'Depuis la propriété intellectuelle',
-            ],
-
-            'revoke-hint' => 'Si vous ne vous y attendiez pas, révoquez immédiatement le token en utilisant le bouton ci-dessous.',
-            'revoke-btn' => 'Révoquer ce jeton',
-            'revoke-expiry' => 'Ce lien de révocation est valable 7 jours. Après cela, connectez-vous au panneau d\'administration pour gérer le jeton.',
-            'no-action' => 'Aucune action n\'est nécessaire : cet e-mail n\'est qu\'une confirmation.',
-        ],
-
-        'revoke-confirmation' => [
-            'title' => 'Révoquer le jeton API',
-            'success-title' => 'Jeton révoqué',
-            'success-message' => 'Le jeton ":name" a été révoqué. Tout client qui l\'utilise perd immédiatement l\'accès.',
-            'already-inactive-title' => 'Jeton déjà inactif',
-            'already-inactive-message' => 'Le jeton « :name » a déjà été révoqué ou régénéré. Aucune autre action n’est nécessaire.',
-        ],
-
-        'confirm' => [
-            'generate' => [
-                'title' => 'Générer un jeton',
-                'message' => 'Générer le jeton maintenant ? Le texte brut ne sera affiché qu\'une seule fois : copiez-le avant de quitter la page.',
-            ],
-
-            'regenerate' => [
-                'title' => 'Régénérer le jeton',
-                'message' => 'Régénérer le jeton ? L\'ancien jeton cessera de fonctionner immédiatement et le nouveau texte brut ne sera affiché qu\'une seule fois.',
-            ],
-
-            'revoke' => [
-                'title' => 'Révoquer le jeton',
-                'message' => 'Révoquer ce jeton ? Tout client l’utilisant perdra immédiatement l’accès. Cette action ne peut pas être annulée.',
-            ],
+        'api-configuration' => [
+            'title' => 'API',
+            'info' => 'Paramètres de l\'API Bagisto et de ses modules d\'administration.',
         ],
     ],
 ];

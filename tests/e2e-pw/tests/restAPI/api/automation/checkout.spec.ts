@@ -1,84 +1,122 @@
-// tests/restAPI/api/automation/checkout.spec.ts
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import {
+  SHOP_CART_MESSAGES,
+  bearer,
+  expectProblem,
+  randomUuid,
+  readCart,
+  readJson,
+} from '../../rest/helpers/coverage/shopCart.helpers';
 
-// These run without a prepared cart, so the sequence guards reject them — that is
-// what is being checked. 405 is never accepted: it would mean the route moved.
-// Reads may legitimately 404 (no active cart / no such estimate).
-function assertCheckoutStatus(resp: any, debugLabel: string, allowNotFound = false) {
-  const code = resp.status();
-  const allowed = [0, 200, 201, 400, 401, 422, 500];
-  expect(allowNotFound ? [...allowed, 404] : allowed).toContain(code);
-  console.log(`${debugLabel}:`, code);
-  return code;
-}
-
-const ADDRESS = {
-  firstName: 'E2E',
-  lastName: 'Tester',
-  email: 'e2e-checkout@example.com',
-  address1: '123 Test Street',
-  city: 'Los Angeles',
-  state: 'CA',
-  country: 'US',
-  postcode: '90210',
-  phone: '5550000000',
+const BILLING = {
+  billingFirstName: 'Checkout',
+  billingLastName: 'Tester',
+  billingEmail: 'checkout.tester@playwrighttest.local',
+  billingAddress: '123 Test Street',
+  billingCity: 'Los Angeles',
+  billingState: 'CA',
+  billingCountry: 'US',
+  billingPostcode: '90210',
+  billingPhoneNumber: '2125551234',
+  useForShipping: true,
 };
 
-test.describe('Checkout Public Endpoints', () => {
-  test('Should handle checkout addresses endpoint', async ({ request }) => {
+test.describe('checkout endpoints without a cart token', () => {
+  test('listing checkout addresses without a bearer token returns 401', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CHECKOUT_ADDRESSES);
-    assertCheckoutStatus(response, 'GET /api/shop/checkout-addresses', true);
+
+    await expectProblem(response, 401, SHOP_CART_MESSAGES.AUTHENTICATION_REQUIRED);
   });
 
-  test('Should handle shipping methods POST', async ({ request }) => {
+  test('listing shipping methods without a bearer token returns 404', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.CHECKOUT_SHIPPING_METHODS);
+
+    await expectProblem(response, 404, SHOP_CART_MESSAGES.AUTHENTICATION_REQUIRED);
+  });
+
+  test('saving a shipping method without a bearer token returns 401', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CHECKOUT_SHIPPING_METHODS, {
       method: 'POST',
       data: { shippingMethod: 'flatrate_flatrate' },
     });
-    assertCheckoutStatus(response, 'POST /api/shop/checkout-shipping-methods');
+
+    await expectProblem(response, 401, SHOP_CART_MESSAGES.AUTHENTICATION_REQUIRED);
   });
 
-  test('Should handle payment methods endpoint', async ({ request }) => {
+  test('listing payment methods without a bearer token returns 404', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CHECKOUT_PAYMENT_METHODS);
-    assertCheckoutStatus(response, 'GET /api/shop/payment-methods', true);
+
+    await expectProblem(response, 404, SHOP_CART_MESSAGES.AUTHENTICATION_REQUIRED);
   });
 
-  test('Should handle place order POST', async ({ request }) => {
+  test('placing an order without a bearer token returns 401', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.PLACE_ORDER, {
       method: 'POST',
       data: {},
     });
-    assertCheckoutStatus(response, 'POST /api/shop/checkout-orders');
+
+    await expectProblem(response, 401, SHOP_CART_MESSAGES.AUTHENTICATION_REQUIRED);
   });
 
-  test('Should handle save shipping address POST', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.SET_SHIPPING_ADDRESS, {
-      method: 'POST',
-      data: { shippingAddress: ADDRESS },
-    });
-    assertCheckoutStatus(response, 'POST /api/shop/checkout-addresses (shipping)');
-  });
-
-  test('Should handle save billing address POST', async ({ request }) => {
+  test('saving a checkout address without a bearer token returns 401', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.SET_BILLING_ADDRESS, {
       method: 'POST',
-      data: { billingAddress: { ...ADDRESS, useForShipping: true } },
+      data: BILLING,
     });
-    assertCheckoutStatus(response, 'POST /api/shop/checkout-addresses (billing)');
+
+    await expectProblem(response, 401, SHOP_CART_MESSAGES.AUTHENTICATION_REQUIRED);
   });
 
-  test('Should handle set payment method POST', async ({ request }) => {
+  test('saving a payment method without a bearer token returns 401', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.SET_PAYMENT_METHOD, {
       method: 'POST',
       data: { paymentMethod: 'cashondelivery' },
     });
-    assertCheckoutStatus(response, 'POST /api/shop/checkout-payment-methods');
+
+    await expectProblem(response, 401, SHOP_CART_MESSAGES.AUTHENTICATION_REQUIRED);
   });
 
-  test('Should handle estimate shipping GET', async ({ request }) => {
+  test('the estimate shipping item route is not exposed', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.ESTIMATE_SHIPPING(1));
-    assertCheckoutStatus(response, 'GET /api/shop/estimate_shippings/1', true);
+
+    expect(response.status(), JSON.stringify(await readJson(response))).toBe(404);
+  });
+});
+
+test.describe('checkout endpoints with an unknown cart token', () => {
+  test('saving a checkout address returns 404 and creates no cart', async ({ request }) => {
+    const token = randomUuid();
+
+    const response = await sendRestRequest(request, ENDPOINTS.SET_BILLING_ADDRESS, {
+      method: 'POST',
+      data: BILLING,
+      headers: bearer(token),
+    });
+
+    await expectProblem(response, 404, SHOP_CART_MESSAGES.INVALID_CART_TOKEN);
+
+    await expectProblem(await readCart(request, token), 404, SHOP_CART_MESSAGES.CART_NOT_FOUND);
+  });
+
+  test('saving a payment method returns 404', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.SET_PAYMENT_METHOD, {
+      method: 'POST',
+      data: { paymentMethod: 'cashondelivery' },
+      headers: bearer(randomUuid()),
+    });
+
+    await expectProblem(response, 404, SHOP_CART_MESSAGES.INVALID_CART_TOKEN);
+  });
+
+  test('placing an order returns 404', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.PLACE_ORDER, {
+      method: 'POST',
+      data: {},
+      headers: bearer(randomUuid()),
+    });
+
+    await expectProblem(response, 404, SHOP_CART_MESSAGES.INVALID_CART_TOKEN);
   });
 });

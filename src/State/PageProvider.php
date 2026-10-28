@@ -10,46 +10,43 @@ use Illuminate\Database\Eloquent\Builder;
 use Webkul\BagistoApi\Models\Page;
 use Webkul\CMS\Repositories\PageRepository;
 
-/**
- * Provider for fetching CMS pages
- * Returns arrays for REST API and Eloquent models for GraphQL
- */
 class PageProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly PageRepository $pageRepository
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(
         Operation $operation,
         array $uriVariables = [],
         array $context = []
     ): object|array|null {
-        // Check if it's a GraphQL operation (class name contains "GraphQl")
         $isGraphQL = str_contains($operation::class, 'GraphQl');
 
-        // For GraphQL operations, return Eloquent models
         if ($isGraphQL) {
             return $this->provideForGraphQL($operation, $uriVariables, $context);
         }
 
-        // For REST operations, return formatted arrays
         return $this->provideForRest($operation, $uriVariables, $context);
     }
 
     /**
-     * Provide data for GraphQL - return Eloquent models
+     * Provide data for GraphQL - return Eloquent models.
      */
     private function provideForGraphQL(Operation $operation, array $uriVariables, array $context): mixed
     {
         $name = $operation->getName();
 
-        // Handle pageByUrlKey - this goes through the resolver
         if ($name === 'pageByUrlKey') {
-            return null; // Let the resolver handle it
+            return null;
         }
 
-        // Check if it's an item query
         $isItem = $operation instanceof Get;
 
         if ($isItem) {
@@ -60,14 +57,13 @@ class PageProvider implements ProviderInterface
             return null;
         }
 
-        // Collection query
         return $this->channelPages()
             ->orderBy('created_at', 'desc')
             ->get();
     }
 
     /**
-     * Provide data for REST API - return formatted arrays
+     * Provide data for REST API - return formatted arrays.
      */
     private function provideForRest(Operation $operation, array $uriVariables, array $context)
     {
@@ -83,7 +79,7 @@ class PageProvider implements ProviderInterface
     }
 
     /**
-     * Provide single page item
+     * Provide single page item.
      */
     private function provideItem(array $uriVariables, array $context): ?array
     {
@@ -113,6 +109,10 @@ class PageProvider implements ProviderInterface
 
         $query = $this->channelPages()->orderBy('created_at', 'desc');
 
+        if ($urlKey = $request->query('url_key')) {
+            $query->whereHas('translations', fn ($translations) => $translations->where('url_key', $urlKey));
+        }
+
         return $query
             ->offset(($page - 1) * $itemsPerPage)
             ->limit($itemsPerPage)
@@ -125,14 +125,11 @@ class PageProvider implements ProviderInterface
      */
     private function channelPages(): Builder
     {
-        return Page::with('translations')
-            ->whereHas('channels', function ($query) {
-                $query->where('channels.id', core()->getCurrentChannel()->id);
-            });
+        return Page::with('translations')->inCurrentChannel();
     }
 
     /**
-     * Format page for REST API response
+     * Format page for REST API response.
      */
     private function formatPage($page): array
     {
@@ -150,7 +147,7 @@ class PageProvider implements ProviderInterface
     }
 
     /**
-     * Format translation for REST API response
+     * Format translation for REST API response.
      */
     private function formatTranslation($translation): array
     {

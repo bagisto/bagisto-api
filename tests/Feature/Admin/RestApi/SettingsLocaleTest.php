@@ -6,47 +6,11 @@ use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 
-/**
- * REST coverage for the admin Settings → Locales CRUD endpoints
- * (Block B Wave 1).
- *
- * Endpoints:
- *   GET    /api/admin/settings/locales
- *   GET    /api/admin/settings/locales/{id}
- *   POST   /api/admin/settings/locales
- *   PUT    /api/admin/settings/locales/{id}
- *   DELETE /api/admin/settings/locales/{id}
- *   POST   /api/admin/settings/locales/mass-delete
- */
 class SettingsLocaleTest extends AdminApiTestCase
 {
-    protected function uniqueCode(string $prefix = 'tl'): string
-    {
-        return strtolower($prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99));
-    }
-
-    protected function insertLocale(array $overrides = []): int
-    {
-        return \DB::table('locales')->insertGetId(array_merge([
-            'code' => $this->uniqueCode(),
-            'name' => 'Test Locale',
-            'direction' => 'ltr',
-            'logo_path' => null,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
+    /**
+     * Test listing requires admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -54,6 +18,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test create requires auth.
+     */
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -63,6 +30,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test detail requires auth.
+     */
     public function test_detail_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -71,6 +41,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -84,6 +57,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBe(10);
     }
 
+    /**
+     * Test listing returns seeded row.
+     */
     public function test_listing_returns_seeded_row(): void
     {
         $admin = $this->createAdmin();
@@ -104,6 +80,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($row)->toHaveKeys(['id', 'code', 'name', 'direction', 'logoPath', 'logoUrl', 'createdAt', 'updatedAt']);
     }
 
+    /**
+     * Test listing filter by id.
+     */
     public function test_listing_filter_by_id(): void
     {
         $admin = $this->createAdmin();
@@ -120,6 +99,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test listing filter by code.
+     */
     public function test_listing_filter_by_code(): void
     {
         $admin = $this->createAdmin();
@@ -136,6 +118,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test listing filter by name.
+     */
     public function test_listing_filter_by_name(): void
     {
         $admin = $this->createAdmin();
@@ -151,6 +136,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test listing filter by direction.
+     */
     public function test_listing_filter_by_direction(): void
     {
         $admin = $this->createAdmin();
@@ -167,6 +155,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($ids)->not()->toContain($ltr);
     }
 
+    /**
+     * Test listing sort by code asc.
+     */
     public function test_listing_sort_by_code_asc(): void
     {
         $admin = $this->createAdmin();
@@ -183,6 +174,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($codes)->toBe($sorted);
     }
 
+    /**
+     * Test listing per page above cap clamped.
+     */
     public function test_listing_per_page_above_cap_clamped(): void
     {
         $admin = $this->createAdmin();
@@ -191,6 +185,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test detail returns full row.
+     */
     public function test_detail_returns_full_row(): void
     {
         $admin = $this->createAdmin();
@@ -210,6 +207,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->json('direction'))->toBe('rtl');
     }
 
+    /**
+     * Test detail unknown id returns 404.
+     */
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -217,6 +217,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test create happy path returns 201.
+     */
     public function test_create_happy_path_returns_201(): void
     {
         $admin = $this->createAdmin();
@@ -234,6 +237,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect(\DB::table('locales')->where('code', $code)->exists())->toBeTrue();
     }
 
+    /**
+     * Test create accepts logo path string.
+     */
     public function test_create_accepts_logo_path_string(): void
     {
         $admin = $this->createAdmin();
@@ -250,6 +256,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect(\DB::table('locales')->where('code', $code)->value('logo_path'))->toBe('locales/test.png');
     }
 
+    /**
+     * Test create missing code returns 422.
+     */
     public function test_create_missing_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -259,6 +268,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create missing name returns 422.
+     */
     public function test_create_missing_name_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -268,6 +280,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create invalid direction returns 422.
+     */
     public function test_create_invalid_direction_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -277,6 +292,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create invalid code format returns 422.
+     */
     public function test_create_invalid_code_format_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -286,6 +304,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create duplicate code returns 422.
+     */
     public function test_create_duplicate_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -298,6 +319,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update changes name.
+     */
     public function test_update_changes_name(): void
     {
         $admin = $this->createAdmin();
@@ -310,6 +334,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect(\DB::table('locales')->where('id', $id)->value('name'))->toBe('NewName');
     }
 
+    /**
+     * Test update same code excludes self.
+     */
     public function test_update_same_code_excludes_self(): void
     {
         $admin = $this->createAdmin();
@@ -324,6 +351,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test update duplicate code returns 422.
+     */
     public function test_update_duplicate_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -338,6 +368,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update invalid direction returns 422.
+     */
     public function test_update_invalid_direction_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -348,6 +381,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update unknown id returns 404.
+     */
     public function test_update_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -357,6 +393,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -368,6 +407,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect(\DB::table('locales')->where('id', $id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test delete last locale returns 400.
+     */
     public function test_delete_last_locale_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -386,6 +428,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect(\DB::table('locales')->where('id', $only)->exists())->toBeTrue();
     }
 
+    /**
+     * Test delete channel default returns 400.
+     */
     public function test_delete_channel_default_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -399,6 +444,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect(\DB::table('locales')->where('id', $newDefault)->exists())->toBeTrue();
     }
 
+    /**
+     * Test delete unknown id returns 404.
+     */
     public function test_delete_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -406,6 +454,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test delete requires auth.
+     */
     public function test_delete_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -414,6 +465,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
+    /**
+     * Test mass delete happy path.
+     */
     public function test_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -431,6 +485,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect(\DB::table('locales')->where('id', $id2)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mass delete skips channel default.
+     */
     public function test_mass_delete_skips_channel_default(): void
     {
         $admin = $this->createAdmin();
@@ -448,6 +505,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect(is_array($skipped) && count($skipped) >= 1)->toBeTrue();
     }
 
+    /**
+     * Test mass delete empty indices returns 422.
+     */
     public function test_mass_delete_empty_indices_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -455,10 +515,52 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test mass delete requires auth.
+     */
     public function test_mass_delete_requires_auth(): void
     {
         $this->seedRequiredData();
         $response = $this->postJson('/api/admin/settings/locales/mass-delete', ['indices' => [1]]);
         expect($response->getStatusCode())->toBe(401);
+    }
+
+    /**
+     * Unique code.
+     */
+    protected function uniqueCode(string $prefix = 'tl'): string
+    {
+        return strtolower($prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99));
+    }
+
+    /**
+     * Insert locale.
+     */
+    protected function insertLocale(array $overrides = []): int
+    {
+        return \DB::table('locales')->insertGetId(array_merge([
+            'code' => $this->uniqueCode(),
+            'name' => 'Test Locale',
+            'direction' => 'ltr',
+            'logo_path' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 }

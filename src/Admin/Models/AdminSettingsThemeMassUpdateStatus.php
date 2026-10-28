@@ -10,9 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeMassUpdateStatusInput;
 use Webkul\BagistoApi\Admin\State\AdminSettingsThemeMassUpdateStatusProcessor;
 
-/**
- * Mass-update status admin settings theme customizations.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsThemeMassUpdateStatus',
@@ -69,13 +66,23 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeMassUpdateStatusProcessor;
 )]
 class AdminSettingsThemeMassUpdateStatus
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the theme customizations whose status was updated.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $updated = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

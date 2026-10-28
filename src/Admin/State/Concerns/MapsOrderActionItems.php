@@ -2,24 +2,11 @@
 
 namespace Webkul\BagistoApi\Admin\State\Concerns;
 
-/**
- * Shared row-to-array mapper used by Invoice / Shipment / Refund detail
- * providers. Each repo writes the same fields on its line-item table
- * (`order_item_id`, `sku`, `name`, `qty`, `price`, `base_price`, `total`,
- * `tax_amount`, `discount_amount`, `product_id`, `product_type`, `additional`),
- * so the mapping is identical — extract once instead of three near-duplicates.
- *
- * Returns a PLAIN associative array (camelCase keys), NOT a typed DTO. A typed
- * DTO array makes API Platform render the field as a GraphQL cursor connection
- * whose nodes resolve to all-null (it re-fetches each node by IRI, but the DTO
- * has no route) and as an IRI string over REST. A plain array renders as a
- * clean inline object list in REST and a queryable Iterable leaf in GraphQL —
- * the same convention AdminOrderDetail::toItem() uses. Columns absent on a
- * given line-item table (e.g. shipment_items has no tax_amount) resolve to null
- * harmlessly.
- */
 trait MapsOrderActionItems
 {
+    /**
+     * Map item.
+     */
     protected function mapItem($row, string $currency): array
     {
         return [
@@ -49,9 +36,7 @@ trait MapsOrderActionItems
 
     /**
      * The line-item table's `product_type` column is the polymorphic morph
-     * class (e.g. Webkul\Product\Models\Product), not the catalog type. Resolve
-     * the real catalog type (simple / configurable / bundle / …) from the order
-     * item, ignoring any class-name morph value.
+     * class (e.g. Webkul\Product\Models\Product), not the catalog type. Resolve.
      */
     private function resolveProductType($row): ?string
     {

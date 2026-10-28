@@ -6,17 +6,21 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Support\CartOptionFileStaging;
 
-/**
- * Deletes staged customizable-option uploads older than the configured TTL.
- * These are files uploaded but never added to a cart. Schedule it (or run
- * manually) to keep the staging directory from growing.
- */
 class PruneCartUploadsCommand extends Command
 {
+    /**
+     * The signature.
+     */
     protected $signature = 'bagisto-api:prune-cart-uploads';
 
+    /**
+     * The description.
+     */
     protected $description = 'Delete abandoned customizable-option uploads older than the TTL.';
 
+    /**
+     * Handle the request.
+     */
     public function handle(CartOptionFileStaging $staging): int
     {
         $disk = Storage::disk(CartOptionFileStaging::DISK);

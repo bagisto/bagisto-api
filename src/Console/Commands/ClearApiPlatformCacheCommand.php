@@ -7,10 +7,19 @@ use Illuminate\Support\Facades\Cache;
 
 class ClearApiPlatformCacheCommand extends Command
 {
+    /**
+     * The signature.
+     */
     protected $signature = 'bagisto-api-platform:clear-cache {--store= : Override cache store name to flush}';
 
+    /**
+     * The description.
+     */
     protected $description = 'Flush API Platform metadata/schema cache store(s) so GraphQL/OpenAPI schema updates are picked up.';
 
+    /**
+     * Handle the request.
+     */
     public function handle(): int
     {
         $configuredStore = (string) config('api-platform.cache', 'file');

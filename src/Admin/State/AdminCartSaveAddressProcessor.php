@@ -10,15 +10,11 @@ use Webkul\BagistoApi\Admin\Models\AdminCart;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Checkout\Facades\Cart;
 
-/**
- * POST /api/admin/carts/{id}/addresses — save billing & shipping addresses.
- *
- * Mirrors CartController::storeAddress: validate, Cart::saveAddresses($params),
- * Cart::collectTotals(). Returns the refreshed cart so the caller can render
- * the shipping-method picker.
- */
 class AdminCartSaveAddressProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminCart
     {
         $cart = AdminCartGuard::resolve(AdminCartGuard::resolveId($uriVariables, $context));
@@ -66,6 +62,9 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Merge params.
+     */
     protected function mergeParams(mixed $data, array $context): array
     {
         $params = request()->all();
@@ -97,13 +96,7 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
 
     /**
      * Enforce the same required address fields as the admin CartAddressRequest:
-     * first_name, last_name, email, address (array), city, country, state,
-     * postcode, phone — for billing, and for shipping unless use_for_shipping.
-     *
-     * Mirrors core's required-field set. The heavy PostCode / PhoneNumber format
-     * rules are intentionally NOT applied (the project convention — they reject
-     * many legitimate-looking values); presence is what guards against the
-     * half-populated-address bug that let an invalid order reach placement.
+     * first_name, last_name, email, address (array), city, country, state,.
      */
     protected function validateAddresses(array $params): void
     {
@@ -128,6 +121,8 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
     }
 
     /**
+     * Validation rules for the billing or shipping address of the given type.
+     *
      * @return array<string, array<int, string>>
      */
     protected function addressRules(string $type): array

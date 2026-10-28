@@ -17,28 +17,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponCollectionProvider
 use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
 
-/**
- * Admin Marketing — Cart Rule Coupons sub-resource (Block F1c).
- *
- * Sub-resource under cart rules: /api/admin/marketing/cart-rules/{cartRuleId}/coupons.
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Promotions\CartRuleCouponController.
- *
- * REST:
- *   GET    /api/admin/marketing/cart-rules/{cartRuleId}/coupons
- *   POST   /api/admin/marketing/cart-rules/{cartRuleId}/coupons         (single create)
- *   DELETE /api/admin/marketing/cart-rules/{cartRuleId}/coupons/{id}
- *
- * Bulk generate + mass-delete are separate top-level resources
- * (AdminMarketingCartRuleCouponGenerate / AdminMarketingCartRuleCouponMassDelete).
- *
- * Permissions:
- *   - list  → marketing.promotions.cart_rules.view  (falls back to *.create when missing)
- *   - create/generate → marketing.promotions.cart_rules.create
- *   - delete → marketing.promotions.cart_rules.delete
- *
- * Ownership: every coupon read/written through these endpoints must belong to
- * the cart rule named in the URL (`cart_rule_id` match). Cross-rule access → 404.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingCartRuleCoupon',
@@ -51,6 +29,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'List coupons for a cart rule',
+                description: 'The coupon codes of one cart rule with their usage limits, use counts and expiry. An unknown cart rule is a 404.',
                 parameters: [
                     new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
                 ],
@@ -100,6 +79,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Create a single coupon code for a cart rule',
+                description: 'Adds one coupon code to the cart rule. `code` is required and must be unique across all coupons; `usage_limit`, `usage_per_customer` and `expired_at` are optional. An unknown cart rule is a 404.',
                 parameters: [
                     new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
                 ],
@@ -178,6 +158,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Delete a coupon',
+                description: 'Deletes one coupon code of the cart rule. An unknown coupon, or one of another cart rule, is a 404.',
                 parameters: [
                     new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Coupon ID', true, schema: ['type' => 'integer']),
@@ -228,42 +209,81 @@ class AdminMarketingCartRuleCoupon
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The cart rule id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $cart_rule_id = null;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(writable: false)]
     public ?string $code = null;
 
+    /**
+     * The usage limit.
+     */
     #[ApiProperty(writable: false)]
     public ?int $usage_limit = null;
 
+    /**
+     * The usage per customer.
+     */
     #[ApiProperty(writable: false)]
     public ?int $usage_per_customer = null;
 
+    /**
+     * The times used.
+     */
     #[ApiProperty(writable: false)]
     public ?int $times_used = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(writable: false)]
     public ?int $type = null;
 
+    /**
+     * The is primary.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $is_primary = null;
 
+    /**
+     * The expired at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $expired_at = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

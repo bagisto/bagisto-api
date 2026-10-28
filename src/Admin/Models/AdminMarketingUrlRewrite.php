@@ -21,25 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
 
-/**
- * Admin Marketing → URL Rewrites endpoints (Block F3a).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\SearchSEO\URLRewriteController 1:1.
- *
- * REST:
- *   GET    /api/admin/marketing/url-rewrites
- *   GET    /api/admin/marketing/url-rewrites/{id}
- *   POST   /api/admin/marketing/url-rewrites
- *   PUT    /api/admin/marketing/url-rewrites/{id}
- *   DELETE /api/admin/marketing/url-rewrites/{id}
- *
- * GraphQL:
- *   adminMarketingUrlRewrites      — cursor listing
- *   adminMarketingUrlRewrite(id:)  — detail
- *   createAdminMarketingUrlRewrite
- *   updateAdminMarketingUrlRewrite
- *   deleteAdminMarketingUrlRewrite
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingUrlRewrite',
@@ -53,6 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Create a URL rewrite',
+                description: 'Creates a URL rewrite. `entity_type` (product, category or cms_page), `request_path`, `target_path`, `redirect_type` (301 or 302) and an existing `locale` code are required.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -124,6 +106,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Update a URL rewrite',
+                description: 'Updates the URL rewrite; the fields are validated as on create. An unknown ID is a 404.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -195,6 +178,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a URL rewrite',
+                description: 'Deletes the URL rewrite. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'URL rewrite deleted.',
@@ -217,6 +201,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'URL rewrite detail',
+                description: 'One URL rewrite by ID with its entity type, paths, redirect type and locale. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Single URL rewrite.',
@@ -346,27 +331,51 @@ class AdminMarketingUrlRewrite
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The entity type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $entity_type = null;
 
+    /**
+     * The request path.
+     */
     #[ApiProperty(writable: false)]
     public ?string $request_path = null;
 
+    /**
+     * The target path.
+     */
     #[ApiProperty(writable: false)]
     public ?string $target_path = null;
 
+    /**
+     * The redirect type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $redirect_type = null;
 
+    /**
+     * The locale.
+     */
     #[ApiProperty(writable: false)]
     public ?string $locale = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 }

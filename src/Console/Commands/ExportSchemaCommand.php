@@ -25,19 +25,9 @@ use Webkul\BagistoApi\GraphQl\ScopedSchemaBuilder;
 
 class ExportSchemaCommand extends Command
 {
-    protected $signature = 'bagisto-api-platform:export-schema
-        {--path= : Output directory (default: the package schema/generated folder)}
-        {--transport=all : Which schemas to export — all, rest, or graphql}';
-
-    protected $description = 'Export the shop and admin API schemas — OpenAPI JSON (REST) and SDL (GraphQL) — split per surface, for Postman, tooling, and codegen.';
-
     /**
      * Singletons rebuilt between the two surfaces so neither carries the other's
-     * resources. `TypesContainerInterface` is deliberately NOT in here — it is shared by
-     * the type converter and the fields builder, and replacing only the container leaves
-     * the converter looking up scalar types in the old one. `Iterable` is then never
-     * found, and every array-typed field is dropped from the printed schema without an
-     * error.
+     * resources. `TypesContainerInterface` is deliberately NOT in here — it is shared by.
      */
     private const DEPS = [
         ResourceNameCollectionFactoryInterface::class,
@@ -46,22 +36,52 @@ class ExportSchemaCommand extends Command
         FieldsBuilderEnumInterface::class,
     ];
 
+    /**
+     * The surfaces constant.
+     */
     private const SURFACES = [
         'shop' => '/api/shop',
         'admin' => '/api/admin',
     ];
 
+    /**
+     * The titles constant.
+     */
     private const TITLES = [
         'shop' => 'Bagisto Shop API',
         'admin' => 'Bagisto Admin API',
     ];
 
+    /**
+     * The default host constant.
+     */
     private const DEFAULT_HOST = 'http://localhost:8000';
 
+    /**
+     * The storefront key placeholder constant.
+     */
     private const STOREFRONT_KEY_PLACEHOLDER = '{{storefrontKey}}';
 
+    /**
+     * The storefront key prefix constant.
+     */
     private const STOREFRONT_KEY_PREFIX = 'pk_storefront_';
 
+    /**
+     * The signature.
+     */
+    protected $signature = 'bagisto-api-platform:export-schema
+        {--path= : Output directory (default: the package schema/generated folder)}
+        {--transport=all : Which schemas to export — all, rest, or graphql}';
+
+    /**
+     * The description.
+     */
+    protected $description = 'Export the shop and admin API schemas — OpenAPI JSON (REST) and SDL (GraphQL) — split per surface, for Postman, tooling, and codegen.';
+
+    /**
+     * Handle the request.
+     */
     public function handle(): int
     {
         $path = rtrim($this->option('path') ?: dirname(__DIR__, 3).'/schema/generated', '/');
@@ -87,6 +107,9 @@ class ExportSchemaCommand extends Command
         return self::SUCCESS;
     }
 
+    /**
+     * Export rest.
+     */
     private function exportRest(string $path): void
     {
         $factory = $this->laravel->make(OpenApiFactoryInterface::class);
@@ -148,6 +171,9 @@ class ExportSchemaCommand extends Command
         return $this->scrubStorefrontKey($spec, (string) config('storefront.playground_key'));
     }
 
+    /**
+     * Scrub storefront key.
+     */
     private function scrubStorefrontKey(mixed $node, string $configuredKey): mixed
     {
         if (is_array($node)) {
@@ -256,6 +282,8 @@ class ExportSchemaCommand extends Command
     }
 
     /**
+     * Collect the names of the component schemas a node references.
+     *
      * @return list<string>
      */
     private function collectRefs(mixed $node, array &$found = []): array
@@ -281,6 +309,9 @@ class ExportSchemaCommand extends Command
         return array_keys($found);
     }
 
+    /**
+     * Export the GraphQL schema and operation map of each surface, printing fields in a stable order.
+     */
     private function exportGraphQl(string $path): void
     {
         foreach ([
@@ -289,7 +320,10 @@ class ExportSchemaCommand extends Command
         ] as $surface => $adminScope) {
             $file = "{$path}/{$surface}.graphql";
 
-            File::put($file, SchemaPrinter::doPrint($this->buildGraphQlSchema($adminScope)));
+            File::put($file, SchemaPrinter::doPrint($this->buildGraphQlSchema($adminScope), [
+                'sortFields' => true,
+                'sortInputFields' => true,
+            ]));
 
             $this->info("Wrote {$file}");
 
@@ -378,6 +412,8 @@ class ExportSchemaCommand extends Command
     }
 
     /**
+     * Root field names one operation adds to the schema, excluding the relay node field.
+     *
      * @return list<string>
      */
     private function operationFieldNames(FieldsBuilderEnumInterface $fieldsBuilder, string $resourceClass, object $operation): array
@@ -395,6 +431,8 @@ class ExportSchemaCommand extends Command
     }
 
     /**
+     * The GraphQL fields one query or mutation operation adds to the schema.
+     *
      * @return array<string, mixed>
      */
     private function operationFields(FieldsBuilderEnumInterface $fieldsBuilder, string $resourceClass, object $operation): array
@@ -412,10 +450,7 @@ class ExportSchemaCommand extends Command
 
     /**
      * The request-body example the resource's REST write operation documents.
-     *
-     * GraphQL input types are almost entirely nullable, so a skeleton built from the schema
-     * alone is empty. The REST example is hand-written per endpoint and therefore carries values
-     * that actually mean something.
+     * GraphQL input types are almost entirely nullable, so a skeleton built from the schema.
      *
      * @return array<string, mixed>|null
      */
@@ -496,6 +531,9 @@ class ExportSchemaCommand extends Command
         return $shortName ?: 'Uncategorised';
     }
 
+    /**
+     * Build graph ql schema.
+     */
     private function buildGraphQlSchema(bool $adminScope): Schema
     {
         foreach (self::DEPS as $id) {

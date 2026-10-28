@@ -91,6 +91,7 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
     graphQlOperations: [
         new QueryCollection(
             provider: DownloadableSamplesProvider::class,
+            description: 'Every downloadable sample of every downloadable product. Read one product\'s samples through its `downloadableSamples` field instead, which returns the first page of that product. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header.',
             links: [
                 new Link(
                     fromProperty: 'downloadableSamples',
@@ -100,7 +101,10 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
                 ),
             ],
         ),
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One downloadable sample. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 #[ApiResource(
@@ -151,11 +155,13 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
 )]
 class ProductDownloadableSample extends BaseProductDownloadableSample
 {
+    /**
+     * Get the array representation.
+     */
     public function toArray(): array
     {
         $array = parent::toArray();
 
-        // Ensure title is included in serialization from translations
         if (
             ! isset($array['title'])
             && $this->title
@@ -163,7 +169,6 @@ class ProductDownloadableSample extends BaseProductDownloadableSample
             $array['title'] = $this->title;
         }
 
-        // Override file_url to return null instead of empty string when no file
         if (
             ! $this->file
             || empty($this->file)
@@ -174,17 +179,26 @@ class ProductDownloadableSample extends BaseProductDownloadableSample
         return $array;
     }
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Product.
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
 
+    /**
+     * Translation.
+     */
     public function translation(): HasOne
     {
         return $this->hasOne(ProductDownloadableSampleTranslation::class, 'product_downloadable_sample_id');
@@ -205,17 +219,26 @@ class ProductDownloadableSample extends BaseProductDownloadableSample
         return url('/api/downloadable/download-sample/sample/'.$this->id);
     }
 
+    /**
+     * Get title.
+     */
     #[ApiProperty(writable: true, readable: true)]
     public function getTitle(): ?string
     {
         return $this->title;
     }
 
+    /**
+     * Set title.
+     */
     public function setTitle(?string $value): void
     {
         $this->title = $value;
     }
 
+    /**
+     * Get url.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getUrl(): ?string
@@ -223,11 +246,17 @@ class ProductDownloadableSample extends BaseProductDownloadableSample
         return $this->url;
     }
 
+    /**
+     * Set url.
+     */
     public function setUrl(?string $value): void
     {
         $this->url = $value;
     }
 
+    /**
+     * Get file.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getFile(): ?string
@@ -235,11 +264,17 @@ class ProductDownloadableSample extends BaseProductDownloadableSample
         return $this->file;
     }
 
+    /**
+     * Set file.
+     */
     public function setFile(?string $value): void
     {
         $this->file = $value;
     }
 
+    /**
+     * Get file name.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getFileName(): ?string
@@ -247,11 +282,17 @@ class ProductDownloadableSample extends BaseProductDownloadableSample
         return $this->file_name;
     }
 
+    /**
+     * Set file name.
+     */
     public function setFileName(?string $value): void
     {
         $this->file_name = $value;
     }
 
+    /**
+     * Get type.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getType(): ?string
@@ -259,11 +300,17 @@ class ProductDownloadableSample extends BaseProductDownloadableSample
         return $this->type;
     }
 
+    /**
+     * Set type.
+     */
     public function setType(?string $value): void
     {
         $this->type = $value;
     }
 
+    /**
+     * Get sort order.
+     */
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getSortOrder(): ?int
@@ -271,22 +318,34 @@ class ProductDownloadableSample extends BaseProductDownloadableSample
         return $this->sort_order;
     }
 
+    /**
+     * Set sort order.
+     */
     public function setSortOrder(?int $value): void
     {
         $this->sort_order = $value;
     }
 
+    /**
+     * Get product id.
+     */
     #[ApiProperty(writable: true, readable: true)]
     public function getProductId(): ?int
     {
         return $this->product_id;
     }
 
+    /**
+     * Set product id.
+     */
     public function setProductId(?int $value): void
     {
         $this->product_id = $value;
     }
 
+    /**
+     * Get file url.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public function getFileUrl(): ?string
     {

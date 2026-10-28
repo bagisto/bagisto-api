@@ -7,46 +7,46 @@ use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\Refund;
 
-/**
- * REST coverage for Admin Refund — create / preview / view.
- */
 class RefundTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    protected function aRefundableOrder(): Order
-    {
-        $existing = Order::with(['items'])
-            ->whereNotIn('status', [Order::STATUS_CLOSED, Order::STATUS_FRAUD])
-            ->whereHas('items', function ($q) {
-                $q->whereRaw('(qty_invoiced - qty_refunded) > 0');
-            })
-            ->first();
-
-        return $existing ?? $this->bootstrapRefundableOrder('processing');
-    }
-
+    /**
+     * Test create requires authentication.
+     */
     public function test_create_requires_authentication(): void
     {
         $this->publicPost('/api/admin/orders/1/refunds', ['items' => []])->assertStatus(401);
     }
 
+    /**
+     * Test preview requires authentication.
+     */
     public function test_preview_requires_authentication(): void
     {
         $this->publicPost('/api/admin/orders/1/refunds/preview', ['items' => []])->assertStatus(401);
     }
 
+    /**
+     * Test view requires authentication.
+     */
     public function test_view_requires_authentication(): void
     {
         $this->publicGet('/api/admin/refunds/1')->assertStatus(401);
     }
 
+    /**
+     * Test view returns 404 for unknown refund.
+     */
     public function test_view_returns_404_for_unknown_refund(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/refunds/999999999')->assertStatus(404);
     }
 
+    /**
+     * Test create returns 404 for unknown order.
+     */
     public function test_create_returns_404_for_unknown_order(): void
     {
         $admin = $this->createAdmin();
@@ -54,6 +54,9 @@ class RefundTest extends AdminApiTestCase
             ->assertStatus(404);
     }
 
+    /**
+     * Test create rejects closed orders.
+     */
     public function test_create_rejects_closed_orders(): void
     {
         $id = Order::query()->value('id') ?? $this->bootstrapAdminOrder('pending', false)->id;
@@ -66,6 +69,9 @@ class RefundTest extends AdminApiTestCase
             ->toBe(trans('bagistoapi::app.admin.order.actions.refund.closed'));
     }
 
+    /**
+     * Test preview returns totals.
+     */
     public function test_preview_returns_totals(): void
     {
         $order = $this->aRefundableOrder();
@@ -85,6 +91,9 @@ class RefundTest extends AdminApiTestCase
         expect($response->json())->toHaveKeys(['subtotal', 'tax', 'shipping', 'grandTotal']);
     }
 
+    /**
+     * Test view returns refund detail.
+     */
     public function test_view_returns_refund_detail(): void
     {
         $refundId = Refund::query()->value('id') ?? $this->bootstrapOrderWithRefund()->refunds->first()->id;
@@ -106,5 +115,20 @@ class RefundTest extends AdminApiTestCase
             expect($items[0])->toBeArray();
             expect($items[0])->toHaveKeys(['id', 'sku', 'name', 'qty', 'basePriceInclTax', 'baseImageUrl']);
         }
+    }
+
+    /**
+     * A refundable order.
+     */
+    protected function aRefundableOrder(): Order
+    {
+        $existing = Order::with(['items'])
+            ->whereNotIn('status', [Order::STATUS_CLOSED, Order::STATUS_FRAUD])
+            ->whereHas('items', function ($q) {
+                $q->whereRaw('(qty_invoiced - qty_refunded) > 0');
+            })
+            ->first();
+
+        return $existing ?? $this->bootstrapRefundableOrder('processing');
     }
 }

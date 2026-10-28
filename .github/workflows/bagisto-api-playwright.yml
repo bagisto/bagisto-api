@@ -11,21 +11,105 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1/3, 2/3, 3/3]
+        shard: [1/4, 2/4, 3/4, 4/4]
+        db:
+          - connection: mysql
+            label: MySQL 8.0
+            image: mysql:8.0
+            port: 3306
+            user: root
+            password: root
+            health: mysqladmin ping
+            php-ext: pdo_mysql
+
+          - connection: mysql
+            label: MySQL 8.4
+            image: mysql:8.4
+            port: 3306
+            user: root
+            password: root
+            health: mysqladmin ping
+            php-ext: pdo_mysql
+
+          - connection: mysql
+            label: MySQL 9.7
+            image: mysql:9.7
+            port: 3306
+            user: root
+            password: root
+            health: mysqladmin ping
+            php-ext: pdo_mysql
+
+          - connection: mariadb
+            label: MariaDB 10.11
+            image: mariadb:10.11
+            port: 3306
+            user: root
+            password: root
+            health: healthcheck.sh --connect --innodb_initialized
+            php-ext: pdo_mysql
+
+          - connection: mariadb
+            label: MariaDB 11.8
+            image: mariadb:11.8
+            port: 3306
+            user: root
+            password: root
+            health: healthcheck.sh --connect --innodb_initialized
+            php-ext: pdo_mysql
+
+          - connection: mariadb
+            label: MariaDB 12.3
+            image: mariadb:12.3
+            port: 3306
+            user: root
+            password: root
+            health: healthcheck.sh --connect --innodb_initialized
+            php-ext: pdo_mysql
+
+          - connection: pgsql
+            label: PostgreSQL 10
+            image: postgres:10
+            port: 5432
+            user: postgres
+            password: postgres
+            health: pg_isready
+            php-ext: pdo_pgsql
+
+          - connection: pgsql
+            label: PostgreSQL 14
+            image: postgres:14
+            port: 5432
+            user: postgres
+            password: postgres
+            health: pg_isready
+            php-ext: pdo_pgsql
+
+          - connection: pgsql
+            label: PostgreSQL 18
+            image: postgres:18
+            port: 5432
+            user: postgres
+            password: postgres
+            health: pg_isready
+            php-ext: pdo_pgsql
+
+    name: Playwright · ${{ matrix.db.label }} · Shard ${{ matrix.shard }}
 
     services:
-      mysql:
-        image: mysql:8.0
+      database:
+        image: ${{ matrix.db.image }}
         env:
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_PASSWORD: ${{ matrix.db.password }}
           MYSQL_DATABASE: bagisto
+          MARIADB_ROOT_PASSWORD: ${{ matrix.db.password }}
+          MARIADB_DATABASE: bagisto
+          POSTGRES_USER: ${{ matrix.db.user }}
+          POSTGRES_PASSWORD: ${{ matrix.db.password }}
+          POSTGRES_DB: bagisto
         ports:
-          - 3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+          - ${{ matrix.db.port }}
+        options: --health-cmd="${{ matrix.db.health }}" --health-interval=10s --health-timeout=5s --health-retries=5
 
     steps:
       - name: Checkout Bagisto API
@@ -37,7 +121,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip, opcache
+          extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, ${{ matrix.db.php-ext }}, tokenizer, zip, opcache
           ini-values: opcache.enable=1, opcache.enable_cli=1, opcache.validate_timestamps=0, opcache.max_accelerated_files=20000, opcache.memory_consumption=256
           coverage: none
           tools: composer:v2
@@ -48,14 +132,34 @@ jobs:
           cd bagisto
           cp .env.example .env
           sed -i "s|^APP_DEBUG=.*|APP_DEBUG=false|" .env
-          sed -i "s|DB_HOST=.*|DB_HOST=127.0.0.1|" .env
-          sed -i "s|DB_PORT=.*|DB_PORT=${{ job.services.mysql.ports['3306'] }}|" .env
-          sed -i "s|DB_DATABASE=.*|DB_DATABASE=bagisto|" .env
-          sed -i "s|DB_USERNAME=.*|DB_USERNAME=root|" .env
-          sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=root|" .env
+          sed -i "s|^DB_CONNECTION=.*|DB_CONNECTION=${{ matrix.db.connection }}|" .env
+          sed -i "s|^DB_HOST=.*|DB_HOST=127.0.0.1|" .env
+          sed -i "s|^DB_PORT=.*|DB_PORT=${{ job.services.database.ports[matrix.db.port] }}|" .env
+          sed -i "s|^DB_DATABASE=.*|DB_DATABASE=bagisto|" .env
+          sed -i "s|^DB_USERNAME=.*|DB_USERNAME=${{ matrix.db.user }}|" .env
+          sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=${{ matrix.db.password }}|" .env
+          sed -i "s|^MAIL_MAILER=.*|MAIL_MAILER=log|" .env
           grep -q '^CACHE_STORE=' .env && sed -i "s|^CACHE_STORE=.*|CACHE_STORE=file|" .env || echo "CACHE_STORE=file" >> .env
           php artisan bagisto:install --no-interaction --demo-samples
           php artisan indexer:index --mode=full
+
+      - name: Resync PostgreSQL sequences
+        if: matrix.db.connection == 'pgsql'
+        working-directory: bagisto
+        run: |
+          cat > /tmp/sync-sequences.php <<'PHP'
+          <?php
+          $synced = 0;
+          foreach (DB::select("SELECT table_name FROM information_schema.columns WHERE table_schema = current_schema() AND column_name = 'id' AND column_default LIKE 'nextval(%'") as $row) {
+              $sequence = DB::selectOne("SELECT pg_get_serial_sequence(?, 'id') AS name", [$row->table_name])->name;
+              if ($sequence) {
+                  DB::statement("SELECT setval(?, COALESCE((SELECT MAX(id) FROM \"{$row->table_name}\"), 0) + 1, false)", [$sequence]);
+                  $synced++;
+              }
+          }
+          echo "Synced {$synced} sequences\n";
+          PHP
+          php -r 'require "vendor/autoload.php"; $app = require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); require "/tmp/sync-sequences.php";'
 
       - name: Copy Bagisto API package
         run: |
@@ -75,19 +179,25 @@ jobs:
       - name: Install API dependencies
         working-directory: bagisto
         run: |
-          composer require \
-            "api-platform/laravel:~4.3.8" \
-            "api-platform/graphql:~4.3.8"
+          REQUIREMENTS=$(php -r '
+            $json = json_decode(file_get_contents("packages/Webkul/BagistoApi/composer.json"), true);
+            foreach ($json["require"] as $package => $constraint) {
+              if ($package === "php" || str_starts_with($package, "ext-")) {
+                continue;
+              }
+              echo escapeshellarg($package.":".$constraint), " ";
+            }
+          ')
+          echo "Requiring: $REQUIREMENTS"
+          eval composer require $REQUIREMENTS --no-interaction --no-progress
 
       - name: Install Bagisto API
         working-directory: bagisto
         run: |
-          composer dump-autoload
-          php artisan optimize:clear
-          php artisan bagisto-api-platform:install
           php -r '$f="composer.json";$j=json_decode(file_get_contents($f),true);$d=$j["extra"]["laravel"]["dont-discover"]??[];if(!in_array("api-platform/laravel",$d,true))$d[]="api-platform/laravel";$j["extra"]["laravel"]["dont-discover"]=$d;file_put_contents($f,json_encode($j,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)."\n");'
           composer dump-autoload
           php artisan optimize:clear
+          php artisan bagisto-api-platform:install
 
       - name: Issue storefront API key
         working-directory: bagisto
@@ -96,7 +206,7 @@ jobs:
             $key = \Webkul\BagistoApi\Models\StorefrontKey::generateKey();
             \Illuminate\Support\Facades\DB::table("storefront_keys")->insert([
               "name" => "e2e", "key_type" => "shop", "key" => $key,
-              "is_active" => 1, "rate_limit" => 0,
+              "is_active" => true, "rate_limit" => 0,
               "created_at" => now(), "updated_at" => now(),
             ]);
             echo "E2E_SHOP_KEY=".$key;
@@ -106,39 +216,77 @@ jobs:
           echo "::add-mask::$KEY"
           echo "STOREFRONT_ACCESS_KEY=$KEY" >> $GITHUB_ENV
 
-      - name: Issue admin integration token
+      - name: Issue admin credentials
         working-directory: bagisto
         run: |
-          RESULT=$(php artisan tinker --execute '
-            $role = \Webkul\User\Models\Role::where("permission_type","all")->value("id");
-            $admin = \Webkul\User\Models\Admin::first() ?? \Webkul\User\Models\Admin::create(["name"=>"E2E Admin","email"=>"api-e2e@example.com","password"=>bcrypt(\Illuminate\Support\Str::random(16)),"role_id"=>$role,"status"=>1]);
-            $p = \Illuminate\Support\Str::random(40);
-            $t = \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::create(["admin_id"=>$admin->id,"name"=>"e2e","token"=>hash("sha256",$p),"token_preview"=>substr($p,0,8),"permission_type"=>"all","abilities"=>[],"expires_at"=>now()->addDay(),"status"=>"active","created_by_admin_id"=>$admin->id]);
-            echo "E2E_CREDS=".$admin->email."::".$t->id."|".$p;
+          ADMIN_PASSWORD="E2e-$(openssl rand -hex 12)"
+          echo "::add-mask::$ADMIN_PASSWORD"
+          RESULT=$(E2E_ADMIN_PASSWORD="$ADMIN_PASSWORD" php artisan tinker --execute '
+            $role = \Webkul\User\Models\Role::query()->where("permission_type", "all")->value("id");
+            $admin = \Webkul\User\Models\Admin::query()->where("role_id", $role)->orderBy("id")->first()
+              ?? new \Webkul\User\Models\Admin(["name" => "E2E Admin", "email" => "api-e2e@example.com", "role_id" => $role]);
+            $admin->password = bcrypt(getenv("E2E_ADMIN_PASSWORD"));
+            $admin->status = 1;
+            $admin->save();
+            foreach ([
+              "api.admin_auth.rate_limits.session_requests_per_minute" => "100000",
+              "api.admin_auth.rate_limits.api_token_requests_per_minute" => "100000",
+            ] as $code => $value) {
+              \Webkul\Core\Models\CoreConfig::query()->updateOrCreate(["code" => $code], ["value" => $value]);
+            }
+            echo "E2E_ADMIN=".$admin->id."::".$admin->email;
           ')
-          LINE=$(echo "$RESULT" | grep "E2E_CREDS=" | head -1 | sed "s/E2E_CREDS=//")
-          if [ -z "$LINE" ]; then echo "::error::Failed to issue an admin integration token."; echo "$RESULT"; exit 1; fi
-          TOKEN=${LINE##*::}
-          echo "::add-mask::$TOKEN"
-          echo "ADMIN_EMAIL=${LINE%%::*}" >> $GITHUB_ENV
-          echo "ADMIN_INTEGRATION_TOKEN=$TOKEN" >> $GITHUB_ENV
-          echo "BAGISTO_URL=http://127.0.0.1:8000" >> $GITHUB_ENV
+          LINE=$(echo "$RESULT" | grep "E2E_ADMIN=" | head -1 | sed "s/E2E_ADMIN=//")
+          if [ -z "$LINE" ]; then echo "::error::Failed to find or create the e2e admin."; echo "$RESULT"; exit 1; fi
+          ADMIN_ID="${LINE%%::*}"
+          php artisan bagisto-api:jwt-keys --no-interaction
+          EXPIRES="$(date -u -d tomorrow +%F)"
+          issue_token() {
+            php artisan bagisto-api:api-token:create --admin="$ADMIN_ID" --name="$1" --domain="$2" --expires="$EXPIRES" --only-token --no-interaction | tail -n 1 | tr -d '[:space:]'
+          }
+          API_TOKEN=$(issue_token e2e localhost)
+          API_TOKEN_OTHER_DOMAIN=$(issue_token e2e-other-domain example.com)
+          API_TOKEN_REVOCABLE_REST=$(issue_token e2e-revocable-rest localhost)
+          API_TOKEN_REVOCABLE_GRAPHQL=$(issue_token e2e-revocable-graphql localhost)
+          for VALUE in "$API_TOKEN" "$API_TOKEN_OTHER_DOMAIN" "$API_TOKEN_REVOCABLE_REST" "$API_TOKEN_REVOCABLE_GRAPHQL"; do
+            if [ -z "$VALUE" ]; then echo "::error::Failed to issue an admin API token."; exit 1; fi
+            echo "::add-mask::$VALUE"
+          done
+          php artisan cache:clear
+          {
+            echo "ADMIN_EMAIL=${LINE##*::}"
+            echo "ADMIN_PASSWORD=$ADMIN_PASSWORD"
+            echo "ADMIN_API_TOKEN=$API_TOKEN"
+            echo "ADMIN_API_TOKEN_OTHER_DOMAIN=$API_TOKEN_OTHER_DOMAIN"
+            echo "ADMIN_API_TOKEN_REVOCABLE_REST=$API_TOKEN_REVOCABLE_REST"
+            echo "ADMIN_API_TOKEN_REVOCABLE_GRAPHQL=$API_TOKEN_REVOCABLE_GRAPHQL"
+            echo "BAGISTO_URL=http://127.0.0.1:8000"
+          } >> $GITHUB_ENV
 
       - name: Verify credentials and routes
         working-directory: bagisto
         env:
           STOREFRONT_ACCESS_KEY: ${{ env.STOREFRONT_ACCESS_KEY }}
-          ADMIN_INTEGRATION_TOKEN: ${{ env.ADMIN_INTEGRATION_TOKEN }}
+          ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
+          ADMIN_API_TOKEN: ${{ env.ADMIN_API_TOKEN }}
         run: |
           php artisan serve --host=127.0.0.1 --port=8099 &
           for i in $(seq 1 20); do curl -sf -o /dev/null http://127.0.0.1:8099/api/shop && break; sleep 2; done
           SHOP=$(curl -s -o /dev/null -w "%{http_code}" -H "X-STOREFRONT-KEY: $STOREFRONT_ACCESS_KEY" http://127.0.0.1:8099/api/shop/channels)
-          ADMIN=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $ADMIN_INTEGRATION_TOKEN" -H "Accept: application/json" http://127.0.0.1:8099/api/admin/get)
+          LOGIN_BODY=$(jq -n --arg email "$ADMIN_EMAIL" --arg password "$ADMIN_PASSWORD" '{email: $email, password: $password, device_name: "ci verify", client_type: "other"}')
+          ACCESS_TOKEN=$(curl -s -H "Content-Type: application/json" -H "Accept: application/json" -d "$LOGIN_BODY" http://127.0.0.1:8099/api/admin/auth/login | jq -r '.accessToken // empty')
+          if [ -n "$ACCESS_TOKEN" ]; then echo "::add-mask::$ACCESS_TOKEN"; fi
+          SESSION=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $ACCESS_TOKEN" -H "Accept: application/json" http://127.0.0.1:8099/api/admin/get)
+          API=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $ADMIN_API_TOKEN" -H "Accept: application/json" http://127.0.0.1:8099/api/admin/get)
           ROUTES=$(curl -s -o /dev/null -w "%{http_code}" -H "X-STOREFRONT-KEY: $STOREFRONT_ACCESS_KEY" http://127.0.0.1:8099/api/shop/channel_translations)
-          echo "storefront key: $SHOP | admin token: $ADMIN | underscore routes: $ROUTES"
+          if [ -n "$ACCESS_TOKEN" ]; then
+            curl -s -o /dev/null -X POST -H "Authorization: Bearer $ACCESS_TOKEN" -H "Accept: application/json" http://127.0.0.1:8099/api/admin/auth/logout
+          fi
+          echo "storefront key: $SHOP | admin login session: $SESSION | admin API token: $API | underscore routes: $ROUTES"
           kill %1 || true
-          if [ "$SHOP" != "200" ] || [ "$ADMIN" != "200" ]; then
-            echo "::error::Credentials are not usable (shop=$SHOP admin=$ADMIN). Aborting before the suite runs."
+          if [ "$SHOP" != "200" ] || [ "$SESSION" != "200" ] || [ "$API" != "200" ]; then
+            echo "::error::Credentials are not usable (shop=$SHOP session=$SESSION api_token=$API). Aborting before the suite runs."
             exit 1
           fi
           if [ "$ROUTES" != "200" ]; then
@@ -146,20 +294,40 @@ jobs:
             exit 1
           fi
 
+      - name: Start the API server
+        working-directory: bagisto/public
+        env:
+          STOREFRONT_ACCESS_KEY: ${{ env.STOREFRONT_ACCESS_KEY }}
+        run: |
+          PHP_CLI_SERVER_WORKERS=4 nohup php -d memory_limit=1024M -S 127.0.0.1:8000 ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php > ../storage/logs/php-server.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf -o /dev/null http://127.0.0.1:8000/api/shop && break; sleep 2; done
+          SHOP=$(curl -s -o /dev/null -w "%{http_code}" -H "X-STOREFRONT-KEY: $STOREFRONT_ACCESS_KEY" http://127.0.0.1:8000/api/shop/channels)
+          echo "API server on 127.0.0.1:8000 answered $SHOP"
+          if [ "$SHOP" != "200" ]; then
+            echo "::error::The API server on 127.0.0.1:8000 is not answering (shop=$SHOP)."
+            tail -50 ../storage/logs/php-server.log
+            exit 1
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
 
       - name: Install Playwright
         env:
           BAGISTO_URL: ${{ env.BAGISTO_URL }}
           STOREFRONT_ACCESS_KEY: ${{ env.STOREFRONT_ACCESS_KEY }}
-          ADMIN_INTEGRATION_TOKEN: ${{ env.ADMIN_INTEGRATION_TOKEN }}
           ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
+          ADMIN_API_TOKEN: ${{ env.ADMIN_API_TOKEN }}
+          ADMIN_API_TOKEN_OTHER_DOMAIN: ${{ env.ADMIN_API_TOKEN_OTHER_DOMAIN }}
+          ADMIN_API_TOKEN_REVOCABLE_REST: ${{ env.ADMIN_API_TOKEN_REVOCABLE_REST }}
+          ADMIN_API_TOKEN_REVOCABLE_GRAPHQL: ${{ env.ADMIN_API_TOKEN_REVOCABLE_GRAPHQL }}
         run: |
           cd bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
           npm install
+          npx --yes -p typescript@5.6.3 tsc -p tsconfig.json
           npx playwright install --with-deps chromium
           npx playwright test tests --shard=${{ matrix.shard }} --reporter=list,html
 
@@ -167,5 +335,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ strategy.job-index }}
-          path: bagisto/packages/Webkul/BagistoApi/tests/e2e-pw/playwright-report
+          name: playwright-report-${{ matrix.db.connection }}-${{ strategy.job-index }}
+          path: |
+            bagisto/packages/Webkul/BagistoApi/tests/e2e-pw/playwright-report
+            bagisto/storage/logs/laravel.log
+            bagisto/storage/logs/php-server.log

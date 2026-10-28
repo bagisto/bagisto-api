@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\GraphQl\DeleteMutation;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
@@ -24,6 +23,7 @@ use Webkul\BagistoApi\State\ProductReviewItemProvider;
 use Webkul\BagistoApi\State\ProductReviewProcessor;
 use Webkul\BagistoApi\State\ProductReviewProvider;
 use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -94,6 +94,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
             openapi: new Operation(
                 tags: ['Product'],
                 summary: 'Get a single product review by ID',
+                description: 'One product review by ID. Only approved reviews are returned; an unknown, pending or disapproved review is a 404. Needs the X-STOREFRONT-KEY header.',
                 responses: [
                     '200' => new Response(
                         description: 'The product review.',
@@ -304,6 +305,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
     graphQlOperations: [
         new QueryCollection(
             provider: ProductReviewProvider::class,
+            description: 'Approved product reviews, oldest first. Filters: `product_id` and `rating`; `status` is accepted but ignored, as only approved reviews are public. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
             args: [
                 'product_id' => [
                     'type' => 'Int',
@@ -341,7 +343,10 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                 ],
             ]
         ),
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One approved product review; a pending or disapproved review is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
         new Mutation(
             name: 'create',
             input: CreateProductReviewInput::class,
@@ -356,7 +361,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
             processor: ProductReviewProcessor::class,
             description: 'Update an existing product review'
         ),
-        new DeleteMutation(
+        new Mutation(
             name: 'delete',
             processor: ProductReviewProcessor::class,
             description: 'Delete a product review'
@@ -438,6 +443,9 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
      */
     public const STATUS_APPROVED = 'approved';
 
+    /**
+     * The fillable.
+     */
     protected $fillable = [
         'comment',
         'title',
@@ -448,6 +456,9 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         'name',
     ];
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'id' => 'int',
         'product_id' => 'int',
@@ -461,6 +472,9 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         'updated_at' => 'datetime',
     ];
 
+    /**
+     * Handle the get magic method.
+     */
     public function __get($key)
     {
         if ($this->hasAttribute($key)) {
@@ -470,11 +484,17 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         return parent::__get($key);
     }
 
+    /**
+     * Get id.
+     */
     public function getId()
     {
         return $this->getAttribute('id');
     }
 
+    /**
+     * Handle the isset magic method.
+     */
     public function __isset($key)
     {
         if ($this->hasAttribute($key)) {
@@ -484,6 +504,9 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         return parent::__isset($key);
     }
 
+    /**
+     * Handle the set magic method.
+     */
     public function __set($key, $value)
     {
         if (in_array($key, ['id', 'product_id', 'customer_id', 'title', 'comment', 'rating', 'name', 'email', 'status', 'created_at', 'updated_at'])) {
@@ -493,11 +516,38 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         }
     }
 
+    /**
+     * The reviewer name, censored as the storefront censors it when the store asks to, except for the review's author.
+     */
+    public function getNameAttribute(?string $value): ?string
+    {
+        if (
+            $value === null
+            || ! core()->getConfigData('catalog.products.review.censoring_reviewer_name')
+            || (
+                $this->customer_id
+                && (int) CurrentCustomer::user()?->id === (int) $this->customer_id
+            )
+        ) {
+            return $value;
+        }
+
+        return collect(explode(' ', $value))
+            ->map(fn ($part) => mb_substr($part, 0, 1).str_repeat('*', max(mb_strlen($part) - 1, 0)))
+            ->join(' ');
+    }
+
+    /**
+     * Get attachments attribute.
+     */
     public function getAttachmentsAttribute()
     {
         return $this->getAttachmentUrls();
     }
 
+    /**
+     * Get attachment urls.
+     */
     public function getAttachmentUrls()
     {
         return $this->images->first() ? $this->images->map(function ($item) {

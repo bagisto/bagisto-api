@@ -7,14 +7,9 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class RmaCustomFieldTest extends AdminApiTestCase
 {
-    private function createField(string $code, string $type = 'text'): int
-    {
-        return DB::table('rma_custom_fields')->insertGetId([
-            'code' => $code, 'label' => 'Label', 'type' => $type, 'is_required' => 0,
-            'position' => 1, 'status' => 1, 'created_at' => now(), 'updated_at' => now(),
-        ]);
-    }
-
+    /**
+     * Test create text.
+     */
     public function test_create_text(): void
     {
         $admin = $this->createAdmin();
@@ -27,6 +22,9 @@ class RmaCustomFieldTest extends AdminApiTestCase
         $this->assertDatabaseHas('rma_custom_fields', ['id' => $response->json('id')]);
     }
 
+    /**
+     * Test create select with options.
+     */
     public function test_create_select_with_options(): void
     {
         $admin = $this->createAdmin();
@@ -51,6 +49,9 @@ class RmaCustomFieldTest extends AdminApiTestCase
         expect($response->json('options'))->toHaveCount(2);
     }
 
+    /**
+     * Test create validation code required.
+     */
     public function test_create_validation_code_required(): void
     {
         $admin = $this->createAdmin();
@@ -62,6 +63,9 @@ class RmaCustomFieldTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create validation select needs options.
+     */
     public function test_create_validation_select_needs_options(): void
     {
         $admin = $this->createAdmin();
@@ -71,6 +75,9 @@ class RmaCustomFieldTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test list and get.
+     */
     public function test_list_and_get(): void
     {
         $admin = $this->createAdmin();
@@ -83,6 +90,9 @@ class RmaCustomFieldTest extends AdminApiTestCase
         expect((int) $get->json('id'))->toBe($id);
     }
 
+    /**
+     * Test update rebuilds options.
+     */
     public function test_update_rebuilds_options(): void
     {
         $admin = $this->createAdmin();
@@ -109,6 +119,9 @@ class RmaCustomFieldTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test delete.
+     */
     public function test_delete(): void
     {
         $admin = $this->createAdmin();
@@ -119,6 +132,9 @@ class RmaCustomFieldTest extends AdminApiTestCase
         $this->assertDatabaseMissing('rma_custom_fields', ['id' => $id]);
     }
 
+    /**
+     * Test mass delete.
+     */
     public function test_mass_delete(): void
     {
         $admin = $this->createAdmin();
@@ -129,6 +145,9 @@ class RmaCustomFieldTest extends AdminApiTestCase
         $this->assertDatabaseMissing('rma_custom_fields', ['id' => $a]);
     }
 
+    /**
+     * Test mass update status.
+     */
     public function test_mass_update_status(): void
     {
         $admin = $this->createAdmin();
@@ -141,6 +160,17 @@ class RmaCustomFieldTest extends AdminApiTestCase
         $this->assertDatabaseHas('rma_custom_fields', [
             'id' => $id,
             'status' => 0,
+        ]);
+    }
+
+    /**
+     * Create field.
+     */
+    private function createField(string $code, string $type = 'text'): int
+    {
+        return DB::table('rma_custom_fields')->insertGetId([
+            'code' => $code, 'label' => 'Label', 'type' => $type, 'is_required' => 0,
+            'position' => 1, 'status' => 1, 'created_at' => now(), 'updated_at' => now(),
         ]);
     }
 }

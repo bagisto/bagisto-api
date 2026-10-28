@@ -7,6 +7,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminAppearanceSectionDuplicateInput
 {
+    /**
+     * The section id.
+     */
     #[ApiProperty(description: 'Section being copied')]
     #[Groups(['mutation'])]
     public ?int $section_id = null;

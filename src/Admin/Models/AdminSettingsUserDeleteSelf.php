@@ -10,18 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsUserDeleteSelfInput;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserDeleteSelfProcessor;
 
-/**
- * Self-delete the authenticated admin's OWN account, password-confirmed
- * (the admin "delete my account" flow — Webkul\Admin UserController::destroySelf).
- *
- * Distinct from DELETE /api/admin/settings/users/{id}, which deletes ANOTHER
- * admin and refuses self-deletion. This endpoint deletes the caller's own admin
- * after re-confirming their password. It deletes the admin that owns the calling
- * integration token, which invalidates that token.
- *
- * REST:    POST /api/admin/settings/users/delete-self
- * GraphQL: createAdminSettingsUserDeleteSelf
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsUserDeleteSelf',
@@ -83,12 +71,21 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserDeleteSelfProcessor;
 )]
 class AdminSettingsUserDeleteSelf
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

@@ -1,25 +1,8 @@
-// tests/restAPI/api/automation/admin/customers/customers.spec.ts
-//
-// Admin Customers (W2) — CRUD + mass-delete + mass-update-status.
-//
-// Probed 2026-05-26:
-//   GET    /api/admin/customers              → { data:[{id,firstName,...,customerGroupId,...}], meta }
-//   POST   /api/admin/customers              → 201 + full customer detail
-//   GET    /api/admin/customers/{id}         → detail with totalAddresses/totalOrders/totalAmountSpent populated
-//   PUT    /api/admin/customers/{id}         → updated customer detail
-//   DELETE /api/admin/customers/{id}         → { message }  (refuses with 400 if pending/processing orders)
-//   POST   /api/admin/customers/mass-delete  → { deleted:[], skipped:[], message }
-//   POST   /api/admin/customers/mass-update-status → { updated:[], value, message }
-//
-// Required create fields probed live: first_name, last_name, email,
-// customer_group_id, channel_id, password (with send_password=false).
-
 import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_CUSTOMERS } from '../../../../rest/endpoints/admin.customers.endpoints';
+import { placeOrder } from '../../../../rest/helpers/coverage/adminSales.helpers';
 
-// Per-test timeout bumped — under parallel load create+detail+delete chains
-// can exceed the 60s default.
 test.describe.configure({ timeout: 120_000 });
 
 function uniqueEmail(prefix = 'cust'): string {
@@ -31,7 +14,7 @@ async function createCustomer(request: APIRequestContext, overrides: Record<stri
     first_name: 'E2E',
     last_name: 'Tester',
     email: uniqueEmail(),
-    customer_group_id: 2, // 'general' — system group, always present
+    customer_group_id: 2,
     channel_id: 1,
     send_password: false,
     password: 'e2epass123',
@@ -44,7 +27,7 @@ async function createCustomer(request: APIRequestContext, overrides: Record<stri
   return { resp, payload };
 }
 
-test.describe('Admin Customers REST API', () => {
+test.describe('admin customers rest api', () => {
   test('list returns envelope with data + meta', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMERS, {
       params: { per_page: '3' },
@@ -56,9 +39,9 @@ test.describe('Admin Customers REST API', () => {
     expect(typeof body.meta.total).toBe('number');
   });
 
-  test('list filter by email LIKE narrows the result', async ({ request }) => {
+  test('list filter by email like narrows the result', async ({ request }) => {
     const { resp: createResp, payload } = await createCustomer(request);
-    expect([200, 201]).toContain(createResp.status());
+    expect(createResp.status()).toBe(201);
     const created = await createResp.json();
 
     const filterResp = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMERS, {
@@ -69,7 +52,6 @@ test.describe('Admin Customers REST API', () => {
     expect(body.data.length).toBeGreaterThan(0);
     expect(body.data.some((c: any) => c.id === created.id)).toBe(true);
 
-    // cleanup
     await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(created.id), { method: 'DELETE' });
   });
 
@@ -82,7 +64,7 @@ test.describe('Admin Customers REST API', () => {
 
   test('create + detail + delete round-trip', async ({ request }) => {
     const { resp: createResp } = await createCustomer(request);
-    expect([200, 201]).toContain(createResp.status());
+    expect(createResp.status()).toBe(201);
     const created = await createResp.json();
     expect(created.id).toBeGreaterThan(0);
     expect(created.email).toContain('@example.com');
@@ -91,16 +73,15 @@ test.describe('Admin Customers REST API', () => {
     expect(detailResp.status()).toBe(200);
     const detail = await detailResp.json();
     expect(detail.id).toBe(created.id);
-    // detail-only fields populated (vs listing where they're null)
     expect(typeof detail.totalAddresses).toBe('number');
     expect(typeof detail.totalOrders).toBe('number');
 
     const delResp = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(created.id), {
       method: 'DELETE',
     });
-    expect([200, 204]).toContain(delResp.status());
+    expect(delResp.status()).toBe(200);
+    expect((await delResp.json()).message).toBe('Customer deleted successfully.');
 
-    // confirm gone
     const missing = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(created.id));
     expect(missing.status()).toBe(404);
   });
@@ -117,26 +98,31 @@ test.describe('Admin Customers REST API', () => {
         password: 'e2epass123',
       },
     });
-    expect([400, 422]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('The email field is required.');
   });
 
   test('create rejects duplicate email with 422', async ({ request }) => {
     const { resp: firstResp, payload } = await createCustomer(request);
-    expect([200, 201]).toContain(firstResp.status());
+    expect(firstResp.status()).toBe(201);
     const first = await firstResp.json();
 
     const dupResp = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMERS, {
       method: 'POST',
       data: { ...payload, first_name: 'Dup' },
     });
-    expect([400, 422]).toContain(dupResp.status());
+    expect(dupResp.status()).toBe(422);
+    expect((await dupResp.json()).detail).toBe('The email has already been taken.');
 
-    // cleanup
+    const list = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMERS, { params: { email: payload.email } });
+    expect((await list.json()).data.map((c: any) => c.id)).toEqual([first.id]);
+
     await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(first.id), { method: 'DELETE' });
   });
 
   test('update persists changes', async ({ request }) => {
     const { resp: createResp } = await createCustomer(request);
+    expect(createResp.status()).toBe(201);
     const created = await createResp.json();
 
     const newLast = `Updated${Date.now()}`;
@@ -150,9 +136,12 @@ test.describe('Admin Customers REST API', () => {
         channel_id: 1,
       },
     });
-    expect([200, 201]).toContain(updResp.status());
+    expect(updResp.status()).toBe(200);
     const updated = await updResp.json();
     expect(updated.lastName).toBe(newLast);
+
+    const detail = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(created.id));
+    expect((await detail.json()).lastName).toBe(newLast);
 
     await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(created.id), { method: 'DELETE' });
   });
@@ -160,13 +149,15 @@ test.describe('Admin Customers REST API', () => {
   test('detail returns 404 for unknown id', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(99999999));
     expect(resp.status()).toBe(404);
+    expect((await resp.json()).detail).toBe('Customer not found.');
   });
 
   test('delete unknown id returns 404', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(99999999), {
       method: 'DELETE',
     });
-    expect([404, 400]).toContain(resp.status());
+    expect(resp.status()).toBe(404);
+    expect((await resp.json()).detail).toBe('Customer not found.');
   });
 
   test('mass-delete removes both ids and reports them', async ({ request }) => {
@@ -184,7 +175,6 @@ test.describe('Admin Customers REST API', () => {
     expect(Array.isArray(body.deleted)).toBe(true);
     expect(body.deleted).toEqual(expect.arrayContaining([aId, bId]));
 
-    // confirm one is gone
     const gone = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(aId));
     expect(gone.status()).toBe(404);
   });
@@ -194,7 +184,8 @@ test.describe('Admin Customers REST API', () => {
       method: 'POST',
       data: { indices: [] },
     });
-    expect([400, 422]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('At least one customer id is required.');
   });
 
   test('mass-update-status flips status for both ids', async ({ request }) => {
@@ -212,7 +203,6 @@ test.describe('Admin Customers REST API', () => {
     expect(Array.isArray(body.updated)).toBe(true);
     expect(body.updated).toEqual(expect.arrayContaining([aId, bId]));
 
-    // cleanup
     await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMERS_MASS_DELETE, {
       method: 'POST',
       data: { indices: [aId, bId] },
@@ -222,26 +212,24 @@ test.describe('Admin Customers REST API', () => {
   test('mass-update-status rejects invalid value', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMERS_MASS_UPDATE_STATUS, {
       method: 'POST',
-      data: { indices: [1], value: 99 },
+      data: { indices: [99999999], value: 99 },
     });
-    expect([400, 422]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('Status value must be 0 or 1.');
   });
 
-  test('delete-with-active-orders guard (smoke)', async ({ request }) => {
-    // We can't reliably create an order with status=pending here; this test
-    // exercises the guard's HTTP shape against an arbitrary customer and
-    // accepts either 200 (no orders → delete OK) or 400 (guard fired).
-    // Skipped if no customers exist.
-    const list = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMERS, {
-      params: { per_page: '1' },
-    });
-    const body = await list.json();
-    if (!body.data || body.data.length === 0) test.skip(true, 'no customers in DB');
-    // Don't actually delete a real DB customer — just smoke the endpoint shape
-    // by hitting an obviously-fake id.
-    const probe = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(99999998), {
+  test('delete refuses a customer with a pending order', async ({ request }) => {
+    test.setTimeout(180_000);
+    const order = await placeOrder(request);
+
+    const resp = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(order.customer.id), {
       method: 'DELETE',
     });
-    expect([200, 204, 400, 404]).toContain(probe.status());
+    expect(resp.status()).toBe(400);
+    expect((await resp.json()).detail).toBe('Customer has pending or processing orders and cannot be deleted.');
+
+    const detail = await sendAdminRequest(request, ADMIN_CUSTOMERS.CUSTOMER(order.customer.id));
+    expect(detail.status()).toBe(200);
+    expect((await detail.json()).id).toBe(order.customer.id);
   });
 });

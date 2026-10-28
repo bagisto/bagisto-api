@@ -132,12 +132,7 @@ return [
 
     'swagger_ui' => [
         'enabled' => true,
-        'http_auth' => [
-            'bearerAuth' => [
-                'scheme' => 'bearer',
-                'bearerFormat' => 'UUID',
-            ],
-        ],
+        'http_auth' => [],
     ],
 
     'url_generation_strategy' => UrlGeneratorInterface::ABS_PATH,
@@ -156,16 +151,6 @@ return [
 
     'security' => [
         'sanctum' => true,
-    ],
-
-    'rate_limit' => [
-        'skip_localhost' => env('RATE_LIMIT_SKIP_LOCALHOST', true),
-        'auth' => env('RATE_LIMIT_AUTH', 5),
-        'admin' => env('RATE_LIMIT_ADMIN', 60),
-        'shop' => env('RATE_LIMIT_SHOP', 100),
-        'graphql' => env('RATE_LIMIT_GRAPHQL', 100),
-        'cache_driver' => env('RATE_LIMIT_CACHE', env('CACHE_STORE', 'file')),
-        'cache_prefix' => 'api:rate-limit:',
     ],
 
     'security_headers' => [

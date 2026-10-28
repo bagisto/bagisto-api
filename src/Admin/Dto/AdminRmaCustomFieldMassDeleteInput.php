@@ -7,16 +7,26 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminRmaCustomFieldMassDeleteInput
 {
-    /** @var array<int,int>|null */
+    /**
+     * The ids of the RMA custom fields to delete.
+     *
+     * @var array<int,int>|null
+     */
     #[ApiProperty(description: 'RMA custom field ids')]
     #[Groups(['mutation'])]
     public ?array $indices = null;
 
+    /**
+     * Get indices.
+     */
     public function getIndices(): ?array
     {
         return $this->indices;
     }
 
+    /**
+     * Set indices.
+     */
     public function setIndices(?array $value): void
     {
         $this->indices = $value;

@@ -15,29 +15,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductImageUpdateInput;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
 
-/**
- * Phase 5.11 — Admin Catalog Product images sub-resource.
- *
- * Endpoints (under the parent product):
- *   POST   /api/admin/catalog/products/{productId}/images
- *          Multipart `image: <file>` (bmp/jpeg/jpg/png/webp). Optional `position`.
- *          Returns the new image row.
- *
- *   PUT    /api/admin/catalog/products/{productId}/images/reorder
- *          Body: { "order": [{ "id": <imageId>, "position": <int> }, ...] }
- *          Returns the updated list of images.
- *
- *   DELETE /api/admin/catalog/products/{productId}/images/{id}
- *          Removes the DB row and the storage file. Returns { success, message }.
- *
- * GraphQL mutations: createAdminCatalogProductImage / reorderAdminCatalogProductImages /
- * deleteAdminCatalogProductImage. The upload mutation is documented but the
- * binary file part is not transportable over JSON GraphQL — clients must use
- * REST for upload.
- *
- * Permission: catalog.products.edit (Sanctum-token pattern — reads
- * $admin->role->permission_type/->permissions directly, never bouncer()).
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCatalogProductImage',
@@ -326,27 +303,51 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
 )]
 class AdminCatalogProductImage
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The product id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $product_id = null;
 
+    /**
+     * The path.
+     */
     #[ApiProperty(writable: false)]
     public ?string $path = null;
 
+    /**
+     * The position.
+     */
     #[ApiProperty(writable: false)]
     public ?int $position = null;
 
+    /**
+     * The url.
+     */
     #[ApiProperty(writable: false)]
     public ?string $url = null;
 
+    /**
+     * The alt text.
+     */
     #[ApiProperty(writable: false, description: 'Alt text stored for the current locale.')]
     public ?string $alt_text = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 

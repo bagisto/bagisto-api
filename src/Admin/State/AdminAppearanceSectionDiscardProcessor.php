@@ -9,19 +9,21 @@ use Webkul\BagistoApi\Admin\Models\AdminAppearanceSectionDiscard;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
 use Webkul\Theme\Repositories\SectionRepository;
 
-/**
- * Mirrors SectionController::discard — throws away every staged edit of the theme and
- * channel, leaving the published content untouched.
- */
 class AdminAppearanceSectionDiscardProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SectionRepository $sectionRepository,
         protected AppearanceScopeGuard $scope,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $this->authorizedAdmin('appearance.sections.edit', 'bagistoapi::app.admin.appearance.no-permission');

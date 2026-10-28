@@ -10,18 +10,16 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Marketing\Models\Campaign;
 
-/**
- * Campaign detail — GET /api/admin/marketing/campaigns/{id} +
- * adminMarketingCampaign.
- *
- * Branches: GraphQL → the AdminMarketingCampaign Eloquent model (the four to-one
- * objects resolve); REST → the flat AdminMarketingCampaignRestDto with channel /
- * customer_group / marketing_template / marketing_event as objects.
- */
 class AdminMarketingCampaignItemProvider implements ProviderInterface
 {
+    /**
+     * The graphql relations constant.
+     */
     protected const GRAPHQL_RELATIONS = ['channel', 'customer_group', 'marketing_template'];
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminMarketingCampaign|AdminMarketingCampaignRestDto
     {
         AdminReadPermissions::authorize($operation, AdminMarketingCampaign::class);
@@ -51,14 +49,19 @@ class AdminMarketingCampaignItemProvider implements ProviderInterface
         return $this->buildRestDto($campaign);
     }
 
+    /**
+     * Build rest dto public.
+     */
     public function buildRestDtoPublic(object $campaign): AdminMarketingCampaignRestDto
     {
         return $this->buildRestDto($campaign);
     }
 
+    /**
+     * Build rest dto.
+     */
     protected function buildRestDto(object $campaign): AdminMarketingCampaignRestDto
     {
-        /** @var Campaign $campaign */
         $dto = new AdminMarketingCampaignRestDto;
 
         $dto->id = (int) $campaign->id;
@@ -76,6 +79,8 @@ class AdminMarketingCampaignItemProvider implements ProviderInterface
     }
 
     /**
+     * Build the channel summary of a campaign, or null when it has none.
+     *
      * @return array{id:int, code:string|null, name:string|null}|null
      */
     protected function channelObject(?object $channel): ?array
@@ -92,6 +97,8 @@ class AdminMarketingCampaignItemProvider implements ProviderInterface
     }
 
     /**
+     * Build the customer group summary of a campaign, or null when it has none.
+     *
      * @return array{id:int, code:string|null, name:string|null}|null
      */
     protected function customerGroupObject(?object $group): ?array
@@ -108,6 +115,8 @@ class AdminMarketingCampaignItemProvider implements ProviderInterface
     }
 
     /**
+     * Build the email template summary of a campaign, or null when it has none.
+     *
      * @return array{id:int, name:string|null, status:string|null}|null
      */
     protected function templateObject(?object $template): ?array
@@ -124,6 +133,8 @@ class AdminMarketingCampaignItemProvider implements ProviderInterface
     }
 
     /**
+     * Build the event summary of a campaign, or null when it has none.
+     *
      * @return array{id:int, name:string|null, date:string|null}|null
      */
     protected function eventObject(?object $event): ?array

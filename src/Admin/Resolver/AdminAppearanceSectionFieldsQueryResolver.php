@@ -9,8 +9,14 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionFieldsProvider;
 
 class AdminAppearanceSectionFieldsQueryResolver implements QueryItemResolverInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected AdminAppearanceSectionFieldsProvider $provider) {}
 
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?object $item, array $context): AdminAppearanceSectionFields
     {
         return $this->provider->provide(new Get, [], $context);

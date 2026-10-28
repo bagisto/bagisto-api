@@ -9,17 +9,19 @@ use ReflectionProperty;
 use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\TypeInfo\Type as NativeType;
 
-/**
- * Restores the element type of `@var array<Foo>` / `Foo[]` DTO properties when the
- */
 class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryInterface
 {
+    /**
+     * The namespace prefix constant.
+     */
     private const NAMESPACE_PREFIX = 'Webkul\\BagistoApi\\';
 
-    /** @var array<class-string, array{ns:string, uses:array<string,string>, docs:array<string,string>}> */
+    /**
+     * Parsed namespace, use imports and property docblocks of each class source file.
+     *
+     * @var array<class-string, array{ns:string, uses:array<string,string>, docs:array<string,string>}>
+     */
     private static array $fileCache = [];
-
-    public function __construct(private readonly PropertyMetadataFactoryInterface $decorated) {}
 
     /**
      * Resolved native type per "class::property", or false when the property
@@ -36,6 +38,14 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
      */
     private static array $resultCache = [];
 
+    /**
+     * Create a new instance.
+     */
+    public function __construct(private readonly PropertyMetadataFactoryInterface $decorated) {}
+
+    /**
+     * Create.
+     */
     public function create(string $resourceClass, string $property, array $options = []): ApiProperty
     {
         $cacheKey = $resourceClass.'::'.$property.'::'
@@ -48,6 +58,9 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         return self::$resultCache[$cacheKey] = $this->build($resourceClass, $property, $options);
     }
 
+    /**
+     * Build.
+     */
     private function build(string $resourceClass, string $property, array $options = []): ApiProperty
     {
         $metadata = $this->decorated->create($resourceClass, $property, $options);
@@ -68,6 +81,8 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
     }
 
     /**
+     * Resolve the native array type for a property, or false when it needs no rewrite.
+     *
      * @return Type|false false = leave metadata alone
      */
     private function resolveNativeType(string $resourceClass, string $property, ApiProperty $metadata): mixed
@@ -91,28 +106,20 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         return $allowsNull ? NativeType::nullable($native) : $native;
     }
 
+    /**
+     * Already has object element.
+     */
     private function alreadyHasObjectElement(ApiProperty $metadata): bool
     {
         $native = $metadata->getNativeType();
 
-        if (
-            $native !== null
-            && str_contains((string) $native, '\\')
-        ) {
-            return true;
-        }
-
-        foreach ($metadata->getBuiltinTypes() ?? [] as $type) {
-            foreach ($type->getCollectionValueTypes() as $value) {
-                if ($value->getClassName() !== null) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return $native !== null
+            && str_contains((string) $native, '\\');
     }
 
+    /**
+     * Whether array typed.
+     */
     private function isArrayTyped(string $class, string $property, ?bool &$allowsNull): bool
     {
         $allowsNull = false;
@@ -136,6 +143,9 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         return in_array($name, ['array', 'iterable'], true);
     }
 
+    /**
+     * Element class from source.
+     */
     private function elementClassFromSource(string $class, string $property): ?string
     {
         $parsed = $this->parseFile($class);
@@ -162,7 +172,9 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         return $fqcn !== null && (class_exists($fqcn) || interface_exists($fqcn)) ? $fqcn : null;
     }
 
-    /** Extract the element type from an `@var` expression: array<X>, array<int,X>, X[], X[]|null. */
+    /**
+     * Extract the element type from an `@var` expression: array<X>, array<int,X>, X[], X[]|null.
+     */
     private function elementFromVar(string $var): ?string
     {
         $var = trim($var);
@@ -193,10 +205,13 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         return null;
     }
 
+    /**
+     * Clean type.
+     */
     private function cleanType(string $type): ?string
     {
         $type = trim($type);
-        $type = preg_replace('/<.*>$/', '', $type);   // strip a nested generic
+        $type = preg_replace('/<.*>$/', '', $type);
         $type = rtrim($type, '[]');
 
         if (
@@ -209,6 +224,9 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         return $type;
     }
 
+    /**
+     * Resolve class.
+     */
     private function resolveClass(string $name, string $namespace, array $uses): ?string
     {
         if (str_starts_with($name, '\\')) {
@@ -235,6 +253,8 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
     }
 
     /**
+     * Parse the namespace, use imports and property docblocks of a class source file.
+     *
      * @return array{ns:string, uses:array<string,string>, docs:array<string,string>}|null
      */
     private function parseFile(string $class): ?array
@@ -317,6 +337,9 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         ];
     }
 
+    /**
+     * Read name.
+     */
     private function readName(array $tokens, int &$index): string
     {
         $name = '';
@@ -343,6 +366,9 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         return trim($name, '\\');
     }
 
+    /**
+     * Read use.
+     */
     private function readUse(array $tokens, int &$index, array &$uses): void
     {
         $name = '';

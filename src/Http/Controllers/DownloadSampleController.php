@@ -14,6 +14,9 @@ class DownloadSampleController extends Controller
 {
     use ValidatesExternalUrl;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ProductRepository $productRepository,
         protected ProductDownloadableLinkRepository $productDownloadableLinkRepository,
@@ -35,6 +38,9 @@ class DownloadSampleController extends Controller
         return $this->downloadProductSample($id);
     }
 
+    /**
+     * Download link sample.
+     */
     private function downloadLinkSample(int $id)
     {
         $productDownloadableLink = $this->productDownloadableLinkRepository->find($id);
@@ -53,7 +59,6 @@ class DownloadSampleController extends Controller
                 return $privateDisk->download($productDownloadableLink->sample_file);
             }
 
-            // Fallback to public disk
             if (Storage::exists($productDownloadableLink->sample_file)) {
                 return Storage::download($productDownloadableLink->sample_file);
             }
@@ -78,6 +83,9 @@ class DownloadSampleController extends Controller
         return response()->download($tempImage, $fileName);
     }
 
+    /**
+     * Download product sample.
+     */
     private function downloadProductSample(int $id)
     {
         $productDownloadableSample = $this->productDownloadableSampleRepository->find($id);
@@ -102,12 +110,10 @@ class DownloadSampleController extends Controller
         }
 
         if ($productDownloadableSample->type === 'file') {
-            // Check public disk first
             if (Storage::exists($productDownloadableSample->file)) {
                 return Storage::download($productDownloadableSample->file);
             }
 
-            // Fallback to private disk
             $privateDisk = Storage::disk('private');
 
             if ($privateDisk->exists($productDownloadableSample->file)) {

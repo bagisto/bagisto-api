@@ -17,23 +17,38 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
 class AdminCustomerReviewProvider implements ProviderInterface
 {
+    /**
+     * The default per page constant.
+     */
     protected const DEFAULT_PER_PAGE = 10;
 
+    /**
+     * The max per page constant.
+     */
     protected const MAX_PER_PAGE = 50;
 
+    /**
+     * The sortable constant.
+     */
     protected const SORTABLE = ['id', 'rating', 'created_at'];
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        AdminReadPermissions::authorize($operation, AdminCustomerReview::class);
-
         $isCollection = $operation instanceof GetCollection || $operation instanceof QueryCollection;
+
+        AdminReadPermissions::authorize($operation, AdminCustomerReview::class, $isCollection ? null : 'customers.reviews.edit');
 
         return $isCollection
             ? $this->provideCollection($context)
             : $this->provideItem($uriVariables, $context);
     }
 
+    /**
+     * Provide item.
+     */
     protected function provideItem(array $uriVariables, array $context): object
     {
         $id = $uriVariables['id'] ?? $context['args']['id'] ?? null;
@@ -58,6 +73,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
         return $this->toDetailDto($review);
     }
 
+    /**
+     * Provide collection.
+     */
     protected function provideCollection(array $context): Paginator
     {
         $args = $context['args'] ?? array_merge(
@@ -87,6 +105,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
         ));
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['status'])) {
@@ -126,6 +147,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -133,6 +157,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
         $query->orderBy(in_array($column, self::SORTABLE, true) ? $column : 'id', $direction);
     }
 
+    /**
+     * Resolve paging.
+     */
     protected function resolvePaging(array $args): array
     {
         $first = $args['first'] ?? null;
@@ -161,6 +188,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
         return [max(1, (int) ($args['page'] ?? 1)), $perPage];
     }
 
+    /**
+     * Resolve sort.
+     */
     protected function resolveSort(array $args): array
     {
         $default = self::SORTABLE[0];
@@ -183,6 +213,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
         return [$sort, $order];
     }
 
+    /**
+     * To list dto.
+     */
     protected function toListDto(AdminCustomerReview $customerReview): AdminCustomerReviewListDto
     {
         $dto = new AdminCustomerReviewListDto;
@@ -200,6 +233,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
         return $dto;
     }
 
+    /**
+     * To detail dto.
+     */
     protected function toDetailDto(AdminCustomerReview $customerReview): AdminCustomerReviewDetailDto
     {
         $dto = new AdminCustomerReviewDetailDto;
@@ -222,6 +258,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
         return $dto;
     }
 
+    /**
+     * Map product.
+     */
     protected function mapProduct(AdminCustomerReview $customerReview): ?array
     {
         if ($customerReview->product_id === null) {
@@ -237,6 +276,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Map customer.
+     */
     protected function mapCustomer(AdminCustomerReview $customerReview): ?array
     {
         if ($customerReview->customer_id === null) {
@@ -252,6 +294,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Whether graph ql.
+     */
     protected function isGraphQL(array $context): bool
     {
         return ! empty($context['graphql_operation_name']);

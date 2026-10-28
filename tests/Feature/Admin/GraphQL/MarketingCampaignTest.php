@@ -8,71 +8,11 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Customer\Models\Customer;
 use Webkul\Marketing\Mail\NewsletterMail;
 
-/**
- * GraphQL coverage for Admin Marketing → Campaigns CRUD + send (Block F2c).
- */
 class MarketingCampaignTest extends AdminApiTestCase
 {
-    protected function insertTemplate(): int
-    {
-        return DB::table('marketing_templates')->insertGetId([
-            'name' => 'Tpl '.uniqid(),
-            'status' => 'active',
-            'content' => '<p>hi</p>',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
-    protected function insertEvent(): int
-    {
-        return DB::table('marketing_events')->insertGetId([
-            'name' => 'Evt '.uniqid(),
-            'description' => 'desc',
-            'date' => null,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
-    protected function insertCampaign(array $overrides = []): int
-    {
-        return DB::table('marketing_campaigns')->insertGetId($this->existingColumns('marketing_campaigns', array_merge([
-            'name' => 'gqlcamp-'.uniqid(),
-            'subject' => 'subj',
-            'status' => 1,
-            'type' => 'email',
-            'mail_to' => '',
-            'channel_id' => $this->getChannelId(),
-            'customer_group_id' => $this->getCustomerGroupId(),
-            'marketing_template_id' => $this->insertTemplate(),
-            'marketing_event_id' => $this->insertEvent(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides)));
-    }
-
-    protected function getChannelId(): int
-    {
-        return (int) DB::table('channels')->first()->id;
-    }
-
-    protected function getCustomerGroupId(): int
-    {
-        return (int) DB::table('customer_groups')->where('code', '!=', 'guest')->first()->id;
-    }
-
-    protected function createFreshGroupId(): int
-    {
-        return (int) DB::table('customer_groups')->insertGetId([
-            'code' => 'e2e-cg-'.uniqid(),
-            'name' => 'E2E Group '.uniqid(),
-            'is_user_defined' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
+    /**
+     * Test listing resolves scalars and nullable to one objects.
+     */
     public function test_listing_resolves_scalars_and_nullable_to_one_objects(): void
     {
         $admin = $this->createAdmin();
@@ -102,6 +42,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeNull();
     }
 
+    /**
+     * Test query listing.
+     */
     public function test_query_listing(): void
     {
         $admin = $this->createAdmin();
@@ -116,6 +59,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         expect($response->json('data.adminMarketingCampaigns.edges'))->toBeArray();
     }
 
+    /**
+     * Test query detail.
+     */
     public function test_query_detail(): void
     {
         $admin = $this->createAdmin();
@@ -149,6 +95,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test mutation create.
+     */
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();
@@ -187,6 +136,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         $this->assertDatabaseHas('marketing_campaigns', ['name' => 'gqlcr-camp']);
     }
 
+    /**
+     * Test mutation update.
+     */
     public function test_mutation_update(): void
     {
         $admin = $this->createAdmin();
@@ -228,6 +180,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test mutation delete.
+     */
     public function test_mutation_delete(): void
     {
         $admin = $this->createAdmin();
@@ -236,7 +191,7 @@ class MarketingCampaignTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation Del($input: deleteAdminMarketingCampaignInput!) {
               deleteAdminMarketingCampaign(input: $input) {
-                adminMarketingCampaign { _id }
+                adminMarketingCampaign { id _id }
               }
             }
         GQL;
@@ -246,9 +201,16 @@ class MarketingCampaignTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.deleteAdminMarketingCampaign.adminMarketingCampaign.id'))->toBe("/api/admin/marketing/campaigns/{$id}");
+
         $this->assertDatabaseMissing('marketing_campaigns', ['id' => $id]);
     }
 
+    /**
+     * Test mutation send happy path.
+     */
     public function test_mutation_send_happy_path(): void
     {
         Mail::fake();
@@ -281,6 +243,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         Mail::assertQueued(NewsletterMail::class, 1);
     }
 
+    /**
+     * Test mutation send refuses inactive.
+     */
     public function test_mutation_send_refuses_inactive(): void
     {
         Mail::fake();
@@ -304,6 +269,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         Mail::assertNothingQueued();
     }
 
+    /**
+     * Test query listing requires auth.
+     */
     public function test_query_listing_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -311,5 +279,83 @@ class MarketingCampaignTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query);
         $response->assertOk();
         expect($response->json('errors'))->toBeArray();
+    }
+
+    /**
+     * Insert template.
+     */
+    protected function insertTemplate(): int
+    {
+        return DB::table('marketing_templates')->insertGetId([
+            'name' => 'Tpl '.uniqid(),
+            'status' => 'active',
+            'content' => '<p>hi</p>',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Insert event.
+     */
+    protected function insertEvent(): int
+    {
+        return DB::table('marketing_events')->insertGetId([
+            'name' => 'Evt '.uniqid(),
+            'description' => 'desc',
+            'date' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Insert campaign.
+     */
+    protected function insertCampaign(array $overrides = []): int
+    {
+        return DB::table('marketing_campaigns')->insertGetId($this->existingColumns('marketing_campaigns', array_merge([
+            'name' => 'gqlcamp-'.uniqid(),
+            'subject' => 'subj',
+            'status' => 1,
+            'type' => 'email',
+            'mail_to' => '',
+            'channel_id' => $this->getChannelId(),
+            'customer_group_id' => $this->getCustomerGroupId(),
+            'marketing_template_id' => $this->insertTemplate(),
+            'marketing_event_id' => $this->insertEvent(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides)));
+    }
+
+    /**
+     * Get channel id.
+     */
+    protected function getChannelId(): int
+    {
+        return (int) DB::table('channels')->first()->id;
+    }
+
+    /**
+     * Get customer group id.
+     */
+    protected function getCustomerGroupId(): int
+    {
+        return (int) DB::table('customer_groups')->where('code', '!=', 'guest')->first()->id;
+    }
+
+    /**
+     * Create fresh group id.
+     */
+    protected function createFreshGroupId(): int
+    {
+        return (int) DB::table('customer_groups')->insertGetId([
+            'code' => 'e2e-cg-'.uniqid(),
+            'name' => 'E2E Group '.uniqid(),
+            'is_user_defined' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

@@ -4,19 +4,10 @@ namespace Webkul\BagistoApi\Service;
 
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-/**
- * Generic service to normalize and convert IDs between formats
- *
- * Supports:
- * - Numeric format: "1", "23", "456"
- * - IRI format: "/api/shop/countries/1", "/api/shop/channels/5"
- *
- * This service is reusable across all resolvers and providers
- */
 class GenericIdNormalizer
 {
     /**
-     * Extract numeric ID from any format (numeric or IRI)
+     * Extract numeric ID from any format (numeric or IRI).
      *
      * @param  mixed  $id  The ID to normalize (could be numeric or IRI string)
      * @return int|null The numeric ID, or null if format is invalid
@@ -29,12 +20,10 @@ class GenericIdNormalizer
      */
     public static function extractNumericId($id): ?int
     {
-        // If already numeric, return as is
         if (is_numeric($id)) {
             return intval($id);
         }
 
-        // If string, extract from IRI format
         if (
             is_string($id)
             && str_contains($id, '/')
@@ -47,12 +36,11 @@ class GenericIdNormalizer
             }
         }
 
-        // Invalid format
         return null;
     }
 
     /**
-     * Convert numeric ID to IRI format
+     * Convert numeric ID to IRI format.
      *
      * @param  int  $id  The numeric ID
      * @param  string  $resourceName  The resource name in kebab-case (e.g., 'countries', 'country-states')
@@ -68,7 +56,7 @@ class GenericIdNormalizer
     }
 
     /**
-     * Check if ID is in IRI format
+     * Check if ID is in IRI format.
      *
      * @param  mixed  $id  The ID to check
      * @return bool True if ID is in IRI format, false otherwise
@@ -84,7 +72,7 @@ class GenericIdNormalizer
     }
 
     /**
-     * Check if ID is in numeric format
+     * Check if ID is in numeric format.
      *
      * @param  mixed  $id  The ID to check
      * @return bool True if ID is numeric, false otherwise
@@ -101,7 +89,7 @@ class GenericIdNormalizer
 
     /**
      * Validate ID format and return normalized numeric ID
-     * Throws exception if invalid format
+     * Throws exception if invalid format.
      *
      * @param  mixed  $id  The ID to validate
      * @param  string  $errorMessageKey  Translation key for error message (without prefix)

@@ -14,8 +14,14 @@ class AdminRmaCustomFieldMassUpdateStatusProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(private readonly RMACustomFieldRepository $rmaCustomFieldRepository) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminRmaCustomFieldMassUpdateStatus
     {
         $this->authorizedAdmin('sales.rma.custom-fields.edit', 'bagistoapi::app.admin.rma.no-permission');

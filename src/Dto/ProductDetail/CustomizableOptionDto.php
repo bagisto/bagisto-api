@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\ApiResource;
 class CustomizableOptionDto
 {
     /**
+     * Create a new customizable option with its prices.
+     *
      * @param  CustomizableOptionPriceDto[]  $prices
      */
     public function __construct(

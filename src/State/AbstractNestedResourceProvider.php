@@ -7,16 +7,14 @@ use ApiPlatform\State\ProviderInterface;
 
 abstract class AbstractNestedResourceProvider implements ProviderInterface
 {
+    /**
+     * Get model class.
+     */
     abstract protected function getModelClass(): string;
 
     /**
-     * The column a collection is ordered by, or null to leave the order to the database.
+     * Provide.
      */
-    protected function orderColumn(): ?string
-    {
-        return null;
-    }
-
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $modelClass = $this->getModelClass();
@@ -49,5 +47,13 @@ abstract class AbstractNestedResourceProvider implements ProviderInterface
         }
 
         return $modelClass::all();
+    }
+
+    /**
+     * The column a collection is ordered by, or null to leave the order to the database.
+     */
+    protected function orderColumn(): ?string
+    {
+        return null;
     }
 }

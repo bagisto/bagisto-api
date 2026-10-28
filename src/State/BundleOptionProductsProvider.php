@@ -11,9 +11,6 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Models\ProductBundleOption;
 
-/**
- * Filters ProductBundleOptionProducts by parent option for BagistoApi nested queries.
- */
 class BundleOptionProductsProvider implements ProviderInterface
 {
     /**

@@ -2,9 +2,14 @@
 
 namespace Webkul\BagistoApi\Admin\Helper;
 
+use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
-use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
+use Webkul\BagistoApi\Admin\Auth\AdminApiAuthenticator;
+use Webkul\BagistoApi\Admin\Auth\AdminApiCredential;
+use Webkul\BagistoApi\Admin\Auth\AdminApiGuard;
+use Webkul\BagistoApi\Admin\Models\AdminApiSession;
+use Webkul\BagistoApi\Exception\AdminAuthException;
 use Webkul\User\Models\Admin;
 
 class AdminAuthHelper
@@ -21,6 +26,28 @@ class AdminAuthHelper
         $user = Auth::guard('admin-api')->user();
 
         return $user instanceof Admin ? $user : null;
+    }
+
+    /**
+     * The session or API token the current request authenticated with.
+     */
+    public static function credential(): ?AdminApiCredential
+    {
+        $guard = Auth::guard('admin-api');
+
+        return $guard instanceof AdminApiGuard
+            ? $guard->credential()
+            : null;
+    }
+
+    /**
+     * The channel of a request: "graphql" for the admin GraphQL endpoint, "rest" otherwise.
+     */
+    public static function channel(HttpRequest $request): string
+    {
+        return str_ends_with(rtrim($request->getPathInfo(), '/'), '/graphql')
+            ? AdminApiSession::CHANNEL_GRAPHQL
+            : AdminApiSession::CHANNEL_REST;
     }
 
     /**
@@ -46,7 +73,8 @@ class AdminAuthHelper
 
         $permissions = (array) $permissions;
 
-        return in_array($permission, $permissions, true) || in_array('*', $permissions, true);
+        return in_array($permission, $permissions, true)
+            || in_array('*', $permissions, true);
     }
 
     /**
@@ -88,53 +116,16 @@ class AdminAuthHelper
     }
 
     /**
-     * Resolve the admin behind an arbitrary token string, scoping their role to the token's abilities.
+     * Resolve the admin behind an access token or API token string, or null when it is not valid.
      */
     protected static function resolveFromExplicitToken(string $token): ?Admin
     {
-        if (! str_contains($token, '|')) {
+        try {
+            return app(AdminApiAuthenticator::class)
+                ->authenticate($token, Request::instance())
+                ->admin;
+        } catch (AdminAuthException $exception) {
             return null;
         }
-
-        [$id, $plain] = explode('|', $token, 2);
-
-        if (
-            ! ctype_digit($id)
-            || $plain === ''
-        ) {
-            return null;
-        }
-
-        $row = AdminPersonalAccessToken::find((int) $id);
-
-        if (
-            ! $row
-            || ! $row->isUsable()
-        ) {
-            return null;
-        }
-
-        if (! hash_equals((string) $row->token, hash('sha256', $plain))) {
-            return null;
-        }
-
-        $admin = $row->admin;
-
-        if (
-            ! $admin instanceof Admin
-            || ! $admin->status
-        ) {
-            return null;
-        }
-
-        if (method_exists($admin, 'withAccessToken')) {
-            $admin->withAccessToken($row);
-        } else {
-            $admin->setAttribute('current_access_token', $row);
-        }
-
-        $row->applyAbilityScope($admin);
-
-        return $admin;
     }
 }

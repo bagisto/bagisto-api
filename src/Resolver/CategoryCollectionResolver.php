@@ -8,7 +8,7 @@ use Webkul\BagistoApi\Models\Category;
 class CategoryCollectionResolver implements QueryCollectionResolverInterface
 {
     /**
-     * Return ordered category collection
+     * Return ordered category collection.
      */
     public function __invoke(?iterable $collection, array $context): iterable
     {

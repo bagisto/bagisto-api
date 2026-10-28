@@ -8,6 +8,9 @@ use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
 class SocialLoginTest extends GraphQLTestCase
 {
+    /**
+     * The mutation.
+     */
     private string $mutation = <<<'GQL'
         mutation socialLogin($input: createSocialLoginInput!) {
           createSocialLogin(input: $input) {
@@ -28,6 +31,86 @@ class SocialLoginTest extends GraphQLTestCase
         }
     GQL;
 
+    /**
+     * Test unsupported provider is rejected.
+     */
+    public function test_unsupported_provider_is_rejected(): void
+    {
+        $this->seedRequiredData();
+
+        $node = $this->node([
+            'provider' => 'github',
+            'idToken' => 'x',
+        ]);
+
+        expect($node['success'])->toBeFalse();
+        expect($node['code'])->toBe('PROVIDER_NOT_SUPPORTED');
+    }
+
+    /**
+     * Test missing token is rejected.
+     */
+    public function test_missing_token_is_rejected(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGoogle();
+
+        $node = $this->node(['provider' => 'google']);
+
+        expect($node['success'])->toBeFalse();
+        expect($node['code'])->toBe('SOCIAL_TOKEN_REQUIRED');
+    }
+
+    /**
+     * Test invalid token is rejected.
+     */
+    public function test_invalid_token_is_rejected(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGoogle();
+
+        Http::fake(['oauth2.googleapis.com/*' => Http::response(['error' => 'invalid_token'], 400)]);
+
+        $node = $this->node([
+            'provider' => 'google',
+            'idToken' => 'bogus',
+        ]);
+
+        expect($node['success'])->toBeFalse();
+        expect($node['code'])->toBe('SOCIAL_TOKEN_INVALID');
+    }
+
+    /**
+     * Test new customer is created and gets a bearer token.
+     */
+    public function test_new_customer_is_created_and_gets_a_bearer_token(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGoogle();
+
+        $email = 'social-gql-'.uniqid().'@example.com';
+        $this->fakeGoogle($email);
+
+        $node = $this->node([
+            'provider' => 'google',
+            'idToken' => 'valid',
+        ]);
+
+        expect($node['success'])->toBeTrue();
+        expect($node['token'])->not->toBeNull();
+        expect($node['email'])->toBe($email);
+        expect($node['firstName'])->toBe('Nadia');
+        expect($node['isNewCustomer'])->toBeTrue();
+
+        $this->assertDatabaseHas('customers', [
+            'email' => $email,
+            'status' => 1,
+        ]);
+    }
+
+    /**
+     * Set up the test environment.
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -35,6 +118,9 @@ class SocialLoginTest extends GraphQLTestCase
         $this->forgetCoreConfigCache();
     }
 
+    /**
+     * Enable google.
+     */
     private function enableGoogle(): void
     {
         DB::table('core_config')->whereIn('code', [
@@ -59,6 +145,9 @@ class SocialLoginTest extends GraphQLTestCase
         $this->forgetCoreConfigCache();
     }
 
+    /**
+     * Fake google.
+     */
     private function fakeGoogle(string $email): void
     {
         Http::fake([
@@ -72,74 +161,12 @@ class SocialLoginTest extends GraphQLTestCase
         ]);
     }
 
+    /**
+     * Node.
+     */
     private function node(array $input): array
     {
         return (array) $this->graphQL($this->mutation, ['input' => $input])
             ->json('data.createSocialLogin.socialLogin');
-    }
-
-    public function test_unsupported_provider_is_rejected(): void
-    {
-        $this->seedRequiredData();
-
-        $node = $this->node([
-            'provider' => 'github',
-            'idToken' => 'x',
-        ]);
-
-        expect($node['success'])->toBeFalse();
-        expect($node['code'])->toBe('PROVIDER_NOT_SUPPORTED');
-    }
-
-    public function test_missing_token_is_rejected(): void
-    {
-        $this->seedRequiredData();
-        $this->enableGoogle();
-
-        $node = $this->node(['provider' => 'google']);
-
-        expect($node['success'])->toBeFalse();
-        expect($node['code'])->toBe('SOCIAL_TOKEN_REQUIRED');
-    }
-
-    public function test_invalid_token_is_rejected(): void
-    {
-        $this->seedRequiredData();
-        $this->enableGoogle();
-
-        Http::fake(['oauth2.googleapis.com/*' => Http::response(['error' => 'invalid_token'], 400)]);
-
-        $node = $this->node([
-            'provider' => 'google',
-            'idToken' => 'bogus',
-        ]);
-
-        expect($node['success'])->toBeFalse();
-        expect($node['code'])->toBe('SOCIAL_TOKEN_INVALID');
-    }
-
-    public function test_new_customer_is_created_and_gets_a_bearer_token(): void
-    {
-        $this->seedRequiredData();
-        $this->enableGoogle();
-
-        $email = 'social-gql-'.uniqid().'@example.com';
-        $this->fakeGoogle($email);
-
-        $node = $this->node([
-            'provider' => 'google',
-            'idToken' => 'valid',
-        ]);
-
-        expect($node['success'])->toBeTrue();
-        expect($node['token'])->not->toBeNull();
-        expect($node['email'])->toBe($email);
-        expect($node['firstName'])->toBe('Nadia');
-        expect($node['isNewCustomer'])->toBeTrue();
-
-        $this->assertDatabaseHas('customers', [
-            'email' => $email,
-            'status' => 1,
-        ]);
     }
 }

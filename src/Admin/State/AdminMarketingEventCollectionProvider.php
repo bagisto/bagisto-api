@@ -7,19 +7,19 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingEvent;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/marketing/events + adminMarketingEvents.
- *
- * Filters: name (LIKE), date range (date_from/date_to).
- * Sort:    id (default desc), name, date.
- */
 class AdminMarketingEventCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'name', 'date'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('marketing_events')->select(
@@ -32,6 +32,9 @@ class AdminMarketingEventCollectionProvider extends AbstractAdminCollectionProvi
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
@@ -47,6 +50,9 @@ class AdminMarketingEventCollectionProvider extends AbstractAdminCollectionProvi
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -60,6 +66,9 @@ class AdminMarketingEventCollectionProvider extends AbstractAdminCollectionProvi
         $query->orderBy($columnMap[$column] ?? 'marketing_events.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminMarketingEvent
     {
         $dto = new AdminMarketingEvent;

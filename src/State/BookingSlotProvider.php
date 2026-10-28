@@ -13,20 +13,16 @@ use Webkul\BookingProduct\Helpers\RentalSlot as RentalSlotHelper;
 use Webkul\BookingProduct\Helpers\TableSlot as TableSlotHelper;
 use Webkul\BookingProduct\Repositories\BookingProductRepository;
 
-/**
- * Provider for fetching booking slots via GraphQL
- *
- * Handles the bookingSlot query that accepts:
- * - id: The booking product ID
- * - date: The date for which to fetch available slots
- */
 class BookingSlotProvider implements ProviderInterface
 {
     /**
-     * Booking type to helper mapping
+     * Booking type to helper mapping.
      */
     protected array $bookingHelpers = [];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected BookingProductRepository $bookingProductRepository,
         protected DefaultSlotHelper $defaultSlotHelper,
@@ -45,15 +41,13 @@ class BookingSlotProvider implements ProviderInterface
     }
 
     /**
-     * Provide booking slots for GraphQL query
+     * Provide booking slots for GraphQL query.
      */
     public function provide(
         Operation $operation,
         array $uriVariables = [],
         array $context = []
     ): ?array {
-        // GraphQL passes inputs via $context['args']; REST uses query params.
-        // Fall back to request()->query() so the same provider serves both.
         $args = $context['args'] ?? [];
 
         $id = $args['id'] ?? request()->query('id');
@@ -61,56 +55,46 @@ class BookingSlotProvider implements ProviderInterface
 
         if ($id === null) {
             throw new BadRequestHttpException(
-                'bagistoapi::app.graphql.booking-slot.id-required'
+                __('bagistoapi::app.graphql.booking-slot.id-required')
             );
         }
 
         if ($date === null) {
             throw new BadRequestHttpException(
-                'bagistoapi::app.graphql.booking-slot.date-required'
+                __('bagistoapi::app.graphql.booking-slot.date-required')
             );
         }
 
-        // Find the booking product
         $bookingProduct = $this->bookingProductRepository->find($id);
 
         if (! $bookingProduct) {
             throw new BadRequestHttpException(
-                'bagistoapi::app.graphql.booking-slot.product-not-found'
+                __('bagistoapi::app.graphql.booking-slot.product-not-found')
             );
         }
 
-        // Check if the booking type has a helper
         if (! isset($this->bookingHelpers[$bookingProduct->type])) {
             throw new BadRequestHttpException(
-                'bagistoapi::app.graphql.booking-slot.invalid-type'
+                __('bagistoapi::app.graphql.booking-slot.invalid-type')
             );
         }
 
-        // Get slots for the given date using the appropriate helper
         $slots = $this->bookingHelpers[$bookingProduct->type]->getSlotsByDate($bookingProduct, $date);
 
+        $identifierPrefix = $bookingProduct->id.'-'.$date.'-';
+
         if ($bookingProduct->type === 'rental') {
-            return $this->buildRentalSlots($slots);
+            return $this->buildRentalSlots($slots, $identifierPrefix);
         }
 
-        return $this->buildFlatSlots($slots);
+        return $this->buildFlatSlots($slots, $identifierPrefix);
     }
 
     /**
      * Build grouped slot response for rental hourly booking type.
-     *
-     * Each BookingSlot represents an admin-configured time range group
-     * (e.g., "10:00 AM - 12:00 PM") with a nested `slots` array
-     * containing the individual hourly sub-slots.
-     *
-     * Raw helper structure:
-     * [
-     *   ['time' => '10:00 AM - 12:00 PM', 'slots' => [['from', 'to', 'from_timestamp', 'to_timestamp', 'qty'], ...]],
-     *   ['time' => '12:00 PM - 09:00 PM', 'slots' => [...]],
-     * ]
+     * Each BookingSlot represents an admin-configured time range group.
      */
-    private function buildRentalSlots(array $rawSlots): array
+    private function buildRentalSlots(array $rawSlots, string $identifierPrefix): array
     {
         $result = [];
         $index = 1;
@@ -134,10 +118,13 @@ class BookingSlotProvider implements ProviderInterface
                 ];
             }
 
+            $slotId = (string) $index++;
+
             $result[] = new BookingSlot(
-                slotId: (string) $index++,
+                slotId: $slotId,
                 time: $group['time'] ?? null,
                 slots: $subSlots,
+                identifier: $identifierPrefix.$slotId,
             );
         }
 
@@ -146,17 +133,19 @@ class BookingSlotProvider implements ProviderInterface
 
     /**
      * Build flat slot response for default, appointment, table, and event types.
-     *
      * Each BookingSlot is a single time slot with from/to/timestamp/qty.
      */
-    private function buildFlatSlots(array $rawSlots): array
+    private function buildFlatSlots(array $rawSlots, string $identifierPrefix): array
     {
         $result = [];
         $index = 1;
 
         foreach ($rawSlots as $slot) {
+            $slotId = $slot['timestamp'] ?? (string) $index++;
+
             $result[] = new BookingSlot(
-                slotId: $slot['timestamp'] ?? (string) $index++,
+                slotId: $slotId,
+                identifier: $identifierPrefix.$slotId,
                 from: $slot['from'] ?? null,
                 to: $slot['to'] ?? null,
                 timestamp: $slot['timestamp'] ?? null,

@@ -8,14 +8,10 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\Product\Models\ProductAttributeValueProxy;
 
-/**
- * Resolves single product queries by ID, SKU, or URL key.
- */
 class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements QueryItemResolverInterface
 {
     /**
      * Resolves product queries based on provided arguments.
-     *
      *
      * @throws ResourceNotFoundException|InvalidInputException
      */
@@ -23,7 +19,6 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
     {
         $args = $context['args'] ?? [];
 
-        /** Resolve locale/channel from args first, then headers, then defaults */
         $locale = $args['locale'] ?? request()->attributes->get('bagisto_locale');
         $channel = $args['channel'] ?? request()->attributes->get('bagisto_channel');
 
@@ -54,7 +49,7 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
             return $this->applyLocaleChannel($product, $locale, $channel);
         }
 
-        throw new InvalidInputException(__('bagistoapi::app.graphql.product.missing-query-parameter'));
+        throw new InvalidInputException(__('bagistoapi::app.graphql.product.parameters-required'));
     }
 
     /**
@@ -90,7 +85,6 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
     /**
      * Resolve product by numeric ID.
      *
-     *
      * @throws ResourceNotFoundException
      */
     private function resolveById(int|string $id): Product
@@ -109,7 +103,6 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
     /**
      * Resolve product by SKU.
      *
-     *
      * @throws ResourceNotFoundException
      */
     private function resolveBySku(string $sku, ?string $channel): Product
@@ -123,7 +116,6 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
 
     /**
      * Resolve product by URL key attribute.
-     *
      *
      * @throws ResourceNotFoundException
      */

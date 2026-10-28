@@ -15,8 +15,10 @@ use Webkul\BagistoApi\Admin\Dto\AdminReturnUpdateStatusInput;
 use Webkul\BagistoApi\Admin\Models\AdminReturn;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminReturn;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\State\Concerns\ReadsReturnImages;
 use Webkul\RMA\Enums\DefaultRMAResolution;
 use Webkul\RMA\Enums\DefaultRMAStatusEnum;
 use Webkul\RMA\Repositories\RMAAdditionalFieldRepository;
@@ -36,9 +38,12 @@ class AdminReturnProcessor implements ProcessorInterface
 {
     use BuildsAdminReturn;
     use ChecksAdminPermission;
+    use ReadsReturnImages;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
-        private readonly ProcessorInterface $persistProcessor,
         private readonly RMARepository $rmaRepository,
         private readonly RMAItemRepository $rmaItemRepository,
         private readonly RMAImageRepository $rmaImageRepository,
@@ -50,6 +55,9 @@ class AdminReturnProcessor implements ProcessorInterface
         private readonly RefundRepository $refundRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof AdminCreateReturnInput) {
@@ -64,10 +72,7 @@ class AdminReturnProcessor implements ProcessorInterface
             return $this->handleReopen(self::basename($data->id));
         }
 
-        if (
-            $data instanceof AdminReturn
-            && $operation instanceof Post
-        ) {
+        if ($operation instanceof Post) {
             $action = $this->actionFromTemplate($operation->getUriTemplate());
 
             if ($action === 'update-status') {
@@ -93,14 +98,15 @@ class AdminReturnProcessor implements ProcessorInterface
                 'variant' => self::intOrNull(request()->input('variant')),
             ];
 
-            $images = request()->hasFile('images') ? request()->file('images') : [];
-
-            return $this->handleCreate($input, $images);
+            return $this->handleCreate($input, $this->returnImagesFromRequest());
         }
 
-        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        throw new AuthorizationException(__('bagistoapi::app.admin.rma.no-permission'));
     }
 
+    /**
+     * Handle create.
+     */
     private function handleCreate(array $input, array $images): AdminReturn
     {
         $this->authorizedAdmin('sales.rma.requests.create', 'bagistoapi::app.admin.rma.no-permission');
@@ -175,6 +181,9 @@ class AdminReturnProcessor implements ProcessorInterface
         return $this->buildAdminReturn($fresh, $this->rmaRepository, $this->rmaStatusRepository);
     }
 
+    /**
+     * Handle update status.
+     */
     private function handleUpdateStatus(mixed $id, ?int $statusId, $shipping): AdminReturn
     {
         $this->authorizedAdmin('sales.rma.requests', 'bagistoapi::app.admin.rma.no-permission');
@@ -201,6 +210,9 @@ class AdminReturnProcessor implements ProcessorInterface
         };
     }
 
+    /**
+     * Handle received package.
+     */
     private function handleReceivedPackage($rma, int $statusId, $shipping): AdminReturn
     {
         try {
@@ -229,6 +241,9 @@ class AdminReturnProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Handle item cancellation.
+     */
     private function handleItemCancellation($rma, int $statusId): AdminReturn
     {
         try {
@@ -248,6 +263,9 @@ class AdminReturnProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Process order refund.
+     */
     private function processOrderRefund($order, array $refundData): void
     {
         if (! $order->canRefund()) {
@@ -277,6 +295,9 @@ class AdminReturnProcessor implements ProcessorInterface
         $this->refundRepository->create(array_merge($refundData, ['order_id' => $order->id]));
     }
 
+    /**
+     * Cancel rma item.
+     */
     private function cancelRmaItem($rma): void
     {
         if (
@@ -310,6 +331,9 @@ class AdminReturnProcessor implements ProcessorInterface
         Event::dispatch('sales.order.cancel.after', $rma->order);
     }
 
+    /**
+     * Finalize rma update.
+     */
     private function finalizeRmaUpdate($rma, int $statusId): AdminReturn
     {
         $rma->update(['rma_status_id' => $statusId]);
@@ -333,6 +357,9 @@ class AdminReturnProcessor implements ProcessorInterface
         return $this->buildAdminReturn($fresh, $this->rmaRepository, $this->rmaStatusRepository);
     }
 
+    /**
+     * Handle reopen.
+     */
     private function handleReopen(mixed $id): AdminReturn
     {
         $this->authorizedAdmin('sales.rma.requests', 'bagistoapi::app.admin.rma.no-permission');
@@ -361,6 +388,9 @@ class AdminReturnProcessor implements ProcessorInterface
         return $this->buildAdminReturn($fresh, $this->rmaRepository, $this->rmaStatusRepository);
     }
 
+    /**
+     * Find owned.
+     */
     private function findOwned(mixed $id): object
     {
         $rma = $this->rmaRepository->with(self::RETURN_RELATIONS)->find($id);
@@ -372,6 +402,9 @@ class AdminReturnProcessor implements ProcessorInterface
         return $rma;
     }
 
+    /**
+     * Action from template.
+     */
     private function actionFromTemplate(?string $template): ?string
     {
         foreach (['update-status', 'reopen'] as $action) {
@@ -386,11 +419,17 @@ class AdminReturnProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Basename.
+     */
     private static function basename(?string $value): ?string
     {
         return $value === null ? null : basename($value);
     }
 
+    /**
+     * Input to array.
+     */
     private function inputToArray(AdminCreateReturnInput $dto): array
     {
         return [
@@ -405,6 +444,9 @@ class AdminReturnProcessor implements ProcessorInterface
         ];
     }
 
+    /**
+     * Int or null.
+     */
     private static function intOrNull($value): ?int
     {
         return $value === null || $value === '' ? null : (int) $value;

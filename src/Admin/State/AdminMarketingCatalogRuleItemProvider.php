@@ -10,17 +10,11 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\CatalogRule\Models\CatalogRule;
 
-/**
- * Catalog rule detail — GET /api/admin/marketing/catalog-rules/{id} +
- * adminMarketingCatalogRule.
- *
- * Branches: GraphQL → the AdminMarketingCatalogRule Eloquent model (channels /
- * customerGroups connections resolve); REST → the flat
- * AdminMarketingCatalogRuleRestDto built from the core CatalogRule (channels /
- * customer_groups as object arrays).
- */
 class AdminMarketingCatalogRuleItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminMarketingCatalogRule|AdminMarketingCatalogRuleRestDto
     {
         AdminReadPermissions::authorize($operation, AdminMarketingCatalogRule::class);
@@ -58,9 +52,11 @@ class AdminMarketingCatalogRuleItemProvider implements ProviderInterface
         return $this->buildRestDto($rule);
     }
 
+    /**
+     * Build rest dto.
+     */
     protected function buildRestDto(object $rule): AdminMarketingCatalogRuleRestDto
     {
-        /** @var CatalogRule $rule */
         $dto = new AdminMarketingCatalogRuleRestDto;
 
         $dto->id = (int) $rule->id;

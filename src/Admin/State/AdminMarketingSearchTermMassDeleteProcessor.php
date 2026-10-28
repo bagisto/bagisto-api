@@ -13,15 +13,11 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Marketing\Models\SearchTerm;
 
-/**
- * POST /api/admin/marketing/search-terms/mass-delete + createAdminMarketingSearchTermMassDelete.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\SearchSEO\SearchTermController::massDestroy:
- *   - Iterate indices, fire before/after events per id, delete each one.
- *   - Non-existent IDs are silently skipped.
- */
 class AdminMarketingSearchTermMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -61,6 +57,9 @@ class AdminMarketingSearchTermMassDeleteProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -88,6 +87,9 @@ class AdminMarketingSearchTermMassDeleteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

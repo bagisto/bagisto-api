@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Webkul\BagistoApi\Dto\CreateGdprRequestInput;
@@ -19,13 +18,20 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\GdprRequest;
 use Webkul\BagistoApi\State\Concerns\GdprFeatureGate;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class GdprRequestProcessor implements ProcessorInterface
 {
     use GdprFeatureGate;
 
+    /**
+     * The active statuses constant.
+     */
     private const ACTIVE_STATUSES = ['pending', 'processing'];
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $this->assertGdprEnabled();
@@ -71,6 +77,9 @@ class GdprRequestProcessor implements ProcessorInterface
         return $this->handleCreate($this->buildCreateFromRequest());
     }
 
+    /**
+     * Handle create.
+     */
     private function handleCreate(CreateGdprRequestInput $input): GdprRequest
     {
         $customer = $this->resolveCustomer();
@@ -110,6 +119,9 @@ class GdprRequestProcessor implements ProcessorInterface
         return $gdprRequest;
     }
 
+    /**
+     * Handle revoke.
+     */
     private function handleRevoke(int $id): GdprRequest
     {
         $customer = $this->resolveCustomer();
@@ -142,6 +154,9 @@ class GdprRequestProcessor implements ProcessorInterface
         return $gdprRequest->fresh();
     }
 
+    /**
+     * Handle delete.
+     */
     private function handleDelete(int $id, Operation $operation): mixed
     {
         $customer = $this->resolveCustomer();
@@ -167,6 +182,9 @@ class GdprRequestProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Build create from request.
+     */
     private function buildCreateFromRequest(): CreateGdprRequestInput
     {
         $input = new CreateGdprRequestInput;
@@ -176,6 +194,9 @@ class GdprRequestProcessor implements ProcessorInterface
         return $input;
     }
 
+    /**
+     * Hydrate create input.
+     */
     private function hydrateCreateInput(CreateGdprRequestInput $input, array $context): void
     {
         $args = $context['args']['input'] ?? $context['args'] ?? null;
@@ -205,6 +226,9 @@ class GdprRequestProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve id.
+     */
     private function resolveId(?string $rawId, array $uriVariables, array $context): int
     {
         $id = $rawId
@@ -228,9 +252,12 @@ class GdprRequestProcessor implements ProcessorInterface
         return $numericId;
     }
 
+    /**
+     * Resolve customer.
+     */
     private function resolveCustomer(): object
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.gdpr.unauthenticated'));
@@ -239,6 +266,9 @@ class GdprRequestProcessor implements ProcessorInterface
         return $customer;
     }
 
+    /**
+     * Safe dispatch.
+     */
     private function safeDispatch(string $event, mixed $payload): void
     {
         try {

@@ -12,19 +12,21 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Sales\Models\Order;
+use Webkul\Sales\Repositories\OrderRepository;
 
-/**
- * Admin Reorder — POST /api/admin/orders/{id}/reorder + GraphQL createAdminReorder.
- *
- * Mirrors the monolith admin Reorder button: build a fresh admin draft cart
- * (`is_active = false`) for the order's customer, re-add every order item
- * via Cart::addProduct($item->product, $item->additional), and return the new
- * cart id. Per-item add failures are swallowed (best-effort), matching core.
- */
 class AdminReorderProcessor implements ProcessorInterface
 {
-    public function __construct(private readonly AdminOrderActionGuard $actionGuard) {}
+    /**
+     * Create a new instance.
+     */
+    public function __construct(
+        private readonly AdminOrderActionGuard $actionGuard,
+        private readonly OrderRepository $orderRepository,
+    ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminReorder
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -33,13 +35,17 @@ class AdminReorderProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
+        $this->actionGuard->assertPermission($admin, 'sales.orders.create', 'bagistoapi::app.admin.order.reorder.no-permission');
+
         $orderId = $this->resolveOrderId($uriVariables, $context);
 
         if ($orderId === null) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.not-found'));
         }
 
-        $order = Order::with(['items.product', 'customer'])->find($orderId);
+        $order = $this->orderRepository
+            ->with(['items.product', 'customer'])
+            ->find($orderId);
 
         if (! $order) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.not-found'));
@@ -55,13 +61,6 @@ class AdminReorderProcessor implements ProcessorInterface
         if (! $this->allItemsSaleable($order)) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.order.reorder.items-not-saleable'),
-                422,
-            );
-        }
-
-        if (! $this->actionGuard->adminHasPermission($admin, 'sales.orders.create')) {
-            throw new InvalidInputException(
-                __('bagistoapi::app.admin.order.reorder.no-permission'),
                 422,
             );
         }
@@ -122,7 +121,7 @@ class AdminReorderProcessor implements ProcessorInterface
     }
 
     /**
-     * Order id from REST uriVariables, GraphQL args, or the request body.
+     * The order id from the URI variables, the GraphQL arguments or the request body.
      */
     protected function resolveOrderId(array $uriVariables, array $context): ?int
     {
@@ -144,8 +143,7 @@ class AdminReorderProcessor implements ProcessorInterface
     }
 
     /**
-     * Check (A2): every item's product must still be saleable. Mirrors the
-     * second half of `Order::canReorder()` so we can surface a distinct error.
+     * Whether every item's product is still saleable, as the second half of `Order::canReorder()` checks.
      */
     protected function allItemsSaleable(Order $order): bool
     {
@@ -159,15 +157,16 @@ class AdminReorderProcessor implements ProcessorInterface
     }
 
     /**
-     * Check (C): `sales.order_settings.reorder.admin` config toggle.
-     * `core()->getConfigData()` works in API context — it reads the
-     * core_config table directly with no session dependency.
+     * Whether the admin reorder setting is on.
      */
     protected function adminReorderEnabled(): bool
     {
         return (bool) core()->getConfigData('sales.order_settings.reorder.admin');
     }
 
+    /**
+     * The reorder result returned to the client.
+     */
     protected function result(int $id, bool $success, string $message, ?int $cartId = null): AdminReorder
     {
         $reorder = new AdminReorder;

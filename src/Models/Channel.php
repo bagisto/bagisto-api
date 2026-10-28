@@ -115,8 +115,14 @@ use Webkul\BagistoApi\State\ChannelProvider;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
-        new QueryCollection(provider: ChannelProvider::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One storefront channel. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
+        new QueryCollection(
+            provider: ChannelProvider::class,
+            description: 'Every storefront channel with its locales, currencies, default locale and base currency, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 class Channel extends \Webkul\Core\Models\Channel
@@ -146,7 +152,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -155,7 +161,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * Override locales relationship to return API resource model
+     * Override locales relationship to return API resource model.
      */
     public function locales(): BelongsToMany
     {
@@ -163,7 +169,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * Override currencies relationship to return API resource model
+     * Override currencies relationship to return API resource model.
      */
     public function currencies(): BelongsToMany
     {
@@ -171,7 +177,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * Override default locale relationship to return API resource model
+     * Override default locale relationship to return API resource model.
      */
     public function default_locale(): BelongsTo
     {
@@ -179,7 +185,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * Override base currency relationship to return API resource model
+     * Override base currency relationship to return API resource model.
      */
     public function base_currency(): BelongsTo
     {
@@ -187,7 +193,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * Expose logo URL for API
+     * Expose logo URL for API.
      */
     #[ApiProperty(writable: false, readable: true)]
     public function getLogoUrl(): ?string
@@ -196,7 +202,7 @@ class Channel extends \Webkul\Core\Models\Channel
     }
 
     /**
-     * Expose favicon URL for API
+     * Expose favicon URL for API.
      */
     #[ApiProperty(writable: false, readable: true)]
     public function getFaviconUrl(): ?string

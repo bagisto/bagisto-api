@@ -70,6 +70,7 @@ use Webkul\BagistoApi\Admin\State\AdminMenuProvider;
         new Query(
             name: 'get',
             resolver: AdminMenuQueryResolver::class,
+            description: 'The admin sidebar menu as a nested tree, filtered to what the authenticated admin\'s role may see. Each node carries its label, ACL key, hierarchy and the matching API resource (REST path and GraphQL field), or null for group headers and panel-only screens. Needs only a valid access token or API token.',
             args: [],
             normalizationContext: ['skip_null_values' => false],
         ),
@@ -77,11 +78,16 @@ use Webkul\BagistoApi\Admin\State\AdminMenuProvider;
 )]
 class AdminMenu
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     #[Groups(['query'])]
     public ?string $id = 'menu';
 
     /**
+     * The admin menu tree, as nested menu items filtered to what the admin may see.
+     *
      * @var array<int, array<string, mixed>>|null
      */
     #[ApiProperty(writable: false)]

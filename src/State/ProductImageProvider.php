@@ -6,6 +6,9 @@ use Webkul\BagistoApi\Models\ProductImage;
 
 class ProductImageProvider extends AbstractNestedResourceProvider
 {
+    /**
+     * Get model class.
+     */
     protected function getModelClass(): string
     {
         return ProductImage::class;

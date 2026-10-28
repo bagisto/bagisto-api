@@ -1,139 +1,113 @@
-// tests/restAPI/api/automation/customerReviews.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import { bearer, expectProblem, readJson, registerShopCustomer, ShopCustomer, uniqueSuffix } from '../../rest/helpers/coverage/shopCart.helpers';
+import { e2eFixtures, missingFixtureReason } from '../../../fixtures/e2eFixtures';
 
-function authHeaders(token: string) {
-  return { Authorization: `Bearer ${token}` };
+const MSG = {
+  UNAUTHENTICATED: 'Unauthenticated. Please login to perform this action',
+  REVIEW_NOT_FOUND: (id: number) => `Customer review with ID "${id}" not found`,
+};
+
+interface CreatedReview {
+  id: number;
+  title: string;
+  comment: string;
+  rating: number;
 }
 
-function assertStatus(resp: any, debugLabel: string) {
-  expect([0, 200, 201, 400, 401, 403, 404, 422, 500]).toContain(resp.status());
-  console.log(`${debugLabel}:`, resp.status());
+async function createReview(request: APIRequestContext, customer: ShopCustomer, productId: number): Promise<CreatedReview> {
+  const suffix = uniqueSuffix();
+  const title = `customer review ${suffix}`;
+  const comment = `customer review comment ${suffix}`;
+  const rating = 4;
+
+  const response = await sendRestRequest(request, ENDPOINTS.REVIEWS, {
+    method: 'POST',
+    data: { product_id: productId, title, comment, rating, name: customer.firstName },
+    headers: bearer(customer.token),
+  });
+  const body = await readJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(201);
+
+  return { id: Number(body.id), title, comment, rating };
 }
 
-function generateUniqueEmail() {
-  return `custrev_${Date.now()}@example.com`;
+function reviewedProductId(): number {
+  const fx = e2eFixtures();
+  test.skip(!fx.order, missingFixtureReason('order'));
+
+  return fx.order!.productId;
 }
 
-function generatePassword() {
-  return `CustRev${Math.floor(Math.random() * 10000)}!`;
-}
-
-let authToken: string | null = null;
-let customerEmail: string;
-let customerPassword: string;
-
-test.describe('Customer Reviews REST API (Public)', () => {
-  test('Should return status for customer reviews endpoint without auth', async ({ request }) => {
+test.describe('customer reviews rest api without a token', () => {
+  test('customer reviews list without a bearer token is refused', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REVIEWS);
-    assertStatus(response, 'GET /api/shop/customer-reviews');
+
+    await expectProblem(response, 403, MSG.UNAUTHENTICATED);
   });
 
-  test('Should return status for single customer review by ID without auth', async ({ request }) => {
+  test('customer review detail without a bearer token is refused', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REVIEW(1));
-    assertStatus(response, 'GET /api/shop/customer-reviews/1');
+
+    await expectProblem(response, 403, MSG.UNAUTHENTICATED);
   });
 });
 
-test.describe('Customer Reviews (Auth Required)', () => {
-  test.beforeAll(async ({ request }) => {
-    customerEmail = generateUniqueEmail();
-    customerPassword = generatePassword();
-    console.log(`Customer reviews test credentials - Email: ${customerEmail}, Password: ${customerPassword}`);
+test.describe('customer reviews rest api', () => {
+  let customer: ShopCustomer;
 
-    const loginResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-      method: 'POST',
-      data: { email: customerEmail, password: customerPassword },
-    });
-
-    const body = [200, 201].includes(loginResp.status())
-        ? await loginResp.json()
-        : null;
-    if (body?.token) {
-      authToken = body.token as string;
-      console.log('Logged in successfully. Token:', authToken?.slice(0, 12) + '...');
-    } else {
-      // Try to register first
-      const registerResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REGISTER, {
-        method: 'POST',
-        data: {
-          first_name: 'Review',
-          last_name: 'User',
-          email: customerEmail,
-          password: customerPassword,
-          password_confirmation: customerPassword,
-        },
-      });
-
-      if (registerResp.status() === 200 || registerResp.status() === 201) {
-        const loginRetry = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-          method: 'POST',
-          data: { email: customerEmail, password: customerPassword },
-        });
-        const body = [200, 201].includes(loginRetry.status())
-            ? await loginRetry.json()
-            : null;
-        if (body?.token) {
-          authToken = body.token as string;
-          console.log('Registered and logged in for customer reviews tests');
-        }
-      }
-    }
+  test.beforeEach(async ({ request }) => {
+    customer = await registerShopCustomer(request);
   });
 
-  test('Should return own reviews when authenticated', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'Login failed');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REVIEWS, {
-      headers: authHeaders(authToken),
-    });
-    assertStatus(response, 'GET /api/shop/customer-reviews (authenticated)');
-    if (response.status() === 200) {
-      const body = await response.json();
-      if (Array.isArray(body)) {
-        console.log('Own customer reviews:', body.length);
-        if (body.length > 0) {
-          console.log('First review:', JSON.stringify({ id: body[0].id, title: body[0].title, rating: body[0].rating }));
-        }
-      }
-    }
+  test('customer reviews list holds exactly the reviews the customer wrote', async ({ request }) => {
+    const productId = reviewedProductId();
+    const review = await createReview(request, customer, productId);
+
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REVIEWS, { headers: bearer(customer.token) });
+    const body = await readJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(Array.isArray(body)).toBe(true);
+    expect(body).toHaveLength(1);
+    expect(body[0].id).toBe(review.id);
+    expect(body[0].title).toBe(review.title);
+    expect(body[0].comment).toBe(review.comment);
+    expect(body[0].rating).toBe(review.rating);
+    expect(body[0].status).toBe('pending');
   });
 
-  test('Should return own review by ID when authenticated', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'Login failed');
-      return;
-    }
-    const listResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REVIEWS, {
-      headers: authHeaders(authToken),
-    });
-    if (listResp.status() !== 200) {
-      test.skip(true, 'Customer reviews list not available');
-      return;
-    }
-    const listBody = await listResp.json();
-    if (!Array.isArray(listBody) || listBody.length === 0) {
-      test.skip(true, 'No customer reviews found');
-      return;
-    }
-    const reviewId = listBody[0].id;
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REVIEW(reviewId), {
-      headers: authHeaders(authToken),
-    });
-    assertStatus(response, `GET /api/shop/customer-reviews/${reviewId} (authenticated)`);
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(body.id).toBe(reviewId);
-      expect(body).toHaveProperty('title');
-      console.log('Single customer review:', { id: body.id, title: body.title, status: body.status });
-    }
+  test('customer review detail returns the own review', async ({ request }) => {
+    const productId = reviewedProductId();
+    const review = await createReview(request, customer, productId);
+
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REVIEW(review.id), { headers: bearer(customer.token) });
+    const body = await readJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body.id).toBe(review.id);
+    expect(body.title).toBe(review.title);
+    expect(body.rating).toBe(review.rating);
+    expect(body.status).toBe('pending');
   });
 
-  test('Should return 401/403 when fetching reviews without auth token', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REVIEWS);
-    assertStatus(response, 'GET /api/shop/customer-reviews (no auth)');
+  test('customer review detail of another customer review is not found', async ({ request }) => {
+    const productId = reviewedProductId();
+    const review = await createReview(request, customer, productId);
+    const intruder = await registerShopCustomer(request);
+
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REVIEW(review.id), { headers: bearer(intruder.token) });
+
+    await expectProblem(response, 404, MSG.REVIEW_NOT_FOUND(review.id));
+  });
+
+  test('customer reviews list of a customer without reviews is empty', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REVIEWS, { headers: bearer(customer.token) });
+    const body = await readJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body).toEqual([]);
   });
 });

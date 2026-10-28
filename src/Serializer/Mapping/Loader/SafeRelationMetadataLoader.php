@@ -14,13 +14,16 @@ use Symfony\Component\Serializer\Mapping\AttributeMetadata;
 use Symfony\Component\Serializer\Mapping\ClassMetadataInterface;
 use Symfony\Component\Serializer\Mapping\Loader\LoaderInterface;
 
-/**
- * Safe relation metadata loader that skips abstract models
- */
 final class SafeRelationMetadataLoader implements LoaderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(private readonly ModelMetadata $modelMetadata) {}
 
+    /**
+     * Load class metadata.
+     */
     public function loadClassMetadata(ClassMetadataInterface $classMetadata): bool
     {
         if ($classMetadata->getName() === Model::class) {
@@ -33,22 +36,13 @@ final class SafeRelationMetadataLoader implements LoaderInterface
 
         $reflection = $classMetadata->getReflectionClass();
 
-        /**
-         * Skip abstract classes to prevent instantiation errors
-         */
         if ($reflection->isAbstract()) {
             return false;
         }
 
         try {
-            /**
-             * Attempt to create instance without constructor
-             */
             $model = $reflection->newInstanceWithoutConstructor();
         } catch (\Throwable $exception) {
-            /**
-             * Skip models that cannot be instantiated
-             */
             return false;
         }
 

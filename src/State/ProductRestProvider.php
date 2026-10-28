@@ -4,28 +4,11 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 
-/**
- * REST provider for product collection.
- *
- * Translates REST query params into the same $args shape ProductGraphQLProvider
- * consumes, then delegates to the parent. This keeps REST and GraphQL behaviour
- * identical for search, filter, sort, and pagination.
- *
- * Param mapping:
- *   ?query=foo                  → args.query
- *   ?sort=name-asc              → args.sortKey=NAME, args.reverse=false
- *   ?per_page=20&page=2         → args.first=20, args.after=base64(19)
- *   ?type=configurable          → args.filter.type
- *   ?category_id=2              → args.filter.category_id
- *   ?price=10,200               → args.filter.price_from=10, price_to=200
- *   ?price_from=10&price_to=200 → args.filter.price_from, price_to
- *   ?new=1 / ?featured=1        → args.filter.new / featured
- *   ?color=3&size=6             → args.filter.color, size (filterable attributes)
- *   ?filter={"color":{...}}     → merged into args.filter
- *   ?locale=en&channel=default  → args.locale, args.channel
- */
 class ProductRestProvider extends ProductGraphQLProvider
 {
+    /**
+     * The reserved keys constant.
+     */
     private const RESERVED_KEYS = [
         'query', 'sort', 'order', 'page', 'per_page',
         'locale', 'channel', 'filter',
@@ -33,13 +16,18 @@ class ProductRestProvider extends ProductGraphQLProvider
 
     /**
      * Mirrors the package-wide `pagination_maximum_items_per_page` cap from
-     * config/api-platform.php. This provider overrides API Platform's
-     * default pagination, so we must enforce the cap explicitly.
+     * config/api-platform.php. This provider overrides API Platform's.
      */
     private const MAX_PER_PAGE = 50;
 
+    /**
+     * The default per page constant.
+     */
     private const DEFAULT_PER_PAGE = 30;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $query = request()->query();
@@ -110,7 +98,6 @@ class ProductRestProvider extends ProductGraphQLProvider
     /**
      * Build the filter array from REST query params.
      * Everything outside the reserved key list is treated as a filter.
-     * A JSON `filter` param is merged on top.
      */
     private function buildFilter(array $query): array
     {

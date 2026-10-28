@@ -4,11 +4,11 @@ namespace Webkul\BagistoApi\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-/**
- * Custom API entrypoint providing Bagisto-branded documentation index
- */
 class ApiEntrypointController
 {
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(Request $request, ?string $index = null, ?string $_format = null)
     {
         if (

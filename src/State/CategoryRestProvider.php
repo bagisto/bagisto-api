@@ -8,31 +8,25 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Models\Category;
 
-/**
- * REST provider for /categories collection.
- *
- * Storefront scope — always filters to active categories (status=1).
- * Admin-disabled categories are not shoppable and never appear here.
- *
- * Optional query params:
- *   ?parent_id=2 / ?parentId=2  → only direct children of category 2
- *   ?per_page=N & ?page=N       → standard pagination (defaults from config)
- */
 class CategoryRestProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(private readonly Pagination $pagination) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        // Eager-load every relation the response will surface to avoid the
-        // N+1 explosion Symfony Serializer triggers when normalizing each
-        // category's filterableAttributes → options → translations chain.
         $query = Category::query()
             ->where('status', 1)
             ->with([
                 'translations',
-                'filterable_attributes.translations',
-                'filterable_attributes.options.translations',
+                'parent',
+                'children',
+                'filterableAttributes',
             ]);
 
         $request = request();
@@ -50,6 +44,10 @@ class CategoryRestProvider implements ProviderInterface
         $perPage = $this->pagination->getLimit($operation, $context);
         $page = $this->pagination->getPage($context);
 
-        return new Paginator($query->paginate($perPage, ['*'], 'page', $page));
+        $categories = $query->paginate($perPage, ['*'], 'page', $page);
+
+        Category::preloadCollection($categories->getCollection());
+
+        return new Paginator($categories);
     }
 }

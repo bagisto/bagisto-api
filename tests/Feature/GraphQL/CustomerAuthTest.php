@@ -6,21 +6,15 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
-/**
- * Tests for customer authentication GraphQL mutations:
- * - createCustomer (registration)
- * - createCustomerLogin
- * - createLogout
- * - createForgotPassword
- * - createVerifyToken
- *
- * All tests use freshly-created dummy data via factories,
- * no reliance on pre-existing DB records.
- */
 class CustomerAuthTest extends GraphQLTestCase
 {
-    // ─── Registration ───────────────────────────────────────────────────
+    // ============================================================================
+    // Registration
+    // ============================================================================
 
+    /**
+     * Test register new customer successfully.
+     */
     public function test_register_new_customer_successfully(): void
     {
         $this->seedRequiredData();
@@ -69,10 +63,12 @@ class CustomerAuthTest extends GraphQLTestCase
         $this->assertSame('Doe', $data['lastName']);
         $this->assertNotEmpty($data['token'], 'Registration should return an auth token');
 
-        // Verify customer exists in DB
         $this->assertDatabaseHas('customers', ['email' => $email]);
     }
 
+    /**
+     * Test register fails with duplicate email.
+     */
     public function test_register_fails_with_duplicate_email(): void
     {
         $existing = $this->createCustomer([
@@ -105,6 +101,9 @@ class CustomerAuthTest extends GraphQLTestCase
         $this->assertNotEmpty($errors, 'Duplicate email should return an error');
     }
 
+    /**
+     * Test register fails with mismatched passwords.
+     */
     public function test_register_fails_with_mismatched_passwords(): void
     {
         $this->seedRequiredData();
@@ -135,8 +134,13 @@ class CustomerAuthTest extends GraphQLTestCase
         $this->assertNotEmpty($errors, 'Mismatched password should return an error');
     }
 
-    // ─── Login ──────────────────────────────────────────────────────────
+    // ============================================================================
+    // Login
+    // ============================================================================
 
+    /**
+     * Test login with valid credentials.
+     */
     public function test_login_with_valid_credentials(): void
     {
         $password = 'secret123';
@@ -177,6 +181,9 @@ class CustomerAuthTest extends GraphQLTestCase
         $this->assertNotEmpty($data['token'], 'Login should return a bearer token');
     }
 
+    /**
+     * Test login fails with wrong password.
+     */
     public function test_login_fails_with_wrong_password(): void
     {
         $email = 'wrongpass_'.uniqid().'@example.com';
@@ -201,16 +208,15 @@ class CustomerAuthTest extends GraphQLTestCase
             ],
         ]);
 
-        $data = $response->json('data.createCustomerLogin.customerLogin');
-        $this->assertNotNull($data);
-        $this->assertFalse($data['success'], 'Login should fail with wrong password');
-        $this->assertEmpty($data['token'], 'No token should be returned on failure');
+        $this->assertSame('invalid_credentials', $response->json('errors.0.extensions.code'));
+        $this->assertNull($response->json('data.createCustomerLogin'));
     }
 
+    /**
+     * Test suspended customer can login.
+     */
     public function test_suspended_customer_can_login(): void
     {
-        // A suspended customer may sign in and browse; they are stopped only at
-        // checkout (mirrors the storefront). Only inactive accounts are refused.
         $email = 'suspended_'.uniqid().'@example.com';
         $password = 'secret123';
 
@@ -239,8 +245,13 @@ class CustomerAuthTest extends GraphQLTestCase
         $this->assertTrue($data['success'], 'Suspended customer should be able to log in (blocked only at checkout)');
     }
 
-    // ─── Logout ─────────────────────────────────────────────────────────
+    // ============================================================================
+    // Logout
+    // ============================================================================
 
+    /**
+     * Test logout authenticated customer.
+     */
     public function test_logout_authenticated_customer(): void
     {
         if (! Schema::hasColumn('customers', 'device_token')) {
@@ -250,7 +261,7 @@ class CustomerAuthTest extends GraphQLTestCase
         }
 
         $customer = $this->createCustomer();
-        $token = $customer->createToken('test-token')->plainTextToken;
+        $token = $this->customerAccessToken($customer);
 
         $mutation = <<<'GQL'
             mutation logout($input: createLogoutInput!) {
@@ -273,6 +284,9 @@ class CustomerAuthTest extends GraphQLTestCase
         $this->assertTrue($data['success'], 'Logout should succeed with valid token');
     }
 
+    /**
+     * Test logout fails without token.
+     */
     public function test_logout_fails_without_token(): void
     {
         $mutation = <<<'GQL'
@@ -288,15 +302,19 @@ class CustomerAuthTest extends GraphQLTestCase
         $errors = $response->json('errors');
         $logoutData = $response->json('data.createLogout.logout');
 
-        // Either an error or a failed response is acceptable
         $this->assertTrue(
             ! empty($errors) || ($logoutData && ! $logoutData['success']),
             'Logout without auth should fail'
         );
     }
 
-    // ─── Forgot Password ────────────────────────────────────────────────
+    // ============================================================================
+    // Forgot Password
+    // ============================================================================
 
+    /**
+     * Test forgot password for existing email.
+     */
     public function test_forgot_password_for_existing_email(): void
     {
         $customer = $this->createCustomer([
@@ -319,12 +337,14 @@ class CustomerAuthTest extends GraphQLTestCase
 
         $data = $response->json('data.createForgotPassword.forgotPassword');
         $this->assertNotNull($data);
-        // Should return a success/message response (actual email delivery depends on mail config)
         $this->assertArrayHasKey('success', $data);
         $this->assertArrayHasKey('message', $data);
         $this->assertNotEmpty($data['message']);
     }
 
+    /**
+     * Test forgot password for nonexistent email.
+     */
     public function test_forgot_password_for_nonexistent_email(): void
     {
         $this->seedRequiredData();
@@ -341,7 +361,6 @@ class CustomerAuthTest extends GraphQLTestCase
             'input' => ['email' => 'does-not-exist-'.uniqid().'@example.com'],
         ]);
 
-        // Response should be present — either success:false or an error
         $data = $response->json('data.createForgotPassword.forgotPassword');
         $errors = $response->json('errors');
 
@@ -351,12 +370,17 @@ class CustomerAuthTest extends GraphQLTestCase
         );
     }
 
-    // ─── Verify Token ───────────────────────────────────────────────────
+    // ============================================================================
+    // Verify Token
+    // ============================================================================
 
+    /**
+     * Test verify token with valid token.
+     */
     public function test_verify_token_with_valid_token(): void
     {
         $customer = $this->createCustomer();
-        $token = $customer->createToken('test-token')->plainTextToken;
+        $token = $this->customerAccessToken($customer);
 
         $mutation = <<<'GQL'
             mutation verify($input: createVerifyTokenInput!) {
@@ -378,6 +402,9 @@ class CustomerAuthTest extends GraphQLTestCase
         $this->assertSame($customer->email, $data['email']);
     }
 
+    /**
+     * Test verify token fails without token.
+     */
     public function test_verify_token_fails_without_token(): void
     {
         $mutation = <<<'GQL'
@@ -399,10 +426,13 @@ class CustomerAuthTest extends GraphQLTestCase
         );
     }
 
+    /**
+     * Test verify token fails for suspended customer.
+     */
     public function test_verify_token_fails_for_suspended_customer(): void
     {
         $customer = $this->createCustomer(['is_suspended' => 1]);
-        $token = $customer->createToken('test-token')->plainTextToken;
+        $token = $this->customerAccessToken($customer);
 
         $mutation = <<<'GQL'
             mutation verify($input: createVerifyTokenInput!) {

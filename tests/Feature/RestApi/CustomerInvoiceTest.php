@@ -13,8 +13,280 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerInvoiceTest extends RestApiTestCase
 {
+    // ============================================================================
+    // Collection
+    // ============================================================================
+
     /**
-     * Create test data — customer with order and invoices
+     * Test: GET /api/shop/customer-invoices returns collection.
+     */
+    public function test_get_customer_invoices_collection(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet($testData['customer'], '/api/shop/customer-invoices');
+
+        $response->assertOk();
+        $json = $response->json();
+
+        expect($json)->toBeArray();
+        expect(count($json))->toBeGreaterThanOrEqual(2);
+    }
+
+    /**
+     * Test: GET /api/shop/customer-invoices without auth returns error.
+     */
+    public function test_get_customer_invoices_requires_auth(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicGet('/api/shop/customer-invoices');
+
+        expect(in_array($response->getStatusCode(), [401, 403, 500]))->toBeTrue();
+    }
+
+    /**
+     * Test: Customer only sees invoices from own orders.
+     */
+    public function test_customer_only_sees_own_invoices(): void
+    {
+        $testData = $this->createTestData();
+
+        $otherCustomer = $this->createCustomer();
+        $channel = Channel::first();
+
+        $otherOrder = Order::factory()->create([
+            'customer_id' => $otherCustomer->id,
+            'customer_email' => $otherCustomer->email,
+            'customer_first_name' => $otherCustomer->first_name,
+            'customer_last_name' => $otherCustomer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
+        ]);
+
+        Invoice::factory()->create([
+            'order_id' => $otherOrder->id,
+            'state' => 'paid',
+            'grand_total' => 200.00,
+            'base_grand_total' => 200.00,
+        ]);
+
+        $response = $this->authenticatedGet($testData['customer'], '/api/shop/customer-invoices');
+
+        $response->assertOk();
+        $json = $response->json();
+
+        expect(count($json))->toBe(2);
+    }
+
+    /**
+     * Test: Customer with no invoices returns empty collection.
+     */
+    public function test_customer_with_no_invoices_returns_empty(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedGet($customer, '/api/shop/customer-invoices');
+
+        $response->assertOk();
+        $json = $response->json();
+
+        expect($json)->toBeArray();
+        expect(count($json))->toBe(0);
+    }
+
+    // ============================================================================
+    // Single Item
+    // ============================================================================
+
+    /**
+     * Test: GET /api/shop/customer-invoices/{id} returns single invoice.
+     */
+    public function test_get_single_customer_invoice(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            '/api/shop/customer-invoices/'.$testData['invoice1']->id
+        );
+
+        $response->assertOk();
+        $json = $response->json();
+
+        expect($json)->toHaveKey('id');
+        expect($json)->toHaveKey('incrementId');
+        expect($json)->toHaveKey('state');
+        expect($json)->toHaveKey('totalQty');
+        expect($json)->toHaveKey('grandTotal');
+        expect($json)->toHaveKey('subTotal');
+        expect($json)->toHaveKey('shippingAmount');
+        expect($json)->toHaveKey('taxAmount');
+        expect($json)->toHaveKey('discountAmount');
+        expect($json)->toHaveKey('baseCurrencyCode');
+        expect($json)->toHaveKey('orderCurrencyCode');
+        expect($json)->toHaveKey('createdAt');
+        expect($json['id'])->toBe($testData['invoice1']->id);
+        expect($json['state'])->toBe('paid');
+    }
+
+    /**
+     * Test: GET /api/shop/customer-invoices/{id} with invalid id returns 404.
+     */
+    public function test_get_customer_invoice_not_found(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedGet($customer, '/api/shop/customer-invoices/999999');
+
+        expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
+    }
+
+    /**
+     * Test: Cannot access another customer's invoice by ID.
+     */
+    public function test_cannot_access_other_customers_invoice(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer();
+
+        $response = $this->authenticatedGet(
+            $otherCustomer,
+            '/api/shop/customer-invoices/'.$testData['invoice1']->id
+        );
+
+        expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
+    }
+
+    /**
+     * Test: Single invoice without auth returns error.
+     */
+    public function test_get_single_invoice_requires_auth(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->publicGet(
+            '/api/shop/customer-invoices/'.$testData['invoice1']->id
+        );
+
+        expect(in_array($response->getStatusCode(), [401, 403, 500]))->toBeTrue();
+    }
+
+    // ============================================================================
+    // Response Shape
+    // ============================================================================
+
+    /**
+     * Test: Invoice response includes financial fields.
+     */
+    public function test_invoice_response_includes_financial_fields(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            '/api/shop/customer-invoices/'.$testData['invoice1']->id
+        );
+
+        $response->assertOk();
+        $json = $response->json();
+
+        expect($json)->toHaveKey('grandTotal');
+        expect($json)->toHaveKey('baseGrandTotal');
+        expect($json)->toHaveKey('subTotal');
+        expect($json)->toHaveKey('baseSubTotal');
+        expect($json)->toHaveKey('taxAmount');
+        expect($json)->toHaveKey('shippingAmount');
+        expect($json)->toHaveKey('discountAmount');
+    }
+
+    /**
+     * Test: Collection returns invoices with correct states.
+     */
+    public function test_collection_returns_invoices_with_correct_states(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet($testData['customer'], '/api/shop/customer-invoices');
+
+        $response->assertOk();
+        $json = $response->json();
+
+        $states = array_column($json, 'state');
+
+        expect($states)->toContain('paid');
+        expect($states)->toContain('pending');
+    }
+
+    // ============================================================================
+    // PDF Download
+    // ============================================================================
+
+    /**
+     * Test: PDF download endpoint returns PDF response.
+     */
+    public function test_pdf_download_returns_pdf(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            '/api/shop/customer-invoices/'.$testData['invoice1']->id.'/pdf'
+        );
+
+        $response->assertOk();
+
+        $contentType = $response->headers->get('Content-Type');
+        expect($contentType)->toContain('pdf');
+    }
+
+    /**
+     * Test: PDF download without auth returns error.
+     */
+    public function test_pdf_download_requires_auth(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->publicGet(
+            '/api/shop/customer-invoices/'.$testData['invoice1']->id.'/pdf'
+        );
+
+        expect(in_array($response->getStatusCode(), [401, 403, 500]))->toBeTrue();
+    }
+
+    /**
+     * Test: PDF download for non-existent invoice returns error.
+     */
+    public function test_pdf_download_invoice_not_found(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedGet($customer, '/api/shop/customer-invoices/999999/pdf');
+
+        expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
+    }
+
+    /**
+     * Test: Cannot download another customer's invoice PDF.
+     */
+    public function test_cannot_download_other_customers_invoice_pdf(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer();
+
+        $response = $this->authenticatedGet(
+            $otherCustomer,
+            '/api/shop/customer-invoices/'.$testData['invoice1']->id.'/pdf'
+        );
+
+        expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
+    }
+
+    /**
+     * Create test data — customer with order and invoices.
      */
     private function createTestData(): array
     {
@@ -108,272 +380,5 @@ class CustomerInvoiceTest extends RestApiTestCase
         ]);
 
         return compact('customer', 'channel', 'product', 'order', 'orderItem', 'invoice1', 'invoice2');
-    }
-
-    // ── Collection ────────────────────────────────────────────
-
-    /**
-     * Test: GET /api/shop/customer-invoices returns collection
-     */
-    public function test_get_customer_invoices_collection(): void
-    {
-        $testData = $this->createTestData();
-
-        $response = $this->authenticatedGet($testData['customer'], '/api/shop/customer-invoices');
-
-        $response->assertOk();
-        $json = $response->json();
-
-        expect($json)->toBeArray();
-        expect(count($json))->toBeGreaterThanOrEqual(2);
-    }
-
-    /**
-     * Test: GET /api/shop/customer-invoices without auth returns error
-     */
-    public function test_get_customer_invoices_requires_auth(): void
-    {
-        $this->seedRequiredData();
-
-        $response = $this->publicGet('/api/shop/customer-invoices');
-
-        expect(in_array($response->getStatusCode(), [401, 403, 500]))->toBeTrue();
-    }
-
-    /**
-     * Test: Customer only sees invoices from own orders
-     */
-    public function test_customer_only_sees_own_invoices(): void
-    {
-        $testData = $this->createTestData();
-
-        /** Create another customer with their own order and invoice */
-        $otherCustomer = $this->createCustomer();
-        $channel = Channel::first();
-
-        $otherOrder = Order::factory()->create([
-            'customer_id' => $otherCustomer->id,
-            'customer_email' => $otherCustomer->email,
-            'customer_first_name' => $otherCustomer->first_name,
-            'customer_last_name' => $otherCustomer->last_name,
-            'channel_id' => $channel->id,
-            'status' => 'completed',
-        ]);
-
-        Invoice::factory()->create([
-            'order_id' => $otherOrder->id,
-            'state' => 'paid',
-            'grand_total' => 200.00,
-            'base_grand_total' => 200.00,
-        ]);
-
-        $response = $this->authenticatedGet($testData['customer'], '/api/shop/customer-invoices');
-
-        $response->assertOk();
-        $json = $response->json();
-
-        /** Should only see the 2 invoices belonging to testData customer's orders */
-        expect(count($json))->toBe(2);
-    }
-
-    /**
-     * Test: Customer with no invoices returns empty collection
-     */
-    public function test_customer_with_no_invoices_returns_empty(): void
-    {
-        $this->seedRequiredData();
-        $customer = $this->createCustomer();
-
-        $response = $this->authenticatedGet($customer, '/api/shop/customer-invoices');
-
-        $response->assertOk();
-        $json = $response->json();
-
-        expect($json)->toBeArray();
-        expect(count($json))->toBe(0);
-    }
-
-    // ── Single Item ───────────────────────────────────────────
-
-    /**
-     * Test: GET /api/shop/customer-invoices/{id} returns single invoice
-     */
-    public function test_get_single_customer_invoice(): void
-    {
-        $testData = $this->createTestData();
-
-        $response = $this->authenticatedGet(
-            $testData['customer'],
-            '/api/shop/customer-invoices/'.$testData['invoice1']->id
-        );
-
-        $response->assertOk();
-        $json = $response->json();
-
-        expect($json)->toHaveKey('id');
-        expect($json)->toHaveKey('incrementId');
-        expect($json)->toHaveKey('state');
-        expect($json)->toHaveKey('totalQty');
-        expect($json)->toHaveKey('grandTotal');
-        expect($json)->toHaveKey('subTotal');
-        expect($json)->toHaveKey('shippingAmount');
-        expect($json)->toHaveKey('taxAmount');
-        expect($json)->toHaveKey('discountAmount');
-        expect($json)->toHaveKey('baseCurrencyCode');
-        expect($json)->toHaveKey('orderCurrencyCode');
-        expect($json)->toHaveKey('createdAt');
-        expect($json['id'])->toBe($testData['invoice1']->id);
-        expect($json['state'])->toBe('paid');
-    }
-
-    /**
-     * Test: GET /api/shop/customer-invoices/{id} with invalid id returns 404
-     */
-    public function test_get_customer_invoice_not_found(): void
-    {
-        $this->seedRequiredData();
-        $customer = $this->createCustomer();
-
-        $response = $this->authenticatedGet($customer, '/api/shop/customer-invoices/999999');
-
-        expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
-    }
-
-    /**
-     * Test: Cannot access another customer's invoice by ID
-     */
-    public function test_cannot_access_other_customers_invoice(): void
-    {
-        $testData = $this->createTestData();
-        $otherCustomer = $this->createCustomer();
-
-        $response = $this->authenticatedGet(
-            $otherCustomer,
-            '/api/shop/customer-invoices/'.$testData['invoice1']->id
-        );
-
-        /** Should return 404/500 because the invoice doesn't belong to otherCustomer */
-        expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
-    }
-
-    /**
-     * Test: Single invoice without auth returns error
-     */
-    public function test_get_single_invoice_requires_auth(): void
-    {
-        $testData = $this->createTestData();
-
-        $response = $this->publicGet(
-            '/api/shop/customer-invoices/'.$testData['invoice1']->id
-        );
-
-        expect(in_array($response->getStatusCode(), [401, 403, 500]))->toBeTrue();
-    }
-
-    // ── Response Shape ────────────────────────────────────────
-
-    /**
-     * Test: Invoice response includes financial fields
-     */
-    public function test_invoice_response_includes_financial_fields(): void
-    {
-        $testData = $this->createTestData();
-
-        $response = $this->authenticatedGet(
-            $testData['customer'],
-            '/api/shop/customer-invoices/'.$testData['invoice1']->id
-        );
-
-        $response->assertOk();
-        $json = $response->json();
-
-        expect($json)->toHaveKey('grandTotal');
-        expect($json)->toHaveKey('baseGrandTotal');
-        expect($json)->toHaveKey('subTotal');
-        expect($json)->toHaveKey('baseSubTotal');
-        expect($json)->toHaveKey('taxAmount');
-        expect($json)->toHaveKey('shippingAmount');
-        expect($json)->toHaveKey('discountAmount');
-    }
-
-    /**
-     * Test: Collection returns invoices with correct states
-     */
-    public function test_collection_returns_invoices_with_correct_states(): void
-    {
-        $testData = $this->createTestData();
-
-        $response = $this->authenticatedGet($testData['customer'], '/api/shop/customer-invoices');
-
-        $response->assertOk();
-        $json = $response->json();
-
-        $states = array_column($json, 'state');
-
-        expect($states)->toContain('paid');
-        expect($states)->toContain('pending');
-    }
-
-    // ── PDF Download ──────────────────────────────────────────
-
-    /**
-     * Test: PDF download endpoint returns PDF response
-     */
-    public function test_pdf_download_returns_pdf(): void
-    {
-        $testData = $this->createTestData();
-
-        $response = $this->authenticatedGet(
-            $testData['customer'],
-            '/api/shop/customer-invoices/'.$testData['invoice1']->id.'/pdf'
-        );
-
-        $response->assertOk();
-
-        $contentType = $response->headers->get('Content-Type');
-        expect($contentType)->toContain('pdf');
-    }
-
-    /**
-     * Test: PDF download without auth returns error
-     */
-    public function test_pdf_download_requires_auth(): void
-    {
-        $testData = $this->createTestData();
-
-        $response = $this->publicGet(
-            '/api/shop/customer-invoices/'.$testData['invoice1']->id.'/pdf'
-        );
-
-        expect(in_array($response->getStatusCode(), [401, 403, 500]))->toBeTrue();
-    }
-
-    /**
-     * Test: PDF download for non-existent invoice returns error
-     */
-    public function test_pdf_download_invoice_not_found(): void
-    {
-        $this->seedRequiredData();
-        $customer = $this->createCustomer();
-
-        $response = $this->authenticatedGet($customer, '/api/shop/customer-invoices/999999/pdf');
-
-        expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
-    }
-
-    /**
-     * Test: Cannot download another customer's invoice PDF
-     */
-    public function test_cannot_download_other_customers_invoice_pdf(): void
-    {
-        $testData = $this->createTestData();
-        $otherCustomer = $this->createCustomer();
-
-        $response = $this->authenticatedGet(
-            $otherCustomer,
-            '/api/shop/customer-invoices/'.$testData['invoice1']->id.'/pdf'
-        );
-
-        expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
     }
 }

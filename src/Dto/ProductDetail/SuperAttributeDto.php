@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\ApiResource;
 class SuperAttributeDto
 {
     /**
+     * Create a new super attribute with its options.
+     *
      * @param  SuperAttributeOptionDto[]  $options
      */
     public function __construct(

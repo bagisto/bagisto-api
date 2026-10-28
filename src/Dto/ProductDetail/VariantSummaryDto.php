@@ -8,6 +8,8 @@ use ApiPlatform\Metadata\ApiResource;
 class VariantSummaryDto
 {
     /**
+     * Create a new variant summary with its chosen super attribute options.
+     *
      * @param  array<string,int>  $super_attribute_options
      */
     public function __construct(

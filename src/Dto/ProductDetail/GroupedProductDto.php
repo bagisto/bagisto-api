@@ -8,6 +8,9 @@ use ApiPlatform\Metadata\ApiResource;
 #[ApiResource(operations: [], graphQlOperations: [])]
 class GroupedProductDto
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         public ?int $id = null,
         public ?int $associated_product_id = null,

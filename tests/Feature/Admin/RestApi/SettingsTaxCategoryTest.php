@@ -7,66 +7,11 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for Admin Settings → Tax Categories CRUD (Block B Wave 3).
- */
 class SettingsTaxCategoryTest extends AdminApiTestCase
 {
-    protected function insertTaxCategory(array $overrides = []): int
-    {
-        return \DB::table('tax_categories')->insertGetId(array_merge([
-            'code' => 'tc-'.uniqid(),
-            'name' => 'Test Tax Category',
-            'description' => 'Test description',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function insertTaxRate(array $overrides = []): int
-    {
-        return \DB::table('tax_rates')->insertGetId(array_merge([
-            'identifier' => 'tr-'.uniqid(),
-            'is_zip' => 0,
-            'zip_code' => '00000',
-            'state' => 'CA',
-            'country' => 'US',
-            'tax_rate' => 5.0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function attachRate(int $categoryId, int $rateId): void
-    {
-        \DB::table('tax_categories_tax_rates')->insert([
-            'tax_category_id' => $categoryId,
-            'tax_rate_id' => $rateId,
-        ]);
-    }
-
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
-    protected function createAdminWithoutPermissions(): Admin
-    {
-        $role = Role::create([
-            'name' => 'Limited '.uniqid(),
-            'description' => 'no tax-category perms',
-            'permission_type' => 'custom',
-            'permissions' => ['catalog.products'],
-        ]);
-
-        return $this->createAdmin(['role_id' => $role->id]);
-    }
-
+    /**
+     * Test listing requires admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -74,6 +19,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -86,6 +34,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect($response->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total', 'from', 'to']);
     }
 
+    /**
+     * Test listing row shape.
+     */
     public function test_listing_row_shape(): void
     {
         $admin = $this->createAdmin();
@@ -98,6 +49,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect($row)->toHaveKeys(['id', 'code', 'name', 'description', 'createdAt', 'updatedAt']);
     }
 
+    /**
+     * Test filter by code.
+     */
     public function test_filter_by_code(): void
     {
         $admin = $this->createAdmin();
@@ -111,6 +65,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test filter by name.
+     */
     public function test_filter_by_name(): void
     {
         $admin = $this->createAdmin();
@@ -124,6 +81,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test sort by code asc.
+     */
     public function test_sort_by_code_asc(): void
     {
         $admin = $this->createAdmin();
@@ -145,6 +105,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test per page cap.
+     */
     public function test_per_page_cap(): void
     {
         $admin = $this->createAdmin();
@@ -154,6 +117,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test detail returns payload with tax rates.
+     */
     public function test_detail_returns_payload_with_tax_rates(): void
     {
         $admin = $this->createAdmin();
@@ -179,6 +145,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect($rateIds)->toContain($r2);
     }
 
+    /**
+     * Test detail unknown id returns 404.
+     */
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -186,6 +155,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test detail requires admin token.
+     */
     public function test_detail_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -194,6 +166,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test create happy path with tax rates.
+     */
     public function test_create_happy_path_with_tax_rates(): void
     {
         $admin = $this->createAdmin();
@@ -229,6 +204,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect(count($rates))->toBe(2);
     }
 
+    /**
+     * Test create missing code returns 422.
+     */
     public function test_create_missing_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -241,6 +219,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create missing name returns 422.
+     */
     public function test_create_missing_name_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -253,6 +234,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create missing description returns 422.
+     */
     public function test_create_missing_description_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -265,6 +249,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create missing taxrates returns 422.
+     */
     public function test_create_missing_taxrates_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -276,6 +263,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create duplicate code returns 422.
+     */
     public function test_create_duplicate_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -291,6 +281,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create requires auth.
+     */
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -301,6 +294,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test create no permission returns 403.
+     */
     public function test_create_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -314,6 +310,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test update happy path syncs rates.
+     */
     public function test_update_happy_path_syncs_rates(): void
     {
         $admin = $this->createAdmin();
@@ -354,6 +353,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test update duplicate code returns 422.
+     */
     public function test_update_duplicate_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -370,6 +372,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test update same code self is ok.
+     */
     public function test_update_same_code_self_is_ok(): void
     {
         $admin = $this->createAdmin();
@@ -385,6 +390,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test update unknown id returns 404.
+     */
     public function test_update_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -395,6 +403,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test update requires auth.
+     */
     public function test_update_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -403,6 +414,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test update no permission returns 403.
+     */
     public function test_update_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -414,6 +428,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -425,6 +442,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $this->assertDatabaseMissing('tax_categories', ['id' => $id]);
     }
 
+    /**
+     * Test delete with attached rates returns 400.
+     */
     public function test_delete_with_attached_rates_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -438,6 +458,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $this->assertDatabaseHas('tax_categories', ['id' => $id]);
     }
 
+    /**
+     * Test delete unknown id returns 404.
+     */
     public function test_delete_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -445,6 +468,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test delete requires auth.
+     */
     public function test_delete_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -453,11 +479,87 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test delete no permission returns 403.
+     */
     public function test_delete_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
         $id = $this->insertTaxCategory();
         $response = $this->adminDelete($admin, '/api/admin/settings/tax-categories/'.$id);
         $response->assertStatus(403);
+    }
+
+    /**
+     * Insert tax category.
+     */
+    protected function insertTaxCategory(array $overrides = []): int
+    {
+        return \DB::table('tax_categories')->insertGetId(array_merge([
+            'code' => 'tc-'.uniqid(),
+            'name' => 'Test Tax Category',
+            'description' => 'Test description',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Insert tax rate.
+     */
+    protected function insertTaxRate(array $overrides = []): int
+    {
+        return \DB::table('tax_rates')->insertGetId(array_merge([
+            'identifier' => 'tr-'.uniqid(),
+            'is_zip' => 0,
+            'zip_code' => '00000',
+            'state' => 'CA',
+            'country' => 'US',
+            'tax_rate' => 5.0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Attach rate.
+     */
+    protected function attachRate(int $categoryId, int $rateId): void
+    {
+        \DB::table('tax_categories_tax_rates')->insert([
+            'tax_category_id' => $categoryId,
+            'tax_rate_id' => $rateId,
+        ]);
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Create admin without permissions.
+     */
+    protected function createAdminWithoutPermissions(): Admin
+    {
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no tax-category perms',
+            'permission_type' => 'custom',
+            'permissions' => ['catalog.products'],
+        ]);
+
+        return $this->createAdmin(['role_id' => $role->id]);
     }
 }

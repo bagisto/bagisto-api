@@ -3,29 +3,25 @@
 namespace Webkul\BagistoApi\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\QueryItemResolverInterface;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Helper\CustomerProfileHelper;
 use Webkul\BagistoApi\Models\CustomerProfile as CustomerProfileModel;
-use Webkul\Customer\Models\Customer;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
-/**
- * GraphQL resolver for single Customer queries
- * Requires authentication - only authenticated users can view customer data
- */
 class CustomerQueryResolver implements QueryItemResolverInterface
 {
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?object $item, array $context): CustomerProfileModel
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
 
-        $token = $customer->currentAccessToken();
-
-        if (! $token) {
+        if (! CurrentCustomer::session()) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.token-not-found-or-expired'));
         }
 

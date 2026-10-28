@@ -8,15 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Order line-item — nested sub-resource of AdminOrderDetail.
- *
- * Eloquent #[ApiResource] (operations: []) so the parent's `items` HasMany
- * resolves as a GraphQL connection (`items { edges { node } }`) with real node
- * data. Money is exposed raw (value + base value); clients format. `children`
- * is a self-referencing connection (configurable/bundle/grouped child lines);
- * `child` / `downloadableLinks` / `additional` are bare JSON leaves.
- */
 #[ApiResource(
     shortName: 'AdminOrderDetailItem',
     operations: [],
@@ -31,13 +22,25 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminOrderDetailItem extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the order items.
+     *
+     * @var string
+     */
     protected $table = 'order_items';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the order item is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['child', 'downloadable_links'];
 
-    /** @var array */
+    /**
+     * The native types the order item attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'product_id' => 'int',
@@ -59,6 +62,9 @@ class AdminOrderDetailItem extends Model
         'created_at' => 'datetime',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

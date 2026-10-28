@@ -11,26 +11,9 @@ class TransactionCreateTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    protected function anUnpaidInvoice(): Invoice
-    {
-        $order = $this->bootstrapInvoiceableOrder('processing');
-        $item = $order->items->first();
-
-        return Invoice::factory()->create([
-            'order_id' => $order->id,
-            'state' => 'pending',
-            'total_qty' => (int) $item->qty_ordered,
-            'sub_total' => 100,
-            'base_sub_total' => 100,
-            'grand_total' => 100,
-            'base_grand_total' => 100,
-            'base_currency_code' => 'USD',
-            'order_currency_code' => 'USD',
-            'channel_currency_code' => 'USD',
-            'increment_id' => 'INV-TX-'.uniqid(),
-        ]);
-    }
-
+    /**
+     * Test create requires authentication.
+     */
     public function test_create_requires_authentication(): void
     {
         $this->publicPost('/api/admin/transactions', [
@@ -40,6 +23,9 @@ class TransactionCreateTest extends AdminApiTestCase
         ])->assertStatus(401);
     }
 
+    /**
+     * Test create records payment and marks invoice paid.
+     */
     public function test_create_records_payment_and_marks_invoice_paid(): void
     {
         $admin = $this->createAdmin();
@@ -65,6 +51,9 @@ class TransactionCreateTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test partial payment keeps invoice unpaid.
+     */
     public function test_partial_payment_keeps_invoice_unpaid(): void
     {
         $admin = $this->createAdmin();
@@ -79,6 +68,9 @@ class TransactionCreateTest extends AdminApiTestCase
         expect(Invoice::find($invoice->id)->state)->not->toBe('paid');
     }
 
+    /**
+     * Test overpayment is rejected.
+     */
     public function test_overpayment_is_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -91,6 +83,9 @@ class TransactionCreateTest extends AdminApiTestCase
         ])->assertStatus(400);
     }
 
+    /**
+     * Test already paid invoice is rejected.
+     */
     public function test_already_paid_invoice_is_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -104,6 +99,9 @@ class TransactionCreateTest extends AdminApiTestCase
         ])->assertStatus(400);
     }
 
+    /**
+     * Test zero amount is rejected.
+     */
     public function test_zero_amount_is_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -116,6 +114,9 @@ class TransactionCreateTest extends AdminApiTestCase
         ])->assertStatus(400);
     }
 
+    /**
+     * Test unknown invoice is rejected.
+     */
     public function test_unknown_invoice_is_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -127,6 +128,9 @@ class TransactionCreateTest extends AdminApiTestCase
         ])->assertStatus(400);
     }
 
+    /**
+     * Test missing amount is rejected.
+     */
     public function test_missing_amount_is_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -138,6 +142,9 @@ class TransactionCreateTest extends AdminApiTestCase
         ])->assertStatus(422);
     }
 
+    /**
+     * Test no permission returns 403.
+     */
     public function test_no_permission_returns_403(): void
     {
         $invoice = $this->anUnpaidInvoice();
@@ -152,5 +159,28 @@ class TransactionCreateTest extends AdminApiTestCase
             'paymentMethod' => 'cashondelivery',
             'amount' => 100,
         ])->assertStatus(403);
+    }
+
+    /**
+     * An unpaid invoice.
+     */
+    protected function anUnpaidInvoice(): Invoice
+    {
+        $order = $this->bootstrapInvoiceableOrder('processing');
+        $item = $order->items->first();
+
+        return Invoice::factory()->create([
+            'order_id' => $order->id,
+            'state' => 'pending',
+            'total_qty' => (int) $item->qty_ordered,
+            'sub_total' => 100,
+            'base_sub_total' => 100,
+            'grand_total' => 100,
+            'base_grand_total' => 100,
+            'base_currency_code' => 'USD',
+            'order_currency_code' => 'USD',
+            'channel_currency_code' => 'USD',
+            'increment_id' => 'INV-TX-'.uniqid(),
+        ]);
     }
 }

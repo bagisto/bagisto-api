@@ -7,40 +7,11 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Core\Models\CoreConfig;
 
-/**
- * GraphQL coverage for Admin Marketing → Sitemaps CRUD + generate (Block F3d).
- */
 class MarketingSitemapTest extends AdminApiTestCase
 {
-    protected function insertSitemap(array $overrides = []): int
-    {
-        $channels = $overrides['channels'] ?? [$this->defaultChannelId()];
-
-        unset($overrides['channels']);
-
-        $id = DB::table('sitemaps')->insertGetId(array_merge([
-            'file_name' => 'gqlsm-'.uniqid().'.xml',
-            'path' => '/',
-            'generated_at' => null,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-
-        foreach ($channels as $channelId) {
-            DB::table('sitemap_channels')->insert([
-                'sitemap_id' => $id,
-                'channel_id' => $channelId,
-            ]);
-        }
-
-        return $id;
-    }
-
-    protected function defaultChannelId(): int
-    {
-        return (int) DB::table('channels')->orderBy('id')->value('id');
-    }
-
+    /**
+     * Test query listing.
+     */
     public function test_query_listing(): void
     {
         $admin = $this->createAdmin();
@@ -55,6 +26,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         expect($response->json('data.adminMarketingSitemaps.edges'))->toBeArray();
     }
 
+    /**
+     * Test query detail.
+     */
     public function test_query_detail(): void
     {
         $admin = $this->createAdmin();
@@ -81,6 +55,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test mutation create.
+     */
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();
@@ -117,6 +94,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test mutation update.
+     */
     public function test_mutation_update(): void
     {
         $admin = $this->createAdmin();
@@ -145,6 +125,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test mutation delete.
+     */
     public function test_mutation_delete(): void
     {
         $admin = $this->createAdmin();
@@ -153,7 +136,7 @@ class MarketingSitemapTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation Del($input: deleteAdminMarketingSitemapInput!) {
               deleteAdminMarketingSitemap(input: $input) {
-                adminMarketingSitemap { _id }
+                adminMarketingSitemap { id _id }
               }
             }
         GQL;
@@ -163,9 +146,16 @@ class MarketingSitemapTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.deleteAdminMarketingSitemap.adminMarketingSitemap.id'))->toBe("/api/admin/marketing/sitemaps/{$id}");
+
         $this->assertDatabaseMissing('sitemaps', ['id' => $id]);
     }
 
+    /**
+     * Test mutation generate.
+     */
     public function test_mutation_generate(): void
     {
         Storage::fake('public');
@@ -211,6 +201,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         expect($row->generated_at)->not->toBeNull();
     }
 
+    /**
+     * Test query listing requires auth.
+     */
     public function test_query_listing_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -218,5 +211,40 @@ class MarketingSitemapTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query);
         $response->assertOk();
         expect($response->json('errors'))->toBeArray();
+    }
+
+    /**
+     * Insert sitemap.
+     */
+    protected function insertSitemap(array $overrides = []): int
+    {
+        $channels = $overrides['channels'] ?? [$this->defaultChannelId()];
+
+        unset($overrides['channels']);
+
+        $id = DB::table('sitemaps')->insertGetId(array_merge([
+            'file_name' => 'gqlsm-'.uniqid().'.xml',
+            'path' => '/',
+            'generated_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+
+        foreach ($channels as $channelId) {
+            DB::table('sitemap_channels')->insert([
+                'sitemap_id' => $id,
+                'channel_id' => $channelId,
+            ]);
+        }
+
+        return $id;
+    }
+
+    /**
+     * Default channel id.
+     */
+    protected function defaultChannelId(): int
+    {
+        return (int) DB::table('channels')->orderBy('id')->value('id');
     }
 }

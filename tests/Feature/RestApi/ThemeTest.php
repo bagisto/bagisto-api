@@ -5,21 +5,16 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Theme\Models\Section;
 
-/**
- * REST coverage for GET /api/shop/theme — the theme the current channel runs.
- */
 class ThemeTest extends RestApiTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // BACKWARD COMPATIBILITY: remove when the minimum supported core is 2.4.10.
-        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
-    }
-
+    /**
+     * The url.
+     */
     private string $url = '/api/shop/theme';
 
+    /**
+     * Test returns the active theme.
+     */
     public function test_returns_the_active_theme(): void
     {
         $this->seedRequiredData();
@@ -35,6 +30,9 @@ class ThemeTest extends RestApiTestCase
         expect($body[0])->toHaveKeys(['code', 'name', 'sectionTypes']);
     }
 
+    /**
+     * Test code matches the channel theme.
+     */
     public function test_code_matches_the_channel_theme(): void
     {
         $this->seedRequiredData();
@@ -48,6 +46,9 @@ class ThemeTest extends RestApiTestCase
         expect($response->json('0.code'))->toBe($expected);
     }
 
+    /**
+     * Test falls back to the default theme when the channel has none.
+     */
     public function test_falls_back_to_the_default_theme_when_the_channel_has_none(): void
     {
         $this->seedRequiredData();
@@ -61,6 +62,9 @@ class ThemeTest extends RestApiTestCase
         expect($response->json('0.code'))->toBe(config('themes.shop-default'));
     }
 
+    /**
+     * Test lists every section type.
+     */
     public function test_lists_every_section_type(): void
     {
         $this->seedRequiredData();
@@ -72,6 +76,9 @@ class ThemeTest extends RestApiTestCase
         expect($response->json('0.sectionTypes'))->toBe(Section::TYPES);
     }
 
+    /**
+     * Test name is resolved from the theme config.
+     */
     public function test_name_is_resolved_from_the_theme_config(): void
     {
         $this->seedRequiredData();
@@ -95,5 +102,15 @@ class ThemeTest extends RestApiTestCase
         $code = $this->publicGet($this->url)->json('0.code');
 
         $this->publicGet('/api/shop/themes/'.$code)->assertNotFound();
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
     }
 }

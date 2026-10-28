@@ -8,19 +8,27 @@ use Webkul\User\Models\Admin;
 
 class AdminSettingsUserItemProvider extends AbstractAdminItemProvider
 {
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.settings.user.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return Admin::with('role')->find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $admin): AdminSettingsUser
     {
-        /** @var Admin $admin */
         $dto = new AdminSettingsUser;
 
         $dto->id = (int) $admin->id;

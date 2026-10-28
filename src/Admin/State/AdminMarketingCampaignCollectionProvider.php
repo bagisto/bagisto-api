@@ -11,21 +11,16 @@ use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCampaign;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/marketing/campaigns + adminMarketingCampaigns.
- *
- * Filters: name (LIKE), status (0/1), marketing_template_id, marketing_event_id,
- *          channel_id, customer_group_id.
- * Sort:    id (default desc), name.
- *
- * Branches: GraphQL → an AdminMarketingCampaign Eloquent row per result (the four
- * to-one objects are detail-only, null on listing rows — no N+1); REST → the flat
- * AdminMarketingCampaignRestDto (the four objects omitted on listing rows).
- */
 class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * The listing is graph ql.
+     */
     protected bool $listingIsGraphQL = false;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
@@ -33,11 +28,17 @@ class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionPr
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'name'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         $columns = [
@@ -62,6 +63,9 @@ class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionPr
         return DB::table('marketing_campaigns')->select($columns);
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
@@ -85,6 +89,9 @@ class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionPr
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -97,6 +104,9 @@ class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionPr
         $query->orderBy($columnMap[$column] ?? 'marketing_campaigns.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): object
     {
         if ($this->listingIsGraphQL) {
@@ -111,16 +121,12 @@ class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionPr
         $dto->createdAt = $row->created_at ? Carbon::parse($row->created_at)->toIso8601String() : null;
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
 
-        // channel / customer_group / marketing_template / marketing_event are
-        // detail-only — null on list rows.
-
         return $dto;
     }
 
     /**
      * GraphQL listing row → Eloquent AdminMarketingCampaign. The four to-one
-     * objects are set null (detail-only — no per-row N+1). The FK ids are NOT
-     * forceFilled (they're consumed by the relations, not exposed as scalars).
+     * objects are set null (detail-only — no per-row N+1). The FK ids are NOT.
      */
     protected function mapRowToEloquent(object $row): AdminMarketingCampaign
     {

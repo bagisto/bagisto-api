@@ -7,27 +7,11 @@ use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Core\Models\CoreConfig;
 
-/**
- * The admin-API audit trail records every write made via an integration token.
- */
 class AuditCaptureTest extends AdminApiTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        AdminApiAudit::query()->delete();
-    }
-
-    protected function audits()
-    {
-        return AdminApiAudit::query();
-    }
-
-    protected function freshCode(): string
-    {
-        return 'Q'.chr(random_int(65, 90)).chr(random_int(65, 90));
-    }
-
+    /**
+     * Test create records a row with new values and actor.
+     */
     public function test_create_records_a_row_with_new_values_and_actor(): void
     {
         $admin = $this->createAdmin();
@@ -51,6 +35,9 @@ class AuditCaptureTest extends AdminApiTestCase
         expect($row->new_values['code'] ?? null)->toBe($code);
     }
 
+    /**
+     * Test update records before and after.
+     */
     public function test_update_records_before_and_after(): void
     {
         $admin = $this->createAdmin();
@@ -72,6 +59,9 @@ class AuditCaptureTest extends AdminApiTestCase
         expect($row->new_values['name'] ?? null)->toBe('New Name');
     }
 
+    /**
+     * Test delete records old values.
+     */
     public function test_delete_records_old_values(): void
     {
         $admin = $this->createAdmin();
@@ -91,6 +81,9 @@ class AuditCaptureTest extends AdminApiTestCase
         expect($row->new_values)->toBeNull();
     }
 
+    /**
+     * Test version id increments per record.
+     */
     public function test_version_id_increments_per_record(): void
     {
         $admin = $this->createAdmin();
@@ -108,6 +101,9 @@ class AuditCaptureTest extends AdminApiTestCase
         expect($versions)->toBe([1, 2]);
     }
 
+    /**
+     * Test get requests are not audited.
+     */
     public function test_get_requests_are_not_audited(): void
     {
         $admin = $this->createAdmin();
@@ -116,9 +112,11 @@ class AuditCaptureTest extends AdminApiTestCase
         expect($this->audits()->count())->toBe(0);
     }
 
+    /**
+     * Test missing token is not audited.
+     */
     public function test_missing_token_is_not_audited(): void
     {
-        // No admin token at all — request is unauthenticated, nothing recorded.
         $this->postJson('/api/admin/settings/currencies', [
             'code' => 'NON',
             'name' => 'x',
@@ -126,6 +124,9 @@ class AuditCaptureTest extends AdminApiTestCase
         expect($this->audits()->count())->toBe(0);
     }
 
+    /**
+     * Test sensitive fields are redacted.
+     */
     public function test_sensitive_fields_are_redacted(): void
     {
         $admin = $this->createAdmin();
@@ -153,6 +154,9 @@ class AuditCaptureTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test core config value is redacted.
+     */
     public function test_core_config_value_is_redacted(): void
     {
         $admin = $this->createAdmin();
@@ -171,6 +175,9 @@ class AuditCaptureTest extends AdminApiTestCase
         expect(json_encode($rows->pluck('new_values')))->not->toContain('plain-visible-text');
     }
 
+    /**
+     * Test value is redacted for core config and secret named rows.
+     */
     public function test_value_is_redacted_for_core_config_and_secret_named_rows(): void
     {
         $recorder = app(AdminApiAuditRecorder::class);
@@ -200,6 +207,9 @@ class AuditCaptureTest extends AdminApiTestCase
         expect($named['title'])->toBe('Shown');
     }
 
+    /**
+     * Test graphql mutation is audited.
+     */
     public function test_graphql_mutation_is_audited(): void
     {
         $admin = $this->createAdmin();
@@ -232,6 +242,9 @@ class AuditCaptureTest extends AdminApiTestCase
         expect(str_ends_with((string) $row->url, 'graphql'))->toBeTrue();
     }
 
+    /**
+     * Test graphql query is not audited.
+     */
     public function test_graphql_query_is_not_audited(): void
     {
         $admin = $this->createAdmin();
@@ -241,5 +254,30 @@ class AuditCaptureTest extends AdminApiTestCase
         ], $this->adminHeaders($admin))->assertOk();
 
         expect($this->audits()->count())->toBe(0);
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        AdminApiAudit::query()->delete();
+    }
+
+    /**
+     * Audits.
+     */
+    protected function audits()
+    {
+        return AdminApiAudit::query();
+    }
+
+    /**
+     * Fresh code.
+     */
+    protected function freshCode(): string
+    {
+        return 'Q'.chr(random_int(65, 90)).chr(random_int(65, 90));
     }
 }

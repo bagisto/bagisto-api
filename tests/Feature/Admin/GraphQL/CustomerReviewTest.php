@@ -9,35 +9,11 @@ use Webkul\Product\Models\Product;
 use Webkul\Product\Models\ProductReview;
 use Webkul\Product\Models\ProductReviewAttachment;
 
-/**
- * GraphQL coverage for Admin Customer Reviews moderation (Block C C3).
- */
 class CustomerReviewTest extends AdminApiTestCase
 {
-    protected function seedProduct(): Product
-    {
-        return $this->createBaseProduct('simple');
-    }
-
-    protected function seedReview(array $overrides = []): ProductReview
-    {
-        $this->seedRequiredData();
-        $group = CustomerGroup::where('code', 'general')->first();
-        $customer = Customer::factory()->create([
-            'customer_group_id' => $group->id,
-            'status' => 1,
-        ]);
-        $product = $this->seedProduct();
-
-        return ProductReview::factory()->create(array_merge([
-            'product_id' => $product->id,
-            'customer_id' => $customer->id,
-            'name' => $customer->first_name.' '.$customer->last_name,
-            'status' => 'pending',
-            'rating' => 4,
-        ], $overrides));
-    }
-
+    /**
+     * Test listing.
+     */
     public function test_listing(): void
     {
         $admin = $this->createAdmin();
@@ -58,6 +34,9 @@ class CustomerReviewTest extends AdminApiTestCase
         expect($ids)->toContain($r->id);
     }
 
+    /**
+     * Test listing resolves guest review with null customer.
+     */
     public function test_listing_resolves_guest_review_with_null_customer(): void
     {
         $admin = $this->createAdmin();
@@ -98,6 +77,9 @@ class CustomerReviewTest extends AdminApiTestCase
         expect($node['node']['product'])->not->toBeNull();
     }
 
+    /**
+     * Test listing filter by status.
+     */
     public function test_listing_filter_by_status(): void
     {
         $admin = $this->createAdmin();
@@ -119,6 +101,9 @@ class CustomerReviewTest extends AdminApiTestCase
         expect($ids)->not()->toContain($pending->id);
     }
 
+    /**
+     * Test listing requires auth.
+     */
     public function test_listing_requires_auth(): void
     {
         $query = 'query { adminCustomerReviews(first: 5) { edges { node { _id } } } }';
@@ -127,6 +112,9 @@ class CustomerReviewTest extends AdminApiTestCase
         expect($resp->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test detail.
+     */
     public function test_detail(): void
     {
         $admin = $this->createAdmin();
@@ -140,6 +128,9 @@ class CustomerReviewTest extends AdminApiTestCase
         expect($resp->json('data.adminCustomerReview._id'))->toBe($r->id);
     }
 
+    /**
+     * Test detail resolves nested objects and connection.
+     */
     public function test_detail_resolves_nested_objects_and_connection(): void
     {
         $admin = $this->createAdmin();
@@ -171,6 +162,9 @@ class CustomerReviewTest extends AdminApiTestCase
         expect($node['images'])->toHaveKey('edges');
     }
 
+    /**
+     * Test detail resolves image connection nodes.
+     */
     public function test_detail_resolves_image_connection_nodes(): void
     {
         $admin = $this->createAdmin();
@@ -200,6 +194,9 @@ class CustomerReviewTest extends AdminApiTestCase
         expect($edges[0]['node']['_id'])->not()->toBeNull();
     }
 
+    /**
+     * Test detail unknown.
+     */
     public function test_detail_unknown(): void
     {
         $admin = $this->createAdmin();
@@ -213,6 +210,9 @@ class CustomerReviewTest extends AdminApiTestCase
         expect($errors !== null || $dataNull)->toBeTrue();
     }
 
+    /**
+     * Test mutation update status.
+     */
     public function test_mutation_update_status(): void
     {
         $admin = $this->createAdmin();
@@ -235,6 +235,9 @@ class CustomerReviewTest extends AdminApiTestCase
         expect(ProductReview::find($r->id)->status)->toBe('approved');
     }
 
+    /**
+     * Test mutation update invalid status.
+     */
     public function test_mutation_update_invalid_status(): void
     {
         $admin = $this->createAdmin();
@@ -257,6 +260,9 @@ class CustomerReviewTest extends AdminApiTestCase
         expect($resp->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test mutation delete.
+     */
     public function test_mutation_delete(): void
     {
         $admin = $this->createAdmin();
@@ -284,6 +290,9 @@ class CustomerReviewTest extends AdminApiTestCase
         expect(ProductReview::find($r->id))->toBeNull();
     }
 
+    /**
+     * Test mutation mass delete.
+     */
     public function test_mutation_mass_delete(): void
     {
         $admin = $this->createAdmin();
@@ -305,6 +314,9 @@ class CustomerReviewTest extends AdminApiTestCase
         expect(ProductReview::find($r2->id))->toBeNull();
     }
 
+    /**
+     * Test mutation mass update status.
+     */
     public function test_mutation_mass_update_status(): void
     {
         $admin = $this->createAdmin();
@@ -327,5 +339,35 @@ class CustomerReviewTest extends AdminApiTestCase
         $resp->assertOk();
         expect(ProductReview::find($r1->id)->status)->toBe('approved');
         expect(ProductReview::find($r2->id)->status)->toBe('approved');
+    }
+
+    /**
+     * Seed product.
+     */
+    protected function seedProduct(): Product
+    {
+        return $this->createBaseProduct('simple');
+    }
+
+    /**
+     * Seed review.
+     */
+    protected function seedReview(array $overrides = []): ProductReview
+    {
+        $this->seedRequiredData();
+        $group = CustomerGroup::where('code', 'general')->first();
+        $customer = Customer::factory()->create([
+            'customer_group_id' => $group->id,
+            'status' => 1,
+        ]);
+        $product = $this->seedProduct();
+
+        return ProductReview::factory()->create(array_merge([
+            'product_id' => $product->id,
+            'customer_id' => $customer->id,
+            'name' => $customer->first_name.' '.$customer->last_name,
+            'status' => 'pending',
+            'rating' => 4,
+        ], $overrides));
     }
 }

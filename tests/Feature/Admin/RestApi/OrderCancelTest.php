@@ -7,38 +7,30 @@ use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Sales\Models\Order;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for POST /api/admin/orders/{id}/cancel.
- */
 class OrderCancelTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    /** Find or create a cancellable order. Never returns null. */
-    protected function aCancellableOrderId(): int
-    {
-        return $this->findOrCreateCancellableOrder()->id;
-    }
-
-    /** Find or create any order. Used by tests that will flip status. */
-    protected function anyOrderId(): int
-    {
-        $id = Order::query()->value('id');
-
-        return $id ?: $this->bootstrapAdminOrder('pending', false)->id;
-    }
-
+    /**
+     * Test cancel requires authentication.
+     */
     public function test_cancel_requires_authentication(): void
     {
         $this->publicPost('/api/admin/orders/1/cancel')->assertStatus(401);
     }
 
+    /**
+     * Test cancel returns 404 for unknown order.
+     */
     public function test_cancel_returns_404_for_unknown_order(): void
     {
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/orders/999999999/cancel')->assertStatus(404);
     }
 
+    /**
+     * Test cancel rejects closed orders with 422.
+     */
     public function test_cancel_rejects_closed_orders_with_422(): void
     {
         $id = $this->anyOrderId();
@@ -51,6 +43,9 @@ class OrderCancelTest extends AdminApiTestCase
             ->toBe(trans('bagistoapi::app.admin.order.actions.cancel.closed'));
     }
 
+    /**
+     * Test cancel rejects fraud orders with 422.
+     */
     public function test_cancel_rejects_fraud_orders_with_422(): void
     {
         $id = $this->anyOrderId();
@@ -63,6 +58,9 @@ class OrderCancelTest extends AdminApiTestCase
             ->toBe(trans('bagistoapi::app.admin.order.actions.cancel.fraud'));
     }
 
+    /**
+     * Test cancel rejects when admin lacks permission.
+     */
     public function test_cancel_rejects_when_admin_lacks_permission(): void
     {
         $id = $this->aCancellableOrderId();
@@ -78,14 +76,17 @@ class OrderCancelTest extends AdminApiTestCase
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->adminTokenSameAsWeb($admin);
+        $token = $this->adminAccessToken($admin);
 
         $response = $this->adminPost($admin, '/api/admin/orders/'.$id.'/cancel', [], $token);
-        $response->assertStatus(422);
+        $response->assertStatus(403);
         expect($response->json('detail') ?? $response->json('message'))
             ->toBe(trans('bagistoapi::app.admin.order.actions.cancel.no-permission'));
     }
 
+    /**
+     * Test cancel succeeds on a cancellable order.
+     */
     public function test_cancel_succeeds_on_a_cancellable_order(): void
     {
         $id = $this->aCancellableOrderId();
@@ -95,5 +96,23 @@ class OrderCancelTest extends AdminApiTestCase
         $response->assertStatus(201);
         expect($response->json('id'))->toBe($id);
         expect($response->json('status'))->toBeIn(['canceled', 'closed']);
+    }
+
+    /**
+     * Find or create a cancellable order. Never returns null.
+     */
+    protected function aCancellableOrderId(): int
+    {
+        return $this->findOrCreateCancellableOrder()->id;
+    }
+
+    /**
+     * Find or create any order. Used by tests that will flip status.
+     */
+    protected function anyOrderId(): int
+    {
+        $id = Order::query()->value('id');
+
+        return $id ?: $this->bootstrapAdminOrder('pending', false)->id;
     }
 }

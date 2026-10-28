@@ -6,29 +6,18 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Webkul\BagistoApi\Models\StorefrontKey;
 
-/**
- * API Key Rotation Service
- *
- * Manages the complete lifecycle of API keys:
- * - Rotation with transition periods
- * - Expiration enforcement
- * - Deprecation tracking
- * - Usage monitoring
- */
 class KeyRotationService
 {
     /**
      * Rotate an API key with a transition period
-     *
-     * The old key will remain valid for a configurable period (default: 7 days)
-     * to allow clients time to update their configurations
+     * The old key will remain valid for a configurable period (default: 7 days).
      *
      * @return StorefrontKey The new key
      */
     public function rotateKey(StorefrontKey $key): StorefrontKey
     {
         if (! $key->isValid()) {
-            throw new \Exception('Cannot rotate an invalid or expired key');
+            throw new \Exception(__('bagistoapi::app.graphql.install.key-rotation-invalid-key'));
         }
 
         return $key->rotate();
@@ -36,7 +25,6 @@ class KeyRotationService
 
     /**
      * Deactivate an API key immediately
-     *
      * Used for security incidents, compromised keys, etc.
      */
     public function deactivateKey(StorefrontKey $key, ?string $reason = null): void
@@ -52,7 +40,7 @@ class KeyRotationService
     }
 
     /**
-     * Batch deactivate keys (for compromise scenarios)
+     * Batch deactivate keys (for compromise scenarios).
      *
      * @return int Number of keys deactivated
      */
@@ -73,8 +61,7 @@ class KeyRotationService
 
     /**
      * Clean up expired keys
-     *
-     * Soft-deletes expired keys for audit trail while removing them from active use
+     * Soft-deletes expired keys for audit trail while removing them from active use.
      *
      * @return int Number of keys cleaned up
      */
@@ -86,7 +73,7 @@ class KeyRotationService
 
         $count = 0;
         foreach ($expiredKeys as $key) {
-            $key->delete(); // Soft delete
+            $key->delete();
             $count++;
         }
 
@@ -102,8 +89,7 @@ class KeyRotationService
 
     /**
      * Invalidate deprecated keys that have passed their deprecation date
-     *
-     * After deprecation period, old keys are automatically disabled
+     * After deprecation period, old keys are automatically disabled.
      *
      * @return int Number of keys invalidated
      */
@@ -130,7 +116,7 @@ class KeyRotationService
     }
 
     /**
-     * Get rotation status for a key
+     * Get rotation status for a key.
      */
     public function getRotationStatus(StorefrontKey $key): array
     {
@@ -150,7 +136,7 @@ class KeyRotationService
     }
 
     /**
-     * Get keys expiring soon (within specified days)
+     * Get keys expiring soon (within specified days).
      *
      * @return Collection
      */
@@ -165,8 +151,7 @@ class KeyRotationService
 
     /**
      * Get keys unused for a long time
-     *
-     * Identifies potential unused API keys that can be reviewed for removal
+     * Identifies potential unused API keys that can be reviewed for removal.
      *
      * @return Collection
      */
@@ -182,7 +167,7 @@ class KeyRotationService
     }
 
     /**
-     * Get a summary of key rotation policy compliance
+     * Get a summary of key rotation policy compliance.
      */
     public function getPolicyComplianceSummary(): array
     {

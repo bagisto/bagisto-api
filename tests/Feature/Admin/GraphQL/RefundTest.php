@@ -11,6 +11,9 @@ class RefundTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
+    /**
+     * Test create requires authentication.
+     */
     public function test_create_requires_authentication(): void
     {
         $mutation = 'mutation($input: createAdminRefundInput!){ createAdminRefund(input:$input){ adminRefund { _id } } }';
@@ -23,6 +26,9 @@ class RefundTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeArray();
     }
 
+    /**
+     * Test preview returns totals.
+     */
     public function test_preview_returns_totals(): void
     {
         $order = Order::with('items')
@@ -33,8 +39,9 @@ class RefundTest extends AdminApiTestCase
 
         $item = $order->items->firstWhere(fn ($i) => $i->qty_to_refund > 0);
         $admin = $this->createAdmin();
+        $refundsBefore = Refund::query()->where('order_id', $order->id)->count();
 
-        $mutation = 'mutation($input: previewAdminRefundInput!){ previewAdminRefund(input:$input){ refundTotalsSummary { grandTotal subtotal } } }';
+        $mutation = 'mutation($input: previewAdminRefundInput!){ previewAdminRefund(input:$input){ adminRefund { orderId grandTotal subtotal formattedGrandTotal } } }';
         $response = $this->adminGraphQL($mutation, [
             'input' => [
                 'orderId' => $order->id,
@@ -48,14 +55,20 @@ class RefundTest extends AdminApiTestCase
             ],
         ], $admin);
 
-        $node = $response->json('data.previewAdminRefund.refundTotalsSummary');
-        if ($node) {
-            expect($node)->toHaveKey('grandTotal');
-        } else {
-            expect($response->json('errors'))->toBeArray();
-        }
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.previewAdminRefund.adminRefund');
+
+        expect($node['orderId'])->toBe($order->id);
+        expect($node['grandTotal'])->toBeGreaterThan(0);
+        expect($node['subtotal'])->toBeGreaterThan(0);
+        expect($node['formattedGrandTotal'])->toBeString()->not->toBeEmpty();
+        expect(Refund::query()->where('order_id', $order->id)->count())->toBe($refundsBefore);
     }
 
+    /**
+     * Test view refund by id.
+     */
     public function test_view_refund_by_id(): void
     {
         $id = Refund::query()->value('id') ?? $this->bootstrapOrderWithRefund()->refunds->first()->id;

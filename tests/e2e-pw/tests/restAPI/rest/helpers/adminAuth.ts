@@ -1,27 +1,29 @@
-// rest/helpers/adminAuth.ts
-//
-// Admin API authentication helper (post 2026-05-27 refactor).
-//
-// Admin endpoints authenticate via a pre-issued AdminPersonalAccessToken
-// (Webkul\BagistoApi\Admin\Auth\AdminApiGuard). The plaintext token lives in
-// the `ADMIN_INTEGRATION_TOKEN` environment variable. There is no login
-// round-trip — the token never changes during a test run, so we don't cache
-// or rotate anything. X-Admin-Key is no longer a thing for /api/admin/*.
-
+import { APIRequestContext, APIResponse } from '@playwright/test';
 import { env } from '../../config/env';
+import { AdminCredentials, currentAdminSession, withAdminSession } from '../../../fixtures/adminSession';
 
-/**
- * Return the static admin Bearer token from the environment.
- */
-export function getAdminToken(): string {
-  return env.adminIntegrationToken;
+export function adminCredentials(): AdminCredentials {
+  return {
+    baseUrl: env.baseUrl,
+    storefrontKey: env.storefrontAccessKey,
+    email: env.adminEmail,
+    password: env.adminPassword,
+  };
 }
 
-/**
- * Bearer auth headers for admin requests.
- */
-export function adminHeaders(token?: string): Record<string, string> {
+export async function getAdminToken(request: APIRequestContext): Promise<string> {
+  return (await currentAdminSession(request, adminCredentials())).accessToken;
+}
+
+export function adminHeaders(token: string): Record<string, string> {
   return {
-    'Authorization': `Bearer ${token ?? getAdminToken()}`,
+    'Authorization': `Bearer ${token}`,
   };
+}
+
+export async function withAdminToken(
+  request: APIRequestContext,
+  send: (token: string) => Promise<APIResponse>,
+): Promise<APIResponse> {
+  return withAdminSession(request, adminCredentials(), send);
 }

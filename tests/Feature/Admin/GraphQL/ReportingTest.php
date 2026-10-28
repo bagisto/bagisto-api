@@ -6,6 +6,9 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class ReportingTest extends AdminApiTestCase
 {
+    /**
+     * Test overview query.
+     */
     public function test_overview_query(): void
     {
         $admin = $this->createAdmin();
@@ -21,6 +24,9 @@ class ReportingTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test sales query.
+     */
     public function test_sales_query(): void
     {
         $admin = $this->createAdmin();
@@ -36,6 +42,9 @@ class ReportingTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test sales by coupon query.
+     */
     public function test_sales_by_coupon_query(): void
     {
         $admin = $this->createAdmin();
@@ -52,6 +61,9 @@ class ReportingTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test customers query.
+     */
     public function test_customers_query(): void
     {
         $admin = $this->createAdmin();
@@ -67,6 +79,9 @@ class ReportingTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test products query.
+     */
     public function test_products_query(): void
     {
         $admin = $this->createAdmin();
@@ -82,6 +97,9 @@ class ReportingTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test overview requires authentication.
+     */
     public function test_overview_requires_authentication(): void
     {
         $query = 'query { statsAdminReportingOverview { entity } }';
@@ -93,10 +111,7 @@ class ReportingTest extends AdminApiTestCase
 
     /**
      * Bug 1 regression — selecting `dateRange` / `statistics` on any of the 4
-     * reporting subpage queries used to crash with HTTP 500 because the
-     * resources declared `?string $dateRange` while the helper returns an
-     * array `{previous,current}`. Selecting full field set must work for
-     * every subpage now.
+     * reporting subpage queries used to crash with HTTP 500 because the.
      */
     public function test_top_selling_query_does_not_return_internal_server_error_for_each_subpage(): void
     {
@@ -120,6 +135,9 @@ class ReportingTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test date range resolves over graphql.
+     */
     public function test_date_range_resolves_over_graphql(): void
     {
         $admin = $this->createAdmin();
@@ -131,6 +149,9 @@ class ReportingTest extends AdminApiTestCase
         expect($response->json('data.statsAdminReportingSales.dateRange'))->not->toBeNull();
     }
 
+    /**
+     * Test view stats queries resolve.
+     */
     public function test_view_stats_queries_resolve(): void
     {
         $admin = $this->createAdmin();
@@ -157,6 +178,9 @@ class ReportingTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test view stats requires authentication.
+     */
     public function test_view_stats_requires_authentication(): void
     {
         $query = 'query { viewStatsAdminReportingSales { entity } }';

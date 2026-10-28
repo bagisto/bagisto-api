@@ -23,7 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDuplicateProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Copy a section',
-                description: 'Copies a section and its content into the same theme and channel. The copy is created switched off. Read the copy back with the section endpoint.',
+                description: 'Copies a section and its content into the same theme and channel. The copy is created switched off. Read the copy back with the section endpoint. Needs the `appearance.sections.create` permission; a footer links section cannot be copied (422), as a channel holds only one.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Section ID to copy', true, schema: ['type' => 'integer']),
                 ],
@@ -36,11 +36,13 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDuplicateProcessor;
                                 'type' => 'object',
                                 'properties' => new \ArrayObject,
                             ],
+
+                            'example' => new \stdClass,
                         ],
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'Section copied.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -52,6 +54,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDuplicateProcessor;
                         ]),
                     ),
                     '404' => new Model\Response(description: 'Section not found.'),
+                    '422' => new Model\Response(description: 'The section is the footer links section, which cannot be copied.'),
                 ],
             ),
         ),
@@ -68,14 +71,29 @@ class AdminAppearanceSectionDuplicate
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The section id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $section_id = null;
 
+    /**
+     * The source id.
+     */
     public ?int $source_id = null;
 
+    /**
+     * The name.
+     */
     public ?string $name = null;
 
+    /**
+     * The type.
+     */
     public ?string $type = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

@@ -11,18 +11,18 @@ use Webkul\Product\Models\ProductImageTranslation;
 use Webkul\Theme\Models\Section;
 use Webkul\Theme\Repositories\SectionRepository;
 
-/**
- * What the installed Bagisto core can do. Every version-dependent branch reads this.
- *
- * BACKWARD COMPATIBILITY: remove this class, and its callers, when the minimum
- * supported core is 2.4.10.
- */
 class CoreCapabilities
 {
-    /** @var array<string, bool> */
+    /**
+     * Capability probe results, keyed by capability name.
+     *
+     * @var array<string, bool>
+     */
     protected array $resolved = [];
 
-    /** Theme customizations became theme sections in 2.4.10. */
+    /**
+     * Theme customizations became theme sections in 2.4.10.
+     */
     public function hasAppearanceSections(): bool
     {
         return $this->remember(
@@ -32,7 +32,9 @@ class CoreCapabilities
         );
     }
 
-    /** Product images carry a translated `alt_text` from 2.4.10. */
+    /**
+     * Product images carry a translated `alt_text` from 2.4.10.
+     */
     public function hasProductImageAltText(): bool
     {
         return $this->remember(
@@ -41,7 +43,9 @@ class CoreCapabilities
         );
     }
 
-    /** `product_flat` gained derived columns in 2.4.10. */
+    /**
+     * `product_flat` gained derived columns in 2.4.10.
+     */
     public function hasProductFlatDerivedColumns(): bool
     {
         return $this->remember(
@@ -50,7 +54,9 @@ class CoreCapabilities
         );
     }
 
-    /** An attribute's `regex` is validated by a core rule from 2.4.10. */
+    /**
+     * An attribute's `regex` is validated by a core rule from 2.4.10.
+     */
     public function hasAttributeRegexRule(): bool
     {
         return $this->remember(
@@ -59,7 +65,9 @@ class CoreCapabilities
         );
     }
 
-    /** From 2.4.10 an attribute family is protected by its code, not by being the last one. */
+    /**
+     * From 2.4.10 an attribute family is protected by its code, not by being the last one.
+     */
     public function hasDefaultAttributeFamilyCode(): bool
     {
         return $this->remember(
@@ -68,7 +76,9 @@ class CoreCapabilities
         );
     }
 
-    /** Email templates and marketing events expose their campaigns from 2.4.10. */
+    /**
+     * Email templates and marketing events expose their campaigns from 2.4.10.
+     */
     public function hasCampaignRelations(): bool
     {
         return $this->remember(
@@ -77,13 +87,17 @@ class CoreCapabilities
         );
     }
 
-    /** Reporting only — prefer a capability above. */
+    /**
+     * Reporting only — prefer a capability above.
+     */
     public function version(): string
     {
         return (string) core()->version();
     }
 
     /**
+     * Run a capability probe once and cache its result under the given key.
+     *
      * @param  callable(): bool  $probe
      */
     protected function remember(string $key, callable $probe): bool
@@ -91,7 +105,9 @@ class CoreCapabilities
         return $this->resolved[$key] ??= (bool) $probe();
     }
 
-    /** A schema read is unavailable during install and while migrations run. */
+    /**
+     * A schema read is unavailable during install and while migrations run.
+     */
     protected function hasColumn(string $table, string $column): bool
     {
         try {

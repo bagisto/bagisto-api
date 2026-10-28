@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Customer;
@@ -14,8 +15,478 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerDownloadableProductTest extends GraphQLTestCase
 {
+    // ============================================================================
+    // Collection Queries
+    // ============================================================================
+
     /**
-     * Create test data — customer with downloadable product purchases
+     * Test: Query all customer downloadable products collection.
+     */
+    public function test_get_customer_downloadable_products_collection(): void
+    {
+        $testData = $this->createTestData();
+
+        $query = <<<'GQL'
+            query getCustomerDownloadableProducts {
+              customerDownloadableProducts(first: 10) {
+                edges {
+                  cursor
+                  node {
+                    _id
+                    productName
+                    name
+                    fileName
+                    type
+                    downloadBought
+                    downloadUsed
+                    downloadCanceled
+                    status
+                    createdAt
+                  }
+                }
+                pageInfo {
+                  endCursor
+                  startCursor
+                  hasNextPage
+                  hasPreviousPage
+                }
+                totalCount
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
+
+        $response->assertOk();
+        $data = $response->json('data.customerDownloadableProducts');
+
+        expect($data['totalCount'])->toBeGreaterThanOrEqual(3);
+        expect($data['edges'])->not()->toBeEmpty();
+    }
+
+    /**
+     * Test: Unauthenticated request returns error.
+     */
+    public function test_get_customer_downloadable_products_requires_authentication(): void
+    {
+        $query = <<<'GQL'
+            query getCustomerDownloadableProducts {
+              customerDownloadableProducts(first: 5) {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query);
+
+        $response->assertOk();
+        $errors = $response->json('errors');
+
+        expect($errors)->not()->toBeEmpty();
+    }
+
+    /**
+     * Test: Customer only sees their own downloadable products.
+     */
+    public function test_customer_only_sees_own_downloadable_products(): void
+    {
+        $testData = $this->createTestData();
+
+        $otherCustomer = $this->createCustomer();
+        $channel = Channel::first();
+
+        $otherOrder = Order::factory()->create([
+            'customer_id' => $otherCustomer->id,
+            'customer_email' => $otherCustomer->email,
+            'customer_first_name' => $otherCustomer->first_name,
+            'customer_last_name' => $otherCustomer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
+        ]);
+
+        $product = Product::factory()->create();
+
+        OrderItem::factory()->create([
+            'order_id' => $otherOrder->id,
+            'product_id' => $product->id,
+            'sku' => 'OTHER-DOWNLOAD',
+            'type' => 'downloadable',
+            'name' => 'Other Download',
+        ]);
+
+        DownloadableLinkPurchased::create([
+            'product_name' => 'Other Download',
+            'name' => 'Other Link',
+            'type' => 'file',
+            'file' => 'downloadable/other.pdf',
+            'file_name' => 'other.pdf',
+            'download_bought' => 5,
+            'download_used' => 0,
+            'status' => 'available',
+            'customer_id' => $otherCustomer->id,
+            'order_id' => $otherOrder->id,
+            'order_item_id' => $otherOrder->items->first()->id,
+            'download_canceled' => 0,
+        ]);
+
+        $query = <<<'GQL'
+            query getCustomerDownloadableProducts {
+              customerDownloadableProducts(first: 50) {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+                totalCount
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
+
+        $response->assertOk();
+        $data = $response->json('data.customerDownloadableProducts');
+
+        expect($data['totalCount'])->toBe(3);
+    }
+
+    /**
+     * Test: Filter downloadable products by status.
+     */
+    public function test_filter_downloadable_products_by_status(): void
+    {
+        $testData = $this->createTestData();
+
+        $query = <<<'GQL'
+            query getCustomerDownloadableProducts($status: String) {
+              customerDownloadableProducts(first: 10, status: $status) {
+                edges {
+                  node {
+                    _id
+                    status
+                  }
+                }
+                totalCount
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $query, ['status' => 'available']);
+
+        $response->assertOk();
+        $data = $response->json('data.customerDownloadableProducts');
+
+        expect($data['totalCount'])->toBe(1);
+        expect($data['edges'][0]['node']['status'])->toBe('available');
+    }
+
+    /**
+     * Test: Filter downloadable products by expired status.
+     */
+    public function test_filter_downloadable_products_by_expired_status(): void
+    {
+        $testData = $this->createTestData();
+
+        $query = <<<'GQL'
+            query getCustomerDownloadableProducts($status: String) {
+              customerDownloadableProducts(first: 10, status: $status) {
+                edges {
+                  node {
+                    _id
+                    status
+                  }
+                }
+                totalCount
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $query, ['status' => 'expired']);
+
+        $response->assertOk();
+        $data = $response->json('data.customerDownloadableProducts');
+
+        expect($data['totalCount'])->toBe(1);
+        expect($data['edges'][0]['node']['status'])->toBe('expired');
+    }
+
+    /**
+     * Test: Cursor-based pagination works.
+     */
+    public function test_cursor_pagination(): void
+    {
+        $testData = $this->createTestData();
+
+        $query = <<<'GQL'
+            query getCustomerDownloadableProducts {
+              customerDownloadableProducts(first: 1) {
+                edges {
+                  cursor
+                  node {
+                    _id
+                  }
+                }
+                pageInfo {
+                  endCursor
+                  hasNextPage
+                }
+                totalCount
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
+
+        $response->assertOk();
+        $data = $response->json('data.customerDownloadableProducts');
+
+        expect($data['totalCount'])->toBeGreaterThanOrEqual(3);
+        expect($data['edges'])->toHaveCount(1);
+        expect($data['pageInfo']['hasNextPage'])->toBeTrue();
+
+        $cursor = $data['pageInfo']['endCursor'];
+
+        $nextQuery = <<<GQL
+            query getCustomerDownloadableProducts {
+              customerDownloadableProducts(first: 1, after: "$cursor") {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+                pageInfo {
+                  hasNextPage
+                }
+                totalCount
+              }
+            }
+        GQL;
+
+        $nextResponse = $this->authenticatedGraphQL($testData['customer'], $nextQuery);
+
+        $nextResponse->assertOk();
+        $nextData = $nextResponse->json('data.customerDownloadableProducts');
+
+        expect($nextData['edges'])->toHaveCount(1);
+    }
+
+    /**
+     * Test: Query single item by ID.
+     */
+    public function test_get_single_downloadable_product(): void
+    {
+        $testData = $this->createTestData();
+
+        $query = <<<GQL
+            query getCustomerDownloadableProduct {
+              customerDownloadableProduct(id: "/api/shop/customer-downloadable-products/{$testData['purchase1']->id}") {
+                _id
+                productName
+                name
+                fileName
+                type
+                downloadBought
+                downloadUsed
+                status
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
+
+        $response->assertOk();
+        $data = $response->json('data.customerDownloadableProduct');
+
+        expect($data)->not()->toBeNull();
+        expect($data['productName'])->toBe('Downloadable Test Product');
+        expect($data['name'])->toBe('Download Link 1');
+        expect($data['type'])->toBe('file');
+        expect($data['status'])->toBe('available');
+    }
+
+    /**
+     * Test other customer cannot get downloadable product by id.
+     */
+    public function test_other_customer_cannot_get_downloadable_product_by_id(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer();
+
+        $query = <<<GQL
+            query getCustomerDownloadableProduct {
+              customerDownloadableProduct(id: "/api/shop/customer-downloadable-products/{$testData['purchase1']->id}") {
+                _id
+                name
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($otherCustomer, $query);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not()->toBeEmpty();
+        expect($response->json('data.customerDownloadableProduct'))->toBeNull();
+    }
+
+    /**
+     * Test guest cannot get downloadable product by id.
+     */
+    public function test_guest_cannot_get_downloadable_product_by_id(): void
+    {
+        $testData = $this->createTestData();
+
+        $query = <<<GQL
+            query getCustomerDownloadableProduct {
+              customerDownloadableProduct(id: "/api/shop/customer-downloadable-products/{$testData['purchase1']->id}") {
+                _id
+                name
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not()->toBeEmpty();
+        expect($response->json('data.customerDownloadableProduct'))->toBeNull();
+    }
+
+    /**
+     * Test: Customer with no downloadable products returns empty collection.
+     */
+    public function test_customer_with_no_downloadable_products_returns_empty(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $query = <<<'GQL'
+            query getCustomerDownloadableProducts {
+              customerDownloadableProducts(first: 10) {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+                totalCount
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $query);
+
+        $response->assertOk();
+        $data = $response->json('data.customerDownloadableProducts');
+
+        expect($data['totalCount'])->toBe(0);
+        expect($data['edges'])->toBeEmpty();
+    }
+
+    /**
+     * Generating a download link for an invoiced purchase returns its download URL without counting a download.
+     */
+    public function test_create_download_link_returns_the_download_url_without_counting_a_download(): void
+    {
+        $testData = $this->createTestData();
+        $this->invoiceOrder($testData['order']);
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $this->createDownloadLinkMutation(), [
+            'id' => $testData['purchase1']->id,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $link = $response->json('data.createDownloadableProductDownloadLink.downloadableProductDownloadLink');
+
+        expect($link['id'])->not->toBeNull();
+        expect($link['url'])->toContain('/api/shop/customer-downloadable-products/'.$testData['purchase1']->id.'/download');
+        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(1);
+    }
+
+    /**
+     * Following the generated download link counts exactly one download.
+     */
+    public function test_following_the_generated_download_link_counts_one_download(): void
+    {
+        Storage::fake('private');
+
+        $testData = $this->createTestData();
+
+        Storage::disk('private')->put('downloadable/test-file.pdf', 'purchased-file-body');
+
+        $this->invoiceOrder($testData['order']);
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $this->createDownloadLinkMutation(), [
+            'id' => $testData['purchase1']->id,
+        ]);
+
+        $url = $response->json('data.createDownloadableProductDownloadLink.downloadableProductDownloadLink.url');
+
+        $download = $this->withHeaders($this->authHeaders($testData['customer']))->get($url);
+
+        $download->assertOk();
+
+        expect($download->streamedContent())->toBe('purchased-file-body');
+        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(2);
+    }
+
+    /**
+     * A customer cannot generate a download link for another customer's purchase.
+     */
+    public function test_create_download_link_for_another_customers_purchase_is_refused(): void
+    {
+        $testData = $this->createTestData();
+        $this->invoiceOrder($testData['order']);
+
+        $otherCustomer = $this->createCustomer();
+
+        $response = $this->authenticatedGraphQL($otherCustomer, $this->createDownloadLinkMutation(), [
+            'id' => $testData['purchase1']->id,
+        ]);
+
+        expect($response->json('errors'))->not->toBeEmpty();
+        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(1);
+    }
+
+    /**
+     * A guest cannot generate a download link.
+     */
+    public function test_create_download_link_requires_authentication(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->graphQL($this->createDownloadLinkMutation(), [
+            'id' => $testData['purchase1']->id,
+        ]);
+
+        expect($response->json('errors'))->not->toBeEmpty();
+        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(1);
+    }
+
+    /**
+     * A purchase still waiting for its invoice cannot get a download link.
+     */
+    public function test_create_download_link_for_a_pending_purchase_is_refused(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $this->createDownloadLinkMutation(), [
+            'id' => $testData['purchase3']->id,
+        ]);
+
+        expect($response->json('errors'))->not->toBeEmpty();
+        expect((string) $response->json('errors.0.message'))->toContain('pending');
+        expect((int) $testData['purchase3']->fresh()->download_used)->toBe(0);
+    }
+
+    /**
+     * Create test data — customer with downloadable product purchases.
      */
     private function createTestData(): array
     {
@@ -97,444 +568,6 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
         return compact('customer', 'channel', 'product', 'order', 'purchase1', 'purchase2', 'purchase3');
     }
 
-    // ── Collection Queries ────────────────────────────────────
-
-    /**
-     * Test: Query all customer downloadable products collection
-     */
-    public function test_get_customer_downloadable_products_collection(): void
-    {
-        $testData = $this->createTestData();
-
-        $query = <<<'GQL'
-            query getCustomerDownloadableProducts {
-              customerDownloadableProducts(first: 10) {
-                edges {
-                  cursor
-                  node {
-                    _id
-                    productName
-                    name
-                    fileName
-                    type
-                    downloadBought
-                    downloadUsed
-                    downloadCanceled
-                    status
-                    createdAt
-                  }
-                }
-                pageInfo {
-                  endCursor
-                  startCursor
-                  hasNextPage
-                  hasPreviousPage
-                }
-                totalCount
-              }
-            }
-        GQL;
-
-        $response = $this->authenticatedGraphQL($testData['customer'], $query);
-
-        $response->assertOk();
-        $data = $response->json('data.customerDownloadableProducts');
-
-        expect($data['totalCount'])->toBeGreaterThanOrEqual(3);
-        expect($data['edges'])->not()->toBeEmpty();
-    }
-
-    /**
-     * Test: Unauthenticated request returns error
-     */
-    public function test_get_customer_downloadable_products_requires_authentication(): void
-    {
-        $query = <<<'GQL'
-            query getCustomerDownloadableProducts {
-              customerDownloadableProducts(first: 5) {
-                edges {
-                  node {
-                    _id
-                  }
-                }
-              }
-            }
-        GQL;
-
-        $response = $this->graphQL($query);
-
-        $response->assertOk();
-        $errors = $response->json('errors');
-
-        expect($errors)->not()->toBeEmpty();
-    }
-
-    /**
-     * Test: Customer only sees their own downloadable products
-     */
-    public function test_customer_only_sees_own_downloadable_products(): void
-    {
-        $testData = $this->createTestData();
-
-        /** Create another customer with their own downloadable purchase */
-        $otherCustomer = $this->createCustomer();
-        $channel = Channel::first();
-
-        $otherOrder = Order::factory()->create([
-            'customer_id' => $otherCustomer->id,
-            'customer_email' => $otherCustomer->email,
-            'customer_first_name' => $otherCustomer->first_name,
-            'customer_last_name' => $otherCustomer->last_name,
-            'channel_id' => $channel->id,
-            'status' => 'completed',
-        ]);
-
-        $product = Product::factory()->create();
-
-        OrderItem::factory()->create([
-            'order_id' => $otherOrder->id,
-            'product_id' => $product->id,
-            'sku' => 'OTHER-DOWNLOAD',
-            'type' => 'downloadable',
-            'name' => 'Other Download',
-        ]);
-
-        DownloadableLinkPurchased::create([
-            'product_name' => 'Other Download',
-            'name' => 'Other Link',
-            'type' => 'file',
-            'file' => 'downloadable/other.pdf',
-            'file_name' => 'other.pdf',
-            'download_bought' => 5,
-            'download_used' => 0,
-            'status' => 'available',
-            'customer_id' => $otherCustomer->id,
-            'order_id' => $otherOrder->id,
-            'order_item_id' => $otherOrder->items->first()->id,
-            'download_canceled' => 0,
-        ]);
-
-        $query = <<<'GQL'
-            query getCustomerDownloadableProducts {
-              customerDownloadableProducts(first: 50) {
-                edges {
-                  node {
-                    _id
-                  }
-                }
-                totalCount
-              }
-            }
-        GQL;
-
-        $response = $this->authenticatedGraphQL($testData['customer'], $query);
-
-        $response->assertOk();
-        $data = $response->json('data.customerDownloadableProducts');
-
-        /** Should only see the 3 purchases belonging to testData customer */
-        expect($data['totalCount'])->toBe(3);
-    }
-
-    /**
-     * Test: Filter downloadable products by status
-     */
-    public function test_filter_downloadable_products_by_status(): void
-    {
-        $testData = $this->createTestData();
-
-        $query = <<<'GQL'
-            query getCustomerDownloadableProducts($status: String) {
-              customerDownloadableProducts(first: 10, status: $status) {
-                edges {
-                  node {
-                    _id
-                    status
-                  }
-                }
-                totalCount
-              }
-            }
-        GQL;
-
-        /** Filter for 'available' — should get 1 result */
-        $response = $this->authenticatedGraphQL($testData['customer'], $query, ['status' => 'available']);
-
-        $response->assertOk();
-        $data = $response->json('data.customerDownloadableProducts');
-
-        expect($data['totalCount'])->toBe(1);
-        expect($data['edges'][0]['node']['status'])->toBe('available');
-    }
-
-    /**
-     * Test: Filter downloadable products by expired status
-     */
-    public function test_filter_downloadable_products_by_expired_status(): void
-    {
-        $testData = $this->createTestData();
-
-        $query = <<<'GQL'
-            query getCustomerDownloadableProducts($status: String) {
-              customerDownloadableProducts(first: 10, status: $status) {
-                edges {
-                  node {
-                    _id
-                    status
-                  }
-                }
-                totalCount
-              }
-            }
-        GQL;
-
-        $response = $this->authenticatedGraphQL($testData['customer'], $query, ['status' => 'expired']);
-
-        $response->assertOk();
-        $data = $response->json('data.customerDownloadableProducts');
-
-        expect($data['totalCount'])->toBe(1);
-        expect($data['edges'][0]['node']['status'])->toBe('expired');
-    }
-
-    /**
-     * Test: Cursor-based pagination works
-     */
-    public function test_cursor_pagination(): void
-    {
-        $testData = $this->createTestData();
-
-        $query = <<<'GQL'
-            query getCustomerDownloadableProducts {
-              customerDownloadableProducts(first: 1) {
-                edges {
-                  cursor
-                  node {
-                    _id
-                  }
-                }
-                pageInfo {
-                  endCursor
-                  hasNextPage
-                }
-                totalCount
-              }
-            }
-        GQL;
-
-        $response = $this->authenticatedGraphQL($testData['customer'], $query);
-
-        $response->assertOk();
-        $data = $response->json('data.customerDownloadableProducts');
-
-        expect($data['totalCount'])->toBeGreaterThanOrEqual(3);
-        expect($data['edges'])->toHaveCount(1);
-        expect($data['pageInfo']['hasNextPage'])->toBeTrue();
-
-        /** Fetch next page using the endCursor */
-        $cursor = $data['pageInfo']['endCursor'];
-
-        $nextQuery = <<<GQL
-            query getCustomerDownloadableProducts {
-              customerDownloadableProducts(first: 1, after: "$cursor") {
-                edges {
-                  node {
-                    _id
-                  }
-                }
-                pageInfo {
-                  hasNextPage
-                }
-                totalCount
-              }
-            }
-        GQL;
-
-        $nextResponse = $this->authenticatedGraphQL($testData['customer'], $nextQuery);
-
-        $nextResponse->assertOk();
-        $nextData = $nextResponse->json('data.customerDownloadableProducts');
-
-        expect($nextData['edges'])->toHaveCount(1);
-    }
-
-    /**
-     * Test: Query single item by ID
-     */
-    public function test_get_single_downloadable_product(): void
-    {
-        $testData = $this->createTestData();
-
-        $query = <<<GQL
-            query getCustomerDownloadableProduct {
-              customerDownloadableProduct(id: "/api/shop/customer-downloadable-products/{$testData['purchase1']->id}") {
-                _id
-                productName
-                name
-                fileName
-                type
-                downloadBought
-                downloadUsed
-                status
-              }
-            }
-        GQL;
-
-        $response = $this->authenticatedGraphQL($testData['customer'], $query);
-
-        $response->assertOk();
-        $data = $response->json('data.customerDownloadableProduct');
-
-        expect($data)->not()->toBeNull();
-        expect($data['productName'])->toBe('Downloadable Test Product');
-        expect($data['name'])->toBe('Download Link 1');
-        expect($data['type'])->toBe('file');
-        expect($data['status'])->toBe('available');
-    }
-
-    public function test_other_customer_cannot_get_downloadable_product_by_id(): void
-    {
-        $testData = $this->createTestData();
-        $otherCustomer = $this->createCustomer();
-
-        $query = <<<GQL
-            query getCustomerDownloadableProduct {
-              customerDownloadableProduct(id: "/api/shop/customer-downloadable-products/{$testData['purchase1']->id}") {
-                _id
-                name
-              }
-            }
-        GQL;
-
-        $response = $this->authenticatedGraphQL($otherCustomer, $query);
-
-        $response->assertOk();
-
-        expect($response->json('errors'))->not()->toBeEmpty();
-        expect($response->json('data.customerDownloadableProduct'))->toBeNull();
-    }
-
-    public function test_guest_cannot_get_downloadable_product_by_id(): void
-    {
-        $testData = $this->createTestData();
-
-        $query = <<<GQL
-            query getCustomerDownloadableProduct {
-              customerDownloadableProduct(id: "/api/shop/customer-downloadable-products/{$testData['purchase1']->id}") {
-                _id
-                name
-              }
-            }
-        GQL;
-
-        $response = $this->graphQL($query);
-
-        $response->assertOk();
-
-        expect($response->json('errors'))->not()->toBeEmpty();
-        expect($response->json('data.customerDownloadableProduct'))->toBeNull();
-    }
-
-    /**
-     * Test: Customer with no downloadable products returns empty collection
-     */
-    public function test_customer_with_no_downloadable_products_returns_empty(): void
-    {
-        $this->seedRequiredData();
-        $customer = $this->createCustomer();
-
-        $query = <<<'GQL'
-            query getCustomerDownloadableProducts {
-              customerDownloadableProducts(first: 10) {
-                edges {
-                  node {
-                    _id
-                  }
-                }
-                totalCount
-              }
-            }
-        GQL;
-
-        $response = $this->authenticatedGraphQL($customer, $query);
-
-        $response->assertOk();
-        $data = $response->json('data.customerDownloadableProducts');
-
-        expect($data['totalCount'])->toBe(0);
-        expect($data['edges'])->toBeEmpty();
-    }
-
-    /**
-     * Generating a download link for an invoiced purchase records the link and counts the download.
-     */
-    public function test_create_download_link_records_the_link_and_counts_the_download(): void
-    {
-        $testData = $this->createTestData();
-        $this->invoiceOrder($testData['order']);
-
-        $response = $this->authenticatedGraphQL($testData['customer'], $this->createDownloadLinkMutation(), [
-            'id' => $testData['purchase1']->id,
-        ]);
-
-        $response->assertOk();
-        expect($response->json('errors'))->toBeNull();
-        expect($response->json('data.createDownloadableProductDownloadLink.downloadableProductDownloadLink.id'))->not->toBeNull();
-        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(2);
-        $this->assertDatabaseHas('downloadable_product_download_links', [
-            'downloadable_link_purchased_id' => $testData['purchase1']->id,
-        ]);
-    }
-
-    /**
-     * A customer cannot generate a download link for another customer's purchase.
-     */
-    public function test_create_download_link_for_another_customers_purchase_is_refused(): void
-    {
-        $testData = $this->createTestData();
-        $this->invoiceOrder($testData['order']);
-
-        $otherCustomer = $this->createCustomer();
-
-        $response = $this->authenticatedGraphQL($otherCustomer, $this->createDownloadLinkMutation(), [
-            'id' => $testData['purchase1']->id,
-        ]);
-
-        expect($response->json('errors'))->not->toBeEmpty();
-        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(1);
-    }
-
-    /**
-     * A guest cannot generate a download link.
-     */
-    public function test_create_download_link_requires_authentication(): void
-    {
-        $testData = $this->createTestData();
-
-        $response = $this->graphQL($this->createDownloadLinkMutation(), [
-            'id' => $testData['purchase1']->id,
-        ]);
-
-        expect($response->json('errors'))->not->toBeEmpty();
-        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(1);
-    }
-
-    /**
-     * A purchase still waiting for its invoice cannot get a download link.
-     */
-    public function test_create_download_link_for_a_pending_purchase_is_refused(): void
-    {
-        $testData = $this->createTestData();
-
-        $response = $this->authenticatedGraphQL($testData['customer'], $this->createDownloadLinkMutation(), [
-            'id' => $testData['purchase3']->id,
-        ]);
-
-        expect($response->json('errors'))->not->toBeEmpty();
-        expect((string) $response->json('errors.0.message'))->toContain('pending');
-        expect((int) $testData['purchase3']->fresh()->download_used)->toBe(0);
-    }
-
     /**
      * Invoice the whole order so its purchased links become downloadable.
      */
@@ -557,6 +590,7 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
               createDownloadableProductDownloadLink(input: {downloadableLinkPurchasedId: $id}) {
                 downloadableProductDownloadLink {
                   id
+                  url
                 }
               }
             }

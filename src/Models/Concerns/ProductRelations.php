@@ -28,6 +28,9 @@ use Webkul\BagistoApi\Models\ProductVideo;
 
 trait ProductRelations
 {
+    /**
+     * Attribute values.
+     */
     public function attribute_values(): HasMany
     {
         return $this->hasMany(AttributeValue::class, 'product_id');
@@ -114,6 +117,9 @@ trait ProductRelations
             ->orderBy('position');
     }
 
+    /**
+     * The images of the product.
+     */
     #[ApiProperty(
         writable: false,
         readable: true,
@@ -126,6 +132,9 @@ trait ProductRelations
         return $this->images;
     }
 
+    /**
+     * Set images.
+     */
     public function setImages($value): void
     {
         $this->images = $value;
@@ -140,6 +149,9 @@ trait ProductRelations
             ->orderBy('position');
     }
 
+    /**
+     * The videos of the product.
+     */
     #[ApiProperty(
         writable: false,
         readable: true,
@@ -152,6 +164,9 @@ trait ProductRelations
         return $this->videos;
     }
 
+    /**
+     * Set videos.
+     */
     public function setVideos($value): void
     {
         $this->videos = $value;
@@ -166,6 +181,9 @@ trait ProductRelations
             ->orderBy('position');
     }
 
+    /**
+     * The base image of the product.
+     */
     #[ApiProperty(
         writable: false,
         readable: true,
@@ -178,6 +196,9 @@ trait ProductRelations
         return $this->base_image_url;
     }
 
+    /**
+     * Channels.
+     */
     public function channels(): BelongsToMany
     {
         return $this->belongsToMany(Channel::class, 'product_channels', 'product_id', 'channel_id');
@@ -224,6 +245,9 @@ trait ProductRelations
                 ->whereIn('parent_id', static::query()->visibleInStorefront($channelCode)->select('products.id'))));
     }
 
+    /**
+     * Get channels.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -235,16 +259,25 @@ trait ProductRelations
         return $this->channels;
     }
 
+    /**
+     * Set channels.
+     */
     public function setChannels($value): void
     {
         $this->channels = $value;
     }
 
+    /**
+     * Attribute family.
+     */
     public function attribute_family(): BelongsTo
     {
         return $this->belongsTo(AttributeFamily::class, 'attribute_family_id');
     }
 
+    /**
+     * Get attribute family.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -256,11 +289,17 @@ trait ProductRelations
         return $this->attribute_family;
     }
 
+    /**
+     * Set attribute family.
+     */
     public function setAttribute_family(?AttributeFamily $value): void
     {
         $this->attribute_family = $value;
     }
 
+    /**
+     * Get booking products attributes.
+     */
     #[ApiProperty(
         writable: true,
         readable: true,
@@ -287,6 +326,9 @@ trait ProductRelations
         $this->booking_products = $value;
     }
 
+    /**
+     * Get booking type attribute.
+     */
     public function getBookingTypeAttribute(): ?string
     {
         if ($this->type !== 'booking') {
@@ -296,6 +338,9 @@ trait ProductRelations
         return $this->booking_products->first()?->type;
     }
 
+    /**
+     * Get booking type.
+     */
     #[ApiProperty(
         writable: false,
         readable: true,
@@ -329,6 +374,9 @@ trait ProductRelations
         return $this->bundle_options;
     }
 
+    /**
+     * Set bundle options.
+     */
     public function setBundleOptions($value): void
     {
         $this->bundle_options = $value;
@@ -342,16 +390,25 @@ trait ProductRelations
         return $this->hasMany(ProductBundleOption::class);
     }
 
+    /**
+     * Grouped products.
+     */
     public function grouped_products(): HasMany
     {
         return $this->hasMany(ProductGroupedProduct::class, 'product_id');
     }
 
+    /**
+     * Downloadable links.
+     */
     public function downloadable_links(): HasMany
     {
         return $this->hasMany(ProductDownloadableLink::class, 'product_id');
     }
 
+    /**
+     * Downloadable samples.
+     */
     public function downloadable_samples(): HasMany
     {
         return $this->hasMany(ProductDownloadableSample::class, 'product_id');
@@ -371,6 +428,9 @@ trait ProductRelations
         return $this->downloadable_samples;
     }
 
+    /**
+     * Set downloadable samples.
+     */
     public function setDownloadableSamples($value): void
     {
         $this->downloadable_samples = $value;
@@ -401,16 +461,25 @@ trait ProductRelations
             ->get();
     }
 
+    /**
+     * Set customizable options.
+     */
     public function setCustomizable_options($value): void
     {
         $this->customizable_options = $value;
     }
 
+    /**
+     * Approved reviews.
+     */
     public function approved_reviews(): HasMany
     {
         return $this->approvedReviews();
     }
 
+    /**
+     * Get reviews.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getReviews()
     {
@@ -445,11 +514,17 @@ trait ProductRelations
         return $this->hasMany(ProductReview::class);
     }
 
+    /**
+     * Related products.
+     */
     public function related_products(): BelongsToMany
     {
         return $this->belongsToMany(static::class, 'product_relations', 'parent_id', 'child_id');
     }
 
+    /**
+     * Get related products.
+     */
     #[ApiProperty(writable: true, readable: true, required: false)]
     public function getRelatedProducts()
     {
@@ -473,11 +548,17 @@ trait ProductRelations
         };
     }
 
+    /**
+     * Up sells.
+     */
     public function up_sells(): BelongsToMany
     {
         return $this->belongsToMany(static::class, 'product_up_sells', 'parent_id', 'child_id');
     }
 
+    /**
+     * Get up sells.
+     */
     #[ApiProperty(writable: true, readable: true, required: false)]
     public function getUpSells()
     {
@@ -499,11 +580,17 @@ trait ProductRelations
         };
     }
 
+    /**
+     * Cross sells.
+     */
     public function cross_sells(): BelongsToMany
     {
         return $this->belongsToMany(static::class, 'product_cross_sells', 'parent_id', 'child_id');
     }
 
+    /**
+     * Get cross sells.
+     */
     #[ApiProperty(writable: true, readable: true, required: false)]
     public function getCrossSells()
     {

@@ -6,10 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Product customer-group price — nested sub-resource of AdminCatalogProduct
- * (`customerGroupPrices` connection).
- */
 #[ApiResource(
     shortName: 'AdminProductDetailCgp',
     operations: [],
@@ -18,22 +14,36 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminProductDetailCgp extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the product customer group prices.
+     *
+     * @var string
+     */
     protected $table = 'product_customer_group_prices';
 
-    /** @var array */
+    /**
+     * The native types the customer group price attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'customer_group_id' => 'int',
         'qty' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get value.
+     */
     #[ApiProperty(writable: false)]
     public function getValue(): ?string
     {

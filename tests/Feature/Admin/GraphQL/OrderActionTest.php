@@ -9,27 +9,13 @@ use Webkul\Core\Models\CoreConfig;
 use Webkul\Sales\Models\Order;
 use Webkul\User\Models\Role;
 
-/**
- * GraphQL coverage for the per-order admin actions — starting with Reorder.
- */
 class OrderActionTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    protected function aReorderableOrderId(): int
-    {
-        $admin = $this->createAdmin();
-        $rows = $this->adminGet($admin, '/api/admin/orders?per_page=20')->json('data');
-
-        foreach ($rows ?? [] as $row) {
-            if (! ($row['isGuest'] ?? true)) {
-                return $row['id'];
-            }
-        }
-
-        return $this->bootstrapAdminOrder('pending', false)->id;
-    }
-
+    /**
+     * Test reorder mutation creates a draft cart.
+     */
     public function test_reorder_mutation_creates_a_draft_cart(): void
     {
         $id = $this->aReorderableOrderId();
@@ -60,6 +46,9 @@ class OrderActionTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test reorder mutation requires authentication.
+     */
     public function test_reorder_mutation_requires_authentication(): void
     {
         $mutation = <<<'GQL'
@@ -77,21 +66,9 @@ class OrderActionTest extends AdminApiTestCase
         expect($response->json('errors'))->not->toBeNull();
     }
 
-    protected function runReorder(int $orderId, $admin = null, ?string $token = null)
-    {
-        $mutation = <<<'GQL'
-            mutation reorder($input: createAdminReorderInput!) {
-              createAdminReorder(input: $input) {
-                adminReorder { success message cartId }
-              }
-            }
-        GQL;
-
-        return $this->adminGraphQL($mutation, [
-            'input' => ['orderId' => '/api/admin/orders/'.$orderId],
-        ], $admin, $token);
-    }
-
+    /**
+     * Test reorder mutation rejects guest orders.
+     */
     public function test_reorder_mutation_rejects_guest_orders(): void
     {
         $admin = $this->createAdmin();
@@ -119,6 +96,9 @@ class OrderActionTest extends AdminApiTestCase
         expect($errors[0]['message'])->toBe(trans('bagistoapi::app.admin.order.reorder.guest-not-supported'));
     }
 
+    /**
+     * Test reorder mutation rejects when items not saleable.
+     */
     public function test_reorder_mutation_rejects_when_items_not_saleable(): void
     {
         $admin = $this->createAdmin();
@@ -149,6 +129,9 @@ class OrderActionTest extends AdminApiTestCase
         expect($errors[0]['message'])->toBe(trans('bagistoapi::app.admin.order.reorder.items-not-saleable'));
     }
 
+    /**
+     * Test reorder mutation rejects when admin lacks permission.
+     */
     public function test_reorder_mutation_rejects_when_admin_lacks_permission(): void
     {
         $id = $this->aReorderableOrderId() ?? Order::where('is_guest', 0)->value('id');
@@ -164,7 +147,7 @@ class OrderActionTest extends AdminApiTestCase
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->adminTokenSameAsWeb($admin);
+        $token = $this->adminAccessToken($admin);
 
         $response = $this->runReorder($id, $admin, $token);
         $errors = $response->json('errors');
@@ -173,6 +156,9 @@ class OrderActionTest extends AdminApiTestCase
         expect($errors[0]['message'])->toBe(trans('bagistoapi::app.admin.order.reorder.no-permission'));
     }
 
+    /**
+     * Test reorder mutation rejects when disabled in settings.
+     */
     public function test_reorder_mutation_rejects_when_disabled_in_settings(): void
     {
         $admin = $this->createAdmin();
@@ -190,5 +176,40 @@ class OrderActionTest extends AdminApiTestCase
 
         expect($errors)->not->toBeNull();
         expect($errors[0]['message'])->toBe(trans('bagistoapi::app.admin.order.reorder.disabled-in-settings'));
+    }
+
+    /**
+     * A reorderable order id.
+     */
+    protected function aReorderableOrderId(): int
+    {
+        $admin = $this->createAdmin();
+        $rows = $this->adminGet($admin, '/api/admin/orders?per_page=20')->json('data');
+
+        foreach ($rows ?? [] as $row) {
+            if (! ($row['isGuest'] ?? true)) {
+                return $row['id'];
+            }
+        }
+
+        return $this->bootstrapAdminOrder('pending', false)->id;
+    }
+
+    /**
+     * Run reorder.
+     */
+    protected function runReorder(int $orderId, $admin = null, ?string $token = null)
+    {
+        $mutation = <<<'GQL'
+            mutation reorder($input: createAdminReorderInput!) {
+              createAdminReorder(input: $input) {
+                adminReorder { success message cartId }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, [
+            'input' => ['orderId' => '/api/admin/orders/'.$orderId],
+        ], $admin, $token);
     }
 }

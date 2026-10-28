@@ -4,56 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * GraphQL coverage for the admin Settings → Inventory Sources endpoints
- * (Block B Wave 1).
- */
 class SettingsInventorySourceTest extends AdminApiTestCase
 {
-    protected function insertInventorySource(array $overrides = []): int
-    {
-        return \DB::table('inventory_sources')->insertGetId(array_merge([
-            'code' => 'gqs-'.str_replace('.', '', uniqid('', true)),
-            'name' => 'GQL Source '.rand(100, 999),
-            'description' => null,
-            'contact_name' => 'Jane',
-            'contact_email' => 'jane'.rand(100, 999).'@example.com',
-            'contact_number' => '5550001111',
-            'contact_fax' => null,
-            'country' => 'US',
-            'state' => 'CA',
-            'city' => 'Los Angeles',
-            'street' => '123 Main St',
-            'postcode' => '90001',
-            'priority' => 0,
-            'latitude' => null,
-            'longitude' => null,
-            'status' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function validPayload(array $overrides = []): array
-    {
-        return array_merge([
-            'code' => 'gqlnew-'.rand(1000, 9999),
-            'name' => 'New GQL Source',
-            'description' => null,
-            'contactName' => 'GQL Admin',
-            'contactEmail' => 'gql'.rand(100, 999).'@example.com',
-            'contactNumber' => '5559998888',
-            'contactFax' => null,
-            'country' => 'US',
-            'state' => 'CA',
-            'city' => 'LA',
-            'street' => '99 GQL St',
-            'postcode' => '90099',
-            'priority' => 0,
-            'status' => 1,
-        ], $overrides);
-    }
-
+    /**
+     * Test query listing returns seeded row.
+     */
     public function test_query_listing_returns_seeded_row(): void
     {
         $admin = $this->createAdmin();
@@ -78,6 +33,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test query listing filter by code.
+     */
     public function test_query_listing_filter_by_code(): void
     {
         $admin = $this->createAdmin();
@@ -103,6 +61,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test query listing requires auth.
+     */
     public function test_query_listing_requires_auth(): void
     {
         $query = <<<'GQL'
@@ -114,6 +75,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test query detail returns row.
+     */
     public function test_query_detail_returns_row(): void
     {
         $admin = $this->createAdmin();
@@ -131,6 +95,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->json('data.adminSettingsInventorySource._id'))->toBe($id);
     }
 
+    /**
+     * Test query detail multiword fields resolve over graphql.
+     */
     public function test_query_detail_multiword_fields_resolve_over_graphql(): void
     {
         $admin = $this->createAdmin();
@@ -170,6 +137,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($node['updatedAt'])->not->toBeNull();
     }
 
+    /**
+     * Test query detail unknown id returns error.
+     */
     public function test_query_detail_unknown_id_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -189,6 +159,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($errors !== null || $dataNull)->toBeTrue();
     }
 
+    /**
+     * Test mutation create happy path.
+     */
     public function test_mutation_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -207,6 +180,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect(\DB::table('inventory_sources')->where('code', $payload['code'])->exists())->toBeTrue();
     }
 
+    /**
+     * Test mutation create duplicate code returns error.
+     */
     public function test_mutation_create_duplicate_code_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -227,6 +203,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test mutation create requires auth.
+     */
     public function test_mutation_create_requires_auth(): void
     {
         $mutation = <<<'GQL'
@@ -242,6 +221,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test mutation update happy path.
+     */
     public function test_mutation_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -269,6 +251,42 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($newName === 'RenamedGqlSrc' || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test mutation update keeps the fields it was not sent.
+     */
+    public function test_mutation_update_keeps_omitted_fields(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertInventorySource(['status' => 1, 'priority' => 7]);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminSettingsInventorySourceInput!) {
+              updateAdminSettingsInventorySource(input: $input) {
+                adminSettingsInventorySource { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => '/api/admin/settings/inventory-sources/'.$id,
+                'name' => 'PartialGqlSrc',
+            ],
+        ], $admin);
+
+        $response->assertOk();
+
+        $row = \DB::table('inventory_sources')->where('id', $id)->first();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($row->name)->toBe('PartialGqlSrc')
+            ->and((int) $row->status)->toBe(1)
+            ->and((int) $row->priority)->toBe(7);
+    }
+
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -289,6 +307,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect(\DB::table('inventory_sources')->where('id', $id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mutation delete last source returns error.
+     */
     public function test_mutation_delete_last_source_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -310,6 +331,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect(\DB::table('inventory_sources')->where('id', $id)->exists())->toBeTrue();
     }
 
+    /**
+     * Test mutation mass delete happy path.
+     */
     public function test_mutation_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -331,5 +355,55 @@ class SettingsInventorySourceTest extends AdminApiTestCase
 
         expect(\DB::table('inventory_sources')->where('id', $id1)->exists())->toBeFalse();
         expect(\DB::table('inventory_sources')->where('id', $id2)->exists())->toBeFalse();
+    }
+
+    /**
+     * Insert inventory source.
+     */
+    protected function insertInventorySource(array $overrides = []): int
+    {
+        return \DB::table('inventory_sources')->insertGetId(array_merge([
+            'code' => 'gqs-'.str_replace('.', '', uniqid('', true)),
+            'name' => 'GQL Source '.rand(100, 999),
+            'description' => null,
+            'contact_name' => 'Jane',
+            'contact_email' => 'jane'.rand(100, 999).'@example.com',
+            'contact_number' => '5550001111',
+            'contact_fax' => null,
+            'country' => 'US',
+            'state' => 'CA',
+            'city' => 'Los Angeles',
+            'street' => '123 Main St',
+            'postcode' => '90001',
+            'priority' => 0,
+            'latitude' => null,
+            'longitude' => null,
+            'status' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Valid payload.
+     */
+    protected function validPayload(array $overrides = []): array
+    {
+        return array_merge([
+            'code' => 'gqlnew-'.rand(1000, 9999),
+            'name' => 'New GQL Source',
+            'description' => null,
+            'contactName' => 'GQL Admin',
+            'contactEmail' => 'gql'.rand(100, 999).'@example.com',
+            'contactNumber' => '5559998888',
+            'contactFax' => null,
+            'country' => 'US',
+            'state' => 'CA',
+            'city' => 'LA',
+            'street' => '99 GQL St',
+            'postcode' => '90099',
+            'priority' => 0,
+            'status' => 1,
+        ], $overrides);
     }
 }

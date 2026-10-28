@@ -1,154 +1,177 @@
-// tests/restAPI/api/automation/customerOrderActions.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import {
+  bearer,
+  expectProblem,
+  findSaleableSimpleProducts,
+  placeCustomerOrder,
+  readCart,
+  readJson,
+  registerShopCustomer,
+  ShopCustomer,
+} from '../../rest/helpers/coverage/shopCart.helpers';
 
-function assertStatus(resp: any, debugLabel: string, allowed: number[] = [0, 200, 201, 400, 401, 403, 404, 422, 500]) {
-  expect(allowed).toContain(resp.status());
-  console.log(`${debugLabel}:`, resp.status());
+const MSG = {
+  UNAUTHENTICATED: 'Unauthenticated. Please login to perform this action',
+  CANCEL_ORDER_ID_REQUIRED: 'Order ID is required to cancel an order',
+  CANCEL_NOT_FOUND: (id: number) => `Order with ID "${id}" not found or does not belong to this customer`,
+  CANCEL_SUCCESS: 'Order has been canceled successfully',
+  REORDER_ORDER_ID_REQUIRED: 'Order ID is required to reorder',
+  REORDER_NOT_FOUND: (id: number) => `Order with ID "${id}" not found or does not belong to this customer`,
+  REORDER_SUCCESS: (count: number) => `${count} item(s) from your previous order have been added to your cart`,
+};
+
+const MISSING_ORDER_ID = 2147480000;
+
+async function orderStatus(request: APIRequestContext, customer: ShopCustomer, orderId: number): Promise<string> {
+  const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDER(orderId), { headers: bearer(customer.token) });
+  const body = await readJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(200);
+
+  return body.status;
 }
 
-function authHeaders(token: string) {
-  return { Authorization: `Bearer ${token}` };
-}
+test.describe('customer order cancel rest api', () => {
+  let customer: ShopCustomer;
 
-function uniqueEmail() {
-  return `orderaction_${Date.now()}@example.com`;
-}
-
-function genPassword() {
-  return `OrderAct${Math.floor(Math.random() * 10000)}!`;
-}
-
-let authToken: string | null = null;
-let customerEmail: string;
-let customerPassword: string;
-
-test.describe('Customer Order Actions (Cancel + Reorder)', () => {
-  test.beforeAll(async ({ request }) => {
-    customerEmail = uniqueEmail();
-    customerPassword = genPassword();
-
-    const reg = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REGISTER, {
-      method: 'POST',
-      data: {
-        first_name: 'Order',
-        last_name: 'Action',
-        email: customerEmail,
-        password: customerPassword,
-        password_confirmation: customerPassword,
-      },
-    });
-    if (reg.status() === 200 || reg.status() === 201) {
-      const login = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-        method: 'POST',
-        data: { email: customerEmail, password: customerPassword },
-      });
-      const body = [200, 201].includes(login.status())
-          ? await login.json()
-          : null;
-      if (body?.token) {
-        authToken = body.token as string;
-      }
-    }
+  test.beforeEach(async ({ request }) => {
+    customer = await registerShopCustomer(request);
   });
 
-  test('POST /cancel-order without auth → 401/403', async ({ request }) => {
+  test('cancel without a bearer token is refused', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CANCEL_ORDER, {
       method: 'POST',
-      data: { id: 1 },
+      data: { orderId: MISSING_ORDER_ID },
     });
-    expect([401, 403, 404, 422, 500]).toContain(response.status());
-    console.log('POST /api/shop/cancel-order no auth:', response.status());
+
+    await expectProblem(response, 403, MSG.UNAUTHENTICATED);
   });
 
-  test('POST /cancel-order with auth — missing id → 4xx', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'No auth token');
-      return;
-    }
+  test('cancel without an order id is rejected', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CANCEL_ORDER, {
       method: 'POST',
       data: {},
-      headers: authHeaders(authToken),
+      headers: bearer(customer.token),
     });
-    expect([200, 400, 401, 403, 404, 422, 500]).toContain(response.status());
-    console.log('POST /api/shop/cancel-order missing id:', response.status());
+
+    await expectProblem(response, 400, MSG.CANCEL_ORDER_ID_REQUIRED);
   });
 
-  test('POST /cancel-order with non-existent order id → 4xx', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'No auth token');
-      return;
-    }
+  test('cancel of an order that does not exist is not found', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CANCEL_ORDER, {
       method: 'POST',
-      data: { id: 999999 },
-      headers: authHeaders(authToken),
+      data: { orderId: MISSING_ORDER_ID },
+      headers: bearer(customer.token),
     });
-    expect([200, 400, 401, 403, 404, 422, 500]).toContain(response.status());
-    console.log('POST /api/shop/cancel-order non-existent:', response.status());
+
+    await expectProblem(response, 404, MSG.CANCEL_NOT_FOUND(MISSING_ORDER_ID));
   });
 
-  test('POST /reorder without auth → 401/403', async ({ request }) => {
+  test('cancel of another customer order is not found and leaves the order pending', async ({ request }) => {
+    const [productId] = await findSaleableSimpleProducts(request, 1);
+    const order = await placeCustomerOrder(request, customer, productId);
+    const intruder = await registerShopCustomer(request);
+
+    const response = await sendRestRequest(request, ENDPOINTS.CANCEL_ORDER, {
+      method: 'POST',
+      data: { orderId: order.orderId },
+      headers: bearer(intruder.token),
+    });
+
+    await expectProblem(response, 404, MSG.CANCEL_NOT_FOUND(order.orderId));
+    expect(await orderStatus(request, customer, order.orderId)).toBe('pending');
+  });
+
+  test('cancel of an own pending order cancels it', async ({ request }) => {
+    const [productId] = await findSaleableSimpleProducts(request, 1);
+    const order = await placeCustomerOrder(request, customer, productId);
+
+    const response = await sendRestRequest(request, ENDPOINTS.CANCEL_ORDER, {
+      method: 'POST',
+      data: { orderId: order.orderId },
+      headers: bearer(customer.token),
+    });
+    const body = await readJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(201);
+    expect(body.success).toBe(true);
+    expect(body.message).toBe(MSG.CANCEL_SUCCESS);
+    expect(body.orderId).toBe(order.orderId);
+    expect(body.status).toBe('canceled');
+    expect(await orderStatus(request, customer, order.orderId)).toBe('canceled');
+  });
+});
+
+test.describe('customer reorder rest api', () => {
+  let customer: ShopCustomer;
+
+  test.beforeEach(async ({ request }) => {
+    customer = await registerShopCustomer(request);
+  });
+
+  test('reorder without a bearer token is refused', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.REORDER_ORDER, {
       method: 'POST',
-      data: { id: 1 },
+      data: { orderId: MISSING_ORDER_ID },
     });
-    expect([401, 403, 404, 422, 500]).toContain(response.status());
-    console.log('POST /api/shop/reorder no auth:', response.status());
+
+    await expectProblem(response, 403, MSG.UNAUTHENTICATED);
   });
 
-  test('POST /reorder with auth — non-existent order id → 4xx', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'No auth token');
-      return;
-    }
+  test('reorder of an order that does not exist is not found', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.REORDER_ORDER, {
       method: 'POST',
-      data: { id: 999999 },
-      headers: authHeaders(authToken),
+      data: { orderId: MISSING_ORDER_ID },
+      headers: bearer(customer.token),
     });
-    expect([200, 201, 400, 401, 403, 404, 422, 500]).toContain(response.status());
-    console.log('POST /api/shop/reorder non-existent:', response.status());
+
+    await expectProblem(response, 404, MSG.REORDER_NOT_FOUND(MISSING_ORDER_ID));
   });
 
-  test('POST /reorder with auth — missing id → 4xx', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'No auth token');
-      return;
-    }
+  test('reorder without an order id is rejected', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.REORDER_ORDER, {
       method: 'POST',
       data: {},
-      headers: authHeaders(authToken),
+      headers: bearer(customer.token),
     });
-    expect([200, 400, 401, 403, 404, 422, 500]).toContain(response.status());
-    console.log('POST /api/shop/reorder missing id:', response.status());
+
+    await expectProblem(response, 400, MSG.REORDER_ORDER_ID_REQUIRED);
   });
 
-  test('Cross-customer order: cancel another customer\'s order → 403/404', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'No auth token');
-      return;
-    }
-    // Try to cancel id=1 (likely belongs to another customer or doesn't exist)
-    const response = await sendRestRequest(request, ENDPOINTS.CANCEL_ORDER, {
+  test('reorder of an own order puts its product back in the cart', async ({ request }) => {
+    const [productId] = await findSaleableSimpleProducts(request, 1);
+    const order = await placeCustomerOrder(request, customer, productId);
+
+    const response = await sendRestRequest(request, ENDPOINTS.REORDER_ORDER, {
       method: 'POST',
-      data: { id: 1 },
-      headers: authHeaders(authToken),
+      data: { orderId: order.orderId },
+      headers: bearer(customer.token),
     });
-    expect([200, 400, 401, 403, 404, 422, 500]).toContain(response.status());
-    console.log('POST /api/shop/cancel-order cross-customer:', response.status());
-  });
+    const body = await readJson(response);
 
-  test('GET on /cancel-order should be rejected', async ({ request }) => {
+    expect(response.status(), JSON.stringify(body)).toBe(201);
+    expect(body.success).toBe(true);
+    expect(body.orderId).toBe(order.orderId);
+    expect(body.itemsAddedCount).toBe(1);
+    expect(body.message).toBe(MSG.REORDER_SUCCESS(1));
+
+    const cart = await readJson(await readCart(request, customer.token));
+    expect((cart.items ?? []).map((item: any) => Number(item.productId))).toContain(productId);
+  });
+});
+
+test.describe('customer order actions over get', () => {
+  test('get on the cancel order path is not routed', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CANCEL_ORDER);
-    assertStatus(response, 'GET /api/shop/cancel-order', [0, 200, 400, 404, 405, 500]);
+
+    expect(response.status()).toBe(404);
   });
 
-  test('GET on /reorder should be rejected', async ({ request }) => {
+  test('get on the reorder path is not routed', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.REORDER_ORDER);
-    assertStatus(response, 'GET /api/shop/reorder', [0, 200, 400, 404, 405, 500]);
+
+    expect(response.status()).toBe(404);
   });
 });

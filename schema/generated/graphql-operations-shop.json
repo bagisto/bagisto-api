@@ -14,6 +14,16 @@
         "tag": "Attribute",
         "resource": "Webkul\\BagistoApi\\Models\\AttributeOption"
     },
+    "attributeTranslation": {
+        "kind": "query",
+        "tag": "AttributeTranslation",
+        "resource": "Webkul\\BagistoApi\\Models\\AttributeTranslation"
+    },
+    "attributeTranslations": {
+        "kind": "query",
+        "tag": "AttributeTranslation",
+        "resource": "Webkul\\BagistoApi\\Models\\AttributeTranslation"
+    },
     "attributes": {
         "kind": "query",
         "tag": "Attribute",
@@ -28,6 +38,11 @@
         "kind": "mutation",
         "tag": "Customer Return",
         "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn"
+    },
+    "cartCrossSells": {
+        "kind": "query",
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\CartCrossSellProducts"
     },
     "categories": {
         "kind": "query",
@@ -44,11 +59,6 @@
         "tag": "CategoryAttributeFilter",
         "resource": "Webkul\\BagistoApi\\Models\\Filter\\Attribute"
     },
-    "categoryTrees": {
-        "kind": "query",
-        "tag": "CategoryTree",
-        "resource": "Webkul\\BagistoApi\\Models\\CategoryTree"
-    },
     "channel": {
         "kind": "query",
         "tag": "Channel",
@@ -59,15 +69,15 @@
         "tag": "Channel",
         "resource": "Webkul\\BagistoApi\\Models\\Channel"
     },
+    "checkoutMessage": {
+        "kind": "query",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutMessage"
+    },
     "closeCustomerReturn": {
         "kind": "mutation",
         "tag": "Customer Return",
         "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn"
-    },
-    "collectionCustomerAddressToken": {
-        "kind": "query",
-        "tag": "CustomerAddressToken",
-        "resource": "Webkul\\BagistoApi\\Models\\CustomerAddressToken"
     },
     "collectionDefaultChannels": {
         "kind": "query",
@@ -164,6 +174,11 @@
         "tag": "Checkout",
         "resource": "Webkul\\BagistoApi\\Models\\CheckoutOrder"
     },
+    "createCheckoutPaymentConfirmation": {
+        "kind": "mutation",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutPaymentConfirmation"
+    },
     "createCheckoutPaymentMethod": {
         "kind": "mutation",
         "tag": "Checkout",
@@ -171,6 +186,11 @@
         "example": {
             "paymentMethod": "moneytransfer"
         }
+    },
+    "createCheckoutPaymentSession": {
+        "kind": "mutation",
+        "tag": "Checkout",
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutPaymentSession"
     },
     "createCheckoutShippingMethod": {
         "kind": "mutation",
@@ -201,7 +221,7 @@
     },
     "createCustomer": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\Customer",
         "example": {
             "firstName": "John",
@@ -218,12 +238,19 @@
     },
     "createCustomerLogin": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\CustomerLogin",
         "example": {
             "email": "john@example.com",
-            "password": "Password123!"
+            "password": "Password123!",
+            "device_name": "iPhone 15",
+            "client_type": "mobile"
         }
+    },
+    "createCustomerLogoutAll": {
+        "kind": "mutation",
+        "tag": "Customer Authentication",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerLogoutAll"
     },
     "createCustomerProfileDelete": {
         "kind": "mutation",
@@ -253,6 +280,19 @@
         "tag": "Customer Return",
         "resource": "Webkul\\BagistoApi\\Models\\CustomerReturnMessage"
     },
+    "createCustomerTokenRefresh": {
+        "kind": "mutation",
+        "tag": "Customer Authentication",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerTokenRefresh",
+        "example": {
+            "refresh_token": "88|7c1f4e2a9b..."
+        }
+    },
+    "createCustomizableOptionFile": {
+        "kind": "mutation",
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomizableOptionFile"
+    },
     "createDeleteAllCompareItems": {
         "kind": "mutation",
         "tag": "CompareItem",
@@ -280,7 +320,7 @@
     },
     "createEstimateShipping": {
         "kind": "mutation",
-        "tag": "EstimateShipping",
+        "tag": "Checkout",
         "resource": "Webkul\\BagistoApi\\Models\\EstimateShipping"
     },
     "createEuWithdrawal": {
@@ -290,7 +330,7 @@
     },
     "createForgotPassword": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\ForgotPassword",
         "example": {
             "email": "john@example.com"
@@ -310,9 +350,14 @@
         "tag": "EU Withdrawal",
         "resource": "Webkul\\BagistoApi\\Models\\GuestEuWithdrawal"
     },
+    "createImageSearch": {
+        "kind": "mutation",
+        "tag": "Search",
+        "resource": "Webkul\\BagistoApi\\Models\\ImageSearch"
+    },
     "createLogout": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\CustomerLogout"
     },
     "createMergeCart": {
@@ -325,7 +370,7 @@
     },
     "createMoveToWishlist": {
         "kind": "mutation",
-        "tag": "MoveToWishlist",
+        "tag": "Cart",
         "resource": "Webkul\\BagistoApi\\Models\\MoveToWishlist"
     },
     "createMutationCheckoutAddress": {
@@ -340,6 +385,11 @@
         "example": {
             "customerEmail": "jane@example.com"
         }
+    },
+    "createNewsletterUnsubscription": {
+        "kind": "mutation",
+        "tag": "NewsletterUnsubscription",
+        "resource": "Webkul\\BagistoApi\\Models\\NewsletterUnsubscription"
     },
     "createProductReview": {
         "kind": "mutation",
@@ -381,9 +431,28 @@
             "orderId": 411
         }
     },
+    "createResendVerificationEmail": {
+        "kind": "mutation",
+        "tag": "Customer Authentication",
+        "resource": "Webkul\\BagistoApi\\Models\\ResendVerificationEmail",
+        "example": {
+            "email": "john@example.com"
+        }
+    },
+    "createResetPassword": {
+        "kind": "mutation",
+        "tag": "Customer Authentication",
+        "resource": "Webkul\\BagistoApi\\Models\\ResetPassword",
+        "example": {
+            "token": "a1b2c3d4e5...",
+            "email": "john@example.com",
+            "password": "NewPassword123!",
+            "password_confirmation": "NewPassword123!"
+        }
+    },
     "createSocialLogin": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\SocialLogin",
         "example": {
             "provider": "google",
@@ -395,9 +464,17 @@
         "tag": "Cart",
         "resource": "Webkul\\BagistoApi\\Models\\UpdateCartItem"
     },
+    "createVerifyAccount": {
+        "kind": "mutation",
+        "tag": "Customer Authentication",
+        "resource": "Webkul\\BagistoApi\\Models\\VerifyAccount",
+        "example": {
+            "token": "64-char-token-here"
+        }
+    },
     "createVerifyToken": {
         "kind": "mutation",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\VerifyToken"
     },
     "createWishlist": {
@@ -420,7 +497,7 @@
     },
     "customer": {
         "kind": "query",
-        "tag": "Customer",
+        "tag": "Customer Authentication",
         "resource": "Webkul\\BagistoApi\\Models\\Customer"
     },
     "customerAddress": {
@@ -503,6 +580,11 @@
         "tag": "Customer Review",
         "resource": "Webkul\\BagistoApi\\Models\\CustomerReview"
     },
+    "customerSessions": {
+        "kind": "query",
+        "tag": "Customer Authentication",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerSession"
+    },
     "deleteCompareItem": {
         "kind": "mutation",
         "tag": "CompareItem",
@@ -510,6 +592,11 @@
         "example": {
             "product_id": 1
         }
+    },
+    "deleteCustomerSession": {
+        "kind": "mutation",
+        "tag": "Customer Authentication",
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerSession"
     },
     "deleteGdprRequest": {
         "kind": "mutation",
@@ -555,6 +642,16 @@
         "tag": "EU Withdrawal",
         "resource": "Webkul\\BagistoApi\\Models\\EuWithdrawal"
     },
+    "gdprData": {
+        "kind": "query",
+        "tag": "GDPR",
+        "resource": "Webkul\\BagistoApi\\Models\\GdprData"
+    },
+    "gdprDataPdf": {
+        "kind": "query",
+        "tag": "GdprDataPdf",
+        "resource": "Webkul\\BagistoApi\\Models\\GdprDataPdf"
+    },
     "gdprRequest": {
         "kind": "query",
         "tag": "GDPR Requests",
@@ -574,6 +671,11 @@
         "kind": "query",
         "tag": "GetCustomerAddresses",
         "resource": "Webkul\\BagistoApi\\Models\\CustomerAddressGetAll"
+    },
+    "guestEuWithdrawalConfirmation": {
+        "kind": "query",
+        "tag": "EU Withdrawal",
+        "resource": "Webkul\\BagistoApi\\Models\\GuestEuWithdrawalConfirmation"
     },
     "locale": {
         "kind": "query",
@@ -623,6 +725,11 @@
         "kind": "query",
         "tag": "Product",
         "resource": "Webkul\\BagistoApi\\Models\\Product"
+    },
+    "productAttributeFile": {
+        "kind": "query",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductAttributeFile"
     },
     "productBundleOption": {
         "kind": "query",
@@ -683,6 +790,11 @@
         "kind": "query",
         "tag": "Product",
         "resource": "Webkul\\BagistoApi\\Models\\ProductReview"
+    },
+    "productReviewTranslation": {
+        "kind": "query",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\ProductReviewTranslation"
     },
     "productReviews": {
         "kind": "query",

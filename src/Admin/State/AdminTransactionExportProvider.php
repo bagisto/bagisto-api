@@ -11,21 +11,33 @@ class AdminTransactionExportProvider implements ProviderInterface
 {
     use StreamsAdminExport;
 
+    /**
+     * Export permission.
+     */
     protected function exportPermission(): string
     {
         return 'sales.transactions.view';
     }
 
+    /**
+     * Export filename.
+     */
     protected function exportFilename(): string
     {
         return 'transactions';
     }
 
+    /**
+     * Export headers.
+     */
     protected function exportHeaders(): array
     {
         return ['ID', 'Transaction ID', 'Invoice ID', 'Order ID', 'Status', 'Date'];
     }
 
+    /**
+     * Export row.
+     */
     protected function exportRow(object $row): array
     {
         return [
@@ -38,6 +50,9 @@ class AdminTransactionExportProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Export query.
+     */
     protected function exportQuery(array $args)
     {
         $query = DB::table('order_transactions')

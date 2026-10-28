@@ -14,7 +14,9 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Webkul\BagistoApi\Dto\CreateCompareItemInput;
 use Webkul\BagistoApi\Dto\DeleteCompareItemInput;
 use Webkul\BagistoApi\Resolver\CompareItemQueryResolver;
@@ -22,16 +24,12 @@ use Webkul\BagistoApi\State\CompareItemItemProvider;
 use Webkul\BagistoApi\State\CompareItemProcessor;
 use Webkul\BagistoApi\State\CompareItemProvider;
 
-/**
- * Compare Item API Resource
- *
- * Allows customers to compare products
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
         new Get(
             provider: CompareItemItemProvider::class,
+            normalizationContext: ['groups' => ['compare:read', 'product:list'], 'skip_null_values' => false],
             openapi: new Operation(
                 tags: ['CompareItem'],
                 summary: 'Get a compare item',
@@ -59,6 +57,7 @@ use Webkul\BagistoApi\State\CompareItemProvider;
         ),
         new GetCollection(
             provider: CompareItemProvider::class,
+            normalizationContext: ['groups' => ['compare:read', 'product:list'], 'skip_null_values' => false],
             openapi: new Operation(
                 tags: ['CompareItem'],
                 summary: 'List compare items',
@@ -152,9 +151,13 @@ use Webkul\BagistoApi\State\CompareItemProvider;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: CompareItemQueryResolver::class),
+        new Query(
+            resolver: CompareItemQueryResolver::class,
+            description: 'One compare-list item of the authenticated customer; another customer\'s item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
         new QueryCollection(
             provider: CompareItemProvider::class,
+            description: 'The authenticated customer\'s compare list, oldest first. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
         ),
         new Mutation(
@@ -173,27 +176,48 @@ use Webkul\BagistoApi\State\CompareItemProvider;
 class CompareItem extends \Webkul\Customer\Models\CompareItem
 {
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
+    #[Groups(['compare:read'])]
     public function getId(): int
     {
         return $this->id;
     }
 
     /**
-     * Product relationship for API
+     * When the item was added, kept in the REST read group.
+     */
+    #[Groups(['compare:read'])]
+    public function getCreated_at(): ?CarbonInterface
+    {
+        return $this->created_at;
+    }
+
+    /**
+     * When the item was last changed, kept in the REST read group.
+     */
+    #[Groups(['compare:read'])]
+    public function getUpdated_at(): ?CarbonInterface
+    {
+        return $this->updated_at;
+    }
+
+    /**
+     * Product relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Associated product')]
+    #[Groups(['compare:read'])]
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
 
     /**
-     * Customer relationship for API
+     * Customer relationship for API.
      */
     #[ApiProperty(writable: false, description: 'Customer who added the item')]
+    #[Groups(['compare:read'])]
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id');

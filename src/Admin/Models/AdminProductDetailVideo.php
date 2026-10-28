@@ -7,9 +7,6 @@ use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Product video — nested sub-resource of AdminCatalogProduct (`videos` connection).
- */
 #[ApiResource(
     shortName: 'AdminProductDetailVideo',
     operations: [],
@@ -18,24 +15,42 @@ use Illuminate\Support\Facades\Storage;
 )]
 class AdminProductDetailVideo extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the product videos.
+     *
+     * @var string
+     */
     protected $table = 'product_videos';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the product video is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['url'];
 
-    /** @var array */
+    /**
+     * The native types the product video attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'position' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get url attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getUrlAttribute(): ?string
     {

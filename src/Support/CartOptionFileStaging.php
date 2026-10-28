@@ -9,18 +9,27 @@ use Illuminate\Support\Str;
 
 class CartOptionFileStaging
 {
-    /** Disk and directory the staged uploads live on. */
+    /**
+     * Disk and directory the staged uploads live on.
+     */
     public const DISK = 'private';
 
+    /**
+     * The stage dir constant.
+     */
     public const STAGE_DIR = 'cart-uploads';
 
-    /** How long a staged upload stays resolvable — follows the store's session lifetime. */
+    /**
+     * How long a staged upload stays resolvable — follows the store's session lifetime.
+     */
     public function ttlMinutes(): int
     {
         return (int) config('session.lifetime', 120);
     }
 
-    /** Upload ceiling, taken from php.ini (`upload_max_filesize`) like the rest of Bagisto. */
+    /**
+     * Upload ceiling, taken from php.ini (`upload_max_filesize`) like the rest of Bagisto.
+     */
     public function maxUploadBytes(): int
     {
         $limit = trim((string) core()->getMaxUploadSize());
@@ -39,11 +48,17 @@ class CartOptionFileStaging
         };
     }
 
+    /**
+     * Cart option file key.
+     */
     public function cartOptionFileKey(string $token): string
     {
         return 'bagistoapi:cart-option-file:'.$token;
     }
 
+    /**
+     * Stage.
+     */
     public function stage(UploadedFile $file, int $productId, int $optionId, int|string $ownerId): array
     {
         $extension = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?: 'bin'));
@@ -67,16 +82,25 @@ class CartOptionFileStaging
         ];
     }
 
+    /**
+     * Resolve.
+     */
     public function resolve(string $token): ?array
     {
         return Cache::get($this->cartOptionFileKey($token));
     }
 
+    /**
+     * Forget.
+     */
     public function forget(string $token): void
     {
         Cache::forget($this->cartOptionFileKey($token));
     }
 
+    /**
+     * Delete staged.
+     */
     public function deleteStaged(string $path): void
     {
         if (Storage::disk(self::DISK)->exists($path)) {
@@ -84,6 +108,9 @@ class CartOptionFileStaging
         }
     }
 
+    /**
+     * Staged uploaded file.
+     */
     public function stagedUploadedFile(array $payload): UploadedFile
     {
         $absolute = Storage::disk(self::DISK)->path($payload['path']);

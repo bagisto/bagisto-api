@@ -8,6 +8,9 @@ use Webkul\BagistoApi\State\ThemeProvider;
 
 class ThemeQueryResolver implements QueryItemResolverInterface
 {
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?object $item, array $context): Theme
     {
         return ThemeProvider::build();

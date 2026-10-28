@@ -9,71 +9,31 @@ use Webkul\Checkout\Facades\Cart as CartFacade;
 use Webkul\Checkout\Models\Cart;
 use Webkul\User\Models\Admin;
 
-/**
- * REST coverage for Wave 3 — place-order from a fully prepared draft cart.
- *
- *   POST /api/admin/orders/place/{cartId}
- *
- * Sequence guard chain: empty-cart → addresses → shipping → payment, each a
- * distinct 409. Payment-method restriction (`cashondelivery`/`moneytransfer`)
- * is enforced at HTTP 422.
- */
 class PlaceOrderTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    protected function bootstrapDraftCart(): int
-    {
-        $customer = $this->findOrCreateCustomer();
-        $product = $this->findOrCreateSimpleProduct();
-
-        $cart = CartFacade::createCart([
-            'customer' => $customer,
-            'is_active' => false,
-        ]);
-        CartFacade::setCart($cart);
-        try {
-            CartFacade::addProduct($product, [
-                'product_id' => $product->id,
-                'quantity' => 1,
-            ]);
-            CartFacade::collectTotals();
-        } catch (\Throwable) {
-        }
-
-        return $cart->id;
-    }
-
-    protected function saveAddresses(int $cartId, Admin $admin): void
-    {
-        $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
-            'billing' => [
-                'firstName' => 'Jane',
-                'lastName' => 'Doe',
-                'email' => 'jane@example.com',
-                'address' => ['12 Main St'],
-                'city' => 'Berlin',
-                'country' => 'DE',
-                'state' => 'BE',
-                'postcode' => '10115',
-                'phone' => '+4930123456',
-                'useForShipping' => true,
-            ],
-        ]);
-    }
-
+    /**
+     * Test requires auth.
+     */
     public function test_requires_auth(): void
     {
         $resp = $this->postJson('/api/admin/orders/place/1');
         expect($resp->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test unknown cart returns 404.
+     */
     public function test_unknown_cart_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/orders/place/999999999')->assertStatus(404);
     }
 
+    /**
+     * Test active storefront cart is blocked.
+     */
     public function test_active_storefront_cart_is_blocked(): void
     {
         $admin = $this->createAdmin();
@@ -91,6 +51,9 @@ class PlaceOrderTest extends AdminApiTestCase
         $this->adminPost($admin, '/api/admin/orders/place/'.$cart->id)->assertStatus(403);
     }
 
+    /**
+     * Test empty cart 409.
+     */
     public function test_empty_cart_409(): void
     {
         $admin = $this->createAdmin();
@@ -105,6 +68,9 @@ class PlaceOrderTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(409);
     }
 
+    /**
+     * Test no addresses 409.
+     */
     public function test_no_addresses_409(): void
     {
         $admin = $this->createAdmin();
@@ -114,16 +80,14 @@ class PlaceOrderTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(409);
     }
 
+    /**
+     * Test below minimum order amount is rejected.
+     */
     public function test_below_minimum_order_amount_is_rejected(): void
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        // Enable a minimum order amount the single-item cart can't meet. The
-        // check fires after collectTotals and before the address guard, so the
-        // cart needs only an item — mirrors OrderController::validateOrder #1.
-        // `minimum_order_amount` is channel_based, so scope it to the current
-        // channel; `enable` is global.
         $channel = core()->getRequestedChannelCode();
         DB::table('core_config')
             ->where('code', 'like', 'sales.order_settings.minimum_order.%')->delete();
@@ -152,6 +116,9 @@ class PlaceOrderTest extends AdminApiTestCase
         expect(strtolower($resp->getContent()))->toContain('minimum order');
     }
 
+    /**
+     * Test no shipping method 409.
+     */
     public function test_no_shipping_method_409(): void
     {
         $admin = $this->createAdmin();
@@ -162,6 +129,9 @@ class PlaceOrderTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(409);
     }
 
+    /**
+     * Test no payment method 409.
+     */
     public function test_no_payment_method_409(): void
     {
         $admin = $this->createAdmin();
@@ -186,6 +156,9 @@ class PlaceOrderTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(409);
     }
 
+    /**
+     * Test happy path places order.
+     */
     public function test_happy_path_places_order(): void
     {
         $admin = $this->createAdmin();
@@ -234,6 +207,9 @@ class PlaceOrderTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test unsupported payment method 422.
+     */
     public function test_unsupported_payment_method_422(): void
     {
         $admin = $this->createAdmin();
@@ -269,5 +245,51 @@ class PlaceOrderTest extends AdminApiTestCase
 
         $resp = $this->adminPost($admin, '/api/admin/orders/place/'.$cartId);
         expect($resp->getStatusCode())->toBe(422);
+    }
+
+    /**
+     * Bootstrap draft cart.
+     */
+    protected function bootstrapDraftCart(): int
+    {
+        $customer = $this->findOrCreateCustomer();
+        $product = $this->findOrCreateSimpleProduct();
+
+        $cart = CartFacade::createCart([
+            'customer' => $customer,
+            'is_active' => false,
+        ]);
+        CartFacade::setCart($cart);
+        try {
+            CartFacade::addProduct($product, [
+                'product_id' => $product->id,
+                'quantity' => 1,
+            ]);
+            CartFacade::collectTotals();
+        } catch (\Throwable) {
+        }
+
+        return $cart->id;
+    }
+
+    /**
+     * Save addresses.
+     */
+    protected function saveAddresses(int $cartId, Admin $admin): void
+    {
+        $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
+            'billing' => [
+                'firstName' => 'Jane',
+                'lastName' => 'Doe',
+                'email' => 'jane@example.com',
+                'address' => ['12 Main St'],
+                'city' => 'Berlin',
+                'country' => 'DE',
+                'state' => 'BE',
+                'postcode' => '10115',
+                'phone' => '+4930123456',
+                'useForShipping' => true,
+            ],
+        ]);
     }
 }

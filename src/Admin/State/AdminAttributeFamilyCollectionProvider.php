@@ -6,24 +6,19 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminAttributeFamily;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for the admin Catalog → Attribute Families datagrid endpoint.
- *
- * REST: GET /api/admin/catalog/families
- *
- * Mirrors Webkul\Admin\DataGrids\Catalog\AttributeFamilyDataGrid 1:1 — same 3 columns:
- * id, code, name. No timestamps on the attribute_families table.
- *
- * Filters: id (int or comma list), code (partial), name (partial).
- * Sort allow-list: id (default desc), code, name.
- */
 class AdminAttributeFamilyCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'code', 'name'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('attribute_families')
@@ -34,6 +29,9 @@ class AdminAttributeFamilyCollectionProvider extends AbstractAdminCollectionProv
             );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['id'])) {
@@ -55,6 +53,9 @@ class AdminAttributeFamilyCollectionProvider extends AbstractAdminCollectionProv
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -62,6 +63,9 @@ class AdminAttributeFamilyCollectionProvider extends AbstractAdminCollectionProv
         $query->orderBy($column, $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminAttributeFamily
     {
         $dto = new AdminAttributeFamily;

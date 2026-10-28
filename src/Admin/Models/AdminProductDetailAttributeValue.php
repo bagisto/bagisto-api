@@ -7,14 +7,6 @@ use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Product attribute value (EAV) — nested sub-resource of AdminCatalogProduct
- * (`attributeValues` connection). The GraphQL counterpart of the REST-only
- * computed `attributes` block: one node per stored value, with the attribute's
- * code/adminName/type/group resolved from `attributes` and the value coerced to
- * a string scalar. (Empty family fields are NOT included here — they appear only
- * in the REST `attributes` array.)
- */
 #[ApiResource(
     shortName: 'AdminProductDetailAttributeValue',
     operations: [],
@@ -27,50 +19,83 @@ use Illuminate\Support\Facades\DB;
 )]
 class AdminProductDetailAttributeValue extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the product attribute values.
+     *
+     * @var string
+     */
     protected $table = 'product_attribute_values';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the product attribute value is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['code', 'admin_name', 'type', 'is_required', 'group_code', 'value'];
 
-    /** @var array */
+    /**
+     * The native types the product attribute value attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'attribute_id' => 'int',
     ];
 
+    /**
+     * The attr row.
+     */
     private ?object $attrRow = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get code attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getCodeAttribute(): ?string
     {
         return $this->attr()->code ?? null;
     }
 
+    /**
+     * Get admin name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getAdminNameAttribute(): ?string
     {
         return $this->attr()->admin_name ?? null;
     }
 
+    /**
+     * Get type attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getTypeAttribute(): ?string
     {
         return $this->attr()->type ?? null;
     }
 
+    /**
+     * Get is required attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getIsRequiredAttribute(): bool
     {
         return (bool) ($this->attr()->is_required ?? false);
     }
 
+    /**
+     * Get group code attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getGroupCodeAttribute(): ?string
     {
@@ -79,7 +104,9 @@ class AdminProductDetailAttributeValue extends Model
         return $groupId ? DB::table('attribute_groups')->where('id', $groupId)->value('code') : null;
     }
 
-    /** Polymorphic stored value coerced to a string scalar (per the attribute type). */
+    /**
+     * Polymorphic stored value coerced to a string scalar (per the attribute type).
+     */
     #[ApiProperty(writable: false)]
     public function getValueAttribute(): ?string
     {
@@ -99,12 +126,14 @@ class AdminProductDetailAttributeValue extends Model
         return $raw !== null ? (string) $raw : null;
     }
 
+    /**
+     * Attr.
+     */
     private function attr(): object
     {
         if ($this->attrRow === null) {
             $this->attrRow = DB::table('attributes')->where('id', $this->attribute_id)
                 ->first(['id', 'code', 'admin_name', 'type', 'is_required']) ?? (object) [];
-            // group_id resolved separately (attribute_group_mappings or attributes has no group)
             $this->attrRow->group_id = DB::table('attribute_group_mappings')
                 ->where('attribute_id', $this->attribute_id)->value('attribute_group_id');
         }

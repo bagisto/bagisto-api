@@ -8,10 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Downloadable link — nested sub-resource of AdminCatalogProduct
- * (`downloadableLinks` connection). `translations` is a nested connection.
- */
 #[ApiResource(
     shortName: 'AdminProductDetailDownloadableLink',
     operations: [],
@@ -24,31 +20,52 @@ use Illuminate\Support\Facades\Storage;
 )]
 class AdminProductDetailDownloadableLink extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the downloadable links.
+     *
+     * @var string
+     */
     protected $table = 'product_downloadable_links';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the downloadable link is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['formatted_price', 'file_url', 'sample_file_url'];
 
-    /** @var array */
+    /**
+     * The native types the downloadable link attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'sort_order' => 'int',
         'downloads' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get price.
+     */
     #[ApiProperty(writable: false)]
     public function getPrice(): ?string
     {
         return $this->attributes['price'] !== null ? (string) $this->attributes['price'] : null;
     }
 
+    /**
+     * Get formatted price attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedPriceAttribute(): ?string
     {
@@ -57,18 +74,27 @@ class AdminProductDetailDownloadableLink extends Model
             : null;
     }
 
+    /**
+     * Get file url attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFileUrlAttribute(): ?string
     {
         return $this->file ? Storage::url($this->file) : null;
     }
 
+    /**
+     * Get sample file url attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getSampleFileUrlAttribute(): ?string
     {
         return $this->sample_file ? Storage::url($this->sample_file) : null;
     }
 
+    /**
+     * Translations.
+     */
     #[ApiProperty(writable: false)]
     public function translations(): HasMany
     {

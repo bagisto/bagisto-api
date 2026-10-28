@@ -8,6 +8,9 @@ use Webkul\BagistoApi\Exception\SocialLoginException;
 
 class SocialLoginTokenVerifier
 {
+    /**
+     * The providers constant.
+     */
     public const PROVIDERS = [
         'google' => [
             'driver' => 'google',
@@ -25,9 +28,14 @@ class SocialLoginTokenVerifier
         ],
     ];
 
+    /**
+     * The google tokeninfo url constant.
+     */
     protected const GOOGLE_TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo';
 
     /**
+     * Resolve the Socialite driver for an enabled social login provider.
+     *
      * @throws SocialLoginException
      */
     public function driverFor(string $provider): string
@@ -115,6 +123,8 @@ class SocialLoginTokenVerifier
     }
 
     /**
+     * Fetch the social profile for an access token through Socialite.
+     *
      * @return array{id: string, email: ?string, name: ?string, email_verified: bool}
      *
      * @throws SocialLoginException
@@ -139,6 +149,8 @@ class SocialLoginTokenVerifier
     }
 
     /**
+     * Ensure the Google id token was issued for one of the configured client ids.
+     *
      * @throws SocialLoginException
      */
     protected function assertGoogleAudience(?string $audience): void
@@ -160,6 +172,8 @@ class SocialLoginTokenVerifier
     }
 
     /**
+     * The configured Google OAuth client ids.
+     *
      * @return array<int, string>
      */
     protected function googleClientIds(): array

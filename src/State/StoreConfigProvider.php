@@ -8,12 +8,6 @@ use Webkul\BagistoApi\Models\EuWithdrawalStatus;
 use Webkul\BagistoApi\Models\GdprStatus;
 use Webkul\BagistoApi\Models\StoreConfig;
 
-/**
- * The non-secret store settings of the current channel, read from the admin configuration.
- *
- * Every value comes from an explicit allow-list of keys. Credentials, secrets and callback
- * URLs are never read here.
- */
 class StoreConfigProvider implements ProviderInterface
 {
     /**
@@ -22,11 +16,17 @@ class StoreConfigProvider implements ProviderInterface
      */
     private const SOCIAL_LOGIN_PROVIDERS = ['google', 'facebook', 'linkedin'];
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         return [self::build()];
     }
 
+    /**
+     * Build.
+     */
     public static function build(): StoreConfig
     {
         $channel = core()->getCurrentChannel();
@@ -49,6 +49,9 @@ class StoreConfigProvider implements ProviderInterface
         return $config;
     }
 
+    /**
+     * Fill checkout.
+     */
     private static function fillCheckout(StoreConfig $config): void
     {
         $config->guest_checkout_enabled = self::flag('sales.checkout.shopping_cart.allow_guest_checkout');
@@ -63,6 +66,9 @@ class StoreConfigProvider implements ProviderInterface
         $config->minimum_order_message = self::text('sales.order_settings.minimum_order.description');
     }
 
+    /**
+     * Fill reviews.
+     */
     private static function fillReviews(StoreConfig $config): void
     {
         $config->customer_review_enabled = self::flag('catalog.products.review.customer_review');
@@ -71,6 +77,9 @@ class StoreConfigProvider implements ProviderInterface
         $config->review_summary = self::text('catalog.products.review.summary');
     }
 
+    /**
+     * Fill catalog.
+     */
     private static function fillCatalog(StoreConfig $config): void
     {
         $config->compare_enabled = self::flag('catalog.products.settings.compare_option');
@@ -87,6 +96,9 @@ class StoreConfigProvider implements ProviderInterface
         $config->default_sort_by = self::text('catalog.products.storefront.sort_by');
     }
 
+    /**
+     * Fill customer.
+     */
     private static function fillCustomer(StoreConfig $config): void
     {
         $config->email_verification_required = self::flag('customer.settings.email.verification');
@@ -100,6 +112,9 @@ class StoreConfigProvider implements ProviderInterface
         ));
     }
 
+    /**
+     * Fill tax.
+     */
     private static function fillTax(StoreConfig $config): void
     {
         $config->tax_cart_display_prices = self::text('sales.taxes.shopping_cart.display_prices');
@@ -112,11 +127,17 @@ class StoreConfigProvider implements ProviderInterface
         $config->tax_order_display_shipping = self::text('sales.taxes.sales.display_shipping_amount');
     }
 
+    /**
+     * Flag.
+     */
     private static function flag(string $code): bool
     {
         return filter_var(core()->getConfigData($code), FILTER_VALIDATE_BOOLEAN);
     }
 
+    /**
+     * Number.
+     */
     private static function number(string $code): ?float
     {
         $value = core()->getConfigData($code);
@@ -124,6 +145,9 @@ class StoreConfigProvider implements ProviderInterface
         return is_numeric($value) ? (float) $value : null;
     }
 
+    /**
+     * Text.
+     */
     private static function text(string $code): ?string
     {
         $value = core()->getConfigData($code);

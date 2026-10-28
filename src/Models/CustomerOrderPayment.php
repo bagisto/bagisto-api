@@ -6,12 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Customer Order Payment — nested API resource (no standalone endpoints).
- *
- * Exposed only as a relationship of CustomerOrder.
- * Points to the `order_payment` table.
- */
 #[ApiResource(
     shortName: 'CustomerOrderPayment',
     operations: [],
@@ -19,10 +13,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class CustomerOrderPayment extends Model
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'order_payment';
 
-    /** @var array */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'order_id' => 'int',
@@ -34,7 +36,7 @@ class CustomerOrderPayment extends Model
     ];
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int

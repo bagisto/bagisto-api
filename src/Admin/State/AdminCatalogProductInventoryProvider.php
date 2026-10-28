@@ -12,23 +12,14 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Product\Models\Product;
 
-/**
- * Listing provider for `GET /api/admin/catalog/products/{productId}/inventories`
- * (and `adminCatalogProductInventories` GraphQL query).
- *
- * Also reused as the Put-operation `provider:` so API Platform can resolve
- * the parent product before handing off to the processor, and so the
- * processor can return a refreshed listing payload via `buildPayload()`.
- *
- * Returns a paginator carrying:
- *   - data rows (one per inventory_source the product has a row for)
- *   - meta.totalQty — sum of all rows' qty (used by the envelope normalizer).
- */
 class AdminCatalogProductInventoryProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        AdminReadPermissions::authorize($operation, AdminCatalogProductInventory::class);
+        AdminReadPermissions::authorize($operation, AdminCatalogProductInventory::class, 'catalog.products.edit');
 
         $productId = $this->resolveProductId($uriVariables, $context);
 
@@ -42,8 +33,7 @@ class AdminCatalogProductInventoryProvider implements ProviderInterface
 
     /**
      * Build the listing payload for a product, computing totalQty for the
-     * envelope normalizer. Exposed as a public method so the processor can
-     * reuse it after a write.
+     * envelope normalizer. Exposed as a public method so the processor can.
      */
     public function buildPayload(Product $product): AdminCatalogProductInventoryPaginator
     {
@@ -69,6 +59,9 @@ class AdminCatalogProductInventoryProvider implements ProviderInterface
         return new AdminCatalogProductInventoryPaginator($paginator, ['totalQty' => (int) $totalQty]);
     }
 
+    /**
+     * Resolve product id.
+     */
     protected function resolveProductId(array $uriVariables, array $context): int
     {
         $raw = $uriVariables['productId']
@@ -82,52 +75,75 @@ class AdminCatalogProductInventoryProvider implements ProviderInterface
     }
 }
 
-/**
- * @internal Lightweight paginator wrapper that adds getExtraMeta() for the
- * AdminCollectionEnvelopeNormalizer (which merges extra keys into `meta`).
- */
 final class AdminCatalogProductInventoryPaginator implements \IteratorAggregate, HasNextPagePaginatorInterface, PaginatorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly LengthAwarePaginator $paginator,
         private readonly array $extraMeta = [],
     ) {}
 
+    /**
+     * Count.
+     */
     public function count(): int
     {
         return $this->paginator->count();
     }
 
+    /**
+     * Get last page.
+     */
     public function getLastPage(): float
     {
         return (float) $this->paginator->lastPage();
     }
 
+    /**
+     * Get total items.
+     */
     public function getTotalItems(): float
     {
         return (float) $this->paginator->total();
     }
 
+    /**
+     * Get current page.
+     */
     public function getCurrentPage(): float
     {
         return (float) $this->paginator->currentPage();
     }
 
+    /**
+     * Get items per page.
+     */
     public function getItemsPerPage(): float
     {
         return (float) $this->paginator->perPage();
     }
 
+    /**
+     * Get iterator.
+     */
     public function getIterator(): \Traversable
     {
         return $this->paginator->getIterator();
     }
 
+    /**
+     * Whether next page.
+     */
     public function hasNextPage(): bool
     {
         return $this->paginator->hasMorePages();
     }
 
+    /**
+     * Get extra meta.
+     */
     public function getExtraMeta(): array
     {
         return $this->extraMeta;

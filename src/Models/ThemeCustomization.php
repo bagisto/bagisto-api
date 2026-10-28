@@ -146,12 +146,14 @@ class ThemeCustomization extends \Webkul\Theme\Models\ThemeCustomization
     use ServesLoadedTranslation;
 
     /**
+     * The relations always eager loaded with the theme customization.
+     *
      * @var list<string>
      */
     protected $with = ['translations'];
 
     /**
-     * Get unique theme customization identifier for API
+     * Get unique theme customization identifier for API.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -160,7 +162,7 @@ class ThemeCustomization extends \Webkul\Theme\Models\ThemeCustomization
     }
 
     /**
-     * Get translation for the current locale
+     * Get translation for the current locale.
      */
     #[ApiProperty(readable: true, writable: false, readableLink: true, description: 'Current locale translation')]
     public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
@@ -169,7 +171,7 @@ class ThemeCustomization extends \Webkul\Theme\Models\ThemeCustomization
     }
 
     /**
-     * Get all translations
+     * Get all translations.
      */
     #[ApiProperty(readable: true, writable: false, readableLink: true, description: 'All translations')]
     public function getTranslations()

@@ -13,7 +13,7 @@ use Webkul\Product\Helpers\ProductType;
 class ProductValidator
 {
     /**
-     * Validate product data for creation
+     * Validate product data for creation.
      *
      * @throws UserError
      */
@@ -25,7 +25,7 @@ class ProductValidator
     }
 
     /**
-     * Validate product data for update
+     * Validate product data for update.
      *
      * @throws UserError
      */
@@ -33,7 +33,6 @@ class ProductValidator
     {
         $data = $this->extractValidationData($product);
 
-        // For updates, we don't require all fields
         $this->validateUpdateFields($data, $product->id);
     }
 
@@ -60,25 +59,7 @@ class ProductValidator
     }
 
     /**
-     * Reduce super attributes to a list of IDs, codes or arrays.
-     */
-    private function normalizeSuperAttributes(mixed $superAttributes): mixed
-    {
-        if (! is_iterable($superAttributes)) {
-            return $superAttributes;
-        }
-
-        $normalized = [];
-
-        foreach ($superAttributes as $attribute) {
-            $normalized[] = $attribute instanceof Attribute ? $attribute->id : $attribute;
-        }
-
-        return $normalized;
-    }
-
-    /**
-     * Validate required fields for product creation
+     * Validate required fields for product creation.
      *
      * @throws UserError
      */
@@ -108,10 +89,8 @@ class ProductValidator
             'brand' => 'nullable',
         ];
 
-        // Only validate super_attributes for configurable products
         if (ProductType::hasVariants($data['type'] ?? '')) {
             $rules['super_attributes'] = 'required|array|min:1';
-            // No need to validate nested structure since we normalized to IDs
         }
 
         $messages = [
@@ -131,7 +110,7 @@ class ProductValidator
     }
 
     /**
-     * Validate required fields for product creation
+     * Validate required fields for product creation.
      *
      * @throws UserError
      */
@@ -145,7 +124,6 @@ class ProductValidator
             'sku' => ['required', 'unique:products,sku', new Slug],
         ];
 
-        // Only validate super_attributes for configurable products
         if (ProductType::hasVariants($data['type'] ?? '')) {
             $rules['super_attributes'] = 'required|array|min:1';
         }
@@ -166,7 +144,7 @@ class ProductValidator
     }
 
     /**
-     * Validate fields for product update
+     * Validate fields for product update.
      *
      * @throws UserError
      */
@@ -174,12 +152,10 @@ class ProductValidator
     {
         $rules = [];
 
-        // Only validate SKU if it's being updated
         if (isset($data['sku'])) {
             $rules['sku'] = ['required', 'unique:products,sku,'.$productId, new Slug];
         }
 
-        // Validate other fields if present
         if (isset($data['name'])) {
             $rules['name'] = 'required|string';
         }
@@ -198,7 +174,7 @@ class ProductValidator
     }
 
     /**
-     * Run validation and throw UserError if fails
+     * Run validation and throw UserError if fails.
      *
      * @throws UserError
      */
@@ -218,5 +194,23 @@ class ProductValidator
 
             throw new UserError(implode(', ', $errorMessages));
         }
+    }
+
+    /**
+     * Reduce super attributes to a list of IDs, codes or arrays.
+     */
+    private function normalizeSuperAttributes(mixed $superAttributes): mixed
+    {
+        if (! is_iterable($superAttributes)) {
+            return $superAttributes;
+        }
+
+        $normalized = [];
+
+        foreach ($superAttributes as $attribute) {
+            $normalized[] = $attribute instanceof Attribute ? $attribute->id : $attribute;
+        }
+
+        return $normalized;
     }
 }

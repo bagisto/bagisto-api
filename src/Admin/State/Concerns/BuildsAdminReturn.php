@@ -3,7 +3,6 @@
 namespace Webkul\BagistoApi\Admin\State\Concerns;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Models\AdminReturn;
 use Webkul\RMA\Enums\DefaultRMAResolution;
 use Webkul\RMA\Enums\DefaultRMAStatusEnum;
@@ -12,8 +11,14 @@ use Webkul\RMA\Repositories\RMAStatusRepository;
 
 trait BuildsAdminReturn
 {
+    /**
+     * The return relations constant.
+     */
     public const RETURN_RELATIONS = ['status', 'item.orderItem', 'item.reason', 'images', 'order'];
 
+    /**
+     * Build admin return.
+     */
     protected function buildAdminReturn($rma, RMARepository $rmaRepository, RMAStatusRepository $statusRepository): AdminReturn
     {
         $dto = new AdminReturn;
@@ -37,7 +42,7 @@ trait BuildsAdminReturn
         $dto->images = $rma->images->map(fn ($image) => [
             'id' => (int) $image->id,
             'path' => $image->path,
-            'url' => $image->path ? Storage::url($image->path) : null,
+            'url' => $image->path ? url('/api/admin/rma/requests/images/'.$image->id) : null,
         ])->values()->all();
         $dto->availableStatuses = $this->buildAvailableStatuses($rma, $statusRepository);
         $dto->createdAt = $rma->created_at ? Carbon::parse($rma->created_at)->toIso8601String() : null;
@@ -46,6 +51,9 @@ trait BuildsAdminReturn
         return $dto;
     }
 
+    /**
+     * Build admin return item.
+     */
     protected function buildAdminReturnItem($item): ?array
     {
         if (! $item) {

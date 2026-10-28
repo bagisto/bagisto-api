@@ -21,26 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
 
-/**
- * Admin Settings → Inventory Sources endpoints (Block B Wave 1).
- *
- * REST:
- *   GET    /api/admin/settings/inventory-sources
- *   GET    /api/admin/settings/inventory-sources/{id}
- *   POST   /api/admin/settings/inventory-sources
- *   PUT    /api/admin/settings/inventory-sources/{id}
- *   DELETE /api/admin/settings/inventory-sources/{id}
- *
- * GraphQL: adminSettingsInventorySources, adminSettingsInventorySource,
- *          createAdminSettingsInventorySource, updateAdminSettingsInventorySource,
- *          deleteAdminSettingsInventorySource
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\InventorySourceController.
- *
- * Delete guards (parity with monolith + API-specific FK guard):
- *  - 400 if this is the last remaining inventory source.
- *  - 400 if any product_inventories row references this source.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsInventorySource',
@@ -54,6 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Create a new inventory source',
+                description: 'Creates an inventory source. `code` (letters, digits, `_` and `-`), `name`, the contact fields and the address fields are required; `priority`, `latitude`, `longitude` and `status` (0 or 1) are optional.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -165,6 +146,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Update an inventory source',
+                description: 'Updates the inventory source; the fields are validated as on create. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: [
                         'type' => 'integer',
@@ -215,6 +197,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Delete an inventory source',
+                description: 'Deletes the inventory source. Refused with 400 for the last remaining source or one that holds product stock; an unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: [
                         'type' => 'integer',
@@ -242,6 +225,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Inventory source detail',
+                description: 'One inventory source by ID with its contact details, address, priority and status. An unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: [
                         'type' => 'integer',
@@ -335,63 +319,123 @@ class AdminSettingsInventorySource
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(writable: false, example: 'default')]
     public ?string $code = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false, example: 'Default Warehouse')]
     public ?string $name = null;
 
+    /**
+     * The description.
+     */
     #[ApiProperty(writable: false, example: 'Primary fulfilment warehouse')]
     public ?string $description = null;
 
+    /**
+     * The contact name.
+     */
     #[ApiProperty(writable: false, example: 'Jane Smith')]
     public ?string $contact_name = null;
 
+    /**
+     * The contact email.
+     */
     #[ApiProperty(writable: false, example: 'warehouse@example.com')]
     public ?string $contact_email = null;
 
+    /**
+     * The contact number.
+     */
     #[ApiProperty(writable: false, example: '+1-555-0100')]
     public ?string $contact_number = null;
 
+    /**
+     * The contact fax.
+     */
     #[ApiProperty(writable: false, example: '+1-555-0101')]
     public ?string $contact_fax = null;
 
+    /**
+     * The country.
+     */
     #[ApiProperty(writable: false, example: 'US')]
     public ?string $country = null;
 
+    /**
+     * The state.
+     */
     #[ApiProperty(writable: false, example: 'CA')]
     public ?string $state = null;
 
+    /**
+     * The city.
+     */
     #[ApiProperty(writable: false, example: 'San Francisco')]
     public ?string $city = null;
 
+    /**
+     * The street.
+     */
     #[ApiProperty(writable: false, example: '123 Market St')]
     public ?string $street = null;
 
+    /**
+     * The postcode.
+     */
     #[ApiProperty(writable: false, example: '94103')]
     public ?string $postcode = null;
 
+    /**
+     * The priority.
+     */
     #[ApiProperty(writable: false, example: 1)]
     public ?int $priority = null;
 
+    /**
+     * The latitude.
+     */
     #[ApiProperty(writable: false, example: 37.7749)]
     public ?float $latitude = null;
 
+    /**
+     * The longitude.
+     */
     #[ApiProperty(writable: false, example: -122.4194)]
     public ?float $longitude = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(writable: false, example: 1)]
     public ?int $status = null;
 
+    /**
+     * The created at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, example: 'Inventory source deleted successfully.')]
     public ?string $message = null;
 }

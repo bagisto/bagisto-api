@@ -7,26 +7,11 @@ use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerAddress;
 use Webkul\Customer\Models\CustomerGroup;
 
-/**
- * GraphQL coverage for admin Customers CRUD + sub-resources (Block C C1).
- */
 class CustomerTest extends AdminApiTestCase
 {
-    protected function group(): CustomerGroup
-    {
-        $this->seedRequiredData();
-
-        return CustomerGroup::where('code', 'general')->first();
-    }
-
-    protected function seedCustomer(array $overrides = []): Customer
-    {
-        return Customer::factory()->create(array_merge([
-            'customer_group_id' => $this->group()->id,
-            'status' => 1,
-        ], $overrides));
-    }
-
+    /**
+     * Test listing.
+     */
     public function test_listing(): void
     {
         $admin = $this->createAdmin();
@@ -46,6 +31,9 @@ class CustomerTest extends AdminApiTestCase
         expect($ids)->toContain($c->id);
     }
 
+    /**
+     * Test listing filter by email.
+     */
     public function test_listing_filter_by_email(): void
     {
         $admin = $this->createAdmin();
@@ -66,6 +54,9 @@ class CustomerTest extends AdminApiTestCase
         expect($ids)->toContain($c->id);
     }
 
+    /**
+     * Test listing filter by date of birth range.
+     */
     public function test_listing_filter_by_date_of_birth_range(): void
     {
         $admin = $this->createAdmin();
@@ -90,6 +81,9 @@ class CustomerTest extends AdminApiTestCase
         expect($ids)->not()->toContain($outRange->id);
     }
 
+    /**
+     * Test listing requires auth.
+     */
     public function test_listing_requires_auth(): void
     {
         $query = 'query { adminCustomers(first: 5) { edges { node { _id } } } }';
@@ -98,6 +92,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test detail.
+     */
     public function test_detail(): void
     {
         $admin = $this->createAdmin();
@@ -111,6 +108,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('data.adminCustomer._id'))->toBe($c->id);
     }
 
+    /**
+     * Test query detail resolves camelcase fields.
+     */
     public function test_query_detail_resolves_camelcase_fields(): void
     {
         $admin = $this->createAdmin();
@@ -143,6 +143,9 @@ class CustomerTest extends AdminApiTestCase
         expect((int) $node['totalAddresses'])->toBe(0);
     }
 
+    /**
+     * Test listing resolves group object.
+     */
     public function test_listing_resolves_group_object(): void
     {
         $admin = $this->createAdmin();
@@ -166,6 +169,9 @@ class CustomerTest extends AdminApiTestCase
         expect($row['node']['group']['name'])->not->toBeNull();
     }
 
+    /**
+     * Test detail null group does not 500.
+     */
     public function test_detail_null_group_does_not_500(): void
     {
         $admin = $this->createAdmin();
@@ -183,6 +189,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('data.adminCustomer.group'))->toBeNull();
     }
 
+    /**
+     * Test detail unknown.
+     */
     public function test_detail_unknown(): void
     {
         $admin = $this->createAdmin();
@@ -196,6 +205,37 @@ class CustomerTest extends AdminApiTestCase
         expect($errors !== null || $dataNull)->toBeTrue();
     }
 
+    /**
+     * Test the customer's password hash and tokens are not part of the schema.
+     */
+    public function test_detail_does_not_expose_secret_columns(): void
+    {
+        $admin = $this->createAdmin();
+        $c = $this->seedCustomer();
+        \DB::table('customers')->where('id', $c->id)->update([
+            'api_token' => 'secret-api-token',
+            'token' => 'secret-token',
+        ]);
+
+        foreach (['password', 'apiToken', 'token', 'rememberToken'] as $field) {
+            $query = 'query($id: ID!) { adminCustomer(id: $id) { _id '.$field.' } }';
+            $resp = $this->adminGraphQL($query, ['id' => '/api/admin/customers/'.$c->id], $admin);
+
+            expect($resp->json('errors.0.message'))->toBe('Cannot query field "'.$field.'" on type "AdminCustomer".');
+            expect($resp->getContent())->not->toContain('secret-');
+        }
+
+        foreach (['AdminCustomer', 'AdminOrderDetailCustomer', 'AdminCustomerReviewCustomerRef'] as $type) {
+            $fields = collect($this->adminGraphQL('query { __type(name: "'.$type.'") { fields { name } } }', [], $admin)
+                ->json('data.__type.fields'))->pluck('name');
+
+            expect($fields)->not->toContain('password', 'apiToken', 'token', 'rememberToken');
+        }
+    }
+
+    /**
+     * Test mutation create.
+     */
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();
@@ -221,6 +261,9 @@ class CustomerTest extends AdminApiTestCase
         expect(Customer::where('email', $email)->exists())->toBeTrue();
     }
 
+    /**
+     * Test mutation create requires auth.
+     */
     public function test_mutation_create_requires_auth(): void
     {
         $mutation = <<<'GQL'
@@ -239,6 +282,9 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('errors'))->not()->toBeNull();
     }
 
+    /**
+     * Test mutation update.
+     */
     public function test_mutation_update(): void
     {
         $admin = $this->createAdmin();
@@ -263,6 +309,9 @@ class CustomerTest extends AdminApiTestCase
         expect($name === 'NewGQL' || $hasErrors)->toBeTrue();
     }
 
+    /**
+     * Test mutation delete.
+     */
     public function test_mutation_delete(): void
     {
         $admin = $this->createAdmin();
@@ -291,6 +340,9 @@ class CustomerTest extends AdminApiTestCase
         expect(Customer::where('id', $c->id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mutation mass delete.
+     */
     public function test_mutation_mass_delete(): void
     {
         $admin = $this->createAdmin();
@@ -310,6 +362,9 @@ class CustomerTest extends AdminApiTestCase
         expect(Customer::where('id', $b->id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mutation mass update status.
+     */
     public function test_mutation_mass_update_status(): void
     {
         $admin = $this->createAdmin();
@@ -332,6 +387,9 @@ class CustomerTest extends AdminApiTestCase
         expect((int) $c->fresh()->status)->toBe(0);
     }
 
+    /**
+     * Test addresses list.
+     */
     public function test_addresses_list(): void
     {
         $admin = $this->createAdmin();
@@ -356,6 +414,9 @@ class CustomerTest extends AdminApiTestCase
         expect(is_array($edges) || is_array($errors))->toBeTrue();
     }
 
+    /**
+     * Test address mutation create.
+     */
     public function test_address_mutation_create(): void
     {
         $admin = $this->createAdmin();
@@ -380,6 +441,9 @@ class CustomerTest extends AdminApiTestCase
         expect(CustomerAddress::where('customer_id', $c->id)->exists())->toBeTrue();
     }
 
+    /**
+     * Test note mutation.
+     */
     public function test_note_mutation(): void
     {
         $admin = $this->createAdmin();
@@ -402,66 +466,9 @@ class CustomerTest extends AdminApiTestCase
         expect(\DB::table('customer_notes')->where('customer_id', $c->id)->exists())->toBeTrue();
     }
 
-    public function test_impersonate_mutation(): void
-    {
-        $admin = $this->createAdmin();
-        $c = $this->seedCustomer();
-
-        $mutation = <<<'GQL'
-            mutation($input: createAdminCustomerImpersonateInput!) {
-              createAdminCustomerImpersonate(input: $input) {
-                adminCustomerImpersonate {
-                  _id
-                  token
-                  customerId
-                  customerEmail
-                  customerName
-                  impersonatedByAdminId
-                  expiresAt
-                }
-              }
-            }
-        GQL;
-        $resp = $this->adminGraphQL($mutation, [
-            'input' => ['customerId' => $c->id],
-        ], $admin);
-        $resp->assertOk();
-        expect($resp->json('errors'))->toBeNull();
-
-        $node = $resp->json('data.createAdminCustomerImpersonate.adminCustomerImpersonate');
-        expect($node['customerId'])->not()->toBeNull();
-        expect($node['customerEmail'])->not()->toBeNull();
-        expect($node['customerName'])->not()->toBeNull();
-        expect($node['impersonatedByAdminId'])->not()->toBeNull();
-        expect($node['expiresAt'])->not()->toBeNull();
-
-        $tokenRow = \DB::table('personal_access_tokens')
-            ->where('tokenable_type', Customer::class)
-            ->where('tokenable_id', $c->id)
-            ->orderByDesc('id')->first();
-        expect($tokenRow)->not()->toBeNull();
-    }
-
-    protected function seedAddress(Customer $c): CustomerAddress
-    {
-        return CustomerAddress::create([
-            'customer_id' => $c->id, 'address_type' => CustomerAddress::ADDRESS_TYPE,
-            'first_name' => 'A', 'last_name' => 'B', 'address' => '1 Addr',
-            'city' => 'OrigCity', 'state' => 'NY', 'country' => 'US', 'postcode' => '10001', 'phone' => '555',
-        ]);
-    }
-
-    protected function addressUpdateMutation(): string
-    {
-        return <<<'GQL'
-            mutation Upd($input: updateAdminCustomerAddressInput!) {
-              updateAdminCustomerAddress(input: $input) {
-                adminCustomerAddress { _id }
-              }
-            }
-        GQL;
-    }
-
+    /**
+     * Test address update without customer id is rejected.
+     */
     public function test_address_update_without_customer_id_is_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -478,6 +485,9 @@ class CustomerTest extends AdminApiTestCase
         expect(CustomerAddress::find($addr->id)->city)->toBe('OrigCity');
     }
 
+    /**
+     * Test address update with wrong customer id is rejected.
+     */
     public function test_address_update_with_wrong_customer_id_is_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -496,6 +506,9 @@ class CustomerTest extends AdminApiTestCase
         expect(CustomerAddress::find($addr->id)->city)->toBe('OrigCity');
     }
 
+    /**
+     * Test address update with correct customer id succeeds.
+     */
     public function test_address_update_with_correct_customer_id_succeeds(): void
     {
         $admin = $this->createAdmin();
@@ -512,5 +525,52 @@ class CustomerTest extends AdminApiTestCase
         $r->assertOk();
         expect($r->json('errors'))->toBeNull();
         expect(CustomerAddress::find($addr->id)->city)->toBe('NewCity');
+    }
+
+    /**
+     * Group.
+     */
+    protected function group(): CustomerGroup
+    {
+        $this->seedRequiredData();
+
+        return CustomerGroup::where('code', 'general')->first();
+    }
+
+    /**
+     * Seed customer.
+     */
+    protected function seedCustomer(array $overrides = []): Customer
+    {
+        return Customer::factory()->create(array_merge([
+            'customer_group_id' => $this->group()->id,
+            'status' => 1,
+        ], $overrides));
+    }
+
+    /**
+     * Seed address.
+     */
+    protected function seedAddress(Customer $c): CustomerAddress
+    {
+        return CustomerAddress::create([
+            'customer_id' => $c->id, 'address_type' => CustomerAddress::ADDRESS_TYPE,
+            'first_name' => 'A', 'last_name' => 'B', 'address' => '1 Addr',
+            'city' => 'OrigCity', 'state' => 'NY', 'country' => 'US', 'postcode' => '10001', 'phone' => '555',
+        ]);
+    }
+
+    /**
+     * Address update mutation.
+     */
+    protected function addressUpdateMutation(): string
+    {
+        return <<<'GQL'
+            mutation Upd($input: updateAdminCustomerAddressInput!) {
+              updateAdminCustomerAddress(input: $input) {
+                adminCustomerAddress { _id }
+              }
+            }
+        GQL;
     }
 }

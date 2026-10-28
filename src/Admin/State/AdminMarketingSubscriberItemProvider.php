@@ -11,16 +11,11 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Core\Models\Channel;
 use Webkul\Core\Models\SubscribersList;
 
-/**
- * Subscriber detail — GET /api/admin/marketing/subscribers/{id} +
- * adminMarketingSubscriber.
- *
- * Branches: GraphQL → the AdminMarketingSubscriber Eloquent model (the `channel`
- * to-one object resolves); REST → the flat AdminMarketingSubscriberRestDto with
- * `channel` as an object `{ id, code, name }` (customerId/customerName scalars).
- */
 class AdminMarketingSubscriberItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminMarketingSubscriber|AdminMarketingSubscriberRestDto
     {
         AdminReadPermissions::authorize($operation, AdminMarketingSubscriber::class);
@@ -50,14 +45,19 @@ class AdminMarketingSubscriberItemProvider implements ProviderInterface
         return $this->buildRestDto($subscriber);
     }
 
+    /**
+     * Build rest dto public.
+     */
     public function buildRestDtoPublic(object $subscriber): AdminMarketingSubscriberRestDto
     {
         return $this->buildRestDto($subscriber);
     }
 
+    /**
+     * Build rest dto.
+     */
     protected function buildRestDto(object $subscriber): AdminMarketingSubscriberRestDto
     {
-        /** @var SubscribersList $subscriber */
         $dto = new AdminMarketingSubscriberRestDto;
 
         $dto->id = (int) $subscriber->id;
@@ -77,6 +77,8 @@ class AdminMarketingSubscriberItemProvider implements ProviderInterface
     }
 
     /**
+     * Build the channel summary of a subscriber, or null when it has none.
+     *
      * @return array{id:int, code:string|null, name:string|null}|null
      */
     protected function channelObject(?int $channelId): ?array

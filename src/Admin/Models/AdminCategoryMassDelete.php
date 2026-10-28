@@ -10,18 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCategoryMassDeleteInput;
 use Webkul\BagistoApi\Admin\State\AdminCategoryMassDeleteProcessor;
 
-/**
- * One-operation resource for mass-deleting categories.
- *
- * REST:
- *   POST /api/admin/catalog/categories/mass-delete
- *     Body: { "indices": [12, 18] }
- *     200:  { "deleted": [12, 18], "message": "..." }
- *     400:  if any ID is non-deletable (root, channel root), entire batch rejected.
- *
- * GraphQL:
- *   createAdminCategoryMassDelete
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCategoryMassDelete',
@@ -94,13 +82,23 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryMassDeleteProcessor;
 )]
 class AdminCategoryMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the categories that were deleted.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

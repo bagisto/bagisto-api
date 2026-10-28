@@ -11,23 +11,9 @@ use Webkul\Sales\Models\Order;
 
 class EuWithdrawalTest extends AdminApiTestCase
 {
-    private function createWithdrawal(string $status = 'received'): int
-    {
-        $channel = Channel::first();
-        $order = Order::factory()->create([
-            'customer_id' => null, 'customer_email' => 'w@example.com',
-            'increment_id' => 'WG-'.uniqid(), 'channel_id' => $channel->id,
-            'is_guest' => 1, 'status' => 'completed',
-        ]);
-
-        return DB::table('eu_withdrawals')->insertGetId([
-            'uuid' => (string) Str::uuid(), 'order_id' => $order->id,
-            'customer_id' => null, 'is_guest' => 1, 'customer_email' => 'w@example.com',
-            'channel_id' => $channel->id, 'locale' => 'en', 'received_at' => now(),
-            'status' => $status, 'created_at' => now(), 'updated_at' => now(),
-        ]);
-    }
-
+    /**
+     * Test list and detail.
+     */
     public function test_list_and_detail(): void
     {
         $admin = $this->createAdmin();
@@ -45,6 +31,9 @@ class EuWithdrawalTest extends AdminApiTestCase
         expect($d->json('data.adminEuWithdrawal.status'))->toBe('received');
     }
 
+    /**
+     * Test decline.
+     */
     public function test_decline(): void
     {
         $admin = $this->createAdmin();
@@ -63,6 +52,9 @@ class EuWithdrawalTest extends AdminApiTestCase
         expect($node['declinedReason'])->toBe('no');
     }
 
+    /**
+     * Test mark refunded and resend.
+     */
     public function test_mark_refunded_and_resend(): void
     {
         Mail::fake();
@@ -90,5 +82,25 @@ class EuWithdrawalTest extends AdminApiTestCase
         $re = $this->adminGraphQL($resend, [], $admin);
         $re->assertOk();
         expect($re->json('data.resendConfirmationAdminEuWithdrawal.adminEuWithdrawal.message'))->not->toBeNull();
+    }
+
+    /**
+     * Create withdrawal.
+     */
+    private function createWithdrawal(string $status = 'received'): int
+    {
+        $channel = Channel::first();
+        $order = Order::factory()->create([
+            'customer_id' => null, 'customer_email' => 'w@example.com',
+            'increment_id' => 'WG-'.uniqid(), 'channel_id' => $channel->id,
+            'is_guest' => 1, 'status' => 'completed',
+        ]);
+
+        return DB::table('eu_withdrawals')->insertGetId([
+            'uuid' => (string) Str::uuid(), 'order_id' => $order->id,
+            'customer_id' => null, 'is_guest' => 1, 'customer_email' => 'w@example.com',
+            'channel_id' => $channel->id, 'locale' => 'en', 'received_at' => now(),
+            'status' => $status, 'created_at' => now(), 'updated_at' => now(),
+        ]);
     }
 }

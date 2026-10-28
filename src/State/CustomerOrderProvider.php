@@ -9,47 +9,48 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderDetailDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderListDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\OrderAddressDto;
+use Webkul\BagistoApi\Dto\CustomerOrder\OrderInvoiceDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\OrderItemDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\OrderPaymentDto;
+use Webkul\BagistoApi\Dto\CustomerOrder\OrderRefundDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\OrderShipmentDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\OrderShipmentItemDto;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerOrder;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
+use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Customer\Models\Customer;
+use Webkul\Sales\Repositories\OrderRepository;
 
-/**
- * CustomerOrderProvider — Retrieves orders belonging to the authenticated customer
- *
- * Supports cursor-based pagination and status filtering.
- * All queries are scoped to the current customer for multi-tenant isolation.
- */
 class CustomerOrderProvider implements ProviderInterface
 {
     use ClampsPageSize;
+    use ResolvesCursorWindow;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
-        private readonly Pagination $pagination
+        private readonly Pagination $pagination,
+        private readonly OrderRepository $orderRepository,
     ) {}
 
     /**
-     * Provide customer orders for collection or single-item operations
+     * Provide customer orders for collection or single-item operations.
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
 
-        /** Single item — GET /api/shop/customer-orders/{id} */
         if (
             ! $operation instanceof GetCollection
             && ! ($operation instanceof QueryCollection)
@@ -60,6 +61,9 @@ class CustomerOrderProvider implements ProviderInterface
         return $this->provideCollection($customer, $context, $operation);
     }
 
+    /**
+     * To list dto.
+     */
     private function toListDto(CustomerOrder $order): CustomerOrderListDto
     {
         $dto = new CustomerOrderListDto;
@@ -92,7 +96,7 @@ class CustomerOrderProvider implements ProviderInterface
     }
 
     /**
-     * Return a single order owned by the customer
+     * Return a single order owned by the customer.
      */
     private function provideItem(object $customer, array $uriVariables, Operation $operation, array $context = []): CustomerOrder|CustomerOrderDetailDto
     {
@@ -102,7 +106,10 @@ class CustomerOrderProvider implements ProviderInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.customer-order.id-required'));
         }
 
-        $orderQuery = CustomerOrder::with(['items', 'addresses', 'payment', 'shipments.items'])
+        $orderQuery = CustomerOrder::with([
+            'items', 'addresses', 'payment',
+            'shipments.items', 'invoices.items', 'refunds.items',
+        ])
             ->where('customer_id', $customer->id)
             ->where('customer_type', Customer::class);
 
@@ -126,6 +133,9 @@ class CustomerOrderProvider implements ProviderInterface
         return $order;
     }
 
+    /**
+     * To detail dto.
+     */
     private function toDetailDto(CustomerOrder $order): CustomerOrderDetailDto
     {
         $dto = new CustomerOrderDetailDto;
@@ -178,6 +188,14 @@ class CustomerOrderProvider implements ProviderInterface
         $dto->created_at = $order->created_at?->toIso8601String();
         $dto->updated_at = $order->updated_at?->toIso8601String();
 
+        $coreOrder = $this->orderRepository->with('items.product')->find($order->id);
+
+        $dto->total_due = round((float) $coreOrder->total_due, 2) + 0.0;
+        $dto->base_total_due = round((float) $coreOrder->base_total_due, 2) + 0.0;
+        $dto->can_cancel = $coreOrder->canCancel();
+        $dto->can_reorder = $coreOrder->canReorder();
+        $dto->have_stockable_items = $coreOrder->haveStockableItems();
+
         $dto->items = $order->items
             ->map(fn ($item) => $this->toItemDto($item))
             ->all();
@@ -194,9 +212,20 @@ class CustomerOrderProvider implements ProviderInterface
             ->map(fn ($shipment) => $this->toShipmentDto($shipment))
             ->all();
 
+        $dto->invoices = $order->invoices
+            ->map(fn ($invoice) => $this->toInvoiceDto($invoice))
+            ->all();
+
+        $dto->refunds = $order->refunds
+            ->map(fn ($refund) => $this->toRefundDto($refund))
+            ->all();
+
         return $dto;
     }
 
+    /**
+     * To item dto.
+     */
     private function toItemDto($item): OrderItemDto
     {
         $dto = new OrderItemDto;
@@ -225,6 +254,9 @@ class CustomerOrderProvider implements ProviderInterface
         return $dto;
     }
 
+    /**
+     * To address dto.
+     */
     private function toAddressDto($address): OrderAddressDto
     {
         $dto = new OrderAddressDto;
@@ -246,6 +278,9 @@ class CustomerOrderProvider implements ProviderInterface
         return $dto;
     }
 
+    /**
+     * To payment dto.
+     */
     private function toPaymentDto($payment): OrderPaymentDto
     {
         $dto = new OrderPaymentDto;
@@ -256,6 +291,9 @@ class CustomerOrderProvider implements ProviderInterface
         return $dto;
     }
 
+    /**
+     * To shipment dto.
+     */
     private function toShipmentDto($shipment): OrderShipmentDto
     {
         $dto = new OrderShipmentDto;
@@ -286,10 +324,82 @@ class CustomerOrderProvider implements ProviderInterface
     }
 
     /**
+     * Map an invoice of the order to its DTO.
+     */
+    private function toInvoiceDto(object $invoice): OrderInvoiceDto
+    {
+        $dto = new OrderInvoiceDto;
+        $dto->id = (int) $invoice->id;
+        $dto->increment_id = $invoice->increment_id;
+        $dto->created_at = $invoice->created_at?->toIso8601String();
+
+        foreach ([
+            'sub_total', 'base_sub_total', 'grand_total', 'base_grand_total',
+            'tax_amount', 'base_tax_amount', 'shipping_amount', 'base_shipping_amount',
+            'discount_amount', 'base_discount_amount',
+            'sub_total_incl_tax', 'base_sub_total_incl_tax',
+            'shipping_amount_incl_tax', 'base_shipping_amount_incl_tax',
+        ] as $field) {
+            $dto->{$field} = $invoice->{$field} !== null ? (float) $invoice->{$field} : null;
+        }
+
+        $dto->items = $invoice->items
+            ->map(fn ($item) => $this->toDocumentItemArray($item))
+            ->all();
+
+        return $dto;
+    }
+
+    /**
+     * Map a refund of the order to its DTO.
+     */
+    private function toRefundDto(object $refund): OrderRefundDto
+    {
+        $dto = new OrderRefundDto;
+        $dto->id = (int) $refund->id;
+        $dto->increment_id = $refund->increment_id;
+        $dto->created_at = $refund->created_at?->toIso8601String();
+
+        foreach ([
+            'sub_total', 'base_sub_total', 'grand_total', 'base_grand_total',
+            'tax_amount', 'base_tax_amount', 'shipping_amount', 'base_shipping_amount',
+            'discount_amount', 'base_discount_amount',
+            'adjustment_fee', 'base_adjustment_fee',
+            'adjustment_refund', 'base_adjustment_refund',
+        ] as $field) {
+            $dto->{$field} = $refund->{$field} !== null ? (float) $refund->{$field} : null;
+        }
+
+        $dto->items = $refund->items
+            ->map(fn ($item) => $this->toDocumentItemArray($item))
+            ->all();
+
+        return $dto;
+    }
+
+    /**
+     * Map an invoice or refund item to the array the order detail returns.
+     */
+    private function toDocumentItemArray(object $item): array
+    {
+        return [
+            'id' => (int) $item->id,
+            'order_item_id' => $item->order_item_id !== null ? (int) $item->order_item_id : null,
+            'sku' => $item->sku,
+            'name' => $item->name,
+            'qty' => $item->qty !== null ? (int) $item->qty : null,
+            'price' => $item->price !== null ? (float) $item->price : null,
+            'base_price' => $item->base_price !== null ? (float) $item->base_price : null,
+            'total' => $item->total !== null ? (float) $item->total : null,
+            'base_total' => $item->base_total !== null ? (float) $item->base_total : null,
+            'tax_amount' => $item->tax_amount !== null ? (float) $item->tax_amount : null,
+            'base_tax_amount' => $item->base_tax_amount !== null ? (float) $item->base_tax_amount : null,
+        ];
+    }
+
+    /**
      * Enable debug dumps only when explicitly requested via header:
-     * X-DEBUG-CUSTOMER-ORDER: 1
-     * Optional hard-stop at success checkpoint:
-     * X-DEBUG-CUSTOMER-ORDER-DD: 1
+     * X-DEBUG-CUSTOMER-ORDER: 1.
      */
     private function debugDump(string $checkpoint, array $payload = []): void
     {
@@ -298,11 +408,17 @@ class CustomerOrderProvider implements ProviderInterface
         }
     }
 
+    /**
+     * Should debug dump.
+     */
     private function shouldDebugDump(): bool
     {
         return request()->header('X-DEBUG-CUSTOMER-ORDER') === '1';
     }
 
+    /**
+     * Should debug dd.
+     */
     private function shouldDebugDd(): bool
     {
         return request()->header('X-DEBUG-CUSTOMER-ORDER-DD') === '1';
@@ -310,7 +426,7 @@ class CustomerOrderProvider implements ProviderInterface
 
     /**
      * Targeted hard-stop for debugging.
-     * Usage: X-DEBUG-CUSTOMER-ORDER-DD-AT: start|auth|id|result
+     * Usage: X-DEBUG-CUSTOMER-ORDER-DD-AT: start|auth|id|result.
      */
     private function debugDdAt(string $checkpoint, array $payload = []): void
     {
@@ -320,75 +436,59 @@ class CustomerOrderProvider implements ProviderInterface
     }
 
     /**
-     * Return a paginated collection of orders owned by the customer
+     * Return a paginated collection of orders owned by the customer.
      */
     private function provideCollection(object $customer, array $context, Operation $operation): Paginator
     {
-        $args = $context['args'] ?? [];
+        $isGraphQL = ! empty($context['graphql_operation_name']);
+
+        $args = $isGraphQL ? ($context['args'] ?? []) : $this->restPagingArgs();
         $filters = $context['filters'] ?? [];
 
         $query = CustomerOrder::with(['items', 'addresses', 'payment', 'shipments.items', 'shipments.shippingAddress'])
             ->where('customer_id', $customer->id)
             ->where('customer_type', Customer::class);
 
-        /** Apply optional status filter */
         $status = $args['status'] ?? $filters['status'] ?? null;
         if ($status !== null) {
             $query->where('status', (string) $status);
         }
 
-        /** Cursor-based pagination (offset-based cursors from API Platform) */
-        $first = isset($args['first']) ? (int) $args['first'] : null;
-        $last = isset($args['last']) ? (int) $args['last'] : null;
-        $after = $args['after'] ?? null;
-        $before = $args['before'] ?? null;
-
-        $perPage = $this->clampPageSize($first ?? $last ?? 10);
-        $offset = 0;
-
-        if ($after) {
-            $decoded = base64_decode($after, true);
-            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
-        }
-
-        if ($before) {
-            $decoded = base64_decode($before, true);
-            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset = max(0, $cursor - $perPage);
-        }
+        $requested = $this->requestedCursorLimit($args, 10);
+        $limit = $requested > 0 ? $this->clampPageSize($requested) : 0;
 
         $query->orderBy('id', 'desc');
 
-        $total = (clone $query)->count();
-
-        if ($offset > $total) {
-            $offset = max(0, $total - $perPage);
-        }
-
-        $items = $query
-            ->offset($offset)
-            ->limit($perPage)
-            ->get();
-
-        $isGraphQL = ! empty($context['graphql_operation_name']);
+        $page = $this->paginateCursorWindow($query, $args, $limit);
 
         if (
             $operation instanceof GetCollection
             && ! $isGraphQL
         ) {
-            $items = $items->map(fn (CustomerOrder $order) => $this->toListDto($order));
+            $page->through(fn (CustomerOrder $order) => $this->toListDto($order));
         }
 
-        $currentPage = $total > 0 ? (int) floor($offset / $perPage) + 1 : 1;
+        return new Paginator($page);
+    }
 
-        return new Paginator(
-            new LengthAwarePaginator(
-                $items,
-                $total,
-                $perPage,
-                $currentPage,
-                ['path' => request()->url()]
-            )
-        );
+    /**
+     * The cursor window a REST `page` and `per_page` select, with the `status` filter.
+     */
+    private function restPagingArgs(): array
+    {
+        $perPage = max(1, (int) request()->query('per_page', 10));
+        $page = max(1, (int) request()->query('page', 1));
+
+        $args = ['first' => $perPage];
+
+        if ($page > 1) {
+            $args['after'] = base64_encode((string) (($page - 1) * $this->clampPageSize($perPage) - 1));
+        }
+
+        if (request()->filled('status')) {
+            $args['status'] = (string) request()->query('status');
+        }
+
+        return $args;
     }
 }

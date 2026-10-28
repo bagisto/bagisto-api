@@ -13,21 +13,33 @@ class AdminRefundExportProvider implements ProviderInterface
 {
     use StreamsAdminExport;
 
+    /**
+     * Export permission.
+     */
     protected function exportPermission(): string
     {
         return 'sales.refunds.view';
     }
 
+    /**
+     * Export filename.
+     */
     protected function exportFilename(): string
     {
         return 'refunds';
     }
 
+    /**
+     * Export headers.
+     */
     protected function exportHeaders(): array
     {
         return ['ID', 'Order ID', 'Refunded Amount', 'Billed To', 'Refund Date'];
     }
 
+    /**
+     * Export row.
+     */
     protected function exportRow(object $row): array
     {
         return [
@@ -39,6 +51,9 @@ class AdminRefundExportProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Export query.
+     */
     protected function exportQuery(array $args)
     {
         $prefix = DB::getTablePrefix();

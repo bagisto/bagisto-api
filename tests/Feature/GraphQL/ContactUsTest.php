@@ -9,8 +9,7 @@ class ContactUsTest extends GraphQLTestCase
 {
     /**
      * Create Contact Us - Basic
-     *
-     * This mutation does not require authentication - it is available to all visitors
+     * This mutation does not require authentication - it is available to all visitors.
      */
     public function test_create_contact_us_basic(): void
     {
@@ -55,8 +54,7 @@ class ContactUsTest extends GraphQLTestCase
 
     /**
      * Create Contact Us - With Client Mutation ID
-     *
-     * This mutation does not require authentication - it is available to all visitors
+     * This mutation does not require authentication - it is available to all visitors.
      */
     public function test_create_contact_us_with_client_mutation_id(): void
     {
@@ -101,7 +99,6 @@ class ContactUsTest extends GraphQLTestCase
             $contactUs['message']
         );
 
-        // Verify clientMutationId is returned correctly
         $this->assertEquals(
             'contact-form-001',
             $response->json('data.createContactUs.clientMutationId')

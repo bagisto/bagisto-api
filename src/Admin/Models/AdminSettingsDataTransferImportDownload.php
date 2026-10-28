@@ -8,16 +8,6 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportDownloadProvider;
 
-/**
- * Binary download endpoints (REST-only — binary streams aren't transportable
- * over JSON GraphQL):
- *   GET /settings/data-transfer/imports/{id}/download
- *   GET /settings/data-transfer/imports/{id}/download-error-report
- *   GET /settings/data-transfer/imports/sample/{type}/{format}
- *
- * All three respond with application/octet-stream attachments. The `id`
- * requirement keeps the literal sample/{type}/{format} route from colliding.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsDataTransferImportDownload',
@@ -94,6 +84,9 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportDownloadProvide
 )]
 class AdminSettingsDataTransferImportDownload
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 }

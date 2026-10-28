@@ -13,15 +13,9 @@ use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\Dto\CheckoutAddressOutput;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
-use Webkul\BagistoApi\State\CheckoutAddressProvider;
+use Webkul\BagistoApi\Resolver\CheckoutAddressQueryResolver;
 use Webkul\BagistoApi\State\CheckoutProcessor;
 
-/**
- * CheckoutAddress - GraphQL API Resource for Checkout Address
- *
- * Provides mutation for saving billing and shipping addresses during checkout
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CheckoutAddress',
@@ -218,8 +212,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
         new Query(
             name: 'read',
             output: CheckoutAddressOutput::class,
-            provider: CheckoutAddressProvider::class,
-            resolver: BaseQueryItemResolver::class,
+            resolver: CheckoutAddressQueryResolver::class,
             normalizationContext: [
                 'groups' => ['query'],
             ],
@@ -243,10 +236,16 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
 )]
 class CheckoutAddress
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $id = null;
 
+    /**
+     * The cart token.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $cartToken = null;

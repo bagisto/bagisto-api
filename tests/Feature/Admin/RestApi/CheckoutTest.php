@@ -8,82 +8,67 @@ use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Checkout\Models\Cart;
 use Webkul\User\Models\Admin;
 
-/**
- * REST coverage for Wave 3 admin checkout — shipping + payment methods.
- *
- *   GET  /api/admin/carts/{cartId}/shipping-methods
- *   POST /api/admin/carts/{cartId}/shipping-methods
- *   GET  /api/admin/carts/{cartId}/payment-methods
- *   POST /api/admin/carts/{cartId}/payment-methods
- *
- * Covers happy-path + every 409 sequence-guard message + auth + active-cart
- * rejection + unknown-cart 404.
- */
 class CheckoutTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    /** Build a draft cart with one simple product item. Returns cart id. */
-    protected function bootstrapDraftCart(): int
-    {
-        return $this->bootstrapAdminDraftCart();
-    }
-
-    /** Save a generic address on the cart so shipping rates can be collected. */
-    protected function saveAddresses(int $cartId, Admin $admin): TestResponse
-    {
-        return $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
-            'billing' => [
-                'firstName' => 'Jane',
-                'lastName' => 'Doe',
-                'email' => 'jane@example.com',
-                'address' => ['12 Main St'],
-                'city' => 'Berlin',
-                'country' => 'DE',
-                'state' => 'BE',
-                'postcode' => '10115',
-                'phone' => '+4930123456',
-                'useForShipping' => true,
-            ],
-        ]);
-    }
-
+    /**
+     * Test list shipping methods requires auth.
+     */
     public function test_list_shipping_methods_requires_auth(): void
     {
         $resp = $this->publicGet('/api/admin/carts/1/shipping-methods');
         expect($resp->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test set shipping method requires auth.
+     */
     public function test_set_shipping_method_requires_auth(): void
     {
         $resp = $this->postJson('/api/admin/carts/1/shipping-methods', ['shippingMethod' => 'flatrate_flatrate']);
         expect($resp->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test list payment methods requires auth.
+     */
     public function test_list_payment_methods_requires_auth(): void
     {
         $resp = $this->publicGet('/api/admin/carts/1/payment-methods');
         expect($resp->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test set payment method requires auth.
+     */
     public function test_set_payment_method_requires_auth(): void
     {
         $resp = $this->postJson('/api/admin/carts/1/payment-methods', ['method' => 'cashondelivery']);
         expect($resp->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test unknown cart returns 404 on shipping.
+     */
     public function test_unknown_cart_returns_404_on_shipping(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/carts/999999999/shipping-methods')->assertStatus(404);
     }
 
+    /**
+     * Test unknown cart returns 404 on payment.
+     */
     public function test_unknown_cart_returns_404_on_payment(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/carts/999999999/payment-methods')->assertStatus(404);
     }
 
+    /**
+     * Test active storefront cart is blocked.
+     */
     public function test_active_storefront_cart_is_blocked(): void
     {
         $admin = $this->createAdmin();
@@ -106,6 +91,9 @@ class CheckoutTest extends AdminApiTestCase
             ->assertStatus(403);
     }
 
+    /**
+     * Test list shipping methods requires addresses.
+     */
     public function test_list_shipping_methods_requires_addresses(): void
     {
         $admin = $this->createAdmin();
@@ -115,6 +103,9 @@ class CheckoutTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(409);
     }
 
+    /**
+     * Test set shipping method requires addresses.
+     */
     public function test_set_shipping_method_requires_addresses(): void
     {
         $admin = $this->createAdmin();
@@ -126,6 +117,9 @@ class CheckoutTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(409);
     }
 
+    /**
+     * Test list payment methods requires shipping.
+     */
     public function test_list_payment_methods_requires_shipping(): void
     {
         $admin = $this->createAdmin();
@@ -137,6 +131,9 @@ class CheckoutTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(409);
     }
 
+    /**
+     * Test set payment method requires shipping.
+     */
     public function test_set_payment_method_requires_shipping(): void
     {
         $admin = $this->createAdmin();
@@ -150,6 +147,9 @@ class CheckoutTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(409);
     }
 
+    /**
+     * Test set shipping method requires method code.
+     */
     public function test_set_shipping_method_requires_method_code(): void
     {
         $admin = $this->createAdmin();
@@ -161,6 +161,9 @@ class CheckoutTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 409, 422]);
     }
 
+    /**
+     * Test set payment method requires method code.
+     */
     public function test_set_payment_method_requires_method_code(): void
     {
         $admin = $this->createAdmin();
@@ -171,6 +174,9 @@ class CheckoutTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 409, 422]);
     }
 
+    /**
+     * Test list shipping methods returns envelope after addresses.
+     */
     public function test_list_shipping_methods_returns_envelope_after_addresses(): void
     {
         $admin = $this->createAdmin();
@@ -187,6 +193,9 @@ class CheckoutTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test list payment methods after shipping set.
+     */
     public function test_list_payment_methods_after_shipping_set(): void
     {
         $admin = $this->createAdmin();
@@ -216,6 +225,9 @@ class CheckoutTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test full checkout chain addresses to payment.
+     */
     public function test_full_checkout_chain_addresses_to_payment(): void
     {
         $admin = $this->createAdmin();
@@ -248,5 +260,34 @@ class CheckoutTest extends AdminApiTestCase
         ]);
         expect($payResp->getStatusCode())->toBeIn([200, 201]);
         expect($payResp->json())->toHaveKey('paymentMethod');
+    }
+
+    /**
+     * Build a draft cart with one simple product item. Returns cart id.
+     */
+    protected function bootstrapDraftCart(): int
+    {
+        return $this->bootstrapAdminDraftCart();
+    }
+
+    /**
+     * Save a generic address on the cart so shipping rates can be collected.
+     */
+    protected function saveAddresses(int $cartId, Admin $admin): TestResponse
+    {
+        return $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
+            'billing' => [
+                'firstName' => 'Jane',
+                'lastName' => 'Doe',
+                'email' => 'jane@example.com',
+                'address' => ['12 Main St'],
+                'city' => 'Berlin',
+                'country' => 'DE',
+                'state' => 'BE',
+                'postcode' => '10115',
+                'phone' => '+4930123456',
+                'useForShipping' => true,
+            ],
+        ]);
     }
 }

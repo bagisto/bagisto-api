@@ -1,17 +1,75 @@
-// tests/restAPI/api/automation/customerAddress.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
-import { assertCustomerAddressFields } from '../../rest/assertions/customerAddress.assertions';
+import {
+  SHOP_CART_MESSAGES,
+  ShopCustomer,
+  bearer,
+  expectProblem,
+  readJson,
+  registerShopCustomer,
+} from '../../rest/helpers/coverage/shopCart.helpers';
 
-test.describe('Customer Addresses (Public)', () => {
-  test('Should return 401/404 when unauthenticated on GET /customer-addresses', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESSES);
-    expect([401, 404]).toContain(response.status());
-    console.log('Customer addresses (no auth):', response.status());
+const MSG = {
+  BEARER_REQUIRED: 'Authentication token is required. Please provide the token in the Authorization header as "Bearer <token>"',
+  ADDRESS_TOKEN_REQUIRED: 'Authentication token is required',
+};
+
+function addressPayload(companyName: string, street: string): Record<string, any> {
+  return {
+    companyName,
+    firstName: 'Addr',
+    lastName: 'Company',
+    address1: street,
+    city: 'San Francisco',
+    state: 'CA',
+    country: 'US',
+    postcode: '94103',
+    phone: '5550202',
+    email: `addr_${Date.now()}@example.com`,
+  };
+}
+
+async function createAddress(request: APIRequestContext, customer: ShopCustomer, data: Record<string, any>): Promise<any> {
+  const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS_CREATE, {
+    method: 'POST',
+    data,
+    headers: bearer(customer.token),
+  });
+  const body = await readJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(201);
+  expect(typeof body.id).toBe('number');
+
+  return body;
+}
+
+async function listAddressIds(request: APIRequestContext, customer: ShopCustomer): Promise<number[]> {
+  const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS_CREATE, {
+    headers: bearer(customer.token),
+  });
+  const body = await readJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(200);
+  expect(Array.isArray(body), JSON.stringify(body)).toBe(true);
+
+  return body.map((address: any) => Number(address.id));
+}
+
+test.describe('customer addresses without a bearer token', () => {
+  test('listing returns 401', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS_CREATE);
+
+    await expectProblem(response, 401, MSG.BEARER_REQUIRED);
   });
 
-  test('Should return 401/404 when creating address without auth', async ({ request }) => {
+  test('the legacy nested listing path has no route and returns 404', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESSES);
+
+    expect(response.status(), JSON.stringify(await readJson(response))).toBe(404);
+  });
+
+  test('creating an address returns 401', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS_CREATE, {
       method: 'POST',
       data: {
@@ -21,153 +79,90 @@ test.describe('Customer Addresses (Public)', () => {
         phone: '555-0101',
       },
     });
-    expect([401, 404]).toContain(response.status());
-    console.log('POST /customer-addresses (no auth):', response.status());
+
+    await expectProblem(response, 401, MSG.ADDRESS_TOKEN_REQUIRED);
   });
 
-  test('Should return 401/404 when fetching address /id without auth', async ({ request }) => {
+  test('fetching an address by id returns 401', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS(1));
-    expect([401, 404]).toContain(response.status());
-    console.log('GET /customer-addresses/1 (no auth):', response.status());
-  });
-});
 
-test.describe('Customer Addresses (PUT / DELETE)', () => {
-  test('Should return 404 when updating non-existent address without auth', async ({ request }) => {
+    await expectProblem(response, 401, MSG.BEARER_REQUIRED);
+  });
+
+  test('updating a non-existent address returns 404', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS(999999), {
       method: 'PUT',
       data: { city: 'San Francisco' },
     });
+
     expect(response.status()).toBe(404);
-    console.log('PUT /customer-addresses/999999: 404 (route not registered)');
   });
 
-  test('Should return 404 when deleting non-existent address without auth', async ({ request }) => {
+  test('deleting a non-existent address returns 404', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS(999999), {
       method: 'DELETE',
     });
+
     expect(response.status()).toBe(404);
-    console.log('DELETE /customer-addresses/999999: 404 (route not registered)');
   });
 });
 
-// ─── REGRESSION (strict): companyName round-trip on create + update ───────────
-// Locks down the bug fix where companyName was being dropped from the response
-// even though it was persisted. Both create and update must echo the value.
-test.describe('REGRESSION — companyName on address create/update', () => {
-  let regToken: string | null = null;
+test.describe('customer address company name round trip', () => {
+  let customer: ShopCustomer;
 
-  test.beforeAll(async ({ request }) => {
-    const email = `addrCo_${Date.now()}@example.com`;
-    const password = `AddrCo${Math.floor(Math.random() * 10000)}!`;
-    const reg = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REGISTER, {
-      method: 'POST',
-      data: {
-        first_name: 'Addr',
-        last_name: 'Company',
-        email,
-        password,
-        password_confirmation: password,
-      },
-    });
-    if (reg.status() === 200 || reg.status() === 201) {
-      const login = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-        method: 'POST',
-        data: { email, password },
-      });
-      if ([200, 201].includes(login.status())) {
-        regToken = ((await login.json()).token as string) ?? null;
-      }
-    }
+  test.beforeEach(async ({ request }) => {
+    customer = await registerShopCustomer(request);
   });
 
-  test('POST /customer-addresses with companyName returns it on response', async ({ request }) => {
-    if (!regToken) {
-      test.skip(true, 'Registration / login failed');
-      return;
-    }
-    const companyName = 'Acme Corp';
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS_CREATE, {
-      method: 'POST',
-      data: {
-        companyName,
-        firstName: 'Addr',
-        lastName: 'Company',
-        // address1 is a string; passing the legacy array shape is rejected by the deserializer.
-        address1: '123 Main St',
-        address: '123 Main St',
-        city: 'Los Angeles',
-        state: 'CA',
-        country: 'US',
-        postcode: '90210',
-        phone: '5550101',
-        email: `addr_${Date.now()}@example.com`,
-      },
-      headers: { Authorization: `Bearer ${regToken}` },
-    });
+  test('create echoes the company name and stores it', async ({ request }) => {
+    const created = await createAddress(request, customer, addressPayload('Acme Corp', '123 Main St'));
 
-    expect([200, 201]).toContain(response.status());
-    const body = await response.json();
-    expect(body).toBeDefined();
-    // The fix: companyName (camelCased through the name converter) must be
-    // non-null AND equal to what we sent.
-    const echoed = body.companyName ?? body.company_name;
-    expect(echoed).not.toBeNull();
-    expect(echoed).toBe(companyName);
+    expect(created.companyName).toBe('Acme Corp');
+    expect(created.firstName).toBe('Addr');
+    expect(created.address1).toBe('123 Main St');
+
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS(created.id), {
+      headers: bearer(customer.token),
+    });
+    const stored = await readJson(response);
+
+    expect(response.status(), JSON.stringify(stored)).toBe(200);
+    expect(stored.id).toBe(created.id);
+    expect(stored.companyName).toBe('Acme Corp');
+    expect(await listAddressIds(request, customer)).toEqual([created.id]);
   });
 
-  test('PUT /customer-addresses/{id} with updated companyName reflects new value', async ({ request }) => {
-    if (!regToken) {
-      test.skip(true, 'Registration / login failed');
-      return;
-    }
-    // First, create an address with a companyName.
-    const createResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS_CREATE, {
-      method: 'POST',
-      data: {
-        companyName: 'Original Co',
-        firstName: 'Addr',
-        lastName: 'Company',
-        address1: '456 Side St',
-        address: '456 Side St',
-        city: 'San Francisco',
-        state: 'CA',
-        country: 'US',
-        postcode: '94103',
-        phone: '5550202',
-        email: `addr2_${Date.now()}@example.com`,
-      },
-      headers: { Authorization: `Bearer ${regToken}` },
-    });
-    if (![200, 201].includes(createResp.status())) {
-      test.skip(true, `Create failed: ${createResp.status()}`);
-      return;
-    }
-    const created = await createResp.json();
-    const addrId = created.id;
-    expect(addrId).toBeTruthy();
+  test('update replaces the company name', async ({ request }) => {
+    const created = await createAddress(request, customer, addressPayload('Original Co', '456 Side St'));
 
-    const newCompany = 'New Co';
-    const putResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS(addrId), {
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS(created.id), {
       method: 'PUT',
-      data: {
-        companyName: newCompany,
-        firstName: 'Addr',
-        lastName: 'Company',
-        address1: '456 Side St',
-        address: '456 Side St',
-        city: 'San Francisco',
-        state: 'CA',
-        country: 'US',
-        postcode: '94103',
-        phone: '5550202',
-      },
-      headers: { Authorization: `Bearer ${regToken}` },
+      data: addressPayload('New Co', '456 Side St'),
+      headers: bearer(customer.token),
     });
-    expect([200, 201]).toContain(putResp.status());
-    const putBody = await putResp.json();
-    const echoed = putBody.companyName ?? putBody.company_name;
-    expect(echoed).not.toBeNull();
-    expect(echoed).toBe(newCompany);
+    const updated = await readJson(response);
+
+    expect(response.status(), JSON.stringify(updated)).toBe(200);
+    expect(updated.id).toBe(created.id);
+    expect(updated.companyName).toBe('New Co');
+
+    const read = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS(created.id), {
+      headers: bearer(customer.token),
+    });
+    const stored = await readJson(read);
+
+    expect(read.status(), JSON.stringify(stored)).toBe(200);
+    expect(stored.companyName).toBe('New Co');
+  });
+
+  test('another customer cannot read the address', async ({ request }) => {
+    const created = await createAddress(request, customer, addressPayload('Private Co', '789 Hidden St'));
+    const other = await registerShopCustomer(request);
+
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS(created.id), {
+      headers: bearer(other.token),
+    });
+
+    await expectProblem(response, 403, SHOP_CART_MESSAGES.ADDRESS_NOT_FOUND);
   });
 });

@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminPlaceOrderInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminPlaceOrderProcessor;
 
 #[ApiResource(
@@ -59,21 +60,41 @@ use Webkul\BagistoApi\Admin\State\AdminPlaceOrderProcessor;
 )]
 class AdminPlaceOrder
 {
+    use AcceptsCamelCaseWrites;
+
+    /**
+     * The order id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
-    public ?int $orderId = null;
+    public ?int $order_id = null;
 
+    /**
+     * The increment id.
+     */
     #[ApiProperty(writable: false)]
-    public ?string $incrementId = null;
+    public ?string $increment_id = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(writable: false)]
-    public ?int $customerId = null;
+    public ?int $customer_id = null;
 
+    /**
+     * The grand total.
+     */
     #[ApiProperty(writable: false)]
-    public ?float $grandTotal = null;
+    public ?float $grand_total = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

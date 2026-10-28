@@ -11,9 +11,6 @@ use Webkul\BagistoApi\Models\CustomerProfile as CustomerProfileModel;
 use Webkul\BagistoApi\Support\DateOfBirth;
 use Webkul\Customer\Models\Customer;
 
-/**
- * Maps Customer model to CustomerProfile API resource
- */
 class CustomerProfileHelper
 {
     /**
@@ -37,6 +34,9 @@ class CustomerProfileHelper
         return self::PROFILE_IMAGE_MIME_EXTENSIONS[$mimeType] ?? null;
     }
 
+    /**
+     * Map customer to profile.
+     */
     public static function mapCustomerToProfile(Customer $customer): CustomerProfileModel
     {
         $imageUrl = null;
@@ -58,11 +58,25 @@ class CustomerProfileHelper
         $profile->is_suspended = (string) $customer->is_suspended;
         $profile->image = $imageUrl;
 
+        return self::withCustomerGroup($profile, $customer);
+    }
+
+    /**
+     * Fill in the customer's group on a profile.
+     */
+    public static function withCustomerGroup(CustomerProfileModel $profile, Customer $customer): CustomerProfileModel
+    {
+        $group = $customer->group;
+
+        $profile->customer_group_id = $group ? (int) $group->id : null;
+        $profile->customer_group_code = $group?->code;
+        $profile->customer_group_name = $group?->name;
+
         return $profile;
     }
 
     /**
-     * Map customer model to CustomerProfileOutput DTO
+     * Map customer model to CustomerProfileOutput DTO.
      */
     public static function mapCustomerToProfileOutput(Customer $customer): CustomerProfileOutput
     {
@@ -88,6 +102,9 @@ class CustomerProfileHelper
         );
     }
 
+    /**
+     * Handle image upload.
+     */
     public static function handleImageUpload(string $imageData, Customer $customer): void
     {
         try {

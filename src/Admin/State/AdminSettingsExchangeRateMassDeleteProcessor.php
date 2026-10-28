@@ -14,19 +14,18 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Core\Models\CurrencyExchangeRate;
 use Webkul\Core\Repositories\ExchangeRateRepository;
 
-/**
- * POST /api/admin/settings/exchange-rates/mass-delete +
- * createAdminSettingsExchangeRateMassDelete.
- *
- * Deletes each provided ID, firing the before/after events. Non-existent IDs
- * are silently skipped.
- */
 class AdminSettingsExchangeRateMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ExchangeRateRepository $exchangeRateRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -77,6 +76,9 @@ class AdminSettingsExchangeRateMassDeleteProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -104,6 +106,9 @@ class AdminSettingsExchangeRateMassDeleteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

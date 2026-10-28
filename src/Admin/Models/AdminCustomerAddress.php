@@ -22,21 +22,6 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCustomerAddressProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
 
-/**
- * Customer Address — listing + full CRUD (Block C C1).
- *
- * REST:
- *   GET    /api/admin/customers/{customerId}/addresses
- *   GET    /api/admin/customers/{customerId}/addresses/{id}
- *   POST   /api/admin/customers/{customerId}/addresses
- *   PUT    /api/admin/customers/{customerId}/addresses/{id}
- *   DELETE /api/admin/customers/{customerId}/addresses/{id}
- *
- * GraphQL: adminCustomerAddresses, adminCustomerAddress,
- *          createAdminCustomerAddress, updateAdminCustomerAddress, deleteAdminCustomerAddress
- *
- * Mirrors Webkul\Admin\Http\Controllers\Customers\AddressController.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerAddress',
@@ -49,6 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: "Get a customer's saved addresses",
+                description: 'Every saved address of the customer, in the { data, meta } envelope. An unknown customer is a 404.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],
@@ -86,6 +72,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
         ),
         new Get(
             uriTemplate: '/customers/{customerId}/addresses/{id}',
+            uriVariables: [
+                'customerId' => new Link(parameterName: 'customerId', fromClass: AdminCustomerAddress::class, identifiers: ['customer_id']),
+                'id' => new Link(parameterName: 'id', fromClass: AdminCustomerAddress::class, identifiers: ['id']),
+            ],
             provider: AdminCustomerAddressItemProvider::class,
             requirements: [
                 'customerId' => '\d+',
@@ -94,6 +84,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Address detail',
+                description: 'One saved address of the customer. The address must belong to `customerId`; an address of another customer, or an unknown ID, is a 404. Needs the `customers.addresses` permission.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Address ID', true, schema: ['type' => 'integer']),
@@ -114,6 +105,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                             ],
                         ]),
                     ),
+                    '403' => new Model\Response(description: 'Admin role lacks customers.addresses.'),
                     '404' => new Model\Response(description: 'Address not found.'),
                 ],
             ),
@@ -129,6 +121,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Create address for a customer',
+                description: 'Adds an address to the customer. `first_name`, `last_name`, `address`, `city`, `country`, `postcode` and `phone` are required; `default_address: true` makes it the default and unsets the previous one. An unknown customer is a 404.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],
@@ -224,6 +217,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Update address',
+                description: 'Partial update of a saved address: only the fields sent with a non-null value change. `address` may be a string or an array of lines, joined with new lines. Sending `default_address: true` makes it the customer\'s only default address. Needs the `customers.addresses.edit` permission.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Address ID', true, schema: ['type' => 'integer']),
@@ -300,7 +294,8 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                             ],
                         ]),
                     ),
-                    '403' => new Model\Response(description: 'Address does not belong to the customer.'),
+                    '403' => new Model\Response(description: 'Address does not belong to the customer, or the admin role lacks customers.addresses.edit.'),
+                    '404' => new Model\Response(description: 'Address not found.'),
                 ],
             ),
         ),
@@ -316,6 +311,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Delete address',
+                description: 'Deletes a saved address of the customer and answers 200 with a message (not 204). Needs the `customers.addresses.delete` permission.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Address ID', true, schema: ['type' => 'integer']),
@@ -329,7 +325,8 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                             ],
                         ]),
                     ),
-                    '403' => new Model\Response(description: 'Address does not belong to the customer.'),
+                    '403' => new Model\Response(description: 'Address does not belong to the customer, or the admin role lacks customers.addresses.delete.'),
+                    '404' => new Model\Response(description: 'Address not found.'),
                 ],
             ),
         ),
@@ -347,6 +344,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Set a customer address as the default',
+                description: 'Makes the address the customer\'s default and unsets every other default address; no body is needed. An address of another customer is a 403, and an unknown address a 404.',
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Address ID', true, schema: ['type' => 'integer']),
@@ -431,48 +429,93 @@ class AdminCustomerAddress
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The customer id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customer_id = null;
 
+    /**
+     * The address type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $address_type = null;
 
+    /**
+     * The first name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $first_name = null;
 
+    /**
+     * The last name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $last_name = null;
 
+    /**
+     * The company name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $company_name = null;
 
+    /**
+     * The address.
+     */
     #[ApiProperty(writable: false)]
     public ?string $address = null;
 
+    /**
+     * The city.
+     */
     #[ApiProperty(writable: false)]
     public ?string $city = null;
 
+    /**
+     * The state.
+     */
     #[ApiProperty(writable: false)]
     public ?string $state = null;
 
+    /**
+     * The country.
+     */
     #[ApiProperty(writable: false)]
     public ?string $country = null;
 
+    /**
+     * The postcode.
+     */
     #[ApiProperty(writable: false)]
     public ?string $postcode = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(writable: false)]
     public ?string $email = null;
 
+    /**
+     * The phone.
+     */
     #[ApiProperty(writable: false)]
     public ?string $phone = null;
 
+    /**
+     * The vat id.
+     */
     #[ApiProperty(writable: false)]
     public ?string $vat_id = null;
 
+    /**
+     * The default address.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $default_address = null;
 }

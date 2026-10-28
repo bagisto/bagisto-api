@@ -1,8 +1,3 @@
-// tests/graphQL/graphql/Queries/admin/catalog/products.queries.ts
-//
-// Admin Catalog Products GraphQL operations. Field shapes verified via
-// introspection on 2026-05-26.
-
 export const ADMIN_PRODUCTS_LIST_QUERY = `
   query adminCatalogProducts($first: Int, $after: String) {
     adminCatalogProducts(first: $first, after: $after) {
@@ -125,6 +120,27 @@ export const ADMIN_PRODUCT_MASS_UPDATE_STATUS_MUTATION = `
   mutation createAdminCatalogProductMassUpdateStatus($indices: Iterable!, $value: Int!) {
     createAdminCatalogProductMassUpdateStatus(input: { indices: $indices, value: $value }) {
       adminCatalogProductMassUpdateStatus {
+        id
+        _id
+      }
+    }
+  }
+`;
+
+export const ADMIN_PRODUCT_DESCRIPTION_QUERY = `
+  query adminCatalogProduct($id: ID!) {
+    adminCatalogProduct(id: $id) {
+      id
+      _id
+      description
+    }
+  }
+`;
+
+export const ADMIN_PRODUCT_TRANSLATIONS_UPDATE_MUTATION = `
+  mutation updateAdminCatalogProduct($id: ID!, $translations: Iterable) {
+    updateAdminCatalogProduct(input: { id: $id, translations: $translations }) {
+      adminCatalogProduct {
         id
         _id
       }

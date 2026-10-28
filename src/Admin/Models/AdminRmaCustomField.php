@@ -91,6 +91,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'Get an RMA custom field (with its options)',
+                description: 'One RMA custom field by ID with its options; `options` is filled only for select, multiselect, checkbox and radio fields. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'The RMA custom field with its options.',
@@ -379,6 +380,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider;
         new QueryCollection(
             provider: AdminRmaCustomFieldCollectionProvider::class,
             paginationType: 'cursor',
+            description: 'The extra fields the return form collects. Filters: `code` and `label` (partial match), `type`, `status` (0 or 1). Sortable by id, position or code. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page\'s `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.custom-fields` permission.',
             args: [
                 'code' => ['type' => 'String'],
                 'label' => ['type' => 'String'],
@@ -390,7 +392,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider;
                 'after' => ['type' => 'String'],
             ],
         ),
-        new Query(provider: AdminRmaCustomFieldItemProvider::class),
+        new Query(
+            provider: AdminRmaCustomFieldItemProvider::class,
+            description: 'One RMA custom field with its options. Needs the `sales.rma.custom-fields` permission.',
+        ),
         new Mutation(name: 'create', input: AdminRmaCustomFieldCreateInput::class, processor: AdminRmaCustomFieldProcessor::class),
         new Mutation(name: 'update', input: AdminRmaCustomFieldUpdateInput::class, processor: AdminRmaCustomFieldProcessor::class),
         new Mutation(name: 'delete', input: AdminRmaCustomFieldUpdateInput::class, processor: AdminRmaCustomFieldProcessor::class),
@@ -400,30 +405,67 @@ class AdminRmaCustomField
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The code.
+     */
     public ?string $code = null;
 
+    /**
+     * The label.
+     */
     public ?string $label = null;
 
+    /**
+     * The type.
+     */
     public ?string $type = null;
 
+    /**
+     * The is required.
+     */
     public ?int $is_required = null;
 
+    /**
+     * The position.
+     */
     public ?int $position = null;
 
+    /**
+     * The input validation.
+     */
     public ?string $input_validation = null;
 
+    /**
+     * The status.
+     */
     public ?int $status = null;
 
-    /** @var array<int,array{id:int,name:string,value:string}>|null */
+    /**
+     * The options offered by a select, multiselect, checkbox or radio field.
+     *
+     * @var array<int,array{id:int,name:string,value:string}>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $options = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

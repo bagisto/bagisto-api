@@ -23,25 +23,6 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
 
-/**
- * Admin Settings → Tax Categories endpoints (Block B Wave 3).
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\Tax\TaxCategoryController 1:1.
- *
- * REST:
- *   GET    /api/admin/settings/tax-categories
- *   GET    /api/admin/settings/tax-categories/{id}
- *   POST   /api/admin/settings/tax-categories
- *   PUT    /api/admin/settings/tax-categories/{id}
- *   DELETE /api/admin/settings/tax-categories/{id}
- *
- * GraphQL:
- *   adminSettingsTaxCategories       — cursor listing
- *   adminSettingsTaxCategory(id:)    — detail
- *   createAdminSettingsTaxCategory
- *   updateAdminSettingsTaxCategory
- *   deleteAdminSettingsTaxCategory
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsTaxCategory',
@@ -56,6 +37,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Categories'],
                 summary: 'Create a tax category',
+                description: 'Creates a tax category and attaches the tax rates in `taxrates`. `code` (unique), `name`, `description` and `taxrates` are required.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -172,6 +154,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Categories'],
                 summary: 'Tax category detail',
+                description: 'One tax category by ID with the tax rates attached to it. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Single tax category including attached tax_rates.',
@@ -274,27 +257,48 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
 )]
 class AdminSettingsTaxCategory extends EloquentModel
 {
-    /** @var string */
+    /**
+     * The table that stores the tax categories.
+     *
+     * @var string
+     */
     protected $table = 'tax_categories';
 
-    /** @var array */
+    /**
+     * The native types the tax category attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the tax category is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['message'];
 
+    /**
+     * The action message.
+     */
     public ?string $actionMessage = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get message attribute.
+     */
     #[ApiProperty(writable: false, example: 'Tax category deleted successfully.')]
     public function getMessageAttribute(): ?string
     {
@@ -303,13 +307,7 @@ class AdminSettingsTaxCategory extends EloquentModel
 
     /**
      * Attached tax rates (GraphQL connection — `taxRates { edges { node } }`).
-     * The relation METHOD must be snake_case (`tax_rates`) so the central
-     * converter resolves it; the GraphQL field surfaces as `taxRates`.
-     *
-     * HasMany over the pivot table (NOT belongsToMany): the pivot carries its own
-     * `id` column, which a belongsToMany connection node would wrongly resolve as
-     * the node `_id`. The sub-resource reads the pivot row and surfaces the rate
-     * (id = tax_rate_id) so `node { _id }` is the real rate id.
+     * The relation METHOD must be snake_case (`tax_rates`) so the central.
      */
     #[ApiProperty(writable: false)]
     public function tax_rates(): HasMany

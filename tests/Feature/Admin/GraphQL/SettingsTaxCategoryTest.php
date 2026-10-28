@@ -4,36 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * GraphQL coverage for Admin Settings → Tax Categories CRUD (Block B Wave 3).
- */
 class SettingsTaxCategoryTest extends AdminApiTestCase
 {
-    protected function insertTaxCategory(array $overrides = []): int
-    {
-        return \DB::table('tax_categories')->insertGetId(array_merge([
-            'code' => 'gqltc-'.uniqid(),
-            'name' => 'GQL TC',
-            'description' => 'desc',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function insertTaxRate(): int
-    {
-        return \DB::table('tax_rates')->insertGetId([
-            'identifier' => 'gqltr-'.uniqid(),
-            'is_zip' => 0,
-            'zip_code' => '00000',
-            'state' => 'CA',
-            'country' => 'US',
-            'tax_rate' => 5.0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
+    /**
+     * Test query listing.
+     */
     public function test_query_listing(): void
     {
         $admin = $this->createAdmin();
@@ -54,6 +29,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect($edges)->toBeArray();
     }
 
+    /**
+     * Test query detail.
+     */
     public function test_query_detail(): void
     {
         $admin = $this->createAdmin();
@@ -88,6 +66,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test query detail tax rates resolve as a connection.
+     */
     public function test_query_detail_tax_rates_resolve_as_a_connection(): void
     {
         $admin = $this->createAdmin();
@@ -132,6 +113,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect((float) $edges[0]['node']['taxRate'])->toBe(5.0);
     }
 
+    /**
+     * Test query detail multiword fields resolve over graphql.
+     */
     public function test_query_detail_multiword_fields_resolve_over_graphql(): void
     {
         $admin = $this->createAdmin();
@@ -157,6 +141,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect($node['updatedAt'])->not->toBeNull();
     }
 
+    /**
+     * Test mutation create.
+     */
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();
@@ -183,6 +170,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $this->assertDatabaseHas('tax_categories', ['code' => 'gqlcr-tc']);
     }
 
+    /**
+     * Test mutation update resyncs rates.
+     */
     public function test_mutation_update_resyncs_rates(): void
     {
         $admin = $this->createAdmin();
@@ -227,6 +217,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test mutation delete refuses when rates attached.
+     */
     public function test_mutation_delete_refuses_when_rates_attached(): void
     {
         $admin = $this->createAdmin();
@@ -253,6 +246,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $this->assertDatabaseHas('tax_categories', ['id' => $id]);
     }
 
+    /**
+     * Test mutation delete happy path.
+     */
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -274,6 +270,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $this->assertDatabaseMissing('tax_categories', ['id' => $id]);
     }
 
+    /**
+     * Test query listing requires auth.
+     */
     public function test_query_listing_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -282,5 +281,36 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertOk();
         $errors = $response->json('errors');
         expect($errors)->toBeArray();
+    }
+
+    /**
+     * Insert tax category.
+     */
+    protected function insertTaxCategory(array $overrides = []): int
+    {
+        return \DB::table('tax_categories')->insertGetId(array_merge([
+            'code' => 'gqltc-'.uniqid(),
+            'name' => 'GQL TC',
+            'description' => 'desc',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Insert tax rate.
+     */
+    protected function insertTaxRate(): int
+    {
+        return \DB::table('tax_rates')->insertGetId([
+            'identifier' => 'gqltr-'.uniqid(),
+            'is_zip' => 0,
+            'zip_code' => '00000',
+            'state' => 'CA',
+            'country' => 'US',
+            'tax_rate' => 5.0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

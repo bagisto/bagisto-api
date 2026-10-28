@@ -50,6 +50,7 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
     graphQlOperations: [
         new QueryCollection(
             provider: CursorAwareCollectionProvider::class,
+            description: 'Product videos ordered by ID, optionally only those of product `product_id`. The query takes no pagination arguments, so it returns at most the first 10. Needs the X-STOREFRONT-KEY header.',
             args: [
                 'product_id' => [
                     'type' => 'Int',
@@ -93,7 +94,10 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One product video. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 #[ApiResource(
@@ -139,6 +143,9 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
 )]
 class ProductVideo extends BaseProductVideo
 {
+    /**
+     * The visible.
+     */
     protected $visible = [
         'id',
         'type',
@@ -148,12 +155,18 @@ class ProductVideo extends BaseProductVideo
         'public_path',
     ];
 
+    /**
+     * Get public path attribute.
+     */
     #[ApiProperty(readable: true, writable: false)]
     public function getPublicPathAttribute(): ?string
     {
         return $this->getUrlAttribute();
     }
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

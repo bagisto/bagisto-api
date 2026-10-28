@@ -14,10 +14,19 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminAppearanceSectionTranslationRef extends Model
 {
+    /**
+     * The table.
+     */
     protected $table = 'theme_section_translations';
 
+    /**
+     * The timestamps.
+     */
     public $timestamps = false;
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'id' => 'int',
         'section_id' => 'int',
@@ -25,6 +34,9 @@ class AdminAppearanceSectionTranslationRef extends Model
         'draft_options' => 'array',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
     {

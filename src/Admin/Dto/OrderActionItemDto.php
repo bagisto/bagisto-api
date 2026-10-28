@@ -6,65 +6,114 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 
-/**
- * Shared line-item DTO embedded in Invoice, Shipment, and Refund detail
- * responses. All three monolith repos build the same shape (`order_item_id`,
- * `sku`, `name`, `qty`, `price`, `base_price`, `total`, `tax_amount`,
- * `discount_amount`, plus the formatted variants) — so we expose one DTO
- * across the three detail payloads instead of three near-identical ones.
- *
- * Properties are snake_case so they resolve over both REST and GraphQL; the name
- * converter surfaces them as camelCase to clients. The AcceptsCamelCaseWrites trait
- * lets the per-resource providers keep assigning camelCase ($item->orderItemId = …).
- */
 #[ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
 class OrderActionItemDto
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The order item id.
+     */
     public ?int $order_item_id = null;
 
+    /**
+     * The sku.
+     */
     public ?string $sku = null;
 
+    /**
+     * The name.
+     */
     public ?string $name = null;
 
+    /**
+     * The qty.
+     */
     public ?int $qty = null;
 
+    /**
+     * The price.
+     */
     public ?float $price = null;
 
+    /**
+     * The formatted price.
+     */
     public ?string $formatted_price = null;
 
+    /**
+     * The base price.
+     */
     public ?float $base_price = null;
 
-    /** Per-unit price including tax (base currency) — shown on the admin invoice/refund view. */
+    /**
+     * Per-unit price including tax (base currency) — shown on the admin invoice/refund view.
+     */
     public ?float $base_price_incl_tax = null;
 
+    /**
+     * The total.
+     */
     public ?float $total = null;
 
+    /**
+     * The formatted total.
+     */
     public ?string $formatted_total = null;
 
+    /**
+     * The base total.
+     */
     public ?float $base_total = null;
 
-    /** Row total including tax (base currency) — shown on the admin invoice/refund view. */
+    /**
+     * Row total including tax (base currency) — shown on the admin invoice/refund view.
+     */
     public ?float $base_total_incl_tax = null;
 
-    /** Product base image URL — shown beside each line item on the admin view. */
+    /**
+     * Product base image URL — shown beside each line item on the admin view.
+     */
     public ?string $base_image_url = null;
 
+    /**
+     * The tax amount.
+     */
     public ?float $tax_amount = null;
 
+    /**
+     * The formatted tax amount.
+     */
     public ?string $formatted_tax_amount = null;
 
+    /**
+     * The discount amount.
+     */
     public ?float $discount_amount = null;
 
+    /**
+     * The formatted discount amount.
+     */
     public ?string $formatted_discount_amount = null;
 
+    /**
+     * The product id.
+     */
     public ?int $product_id = null;
 
+    /**
+     * The product type.
+     */
     public ?string $product_type = null;
 
+    /**
+     * The additional.
+     */
     public ?array $additional = null;
 }

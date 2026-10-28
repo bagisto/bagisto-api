@@ -11,31 +11,9 @@ use Webkul\Sales\Models\Order;
 
 class EuWithdrawalTest extends RestApiTestCase
 {
-    private function enable(Channel $channel): void
-    {
-        DB::table('core_config')->updateOrInsert(
-            [
-                'code' => 'sales.eu_withdrawal.general.enabled',
-                'channel_code' => $channel->code,
-                'locale_code' => null,
-            ],
-            ['value' => 1]
-        );
-
-        $this->forgetCoreConfigCache();
-    }
-
-    private function customerOrder($customer, Channel $channel): Order
-    {
-        return Order::factory()->create([
-            'customer_id' => $customer->id,
-            'customer_email' => $customer->email,
-            'channel_id' => $channel->id,
-            'is_guest' => 0,
-            'status' => 'completed',
-        ]);
-    }
-
+    /**
+     * Test customer submit creates withdrawal.
+     */
     public function test_customer_submit_creates_withdrawal(): void
     {
         Mail::fake();
@@ -59,6 +37,9 @@ class EuWithdrawalTest extends RestApiTestCase
         ]);
     }
 
+    /**
+     * Test customer submit is idempotent.
+     */
     public function test_customer_submit_is_idempotent(): void
     {
         Mail::fake();
@@ -75,6 +56,9 @@ class EuWithdrawalTest extends RestApiTestCase
         expect(Withdrawal::where('order_id', $order->id)->count())->toBe(1);
     }
 
+    /**
+     * Test customer cannot withdraw another customers order.
+     */
     public function test_customer_cannot_withdraw_another_customers_order(): void
     {
         Mail::fake();
@@ -90,6 +74,9 @@ class EuWithdrawalTest extends RestApiTestCase
         $this->assertDatabaseMissing('eu_withdrawals', ['order_id' => $order->id]);
     }
 
+    /**
+     * Test submit requires auth.
+     */
     public function test_submit_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -97,12 +84,14 @@ class EuWithdrawalTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test channel disabled returns 404.
+     */
     public function test_channel_disabled_returns_404(): void
     {
         Mail::fake();
         $this->seedRequiredData();
         $channel = Channel::first();
-        // not enabled
         $customer = $this->createCustomer();
         $order = $this->customerOrder($customer, $channel);
 
@@ -110,6 +99,9 @@ class EuWithdrawalTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([403, 404]);
     }
 
+    /**
+     * Test list and view own.
+     */
     public function test_list_and_view_own(): void
     {
         Mail::fake();
@@ -130,6 +122,9 @@ class EuWithdrawalTest extends RestApiTestCase
         expect((int) $get->json('orderId'))->toBe($order->id);
     }
 
+    /**
+     * Test guest submit matches by increment and email.
+     */
     public function test_guest_submit_matches_by_increment_and_email(): void
     {
         Mail::fake();
@@ -161,6 +156,9 @@ class EuWithdrawalTest extends RestApiTestCase
         ]);
     }
 
+    /**
+     * Test guest submit wrong email returns 404.
+     */
     public function test_guest_submit_wrong_email_returns_404(): void
     {
         Mail::fake();
@@ -184,6 +182,105 @@ class EuWithdrawalTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([403, 404]);
     }
 
+    /**
+     * Test guest confirmation requires uuid and matching order email.
+     */
+    public function test_guest_confirmation_requires_uuid_and_matching_order_email(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+
+        $order = Order::factory()->create([
+            'customer_id' => null,
+            'customer_email' => 'guest@example.com',
+            'increment_id' => 'G-'.uniqid(),
+            'channel_id' => $channel->id,
+            'is_guest' => 1,
+            'status' => 'completed',
+        ]);
+
+        $created = $this->publicPost('/api/shop/eu-withdrawals/guest', [
+            'order_increment_id' => $order->increment_id,
+            'email' => 'guest@example.com',
+        ]);
+
+        $created->assertCreated();
+
+        $response = $this->publicGet('/api/shop/eu-withdrawals/guest/'.$created->json('uuid').'?email=guest%40example.com');
+
+        $response->assertOk()
+            ->assertJsonPath('uuid', $created->json('uuid'))
+            ->assertJsonPath('orderIncrementId', $order->increment_id);
+    }
+
+    /**
+     * Test guest confirmation returns generic not found for wrong email.
+     */
+    public function test_guest_confirmation_returns_generic_not_found_for_wrong_email(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+
+        $order = Order::factory()->create([
+            'customer_id' => null,
+            'customer_email' => 'guest@example.com',
+            'increment_id' => 'G-'.uniqid(),
+            'channel_id' => $channel->id,
+            'is_guest' => 1,
+            'status' => 'completed',
+        ]);
+
+        $created = $this->publicPost('/api/shop/eu-withdrawals/guest', [
+            'order_increment_id' => $order->increment_id,
+            'email' => 'guest@example.com',
+        ]);
+
+        $created->assertCreated();
+
+        $response = $this->publicGet('/api/shop/eu-withdrawals/guest/'.$created->json('uuid').'?email=wrong%40example.com');
+
+        $response->assertNotFound();
+    }
+
+    /**
+     * Test guest confirmation returns generic not found when feature is disabled.
+     */
+    public function test_guest_confirmation_returns_generic_not_found_when_feature_is_disabled(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+
+        $order = Order::factory()->create([
+            'customer_id' => null,
+            'customer_email' => 'guest@example.com',
+            'increment_id' => 'G-'.uniqid(),
+            'channel_id' => $channel->id,
+            'is_guest' => 1,
+            'status' => 'completed',
+        ]);
+
+        $created = $this->publicPost('/api/shop/eu-withdrawals/guest', [
+            'order_increment_id' => $order->increment_id,
+            'email' => 'guest@example.com',
+        ]);
+
+        $created->assertCreated();
+        $this->disable($channel);
+
+        $response = $this->publicGet('/api/shop/eu-withdrawals/guest/'.$created->json('uuid').'?email=guest%40example.com');
+
+        $response->assertNotFound();
+    }
+
+    /**
+     * Test guest submit is throttled per order number.
+     */
     public function test_guest_submit_is_throttled_per_order_number(): void
     {
         Mail::fake();
@@ -204,5 +301,49 @@ class EuWithdrawalTest extends RestApiTestCase
 
         expect($statuses[0])->toBeIn([403, 404]);
         expect($statuses[5])->toBe(429);
+    }
+
+    /**
+     * Enable.
+     */
+    private function enable(Channel $channel): void
+    {
+        DB::table('core_config')->updateOrInsert(
+            [
+                'code' => 'sales.eu_withdrawal.general.enabled',
+                'channel_code' => $channel->code,
+                'locale_code' => null,
+            ],
+            ['value' => 1]
+        );
+
+        $this->forgetCoreConfigCache();
+    }
+
+    /**
+     * Disable.
+     */
+    private function disable(Channel $channel): void
+    {
+        DB::table('core_config')->where([
+            'code' => 'sales.eu_withdrawal.general.enabled',
+            'channel_code' => $channel->code,
+        ])->delete();
+
+        $this->forgetCoreConfigCache();
+    }
+
+    /**
+     * Customer order.
+     */
+    private function customerOrder($customer, Channel $channel): Order
+    {
+        return Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'channel_id' => $channel->id,
+            'is_guest' => 0,
+            'status' => 'completed',
+        ]);
     }
 }

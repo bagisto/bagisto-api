@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
-use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
@@ -227,9 +226,9 @@ class SettingsUserTest extends AdminApiTestCase
     }
 
     /**
-     * A custom token granted the core `settings.users.create` ability can create an admin user.
+     * An admin whose role grants only the core `settings.users.create` permission can create an admin user.
      */
-    public function test_custom_token_with_users_create_ability_can_create(): void
+    public function test_role_with_only_users_create_permission_can_create(): void
     {
         $role = Role::create([
             'name' => 'r-'.Str::random(6),
@@ -239,7 +238,7 @@ class SettingsUserTest extends AdminApiTestCase
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->customAbilityToken($admin, ['settings.users.create']);
+        $token = $this->adminAccessToken($admin);
         $email = $this->uniqueEmail('cust');
 
         $response = $this->adminPost($admin, '/api/admin/settings/users', [
@@ -431,12 +430,32 @@ class SettingsUserTest extends AdminApiTestCase
 
         \DB::table('admins')->update(['role_id' => $limited->id]);
 
+        $caller = $this->createAdmin(['role_id' => $this->allAccessRole()->id]);
+
+        $this->adminPut($caller, '/api/admin/settings/users/'.$caller->id, [
+            'status' => 0,
+        ])->assertStatus(400);
+
+        expect((int) Admin::find($caller->id)->status)->toBe(1);
+    }
+
+    /**
+     * An admin who cannot manage the last all-access admin is refused before the last-admin check, as in core.
+     */
+    public function test_update_of_the_last_all_access_admin_by_an_admin_who_cannot_manage_them_returns_403(): void
+    {
+        $this->seedRequiredData();
+
+        $limited = $this->limitedRole();
+
+        \DB::table('admins')->update(['role_id' => $limited->id]);
+
         $caller = $this->createAdmin(['role_id' => $limited->id]);
         $target = $this->createAdmin(['role_id' => $this->allAccessRole()->id]);
 
         $this->adminPut($caller, '/api/admin/settings/users/'.$target->id, [
             'status' => 0,
-        ])->assertStatus(400);
+        ])->assertStatus(403);
 
         expect((int) Admin::find($target->id)->status)->toBe(1);
     }
@@ -452,15 +471,14 @@ class SettingsUserTest extends AdminApiTestCase
 
         \DB::table('admins')->update(['role_id' => $limited->id]);
 
-        $caller = $this->createAdmin(['role_id' => $limited->id]);
         $all = $this->allAccessRole();
-        $target = $this->createAdmin(['role_id' => $all->id]);
+        $caller = $this->createAdmin(['role_id' => $all->id]);
 
-        $this->adminPut($caller, '/api/admin/settings/users/'.$target->id, [
+        $this->adminPut($caller, '/api/admin/settings/users/'.$caller->id, [
             'role_id' => $limited->id,
         ])->assertStatus(400);
 
-        expect((int) Admin::find($target->id)->role_id)->toBe((int) $all->id);
+        expect((int) Admin::find($caller->id)->role_id)->toBe((int) $all->id);
     }
 
     /**
@@ -741,29 +759,5 @@ class SettingsUserTest extends AdminApiTestCase
             'permission_type' => 'all',
             'permissions' => [],
         ]);
-    }
-
-    /**
-     * Issue an active custom-permission token with the given abilities and return its bearer string.
-     */
-    private function customAbilityToken(Admin $admin, array $abilities): string
-    {
-        $plain = Str::random(40);
-
-        $row = AdminPersonalAccessToken::create([
-            'admin_id' => $admin->id,
-            'name' => 'cust-'.Str::random(6),
-            'token' => hash('sha256', $plain),
-            'token_preview' => substr($plain, 0, 8),
-            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_CUSTOM,
-            'abilities' => $abilities,
-            'rate_limit_per_minute' => null,
-            'rate_limit_per_day' => null,
-            'expires_at' => now()->addDay(),
-            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
-            'created_by_admin_id' => $admin->id,
-        ]);
-
-        return $row->id.'|'.$plain;
     }
 }

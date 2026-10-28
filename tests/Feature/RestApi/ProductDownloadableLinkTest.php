@@ -8,24 +8,14 @@ use Webkul\Product\Models\ProductDownloadableLink;
 
 class ProductDownloadableLinkTest extends RestApiTestCase
 {
+    /**
+     * The base url.
+     */
     private string $baseUrl = '/api/shop/product-downloadable-links';
 
-    private function seedDownloadableLink(): ProductDownloadableLink
-    {
-        $product = $this->createBaseProduct('downloadable', [
-            'sku' => 'DL-LINK-PARENT-'.uniqid(),
-        ]);
-
-        return ProductDownloadableLink::create([
-            'title' => 'Test Link',
-            'price' => 5.0,
-            'url' => 'https://example.com/file.zip',
-            'type' => 'url',
-            'sort_order' => 1,
-            'product_id' => $product->id,
-        ]);
-    }
-
+    /**
+     * Test get collection.
+     */
     public function test_get_collection(): void
     {
         $this->seedRequiredData();
@@ -38,6 +28,9 @@ class ProductDownloadableLinkTest extends RestApiTestCase
         expect(\count($response->json()))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test get single downloadable link.
+     */
     public function test_get_single_downloadable_link(): void
     {
         $this->seedRequiredData();
@@ -49,6 +42,9 @@ class ProductDownloadableLinkTest extends RestApiTestCase
         expect((int) $response->json('id'))->toBe($link->id);
     }
 
+    /**
+     * Test link does not expose paid url or file.
+     */
     public function test_link_does_not_expose_paid_url_or_file(): void
     {
         $this->seedRequiredData();
@@ -62,6 +58,9 @@ class ProductDownloadableLinkTest extends RestApiTestCase
         expect($response->getContent())->not->toContain('https://example.com/file.zip');
     }
 
+    /**
+     * Test get nonexistent link returns 404.
+     */
     public function test_get_nonexistent_link_returns_404(): void
     {
         $this->seedRequiredData();
@@ -71,6 +70,9 @@ class ProductDownloadableLinkTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([404, 500]);
     }
 
+    /**
+     * Test nested collection for product.
+     */
     public function test_nested_collection_for_product(): void
     {
         $this->seedRequiredData();
@@ -115,5 +117,24 @@ class ProductDownloadableLinkTest extends RestApiTestCase
 
         $response->assertNotFound();
         expect($response->json('error'))->toBe('not_found');
+    }
+
+    /**
+     * Seed downloadable link.
+     */
+    private function seedDownloadableLink(): ProductDownloadableLink
+    {
+        $product = $this->createBaseProduct('downloadable', [
+            'sku' => 'DL-LINK-PARENT-'.uniqid(),
+        ]);
+
+        return ProductDownloadableLink::create([
+            'title' => 'Test Link',
+            'price' => 5.0,
+            'url' => 'https://example.com/file.zip',
+            'type' => 'url',
+            'sort_order' => 1,
+            'product_id' => $product->id,
+        ]);
     }
 }

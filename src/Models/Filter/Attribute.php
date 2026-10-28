@@ -45,15 +45,27 @@ use Webkul\BagistoApi\State\FilterableAttributesProvider;
 )]
 class Attribute extends \Webkul\BagistoApi\Models\Attribute
 {
+    /**
+     * The min price.
+     */
     public float $minPrice;
 
+    /**
+     * The max price.
+     */
     public float $maxPrice;
 
+    /**
+     * Get max price attribute.
+     */
     public function getMaxPriceAttribute(): float
     {
         return $this->maxPrice;
     }
 
+    /**
+     * Get min price attribute.
+     */
     public function getMinPriceAttribute(): float
     {
         return $this->minPrice;

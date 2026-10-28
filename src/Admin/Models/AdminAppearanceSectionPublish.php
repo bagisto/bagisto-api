@@ -11,9 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminAppearanceSectionPublishInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionPublishProcessor;
 
-/**
- * Promotes every staged edit of a theme and channel to what the storefront draws.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAppearanceSectionPublish',
@@ -26,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionPublishProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Publish staged section edits',
+                description: 'Makes every staged draft (content, status and order) of the theme\'s sections on one channel live on the storefront, and returns the IDs of the sections published. An unknown theme is a 404.',
                 parameters: [
                     new Model\Parameter('code', 'path', 'Theme code', true, schema: [
                         'type' => 'string',
@@ -57,7 +55,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionPublishProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'Staged edits published.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -85,15 +83,26 @@ class AdminAppearanceSectionPublish
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The theme code.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $theme_code = null;
 
+    /**
+     * The channel id.
+     */
     public ?int $channel_id = null;
 
     /**
+     * The ids of the sections that were published.
+     *
      * @var array<int, int>
      */
     public array $section_ids = [];
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

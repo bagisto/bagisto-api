@@ -18,12 +18,12 @@ use ApiPlatform\Laravel\ServiceLocator;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
 use ApiPlatform\Metadata\Resource\Factory\ResourceNameCollectionFactoryInterface;
 use ApiPlatform\State\Pagination\Pagination;
-use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -31,19 +31,40 @@ use Negotiation\Negotiator;
 use Symfony\Component\Serializer\SerializerInterface;
 use Webkul\Attribute\Contracts\Attribute as AttributeContract;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
+use Webkul\BagistoApi\Admin\Auth\AdminApiAuthenticator;
 use Webkul\BagistoApi\Admin\Auth\AdminApiGuard;
-use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
+use Webkul\BagistoApi\Admin\Contracts\AdminApiAudit as AdminApiAuditContract;
+use Webkul\BagistoApi\Admin\Contracts\AdminApiRefreshToken as AdminApiRefreshTokenContract;
+use Webkul\BagistoApi\Admin\Contracts\AdminApiSession as AdminApiSessionContract;
+use Webkul\BagistoApi\Admin\Contracts\AdminApiToken as AdminApiTokenContract;
+use Webkul\BagistoApi\Admin\Contracts\AdminApiTwoFactorChallenge as AdminApiTwoFactorChallengeContract;
+use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
+use Webkul\BagistoApi\Admin\Models\AdminApiRefreshToken;
+use Webkul\BagistoApi\Admin\Models\AdminApiSession;
+use Webkul\BagistoApi\Admin\Models\AdminApiToken;
+use Webkul\BagistoApi\Admin\Models\AdminApiTwoFactorChallenge;
+use Webkul\BagistoApi\Admin\Observers\AdminCredentialObserver;
+use Webkul\BagistoApi\Admin\Services\AdminApiAuthSettings;
+use Webkul\BagistoApi\Admin\Services\AdminApiCredentialRevoker;
+use Webkul\BagistoApi\Auth\CustomerApiAuthenticator;
+use Webkul\BagistoApi\Auth\CustomerApiGuard;
 use Webkul\BagistoApi\CacheProfiles\ApiAwareResponseCache;
 use Webkul\BagistoApi\Console\Commands\ApiKeyMaintenanceCommand;
 use Webkul\BagistoApi\Console\Commands\ApiKeyManagementCommand;
+use Webkul\BagistoApi\Console\Commands\ApiTokenCreateCommand;
 use Webkul\BagistoApi\Console\Commands\ClearApiPlatformCacheCommand;
 use Webkul\BagistoApi\Console\Commands\ExportSchemaCommand;
 use Webkul\BagistoApi\Console\Commands\GenerateStorefrontKey;
 use Webkul\BagistoApi\Console\Commands\InstallApiPlatformCommand;
+use Webkul\BagistoApi\Console\Commands\JwtKeysCommand;
 use Webkul\BagistoApi\Console\Commands\OptimizeApiPlatformCommand;
+use Webkul\BagistoApi\Console\Commands\PruneAdminTokensCommand;
 use Webkul\BagistoApi\Console\Commands\PruneAuditsCommand;
 use Webkul\BagistoApi\Console\Commands\PruneCartUploadsCommand;
+use Webkul\BagistoApi\Console\Commands\PruneCustomerTokensCommand;
 use Webkul\BagistoApi\Console\Commands\WarmApiPlatformCacheCommand;
+use Webkul\BagistoApi\Contracts\CustomerApiRefreshToken as CustomerApiRefreshTokenContract;
+use Webkul\BagistoApi\Contracts\CustomerApiSession as CustomerApiSessionContract;
 use Webkul\BagistoApi\GraphQl\QueryScopedSchemaBuilder;
 use Webkul\BagistoApi\GraphQl\ScopedSchemaBuilder;
 use Webkul\BagistoApi\Http\Controllers\AdminGraphQLEntrypointController;
@@ -51,26 +72,36 @@ use Webkul\BagistoApi\Http\Controllers\AdminGraphQLPlaygroundController;
 use Webkul\BagistoApi\Http\Controllers\ApiEntrypointController;
 use Webkul\BagistoApi\Http\Controllers\DownloadablePurchasedController;
 use Webkul\BagistoApi\Http\Controllers\DownloadSampleController;
+use Webkul\BagistoApi\Http\Controllers\GdprDataPdfController;
 use Webkul\BagistoApi\Http\Controllers\GraphQLPlaygroundController;
 use Webkul\BagistoApi\Http\Controllers\InvoicePdfController;
+use Webkul\BagistoApi\Http\Controllers\ReturnMessageAttachmentController;
 use Webkul\BagistoApi\Http\Controllers\SwaggerUIController;
 use Webkul\BagistoApi\Http\Middleware\EnforceAdminApiAuth;
+use Webkul\BagistoApi\Http\Middleware\EnforceCustomerApiAuth;
 use Webkul\BagistoApi\Http\Middleware\EnsureJsonContentType;
 use Webkul\BagistoApi\Http\Middleware\LogApiRequests;
-use Webkul\BagistoApi\Http\Middleware\RateLimitApi;
 use Webkul\BagistoApi\Http\Middleware\SecurityHeaders;
 use Webkul\BagistoApi\Http\Middleware\SetAdminApiAuditContext;
 use Webkul\BagistoApi\Http\Middleware\SetLocaleChannel;
 use Webkul\BagistoApi\Http\Middleware\ThrottleAdminApi;
+use Webkul\BagistoApi\Http\Middleware\ThrottleCustomerApi;
 use Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey;
 use Webkul\BagistoApi\Models\CoreAttribute;
+use Webkul\BagistoApi\Models\CustomerApiRefreshToken;
+use Webkul\BagistoApi\Models\CustomerApiSession;
+use Webkul\BagistoApi\Observers\CustomerCredentialObserver;
 use Webkul\BagistoApi\Providers\Concerns\RegistersAdminProcessors;
 use Webkul\BagistoApi\Providers\Concerns\RegistersCoreServices;
 use Webkul\BagistoApi\Providers\Concerns\RegistersGraphQlServices;
 use Webkul\BagistoApi\Providers\Concerns\RegistersStorefrontState;
 use Webkul\BagistoApi\State\SnakeCaseLinksHandler;
+use Webkul\BagistoApi\Support\CurrentCustomer;
+use Webkul\Core\Helpers\Locales;
+use Webkul\Customer\Models\CustomerProxy;
 use Webkul\EUWithdrawal\Services\WithdrawalService;
 use Webkul\FPC\CacheProfiles\FullPageCacheProfile;
+use Webkul\User\Models\AdminProxy;
 
 class BagistoApiServiceProvider extends ServiceProvider
 {
@@ -78,6 +109,19 @@ class BagistoApiServiceProvider extends ServiceProvider
     use RegistersCoreServices;
     use RegistersGraphQlServices;
     use RegistersStorefrontState;
+
+    /**
+     * The admin auth model contracts and the models that implement them.
+     */
+    private const AUTH_MODELS = [
+        AdminApiSessionContract::class => AdminApiSession::class,
+        AdminApiRefreshTokenContract::class => AdminApiRefreshToken::class,
+        AdminApiTokenContract::class => AdminApiToken::class,
+        AdminApiTwoFactorChallengeContract::class => AdminApiTwoFactorChallenge::class,
+        AdminApiAuditContract::class => AdminApiAudit::class,
+        CustomerApiSessionContract::class => CustomerApiSession::class,
+        CustomerApiRefreshTokenContract::class => CustomerApiRefreshToken::class,
+    ];
 
     /**
      * Package version, surfaced as the OpenAPI `info.version`.
@@ -96,6 +140,10 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->registerStorefrontProviders();
         $this->registerGraphQlResolvers();
         $this->registerGraphQlDecorators();
+        $this->registerAuthModelContracts();
+
+        $this->app->scoped(AdminApiCredentialRevoker::class);
+        $this->app->scoped(Locales::class);
     }
 
     /**
@@ -107,9 +155,15 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'webkul');
 
-        $this->registerModelSubstitutions();
+        $this->app->booted(function () {
+            $this->registerModelSubstitutions();
 
-        $this->bootAdminIntegration();
+            AdminProxy::modelClass()::observe(AdminCredentialObserver::class);
+
+            CustomerProxy::modelClass()::observe(CustomerCredentialObserver::class);
+        });
+
+        $this->bootAdminPanel();
 
         if (config('bagistoapi.audit.enabled', true)) {
             $this->app->make(AdminApiAuditRecorder::class)->register();
@@ -153,20 +207,6 @@ class BagistoApiServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->registerCommands();
         }
-    }
-
-    /**
-     * Determine whether the API integration module is enabled, defaulting to enabled when unset.
-     */
-    public function isIntegrationModuleEnabled(): bool
-    {
-        try {
-            $value = core()->getConfigData('api.integration.settings.enabled');
-        } catch (\Throwable $exception) {
-            return true;
-        }
-
-        return $value === null ? true : (bool) $value;
     }
 
     /**
@@ -221,7 +261,8 @@ class BagistoApiServiceProvider extends ServiceProvider
     }
 
     /**
-     * Substitute the API attribute model for the core attribute contract through Concord.
+     * Substitute the API attribute model for the core attribute contract and register the admin auth models.
+     * Runs once every provider has booted, so core's own Concord registrations cannot override it.
      */
     protected function registerModelSubstitutions(): void
     {
@@ -229,13 +270,24 @@ class BagistoApiServiceProvider extends ServiceProvider
             return;
         }
 
-        try {
-            $this->app->make('concord')->registerModel(
-                AttributeContract::class,
-                CoreAttribute::class
-            );
-        } catch (\Throwable $exception) {
-            report($exception);
+        $models = [AttributeContract::class => CoreAttribute::class] + self::AUTH_MODELS;
+
+        foreach ($models as $contract => $model) {
+            try {
+                $this->app->make('concord')->registerModel($contract, $model);
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
+        }
+    }
+
+    /**
+     * Bind the admin auth model contracts before any provider boots, since API Platform builds their repositories while booting.
+     */
+    protected function registerAuthModelContracts(): void
+    {
+        foreach (self::AUTH_MODELS as $contract => $model) {
+            $this->app->bind($contract, $model);
         }
     }
 
@@ -245,32 +297,32 @@ class BagistoApiServiceProvider extends ServiceProvider
     protected function registerApiDocumentationRoutes(): void
     {
         Route::get('/api', ApiEntrypointController::class)
-            ->name('bagistoapi.docs-index');
+            ->name('bagistoapi.docs_index');
 
         Route::get('/api/shop', [
             SwaggerUIController::class, 'shopApi',
-        ])->name('bagistoapi.shop-docs')->where('_format', '^(?!json|xml|csv)');
+        ])->name('bagistoapi.shop_docs')->where('_format', '^(?!json|xml|csv)');
 
         Route::get('/api/admin', [
             SwaggerUIController::class, 'adminApi',
-        ])->name('bagistoapi.admin-docs')->where('_format', '^(?!json|xml|csv)');
+        ])->name('bagistoapi.admin_docs')->where('_format', '^(?!json|xml|csv)');
 
         Route::get('/api/shop/docs', [
             SwaggerUIController::class, 'shopApiDocs',
-        ])->name('bagistoapi.shop-api-spec');
+        ])->name('bagistoapi.shop_api_spec');
 
         Route::get('/api/admin/docs', [
             SwaggerUIController::class, 'adminApiDocs',
-        ])->name('bagistoapi.admin-api-spec');
+        ])->name('bagistoapi.admin_api_spec');
 
         Route::get('/api/graphiql', GraphQLPlaygroundController::class)
-            ->name('bagistoapi.graphql-playground');
+            ->name('bagistoapi.graphql_playground');
 
         Route::get('/api/graphql', GraphQLPlaygroundController::class)
-            ->name('bagistoapi.api-graphql-playground');
+            ->name('bagistoapi.api_graphql_playground');
 
         Route::get('/api/admin/graphiql', AdminGraphQLPlaygroundController::class)
-            ->name('bagistoapi.admin-graphql-playground');
+            ->name('bagistoapi.admin_graphql_playground');
 
         Route::post(
             '/api/admin/graphql',
@@ -282,22 +334,31 @@ class BagistoApiServiceProvider extends ServiceProvider
                 SetAdminApiAuditContext::class,
                 SetLocaleChannel::class,
             ])
-            ->name('bagistoapi.admin-api-graphql');
+            ->name('bagistoapi.admin_api_graphql');
 
         Route::get('/api/shop/customer-invoices/{id}/pdf', InvoicePdfController::class)
             ->where('id', '[0-9]+')
             ->middleware(['Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey'])
-            ->name('bagistoapi.customer-invoice-pdf');
+            ->name('bagistoapi.customer_invoice_pdf');
+
+        Route::get('/api/shop/gdpr-data/pdf', GdprDataPdfController::class)
+            ->middleware(['Webkul\\BagistoApi\\Http\\Middleware\\VerifyStorefrontKey'])
+            ->name('bagistoapi.customer_gdpr_data_pdf');
 
         Route::get('/api/downloadable/download-sample/{type}/{id}', DownloadSampleController::class)
             ->where('type', 'link|sample')
             ->where('id', '[0-9]+')
-            ->name('bagistoapi.download-sample');
+            ->name('bagistoapi.download_sample');
 
         Route::get('/api/shop/customer-downloadable-products/{id}/download', DownloadablePurchasedController::class)
             ->where('id', '[0-9]+')
             ->middleware(['Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey'])
-            ->name('bagistoapi.customer-downloadable-product-download');
+            ->name('bagistoapi.customer_downloadable_product_download');
+
+        Route::get('/api/shop/return-messages/{id}/attachment', ReturnMessageAttachmentController::class)
+            ->where('id', '[0-9]+')
+            ->middleware(['Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey'])
+            ->name('bagistoapi.customer_return_message_attachment');
     }
 
     /**
@@ -324,18 +385,21 @@ class BagistoApiServiceProvider extends ServiceProvider
     {
         $this->app['router']->aliasMiddleware('storefront.key', VerifyStorefrontKey::class);
         $this->app['router']->aliasMiddleware('api.locale-channel', SetLocaleChannel::class);
-        $this->app['router']->aliasMiddleware('api.rate-limit', RateLimitApi::class);
         $this->app['router']->aliasMiddleware('api.security-headers', SecurityHeaders::class);
         $this->app['router']->aliasMiddleware('api.log-requests', LogApiRequests::class);
     }
 
     /**
-     * Prepend the JSON content type middleware to the global HTTP kernel stack.
+     * Add the JSON content type, customer token and customer throttle middleware to the global HTTP kernel stack.
      */
     protected function registerGlobalMiddleware(): void
     {
         $kernel = $this->app->make(Kernel::class);
         $kernel->prependMiddleware(EnsureJsonContentType::class);
+
+        $kernel->pushMiddleware(EnforceCustomerApiAuth::class);
+
+        $kernel->pushMiddleware(ThrottleCustomerApi::class);
     }
 
     /**
@@ -379,11 +443,21 @@ class BagistoApiServiceProvider extends ServiceProvider
             ApiKeyMaintenanceCommand::class,
             PruneAuditsCommand::class,
             PruneCartUploadsCommand::class,
+            JwtKeysCommand::class,
+            ApiTokenCreateCommand::class,
+            PruneAdminTokensCommand::class,
+            PruneCustomerTokensCommand::class,
             ExportSchemaCommand::class,
         ]);
 
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
             $schedule->command('bagisto-api:prune-cart-uploads')->everyTwoHours();
+
+            $schedule->command('bagisto-api:prune-admin-tokens')->hourly();
+
+            $schedule->command('bagisto-api:prune-customer-tokens')->hourly();
+
+            $schedule->command('bagisto-api:prune-audits')->daily();
         });
     }
 
@@ -454,7 +528,7 @@ class BagistoApiServiceProvider extends ServiceProvider
     }
 
     /**
-     * Merge the admin Integration ACL and menu configs into core arrays.
+     * Merge the package ACL and system configuration into core's.
      */
     protected function mergeAdminConfigs(): void
     {
@@ -466,23 +540,20 @@ class BagistoApiServiceProvider extends ServiceProvider
     }
 
     /**
-     * Merge the admin Integration menu into the admin menu when the module is enabled.
+     * Merge the package menu into the admin menu.
      */
-    protected function registerIntegrationMenu(): void
+    protected function registerAdminMenu(): void
     {
-        if (! $this->isIntegrationModuleEnabled()) {
-            return;
-        }
-
         $menuConfig = require __DIR__.'/../Admin/Config/menu.php';
+
         $existingMenu = (array) config('menu.admin', []);
         config(['menu.admin' => array_merge($existingMenu, $menuConfig)]);
     }
 
     /**
-     * Load the admin integration routes and views, and register the admin API guard and rate limiter.
+     * Load the admin panel routes, views and menu, and register the admin API guard and rate limiter.
      */
-    protected function bootAdminIntegration(): void
+    protected function bootAdminPanel(): void
     {
         Route::middleware([
             'web',
@@ -491,41 +562,30 @@ class BagistoApiServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(__DIR__.'/../Admin/Resources/views', 'bagistoapi');
 
-        $this->registerIntegrationMenu();
+        $this->registerAdminMenu();
+
+        Event::listen('bagisto.admin.customers.customers.view.card.notes.after', function ($viewRenderEventManager) {
+            $viewRenderEventManager->addTemplate('bagistoapi::customer-api-sessions.customer-card');
+        });
 
         Auth::extend('admin-api', function ($app, $name, array $config) {
-            $provider = Auth::createUserProvider($config['provider']);
-
             return new AdminApiGuard(
-                $provider,
-                $app['request']
+                Auth::createUserProvider($config['provider']),
+                $app['request'],
+                $app->make(AdminApiAuthenticator::class),
             );
         });
 
-        RateLimiter::for('admin-api', function (Request $request) {
-            $admin = method_exists($request, 'user') ? $request->user('admin-api') : null;
+        Auth::extend(CurrentCustomer::GUARD, function ($app, $name, array $config) {
+            return new CustomerApiGuard(
+                Auth::createUserProvider($config['provider']),
+                $app['request'],
+                $app->make(CustomerApiAuthenticator::class),
+            );
+        });
 
-            $token = $admin?->currentAccessToken() ?? $admin?->getAttribute('current_access_token');
-
-            if (! $token instanceof AdminPersonalAccessToken) {
-                return app()->environment('testing')
-                    ? Limit::none()
-                    : Limit::perMinute(60)->by('admin-api-unauthenticated:'.$request->ip());
-            }
-
-            $limits = [];
-
-            if ($token->rate_limit_per_minute !== null) {
-                $limits[] = Limit::perMinute($token->rate_limit_per_minute)
-                    ->by('admin-api-token:min:'.$token->id);
-            }
-
-            if ($token->rate_limit_per_day !== null) {
-                $limits[] = Limit::perDay($token->rate_limit_per_day)
-                    ->by('admin-api-token:day:'.$token->id);
-            }
-
-            return $limits ?: Limit::none();
+        RateLimiter::for(ThrottleAdminApi::LIMITER, function (Request $request) {
+            return ThrottleAdminApi::limitFor($request, $this->app->make(AdminApiAuthSettings::class));
         });
     }
 

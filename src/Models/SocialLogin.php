@@ -9,7 +9,6 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
-use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
 use Webkul\BagistoApi\Dto\SocialLoginInput;
 use Webkul\BagistoApi\State\SocialLoginProcessor;
 
@@ -28,7 +27,7 @@ use Webkul\BagistoApi\State\SocialLoginProcessor;
                 'groups' => ['mutation'],
             ],
             openapi: new Operation(
-                tags: ['Customer'],
+                tags: ['Customer Authentication'],
                 summary: 'Social login',
                 description: 'Verify a provider token the app/web already obtained (Google Identity Services or a native SDK — no redirect), then sign the customer in, creating and linking the account on first sight. Returns a Bearer `token` for subsequent calls. Providers: `google`, `facebook`, `linkedin`.',
                 requestBody: new RequestBody(
@@ -110,41 +109,77 @@ use Webkul\BagistoApi\State\SocialLoginProcessor;
         ),
     ],
 )]
-class SocialLogin implements SnakeCaseFieldsResource
+class SocialLogin extends CustomerAuthTokenResponse
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: false, writable: false, readable: true, required: false)]
     public ?int $id = null;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public ?int $_id = null;
 
+    /**
+     * The token.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $token = null;
 
+    /**
+     * The api token.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $api_token = null;
 
+    /**
+     * The first name.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $first_name = null;
 
+    /**
+     * The last name.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $last_name = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $email = null;
 
+    /**
+     * The phone.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $phone = null;
 
+    /**
+     * The is new customer.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?bool $is_new_customer = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $message = null;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $code = null;
 }

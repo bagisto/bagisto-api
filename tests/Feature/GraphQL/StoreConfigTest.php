@@ -5,11 +5,11 @@ namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
-/**
- * GraphQL coverage for the storeConfig query — the public store settings of the current channel.
- */
 class StoreConfigTest extends GraphQLTestCase
 {
+    /**
+     * The query constant.
+     */
     private const QUERY = <<<'GQL'
         query {
           storeConfig {
@@ -33,24 +33,9 @@ class StoreConfigTest extends GraphQLTestCase
         }
     GQL;
 
-    private function storeSetting(string $code, ?string $value): void
-    {
-        DB::table('core_config')->where('code', $code)->delete();
-
-        if ($value !== null) {
-            DB::table('core_config')->insert([
-                'code' => $code,
-                'value' => $value,
-                'channel_code' => core()->getRequestedChannelCode(),
-                'locale_code' => core()->getRequestedLocaleCode(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        $this->forgetCoreConfigCache();
-    }
-
+    /**
+     * Test returns the settings of the current channel.
+     */
     public function test_returns_the_settings_of_the_current_channel(): void
     {
         $this->seedRequiredData();
@@ -64,6 +49,9 @@ class StoreConfigTest extends GraphQLTestCase
         expect($response->json('data.storeConfig.socialLoginProviders'))->toBeArray();
     }
 
+    /**
+     * Test guest checkout follows the store setting.
+     */
     public function test_guest_checkout_follows_the_store_setting(): void
     {
         $this->seedRequiredData();
@@ -75,6 +63,9 @@ class StoreConfigTest extends GraphQLTestCase
         expect($this->graphQL(self::QUERY)->json('data.storeConfig.guestCheckoutEnabled'))->toBeTrue();
     }
 
+    /**
+     * Test minimum order values are returned.
+     */
     public function test_minimum_order_values_are_returned(): void
     {
         $this->seedRequiredData();
@@ -90,6 +81,9 @@ class StoreConfigTest extends GraphQLTestCase
         expect($data['minimumOrderMessage'])->toBe('Minimum is 25.5');
     }
 
+    /**
+     * Test only enabled social login providers are listed.
+     */
     public function test_only_enabled_social_login_providers_are_listed(): void
     {
         $this->seedRequiredData();
@@ -106,6 +100,9 @@ class StoreConfigTest extends GraphQLTestCase
         expect($this->graphQL(self::QUERY)->json('data.storeConfig.socialLoginProviders'))->toBe(['google', 'linkedin']);
     }
 
+    /**
+     * Test review and tax settings are returned.
+     */
     public function test_review_and_tax_settings_are_returned(): void
     {
         $this->seedRequiredData();
@@ -119,6 +116,9 @@ class StoreConfigTest extends GraphQLTestCase
         expect($data['taxCartDisplayPrices'])->toBe('including_tax');
     }
 
+    /**
+     * Test secret settings are not queryable.
+     */
     public function test_secret_settings_are_not_queryable(): void
     {
         $this->seedRequiredData();
@@ -126,5 +126,26 @@ class StoreConfigTest extends GraphQLTestCase
         $response = $this->graphQL('query { storeConfig { googleClientSecret } }');
 
         expect($response->json('errors'))->not->toBeNull();
+    }
+
+    /**
+     * Store setting.
+     */
+    private function storeSetting(string $code, ?string $value): void
+    {
+        DB::table('core_config')->where('code', $code)->delete();
+
+        if ($value !== null) {
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
     }
 }

@@ -1,247 +1,395 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { getCustomerAuthHeaders } from '../../config/auth';
 import { SHOP_DOCS_QUERIES } from '../../graphql/Queries/shopDocs.queries';
 import {
-  CREATE_CANCEL_ORDER,
   CREATE_CUSTOMER,
-  CREATE_CUSTOMER_LOGIN,
   CREATE_CUSTOMER_PROFILE_DELETE,
   CREATE_CUSTOMER_PROFILE_UPDATE,
   CREATE_FORGOT_PASSWORD,
   CREATE_LOGOUT,
-  CREATE_REORDER_ORDER,
   CREATE_VERIFY_TOKEN,
   GET_CUSTOMER_ORDERS_BY_STATUS,
   GET_CUSTOMER_ORDERS_PAGINATED,
 } from '../../graphql/Queries/customer.queries';
 import { sendGraphQLRequest } from '../../graphql/helpers/graphqlClient';
-import {
-  expectAuthAwareResult,
-  expectGraphQLSuccess,
-  graphQLErrorMessages,
-} from '../../graphql/helpers/testSupport';
+import { expectConnection, expectGraphQLSuccess, graphQLErrorMessages } from '../../graphql/helpers/testSupport';
+import { e2eFixtures, missingFixtureReason, E2eCustomerFixture } from '../../../fixtures/e2eFixtures';
 
-test.describe('Customer GraphQL API - Docs aligned', () => {
-  test('Should return the customer profile or the real auth message', async ({ request }) => {
-    const headers = (await getCustomerAuthHeaders(request)) ?? {};
-    const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getCustomerProfile, {}, headers);
-    expect(response.status()).toBe(200);
+const MSG = {
+  INVALID_CREDENTIALS: 'Invalid email or password',
+  LOGIN_SUCCESS: 'You have logged in successfully',
+  TOKEN_VALID: 'Token is valid',
+  UNAUTHENTICATED: 'Unauthenticated. Please login to perform this action',
+  EMAIL_NOT_FOUND: 'Email address not found',
+  PROFILE_UPDATED: 'Customer profile updated successfully',
+  LOGGED_OUT: 'Logged out successfully',
+  TOKEN_REQUIRED: 'Authentication token is required. Please provide the token in the Authorization header as "Bearer <token>"',
+  DELETE_PASSWORD_INCORRECT: 'The password you entered is incorrect',
+  CURRENT_PASSWORD_INCORRECT: 'The current password you entered is incorrect',
+};
 
-    const body = await response.json();
-    expectAuthAwareResult(body, 'data.readCustomerProfile');
+const CUSTOMER_LOGIN = `
+  mutation createCustomerLogin($email: String!, $password: String!) {
+    createCustomerLogin(input: { email: $email, password: $password }) {
+      customerLogin {
+        token
+        accessToken
+        refreshToken
+        success
+        message
+      }
+    }
+  }
+`;
+
+const PROFILE_UPDATE_WITH_RESULT = `
+  mutation updateCustomerProfile($input: createCustomerProfileUpdateInput!) {
+    createCustomerProfileUpdate(input: $input) {
+      customerProfileUpdate {
+        success
+        message
+        firstName
+        lastName
+        gender
+      }
+    }
+  }
+`;
+
+const PROFILE_DELETE_WITH_PASSWORD = `
+  mutation deleteCustomerProfile($input: createCustomerProfileDeleteInput!) {
+    createCustomerProfileDelete(input: $input) {
+      customerProfileDelete {
+        id
+      }
+    }
+  }
+`;
+
+const ORDER_SHIPMENTS = `
+  query getOrderShipments($orderId: Int, $first: Int) {
+    customerOrderShipments(orderId: $orderId, first: $first) {
+      edges {
+        node {
+          _id
+        }
+      }
+      totalCount
+    }
+  }
+`;
+
+interface RegisteredCustomer {
+  email: string;
+  password: string;
+  headers: Record<string, string>;
+}
+
+function uniqueSuffix(): string {
+  return `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+}
+
+async function gql(
+  request: APIRequestContext,
+  query: string,
+  variables: Record<string, any> = {},
+  headers: Record<string, string> = {},
+  status = 200
+): Promise<any> {
+  const response = await sendGraphQLRequest(request, query, variables, headers);
+  expect(response.status()).toBe(status);
+
+  return response.json();
+}
+
+function errorCode(body: any): string | undefined {
+  return body?.errors?.[0]?.extensions?.code;
+}
+
+async function registerCustomer(request: APIRequestContext, firstName = 'Graph', lastName = 'Customer'): Promise<RegisteredCustomer> {
+  const email = `playwright.customer.${uniqueSuffix()}@playwrighttest.local`;
+  const password = 'Passw0rd!123';
+
+  const body = await gql(request, CREATE_CUSTOMER, {
+    input: { firstName, lastName, email, password, confirmPassword: password, subscribedToNewsLetter: false },
+  });
+  expect(body.errors, graphQLErrorMessages(body).join(' | ')).toBeUndefined();
+
+  const token = body.data.createCustomer.customer.token;
+  expect(typeof token).toBe('string');
+
+  return { email, password, headers: { Authorization: `Bearer ${token}` } };
+}
+
+async function fixtureHeaders(request: APIRequestContext, customer: E2eCustomerFixture): Promise<Record<string, string>> {
+  const body = await gql(request, CUSTOMER_LOGIN, { email: customer.email, password: customer.password });
+  expect(body.errors).toBeUndefined();
+  expect(body.data.createCustomerLogin.customerLogin.success).toBe(true);
+
+  return { Authorization: `Bearer ${body.data.createCustomerLogin.customerLogin.token}` };
+}
+
+function nodeIds(connection: any): number[] {
+  return connection.edges.map((edge: any) => Number(edge.node._id));
+}
+
+test.describe('customer graphql api', () => {
+  test('should return the profile of the authenticated customer', async ({ request }) => {
+    const customer = await registerCustomer(request, 'Profile', 'Reader');
+    const body = await gql(request, SHOP_DOCS_QUERIES.getCustomerProfile, {}, customer.headers);
+
+    expectGraphQLSuccess(body, 'data.readCustomerProfile');
+    expect(body.data.readCustomerProfile.email).toBe(customer.email);
+    expect(body.data.readCustomerProfile.firstName).toBe('Profile');
+    expect(body.data.readCustomerProfile.lastName).toBe('Reader');
   });
 
-  test('Should return customer orders or the real auth message', async ({ request }) => {
-    const headers = (await getCustomerAuthHeaders(request)) ?? {};
-    const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getCustomerOrders, { first: 5 }, headers);
-    expect(response.status()).toBe(200);
+  test('should refuse the profile without a customer token', async ({ request }) => {
+    const body = await gql(request, SHOP_DOCS_QUERIES.getCustomerProfile);
 
-    const body = await response.json();
-    expectAuthAwareResult(body, 'data.customerOrders');
+    expect(body.data?.readCustomerProfile ?? null).toBeNull();
+    expect(graphQLErrorMessages(body)).toEqual([MSG.UNAUTHENTICATED]);
   });
 
-  test('Should fetch a single customer order when auth and order data are available', async ({ request }) => {
-    const headers = await getCustomerAuthHeaders(request);
+  test('should list the orders of the customer', async ({ request }) => {
+    const fx = e2eFixtures();
+    test.skip(!fx.order, missingFixtureReason('order'));
+    test.skip(!fx.customer, missingFixtureReason('customer'));
 
-    if (!headers) {
-      const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getCustomerOrder, { id: '/api/shop/customer-orders/1' });
-      const body = await response.json();
-      console.log(`Customer order auth response: ${graphQLErrorMessages(body).join(' | ')}`);
-      expect(graphQLErrorMessages(body).length > 0 || body.data?.customerOrder === null).toBeTruthy();
-      return;
-    }
-
-    const ordersResponse = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getCustomerOrders, { first: 1 }, headers);
-    const ordersBody = await ordersResponse.json();
-    const orderId = ordersBody.data?.customerOrders?.edges?.[0]?.node?.id;
-
-    if (!orderId) {
-      console.log('Authenticated customer has no orders in this environment.');
-      return;
-    }
-
-    const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getCustomerOrder, { id: orderId }, headers);
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    expectGraphQLSuccess(body, 'data.customerOrder');
-  });
-
-  test('Should fetch customer order shipments when order data exists', async ({ request }) => {
-    const headers = await getCustomerAuthHeaders(request);
-
-    if (!headers) {
-      const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getCustomerOrderShipments, { orderId: 1 });
-      const body = await response.json();
-      console.log(`Customer order shipments auth response: ${graphQLErrorMessages(body).join(' | ')}`);
-      expect(graphQLErrorMessages(body).length > 0 || body.data?.customerOrderShipments === null).toBeTruthy();
-      return;
-    }
-
-    const ordersResponse = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getCustomerOrders, { first: 1 }, headers);
-    const ordersBody = await ordersResponse.json();
-    const orderId = ordersBody.data?.customerOrders?.edges?.[0]?.node?.id;
-
-    if (!orderId) {
-      console.log('Authenticated customer has no orders to check shipments for.');
-      return;
-    }
-
-    const response = await sendGraphQLRequest(
-      request,
-      SHOP_DOCS_QUERIES.getCustomerOrderShipments,
-      { orderId },
-      headers
+    const headers = await fixtureHeaders(request, fx.customer!);
+    const connection = expectConnection(
+      await gql(request, SHOP_DOCS_QUERIES.getCustomerOrders, { first: 50 }, headers),
+      'data.customerOrders'
     );
-    expect(response.status()).toBe(200);
 
-    const body = await response.json();
-    expectAuthAwareResult(body, 'data.customerOrderShipments');
+    const order = connection.edges.find((edge: any) => edge.node._id === fx.order!.id)?.node;
+    expect(order, `order ${fx.order!.id} is not listed`).toBeTruthy();
+    expect(order.incrementId).toBe(fx.order!.incrementId);
   });
 
-  test('Should cover customer orders by status docs query', async ({ request }) => {
-    const headers = (await getCustomerAuthHeaders(request)) ?? {};
-    const response = await sendGraphQLRequest(request, GET_CUSTOMER_ORDERS_BY_STATUS, { first: 5, status: 'pending' }, headers);
-    expect(response.status()).toBe(200);
+  test('should list no orders for a customer who placed none', async ({ request }) => {
+    const headers = await getCustomerAuthHeaders(request);
+    const connection = expectConnection(
+      await gql(request, SHOP_DOCS_QUERIES.getCustomerOrders, { first: 5 }, headers),
+      'data.customerOrders'
+    );
 
-    const body = await response.json();
-    expectAuthAwareResult(body, 'data.customerOrders');
+    expect(connection.totalCount).toBe(0);
+    expect(connection.edges).toEqual([]);
   });
 
-  test('Should cover customer orders pagination docs query', async ({ request }) => {
-    const headers = (await getCustomerAuthHeaders(request)) ?? {};
-    const response = await sendGraphQLRequest(request, GET_CUSTOMER_ORDERS_PAGINATED, { first: 2, after: null }, headers);
-    expect(response.status()).toBe(200);
+  test('should fetch a single customer order', async ({ request }) => {
+    const fx = e2eFixtures();
+    test.skip(!fx.order, missingFixtureReason('order'));
+    test.skip(!fx.customer, missingFixtureReason('customer'));
 
-    const body = await response.json();
-    expectAuthAwareResult(body, 'data.customerOrders');
+    const headers = await fixtureHeaders(request, fx.customer!);
+    const body = await gql(request, SHOP_DOCS_QUERIES.getCustomerOrder, { id: `/api/shop/customer-orders/${fx.order!.id}` }, headers);
+
+    expectGraphQLSuccess(body, 'data.customerOrder');
+    expect(body.data.customerOrder._id).toBe(fx.order!.id);
+    expect(body.data.customerOrder.incrementId).toBe(fx.order!.incrementId);
   });
 
-  test('Should try customer login and token verification mutations', async ({ request }) => {
-    const loginResponse = await sendGraphQLRequest(request, CREATE_CUSTOMER_LOGIN, {
-      email: `bagisto.playwright+${Date.now()}@example.com`,
+  test('should fetch the shipments of a customer order', async ({ request }) => {
+    const fx = e2eFixtures();
+    test.skip(!fx.order, missingFixtureReason('order'));
+    test.skip(!fx.customer, missingFixtureReason('customer'));
+
+    const headers = await fixtureHeaders(request, fx.customer!);
+    const connection = expectConnection(
+      await gql(request, ORDER_SHIPMENTS, { orderId: fx.order!.id, first: 10 }, headers),
+      'data.customerOrderShipments'
+    );
+
+    expect(nodeIds(connection)).toEqual([fx.order!.shipmentId]);
+  });
+
+  test('should filter the customer orders by status', async ({ request }) => {
+    const fx = e2eFixtures();
+    test.skip(!fx.order, missingFixtureReason('order'));
+    test.skip(!fx.customer, missingFixtureReason('customer'));
+
+    const headers = await fixtureHeaders(request, fx.customer!);
+    const detail = await gql(request, SHOP_DOCS_QUERIES.getCustomerOrder, { id: String(fx.order!.id) }, headers);
+    expectGraphQLSuccess(detail, 'data.customerOrder');
+    const status = detail.data.customerOrder.status;
+
+    const matching = expectConnection(
+      await gql(request, GET_CUSTOMER_ORDERS_BY_STATUS, { first: 50, status }, headers),
+      'data.customerOrders'
+    );
+    expect(nodeIds(matching)).toContain(fx.order!.id);
+    for (const edge of matching.edges) {
+      expect(edge.node.status).toBe(status);
+    }
+
+    const otherStatus = status === 'canceled' ? 'closed' : 'canceled';
+    const other = expectConnection(
+      await gql(request, GET_CUSTOMER_ORDERS_BY_STATUS, { first: 50, status: otherStatus }, headers),
+      'data.customerOrders'
+    );
+    expect(nodeIds(other)).not.toContain(fx.order!.id);
+  });
+
+  test('should page through the customer orders', async ({ request }) => {
+    const fx = e2eFixtures();
+    test.skip(!fx.order, missingFixtureReason('order'));
+    test.skip(!fx.customer, missingFixtureReason('customer'));
+
+    const headers = await fixtureHeaders(request, fx.customer!);
+    const firstPage = expectConnection(
+      await gql(request, GET_CUSTOMER_ORDERS_PAGINATED, { first: 1, after: null }, headers),
+      'data.customerOrders'
+    );
+
+    expect(firstPage.edges).toHaveLength(1);
+    expect(firstPage.pageInfo.hasNextPage).toBe(firstPage.totalCount > 1);
+
+    if (firstPage.totalCount > 1) {
+      const secondPage = expectConnection(
+        await gql(request, GET_CUSTOMER_ORDERS_PAGINATED, { first: 1, after: firstPage.pageInfo.endCursor }, headers),
+        'data.customerOrders'
+      );
+      expect(secondPage.edges).toHaveLength(1);
+      expect(secondPage.edges[0].node._id).not.toBe(firstPage.edges[0].node._id);
+    }
+  });
+
+  test('should refuse a login with an email that is not registered', async ({ request }) => {
+    const body = await gql(request, CUSTOMER_LOGIN, {
+      email: `bagisto.playwright+${uniqueSuffix()}@example.com`,
       password: 'SecurePass@123',
     });
-    expect(loginResponse.status()).toBe(200);
-    const loginBody = await loginResponse.json();
-    console.log(`Customer login response: ${JSON.stringify(loginBody)}`);
-    expect(loginBody.data?.createCustomerLogin?.customerLogin || graphQLErrorMessages(loginBody).length > 0).toBeTruthy();
 
-    const headers = (await getCustomerAuthHeaders(request)) ?? {};
-    const verifyResponse = await sendGraphQLRequest(request, CREATE_VERIFY_TOKEN, {}, headers);
-    expect(verifyResponse.status()).toBe(200);
-    const verifyBody = await verifyResponse.json();
-    console.log(`Verify token response: ${JSON.stringify(verifyBody)}`);
-    expect(verifyBody.data?.createVerifyToken?.verifyToken || graphQLErrorMessages(verifyBody).length > 0).toBeTruthy();
+    expect(errorCode(body)).toBe('invalid_credentials');
+    expect(graphQLErrorMessages(body)).toEqual([MSG.INVALID_CREDENTIALS]);
+    expect(body.data?.createCustomerLogin ?? null).toBeNull();
   });
 
-  test('Should try customer registration and forgot password mutations', async ({ request }) => {
-    const email = `bagisto.playwright+${Date.now()}@example.com`;
-    const registrationResponse = await sendGraphQLRequest(request, CREATE_CUSTOMER, {
+  test('should log a registered customer in and verify the issued token', async ({ request }) => {
+    const customer = await registerCustomer(request);
+
+    const loginBody = await gql(request, CUSTOMER_LOGIN, { email: customer.email, password: customer.password });
+    expect(loginBody.errors).toBeUndefined();
+    const login = loginBody.data.createCustomerLogin.customerLogin;
+    expect(login.success).toBe(true);
+    expect(login.message).toBe(MSG.LOGIN_SUCCESS);
+    expect(login.token).toBe(login.accessToken);
+    expect(String(login.accessToken).split('.')).toHaveLength(3);
+    expect(typeof login.refreshToken).toBe('string');
+
+    const verifyBody = await gql(request, CREATE_VERIFY_TOKEN, {}, { Authorization: `Bearer ${login.token}` });
+    expect(verifyBody.errors).toBeUndefined();
+    expect(verifyBody.data.createVerifyToken.verifyToken.isValid).toBe(true);
+    expect(verifyBody.data.createVerifyToken.verifyToken.message).toBe(MSG.TOKEN_VALID);
+  });
+
+  test('should report a token verification without a token as unauthenticated', async ({ request }) => {
+    const body = await gql(request, CREATE_VERIFY_TOKEN);
+
+    expect(body.errors).toBeUndefined();
+    expect(body.data.createVerifyToken.verifyToken.isValid).toBe(false);
+    expect(body.data.createVerifyToken.verifyToken.message).toBe(MSG.UNAUTHENTICATED);
+  });
+
+  test('should register a customer with full details', async ({ request }) => {
+    const email = `bagisto.playwright+${uniqueSuffix()}@example.com`;
+    const phone = String(Date.now()).slice(-10);
+
+    const body = await gql(request, CREATE_CUSTOMER, {
       input: {
         firstName: 'GraphQL',
         lastName: 'Tester',
         gender: 'Male',
-        dateOfBirth: '01/15/1990',
-        phone: '5550123',
-        status: '1',
-        isVerified: '1',
-        isSuspended: '0',
+        dateOfBirth: '1990-01-15',
+        phone,
         email,
         password: 'SecurePass@123',
         confirmPassword: 'SecurePass@123',
         subscribedToNewsLetter: true,
       },
     });
-    expect(registrationResponse.status()).toBe(200);
-    const registrationBody = await registrationResponse.json();
-    console.log(`Customer registration response: ${JSON.stringify(registrationBody)}`);
-    expect(registrationBody.data?.createCustomer?.customer || graphQLErrorMessages(registrationBody).length > 0).toBeTruthy();
 
-    const forgotResponse = await sendGraphQLRequest(request, CREATE_FORGOT_PASSWORD, {
-      email,
-    });
-    expect(forgotResponse.status()).toBe(200);
-    const forgotBody = await forgotResponse.json();
-    console.log(`Forgot password response: ${JSON.stringify(forgotBody)}`);
-    expect(forgotBody.data?.createForgotPassword?.forgotPassword || graphQLErrorMessages(forgotBody).length > 0).toBeTruthy();
+    expect(body.errors, graphQLErrorMessages(body).join(' | ')).toBeUndefined();
+    const customer = body.data.createCustomer.customer;
+    expect(customer.email).toBe(email);
+    expect(customer.firstName).toBe('GraphQL');
+    expect(customer.lastName).toBe('Tester');
+    expect(customer.phone).toBe(phone);
+    expect(typeof customer.token).toBe('string');
   });
 
-  test('Should try customer profile and order mutations and show the real API response', async ({ request }) => {
-    const headers = (await getCustomerAuthHeaders(request)) ?? {};
+  test('should report a forgot password request for an email that is not registered', async ({ request }) => {
+    const body = await gql(request, CREATE_FORGOT_PASSWORD, { email: `bagisto.playwright+${uniqueSuffix()}@example.com` });
 
-    const updateResponse = await sendGraphQLRequest(
+    expect(body.errors).toBeUndefined();
+    expect(body.data.createForgotPassword.forgotPassword.success).toBe(false);
+    expect(body.data.createForgotPassword.forgotPassword.message).toBe(MSG.EMAIL_NOT_FOUND);
+  });
+
+  test('should update the customer profile and read the change back', async ({ request }) => {
+    const customer = await registerCustomer(request);
+
+    const updateBody = await gql(
       request,
-      CREATE_CUSTOMER_PROFILE_UPDATE,
+      PROFILE_UPDATE_WITH_RESULT,
       { input: { firstName: 'Jane', lastName: 'Doe', gender: 'female' } },
-      headers
+      customer.headers
     );
-    expect(updateResponse.status()).toBe(200);
-    const updateBody = await updateResponse.json();
-    console.log(`Update customer profile response: ${JSON.stringify(updateBody)}`);
-    expect(updateBody.data?.createCustomerProfileUpdate?.customerProfileUpdate || graphQLErrorMessages(updateBody).length > 0).toBeTruthy();
+    expect(updateBody.errors, graphQLErrorMessages(updateBody).join(' | ')).toBeUndefined();
+    const updated = updateBody.data.createCustomerProfileUpdate.customerProfileUpdate;
+    expect(updated.success).toBe(true);
+    expect(updated.message).toBe(MSG.PROFILE_UPDATED);
 
-    const cancelResponse = await sendGraphQLRequest(
-      request,
-      CREATE_CANCEL_ORDER,
-      { input: { orderId: 999999 } },
-      headers
-    );
-    expect(cancelResponse.status()).toBe(200);
-    const cancelBody = await cancelResponse.json();
-    console.log(`Cancel customer order response: ${JSON.stringify(cancelBody)}`);
-    expect(cancelBody.data?.createCancelOrder?.cancelOrder || graphQLErrorMessages(cancelBody).length > 0).toBeTruthy();
-
-    const reorderResponse = await sendGraphQLRequest(
-      request,
-      CREATE_REORDER_ORDER,
-      { input: { orderId: 999999 } },
-      headers
-    );
-    expect(reorderResponse.status()).toBe(200);
-    const reorderBody = await reorderResponse.json();
-    console.log(`Reorder customer order response: ${JSON.stringify(reorderBody)}`);
-    expect(reorderBody.data?.createReorderOrder?.reorderOrder || graphQLErrorMessages(reorderBody).length > 0).toBeTruthy();
-
-    const logoutResponse = await sendGraphQLRequest(request, CREATE_LOGOUT, {}, headers);
-    expect(logoutResponse.status()).toBe(200);
-    const logoutBody = await logoutResponse.json();
-    console.log(`Customer logout response: ${JSON.stringify(logoutBody)}`);
-    expect(logoutBody.data?.createLogout?.logout || graphQLErrorMessages(logoutBody).length > 0).toBeTruthy();
+    const profile = await gql(request, SHOP_DOCS_QUERIES.getCustomerProfile, {}, customer.headers);
+    expectGraphQLSuccess(profile, 'data.readCustomerProfile');
+    expect(profile.data.readCustomerProfile.firstName).toBe('Jane');
+    expect(profile.data.readCustomerProfile.lastName).toBe('Doe');
   });
 
-  test('Should safely cover delete customer profile mutation through the actual auth response', async ({ request }) => {
-    const response = await sendGraphQLRequest(request, CREATE_CUSTOMER_PROFILE_DELETE);
-    expect(response.status()).toBe(200);
+  test('should log the customer out and revoke the token', async ({ request }) => {
+    const customer = await registerCustomer(request);
 
-    const body = await response.json();
-    console.log(`Delete customer profile response: ${JSON.stringify(body)}`);
-    expect(body.data?.createCustomerProfileDelete?.customerProfileDelete || graphQLErrorMessages(body).length > 0).toBeTruthy();
+    const logoutBody = await gql(request, CREATE_LOGOUT, {}, customer.headers);
+    expect(logoutBody.errors).toBeUndefined();
+    expect(logoutBody.data.createLogout.logout.success).toBe(true);
+    expect(logoutBody.data.createLogout.logout.message).toBe(MSG.LOGGED_OUT);
+
+    const profile = await gql(request, SHOP_DOCS_QUERIES.getCustomerProfile, {}, customer.headers, 401);
+    expect(profile.data?.readCustomerProfile ?? null).toBeNull();
+    expect(errorCode(profile)).toBe('unauthenticated');
+  });
+
+  test('should refuse to delete a profile without a customer token', async ({ request }) => {
+    const body = await gql(request, CREATE_CUSTOMER_PROFILE_DELETE);
+
+    expect(body.data?.createCustomerProfileDelete ?? null).toBeNull();
+    expect(graphQLErrorMessages(body)).toEqual([MSG.TOKEN_REQUIRED]);
+  });
+
+  test('should refuse to delete a profile with the wrong password and keep the account', async ({ request }) => {
+    const customer = await registerCustomer(request);
+
+    const body = await gql(request, PROFILE_DELETE_WITH_PASSWORD, { input: { password: 'WrongPassw0rd!' } }, customer.headers);
+    expect(body.data?.createCustomerProfileDelete ?? null).toBeNull();
+    expect(graphQLErrorMessages(body)).toEqual([MSG.DELETE_PASSWORD_INCORRECT]);
+
+    const profile = await gql(request, SHOP_DOCS_QUERIES.getCustomerProfile, {}, customer.headers);
+    expectGraphQLSuccess(profile, 'data.readCustomerProfile');
+    expect(profile.data.readCustomerProfile.email).toBe(customer.email);
   });
 });
 
-// ---------------------------------------------------------------------------
-// Regression tests for bug fixes landed 2026-05-25:
-//   - currentPassword on profile update was being silently dropped because the
-//     OutputOnlySnakeToCamelNameConverter denormalises camelCase JSON keys back
-//     to snake_case when populating the DTO. The processor now reads from
-//     $context['args']['input'] (GraphQL) / request()->json() (REST) directly.
-// These pin the GraphQL transport behaviour so the bug can never re-regress.
-// ---------------------------------------------------------------------------
-test.describe('Customer Profile Update — currentPassword regression (2026-05-25)', () => {
-  // Each test in this block performs 3 sequential mutations
-  // (register → password change → re-login) which can exceed the
-  // 30 s default under parallel load.
+test.describe('customer profile update current password regression', () => {
   test.slow();
 
-  test('Should change customer password when currentPassword is correct, and the new password works for re-login', async ({ request }) => {
-    const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
-    const email = `playwright.pwd.ok.${uniqueSuffix}@playwrighttest.local`;
+  test('should change the password when the current password is correct and log in with the new one', async ({ request }) => {
+    const email = `playwright.pwd.ok.${uniqueSuffix()}@playwrighttest.local`;
     const oldPassword = 'OldPassw0rd!123';
     const newPassword = 'NewPassw0rd!456';
 
-    // Register
-    const registerResponse = await sendGraphQLRequest(request, CREATE_CUSTOMER, {
+    const registerBody = await gql(request, CREATE_CUSTOMER, {
       input: {
         firstName: 'Pwd',
         lastName: 'Regression',
@@ -253,13 +401,10 @@ test.describe('Customer Profile Update — currentPassword regression (2026-05-2
         isSuspended: '0',
       },
     });
-    expect(registerResponse.status()).toBe(200);
-    const registerBody = await registerResponse.json();
     const initialToken = registerBody.data?.createCustomer?.customer?.token;
     expect(initialToken, `failed to register customer for pwd-regression: ${JSON.stringify(registerBody)}`).toBeTruthy();
 
-    // Update password with correct currentPassword
-    const updateResponse = await sendGraphQLRequest(
+    const updateBody = await gql(
       request,
       CREATE_CUSTOMER_PROFILE_UPDATE,
       {
@@ -273,31 +418,24 @@ test.describe('Customer Profile Update — currentPassword regression (2026-05-2
       },
       { Authorization: `Bearer ${initialToken}` }
     );
-    expect(updateResponse.status()).toBe(200);
-    const updateBody = await updateResponse.json();
-    console.log(`Password change response: ${JSON.stringify(updateBody)}`);
     expect(updateBody.errors, `update errored: ${graphQLErrorMessages(updateBody).join(' | ')}`).toBeUndefined();
 
-    // Re-login with the NEW password — must succeed (proves the password was actually changed)
-    const reloginResponse = await sendGraphQLRequest(request, CREATE_CUSTOMER_LOGIN, {
-      email,
-      password: newPassword,
-    });
-    expect(reloginResponse.status()).toBe(200);
-    const reloginBody = await reloginResponse.json();
+    const reloginBody = await gql(request, CUSTOMER_LOGIN, { email, password: newPassword });
     expect(
       reloginBody.data?.createCustomerLogin?.customerLogin?.token,
       `re-login with new password failed: ${JSON.stringify(reloginBody)}`
     ).toBeTruthy();
+
+    const oldLoginBody = await gql(request, CUSTOMER_LOGIN, { email, password: oldPassword });
+    expect(errorCode(oldLoginBody)).toBe('invalid_credentials');
   });
 
-  test('Should reject password change when currentPassword is wrong, and old password still works', async ({ request }) => {
-    const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
-    const email = `playwright.pwd.bad.${uniqueSuffix}@playwrighttest.local`;
+  test('should reject a password change when the current password is wrong and keep the old password', async ({ request }) => {
+    const email = `playwright.pwd.bad.${uniqueSuffix()}@playwrighttest.local`;
     const oldPassword = 'OldPassw0rd!123';
     const newPassword = 'NewPassw0rd!456';
 
-    const registerResponse = await sendGraphQLRequest(request, CREATE_CUSTOMER, {
+    const registerBody = await gql(request, CREATE_CUSTOMER, {
       input: {
         firstName: 'Pwd',
         lastName: 'WrongCurrent',
@@ -309,13 +447,10 @@ test.describe('Customer Profile Update — currentPassword regression (2026-05-2
         isSuspended: '0',
       },
     });
-    expect(registerResponse.status()).toBe(200);
-    const registerBody = await registerResponse.json();
     const initialToken = registerBody.data?.createCustomer?.customer?.token;
     expect(initialToken).toBeTruthy();
 
-    // Attempt password change with WRONG currentPassword
-    const updateResponse = await sendGraphQLRequest(
+    const updateBody = await gql(
       request,
       CREATE_CUSTOMER_PROFILE_UPDATE,
       {
@@ -329,21 +464,11 @@ test.describe('Customer Profile Update — currentPassword regression (2026-05-2
       },
       { Authorization: `Bearer ${initialToken}` }
     );
-    expect(updateResponse.status()).toBe(200);
-    const updateBody = await updateResponse.json();
-    console.log(`Wrong current password response: ${JSON.stringify(updateBody)}`);
 
-    // Must surface a current-password related GraphQL error
-    const errMsgs = graphQLErrorMessages(updateBody).join(' | ').toLowerCase();
-    expect(errMsgs).toMatch(/current.?password|password|incorrect/);
+    expect(updateBody.data?.createCustomerProfileUpdate ?? null).toBeNull();
+    expect(graphQLErrorMessages(updateBody)).toEqual([MSG.CURRENT_PASSWORD_INCORRECT]);
 
-    // Old password must STILL work (proves no silent change)
-    const reloginResponse = await sendGraphQLRequest(request, CREATE_CUSTOMER_LOGIN, {
-      email,
-      password: oldPassword,
-    });
-    expect(reloginResponse.status()).toBe(200);
-    const reloginBody = await reloginResponse.json();
+    const reloginBody = await gql(request, CUSTOMER_LOGIN, { email, password: oldPassword });
     expect(reloginBody.data?.createCustomerLogin?.customerLogin?.token).toBeTruthy();
   });
 });

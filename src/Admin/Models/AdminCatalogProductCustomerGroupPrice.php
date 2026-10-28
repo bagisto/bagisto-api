@@ -17,26 +17,6 @@ use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
 
-/**
- * Admin sub-resource for product customer-group (tier) prices.
- *
- * REST:
- *   GET    /api/admin/catalog/products/{productId}/customer-group-prices
- *   POST   /api/admin/catalog/products/{productId}/customer-group-prices
- *   PUT    /api/admin/catalog/products/{productId}/customer-group-prices/{id}
- *   DELETE /api/admin/catalog/products/{productId}/customer-group-prices/{id}
- *
- * GraphQL:
- *   adminCatalogProductCustomerGroupPrices(productId:)
- *   createAdminCatalogProductCustomerGroupPrice
- *   updateAdminCatalogProductCustomerGroupPrice
- *   deleteAdminCatalogProductCustomerGroupPrice
- *
- * NOTE: this is the **fresh** sub-resource that replaces the legacy admin
- * operations on `src/Models/ProductCustomerGroupPrice.php`. The legacy file
- * still exists for parity until removed (see CLAUDE.md "Legacy admin
- * endpoints — to be removed").
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCatalogProductCustomerGroupPrice',
@@ -240,6 +220,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Catalog: Products'],
                 summary: 'Delete a customer-group price row',
+                description: 'Deletes one customer-group (tier) price row of the product. An unknown product, or a row that does not belong to it, is a 404.',
                 parameters: [
                     new Model\Parameter('productId', 'path', 'Product ID.', true, schema: [
                         'type' => 'integer',
@@ -268,6 +249,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
         new QueryCollection(
             provider: AdminCatalogProductCustomerGroupPriceProvider::class,
             paginationEnabled: false,
+            description: 'Every customer-group (tier) price row of product `productId`, ordered by quantity, as a plain list (not paginated). Needs the `catalog.products` permission; an unknown product is an error.',
             extraArgs: [
                 'productId' => ['type' => 'Int!'],
             ],
@@ -305,24 +287,45 @@ class AdminCatalogProductCustomerGroupPrice
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The product id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $product_id = null;
 
+    /**
+     * The qty.
+     */
     #[ApiProperty(writable: false)]
     public ?int $qty = null;
 
+    /**
+     * The value type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $value_type = null;
 
+    /**
+     * The value.
+     */
     #[ApiProperty(writable: false)]
     public ?float $value = null;
 
+    /**
+     * The customer group id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $customer_group_id = null;
 
+    /**
+     * The customer group name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $customer_group_name = null;
 }

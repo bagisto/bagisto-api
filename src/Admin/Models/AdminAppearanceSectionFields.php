@@ -11,10 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\Resolver\AdminAppearanceSectionFieldsQueryResolver;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionFieldsProvider;
 
-/**
- * The field set a section of this type is built from, with the values currently held for
- * the locale — everything a client needs to render an editor for it.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAppearanceSectionFields',
@@ -59,6 +55,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionFieldsProvider;
     graphQlOperations: [
         new Query(
             resolver: AdminAppearanceSectionFieldsQueryResolver::class,
+            description: 'The editor field schema for the type of section `sectionId` and the options it holds in `locale`: staged edits when there are any, otherwise the published values. Needs the `appearance.sections` permission.',
             args: [
                 'sectionId' => ['type' => 'Int!'],
                 'locale' => ['type' => 'String'],
@@ -70,19 +67,32 @@ class AdminAppearanceSectionFields
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The section id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $section_id = null;
 
+    /**
+     * The type.
+     */
     public ?string $type = null;
 
+    /**
+     * The locale.
+     */
     public ?string $locale = null;
 
     /**
+     * The field schema the section editor renders for the section.
+     *
      * @var array<string, mixed>
      */
     public array $schema = [];
 
     /**
+     * The draft or published option values of the section fields.
+     *
      * @var array<string, mixed>
      */
     public array $options = [];

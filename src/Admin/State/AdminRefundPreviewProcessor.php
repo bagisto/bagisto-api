@@ -9,20 +9,21 @@ use Webkul\BagistoApi\Admin\State\Concerns\TranslatesActionPayload;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Sales\Repositories\RefundRepository;
 
-/**
- * POST /api/admin/orders/{orderId}/refunds/preview + adminRefundPreview mutation.
- *
- * Same body as Refund create; returns the computed totals only — never writes.
- */
 class AdminRefundPreviewProcessor implements ProcessorInterface
 {
     use TranslatesActionPayload;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminOrderActionGuard $guard,
         protected RefundRepository $refundRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): RefundTotalsSummary
     {
         $admin = $this->guard->resolveAdmin();
@@ -64,6 +65,9 @@ class AdminRefundPreviewProcessor implements ProcessorInterface
         return $summary;
     }
 
+    /**
+     * Read field.
+     */
     protected function readField(mixed $data, array $context, string $name, mixed $default = null): mixed
     {
         if (

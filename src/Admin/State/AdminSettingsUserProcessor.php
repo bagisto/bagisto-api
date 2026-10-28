@@ -138,11 +138,11 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.user.not-found'));
         }
 
-        $this->assertCanGrantRole($admin, $existing->role);
-
         $payload = $this->normaliseUpdatePayload($input, $existing);
 
         $this->validateUpdatePayload($payload, $id, $input);
+
+        $this->assertCanGrantRole($admin, $existing->role);
 
         $this->assertCanGrantRole($admin, Role::find($payload['role_id']));
 

@@ -268,6 +268,7 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Orders'],
                 summary: 'Create an invoice for an order',
+                description: 'Invoices the given quantities of the order\'s items (`items` of `orderItemId` and `quantity`). Refused with 422 for a closed or fraud order, a PayPal Standard order, nothing left to invoice, or a quantity above what is left; `can_create_transaction` also records a payment transaction.',
                 parameters: [
                     new Model\Parameter('orderId', 'path', 'Order ID', true, schema: ['type' => 'integer']),
                 ],
@@ -370,10 +371,31 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
 )]
 class AdminInvoice extends EloquentModel
 {
-    /** @var string */
+    /**
+     * Status code -> label (mirrors core Order::$statusLabel).
+     */
+    private const STATUS_LABELS = [
+        'pending' => 'Pending',
+        'pending_payment' => 'Pending Payment',
+        'processing' => 'Processing',
+        'completed' => 'Completed',
+        'canceled' => 'Canceled',
+        'closed' => 'Closed',
+        'fraud' => 'Fraud',
+    ];
+
+    /**
+     * The table that stores the invoices.
+     *
+     * @var string
+     */
     protected $table = 'invoices';
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the invoice is serialized.
+     *
+     * @var array
+     */
     protected $appends = [
         'order_increment_id', 'order_status', 'order_status_label', 'order_date',
         'channel_name', 'customer_name', 'customer_email', 'transaction_id',
@@ -383,7 +405,11 @@ class AdminInvoice extends EloquentModel
         'formatted_shipping_amount_incl_tax', 'formatted_base_shipping_amount_incl_tax', 'formatted_shipping_tax_amount', 'formatted_base_shipping_tax_amount',
     ];
 
-    /** @var array */
+    /**
+     * The native types the invoice attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'order_id' => 'int',
@@ -410,21 +436,19 @@ class AdminInvoice extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
-    /** Status code -> label (mirrors core Order::$statusLabel). */
-    private const STATUS_LABELS = [
-        'pending' => 'Pending',
-        'pending_payment' => 'Pending Payment',
-        'processing' => 'Processing',
-        'completed' => 'Completed',
-        'canceled' => 'Canceled',
-        'closed' => 'Closed',
-        'fraud' => 'Fraud',
-    ];
-
+    /**
+     * The order row memo.
+     */
     private ?object $orderRowMemo = null;
 
+    /**
+     * The order row loaded.
+     */
     private bool $orderRowLoaded = false;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
@@ -433,6 +457,9 @@ class AdminInvoice extends EloquentModel
 
     // --- Nested relations (GraphQL connections) ---
 
+    /**
+     * Items.
+     */
     #[ApiProperty(writable: false)]
     public function items(): HasMany
     {
@@ -441,12 +468,7 @@ class AdminInvoice extends EloquentModel
 
     /**
      * The invoice's order (typed object). Billing/shipping addresses live on the
-     * order, so they're reached as `order { addresses { edges { node } } }` — a
-     * top-level `addresses` HasMany on the invoice can't resolve over GraphQL
-     * (API Platform's connection resolver ignores the custom local key, querying
-     * addresses by the invoice id instead of its order_id). The BelongsTo uses
-     * the standard key (invoice.order_id → orders.id) so AdminOrderDetail's own
-     * `addresses` connection resolves correctly.
+     * order, so they're reached as `order { addresses { edges { node } } }` — a.
      */
     #[ApiProperty(writable: false)]
     public function order(): BelongsTo
@@ -456,18 +478,27 @@ class AdminInvoice extends EloquentModel
 
     // --- Order / customer context (from the order; listing pre-sets the raw attributes) ---
 
+    /**
+     * Get order increment id attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getOrderIncrementIdAttribute(): ?string
     {
         return $this->attributes['order_increment_id'] ?? $this->orderRow()?->increment_id;
     }
 
+    /**
+     * Get order status attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getOrderStatusAttribute(): ?string
     {
         return $this->attributes['order_status'] ?? $this->orderRow()?->status;
     }
 
+    /**
+     * Get order status label attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getOrderStatusLabelAttribute(): ?string
     {
@@ -476,6 +507,9 @@ class AdminInvoice extends EloquentModel
         return $status ? (self::STATUS_LABELS[$status] ?? $status) : null;
     }
 
+    /**
+     * Get order date attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getOrderDateAttribute(): ?string
     {
@@ -484,12 +518,18 @@ class AdminInvoice extends EloquentModel
         return $value ? (string) $value : null;
     }
 
+    /**
+     * Get channel name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getChannelNameAttribute(): ?string
     {
         return $this->attributes['channel_name'] ?? $this->orderRow()?->channel_name;
     }
 
+    /**
+     * Get customer name attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getCustomerNameAttribute(): ?string
     {
@@ -506,6 +546,9 @@ class AdminInvoice extends EloquentModel
         return trim(($order->customer_first_name ?? '').' '.($order->customer_last_name ?? '')) ?: null;
     }
 
+    /**
+     * Get customer email attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getCustomerEmailAttribute(): ?string
     {
@@ -530,108 +573,161 @@ class AdminInvoice extends EloquentModel
 
     // --- Formatted money (order currency; base_* use base currency) ---
 
+    /**
+     * Get formatted sub total attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedSubTotalAttribute(): ?string
     {
         return $this->fmt($this->sub_total);
     }
 
+    /**
+     * Get formatted base sub total attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedBaseSubTotalAttribute(): ?string
     {
         return core()->formatBasePrice((float) $this->base_sub_total);
     }
 
+    /**
+     * Get formatted sub total incl tax attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedSubTotalInclTaxAttribute(): ?string
     {
         return $this->fmt($this->sub_total_incl_tax);
     }
 
+    /**
+     * Get formatted base sub total incl tax attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedBaseSubTotalInclTaxAttribute(): ?string
     {
         return core()->formatBasePrice((float) $this->base_sub_total_incl_tax);
     }
 
+    /**
+     * Get formatted grand total attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedGrandTotalAttribute(): ?string
     {
         return $this->fmt($this->grand_total);
     }
 
+    /**
+     * Get formatted base grand total attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedBaseGrandTotalAttribute(): ?string
     {
         return core()->formatBasePrice((float) $this->base_grand_total);
     }
 
+    /**
+     * Get formatted tax amount attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedTaxAmountAttribute(): ?string
     {
         return $this->fmt($this->tax_amount);
     }
 
+    /**
+     * Get formatted base tax amount attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedBaseTaxAmountAttribute(): ?string
     {
         return core()->formatBasePrice((float) $this->base_tax_amount);
     }
 
+    /**
+     * Get formatted discount amount attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedDiscountAmountAttribute(): ?string
     {
         return $this->fmt($this->discount_amount);
     }
 
+    /**
+     * Get formatted base discount amount attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedBaseDiscountAmountAttribute(): ?string
     {
         return core()->formatBasePrice((float) $this->base_discount_amount);
     }
 
+    /**
+     * Get formatted shipping amount attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedShippingAmountAttribute(): ?string
     {
         return $this->fmt($this->shipping_amount);
     }
 
+    /**
+     * Get formatted base shipping amount attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedBaseShippingAmountAttribute(): ?string
     {
         return core()->formatBasePrice((float) $this->base_shipping_amount);
     }
 
+    /**
+     * Get formatted shipping amount incl tax attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedShippingAmountInclTaxAttribute(): ?string
     {
         return $this->fmt($this->shipping_amount_incl_tax);
     }
 
+    /**
+     * Get formatted base shipping amount incl tax attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedBaseShippingAmountInclTaxAttribute(): ?string
     {
         return core()->formatBasePrice((float) $this->base_shipping_amount_incl_tax);
     }
 
+    /**
+     * Get formatted shipping tax amount attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedShippingTaxAmountAttribute(): ?string
     {
         return $this->fmt($this->shipping_tax_amount);
     }
 
+    /**
+     * Get formatted base shipping tax amount attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getFormattedBaseShippingTaxAmountAttribute(): ?string
     {
         return core()->formatBasePrice((float) $this->base_shipping_tax_amount);
     }
 
+    /**
+     * Fmt.
+     */
     private function fmt($amount): string
     {
         return core()->formatPrice((float) $amount, $this->order_currency_code);
     }
 
-    /** Memoised lookup of the invoice's order row (order-context fields). */
+    /**
+     * Memoised lookup of the invoice's order row (order-context fields).
+     */
     private function orderRow(): ?object
     {
         if (! $this->orderRowLoaded) {

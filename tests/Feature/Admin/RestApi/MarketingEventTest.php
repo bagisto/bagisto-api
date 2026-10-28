@@ -7,53 +7,11 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for Admin Marketing → Events CRUD (Block F2b).
- */
 class MarketingEventTest extends AdminApiTestCase
 {
-    protected function insertEvent(array $overrides = []): int
-    {
-        return \DB::table('marketing_events')->insertGetId(array_merge([
-            'name' => 'Event '.uniqid(),
-            'description' => 'desc',
-            'date' => '2026-12-20',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
-    protected function createAdminWithoutPermissions(): Admin
-    {
-        $role = Role::create([
-            'name' => 'Limited '.uniqid(),
-            'description' => 'no event perms',
-            'permission_type' => 'custom',
-            'permissions' => ['catalog.products'],
-        ]);
-
-        return $this->createAdmin(['role_id' => $role->id]);
-    }
-
-    protected function basePayload(array $overrides = []): array
-    {
-        return array_merge([
-            'name' => 'API Event '.uniqid(),
-            'description' => 'via api',
-            'date' => '2027-01-15',
-        ], $overrides);
-    }
-
+    /**
+     * Test listing requires admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -61,6 +19,9 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -73,6 +34,9 @@ class MarketingEventTest extends AdminApiTestCase
         expect($response->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total', 'from', 'to']);
     }
 
+    /**
+     * Test listing row shape.
+     */
     public function test_listing_row_shape(): void
     {
         $admin = $this->createAdmin();
@@ -85,6 +49,9 @@ class MarketingEventTest extends AdminApiTestCase
         expect($row)->toHaveKeys(['id', 'name', 'description', 'date']);
     }
 
+    /**
+     * Test filter by name.
+     */
     public function test_filter_by_name(): void
     {
         $admin = $this->createAdmin();
@@ -98,6 +65,9 @@ class MarketingEventTest extends AdminApiTestCase
         expect($ids)->toContain($id);
     }
 
+    /**
+     * Test filter by date range.
+     */
     public function test_filter_by_date_range(): void
     {
         $admin = $this->createAdmin();
@@ -123,6 +93,9 @@ class MarketingEventTest extends AdminApiTestCase
         expect($ids)->not->toContain($late);
     }
 
+    /**
+     * Test sort by name asc.
+     */
     public function test_sort_by_name_asc(): void
     {
         $admin = $this->createAdmin();
@@ -144,6 +117,9 @@ class MarketingEventTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test per page cap.
+     */
     public function test_per_page_cap(): void
     {
         $admin = $this->createAdmin();
@@ -153,6 +129,9 @@ class MarketingEventTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test detail returns payload.
+     */
     public function test_detail_returns_payload(): void
     {
         $admin = $this->createAdmin();
@@ -165,6 +144,9 @@ class MarketingEventTest extends AdminApiTestCase
         expect($response->json('name'))->toBe('Detail Event');
     }
 
+    /**
+     * Test detail unknown id returns 404.
+     */
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -172,6 +154,9 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test detail requires admin token.
+     */
     public function test_detail_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -180,6 +165,9 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test create happy path.
+     */
     public function test_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -198,6 +186,9 @@ class MarketingEventTest extends AdminApiTestCase
         expect($response->json('date'))->toContain('2027-06-01');
     }
 
+    /**
+     * Test create missing name returns 422.
+     */
     public function test_create_missing_name_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -207,6 +198,9 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create missing description returns 422.
+     */
     public function test_create_missing_description_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -216,6 +210,9 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create missing date returns 422.
+     */
     public function test_create_missing_date_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -225,6 +222,9 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create invalid date returns 422.
+     */
     public function test_create_invalid_date_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -234,6 +234,9 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create requires admin token.
+     */
     public function test_create_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -241,6 +244,9 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test create requires permission.
+     */
     public function test_create_requires_permission(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -248,6 +254,9 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test update happy path.
+     */
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -266,6 +275,9 @@ class MarketingEventTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test update unknown id returns 404.
+     */
     public function test_update_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -277,6 +289,9 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test update invalid date returns 422.
+     */
     public function test_update_invalid_date_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -289,6 +304,9 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test update requires permission.
+     */
     public function test_update_requires_permission(): void
     {
         $admin = $this->createAdminWithoutPermissions();
@@ -301,6 +319,9 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -312,6 +333,9 @@ class MarketingEventTest extends AdminApiTestCase
         $this->assertDatabaseMissing('marketing_events', ['id' => $id]);
     }
 
+    /**
+     * Test delete unknown id returns 404.
+     */
     public function test_delete_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -319,6 +343,9 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test delete requires admin token.
+     */
     public function test_delete_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -327,11 +354,71 @@ class MarketingEventTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test delete requires permission.
+     */
     public function test_delete_requires_permission(): void
     {
         $admin = $this->createAdminWithoutPermissions();
         $id = $this->insertEvent();
         $response = $this->adminDelete($admin, '/api/admin/marketing/events/'.$id);
         $response->assertStatus(403);
+    }
+
+    /**
+     * Insert event.
+     */
+    protected function insertEvent(array $overrides = []): int
+    {
+        return \DB::table('marketing_events')->insertGetId(array_merge([
+            'name' => 'Event '.uniqid(),
+            'description' => 'desc',
+            'date' => '2026-12-20',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Create admin without permissions.
+     */
+    protected function createAdminWithoutPermissions(): Admin
+    {
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no event perms',
+            'permission_type' => 'custom',
+            'permissions' => ['catalog.products'],
+        ]);
+
+        return $this->createAdmin(['role_id' => $role->id]);
+    }
+
+    /**
+     * Base payload.
+     */
+    protected function basePayload(array $overrides = []): array
+    {
+        return array_merge([
+            'name' => 'API Event '.uniqid(),
+            'description' => 'via api',
+            'date' => '2027-01-15',
+        ], $overrides);
     }
 }

@@ -11,19 +11,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\DataTransfer\Helpers\Import as ImportHelper;
 use Webkul\DataTransfer\Models\Import;
 
-/**
- * GET /api/admin/settings/data-transfer/imports/{id}/stats?state=
- *
- * Returns the import detail plus the per-batch progress + summary block for the
- * requested state (default processed). Mirrors ImportController::stats.
- */
 class AdminSettingsDataTransferImportStatsProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ImportHelper $importHelper,
         protected AdminSettingsDataTransferImportItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminSettingsDataTransferImport
     {
         AdminReadPermissions::authorize($operation, AdminSettingsDataTransferImportStats::class);

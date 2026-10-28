@@ -6,6 +6,9 @@ use Webkul\BagistoApi\Admin\Models\AdminTransaction;
 
 trait BuildsAdminTransaction
 {
+    /**
+     * Build admin transaction.
+     */
     protected function buildAdminTransaction(object $row): AdminTransaction
     {
         $transaction = new AdminTransaction;
@@ -51,6 +54,9 @@ trait BuildsAdminTransaction
         return $transaction;
     }
 
+    /**
+     * Admin transaction select.
+     */
     protected function adminTransactionSelect(): array
     {
         return [
@@ -75,6 +81,9 @@ trait BuildsAdminTransaction
         ];
     }
 
+    /**
+     * Safe format base amount.
+     */
     protected function safeFormatBaseAmount(float $amount): ?string
     {
         try {

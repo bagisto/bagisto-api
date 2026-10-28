@@ -7,10 +7,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminCustomerReviewUpdateInput
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(description: 'Resource IRI (e.g. /api/admin/customers/reviews/4).')]
     #[Groups(['mutation'])]
     public ?string $id = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(description: 'New status: pending|approved|disapproved.')]
     #[Groups(['mutation'])]
     public ?string $status = null;

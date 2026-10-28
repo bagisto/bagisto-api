@@ -8,42 +8,9 @@ use Webkul\Customer\Models\Customer;
 
 class GdprRequestTest extends RestApiTestCase
 {
-    private function enableGdpr(): void
-    {
-        DB::table('core_config')->where('code', 'general.gdpr.settings.enabled')->delete();
-
-        DB::table('core_config')->insert([
-            'code' => 'general.gdpr.settings.enabled',
-            'value' => '1',
-            'channel_code' => core()->getRequestedChannelCode(),
-            'locale_code' => core()->getRequestedLocaleCode(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $this->forgetCoreConfigCache();
-    }
-
-    private function disableGdpr(): void
-    {
-        DB::table('core_config')->where('code', 'general.gdpr.settings.enabled')->delete();
-
-        $this->forgetCoreConfigCache();
-    }
-
-    private function seedRequest(Customer $customer, array $overrides = []): int
-    {
-        return (int) DB::table('gdpr_data_request')->insertGetId(array_merge([
-            'customer_id' => $customer->id,
-            'email' => $customer->email,
-            'status' => 'pending',
-            'type' => 'delete',
-            'message' => 'Please remove my data',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
+    /**
+     * Test raise request happy path.
+     */
     public function test_raise_request_happy_path(): void
     {
         $this->enableGdpr();
@@ -67,6 +34,9 @@ class GdprRequestTest extends RestApiTestCase
         ]);
     }
 
+    /**
+     * Test raise request missing type.
+     */
     public function test_raise_request_missing_type(): void
     {
         $this->enableGdpr();
@@ -79,6 +49,9 @@ class GdprRequestTest extends RestApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
+    /**
+     * Test raise request invalid type.
+     */
     public function test_raise_request_invalid_type(): void
     {
         $this->enableGdpr();
@@ -92,6 +65,9 @@ class GdprRequestTest extends RestApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
+    /**
+     * Test raise request missing message.
+     */
     public function test_raise_request_missing_message(): void
     {
         $this->enableGdpr();
@@ -104,6 +80,9 @@ class GdprRequestTest extends RestApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
+    /**
+     * Test list returns only own requests.
+     */
     public function test_list_returns_only_own_requests(): void
     {
         $this->enableGdpr();
@@ -125,6 +104,9 @@ class GdprRequestTest extends RestApiTestCase
         expect(in_array($otherId, $ids, true))->toBeFalse();
     }
 
+    /**
+     * Test view own request.
+     */
     public function test_view_own_request(): void
     {
         $this->enableGdpr();
@@ -139,6 +121,9 @@ class GdprRequestTest extends RestApiTestCase
         expect($response->json('status'))->toBe('pending');
     }
 
+    /**
+     * Test view cross customer returns 404.
+     */
     public function test_view_cross_customer_returns_404(): void
     {
         $this->enableGdpr();
@@ -151,6 +136,9 @@ class GdprRequestTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [403, 404]))->toBeTrue();
     }
 
+    /**
+     * Test revoke own request happy path.
+     */
     public function test_revoke_own_request_happy_path(): void
     {
         $this->enableGdpr();
@@ -169,6 +157,9 @@ class GdprRequestTest extends RestApiTestCase
         ]);
     }
 
+    /**
+     * Test revoke approved request not allowed.
+     */
     public function test_revoke_approved_request_not_allowed(): void
     {
         $this->enableGdpr();
@@ -180,6 +171,9 @@ class GdprRequestTest extends RestApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test revoke cross customer returns 404.
+     */
     public function test_revoke_cross_customer_returns_404(): void
     {
         $this->enableGdpr();
@@ -192,6 +186,9 @@ class GdprRequestTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [403, 404]))->toBeTrue();
     }
 
+    /**
+     * Test delete own request happy path.
+     */
     public function test_delete_own_request_happy_path(): void
     {
         $this->enableGdpr();
@@ -205,6 +202,9 @@ class GdprRequestTest extends RestApiTestCase
         $this->assertDatabaseMissing('gdpr_data_request', ['id' => $id]);
     }
 
+    /**
+     * Test delete cross customer returns 404.
+     */
     public function test_delete_cross_customer_returns_404(): void
     {
         $this->enableGdpr();
@@ -218,6 +218,9 @@ class GdprRequestTest extends RestApiTestCase
         $this->assertDatabaseHas('gdpr_data_request', ['id' => $id]);
     }
 
+    /**
+     * Test raise requires authentication.
+     */
     public function test_raise_requires_authentication(): void
     {
         $this->enableGdpr();
@@ -230,6 +233,9 @@ class GdprRequestTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test list requires authentication.
+     */
     public function test_list_requires_authentication(): void
     {
         $this->enableGdpr();
@@ -239,6 +245,9 @@ class GdprRequestTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test view requires authentication.
+     */
     public function test_view_requires_authentication(): void
     {
         $this->enableGdpr();
@@ -250,6 +259,9 @@ class GdprRequestTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test revoke requires authentication.
+     */
     public function test_revoke_requires_authentication(): void
     {
         $this->enableGdpr();
@@ -261,6 +273,9 @@ class GdprRequestTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test delete requires authentication.
+     */
     public function test_delete_requires_authentication(): void
     {
         $this->enableGdpr();
@@ -272,6 +287,9 @@ class GdprRequestTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
+    /**
+     * Test raise when disabled returns disabled error.
+     */
     public function test_raise_when_disabled_returns_disabled_error(): void
     {
         $this->disableGdpr();
@@ -287,6 +305,9 @@ class GdprRequestTest extends RestApiTestCase
         expect(strtolower($response->getContent()))->toContain('admin');
     }
 
+    /**
+     * Test list when disabled returns disabled error.
+     */
     public function test_list_when_disabled_returns_disabled_error(): void
     {
         $this->disableGdpr();
@@ -296,5 +317,50 @@ class GdprRequestTest extends RestApiTestCase
 
         expect($response->getStatusCode())->toBe(400);
         expect(strtolower($response->getContent()))->toContain('disabled');
+    }
+
+    /**
+     * Enable gdpr.
+     */
+    private function enableGdpr(): void
+    {
+        DB::table('core_config')->where('code', 'general.gdpr.settings.enabled')->delete();
+
+        DB::table('core_config')->insert([
+            'code' => 'general.gdpr.settings.enabled',
+            'value' => '1',
+            'channel_code' => core()->getRequestedChannelCode(),
+            'locale_code' => core()->getRequestedLocaleCode(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->forgetCoreConfigCache();
+    }
+
+    /**
+     * Disable gdpr.
+     */
+    private function disableGdpr(): void
+    {
+        DB::table('core_config')->where('code', 'general.gdpr.settings.enabled')->delete();
+
+        $this->forgetCoreConfigCache();
+    }
+
+    /**
+     * Seed request.
+     */
+    private function seedRequest(Customer $customer, array $overrides = []): int
+    {
+        return (int) DB::table('gdpr_data_request')->insertGetId(array_merge([
+            'customer_id' => $customer->id,
+            'email' => $customer->email,
+            'status' => 'pending',
+            'type' => 'delete',
+            'message' => 'Please remove my data',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
     }
 }

@@ -5,15 +5,18 @@ namespace Webkul\BagistoApi\State\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Dto\SubscribeToNewsletterInput;
 use Webkul\BagistoApi\Dto\SubscribeToNewsletterOutput;
 use Webkul\BagistoApi\Exception\InvalidInputException;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Core\Models\SubscribersListProxy;
 
 class NewsletterSubscriptionProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         if (
@@ -46,7 +49,7 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
             throw new InvalidInputException($errorMessage);
         }
 
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         $existing = SubscribersListProxy::where('email', $data->customerEmail)->first();
 

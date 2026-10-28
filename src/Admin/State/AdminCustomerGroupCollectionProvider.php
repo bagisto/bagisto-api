@@ -7,19 +7,19 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerGroup;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * GET /api/admin/customers/groups + adminCustomerGroups GraphQL.
- *
- * Filters: code (LIKE), name (LIKE), is_user_defined.
- * Sort: id (default desc), code, name.
- */
 class AdminCustomerGroupCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'code', 'name'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('customer_groups')
@@ -33,6 +33,9 @@ class AdminCustomerGroupCollectionProvider extends AbstractAdminCollectionProvid
             );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['code'])) {
@@ -52,6 +55,9 @@ class AdminCustomerGroupCollectionProvider extends AbstractAdminCollectionProvid
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -65,6 +71,9 @@ class AdminCustomerGroupCollectionProvider extends AbstractAdminCollectionProvid
         $query->orderBy($map[$column] ?? 'customer_groups.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminCustomerGroup
     {
         $dto = new AdminCustomerGroup;

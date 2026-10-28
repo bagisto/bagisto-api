@@ -8,6 +8,7 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\OperationFailedException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\CartRule\Repositories\CartRuleCouponRepository;
 use Webkul\Checkout\Facades\Cart as CartFacade;
 use Webkul\Checkout\Models\Cart as CartModel;
 use Webkul\Checkout\Models\CartAddress;
@@ -17,7 +18,7 @@ use Webkul\Shipping\Facades\Shipping;
 trait HandlesCartCouponsAndExtras
 {
     /**
-     * Handle applying coupon code
+     * Handle applying coupon code.
      */
     private function handleApplyCoupon(?CartModel $cart, ?Customer $customer, CartInput $data): array
     {
@@ -38,39 +39,39 @@ trait HandlesCartCouponsAndExtras
 
         CartFacade::setCart($cart);
 
-        try {
-            CartFacade::setCouponCode($data->couponCode)->collectTotals();
-        } catch (\Exception $exception) {
-            throw new OperationFailedException($exception->getMessage(), 0, $exception);
+        $coupon = app(CartRuleCouponRepository::class)->findOneByField('code', $data->couponCode);
+
+        if (! $coupon) {
+            throw new InvalidInputException(__('shop::app.checkout.coupon.invalid'), 422);
+        }
+
+        if ($cart->coupon_code === $coupon->code) {
+            throw new InvalidInputException(__('shop::app.checkout.coupon.already-applied'), 422);
+        }
+
+        if ($coupon->cart_rule?->status) {
+            try {
+                CartFacade::setCouponCode($coupon->code)->collectTotals();
+            } catch (\Exception $exception) {
+                throw new OperationFailedException($exception->getMessage(), 0, $exception);
+            }
         }
 
         $cart = CartFacade::getCart();
 
-        $cartData = CartData::fromModel($cart);
-        // Bagisto's setCouponCode/collectTotals does NOT throw for unknown codes — it
-        // silently writes the column without applying a discount. Treat the coupon as
-        // applied only when there is a matching cart_rule_coupons row.
-        $applied = ! empty($cart->coupon_code)
-            && $cart->coupon_code === $data->couponCode
-            && \DB::table('cart_rule_coupons')->where('code', $data->couponCode)->exists();
-
-        if (! $applied) {
-            // Strip the unverified code so subsequent reads don't lie about a discount.
-            $cart->coupon_code = null;
-            $cart->save();
-            $cartData->couponCode = null;
+        if ($cart?->coupon_code !== $coupon->code) {
+            throw new InvalidInputException(__('shop::app.checkout.coupon.apply-issue'), 422);
         }
 
-        $cartData->success = $applied;
-        $cartData->message = $applied
-            ? __('bagistoapi::app.graphql.cart.coupon-applied')
-            : __('bagistoapi::app.graphql.cart.apply-coupon-failed');
+        $cartData = CartData::fromModel($cart);
+        $cartData->success = true;
+        $cartData->message = __('bagistoapi::app.graphql.cart.coupon-applied');
 
         return (array) $cartData;
     }
 
     /**
-     * Handle removing coupon code from cart
+     * Handle removing coupon code from cart.
      */
     private function handleRemoveCoupon(?CartModel $cart, ?Customer $customer, CartInput $data): array
     {
@@ -100,7 +101,7 @@ trait HandlesCartCouponsAndExtras
     }
 
     /**
-     * Handle moving items to wishlist
+     * Handle moving items to wishlist.
      */
     private function handleMoveToWishlist(?CartModel $cart, ?Customer $customer, CartInput $data): array
     {
@@ -150,7 +151,7 @@ trait HandlesCartCouponsAndExtras
     }
 
     /**
-     * Handle estimating shipping methods and tax
+     * Handle estimating shipping methods and tax.
      */
     private function handleEstimateShipping(?CartModel $cart, ?Customer $customer, CartInput $data): array
     {

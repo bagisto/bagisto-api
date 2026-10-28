@@ -5,21 +5,30 @@ namespace Webkul\BagistoApi\Console\Commands;
 use Illuminate\Console\Command;
 use Webkul\BagistoApi\Services\KeyRotationService;
 
-/**
- * Perform automatic API key maintenance tasks
- */
 class ApiKeyMaintenanceCommand extends Command
 {
+    /**
+     * The signature.
+     */
     protected $signature = 'bagisto-api:key:maintain 
                             {--cleanup : Clean up expired keys}
                             {--invalidate : Invalidate deprecated keys}
                             {--notify : Send expiration notifications}
                             {--all : Perform all maintenance tasks}';
 
+    /**
+     * The description.
+     */
     protected $description = 'Automatic API key maintenance (cleanup, deprecation, notifications)';
 
+    /**
+     * The rotation service.
+     */
     protected KeyRotationService $rotationService;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct()
     {
         parent::__construct();

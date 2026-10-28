@@ -17,19 +17,6 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CustomerOrderShipmentProvider;
 use Webkul\Sales\Models\Order;
 
-/**
- * Customer Order Shipment API Resource
- *
- * Standalone API resource for shipments belonging to authenticated customer's orders.
- * Provides shipment details including tracking numbers, items, addresses, and payment info.
- * Customer-scoped via order relationship — customers can only access their own shipments.
- *
- * Relationships:
- * - order: The parent order
- * - items: Shipment line items
- * - shippingAddress: Destination address for the shipment
- * - billingAddress: Billing address from the order
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomerOrderShipment',
@@ -66,15 +53,21 @@ use Webkul\Sales\Models\Order;
         new Get(
             uriTemplate: '/customer-order-shipments/{id}',
             provider: CustomerOrderShipmentProvider::class,
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'Get a shipment of the customer',
+                description: 'One shipment of an order placed by the authenticated customer; any other shipment or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
     ],
     graphQlOperations: [
         new Query(
             resolver: BaseQueryItemResolver::class,
+            description: 'One shipment of an order placed by the authenticated customer; any other shipment is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
         ),
         new QueryCollection(
             provider: CustomerOrderShipmentProvider::class,
+            description: 'Shipments of the authenticated customer\'s orders, newest first. Filters: `orderId` and `status`. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
             paginationType: 'cursor',
             args: [
                 'orderId' => [
@@ -112,10 +105,18 @@ use Webkul\Sales\Models\Order;
 )]
 class CustomerOrderShipment extends Model
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'shipments';
 
-    /** @var array */
+    /**
+     * The attributes cast to native types.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'order_id' => 'int',
@@ -129,11 +130,15 @@ class CustomerOrderShipment extends Model
         'updated_at' => 'datetime',
     ];
 
-    /** @var array */
+    /**
+     * The accessors appended to the shipment's array form.
+     *
+     * @var array
+     */
     protected $appends = ['shippingNumber'];
 
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -142,7 +147,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get shipment number (for display - uses ID as shipment number)
+     * Get shipment number (for display - uses ID as shipment number).
      */
     #[ApiProperty(writable: false)]
     public function getShippingNumberAttribute(): string
@@ -151,7 +156,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get tracking number
+     * Get tracking number.
      */
     #[ApiProperty(writable: false)]
     public function getTrackingNumber(): ?string
@@ -160,7 +165,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get carrier title
+     * Get carrier title.
      */
     #[ApiProperty(writable: false)]
     public function getCarrierTitle(): ?string
@@ -169,7 +174,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get carrier code
+     * Get carrier code.
      */
     #[ApiProperty(writable: false)]
     public function getCarrierCode(): ?string
@@ -178,7 +183,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get total quantity  shipped
+     * Get total quantity  shipped.
      */
     #[ApiProperty(writable: false)]
     public function getTotalQty(): ?int
@@ -187,7 +192,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get total weight shipped
+     * Get total weight shipped.
      */
     #[ApiProperty(writable: false)]
     public function getTotalWeight(): ?float
@@ -196,7 +201,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get the order that owns this shipment
+     * Get the order that owns this shipment.
      */
     public function order(): BelongsTo
     {
@@ -204,7 +209,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get shipment items
+     * Get shipment items.
      */
     #[ApiProperty(writable: false)]
     public function items(): HasMany
@@ -213,7 +218,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get the shipping address for this shipment
+     * Get the shipping address for this shipment.
      */
     #[ApiProperty(writable: false)]
     public function shippingAddress(): BelongsTo
@@ -222,7 +227,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get the billing address from the parent order
+     * Get the billing address from the parent order.
      */
     #[ApiProperty(writable: false)]
     public function billingAddress(): BelongsTo
@@ -232,7 +237,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get order payment method info
+     * Get order payment method info.
      */
     #[ApiProperty(writable: false)]
     public function getPaymentMethodTitle(): ?string
@@ -241,7 +246,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Get order shipping method info
+     * Get order shipping method info.
      */
     #[ApiProperty(writable: false)]
     public function getShippingMethodTitle(): ?string
@@ -250,7 +255,7 @@ class CustomerOrderShipment extends Model
     }
 
     /**
-     * Override toArray to ensure custom accessors are included
+     * Override toArray to ensure custom accessors are included.
      */
     public function toArray(): array
     {
@@ -264,7 +269,6 @@ class CustomerOrderShipment extends Model
         $array['paymentMethodTitle'] = $this->getPaymentMethodTitle();
         $array['shippingMethodTitle'] = $this->getShippingMethodTitle();
 
-        // Set addresses to null if not found
         if (
             ! array_key_exists('shippingAddress', $array)
             || ! $this->shippingAddress

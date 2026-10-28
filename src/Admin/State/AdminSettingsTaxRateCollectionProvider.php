@@ -7,16 +7,19 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTaxRate;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/settings/tax-rates + adminSettingsTaxRates.
- */
 class AdminSettingsTaxRateCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'identifier', 'tax_rate'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('tax_rates')->select(
@@ -25,6 +28,9 @@ class AdminSettingsTaxRateCollectionProvider extends AbstractAdminCollectionProv
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['identifier'])) {
@@ -52,12 +58,18 @@ class AdminSettingsTaxRateCollectionProvider extends AbstractAdminCollectionProv
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
         $query->orderBy($column, $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminSettingsTaxRate
     {
         $dto = new AdminSettingsTaxRate;

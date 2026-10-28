@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
-use Symfony\Component\PropertyInfo\Type as LegacyType;
 use Symfony\Component\TypeInfo\Type as NativeType;
 use Webkul\BagistoApi\Admin\Models\AdminCustomer;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerReview;
@@ -14,10 +13,15 @@ use Webkul\BagistoApi\Admin\Models\AdminInvoice;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCampaign;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSearchTerm;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSubscriber;
+use Webkul\BagistoApi\Admin\Models\AdminOrderDetailItem;
+use Webkul\BagistoApi\Models\BookingProduct;
 use Webkul\BagistoApi\Models\Customer;
 
 class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInterface
 {
+    /**
+     * The nullable relations.
+     */
     private array $nullableRelations = [
         Customer::class => ['status', 'is_verified', 'is_suspended', 'subscribed_to_news_letter'],
         AdminCustomer::class => ['group'],
@@ -38,11 +42,31 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
         Customer::class => ['status', 'is_verified', 'is_suspended'],
     ];
 
-    /** @var array<class-string, string[]> */
+    /**
+     * Computed properties that hold JSON, typed as arrays so GraphQL serves them as `Iterable` instead of `String`.
+     *
+     * @var array<class-string, string[]>
+     */
+    private array $jsonProperties = [
+        AdminOrderDetailItem::class => ['child', 'downloadable_links'],
+        BookingProduct::class => ['slots'],
+    ];
+
+    /**
+     * The table columns already read for each model class.
+     *
+     * @var array<class-string, string[]>
+     */
     private static array $columnsCache = [];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(private readonly PropertyMetadataFactoryInterface $decorated) {}
 
+    /**
+     * Create.
+     */
     public function create(string $resourceClass, string $property, array $options = []): ApiProperty
     {
         $metadata = $this->decorated->create($resourceClass, $property, $options);
@@ -51,40 +75,29 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
             $metadata = $metadata->withNativeType(NativeType::nullable(NativeType::string()));
         }
 
+        if (in_array($property, $this->jsonProperties[$resourceClass] ?? [], true)) {
+            return $metadata->withNativeType(NativeType::nullable(NativeType::array()));
+        }
+
         if (! $this->shouldBeNullable($resourceClass, $property)) {
             return $metadata;
         }
 
         $native = $metadata->getNativeType();
 
-        if ($native !== null) {
-            return $native->isNullable()
-                ? $metadata
-                : $metadata->withNativeType(NativeType::nullable($native));
-        }
-
-        $types = $metadata->getBuiltinTypes() ?? [];
-
-        if ($types === []) {
+        if (
+            $native === null
+            || $native->isNullable()
+        ) {
             return $metadata;
         }
 
-        $nullable = [];
-
-        foreach ($types as $type) {
-            $nullable[] = new LegacyType(
-                $type->getBuiltinType(),
-                true,
-                $type->getClassName(),
-                $type->isCollection(),
-                $type->getCollectionKeyTypes(),
-                $type->getCollectionValueTypes(),
-            );
-        }
-
-        return $metadata->withBuiltinTypes($nullable);
+        return $metadata->withNativeType(NativeType::nullable($native));
     }
 
+    /**
+     * Should be nullable.
+     */
     private function shouldBeNullable(string $resourceClass, string $property): bool
     {
         if (in_array($property, $this->nullableRelations[$resourceClass] ?? [], true)) {
@@ -99,6 +112,8 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
     }
 
     /**
+     * Return the column names of the resource model's table, reading each table once.
+     *
      * @return string[]
      */
     private function columnsOf(string $resourceClass): array

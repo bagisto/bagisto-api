@@ -6,14 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Customer group — shared nested sub-resource for Marketing resources that
- * reference customer groups (catalog rules / cart rules `customerGroups`
- * connections; campaigns `customerGroup` to-one). Backed by `customer_groups`.
- *
- * Used as a belongsToMany node (pivot has no own id → node `_id` is the group's
- * real id) and as a BelongsTo typed object. `code`/`name` are real columns.
- */
 #[ApiResource(
     shortName: 'AdminMarketingCustomerGroupRef',
     operations: [],
@@ -22,17 +14,32 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminMarketingCustomerGroupRef extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the customer groups.
+     *
+     * @var string
+     */
     protected $table = 'customer_groups';
 
-    /** @var bool */
+    /**
+     * Indicates the customer group reference does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The native types the customer group reference attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

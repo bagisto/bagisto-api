@@ -1,38 +1,44 @@
-// Admin Settings — Channels REST e2e.
-// Listing / detail / create / update / delete.
-// Translatable, FK-heavy. Channel creation requires locales/currencies/
-// inventory_sources arrays + default ids. We pick id=1 for each (default
-// fixtures seeded by Bagisto installer). Delete operates only on rows we
-// created (never the default app channel).
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext, APIResponse } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_SETTINGS } from '../../../../rest/endpoints/admin.settings.endpoints';
 
 test.describe.configure({ timeout: 60_000 });
 
-const OK_LIST = [200];
-const OK_CREATE = [200, 201, 400, 422, 429];
-const OK_UPDATE = [200, 201, 400, 404, 422, 429];
-const OK_DELETE = [200, 204, 400, 404, 422, 429];
+const UNKNOWN_ID = 99999999;
 
-async function safeJson(resp: any): Promise<any> {
-  try { return await resp.json(); } catch { return null; }
+const MSG = {
+  NOT_FOUND: 'Channel not found.',
+  DELETED: 'Channel deleted successfully.',
+  CODE_REQUIRED: 'The code field is required.',
+};
+
+interface CreatedChannel {
+  id: number;
+  code: string;
+  name: string;
+  hostname: string;
 }
 
-function uniqueCode(prefix = 'e2e'): string {
-  return `${prefix}_${Date.now().toString(36).slice(-6)}`;
+function uniqueCode(): string {
+  return `e2e_ch_${Date.now().toString(36)}${Math.floor(Math.random() * 1_000_000).toString(36)}`;
 }
 
-async function createChannel(request: any): Promise<{ id: number | null }> {
-  const code = uniqueCode('e2e_ch');
-  const resp = await sendAdminRequest(request, ADMIN_SETTINGS.CHANNELS, {
+async function jsonOf(response: APIResponse): Promise<any> {
+  return JSON.parse(await response.text());
+}
+
+async function createChannel(request: APIRequestContext): Promise<CreatedChannel> {
+  const code = uniqueCode();
+  const name = `E2E Channel ${code}`;
+  const hostname = `https://${code.replace(/_/g, '-')}.example.com`;
+
+  const response = await sendAdminRequest(request, ADMIN_SETTINGS.CHANNELS, {
     method: 'POST',
     data: {
       code,
-      name: `E2E Channel ${code}`,
+      name,
       description: 'e2e generated',
-      hostname: `https://${code}.example.com`,
+      hostname,
       locales: [1],
       currencies: [1],
       inventory_sources: [1],
@@ -41,41 +47,70 @@ async function createChannel(request: any): Promise<{ id: number | null }> {
       root_category_id: 1,
     },
   });
-  const body = await safeJson(resp);
-  return { id: body?.id ?? body?.data?.id ?? null };
+  const body = await jsonOf(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(201);
+  expect(typeof body.id).toBe('number');
+  expect(body.code).toBe(code);
+
+  return { id: body.id, code, name, hostname };
 }
 
-test.describe('Admin Settings Channels REST API', () => {
-  test('listing returns 200', async ({ request }) => {
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.CHANNELS);
-    expect(OK_LIST).toContain(resp.status());
-    const body = await safeJson(resp);
-    if (body) expect(Array.isArray(body.data) || Array.isArray(body)).toBe(true);
+async function deleteChannel(request: APIRequestContext, id: number): Promise<void> {
+  await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(id), { method: 'DELETE' });
+}
+
+async function expectNotFound(response: APIResponse): Promise<void> {
+  const body = await jsonOf(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(404);
+  expect(body.detail ?? body.message).toBe(MSG.NOT_FOUND);
+}
+
+test.describe('admin settings channels rest api', () => {
+  test('listing filtered by code returns the default channel', async ({ request }) => {
+    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.CHANNELS, { params: { code: 'default' } });
+    const body = await jsonOf(resp);
+
+    expect(resp.status(), JSON.stringify(body)).toBe(200);
+    expect(Array.isArray(body.data)).toBe(true);
+    expect(body.data.map((row: any) => row.code)).toContain('default');
   });
 
   test('listing with pagination', async ({ request }) => {
     const resp = await sendAdminRequest(request, ADMIN_SETTINGS.CHANNELS, {
       params: { page: '1', per_page: '5' },
     });
-    expect(OK_LIST).toContain(resp.status());
+    const body = await jsonOf(resp);
+
+    expect(resp.status(), JSON.stringify(body)).toBe(200);
+    expect(body.data.length).toBeLessThanOrEqual(5);
   });
 
-  test('detail for id=1 returns 200', async ({ request }) => {
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(1));
-    expect([200, 404]).toContain(resp.status());
+  test('detail returns a created channel', async ({ request }) => {
+    const channel = await createChannel(request);
+
+    try {
+      const resp = await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(channel.id));
+      const body = await jsonOf(resp);
+
+      expect(resp.status(), JSON.stringify(body)).toBe(200);
+      expect(body.id).toBe(channel.id);
+      expect(body.code).toBe(channel.code);
+      expect(body.name).toBe(channel.name);
+      expect(body.hostname).toBe(channel.hostname);
+      expect(body.defaultLocaleId).toBe(1);
+      expect(body.baseCurrencyId).toBe(1);
+      expect(body.rootCategoryId).toBe(1);
+      expect(body.locales.map((locale: any) => locale.id)).toEqual([1]);
+      expect(body.currencies.map((currency: any) => currency.id)).toEqual([1]);
+    } finally {
+      await deleteChannel(request, channel.id);
+    }
   });
 
   test('detail for non-existent id returns 404', async ({ request }) => {
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(99999999));
-    expect([400, 404]).toContain(resp.status());
-  });
-
-  test('create channel happy path', async ({ request }) => {
-    const { id } = await createChannel(request);
-    // tolerate failure (fixtures may differ) but if created, clean up
-    if (id) {
-      await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(id), { method: 'DELETE' });
-    }
+    await expectNotFound(await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(UNKNOWN_ID)));
   });
 
   test('create channel missing code returns 422', async ({ request }) => {
@@ -83,26 +118,50 @@ test.describe('Admin Settings Channels REST API', () => {
       method: 'POST',
       data: { name: 'No code' },
     });
-    expect([400, 422]).toContain(resp.status());
+    const body = await jsonOf(resp);
+
+    expect(resp.status(), JSON.stringify(body)).toBe(422);
+    expect(body.detail ?? body.message).toBe(MSG.CODE_REQUIRED);
   });
 
   test('update channel partial (name only)', async ({ request }) => {
-    const { id } = await createChannel(request);
-    if (!id) { test.skip(true, 'create failed'); return; }
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(id), {
-      method: 'PUT',
-      data: { name: 'Renamed E2E' },
-    });
-    expect(OK_UPDATE).toContain(resp.status());
-    await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(id), { method: 'DELETE' });
+    const channel = await createChannel(request);
+    const renamed = `Renamed ${channel.code}`;
+
+    try {
+      const resp = await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(channel.id), {
+        method: 'PUT',
+        data: { name: renamed },
+      });
+      const body = await jsonOf(resp);
+
+      expect(resp.status(), JSON.stringify(body)).toBe(200);
+      expect(body.id).toBe(channel.id);
+      expect(body.name).toBe(renamed);
+      expect(body.code).toBe(channel.code);
+
+      const detail = await jsonOf(await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(channel.id)));
+      expect(detail.name).toBe(renamed);
+      expect(detail.locales.map((locale: any) => locale.id)).toEqual([1]);
+    } finally {
+      await deleteChannel(request, channel.id);
+    }
   });
 
-  test('delete fresh channel returns 200/204', async ({ request }) => {
-    const { id } = await createChannel(request);
-    if (!id) { test.skip(true, 'create failed'); return; }
-    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(id), {
+  test('delete fresh channel returns 200', async ({ request }) => {
+    const channel = await createChannel(request);
+
+    const resp = await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(channel.id), {
       method: 'DELETE',
     });
-    expect(OK_DELETE).toContain(resp.status());
+    const body = await jsonOf(resp);
+
+    expect(resp.status(), JSON.stringify(body)).toBe(200);
+    expect(body.message).toBe(MSG.DELETED);
+    await expectNotFound(await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(channel.id)));
+  });
+
+  test('delete non-existent channel returns 404', async ({ request }) => {
+    await expectNotFound(await sendAdminRequest(request, ADMIN_SETTINGS.CHANNEL(UNKNOWN_ID), { method: 'DELETE' }));
   });
 });

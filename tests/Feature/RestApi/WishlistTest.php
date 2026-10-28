@@ -8,34 +8,18 @@ use Webkul\Customer\Models\Wishlist;
 
 class WishlistTest extends RestApiTestCase
 {
+    /**
+     * The base url.
+     */
     private string $baseUrl = '/api/shop/wishlists';
 
-    private function createTestData(): array
-    {
-        $this->seedRequiredData();
+    // ============================================================================
+    // GET Collection
+    // ============================================================================
 
-        $customer = $this->createCustomer();
-        $channel = Channel::first();
-        $product1 = $this->createBaseProduct('simple');
-        $product2 = $this->createBaseProduct('simple');
-
-        $wishlistItem1 = Wishlist::factory()->create([
-            'customer_id' => $customer->id,
-            'product_id' => $product1->id,
-            'channel_id' => $channel->id,
-        ]);
-
-        $wishlistItem2 = Wishlist::factory()->create([
-            'customer_id' => $customer->id,
-            'product_id' => $product2->id,
-            'channel_id' => $channel->id,
-        ]);
-
-        return compact('customer', 'channel', 'product1', 'product2', 'wishlistItem1', 'wishlistItem2');
-    }
-
-    // ── GET Collection ────────────────────────────────────────
-
+    /**
+     * Test get wishlist collection.
+     */
     public function test_get_wishlist_collection(): void
     {
         $testData = $this->createTestData();
@@ -49,16 +33,41 @@ class WishlistTest extends RestApiTestCase
         expect(count($data))->toBeGreaterThanOrEqual(2);
     }
 
+    /**
+     * Each wishlist item carries the product card, so the wishlist page needs no further call.
+     */
+    public function test_wishlist_items_embed_the_product_card(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet($testData['customer'], $this->baseUrl);
+
+        $response->assertOk();
+
+        $item = collect($response->json())->firstWhere('id', $testData['wishlistItem1']->id);
+
+        expect($item['product'])->toBeArray()
+            ->and($item['product']['id'])->toBe($testData['product1']->id)
+            ->and($item['product']['sku'])->toBe($testData['product1']->sku)
+            ->and($item['product'])->toHaveKeys(['name', 'price', 'formattedPrice', 'isSaleable', 'averageRating'])
+            ->and($item)->toHaveKeys(['createdAt', 'updatedAt']);
+    }
+
+    /**
+     * Test get wishlist collection requires auth.
+     */
     public function test_get_wishlist_collection_requires_auth(): void
     {
         $this->seedRequiredData();
 
         $response = $this->publicGet($this->baseUrl);
 
-        // AuthorizationException has no HttpExceptionInterface — REST maps it to 500
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Test get wishlist collection only returns own items.
+     */
     public function test_get_wishlist_collection_only_returns_own_items(): void
     {
         $testData = $this->createTestData();
@@ -81,6 +90,9 @@ class WishlistTest extends RestApiTestCase
         }
     }
 
+    /**
+     * Test get wishlist collection default order is oldest first.
+     */
     public function test_get_wishlist_collection_default_order_is_oldest_first(): void
     {
         $testData = $this->createTestData();
@@ -93,6 +105,9 @@ class WishlistTest extends RestApiTestCase
         expect($ids[0])->toBe($testData['wishlistItem1']->id);
     }
 
+    /**
+     * Test get wishlist collection order desc returns newest first.
+     */
     public function test_get_wishlist_collection_order_desc_returns_newest_first(): void
     {
         $testData = $this->createTestData();
@@ -105,6 +120,9 @@ class WishlistTest extends RestApiTestCase
         expect($ids[0])->toBe($testData['wishlistItem2']->id);
     }
 
+    /**
+     * Test get wishlist collection sort created at desc returns newest first.
+     */
     public function test_get_wishlist_collection_sort_created_at_desc_returns_newest_first(): void
     {
         $testData = $this->createTestData();
@@ -117,8 +135,13 @@ class WishlistTest extends RestApiTestCase
         expect($ids[0])->toBe($testData['wishlistItem2']->id);
     }
 
-    // ── GET Single ────────────────────────────────────────────
+    // ============================================================================
+    // GET Single
+    // ============================================================================
 
+    /**
+     * Test get single wishlist item.
+     */
     public function test_get_single_wishlist_item(): void
     {
         $testData = $this->createTestData();
@@ -140,6 +163,9 @@ class WishlistTest extends RestApiTestCase
         expect($data['id'])->toBe($testData['wishlistItem1']->id);
     }
 
+    /**
+     * Test cannot get other customers wishlist item.
+     */
     public function test_cannot_get_other_customers_wishlist_item(): void
     {
         $testData = $this->createTestData();
@@ -153,6 +179,9 @@ class WishlistTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [403, 404]))->toBeTrue();
     }
 
+    /**
+     * Test get non existent wishlist item returns 404.
+     */
     public function test_get_non_existent_wishlist_item_returns_404(): void
     {
         $this->seedRequiredData();
@@ -163,6 +192,9 @@ class WishlistTest extends RestApiTestCase
         $response->assertNotFound();
     }
 
+    /**
+     * Test wishlist item id is integer.
+     */
     public function test_wishlist_item_id_is_integer(): void
     {
         $testData = $this->createTestData();
@@ -174,10 +206,12 @@ class WishlistTest extends RestApiTestCase
 
         $response->assertOk();
 
-        // _id is GraphQL-only; REST exposes only id
         expect($response->json('id'))->toBeInt();
     }
 
+    /**
+     * Test wishlist item timestamps are iso8601.
+     */
     public function test_wishlist_item_timestamps_are_iso8601(): void
     {
         $testData = $this->createTestData();
@@ -193,8 +227,13 @@ class WishlistTest extends RestApiTestCase
         expect($response->json('updatedAt'))->toMatch('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
     }
 
-    // ── POST Create ───────────────────────────────────────────
+    // ============================================================================
+    // POST Create
+    // ============================================================================
 
+    /**
+     * Test create wishlist item.
+     */
     public function test_create_wishlist_item(): void
     {
         $this->seedRequiredData();
@@ -217,6 +256,9 @@ class WishlistTest extends RestApiTestCase
         )->toBeTrue();
     }
 
+    /**
+     * Test create wishlist item with snake case key.
+     */
     public function test_create_wishlist_item_with_snake_case_key(): void
     {
         $this->seedRequiredData();
@@ -231,6 +273,9 @@ class WishlistTest extends RestApiTestCase
         expect($response->json('id'))->toBeInt();
     }
 
+    /**
+     * Test create wishlist requires auth.
+     */
     public function test_create_wishlist_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -241,6 +286,9 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Test create wishlist with nonexistent product returns error.
+     */
     public function test_create_wishlist_with_nonexistent_product_returns_error(): void
     {
         $this->seedRequiredData();
@@ -253,6 +301,9 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
     }
 
+    /**
+     * Test create duplicate wishlist item returns error.
+     */
     public function test_create_duplicate_wishlist_item_returns_error(): void
     {
         $testData = $this->createTestData();
@@ -264,8 +315,13 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 409, 422]);
     }
 
-    // ── DELETE Single ─────────────────────────────────────────
+    // ============================================================================
+    // DELETE Single
+    // ============================================================================
 
+    /**
+     * Test delete wishlist item.
+     */
     public function test_delete_wishlist_item(): void
     {
         $testData = $this->createTestData();
@@ -280,6 +336,9 @@ class WishlistTest extends RestApiTestCase
         expect(Wishlist::find($itemId))->toBeNull();
     }
 
+    /**
+     * Test delete wishlist item requires auth.
+     */
     public function test_delete_wishlist_item_requires_auth(): void
     {
         $testData = $this->createTestData();
@@ -289,6 +348,9 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Test delete non existent wishlist item returns 404.
+     */
     public function test_delete_non_existent_wishlist_item_returns_404(): void
     {
         $this->seedRequiredData();
@@ -299,6 +361,9 @@ class WishlistTest extends RestApiTestCase
         $response->assertNotFound();
     }
 
+    /**
+     * Test cannot delete other customers wishlist item.
+     */
     public function test_cannot_delete_other_customers_wishlist_item(): void
     {
         $testData = $this->createTestData();
@@ -312,8 +377,13 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([403, 404, 500]);
     }
 
-    // ── POST Toggle ───────────────────────────────────────────
+    // ============================================================================
+    // POST Toggle
+    // ============================================================================
 
+    /**
+     * Test toggle adds product when not in wishlist.
+     */
     public function test_toggle_adds_product_when_not_in_wishlist(): void
     {
         $this->seedRequiredData();
@@ -336,6 +406,9 @@ class WishlistTest extends RestApiTestCase
         )->toBeTrue();
     }
 
+    /**
+     * Test toggle removes product when already in wishlist.
+     */
     public function test_toggle_removes_product_when_already_in_wishlist(): void
     {
         $testData = $this->createTestData();
@@ -346,7 +419,6 @@ class WishlistTest extends RestApiTestCase
             'productId' => $product->id,
         ]);
 
-        // Toggle is a POST operation — API Platform always returns 201 regardless of add/remove
         $response->assertCreated();
         $data = $response->json();
 
@@ -355,6 +427,9 @@ class WishlistTest extends RestApiTestCase
         expect(Wishlist::find($itemId))->toBeNull();
     }
 
+    /**
+     * Test toggle requires auth.
+     */
     public function test_toggle_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -367,6 +442,9 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Test toggle with nonexistent product returns error.
+     */
     public function test_toggle_with_nonexistent_product_returns_error(): void
     {
         $this->seedRequiredData();
@@ -379,13 +457,15 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
     }
 
+    /**
+     * Test toggle add then toggle again removes.
+     */
     public function test_toggle_add_then_toggle_again_removes(): void
     {
         $this->seedRequiredData();
         $customer = $this->createCustomer();
         $product = $this->createBaseProduct('simple');
 
-        // First toggle — adds
         $addResponse = $this->authenticatedPost($customer, $this->baseUrl.'/toggle', [
             'productId' => $product->id,
         ]);
@@ -394,7 +474,6 @@ class WishlistTest extends RestApiTestCase
             Wishlist::where('customer_id', $customer->id)->where('product_id', $product->id)->exists()
         )->toBeTrue();
 
-        // Second toggle — removes (still 201 — POST operation)
         $removeResponse = $this->authenticatedPost($customer, $this->baseUrl.'/toggle', [
             'productId' => $product->id,
         ]);
@@ -404,8 +483,13 @@ class WishlistTest extends RestApiTestCase
         )->toBeFalse();
     }
 
-    // ── Move to Cart ──────────────────────────────────────────
+    // ============================================================================
+    // Move To Cart
+    // ============================================================================
 
+    /**
+     * Test move wishlist to cart.
+     */
     public function test_move_wishlist_to_cart(): void
     {
         $testData = $this->createTestData();
@@ -415,14 +499,12 @@ class WishlistTest extends RestApiTestCase
             'quantity' => 1,
         ]);
 
-        /**
-         * Accept 201 (success) or 400 (Cart op may fail because factory products
-         * lack full pricing/inventory in the test env). The key check is that the
-         * request authenticates and the DTO deserializes — i.e. NOT 401/403/500.
-         */
         expect($response->getStatusCode())->toBeIn([201, 400]);
     }
 
+    /**
+     * Test move to cart requires auth.
+     */
     public function test_move_to_cart_requires_auth(): void
     {
         $response = $this->publicPost('/api/shop/move-wishlist-to-carts', [
@@ -433,6 +515,9 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Test move nonexistent wishlist item to cart returns error.
+     */
     public function test_move_nonexistent_wishlist_item_to_cart_returns_error(): void
     {
         $this->seedRequiredData();
@@ -446,6 +531,9 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
     }
 
+    /**
+     * Test cannot move other customers wishlist to cart.
+     */
     public function test_cannot_move_other_customers_wishlist_to_cart(): void
     {
         $testData = $this->createTestData();
@@ -459,8 +547,13 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 403, 404, 500]);
     }
 
-    // ── Delete All ────────────────────────────────────────────
+    // ============================================================================
+    // Delete All
+    // ============================================================================
 
+    /**
+     * Test delete all wishlists.
+     */
     public function test_delete_all_wishlists(): void
     {
         $testData = $this->createTestData();
@@ -481,6 +574,9 @@ class WishlistTest extends RestApiTestCase
         )->toBe(0);
     }
 
+    /**
+     * Test delete all wishlists requires auth.
+     */
     public function test_delete_all_wishlists_requires_auth(): void
     {
         $response = $this->publicPost('/api/shop/delete-all-wishlists');
@@ -488,6 +584,9 @@ class WishlistTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Test delete all wishlists when empty returns zero count.
+     */
     public function test_delete_all_wishlists_when_empty_returns_zero_count(): void
     {
         $this->seedRequiredData();
@@ -499,6 +598,9 @@ class WishlistTest extends RestApiTestCase
         expect($response->json('deletedCount'))->toBe(0);
     }
 
+    /**
+     * Test delete all wishlists only removes own items.
+     */
     public function test_delete_all_wishlists_only_removes_own_items(): void
     {
         $testData = $this->createTestData();
@@ -516,5 +618,32 @@ class WishlistTest extends RestApiTestCase
         expect(
             Wishlist::where('customer_id', $otherCustomer->id)->count()
         )->toBe(1);
+    }
+
+    /**
+     * Create test data.
+     */
+    private function createTestData(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $channel = Channel::first();
+        $product1 = $this->createBaseProduct('simple');
+        $product2 = $this->createBaseProduct('simple');
+
+        $wishlistItem1 = Wishlist::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product1->id,
+            'channel_id' => $channel->id,
+        ]);
+
+        $wishlistItem2 = Wishlist::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product2->id,
+            'channel_id' => $channel->id,
+        ]);
+
+        return compact('customer', 'channel', 'product1', 'product2', 'wishlistItem1', 'wishlistItem2');
     }
 }

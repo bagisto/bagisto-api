@@ -20,12 +20,21 @@ use Webkul\Product\Repositories\ProductReviewRepository;
 
 class AdminCustomerReviewProcessor implements ProcessorInterface
 {
+    /**
+     * The allowed statuses constant.
+     */
     public const ALLOWED_STATUSES = ['pending', 'approved', 'disapproved'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ProductReviewRepository $reviewRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -70,6 +79,9 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, ?string $status): AdminCustomerReview
     {
         $existing = ProductReview::find($id);
@@ -95,6 +107,9 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
         return $fresh;
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminCustomerReview
     {
         $existing = ProductReview::find($id);
@@ -124,6 +139,9 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.customer.review.deleted')];
     }
 
+    /**
+     * Resolve status.
+     */
     protected function resolveStatus(mixed $data, array $context, bool $isGraphQL): ?string
     {
         if (
@@ -144,6 +162,9 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
         return $value !== null ? (string) $value : null;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

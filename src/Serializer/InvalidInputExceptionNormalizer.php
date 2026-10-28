@@ -5,14 +5,10 @@ namespace Webkul\BagistoApi\Serializer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 
-/**
- * Normalizer for InvalidInputException
- * Converts InvalidInputException to proper API Platform error response format for REST APIs
- */
 class InvalidInputExceptionNormalizer implements NormalizerInterface
 {
     /**
-     * {@inheritdoc}
+     * {@inheritdoc}.
      */
     public function normalize($exception, $format = null, array $context = []): array
     {
@@ -26,7 +22,7 @@ class InvalidInputExceptionNormalizer implements NormalizerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritdoc}.
      */
     public function supportsNormalization($data, $format = null, array $context = []): bool
     {
@@ -34,7 +30,7 @@ class InvalidInputExceptionNormalizer implements NormalizerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritdoc}.
      */
     public function getSupportedTypes(?string $format): array
     {

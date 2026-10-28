@@ -4,12 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * GraphQL coverage for the admin Orders listing — adminOrders query
- * (native cursor pagination).
- */
 class OrderTest extends AdminApiTestCase
 {
+    /**
+     * Test orders query returns cursor collection.
+     */
     public function test_orders_query_returns_cursor_collection(): void
     {
         $admin = $this->createAdmin();
@@ -32,6 +31,9 @@ class OrderTest extends AdminApiTestCase
         expect($response->json('data.adminOrders.totalCount'))->toBeInt();
     }
 
+    /**
+     * Test listing resolves non null tax and flag scalars.
+     */
     public function test_listing_resolves_non_null_tax_and_flag_scalars(): void
     {
         $admin = $this->createAdmin();
@@ -62,6 +64,9 @@ class OrderTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeNull();
     }
 
+    /**
+     * Test items resolve as a connection.
+     */
     public function test_items_resolve_as_a_connection(): void
     {
         $admin = $this->createAdmin();
@@ -108,6 +113,9 @@ class OrderTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test first limits the result count.
+     */
     public function test_first_limits_the_result_count(): void
     {
         $admin = $this->createAdmin();
@@ -128,8 +136,7 @@ class OrderTest extends AdminApiTestCase
 
     /**
      * The adminOrders query must expose the listing filter args (declared via
-     * extraArgs). Without them the query 500s with "Unknown argument". This
-     * verifies they are accepted and the status filter actually narrows.
+     * extraArgs). Without them the query 500s with "Unknown argument". This.
      */
     public function test_orders_query_accepts_filter_args(): void
     {
@@ -153,6 +160,9 @@ class OrderTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test orders query requires authentication.
+     */
     public function test_orders_query_requires_authentication(): void
     {
         $query = <<<'GQL'

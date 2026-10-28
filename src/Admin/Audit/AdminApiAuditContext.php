@@ -4,40 +4,81 @@ namespace Webkul\BagistoApi\Admin\Audit;
 
 use Webkul\User\Models\Admin;
 
-/**
- * Request-scoped holder for the "who / where" context of an admin-API write.
- *
- * Populated by SetAdminApiAuditContext middleware (only on admin-API write
- * requests) and read by AdminApiAuditRecorder when Eloquent model events fire.
- * Bound as a singleton, so it is effectively one-per-request.
- */
 class AdminApiAuditContext
 {
-    protected bool $active = false;
-
+    /**
+     * The history id.
+     */
     public ?string $historyId = null;
 
+    /**
+     * The admin id.
+     */
     public ?int $adminId = null;
 
+    /**
+     * The admin name.
+     */
     public ?string $adminName = null;
 
+    /**
+     * The token id.
+     */
     public ?int $tokenId = null;
 
+    /**
+     * The token name.
+     */
     public ?string $tokenName = null;
 
+    /**
+     * The token kind: "session" or "api_token".
+     */
+    public ?string $tokenKind = null;
+
+    /**
+     * The channel: "rest" or "graphql".
+     */
+    public ?string $channel = null;
+
+    /**
+     * The method.
+     */
     public ?string $method = null;
 
+    /**
+     * The url.
+     */
     public ?string $url = null;
 
+    /**
+     * The ip address.
+     */
     public ?string $ipAddress = null;
 
+    /**
+     * The user agent.
+     */
     public ?string $userAgent = null;
 
+    /**
+     * The tags.
+     */
     public ?string $tags = null;
 
-    /** Number of audit rows written during this request (envelope fallback). */
+    /**
+     * Whether the request is being audited.
+     */
+    protected bool $active = false;
+
+    /**
+     * Number of audit rows written during this request (envelope fallback).
+     */
     protected int $rowCount = 0;
 
+    /**
+     * Activate.
+     */
     public function activate(array $data): void
     {
         $this->active = true;
@@ -46,6 +87,8 @@ class AdminApiAuditContext
         $this->adminName = $data['admin_name'] ?? null;
         $this->tokenId = $data['token_id'] ?? null;
         $this->tokenName = $data['token_name'] ?? null;
+        $this->tokenKind = $data['token_kind'] ?? null;
+        $this->channel = $data['channel'] ?? null;
         $this->method = $data['method'] ?? null;
         $this->url = $data['url'] ?? null;
         $this->ipAddress = $data['ip_address'] ?? null;
@@ -53,16 +96,25 @@ class AdminApiAuditContext
         $this->tags = $data['tags'] ?? null;
     }
 
+    /**
+     * Whether active.
+     */
     public function isActive(): bool
     {
         return $this->active;
     }
 
+    /**
+     * Record written.
+     */
     public function recordWritten(): void
     {
         $this->rowCount++;
     }
 
+    /**
+     * Row count.
+     */
     public function rowCount(): int
     {
         return $this->rowCount;
@@ -80,6 +132,8 @@ class AdminApiAuditContext
             'admin_name' => $this->adminName,
             'token_id' => $this->tokenId,
             'token_name' => $this->tokenName,
+            'token_kind' => $this->tokenKind,
+            'channel' => $this->channel,
             'method' => $this->method,
             'url' => $this->url,
             'ip_address' => $this->ipAddress,

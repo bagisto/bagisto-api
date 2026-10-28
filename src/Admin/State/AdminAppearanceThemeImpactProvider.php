@@ -15,12 +15,18 @@ class AdminAppearanceThemeImpactProvider implements ProviderInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ThemeCatalog $themeCatalog,
         protected ChannelRepository $channelRepository,
         protected AppearanceScopeGuard $scope,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $this->authorizedAdmin('appearance.themes', 'bagistoapi::app.admin.appearance.no-permission');
@@ -57,6 +63,8 @@ class AdminAppearanceThemeImpactProvider implements ProviderInterface
     }
 
     /**
+     * Resolve the ids of the channels to check the theme impact for.
+     *
      * @return array<int, int>
      */
     protected function resolveChannelIds(array $args): array
@@ -81,6 +89,9 @@ class AdminAppearanceThemeImpactProvider implements ProviderInterface
         return $ids;
     }
 
+    /**
+     * Theme name.
+     */
     protected function themeName(?string $code): ?string
     {
         if (! $code) {

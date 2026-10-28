@@ -10,14 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsDataTransferImportActionInput;
 use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor;
 
-/**
- * POST /api/admin/settings/data-transfer/imports/{id}/start
- * + startAdminSettingsDataTransferImportStart mutation.
- *
- * Runs one batch of the import (or kicks off the queue when process_in_queue is
- * set) and returns { stats, import }. Guards: nothing-to-import (400), not-valid
- * (400), setup-queue-error (400). Permission: settings.data_transfer.imports.import.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminSettingsDataTransferImportStart',
@@ -60,6 +52,9 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor
 )]
 class AdminSettingsDataTransferImportStart
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 }

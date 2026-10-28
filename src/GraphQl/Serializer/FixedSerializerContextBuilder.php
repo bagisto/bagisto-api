@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\GraphQl\Serializer;
 
 use ApiPlatform\GraphQl\Serializer\SerializerContextBuilderInterface;
+use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Operation;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -17,39 +18,29 @@ use Webkul\BagistoApi\Models\CustomerOrderItem;
 use Webkul\BagistoApi\Models\CustomerOrderShipment;
 use Webkul\BagistoApi\Models\CustomerOrderShipmentItem;
 
-/**
- * Decorates the GraphQL SerializerContextBuilder to fix attribute resolution
- * for multi-word resource names (e.g., CompareItem).
- *
- * API Platform's default implementation uses the name converter to denormalize
- * field names in the selection set (e.g., compareItem → compare_item), but then
- * looks up the wrap field name without denormalization (using lcfirst(shortName)).
- * This mismatch causes empty attributes for multi-word resource names.
- *
- * Also ensures that nested relationships (like CustomerOrder.items) properly
- * include all requested fields in the serialization context.
- */
 class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly SerializerContextBuilderInterface $decorated,
         private readonly ?NameConverterInterface $nameConverter = null,
     ) {}
 
+    /**
+     * Create.
+     */
     public function create(?string $resourceClass, Operation $operation, array $resolverContext, bool $normalization): array
     {
         $context = $this->decorated->create($resourceClass, $operation, $resolverContext, $normalization);
 
-        // Ensure nested CustomerOrderItem fields are always included
-        // This handles the case where nested items don't trigger their own context builder call
         if (
             $normalization
             && $resourceClass === CustomerOrder::class
         ) {
-            // When processing the parent order, also ensure nested items have proper attributes
             $attributes = $context['attributes'] ?? [];
 
-            // Check if items field is being requested
             if (
                 isset($attributes['items'])
                 && is_array($attributes['items'])
@@ -57,7 +48,6 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
                 $this->ensureNestedItemsAttributes($attributes['items']);
             }
 
-            // Check if addresses field is being requested
             if (
                 isset($attributes['addresses'])
                 && is_array($attributes['addresses'])
@@ -65,7 +55,6 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
                 $this->ensureNestedAddressesAttributes($attributes['addresses']);
             }
 
-            // Check if shipments field is being requested
             if (
                 isset($attributes['shipments'])
                 && is_array($attributes['shipments'])
@@ -74,14 +63,12 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             }
         }
 
-        // Ensure nested CustomerInvoiceItem fields are always included
         if (
             $normalization
             && $resourceClass === CustomerInvoice::class
         ) {
             $attributes = $context['attributes'] ?? [];
 
-            // Check if items field is being requested
             if (
                 isset($attributes['items'])
                 && is_array($attributes['items'])
@@ -89,7 +76,6 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
                 $this->ensureNestedInvoiceItemsAttributes($attributes['items']);
             }
 
-            // Check if addresses field is being requested
             if (
                 isset($attributes['addresses'])
                 && is_array($attributes['addresses'])
@@ -98,7 +84,6 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             }
         }
 
-        // Handle direct nested CustomerOrderItem serialization
         if (
             $normalization
             && $resourceClass === CustomerOrderItem::class
@@ -106,7 +91,6 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             $context = $this->ensureCustomerOrderItemAttributes($context, $resolverContext);
         }
 
-        // Handle direct nested CustomerInvoiceItem serialization
         if (
             $normalization
             && $resourceClass === CustomerInvoiceItem::class
@@ -114,7 +98,6 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             $context = $this->ensureCustomerInvoiceItemAttributes($context, $resolverContext);
         }
 
-        // Handle direct nested CustomerInvoiceAddress serialization
         if (
             $normalization
             && $resourceClass === CustomerInvoiceAddress::class
@@ -122,7 +105,6 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             $context = $this->ensureAddressAttributes($context, $resolverContext);
         }
 
-        // Handle direct nested CustomerOrderShipment serialization
         if (
             $normalization
             && $resourceClass === CustomerOrderShipment::class
@@ -130,12 +112,15 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             $context = $this->ensureShipmentAttributes($context, $resolverContext);
         }
 
-        // Handle direct nested CustomerOrderShipmentItem serialization
         if (
             $normalization
             && $resourceClass === CustomerOrderShipmentItem::class
         ) {
             $context = $this->ensureShipmentItemAttributes($context, $resolverContext);
+        }
+
+        if ($this->normalizesTransferObject($normalization, $resourceClass, $operation)) {
+            unset($context['attributes']);
         }
 
         if (
@@ -168,12 +153,10 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Ensure nested items' attributes include qty fields
+     * Ensure nested items' attributes include qty fields.
      */
     private function ensureNestedItemsAttributes(array $itemsAttributes): void
     {
-        // The itemsAttributes should contain edges > node structure for paginated results
-        // Recursively ensure qty fields are in node attributes
         if (
             isset($itemsAttributes['edges'])
             && is_array($itemsAttributes['edges'])
@@ -183,14 +166,13 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
                 && is_array($itemsAttributes['edges']['node'])
             ) {
                 $this->addQtyFieldsToAttributes($itemsAttributes['edges']['node']);
-                // Also add database column names in case they're being used
                 $this->addQtyFieldsToAttributes($itemsAttributes['edges']);
             }
         }
     }
 
     /**
-     * Add qty fields to an attributes array
+     * Add qty fields to an attributes array.
      */
     private function addQtyFieldsToAttributes(array &$attributes): void
     {
@@ -202,11 +184,10 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Ensure nested invoice items' attributes include qty field
+     * Ensure nested invoice items' attributes include qty field.
      */
     private function ensureNestedInvoiceItemsAttributes(array &$itemsAttributes): void
     {
-        // The itemsAttributes should contain edges > node structure for paginated results
         if (
             isset($itemsAttributes['edges'])
             && is_array($itemsAttributes['edges'])
@@ -222,11 +203,10 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Ensure nested addresses' attributes are properly set
+     * Ensure nested addresses' attributes are properly set.
      */
     private function ensureNestedAddressesAttributes(array &$addressAttributes): void
     {
-        // The addressAttributes should contain edges > node structure for paginated results
         if (
             isset($addressAttributes['edges'])
             && is_array($addressAttributes['edges'])
@@ -242,7 +222,7 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Add invoice item fields to an attributes array
+     * Add invoice item fields to an attributes array.
      */
     private function addInvoiceItemFieldsToAttributes(array &$attributes): void
     {
@@ -254,11 +234,10 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Add address fields to an attributes array
+     * Add address fields to an attributes array.
      */
     private function addAddressFieldsToAttributes(array &$attributes): void
     {
-        // Include both snake_case and camelCase versions
         $addressFields = [
             'id',
             'name',
@@ -284,17 +263,14 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Ensure CustomerOrderItem attributes always include qty fields
+     * Ensure CustomerOrderItem attributes always include qty fields.
      */
     private function ensureCustomerOrderItemAttributes(array $context, array $resolverContext): array
     {
-        // Always ensure qty fields are in the attributes for item serialization
         $attributes = $context['attributes'] ?? [];
 
-        // Use snake_case field names to match the denormalization used by the serializer
         $qtyFields = ['id', 'qty_ordered', 'qty_shipped', 'qty_invoiced', 'qty_canceled', 'qty_refunded', 'sku', 'name', 'price', 'base_price', 'total', 'base_total'];
 
-        // Ensure attributes includes all qty fields
         foreach ($qtyFields as $field) {
             if (is_array($attributes)) {
                 if (
@@ -318,7 +294,7 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Ensure CustomerInvoiceItem attributes include qty field
+     * Ensure CustomerInvoiceItem attributes include qty field.
      */
     private function ensureCustomerInvoiceItemAttributes(array $context, array $resolverContext): array
     {
@@ -338,7 +314,7 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Ensure address attributes are properly set
+     * Ensure address attributes are properly set.
      */
     private function ensureAddressAttributes(array $context, array $resolverContext): array
     {
@@ -384,11 +360,10 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Add shipment fields to an attributes array
+     * Add shipment fields to an attributes array.
      */
     private function addShipmentFieldsToAttributes(array &$attributes): void
     {
-        // Include both snake_case and camelCase versions to handle serializer name conversion
         $shipmentFields = [
             'id',
             'status',
@@ -425,7 +400,7 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Add shipment item fields to an attributes array
+     * Add shipment item fields to an attributes array.
      */
     private function addShipmentItemFieldsToAttributes(array &$attributes): void
     {
@@ -437,13 +412,12 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Ensure CustomerOrderShipment attributes are properly set
+     * Ensure CustomerOrderShipment attributes are properly set.
      */
     private function ensureShipmentAttributes(array $context, array $resolverContext): array
     {
         $attributes = $context['attributes'] ?? [];
 
-        // Include both snake_case and camelCase versions
         $fields = [
             'id',
             'status',
@@ -486,7 +460,7 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Ensure CustomerOrderShipmentItem attributes are properly set
+     * Ensure CustomerOrderShipmentItem attributes are properly set.
      */
     private function ensureShipmentItemAttributes(array $context, array $resolverContext): array
     {
@@ -507,11 +481,7 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
 
     /**
      * Rebuild mutation attributes using the denormalized wrap field name
-     *
-     * For Eloquent models, inner field names are denormalized (camelCase → snake_case)
-     * since Eloquent properties use snake_case. For non-Eloquent response models
-     * (DTOs, action responses), inner field names are kept as-is since PHP properties
-     * use camelCase.
+     * For Eloquent models, inner field names are denormalized (camelCase → snake_case).
      */
     private function rebuildMutationAttributes(
         ?string $resourceClass,
@@ -530,18 +500,12 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             return [];
         }
 
-        // Eloquent models AND admin output resources expose non-camelCase
-        // properties (admin DTOs declare snake_case props via AcceptsCamelCaseWrites),
-        // so their inner mutation field names must be denormalized
-        // (incrementId → increment_id) for the serializer to read them. Shop
-        // POPOs with camelCase props keep their field names as-is.
         $isEloquent = $resourceClass && (
             is_subclass_of($resourceClass, Model::class)
             || str_starts_with($resourceClass, 'Webkul\\BagistoApi\\Admin\\')
             || is_a($resourceClass, SnakeCaseFieldsResource::class, true)
         );
 
-        /** Denormalize top-level keys to locate the wrap field */
         $topLevel = [];
 
         foreach ($fields as $key => $value) {
@@ -558,15 +522,11 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             return [];
         }
 
-        /**
-         * For Eloquent models, denormalize inner field names (e.g., productId → product_id).
-         * For non-Eloquent models, keep camelCase field names as-is (they match PHP properties).
-         */
         return $this->replaceIdKeys($innerFields, $resourceClass, $isEloquent);
     }
 
     /**
-     * Replace _id keys with id and optionally denormalize field names
+     * Replace _id keys with id and optionally denormalize field names.
      */
     private function replaceIdKeys(array $fields, ?string $resourceClass, bool $denormalizeKeys = true): array
     {
@@ -589,5 +549,33 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
         }
 
         return $denormalizedFields;
+    }
+
+    /**
+     * Whether the operation normalizes a transfer object rather than the resource itself.
+     */
+    private function normalizesTransferObject(bool $normalization, ?string $resourceClass, Operation $operation): bool
+    {
+        if (
+            ! $normalization
+            || $operation instanceof Mutation
+            || $operation instanceof CollectionOperationInterface
+        ) {
+            return false;
+        }
+
+        $output = $operation->getOutput();
+
+        $outputClass = \is_array($output) ? ($output['class'] ?? null) : $output;
+
+        if (
+            ! $outputClass
+            || $outputClass === $resourceClass
+        ) {
+            return false;
+        }
+
+        return ! is_a($outputClass, Model::class, true)
+            && ! is_a($outputClass, SnakeCaseFieldsResource::class, true);
     }
 }

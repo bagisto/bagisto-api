@@ -9,10 +9,61 @@ use Webkul\BagistoApi\Tests\RestApiTestCase;
 
 class AddToCartConfigurableProductTest extends RestApiTestCase
 {
+    /**
+     * The cart tokens url.
+     */
     private string $cartTokensUrl = '/api/shop/cart-tokens';
 
+    /**
+     * The add product url.
+     */
     private string $addProductUrl = '/api/shop/add-product-in-cart';
 
+    /**
+     * Test add configurable product to cart as guest.
+     */
+    public function test_add_configurable_product_to_cart_as_guest(): void
+    {
+        $token = $this->createGuestCartToken();
+        $payload = $this->createConfigurableProductPayload();
+
+        $response = $this->postWithToken($this->addProductUrl, $token, [
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
+            'superAttribute' => $payload['superAttribute'],
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('isGuest'))->toBeTrue();
+        expect((int) $response->json('itemsCount'))->toBeGreaterThan(0);
+    }
+
+    /**
+     * Test add configurable product to customer cart.
+     */
+    public function test_add_configurable_product_to_customer_cart(): void
+    {
+        $payload = $this->createConfigurableProductPayload();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
+            'superAttribute' => $payload['superAttribute'],
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('isGuest'))->toBeFalse();
+        expect((int) $response->json('itemsCount'))->toBeGreaterThan(0);
+    }
+
+    /**
+     * Create guest cart token.
+     */
     private function createGuestCartToken(): string
     {
         $response = $this->publicPost($this->cartTokensUrl, ['createNew' => true]);
@@ -24,6 +75,9 @@ class AddToCartConfigurableProductTest extends RestApiTestCase
         return $token;
     }
 
+    /**
+     * Post with token.
+     */
     private function postWithToken(string $url, string $token, array $payload): TestResponse
     {
         return $this->withHeaders([
@@ -32,6 +86,9 @@ class AddToCartConfigurableProductTest extends RestApiTestCase
         ])->postJson($url, $payload);
     }
 
+    /**
+     * Create configurable product payload.
+     */
     private function createConfigurableProductPayload(): array
     {
         $this->seedRequiredData();
@@ -90,41 +147,5 @@ class AddToCartConfigurableProductTest extends RestApiTestCase
             'selectedConfigurableOption' => (int) $child->id,
             'superAttribute' => $superAttribute,
         ];
-    }
-
-    public function test_add_configurable_product_to_cart_as_guest(): void
-    {
-        $token = $this->createGuestCartToken();
-        $payload = $this->createConfigurableProductPayload();
-
-        $response = $this->postWithToken($this->addProductUrl, $token, [
-            'productId' => $payload['productId'],
-            'quantity' => 1,
-            'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute' => $payload['superAttribute'],
-        ]);
-
-        expect($response->getStatusCode())->toBeIn([200, 201]);
-        expect($response->json('success'))->toBeTrue();
-        expect($response->json('isGuest'))->toBeTrue();
-        expect((int) $response->json('itemsCount'))->toBeGreaterThan(0);
-    }
-
-    public function test_add_configurable_product_to_customer_cart(): void
-    {
-        $payload = $this->createConfigurableProductPayload();
-        $customer = $this->createCustomer();
-
-        $response = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId' => $payload['productId'],
-            'quantity' => 1,
-            'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute' => $payload['superAttribute'],
-        ]);
-
-        expect($response->getStatusCode())->toBeIn([200, 201]);
-        expect($response->json('success'))->toBeTrue();
-        expect($response->json('isGuest'))->toBeFalse();
-        expect((int) $response->json('itemsCount'))->toBeGreaterThan(0);
     }
 }

@@ -8,55 +8,11 @@ use Webkul\Core\Helpers\Exchange\ExchangeRates;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for the admin Settings → Exchange Rates CRUD endpoints
- * (Block B Wave 1).
- *
- * Endpoints:
- *   GET    /api/admin/settings/exchange-rates
- *   GET    /api/admin/settings/exchange-rates/{id}
- *   POST   /api/admin/settings/exchange-rates
- *   PUT    /api/admin/settings/exchange-rates/{id}
- *   DELETE /api/admin/settings/exchange-rates/{id}
- *   POST   /api/admin/settings/exchange-rates/mass-delete
- */
 class SettingsExchangeRateTest extends AdminApiTestCase
 {
-    protected function insertCurrency(array $overrides = []): int
-    {
-        return \DB::table('currencies')->insertGetId(array_merge([
-            'code' => 'TC'.substr((string) microtime(true), -4).rand(10, 99),
-            'name' => 'Test Currency',
-            'symbol' => '$',
-            'decimal' => 2,
-            'group_separator' => ',',
-            'decimal_separator' => '.',
-            'currency_position' => 'left',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    protected function insertExchangeRate(int $targetCurrencyId, float $rate = 1.0): int
-    {
-        return \DB::table('currency_exchange_rates')->insertGetId([
-            'target_currency' => $targetCurrencyId,
-            'rate' => $rate,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
+    /**
+     * Test listing requires admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -65,6 +21,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test create requires auth.
+     */
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -77,6 +36,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test detail requires auth.
+     */
     public function test_detail_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -87,6 +49,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -100,6 +65,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBe(10);
     }
 
+    /**
+     * Test listing returns seeded row with currency code.
+     */
     public function test_listing_returns_seeded_row_with_currency_code(): void
     {
         $admin = $this->createAdmin();
@@ -120,6 +88,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($row)->toHaveKeys(['id', 'targetCurrency', 'targetCurrencyCode', 'targetCurrencyName', 'rate', 'createdAt', 'updatedAt']);
     }
 
+    /**
+     * Test listing filter by target currency.
+     */
     public function test_listing_filter_by_target_currency(): void
     {
         $admin = $this->createAdmin();
@@ -136,6 +107,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
+    /**
+     * Test listing filter by rate range.
+     */
     public function test_listing_filter_by_rate_range(): void
     {
         $admin = $this->createAdmin();
@@ -152,6 +126,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($ids)->not()->toContain($idHi);
     }
 
+    /**
+     * Test listing sort by rate asc.
+     */
     public function test_listing_sort_by_rate_asc(): void
     {
         $admin = $this->createAdmin();
@@ -168,6 +145,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($rates)->toBe($sorted);
     }
 
+    /**
+     * Test listing per page above cap clamped.
+     */
     public function test_listing_per_page_above_cap_clamped(): void
     {
         $admin = $this->createAdmin();
@@ -176,6 +156,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test listing page beyond last returns empty.
+     */
     public function test_listing_page_beyond_last_returns_empty(): void
     {
         $admin = $this->createAdmin();
@@ -184,6 +167,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->json('data'))->toBe([]);
     }
 
+    /**
+     * Test detail returns full row.
+     */
     public function test_detail_returns_full_row(): void
     {
         $admin = $this->createAdmin();
@@ -202,6 +188,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->json('targetCurrencyName'))->toBe('DetailTest');
     }
 
+    /**
+     * Test detail unknown id returns 404.
+     */
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -209,6 +198,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Test create happy path returns 201.
+     */
     public function test_create_happy_path_returns_201(): void
     {
         $admin = $this->createAdmin();
@@ -226,6 +218,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect(\DB::table('currency_exchange_rates')->where('target_currency', $cur)->exists())->toBeTrue();
     }
 
+    /**
+     * Test create missing target currency returns 422.
+     */
     public function test_create_missing_target_currency_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -233,6 +228,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create missing rate returns 422.
+     */
     public function test_create_missing_rate_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -241,6 +239,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create non positive rate returns 422.
+     */
     public function test_create_non_positive_rate_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -252,6 +253,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create unknown currency returns 422.
+     */
     public function test_create_unknown_currency_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -262,6 +266,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create duplicate pair returns 422.
+     */
     public function test_create_duplicate_pair_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -276,6 +283,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update changes rate.
+     */
     public function test_update_changes_rate(): void
     {
         $admin = $this->createAdmin();
@@ -291,6 +301,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect((float) \DB::table('currency_exchange_rates')->where('id', $id)->value('rate'))->toBe(2.5);
     }
 
+    /**
+     * Test update changes target currency.
+     */
     public function test_update_changes_target_currency(): void
     {
         $admin = $this->createAdmin();
@@ -307,6 +320,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect((int) \DB::table('currency_exchange_rates')->where('id', $id)->value('target_currency'))->toBe($cur2);
     }
 
+    /**
+     * Test update same target excludes self.
+     */
     public function test_update_same_target_excludes_self(): void
     {
         $admin = $this->createAdmin();
@@ -321,6 +337,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test update duplicate target returns 422.
+     */
     public function test_update_duplicate_target_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -337,6 +356,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update unknown id returns 404.
+     */
     public function test_update_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -348,6 +370,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test update partial rate only keeps existing currency.
+     */
     public function test_update_partial_rate_only_keeps_existing_currency(): void
     {
         $admin = $this->createAdmin();
@@ -363,6 +388,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect((int) \DB::table('currency_exchange_rates')->where('id', $id)->value('target_currency'))->toBe($cur);
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -375,6 +403,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect(\DB::table('currency_exchange_rates')->where('id', $id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test delete unknown id returns 404.
+     */
     public function test_delete_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -382,6 +413,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test delete requires auth.
+     */
     public function test_delete_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -392,6 +426,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
+    /**
+     * Test mass delete happy path.
+     */
     public function test_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -408,6 +445,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect(\DB::table('currency_exchange_rates')->where('id', $id2)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mass delete silently skips unknown ids.
+     */
     public function test_mass_delete_silently_skips_unknown_ids(): void
     {
         $admin = $this->createAdmin();
@@ -421,6 +461,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect(\DB::table('currency_exchange_rates')->where('id', $id1)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mass delete empty indices returns 422.
+     */
     public function test_mass_delete_empty_indices_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -428,6 +471,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test mass delete requires auth.
+     */
     public function test_mass_delete_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -435,21 +481,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
-    protected function fakeExchangeHelper(?\Closure $update = null): void
-    {
-        $this->app->bind(ExchangeRates::class, fn () => new class($update)
-        {
-            public function __construct(private $update) {}
-
-            public function updateRates()
-            {
-                if ($this->update) {
-                    ($this->update)();
-                }
-            }
-        });
-    }
-
+    /**
+     * Test update rates happy path.
+     */
     public function test_update_rates_happy_path(): void
     {
         $this->seedRequiredData();
@@ -463,6 +497,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->json('message'))->not->toBeNull();
     }
 
+    /**
+     * Test update rates provider failure returns 422.
+     */
     public function test_update_rates_provider_failure_returns_422(): void
     {
         $this->seedRequiredData();
@@ -477,6 +514,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->json('detail') ?? $response->json('message'))->toContain('Fixer API key invalid');
     }
 
+    /**
+     * Test update rates requires auth.
+     */
     public function test_update_rates_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -484,6 +524,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
+    /**
+     * Test update rates no permission returns 403.
+     */
     public function test_update_rates_no_permission_returns_403(): void
     {
         $this->seedRequiredData();
@@ -496,5 +539,70 @@ class SettingsExchangeRateTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/settings/exchange-rates/update-rates');
         expect($response->getStatusCode())->toBe(403);
+    }
+
+    /**
+     * Insert currency.
+     */
+    protected function insertCurrency(array $overrides = []): int
+    {
+        return \DB::table('currencies')->insertGetId(array_merge([
+            'code' => 'TC'.substr((string) microtime(true), -4).rand(10, 99),
+            'name' => 'Test Currency',
+            'symbol' => '$',
+            'decimal' => 2,
+            'group_separator' => ',',
+            'decimal_separator' => '.',
+            'currency_position' => 'left',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Insert exchange rate.
+     */
+    protected function insertExchangeRate(int $targetCurrencyId, float $rate = 1.0): int
+    {
+        return \DB::table('currency_exchange_rates')->insertGetId([
+            'target_currency' => $targetCurrencyId,
+            'rate' => $rate,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Fake exchange helper.
+     */
+    protected function fakeExchangeHelper(?\Closure $update = null): void
+    {
+        $this->app->bind(ExchangeRates::class, fn () => new class($update)
+        {
+            public function __construct(private $update) {}
+
+            public function updateRates()
+            {
+                if ($this->update) {
+                    ($this->update)();
+                }
+            }
+        });
     }
 }

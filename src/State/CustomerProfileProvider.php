@@ -5,23 +5,21 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\Request;
-use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
-use Webkul\BagistoApi\Models\Customer as ApiCustomer;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\BagistoApi\Support\DateOfBirth;
 use Webkul\Customer\Models\Customer;
 
-/**
- * Fetch customer profile via query.
- */
 class CustomerProfileProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $request = Request::instance() ?? ($context['request'] ?? null);
 
-        // Extract Bearer token from Authorization header
         $token = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
 
         if (! $token) {
@@ -34,7 +32,6 @@ class CustomerProfileProvider implements ProviderInterface
             throw new AuthenticationException(__('bagistoapi::app.graphql.customer-profile.invalid-token'));
         }
 
-        // Map customer data to return array
         return [
             'id' => (string) $authenticatedCustomer->id,
             'firstName' => $authenticatedCustomer->first_name,
@@ -51,27 +48,10 @@ class CustomerProfileProvider implements ProviderInterface
     }
 
     /**
-     * Get customer from Sanctum token.
+     * Resolve the customer behind a customer access token.
      */
     private function getCustomerFromToken(string $token): ?Customer
     {
-        try {
-            $personalAccessToken = PersonalAccessToken::findToken($token);
-
-            if (
-                ! $personalAccessToken
-                || ! in_array($personalAccessToken->tokenable_type, [Customer::class, ApiCustomer::class], true)
-                || (
-                    $personalAccessToken->expires_at
-                    && $personalAccessToken->expires_at->isPast()
-                )
-            ) {
-                return null;
-            }
-
-            return Customer::find($personalAccessToken->tokenable_id);
-        } catch (\Exception $exception) {
-            return null;
-        }
+        return CurrentCustomer::fromToken($token);
     }
 }

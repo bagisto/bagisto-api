@@ -11,28 +11,20 @@ use Webkul\BagistoApi\Models\ProductReview;
 use Webkul\BagistoApi\Service\GenericIdNormalizer;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
-/**
- * Query resolver to fetch all product reviews by product ID
- *
- * Supports both numeric product IDs and IRI format for product identification.
- * Returns paginated collection of reviews for a given product.
- *
- * @example Query usage:
- * query {
- *   productReviewsByProductId(productId: 1) {
- *     edges { node { id title rating comment } }
- *     totalCount
- *   }
- * }
- */
 class ProductReviewsByProductIdResolver implements QueryCollectionResolverInterface
 {
     use ClampsPageSize;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?iterable $collection, Operation $operation, array $uriVariables = [], array $context = []): iterable
     {
         $args = $context['args'] ?? [];
@@ -58,20 +50,16 @@ class ProductReviewsByProductIdResolver implements QueryCollectionResolverInterf
 
         $query = ProductReview::where('product_id', $numericProductId);
 
-        // Apply status filter
         if (isset($args['status'])) {
             $query->where('status', (int) $args['status']);
         }
 
-        // Apply rating filter
         if (! empty($args['rating'])) {
             $query->where('rating', (int) $args['rating']);
         }
 
-        // Eager load relationships
         $query->with(['product', 'customer']);
 
-        // Apply cursor-based pagination
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
         $after = $args['after'] ?? null;

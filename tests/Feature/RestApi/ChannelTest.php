@@ -7,26 +7,18 @@ use Webkul\Core\Models\Channel;
 
 class ChannelTest extends RestApiTestCase
 {
+    /**
+     * The collection url.
+     */
     private string $collectionUrl = '/api/shop/channels';
 
-    private function itemUrl(int $id): string
-    {
-        return $this->collectionUrl.'/'.$id;
-    }
+    // ============================================================================
+    // GET Collection
+    // ============================================================================
 
-    private function firstChannelId(): int
-    {
-        $id = Channel::query()->orderBy('id')->value('id');
-
-        if (! $id) {
-            $this->markTestSkipped('No channels found. Run Bagisto seeders for channels.');
-        }
-
-        return (int) $id;
-    }
-
-    // ── GET Collection ────────────────────────────────────────
-
+    /**
+     * Test get channels collection returns ok.
+     */
     public function test_get_channels_collection_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -37,6 +29,9 @@ class ChannelTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test get channels collection returns non empty list.
+     */
     public function test_get_channels_collection_returns_non_empty_list(): void
     {
         $this->seedRequiredData();
@@ -47,6 +42,9 @@ class ChannelTest extends RestApiTestCase
         expect(count($response->json()))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test channels collection items have expected fields.
+     */
     public function test_channels_collection_items_have_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -63,6 +61,9 @@ class ChannelTest extends RestApiTestCase
         expect($first)->toHaveKey('theme');
     }
 
+    /**
+     * Test channels collection includes null fields.
+     */
     public function test_channels_collection_includes_null_fields(): void
     {
         $this->seedRequiredData();
@@ -72,7 +73,6 @@ class ChannelTest extends RestApiTestCase
         $response->assertOk();
         $first = $response->json(0);
 
-        // normalizationContext: skip_null_values => false must preserve null keys.
         expect($first)->toHaveKey('timezone');
         expect($first)->toHaveKey('logo');
         expect($first)->toHaveKey('favicon');
@@ -82,6 +82,9 @@ class ChannelTest extends RestApiTestCase
         expect($first)->toHaveKey('faviconUrl');
     }
 
+    /**
+     * Test channels collection includes relationships.
+     */
     public function test_channels_collection_includes_relationships(): void
     {
         $this->seedRequiredData();
@@ -99,8 +102,13 @@ class ChannelTest extends RestApiTestCase
         expect($first['currencies'])->toBeArray();
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
+    /**
+     * Test items per page limits collection size.
+     */
     public function test_items_per_page_limits_collection_size(): void
     {
         $this->seedRequiredData();
@@ -115,6 +123,9 @@ class ChannelTest extends RestApiTestCase
         expect(count($response->json()))->toBe(1);
     }
 
+    /**
+     * Test page parameter returns different results.
+     */
     public function test_page_parameter_returns_different_results(): void
     {
         $this->seedRequiredData();
@@ -137,6 +148,9 @@ class ChannelTest extends RestApiTestCase
         expect($id1)->not()->toBe($id2);
     }
 
+    /**
+     * Test page beyond total returns empty collection.
+     */
     public function test_page_beyond_total_returns_empty_collection(): void
     {
         $this->seedRequiredData();
@@ -147,8 +161,13 @@ class ChannelTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
-    // ── GET item ──────────────────────────────────────────────
+    // ============================================================================
+    // GET Item
+    // ============================================================================
 
+    /**
+     * Test get channel by id returns ok.
+     */
     public function test_get_channel_by_id_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -160,6 +179,9 @@ class ChannelTest extends RestApiTestCase
         expect($response->json('id'))->toBe($id);
     }
 
+    /**
+     * Test get channel by id returns expected fields.
+     */
     public function test_get_channel_by_id_returns_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -178,6 +200,9 @@ class ChannelTest extends RestApiTestCase
         expect($body)->toHaveKey('currencies');
     }
 
+    /**
+     * Test get nonexistent channel returns error.
+     */
     public function test_get_nonexistent_channel_returns_error(): void
     {
         $this->seedRequiredData();
@@ -185,5 +210,27 @@ class ChannelTest extends RestApiTestCase
         $response = $this->publicGet($this->itemUrl(999999));
 
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
+    }
+
+    /**
+     * Item url.
+     */
+    private function itemUrl(int $id): string
+    {
+        return $this->collectionUrl.'/'.$id;
+    }
+
+    /**
+     * First channel id.
+     */
+    private function firstChannelId(): int
+    {
+        $id = Channel::query()->orderBy('id')->value('id');
+
+        if (! $id) {
+            $this->markTestSkipped('No channels found. Run Bagisto seeders for channels.');
+        }
+
+        return (int) $id;
     }
 }

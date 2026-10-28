@@ -58,6 +58,9 @@ use Webkul\Product\Models\ProductCustomerGroupPrice as BaseProductCustomerGroupP
 )]
 class ProductCustomerGroupPrice extends BaseProductCustomerGroupPrice
 {
+    /**
+     * The visible.
+     */
     protected $visible = [
         'id',
         'qty',
@@ -69,6 +72,9 @@ class ProductCustomerGroupPrice extends BaseProductCustomerGroupPrice
         'updated_at',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

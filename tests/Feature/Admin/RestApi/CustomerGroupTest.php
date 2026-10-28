@@ -8,74 +8,58 @@ use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerGroup;
 
-/**
- * REST coverage for the admin Customer Groups CRUD (Block C C2).
- */
 class CustomerGroupTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
-    protected function uniqueCode(string $prefix = 'grp'): string
-    {
-        return $prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99);
-    }
-
-    protected function seedUserGroup(array $overrides = []): CustomerGroup
-    {
-        $this->seedRequiredData();
-
-        return CustomerGroup::create(array_merge([
-            'code' => $this->uniqueCode('u'),
-            'name' => 'User Group',
-            'is_user_defined' => 1,
-        ], $overrides));
-    }
-
-    protected function systemGroup(): CustomerGroup
-    {
-        return $this->findOrCreateSystemCustomerGroup();
-    }
-
+    /**
+     * Test listing requires auth.
+     */
     public function test_listing_requires_auth(): void
     {
         $this->seedRequiredData();
         $this->publicGet('/api/admin/customers/groups')->assertStatus(401);
     }
 
+    /**
+     * Test create requires auth.
+     */
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
         $this->postJson('/api/admin/customers/groups', [])->assertStatus(401);
     }
 
+    /**
+     * Test update requires auth.
+     */
     public function test_update_requires_auth(): void
     {
         $g = $this->seedUserGroup();
         $this->putJson('/api/admin/customers/groups/'.$g->id, [])->assertStatus(401);
     }
 
+    /**
+     * Test delete requires auth.
+     */
     public function test_delete_requires_auth(): void
     {
         $g = $this->seedUserGroup();
         $this->deleteJson('/api/admin/customers/groups/'.$g->id)->assertStatus(401);
     }
 
+    /**
+     * Test detail requires auth.
+     */
     public function test_detail_requires_auth(): void
     {
         $g = $this->seedUserGroup();
         $this->publicGet('/api/admin/customers/groups/'.$g->id)->assertStatus(401);
     }
 
+    /**
+     * Test listing returns envelope.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -85,6 +69,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($resp->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total']);
     }
 
+    /**
+     * Test listing includes seeded group.
+     */
     public function test_listing_includes_seeded_group(): void
     {
         $admin = $this->createAdmin();
@@ -98,6 +85,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($row['code'])->toBe($g->code);
     }
 
+    /**
+     * Test listing filter by code.
+     */
     public function test_listing_filter_by_code(): void
     {
         $admin = $this->createAdmin();
@@ -110,6 +100,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($ids)->toContain($g->id);
     }
 
+    /**
+     * Test listing filter by name.
+     */
     public function test_listing_filter_by_name(): void
     {
         $admin = $this->createAdmin();
@@ -121,6 +114,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($ids)->toContain($g->id);
     }
 
+    /**
+     * Test listing filter by is user defined.
+     */
     public function test_listing_filter_by_is_user_defined(): void
     {
         $admin = $this->createAdmin();
@@ -136,6 +132,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($ids)->not()->toContain($u->id);
     }
 
+    /**
+     * Test listing per page capped.
+     */
     public function test_listing_per_page_capped(): void
     {
         $admin = $this->createAdmin();
@@ -144,6 +143,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($resp->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * Test listing sort by code.
+     */
     public function test_listing_sort_by_code(): void
     {
         $admin = $this->createAdmin();
@@ -153,6 +155,9 @@ class CustomerGroupTest extends AdminApiTestCase
         $resp->assertOk();
     }
 
+    /**
+     * Test detail returns group.
+     */
     public function test_detail_returns_group(): void
     {
         $admin = $this->createAdmin();
@@ -165,12 +170,18 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($resp->json())->toHaveKeys(['customersCount']);
     }
 
+    /**
+     * Test detail unknown returns 404.
+     */
     public function test_detail_unknown_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/customers/groups/99999999')->assertStatus(404);
     }
 
+    /**
+     * Test create happy path.
+     */
     public function test_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -185,6 +196,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect((int) $row->is_user_defined)->toBe(1);
     }
 
+    /**
+     * Test create missing required 422.
+     */
     public function test_create_missing_required_422(): void
     {
         $admin = $this->createAdmin();
@@ -192,6 +206,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create duplicate code 422.
+     */
     public function test_create_duplicate_code_422(): void
     {
         $admin = $this->createAdmin();
@@ -202,6 +219,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test create invalid code rule 422.
+     */
     public function test_create_invalid_code_rule_422(): void
     {
         $admin = $this->createAdmin();
@@ -211,6 +231,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update changes name.
+     */
     public function test_update_changes_name(): void
     {
         $admin = $this->createAdmin();
@@ -223,6 +246,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($g->fresh()->name)->toBe('New');
     }
 
+    /**
+     * Test update changes code.
+     */
     public function test_update_changes_code(): void
     {
         $admin = $this->createAdmin();
@@ -236,6 +262,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($g->fresh()->code)->toBe($newCode);
     }
 
+    /**
+     * Test update same code excludes self.
+     */
     public function test_update_same_code_excludes_self(): void
     {
         $admin = $this->createAdmin();
@@ -247,6 +276,9 @@ class CustomerGroupTest extends AdminApiTestCase
         $resp->assertOk();
     }
 
+    /**
+     * Test update duplicate code 422.
+     */
     public function test_update_duplicate_code_422(): void
     {
         $admin = $this->createAdmin();
@@ -259,6 +291,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test update unknown 404.
+     */
     public function test_update_unknown_404(): void
     {
         $admin = $this->createAdmin();
@@ -266,6 +301,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test update system group code blocked.
+     */
     public function test_update_system_group_code_blocked(): void
     {
         $admin = $this->createAdmin();
@@ -278,6 +316,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($sys->fresh()->code)->toBe($sys->code);
     }
 
+    /**
+     * Test update system group name allowed.
+     */
     public function test_update_system_group_name_allowed(): void
     {
         $admin = $this->createAdmin();
@@ -293,6 +334,9 @@ class CustomerGroupTest extends AdminApiTestCase
         $sys->update(['name' => $oldName]);
     }
 
+    /**
+     * Test delete happy path.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -303,6 +347,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect(CustomerGroup::where('id', $g->id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test delete system group 400.
+     */
     public function test_delete_system_group_400(): void
     {
         $admin = $this->createAdmin();
@@ -313,6 +360,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect(CustomerGroup::where('id', $sys->id)->exists())->toBeTrue();
     }
 
+    /**
+     * Test delete group with customers 400.
+     */
     public function test_delete_group_with_customers_400(): void
     {
         $admin = $this->createAdmin();
@@ -328,6 +378,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect(CustomerGroup::where('id', $g->id)->exists())->toBeTrue();
     }
 
+    /**
+     * Test delete unknown 404.
+     */
     public function test_delete_unknown_404(): void
     {
         $admin = $this->createAdmin();
@@ -335,6 +388,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Test mass delete happy path.
+     */
     public function test_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -349,6 +405,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect(CustomerGroup::where('id', $b->id)->exists())->toBeFalse();
     }
 
+    /**
+     * Test mass delete skips system group.
+     */
     public function test_mass_delete_skips_system_group(): void
     {
         $admin = $this->createAdmin();
@@ -365,6 +424,9 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($resp->json('deleted'))->toContain($u->id);
     }
 
+    /**
+     * Test mass delete skips group with customers.
+     */
     public function test_mass_delete_skips_group_with_customers(): void
     {
         $admin = $this->createAdmin();
@@ -381,10 +443,59 @@ class CustomerGroupTest extends AdminApiTestCase
         expect($resp->json('skipped'))->toBeArray()->not()->toBeEmpty();
     }
 
+    /**
+     * Test mass delete empty 422.
+     */
     public function test_mass_delete_empty_422(): void
     {
         $admin = $this->createAdmin();
         $resp = $this->adminPost($admin, '/api/admin/customers/groups/mass-delete', ['indices' => []]);
         expect($resp->getStatusCode())->toBe(422);
+    }
+
+    /**
+     * Admin put.
+     */
+    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Admin delete.
+     */
+    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Unique code.
+     */
+    protected function uniqueCode(string $prefix = 'grp'): string
+    {
+        return $prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99);
+    }
+
+    /**
+     * Seed user group.
+     */
+    protected function seedUserGroup(array $overrides = []): CustomerGroup
+    {
+        $this->seedRequiredData();
+
+        return CustomerGroup::create(array_merge([
+            'code' => $this->uniqueCode('u'),
+            'name' => 'User Group',
+            'is_user_defined' => 1,
+        ], $overrides));
+    }
+
+    /**
+     * System group.
+     */
+    protected function systemGroup(): CustomerGroup
+    {
+        return $this->findOrCreateSystemCustomerGroup();
     }
 }

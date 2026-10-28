@@ -10,10 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerRecentOrderItemProvider;
 
-/**
- * Items the customer has ordered recently — right-sidebar "Recent Order Items"
- * panel on the Create-Order screen. Limited to 5 most recent distinct products.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerRecentOrderItem',
@@ -66,6 +62,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerRecentOrderItemProvider;
         new QueryCollection(
             provider: AdminCustomerRecentOrderItemProvider::class,
             paginationType: 'cursor',
+            description: 'Up to 5 top-level items from the most recent orders of customer `customerId`, one per product, newest first, in one page (no pagination arguments). It needs the `customers.customers` permission, as the customer page in the admin panel does; an unknown customer is an error.',
 
             args: ['customerId' => [
                 'type' => 'Int!',
@@ -78,30 +75,57 @@ class AdminCustomerRecentOrderItem
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The product id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $product_id = null;
 
+    /**
+     * The sku.
+     */
     #[ApiProperty(writable: false)]
     public ?string $sku = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(writable: false)]
     public ?string $type = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The price.
+     */
     #[ApiProperty(writable: false)]
     public ?float $price = null;
 
+    /**
+     * The formatted price.
+     */
     #[ApiProperty(writable: false)]
     public ?string $formatted_price = null;
 
+    /**
+     * The product image.
+     */
     #[ApiProperty(writable: false)]
     public ?string $product_image = null;
 
+    /**
+     * The additional.
+     */
     #[ApiProperty(writable: false)]
     public ?array $additional = null;
 }

@@ -15,8 +15,14 @@ use Webkul\Customer\Repositories\CustomerRepository;
 
 class AdminCustomerMassUpdateStatusProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected CustomerRepository $customerRepository) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -61,6 +67,9 @@ class AdminCustomerMassUpdateStatusProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin): void
     {
         $role = $admin->role ?? null;
@@ -85,6 +94,9 @@ class AdminCustomerMassUpdateStatusProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve payload.
+     */
     protected function resolvePayload(mixed $data, array $context): array
     {
         if ($data instanceof AdminCustomerMassUpdateStatusInput) {

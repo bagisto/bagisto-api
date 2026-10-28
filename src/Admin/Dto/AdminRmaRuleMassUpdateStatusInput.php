@@ -7,30 +7,49 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminRmaRuleMassUpdateStatusInput
 {
-    /** @var array<int,int>|null */
+    /**
+     * The ids of the RMA rules whose status is updated.
+     *
+     * @var array<int,int>|null
+     */
     #[ApiProperty(description: 'RMA rule ids')]
     #[Groups(['mutation'])]
     public ?array $indices = null;
 
+    /**
+     * The value.
+     */
     #[ApiProperty(description: 'New status: 0 or 1')]
     #[Groups(['mutation'])]
     public ?int $value = null;
 
+    /**
+     * Get value.
+     */
     public function getValue(): ?int
     {
         return $this->value;
     }
 
+    /**
+     * Set value.
+     */
     public function setValue(?int $value): void
     {
         $this->value = $value;
     }
 
+    /**
+     * Get indices.
+     */
     public function getIndices(): ?array
     {
         return $this->indices;
     }
 
+    /**
+     * Set indices.
+     */
     public function setIndices(?array $value): void
     {
         $this->indices = $value;

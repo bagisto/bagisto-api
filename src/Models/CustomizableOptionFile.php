@@ -4,23 +4,13 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Dto\CustomizableOptionFileInput;
+use Webkul\BagistoApi\Dto\CustomizableOptionFileOutput;
 use Webkul\BagistoApi\State\CustomizableOptionFileProcessor;
 
-/**
- * Shop endpoint to stage a file for a file-type customizable option.
- *
- *   POST /api/shop/customizable-option-files
- *        Multipart: product_id, option_id, file.
- *        Validates the option is a file type on the product, the extension,
- *        and the size, then stages the file and returns a short-lived token.
- *        Send the token back on add-to-cart as
- *        customizableOptions: { "<optionId>": ["<token>"] }.
- *
- * REST-only — a binary file part is not transportable over JSON GraphQL.
- * Add-to-cart with the token works on both REST and GraphQL.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomizableOptionFile',
@@ -86,19 +76,46 @@ use Webkul\BagistoApi\State\CustomizableOptionFileProcessor;
             ),
         ),
     ],
-    graphQlOperations: [],
+    graphQlOperations: [
+        new Mutation(
+            name: 'create',
+            input: CustomizableOptionFileInput::class,
+            output: CustomizableOptionFileOutput::class,
+            processor: CustomizableOptionFileProcessor::class,
+            denormalizationContext: [
+                'allow_extra_attributes' => true,
+                'groups' => ['mutation'],
+            ],
+            normalizationContext: [
+                'groups' => ['mutation'],
+            ],
+            description: 'Stage a file for a file-type customizable option and return the token. Send the file base64-encoded (raw or a data: URI) in `file`. Send the token on add-to-cart as customizableOptions: { "<optionId>": ["<token>"] }.',
+        ),
+    ],
 )]
 class CustomizableOptionFile
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The token.
+     */
     #[ApiProperty(writable: false)]
     public ?string $token = null;
 
+    /**
+     * The file name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $fileName = null;
 
+    /**
+     * The option id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $optionId = null;
 }

@@ -10,6 +10,9 @@ trait BuildsAdminShipment
     use MapsOrderActionItems;
     use MapsOrderAddress;
 
+    /**
+     * Build admin shipment.
+     */
     protected function buildAdminShipment(Shipment $shipment): AdminShipment
     {
         $order = $shipment->order;
@@ -63,6 +66,9 @@ trait BuildsAdminShipment
         return $dto;
     }
 
+    /**
+     * Safe format base price.
+     */
     protected function safeFormatBasePrice(float $amount): ?string
     {
         try {

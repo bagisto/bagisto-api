@@ -25,11 +25,17 @@ use Webkul\Marketing\Repositories\CampaignRepository;
 
 class AdminMarketingCampaignProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CampaignRepository $campaignRepository,
         protected AdminMarketingCampaignItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -47,7 +53,7 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.communications.campaigns.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if (
@@ -85,6 +91,9 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input, bool $isGraphQL = false): AdminMarketingCampaign|AdminMarketingCampaignRestDto
     {
         $this->validatePayload($input);
@@ -108,6 +117,9 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         return $this->buildResult((int) $campaign->id, $isGraphQL);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): AdminMarketingCampaign|AdminMarketingCampaignRestDto
     {
         $campaign = Campaign::find($id);
@@ -142,6 +154,9 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         return $this->buildResult($id, $isGraphQL);
     }
 
+    /**
+     * Build result.
+     */
     protected function buildResult(int $id, bool $isGraphQL): AdminMarketingCampaign|AdminMarketingCampaignRestDto
     {
         if ($isGraphQL) {
@@ -153,12 +168,17 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         );
     }
 
-    protected function handleDelete(int $id): array
+    /**
+     * Handle delete.
+     */
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingCampaign
     {
         $campaign = Campaign::find($id);
         if (! $campaign) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.campaign.not-found'));
         }
+
+        $snapshot = $asResource ? $this->buildResult($id, true) : null;
 
         Event::dispatch('marketing.campaigns.delete.before', $id);
 
@@ -174,9 +194,12 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
 
         Event::dispatch('marketing.campaigns.delete.after', $id);
 
-        return ['message' => __('bagistoapi::app.admin.marketing.campaign.deleted')];
+        return $snapshot ?? ['message' => __('bagistoapi::app.admin.marketing.campaign.deleted')];
     }
 
+    /**
+     * Validate payload.
+     */
     protected function validatePayload(array $input): void
     {
         $rules = [
@@ -195,6 +218,9 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -222,6 +248,9 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -237,6 +266,9 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         return $this->normaliseArgs(request()->all());
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -249,6 +281,9 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -291,6 +326,9 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         return $input;
     }
 
+    /**
+     * Dto to array.
+     */
     protected function dtoToArray(object $dto, array $rawArgs = []): array
     {
         $result = [];

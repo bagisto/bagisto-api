@@ -25,11 +25,17 @@ use Webkul\Customer\Repositories\CustomerRepository;
 
 class AdminCustomerProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AdminCustomerItemProvider $itemProvider,
         protected CustomerRepository $customerRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -85,12 +91,13 @@ class AdminCustomerProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input, bool $isGraphQL = false): mixed
     {
         $sendPassword = (bool) ($input['send_password'] ?? true);
 
-        // The same address may register on each channel of a store, so an email is unique
-        // per channel rather than across the table.
         $channelId = (int) ($input['channel_id'] ?? core()->getCurrentChannel()->id);
 
         $rules = [
@@ -151,6 +158,9 @@ class AdminCustomerProcessor implements ProcessorInterface
         return $this->buildResponse((int) $customer->id, $isGraphQL);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): mixed
     {
         $existing = Customer::find($id);
@@ -195,6 +205,9 @@ class AdminCustomerProcessor implements ProcessorInterface
         return $this->buildResponse($id, $isGraphQL);
     }
 
+    /**
+     * Build response.
+     */
     protected function buildResponse(int $id, bool $isGraphQL): mixed
     {
         $customer = AdminCustomer::with('group')->find($id);
@@ -202,6 +215,9 @@ class AdminCustomerProcessor implements ProcessorInterface
         return $this->itemProvider->mapForProcessor($customer, $isGraphQL);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminCustomer
     {
         $existing = Customer::find($id);
@@ -233,6 +249,9 @@ class AdminCustomerProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.customer.deleted')];
     }
 
+    /**
+     * Resolve input.
+     */
     protected function resolveInput(mixed $data, array $context, bool $isGraphQL): array
     {
         if ($isGraphQL) {
@@ -245,6 +264,9 @@ class AdminCustomerProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Normalize keys.
+     */
     protected function normalizeKeys(array $args): array
     {
         $map = [
@@ -265,6 +287,9 @@ class AdminCustomerProcessor implements ProcessorInterface
         return $out;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

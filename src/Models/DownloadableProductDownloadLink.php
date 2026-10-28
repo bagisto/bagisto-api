@@ -4,15 +4,10 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
-use Illuminate\Database\Eloquent\Model;
+use Webkul\BagistoApi\Dto\DownloadableProductDownloadLinkOutput;
 use Webkul\BagistoApi\Dto\GenerateDownloadLinkInput;
 use Webkul\BagistoApi\State\DownloadableProductProcessor;
 
-/**
- * Temporary download link for purchased downloadable products.
- *
- * Stores secure tokens and metadata for file downloads with automatic expiration.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'DownloadableProductDownloadLink',
@@ -23,23 +18,12 @@ use Webkul\BagistoApi\State\DownloadableProductProcessor;
             name: 'create',
             processor: DownloadableProductProcessor::class,
             input: GenerateDownloadLinkInput::class,
+            output: DownloadableProductDownloadLinkOutput::class,
+            normalizationContext: [
+                'groups' => ['mutation'],
+            ],
+            description: 'Check the customer may download the purchased link and return the URL that downloads it.',
         ),
     ]
 )]
-class DownloadableProductDownloadLink extends Model
-{
-    protected $table = 'downloadable_product_download_links';
-
-    protected $fillable = [
-        'token',
-        'url',
-        'downloadable_link_purchased_id',
-        'expires_at',
-    ];
-
-    protected $casts = [
-        'expires_at' => 'datetime',
-    ];
-
-    public $timestamps = true;
-}
+class DownloadableProductDownloadLink {}

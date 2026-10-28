@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/** Customizable-option price — nested in the customizableOptions connection. */
 #[ApiResource(
     shortName: 'AdminProductDetailCustomizableOptionPrice',
     operations: [],
@@ -15,21 +14,35 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminProductDetailCustomizableOptionPrice extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the customizable option prices.
+     *
+     * @var string
+     */
     protected $table = 'product_customizable_option_prices';
 
-    /** @var array */
+    /**
+     * The native types the customizable option price attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'sort_order' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Get price.
+     */
     #[ApiProperty(writable: false)]
     public function getPrice(): ?string
     {

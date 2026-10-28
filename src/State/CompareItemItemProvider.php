@@ -4,22 +4,20 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CompareItem;
+use Webkul\BagistoApi\Models\Product;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
-/**
- * Provider for REST GET /api/shop/compare-items/{id}
- *
- * Enforces authentication and customer ownership so a customer cannot
- * read another customer's compare-item row by guessing its ID.
- */
 class CompareItemItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -36,7 +34,7 @@ class CompareItemItemProvider implements ProviderInterface
 
         $compareItem = CompareItem::where('id', (int) $id)
             ->where('customer_id', $customer->id)
-            ->with(['product', 'customer'])
+            ->with(['product' => fn ($query) => Product::withReviewSummary($query), 'customer'])
             ->first();
 
         if (! $compareItem) {

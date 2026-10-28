@@ -14,6 +14,9 @@ class AdminRmaReasonCollectionProvider extends AbstractAdminCollectionProvider
 {
     use ChecksAdminPermission;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin('sales.rma.reasons');
@@ -21,11 +24,17 @@ class AdminRmaReasonCollectionProvider extends AbstractAdminCollectionProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'position', 'title'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('rma_reasons')->select(
@@ -39,6 +48,9 @@ class AdminRmaReasonCollectionProvider extends AbstractAdminCollectionProvider
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['title'])) {
@@ -54,6 +66,9 @@ class AdminRmaReasonCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -67,6 +82,9 @@ class AdminRmaReasonCollectionProvider extends AbstractAdminCollectionProvider
         $query->orderBy($map[$column] ?? 'rma_reasons.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminRmaReason
     {
         $dto = new AdminRmaReason;

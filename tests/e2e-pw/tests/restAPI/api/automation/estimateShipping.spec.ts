@@ -1,37 +1,50 @@
-// tests/restAPI/api/automation/estimateShipping.spec.ts
-//
-// EstimateShipping is declared in the BagistoApi package as GraphQL-only
-// (`operations: []`, `graphQlOperations: [Mutation]`). These REST smoke tests
-// poke the URL anyway to lock down the expected absence of a REST endpoint
-// (so a future REST exposure shows up here instead of silently shipping).
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import {
+  SHOP_CART_MESSAGES,
+  bearer,
+  createGuestCart,
+  expectProblem,
+  randomUuid,
+  readJson,
+} from '../../rest/helpers/coverage/shopCart.helpers';
 
-function assertStatus(resp: any, debugLabel: string, allowed: number[]) {
-  expect(allowed).toContain(resp.status());
-  console.log(`${debugLabel}:`, resp.status());
-}
-
-test.describe('Estimate Shipping REST API', () => {
-  test('GET returns 404/405 (REST not exposed)', async ({ request }) => {
+test.describe('estimate shipping rest api', () => {
+  test('get has no route and returns 404', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.ESTIMATE_SHIPPING_REST);
-    assertStatus(response, 'GET /api/shop/estimate-shippings', [0, 200, 400, 404, 405, 500]);
+
+    expect(response.status(), JSON.stringify(await readJson(response))).toBe(404);
   });
 
-  test('POST without params returns 4xx', async ({ request }) => {
+  test('post without a bearer token returns 401', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.ESTIMATE_SHIPPING_REST, {
       method: 'POST',
-      data: {},
+      data: { country: 'US', state: 'CA', postcode: '94103' },
     });
-    assertStatus(response, 'POST /api/shop/estimate-shippings empty', [0, 200, 400, 404, 405, 422, 500]);
+
+    await expectProblem(response, 401, SHOP_CART_MESSAGES.AUTHENTICATION_REQUIRED);
   });
 
-  test('POST with non-shippable params returns 4xx', async ({ request }) => {
+  test('post with an unknown cart token returns 404', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.ESTIMATE_SHIPPING_REST, {
       method: 'POST',
-      data: { country: 'US', postcode: '94103', token: 'invalid-token' },
+      data: { country: 'US', state: 'CA', postcode: '94103' },
+      headers: bearer(randomUuid()),
     });
-    assertStatus(response, 'POST /api/shop/estimate-shippings invalid token', [0, 200, 400, 404, 405, 422, 500]);
+
+    await expectProblem(response, 404, SHOP_CART_MESSAGES.CART_NOT_FOUND);
+  });
+
+  test('post without a state on a guest cart returns 400', async ({ request }) => {
+    const cart = await createGuestCart(request);
+
+    const response = await sendRestRequest(request, ENDPOINTS.ESTIMATE_SHIPPING_REST, {
+      method: 'POST',
+      data: { country: 'US', postcode: '94103' },
+      headers: bearer(cart.token),
+    });
+
+    await expectProblem(response, 400, SHOP_CART_MESSAGES.ADDRESS_DATA_REQUIRED);
   });
 });

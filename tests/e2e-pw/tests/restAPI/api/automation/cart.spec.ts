@@ -1,275 +1,284 @@
-// tests/restAPI/api/automation/cart.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext, APIResponse } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
+import { sendAdminRequest } from '../../rest/helpers/adminClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
-import { assertCartResponseFields, assertCartItemFields } from '../../rest/assertions/cart.assertions';
+import { ADMIN_MARKETING } from '../../rest/endpoints/admin.marketing.endpoints';
+import {
+  ShopGuestCart,
+  addCartLine,
+  bearer,
+  createGuestCart,
+  expectProblem,
+  findSaleableSimpleProducts,
+  readCart,
+  readJson,
+  uniqueSuffix,
+} from '../../rest/helpers/coverage/shopCart.helpers';
 
-// Cart endpoints can be slow under parallel load (session + cart bootstrap
-// path). 60s gives headroom for the GET to come back without flaking.
-test.describe.configure({ timeout: 60_000 });
+test.describe.configure({ timeout: 120_000 });
 
-test.describe('Cart REST API', () => {
-  function assertCartStatus(resp: any, debugLabel: string) {
-    const code = resp.status();
-    expect([0, 200, 201, 400, 401, 404, 422, 500, 429]).toContain(code);
-    console.log(`${debugLabel}:`, code);
-    return code;
+const MSG = {
+  AUTHENTICATION_REQUIRED: 'Authentication token is required',
+  PRODUCT_ADDED: 'Product added to cart successfully',
+  ITEM_UPDATED: 'Cart item updated successfully',
+  CART_ITEM_NOT_FOUND: 'Cart item not found',
+  COUPON_APPLIED: 'Coupon applied successfully',
+  COUPON_REMOVED: 'Coupon removed successfully',
+  COUPON_INVALID: 'Coupon code is invalid.',
+};
+
+const ALL_CUSTOMER_GROUP_IDS = [1, 2, 3];
+const DEFAULT_CHANNEL_ID = 1;
+
+interface CouponRule {
+  id: number;
+  code: string;
+}
+
+async function postCart(
+  request: APIRequestContext,
+  endpoint: string,
+  token: string | null,
+  data: Record<string, any> = {}
+): Promise<APIResponse> {
+  return sendRestRequest(request, endpoint, {
+    method: 'POST',
+    data,
+    headers: token ? bearer(token) : {},
+  });
+}
+
+async function expectCartPayload(response: APIResponse, status: number): Promise<any> {
+  const body = await readJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(status);
+
+  return body;
+}
+
+async function guestCartWithLine(request: APIRequestContext): Promise<{ cart: ShopGuestCart; itemId: number; productId: number }> {
+  const [productId] = await findSaleableSimpleProducts(request, 1);
+  const cart = await createGuestCart(request);
+  const line = await addCartLine(request, cart.token, productId, 1);
+
+  return { cart, itemId: line.itemId, productId };
+}
+
+async function createCouponRule(request: APIRequestContext): Promise<CouponRule> {
+  const code = `E2ECART${uniqueSuffix().replace(/[^0-9]/g, '')}`;
+  const response = await sendAdminRequest(request, ADMIN_MARKETING.CART_RULES, {
+    method: 'POST',
+    data: {
+      name: `E2E shop cart coupon ${code}`,
+      description: 'e2e shop cart coupon rule',
+      channels: [DEFAULT_CHANNEL_ID],
+      customer_groups: ALL_CUSTOMER_GROUP_IDS,
+      coupon_type: 1,
+      use_auto_generation: 0,
+      coupon_code: code,
+      action_type: 'by_percent',
+      discount_amount: 10,
+      sort_order: 0,
+      status: 1,
+      conditions: [],
+      uses_per_customer: 0,
+      uses_per_coupon: 0,
+    },
+  });
+  const body = await readJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(201);
+  expect(typeof body.id).toBe('number');
+
+  return { id: body.id, code };
+}
+
+async function deleteCouponRule(request: APIRequestContext, rule: CouponRule | null): Promise<void> {
+  if (!rule) {
+    return;
   }
 
-  test('Should get the current cart (GET)', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.GET_CART);
-    const code = response.status();
-    if (code === 429) {
-      test.skip(true, 'Rate limited');
-      return;
-    }
-    expect([200, 404]).toContain(code);
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(body).toHaveProperty('items');
-      console.log('Cart items:', body.items?.length);
-    }
+  const response = await sendAdminRequest(request, ADMIN_MARKETING.CART_RULE(rule.id), { method: 'DELETE' });
+
+  expect(response.status(), await response.text()).toBe(200);
+}
+
+test.describe('cart rest api', () => {
+  test('should get the current cart', async ({ request }) => {
+    const cart = await createGuestCart(request);
+
+    const body = await expectCartPayload(await readCart(request, cart.token), 201);
+
+    expect(body.id).toBe(cart.cartId);
+    expect(body.itemsCount).toBe(0);
+    expect(body.items).toEqual([]);
   });
 
-  test('Should handle POST to cart create endpoint', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.CREATE_CART, {
-      method: 'POST',
-    });
-    assertCartStatus(response, 'POST /api/shop/cart');
+  test('should refuse to read the cart without a bearer token', async ({ request }) => {
+    await expectProblem(await postCart(request, ENDPOINTS.CREATE_CART, null), 401, MSG.AUTHENTICATION_REQUIRED);
   });
 
-  test('Should handle GET to cart create (wrong method)', async ({ request }) => {
+  test('should not route a get on the cart path', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CREATE_CART);
-    assertCartStatus(response, 'GET /api/shop/cart/create');
+
+    expect(response.status()).toBe(404);
   });
 });
 
-test.describe('Cart Item Operations', () => {
-  // 404/405 are deliberately NOT accepted: they would mean the route moved.
-  function assertCartItemStatus(resp: any, debugLabel: string) {
-    const code = resp.status();
-    expect([0, 200, 201, 400, 401, 422, 500, 429]).toContain(code);
-    console.log(`${debugLabel}:`, code);
-    if (code === 429) {
-      test.skip(true, 'Rate limited');
-    }
-    return code;
-  }
+test.describe('cart item operations', () => {
+  test('should add a product to the cart', async ({ request }) => {
+    const [productId] = await findSaleableSimpleProducts(request, 1);
+    const cart = await createGuestCart(request);
 
-  test('Should handle add-to-cart POST', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.ADD_TO_CART, {
-      method: 'POST',
-      data: { productId: 1, quantity: 1 },
-    });
-    assertCartItemStatus(response, 'POST /api/shop/add-product-in-cart');
-  });
+    const body = await expectCartPayload(
+      await postCart(request, ENDPOINTS.ADD_TO_CART, cart.token, { productId, quantity: 1 }),
+      201
+    );
 
-  test('Should handle add-to-cart with options', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.ADD_TO_CART, {
-      method: 'POST',
-      data: { productId: 1, quantity: 2, options: {} },
-    });
-    assertCartItemStatus(response, 'POST /api/shop/add-product-in-cart (options)');
-  });
-
-  test('Should handle add-to-cart missing productId', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.ADD_TO_CART, {
-      method: 'POST',
-      data: { quantity: 1 },
-    });
-    assertCartItemStatus(response, 'POST /api/shop/add-product-in-cart no productId');
-  });
-
-  test('Should handle cart item update', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.UPDATE_CART_ITEM, {
-      method: 'POST',
-      data: { items: [{ cartItemId: 1, quantity: 3 }] },
-    });
-    assertCartItemStatus(response, 'POST /api/shop/update-cart-item');
-  });
-
-  test('Should handle cart item removal', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.REMOVE_CART_ITEM, {
-      method: 'POST',
-      data: { cartItemId: 1 },
-    });
-    assertCartItemStatus(response, 'POST /api/shop/remove-cart-item');
-  });
-
-  test('Should handle removal of a non-existent cart item', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.REMOVE_CART_ITEM, {
-      method: 'POST',
-      data: { cartItemId: 999999 },
-    });
-    assertCartItemStatus(response, 'POST /api/shop/remove-cart-item (unknown id)');
-  });
-});
-
-test.describe('Cart Coupon Operations', () => {
-  function assertCartStatus2(resp: any, debugLabel: string) {
-    const code = resp.status();
-    expect([0, 200, 201, 400, 401, 422, 500, 429]).toContain(code);
-    console.log(`${debugLabel}:`, code);
-    if (code === 429) {
-      test.skip(true, 'Rate limited');
-    }
-  }
-
-  test('Should handle coupon application', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.APPLY_COUPON, {
-      method: 'POST',
-      data: { code: 'SAVE10' },
-    });
-    assertCartStatus2(response, 'POST /api/shop/apply-coupon');
-  });
-
-  test('Should handle coupon removal', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.REMOVE_COUPON, {
-      method: 'POST',
-    });
-    assertCartStatus2(response, 'POST /api/shop/remove-coupon');
-  });
-});
-
-// ─── REGRESSION (strict): coupon flow returns non-null couponCode + message ──
-//
-// Locks down two related bug fixes:
-//   C3 — Read Cart was returning couponCode = null even after a coupon was
-//        applied. The applied code MUST be echoed back on subsequent GETs.
-//   C4 — apply / remove coupon mutations were returning success=null /
-//        message=null. Both fields MUST be non-null and meaningful.
-//
-// NOTE: requires an active coupon to be seeded in the dev DB. If no coupon is
-// available (or the test cart can't be primed with an item), the test will
-// `test.skip` rather than false-fail. To exercise the strict path locally,
-// seed at least one row in cart_rule_coupons with status=1 and ensure a cart
-// rule with status=1, starts_from <= today, ends_till >= today exists.
-test.describe('REGRESSION — coupon flow (couponCode + success + message)', () => {
-  // Adjust this if your dev DB seeds a different active code.
-  const SEEDED_COUPON = process.env.E2E_ACTIVE_COUPON ?? 'SAVE10';
-
-  async function ensureCartWithItem(request: any) {
-    // Add a product to the cart so coupons have something to act on.
-    const list = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '1' },
-    });
-    if (list.status() !== 200) return false;
-    const items = await list.json();
-    if (!Array.isArray(items) || items.length === 0) return false;
-    const productId = items[0].id;
-    const add = await sendRestRequest(request, ENDPOINTS.ADD_TO_CART, {
-      method: 'POST',
-      data: { productId, quantity: 1 },
-    });
-    return add.status() === 200 || add.status() === 201;
-  }
-
-  test('Apply valid coupon — success===true, message non-empty, couponCode echoed', async ({ request }) => {
-    const ok = await ensureCartWithItem(request);
-    if (!ok) {
-      test.skip(true, 'Could not prime cart with an item');
-      return;
-    }
-
-    const applyResp = await sendRestRequest(request, ENDPOINTS.APPLY_COUPON, {
-      method: 'POST',
-      data: { code: SEEDED_COUPON, couponCode: SEEDED_COUPON },
-    });
-    if (applyResp.status() === 404 || applyResp.status() === 400) {
-      test.skip(true, `Coupon '${SEEDED_COUPON}' not seeded as active — set E2E_ACTIVE_COUPON env var`);
-      return;
-    }
-    expect([200, 201]).toContain(applyResp.status());
-    const applyBody = await applyResp.json();
-
-    // C4: success + message must be present and truthful.
-    expect(applyBody).toHaveProperty('success');
-    expect(applyBody.success).toBe(true);
-    expect(applyBody).toHaveProperty('message');
-    expect(typeof applyBody.message).toBe('string');
-    expect(applyBody.message.length).toBeGreaterThan(0);
-
-    // C3: read the cart back and confirm couponCode persists.
-    const readResp = await sendRestRequest(request, ENDPOINTS.GET_CART, { method: 'POST' });
-    if (![200, 201].includes(readResp.status())) {
-      // Some installs use GET for read-cart; fall back to that.
-      const readGet = await sendRestRequest(request, ENDPOINTS.GET_CART);
-      expect([200, 201]).toContain(readGet.status());
-      const cart = await readGet.json();
-      const code = cart.couponCode ?? cart.coupon_code ?? cart.data?.couponCode;
-      expect(code).not.toBeNull();
-      expect(typeof code).toBe('string');
-      expect(code.toUpperCase()).toBe(SEEDED_COUPON.toUpperCase());
-      return;
-    }
-    const cart = await readResp.json();
-    const code = cart.couponCode ?? cart.coupon_code ?? cart.data?.couponCode;
-    expect(code).not.toBeNull();
-    expect(typeof code).toBe('string');
-    expect(code.toUpperCase()).toBe(SEEDED_COUPON.toUpperCase());
-  });
-
-  test('Remove coupon — success===true, message non-empty', async ({ request }) => {
-    const ok = await ensureCartWithItem(request);
-    if (!ok) {
-      test.skip(true, 'Could not prime cart with an item');
-      return;
-    }
-
-    // Apply first so there's something to remove.
-    const apply = await sendRestRequest(request, ENDPOINTS.APPLY_COUPON, {
-      method: 'POST',
-      data: { code: SEEDED_COUPON, couponCode: SEEDED_COUPON },
-    });
-    if (![200, 201].includes(apply.status())) {
-      test.skip(true, `Coupon '${SEEDED_COUPON}' not seeded — set E2E_ACTIVE_COUPON`);
-      return;
-    }
-
-    const removeResp = await sendRestRequest(request, ENDPOINTS.REMOVE_COUPON, {
-      method: 'DELETE',
-    });
-    expect([200, 201, 204]).toContain(removeResp.status());
-    if (removeResp.status() === 204) return; // no body
-
-    const body = await removeResp.json();
-    expect(body).toHaveProperty('success');
     expect(body.success).toBe(true);
-    expect(body).toHaveProperty('message');
-    expect(typeof body.message).toBe('string');
-    expect(body.message.length).toBeGreaterThan(0);
+    expect(body.message).toBe(MSG.PRODUCT_ADDED);
+    expect(body.id).toBe(cart.cartId);
+    expect(body.itemsCount).toBe(1);
+    expect(body.items).toHaveLength(1);
+    expect(Number(body.items[0].productId)).toBe(productId);
+    expect(Number(body.items[0].quantity)).toBe(1);
   });
 
-  test('Apply unknown coupon — success===false, message non-empty', async ({ request }) => {
-    const ok = await ensureCartWithItem(request);
-    if (!ok) {
-      test.skip(true, 'Could not prime cart with an item');
-      return;
-    }
-    const bogus = 'INVALIDCODE9999';
-    const resp = await sendRestRequest(request, ENDPOINTS.APPLY_COUPON, {
-      method: 'POST',
-      data: { code: bogus, couponCode: bogus },
-    });
-    // The mutation may return 200 with success=false (project convention) or 4xx.
-    expect([200, 201, 400, 404, 422]).toContain(resp.status());
-    if (resp.status() === 200 || resp.status() === 201) {
-      const body = await resp.json();
-      expect(body).toHaveProperty('success');
-      expect(body.success).toBe(false);
-      expect(body).toHaveProperty('message');
-      expect(typeof body.message).toBe('string');
-      expect(body.message.length).toBeGreaterThan(0);
-    } else {
-      const body = await resp.json().catch(() => ({}));
-      // Even on 4xx, a message is expected.
-      if (body && typeof body === 'object') {
-        const msg = body.message ?? body.error ?? body.detail;
-        if (msg !== undefined) {
-          expect(typeof msg).toBe('string');
-          expect((msg as string).length).toBeGreaterThan(0);
-        }
-      }
-    }
+  test('should refuse add-to-cart without a bearer token', async ({ request }) => {
+    const response = await postCart(request, ENDPOINTS.ADD_TO_CART, null, { productId: 1, quantity: 2, options: {} });
+
+    await expectProblem(response, 401, MSG.AUTHENTICATION_REQUIRED);
+  });
+
+  test('should reject add-to-cart without a product id', async ({ request }) => {
+    const cart = await createGuestCart(request);
+
+    const response = await postCart(request, ENDPOINTS.ADD_TO_CART, cart.token, { quantity: 1 });
+    const body = await readJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(400);
+    expect(body.title).toBe('Bad Request');
+
+    const after = await expectCartPayload(await readCart(request, cart.token), 201);
+    expect(after.itemsCount).toBe(0);
+  });
+
+  test('should update a cart item quantity', async ({ request }) => {
+    const { cart, itemId } = await guestCartWithLine(request);
+
+    const body = await expectCartPayload(
+      await postCart(request, ENDPOINTS.UPDATE_CART_ITEM, cart.token, { cartItemId: itemId, quantity: 2 }),
+      201
+    );
+
+    expect(body.success).toBe(true);
+    expect(body.message).toBe(MSG.ITEM_UPDATED);
+
+    const item = body.items.find((line: any) => Number(line.id) === itemId);
+    expect(Number(item?.quantity)).toBe(2);
+
+    const after = await expectCartPayload(await readCart(request, cart.token), 201);
+    expect(Number(after.items.find((line: any) => Number(line.id) === itemId)?.quantity)).toBe(2);
+  });
+
+  test('should remove a cart item', async ({ request }) => {
+    const { cart, itemId } = await guestCartWithLine(request);
+
+    const body = await expectCartPayload(
+      await postCart(request, ENDPOINTS.REMOVE_CART_ITEM, cart.token, { cartItemId: itemId }),
+      201
+    );
+
+    expect(body.itemsCount).toBe(0);
+    expect(body.items).toEqual([]);
+  });
+
+  test('should refuse removal of a non-existent cart item', async ({ request }) => {
+    const { cart, itemId } = await guestCartWithLine(request);
+
+    const response = await postCart(request, ENDPOINTS.REMOVE_CART_ITEM, cart.token, { cartItemId: 999999999 });
+
+    await expectProblem(response, 400, MSG.CART_ITEM_NOT_FOUND);
+
+    const after = await expectCartPayload(await readCart(request, cart.token), 201);
+    expect(after.items.map((line: any) => Number(line.id))).toEqual([itemId]);
+  });
+});
+
+test.describe('cart coupon operations', () => {
+  test('should refuse coupon application without a bearer token', async ({ request }) => {
+    const response = await postCart(request, ENDPOINTS.APPLY_COUPON, null, { couponCode: 'SAVE10' });
+
+    await expectProblem(response, 401, MSG.AUTHENTICATION_REQUIRED);
+  });
+
+  test('should refuse coupon removal without a bearer token', async ({ request }) => {
+    await expectProblem(await postCart(request, ENDPOINTS.REMOVE_COUPON, null), 401, MSG.AUTHENTICATION_REQUIRED);
+  });
+});
+
+test.describe('regression coupon flow returns coupon code success and message', () => {
+  let rule: CouponRule | null;
+
+  test.beforeEach(() => {
+    rule = null;
+  });
+
+  test.afterEach(async ({ request }) => {
+    await deleteCouponRule(request, rule);
+  });
+
+  test('apply valid coupon reports success and echoes the coupon code', async ({ request }) => {
+    const { cart } = await guestCartWithLine(request);
+    rule = await createCouponRule(request);
+
+    const body = await expectCartPayload(
+      await postCart(request, ENDPOINTS.APPLY_COUPON, cart.token, { couponCode: rule.code }),
+      201
+    );
+
+    expect(body.success).toBe(true);
+    expect(body.message).toBe(MSG.COUPON_APPLIED);
+    expect(body.couponCode).toBe(rule.code);
+    expect(body.discountAmount).toBeGreaterThan(0);
+
+    const after = await expectCartPayload(await readCart(request, cart.token), 201);
+    expect(after.couponCode).toBe(rule.code);
+  });
+
+  test('remove coupon reports success and clears the coupon code', async ({ request }) => {
+    const { cart } = await guestCartWithLine(request);
+    rule = await createCouponRule(request);
+
+    const applied = await expectCartPayload(
+      await postCart(request, ENDPOINTS.APPLY_COUPON, cart.token, { couponCode: rule.code }),
+      201
+    );
+    expect(applied.couponCode).toBe(rule.code);
+
+    const body = await expectCartPayload(await postCart(request, ENDPOINTS.REMOVE_COUPON, cart.token), 201);
+
+    expect(body.success).toBe(true);
+    expect(body.message).toBe(MSG.COUPON_REMOVED);
+    expect(body.couponCode).toBeNull();
+    expect(body.discountAmount).toBe(0);
+
+    const after = await expectCartPayload(await readCart(request, cart.token), 201);
+    expect(after.couponCode).toBeNull();
+  });
+
+  test('apply unknown coupon is refused with 422 and leaves no coupon code', async ({ request }) => {
+    const { cart } = await guestCartWithLine(request);
+    const bogus = `INVALIDCODE${uniqueSuffix().replace(/[^0-9]/g, '')}`;
+
+    const body = await expectCartPayload(
+      await postCart(request, ENDPOINTS.APPLY_COUPON, cart.token, { couponCode: bogus }),
+      422
+    );
+
+    expect(body.detail ?? body.message).toBe(MSG.COUPON_INVALID);
+
+    const after = await expectCartPayload(await readCart(request, cart.token), 201);
+    expect(after.couponCode).toBeNull();
   });
 });

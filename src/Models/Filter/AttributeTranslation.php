@@ -14,7 +14,7 @@ use ApiPlatform\Metadata\ApiResource;
 class AttributeTranslation extends \Webkul\Attribute\Models\AttributeTranslation
 {
     /**
-     * API Platform identifier
+     * API Platform identifier.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int

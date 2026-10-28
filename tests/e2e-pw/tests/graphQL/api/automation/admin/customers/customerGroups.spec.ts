@@ -1,10 +1,3 @@
-// tests/graphQL/api/automation/admin/customers/customerGroups.spec.ts
-//
-// Admin Customer Groups (W2 GraphQL) — CRUD + mass-delete + system-group
-// guards. System groups have ids 1 (guest), 2 (general), 3 (wholesale) with
-// is_user_defined=0. Update of `code` on a system group is rejected; delete
-// of a system group is rejected.
-
 import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminGraphQLRequest } from '../../../../graphql/helpers/adminGraphqlClient';
 import {
@@ -12,190 +5,218 @@ import {
   ADMIN_CUSTOMER_GROUP_DETAIL,
   ADMIN_CUSTOMER_GROUP_CREATE,
   ADMIN_CUSTOMER_GROUP_UPDATE,
-  ADMIN_CUSTOMER_GROUP_DELETE,
-  ADMIN_CUSTOMER_GROUP_MASS_DELETE,
 } from '../../../../graphql/Queries/admin/customers/customerGroups.queries';
 
 test.describe.configure({ timeout: 60_000 });
+
+const GROUP_NOT_FOUND = 'Customer group not found.';
+
+const SYSTEM_GROUP_UNDELETABLE = 'System customer groups cannot be deleted.';
+
+const DELETE_GROUP = `
+  mutation deleteAdminCustomerGroup($id: ID!) {
+    deleteAdminCustomerGroup(input: { id: $id }) {
+      adminCustomerGroup {
+        _id
+        code
+        message
+      }
+    }
+  }
+`;
+
+const MASS_DELETE_GROUPS = `
+  mutation createAdminCustomerGroupMassDelete($indices: Iterable!) {
+    createAdminCustomerGroupMassDelete(input: { indices: $indices }) {
+      adminCustomerGroupMassDelete {
+        deleted
+        skipped
+        message
+      }
+    }
+  }
+`;
+
+interface CreatedGroup {
+  _id: number;
+  code: string;
+  name: string;
+}
 
 function uniqueCode(): string {
   return `e2egqlgrp${Date.now()}${Math.floor(Math.random() * 100000)}`;
 }
 
-async function createGroup(request: APIRequestContext) {
+function groupIri(id: number): string {
+  return `/api/admin/customers/groups/${id}`;
+}
+
+async function gql(request: APIRequestContext, query: string, variables: Record<string, any> = {}): Promise<any> {
+  const response = await sendAdminGraphQLRequest(request, query, variables);
+  expect(response.status()).toBe(200);
+
+  return response.json();
+}
+
+function expectGraphQLError(body: any, field: string, message: string): void {
+  expect(body.data?.[field] ?? null).toBeNull();
+  expect(body.errors?.[0]?.message).toBe(message);
+}
+
+async function createGroup(request: APIRequestContext): Promise<CreatedGroup> {
   const code = uniqueCode();
-  const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUP_CREATE, {
-    code,
-    name: `E2E GQL Group ${code}`,
-  });
-  return { resp, code };
+  const name = `E2E GQL Group ${code}`;
+  const body = await gql(request, ADMIN_CUSTOMER_GROUP_CREATE, { code, name });
+  expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+
+  const created = body.data.createAdminCustomerGroup.adminCustomerGroup;
+  expect(created._id).toBeGreaterThan(0);
+  expect(created.code).toBe(code);
+  expect(created.name).toBe(name);
+
+  return created;
 }
 
-async function dropGroup(request: APIRequestContext, id: string) {
-  try {
-    await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUP_DELETE, { id });
-  } catch {
-    // ignore
-  }
+async function dropGroup(request: APIRequestContext, id: number): Promise<void> {
+  await sendAdminGraphQLRequest(request, DELETE_GROUP, { id: groupIri(id) });
 }
 
-test.describe('Admin Customer Groups GraphQL API', () => {
-  test('list returns edges', async ({ request }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUPS_LIST, {
-      first: 5,
-    });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    expect(body.errors).toBeUndefined();
-    const edges = body?.data?.adminCustomerGroups?.edges ?? [];
-    // 3 seeded system groups always present
-    expect(edges.length).toBeGreaterThanOrEqual(3);
+async function groupDetail(request: APIRequestContext, id: number): Promise<any> {
+  const body = await gql(request, ADMIN_CUSTOMER_GROUP_DETAIL, { id: groupIri(id) });
+  expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+
+  return body.data.adminCustomerGroup;
+}
+
+async function codesMatching(request: APIRequestContext, code: string, isUserDefined: number): Promise<string[]> {
+  const body = await gql(request, ADMIN_CUSTOMER_GROUPS_LIST, { code, is_user_defined: isUserDefined });
+  expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+
+  return body.data.adminCustomerGroups.edges.map((edge: any) => edge.node.code);
+}
+
+test.describe('admin customer groups graphql api', () => {
+  test('list returns the seeded system groups', async ({ request }) => {
+    const body = await gql(request, ADMIN_CUSTOMER_GROUPS_LIST, { first: 50, is_user_defined: 0 });
+
+    expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+    const codes = body.data.adminCustomerGroups.edges.map((edge: any) => edge.node.code);
+    expect(codes).toEqual(expect.arrayContaining(['guest', 'general', 'wholesale']));
   });
 
-  test('list filter by is_user_defined=0 narrows', async ({ request }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUPS_LIST, {
-      is_user_defined: 0,
-    });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    expect(body.errors).toBeUndefined();
-    // isUserDefined comes back as null over GraphQL (project-wide quirk);
-    // we just assert the filter runs and returns rows.
-    expect(Array.isArray(body?.data?.adminCustomerGroups?.edges)).toBe(true);
+  test('list filter by is_user_defined separates a created group from system groups', async ({ request }) => {
+    const created = await createGroup(request);
+
+    try {
+      expect(await codesMatching(request, created.code, 1)).toEqual([created.code]);
+      expect(await codesMatching(request, created.code, 0)).toEqual([]);
+
+      const system = await gql(request, ADMIN_CUSTOMER_GROUPS_LIST, { first: 50, is_user_defined: 0 });
+      const nodes = system.data.adminCustomerGroups.edges.map((edge: any) => edge.node);
+      expect(nodes.length).toBeGreaterThan(0);
+      expect(nodes.every((node: any) => node.isUserDefined === 0)).toBe(true);
+    } finally {
+      await dropGroup(request, created._id);
+    }
   });
 
-  test('create + detail + delete round-trip', async ({ request }) => {
-    const { resp: createResp } = await createGroup(request);
-    const createBody = await createResp.json();
-    expect(createBody.errors).toBeUndefined();
-    const created = createBody?.data?.createAdminCustomerGroup?.adminCustomerGroup;
-    expect(created).toBeTruthy();
-    expect(created._id).toBeGreaterThan(0);
+  test('create detail and delete round trip', async ({ request }) => {
+    const created = await createGroup(request);
 
-    // Detail
-    const detailResp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUP_DETAIL, {
-      id: created.id,
-    });
-    const detailBody = await detailResp.json();
-    expect(detailBody.errors).toBeUndefined();
-    const detail = detailBody?.data?.adminCustomerGroup;
-    expect(detail).toBeTruthy();
+    const detail = await groupDetail(request, created._id);
     expect(detail._id).toBe(created._id);
+    expect(detail.code).toBe(created.code);
+    expect(detail.name).toBe(created.name);
+    expect(detail.isUserDefined).toBe(1);
+    expect(detail.customersCount).toBe(0);
 
-    // Delete
-    const delResp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUP_DELETE, {
-      id: created.id,
-    });
-    expect(delResp.status()).toBe(200);
+    const removal = await gql(request, DELETE_GROUP, { id: groupIri(created._id) });
+    expect(removal.errors, JSON.stringify(removal.errors)).toBeUndefined();
+    expect(removal.data.deleteAdminCustomerGroup.adminCustomerGroup._id).toBe(created._id);
+    expect(removal.data.deleteAdminCustomerGroup.adminCustomerGroup.message).toBe('Customer group deleted successfully.');
 
-    // Confirm gone
-    const missing = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUP_DETAIL, {
-      id: created.id,
-    });
-    const missingBody = await missing.json();
-    const hasErrors = Array.isArray(missingBody?.errors) && missingBody.errors.length > 0;
-    const isNull = missingBody?.data?.adminCustomerGroup === null;
-    expect(hasErrors || isNull).toBe(true);
+    expectGraphQLError(await gql(request, ADMIN_CUSTOMER_GROUP_DETAIL, { id: groupIri(created._id) }), 'adminCustomerGroup', GROUP_NOT_FOUND);
   });
 
-  test('create rejects duplicate code', async ({ request }) => {
-    const { resp: firstResp } = await createGroup(request);
-    const first = (await firstResp.json())?.data?.createAdminCustomerGroup?.adminCustomerGroup;
+  test('create rejects a duplicate code', async ({ request }) => {
+    const first = await createGroup(request);
 
-    const dupResp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUP_CREATE, {
-      code: first.code,
-      name: 'Duplicate',
-    });
-    const dupBody = await dupResp.json();
-    const hasErrors = Array.isArray(dupBody?.errors) && dupBody.errors.length > 0;
-    const isNull = dupBody?.data?.createAdminCustomerGroup?.adminCustomerGroup === null;
-    expect(hasErrors || isNull).toBe(true);
+    try {
+      const duplicate = await gql(request, ADMIN_CUSTOMER_GROUP_CREATE, { code: first.code, name: 'Duplicate' });
 
-    await dropGroup(request, first.id);
+      expectGraphQLError(duplicate, 'createAdminCustomerGroup', 'The code has already been taken.');
+      expect(await codesMatching(request, first.code, 1)).toEqual([first.code]);
+    } finally {
+      await dropGroup(request, first._id);
+    }
   });
 
-  test('create rejects invalid Code rule (kebab-case)', async ({ request }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUP_CREATE, {
-      code: '123-bad-code',
-      name: 'Bad',
-    });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const isNull = body?.data?.createAdminCustomerGroup?.adminCustomerGroup === null;
-    expect(hasErrors || isNull).toBe(true);
+  test('create rejects a code that does not start with a letter', async ({ request }) => {
+    const code = `123-bad-code-${Date.now()}`;
+    const body = await gql(request, ADMIN_CUSTOMER_GROUP_CREATE, { code, name: 'Bad' });
+
+    expectGraphQLError(body, 'createAdminCustomerGroup', 'The code must be valid.');
+    expect(await codesMatching(request, code, 1)).toEqual([]);
   });
 
-  test('update name on user-defined group', async ({ request }) => {
-    const { resp: createResp } = await createGroup(request);
-    const created = (await createResp.json())?.data?.createAdminCustomerGroup?.adminCustomerGroup;
+  test('update renames a user defined group', async ({ request }) => {
+    const created = await createGroup(request);
 
-    const newName = `Renamed ${Date.now()}`;
-    const updResp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUP_UPDATE, {
-      id: created.id,
-      code: created.code,
-      name: newName,
-    });
-    const updBody = await updResp.json();
-    expect(updBody.errors, `update errors: ${JSON.stringify(updBody.errors)}`).toBeUndefined();
+    try {
+      const newName = `Renamed ${Date.now()}`;
+      const body = await gql(request, ADMIN_CUSTOMER_GROUP_UPDATE, {
+        id: groupIri(created._id),
+        code: created.code,
+        name: newName,
+      });
 
-    await dropGroup(request, created.id);
+      expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+      expect(body.data.updateAdminCustomerGroup.adminCustomerGroup.name).toBe(newName);
+      expect(body.data.updateAdminCustomerGroup.adminCustomerGroup.code).toBe(created.code);
+      expect((await groupDetail(request, created._id)).name).toBe(newName);
+    } finally {
+      await dropGroup(request, created._id);
+    }
   });
 
-  test('SYSTEM GUARD: updating code on system group (general, id=2) is rejected', async ({
-    request,
-  }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUP_UPDATE, {
-      id: '/api/admin/customers/groups/2',
+  test('system guard refuses to change the code of the general group', async ({ request }) => {
+    const body = await gql(request, ADMIN_CUSTOMER_GROUP_UPDATE, {
+      id: groupIri(2),
       code: 'renamed_general',
       name: 'General',
     });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const isNull = body?.data?.updateAdminCustomerGroup?.adminCustomerGroup === null;
-    expect(hasErrors || isNull).toBe(true);
+
+    expectGraphQLError(body, 'updateAdminCustomerGroup', 'The code of a system customer group cannot be changed.');
+    expect((await groupDetail(request, 2)).code).toBe('general');
   });
 
-  test('SYSTEM GUARD: deleting system group (guest, id=1) is rejected', async ({
-    request,
-  }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUP_DELETE, {
-      id: '/api/admin/customers/groups/1',
-    });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    const isNull = body?.data?.deleteAdminCustomerGroup?.adminCustomerGroup === null;
-    expect(hasErrors || isNull).toBe(true);
+  test('system guard refuses to delete the guest group', async ({ request }) => {
+    const body = await gql(request, DELETE_GROUP, { id: groupIri(1) });
+
+    expectGraphQLError(body, 'deleteAdminCustomerGroup', SYSTEM_GROUP_UNDELETABLE);
+    expect((await groupDetail(request, 1)).code).toBe('guest');
   });
 
-  test('mass-delete removes user-defined and skips system', async ({ request }) => {
+  test('mass delete removes user defined groups and skips the system group', async ({ request }) => {
     const a = await createGroup(request);
     const b = await createGroup(request);
-    const aId = (await a.resp.json())?.data?.createAdminCustomerGroup?.adminCustomerGroup?._id;
-    const bId = (await b.resp.json())?.data?.createAdminCustomerGroup?.adminCustomerGroup?._id;
 
-    const mass = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUP_MASS_DELETE, {
-      indices: [aId, bId, 1 /* guest — system, should skip */],
-    });
-    expect(mass.status()).toBe(200);
+    const body = await gql(request, MASS_DELETE_GROUPS, { indices: [a._id, b._id, 1] });
 
-    // Guest must still exist.
-    const guestProbe = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUP_DETAIL, {
-      id: '/api/admin/customers/groups/1',
-    });
-    const guestBody = await guestProbe.json();
-    expect(guestBody?.data?.adminCustomerGroup?._id).toBe(1);
+    expect(body.errors, JSON.stringify(body.errors)).toBeUndefined();
+    const result = body.data.createAdminCustomerGroupMassDelete.adminCustomerGroupMassDelete;
+    expect(result.deleted).toEqual([a._id, b._id]);
+    expect(result.skipped).toEqual([{ id: 1, reason: SYSTEM_GROUP_UNDELETABLE }]);
+    expect(result.message).toBe('Customer groups deleted.');
+
+    expectGraphQLError(await gql(request, ADMIN_CUSTOMER_GROUP_DETAIL, { id: groupIri(a._id) }), 'adminCustomerGroup', GROUP_NOT_FOUND);
+    expectGraphQLError(await gql(request, ADMIN_CUSTOMER_GROUP_DETAIL, { id: groupIri(b._id) }), 'adminCustomerGroup', GROUP_NOT_FOUND);
+    expect((await groupDetail(request, 1))._id).toBe(1);
   });
 
-  test('mass-delete rejects empty indices', async ({ request }) => {
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GROUP_MASS_DELETE, {
-      indices: [],
-    });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    const hasErrors = Array.isArray(body?.errors) && body.errors.length > 0;
-    expect(hasErrors).toBe(true);
+  test('mass delete rejects empty indices', async ({ request }) => {
+    const body = await gql(request, MASS_DELETE_GROUPS, { indices: [] });
+
+    expectGraphQLError(body, 'createAdminCustomerGroupMassDelete', 'At least one customer group id is required.');
   });
 });

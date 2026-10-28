@@ -11,6 +11,135 @@ use Webkul\Sales\Models\Order;
 
 class EuWithdrawalTest extends AdminApiTestCase
 {
+    /**
+     * Test list.
+     */
+    public function test_list(): void
+    {
+        $admin = $this->createAdmin();
+        $w = $this->createWithdrawal();
+        $response = $this->adminGet($admin, '/api/admin/eu-withdrawals');
+        $response->assertOk();
+        expect(collect($response->json('data'))->firstWhere('id', $w['id']))->not->toBeNull();
+    }
+
+    /**
+     * Test list filter status.
+     */
+    public function test_list_filter_status(): void
+    {
+        $admin = $this->createAdmin();
+        $this->createWithdrawal('received');
+        $ref = $this->createWithdrawal('refunded');
+        $response = $this->adminGet($admin, '/api/admin/eu-withdrawals?status=refunded');
+        $response->assertOk();
+        $ids = collect($response->json('data'))->pluck('status')->unique()->all();
+        expect($ids)->toBe(['refunded']);
+    }
+
+    /**
+     * Test get detail.
+     */
+    public function test_get_detail(): void
+    {
+        $admin = $this->createAdmin();
+        $w = $this->createWithdrawal();
+        $response = $this->adminGet($admin, '/api/admin/eu-withdrawals/'.$w['id']);
+        $response->assertOk();
+        expect((int) $response->json('id'))->toBe($w['id']);
+        expect($response->json('status'))->toBe('received');
+        expect($response->json('customerEmail'))->toBe('w@example.com');
+    }
+
+    /**
+     * Test decline.
+     */
+    public function test_decline(): void
+    {
+        $admin = $this->createAdmin();
+        $w = $this->createWithdrawal();
+        $response = $this->adminPost($admin, '/api/admin/eu-withdrawals/'.$w['id'].'/decline', [
+            'declined_reason' => 'Outside cooling-off period.',
+        ]);
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('status'))->toBe('declined');
+        expect($response->json('declinedReason'))->toBe('Outside cooling-off period.');
+        $this->assertDatabaseHas('eu_withdrawals', [
+            'id' => $w['id'],
+            'status' => 'declined',
+        ]);
+    }
+
+    /**
+     * Test decline requires reason.
+     */
+    public function test_decline_requires_reason(): void
+    {
+        $admin = $this->createAdmin();
+        $w = $this->createWithdrawal();
+        $response = $this->adminPost($admin, '/api/admin/eu-withdrawals/'.$w['id'].'/decline', []);
+        expect($response->getStatusCode())->toBe(422);
+    }
+
+    /**
+     * Test mark refunded.
+     */
+    public function test_mark_refunded(): void
+    {
+        $admin = $this->createAdmin();
+        $w = $this->createWithdrawal('declined');
+        $response = $this->adminPost($admin, '/api/admin/eu-withdrawals/'.$w['id'].'/mark-refunded', [
+            'refund_note' => 'refund #555',
+        ]);
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('status'))->toBe('refunded');
+        expect($response->json('refundNote'))->toBe('refund #555');
+        $this->assertDatabaseHas('eu_withdrawals', [
+            'id' => $w['id'],
+            'status' => 'refunded',
+            'declined_reason' => null,
+        ]);
+    }
+
+    /**
+     * Test resend confirmation.
+     */
+    public function test_resend_confirmation(): void
+    {
+        Mail::fake();
+        $admin = $this->createAdmin();
+        $w = $this->createWithdrawal();
+        $response = $this->adminPost($admin, '/api/admin/eu-withdrawals/'.$w['id'].'/resend-confirmation', []);
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('message'))->not->toBeNull();
+        $this->assertDatabaseHas('eu_withdrawals', ['id' => $w['id']]);
+
+        $withJunkObject = $this->adminPost($admin, '/api/admin/eu-withdrawals/'.$w['id'].'/resend-confirmation', ['unexpected' => 'value']);
+        expect($withJunkObject->getStatusCode())->toBeIn([200, 201]);
+
+        $withRawString = $this->call(
+            'POST',
+            '/api/admin/eu-withdrawals/'.$w['id'].'/resend-confirmation',
+            [], [], [],
+            $this->transformHeadersToServerVars($this->adminHeaders($admin)) + ['CONTENT_TYPE' => 'application/json'],
+            '"string"'
+        );
+        expect($withRawString->getStatusCode())->toBeIn([200, 201]);
+    }
+
+    /**
+     * Test requires auth.
+     */
+    public function test_requires_auth(): void
+    {
+        $w = $this->createWithdrawal();
+        $response = $this->getJson('/api/admin/eu-withdrawals/'.$w['id']);
+        expect($response->getStatusCode())->toBeIn([401, 403]);
+    }
+
+    /**
+     * Create withdrawal.
+     */
     private function createWithdrawal(string $status = 'received'): array
     {
         $channel = Channel::first();
@@ -39,108 +168,5 @@ class EuWithdrawalTest extends AdminApiTestCase
             'id' => $id,
             'order' => $order,
         ];
-    }
-
-    public function test_list(): void
-    {
-        $admin = $this->createAdmin();
-        $w = $this->createWithdrawal();
-        $response = $this->adminGet($admin, '/api/admin/eu-withdrawals');
-        $response->assertOk();
-        expect(collect($response->json('data'))->firstWhere('id', $w['id']))->not->toBeNull();
-    }
-
-    public function test_list_filter_status(): void
-    {
-        $admin = $this->createAdmin();
-        $this->createWithdrawal('received');
-        $ref = $this->createWithdrawal('refunded');
-        $response = $this->adminGet($admin, '/api/admin/eu-withdrawals?status=refunded');
-        $response->assertOk();
-        $ids = collect($response->json('data'))->pluck('status')->unique()->all();
-        expect($ids)->toBe(['refunded']);
-    }
-
-    public function test_get_detail(): void
-    {
-        $admin = $this->createAdmin();
-        $w = $this->createWithdrawal();
-        $response = $this->adminGet($admin, '/api/admin/eu-withdrawals/'.$w['id']);
-        $response->assertOk();
-        expect((int) $response->json('id'))->toBe($w['id']);
-        expect($response->json('status'))->toBe('received');
-        expect($response->json('customerEmail'))->toBe('w@example.com');
-    }
-
-    public function test_decline(): void
-    {
-        $admin = $this->createAdmin();
-        $w = $this->createWithdrawal();
-        $response = $this->adminPost($admin, '/api/admin/eu-withdrawals/'.$w['id'].'/decline', [
-            'declined_reason' => 'Outside cooling-off period.',
-        ]);
-        expect($response->getStatusCode())->toBeIn([200, 201]);
-        expect($response->json('status'))->toBe('declined');
-        expect($response->json('declinedReason'))->toBe('Outside cooling-off period.');
-        $this->assertDatabaseHas('eu_withdrawals', [
-            'id' => $w['id'],
-            'status' => 'declined',
-        ]);
-    }
-
-    public function test_decline_requires_reason(): void
-    {
-        $admin = $this->createAdmin();
-        $w = $this->createWithdrawal();
-        $response = $this->adminPost($admin, '/api/admin/eu-withdrawals/'.$w['id'].'/decline', []);
-        expect($response->getStatusCode())->toBe(422);
-    }
-
-    public function test_mark_refunded(): void
-    {
-        $admin = $this->createAdmin();
-        $w = $this->createWithdrawal('declined');
-        $response = $this->adminPost($admin, '/api/admin/eu-withdrawals/'.$w['id'].'/mark-refunded', [
-            'refund_note' => 'refund #555',
-        ]);
-        expect($response->getStatusCode())->toBeIn([200, 201]);
-        expect($response->json('status'))->toBe('refunded');
-        expect($response->json('refundNote'))->toBe('refund #555');
-        // decline metadata cleared
-        $this->assertDatabaseHas('eu_withdrawals', [
-            'id' => $w['id'],
-            'status' => 'refunded',
-            'declined_reason' => null,
-        ]);
-    }
-
-    public function test_resend_confirmation(): void
-    {
-        Mail::fake();
-        $admin = $this->createAdmin();
-        $w = $this->createWithdrawal();
-        $response = $this->adminPost($admin, '/api/admin/eu-withdrawals/'.$w['id'].'/resend-confirmation', []);
-        expect($response->getStatusCode())->toBeIn([200, 201]);
-        expect($response->json('message'))->not->toBeNull();
-        $this->assertDatabaseHas('eu_withdrawals', ['id' => $w['id']]);
-
-        $withJunkObject = $this->adminPost($admin, '/api/admin/eu-withdrawals/'.$w['id'].'/resend-confirmation', ['unexpected' => 'value']);
-        expect($withJunkObject->getStatusCode())->toBeIn([200, 201]);
-
-        $withRawString = $this->call(
-            'POST',
-            '/api/admin/eu-withdrawals/'.$w['id'].'/resend-confirmation',
-            [], [], [],
-            $this->transformHeadersToServerVars($this->adminHeaders($admin)) + ['CONTENT_TYPE' => 'application/json'],
-            '"string"'
-        );
-        expect($withRawString->getStatusCode())->toBeIn([200, 201]);
-    }
-
-    public function test_requires_auth(): void
-    {
-        $w = $this->createWithdrawal();
-        $response = $this->getJson('/api/admin/eu-withdrawals/'.$w['id']);
-        expect($response->getStatusCode())->toBeIn([401, 403]);
     }
 }

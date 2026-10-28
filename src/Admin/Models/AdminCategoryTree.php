@@ -10,18 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCategoryTreeProvider;
 
-/**
- * Admin Catalog → Categories tree.
- *
- * REST: GET /api/admin/catalog/categories/tree
- *
- * Returns the full nested category tree. Each node carries the same scalar
- * shape as the flat listing plus `children: [...]` (empty array for leaves).
- * No envelope — the response body is a JSON array of root nodes (typically
- * one — the system root — but multi-root installs work too).
- *
- * Uses Kalnoy\Nestedset's `toTree()` for the hierarchy build.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCategoryTree',
@@ -123,28 +111,53 @@ class AdminCategoryTree
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 
+    /**
+     * The slug.
+     */
     #[ApiProperty(writable: false)]
     public ?string $slug = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(writable: false)]
     public ?int $status = null;
 
+    /**
+     * The position.
+     */
     #[ApiProperty(writable: false)]
     public ?int $position = null;
 
+    /**
+     * The parent id.
+     */
     #[ApiProperty(writable: false)]
     public ?int $parent_id = null;
 
+    /**
+     * The display mode.
+     */
     #[ApiProperty(writable: false)]
     public ?string $display_mode = null;
 
-    /** @var array<int, array<string, mixed>>|null Plain associative arrays — never nested DTOs, to avoid IRI serialization by API Platform. */
+    /**
+     * The child categories nested under this category.
+     *
+     * @var array<int, array<string, mixed>>|null Plain associative arrays — never nested DTOs, to avoid IRI serialization by API Platform.
+     */
     #[ApiProperty(writable: false)]
     public ?array $children = null;
 }

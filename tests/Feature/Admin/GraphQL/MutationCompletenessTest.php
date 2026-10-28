@@ -4,26 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
-/**
- * Mutation-response field-completeness guard.
- *
- * The read guard (FieldCompletenessTest) proves QUERY responses resolve. Mutations
- * go through a different serializer path, so this runs a representative CREATE for
- * each major resource with a valid input and an EXPLICIT full field selection on
- * the result, asserting no `errors` and that every selected field is non-null.
- * That catches the mutation-response field-resolution class (camelCase-null, the
- * delete-snapshot 500s) for the create path.
- *
- * Why explicit selections (not introspected): in the test environment the GraphQL
- * INTROSPECTION schema is shop-scoped (admin mutations execute fine, but
- * `__schema.mutationType` / `__type(Admin*)` return the shop schema), so field
- * discovery via introspection is unreliable here. Hard-coding the field list per
- * resource is reliable and makes the guard's coverage explicit.
- *
- * Transactional — every create rolls back. Serial — skips under --parallel.
- */
 class MutationCompletenessTest extends AdminApiTestCase
 {
+    /**
+     * Test create mutations resolve all result fields.
+     */
     public function test_create_mutations_resolve_all_result_fields(): void
     {
         if (getenv('LARAVEL_PARALLEL_TESTING')) {
@@ -36,9 +21,8 @@ class MutationCompletenessTest extends AdminApiTestCase
         $channelId = (int) \DB::table('channels')->value('id');
         $groupId = (int) \DB::table('customer_groups')->value('id');
         $rnd = (string) rand(10000, 99999);
-        $cur = chr(rand(65, 90)).chr(rand(65, 90)).chr(rand(65, 90)); // 3 letters for currency code
+        $cur = chr(rand(65, 90)).chr(rand(65, 90)).chr(rand(65, 90));
 
-        // wrapper => [mutation, inputType, input, resultSelection]
         $cases = [
             'adminSettingsCurrency' => ['createAdminSettingsCurrency', 'createAdminSettingsCurrencyInput',
                 [
@@ -119,7 +103,6 @@ class MutationCompletenessTest extends AdminApiTestCase
                 'urlKey pageTitle createdAt updatedAt'],
         ];
 
-        // Fields that are legitimately null on a fresh create (no value yet).
         $nullableOnCreate = ['updatedAt' => true];
 
         $failures = [];
@@ -139,11 +122,9 @@ class MutationCompletenessTest extends AdminApiTestCase
 
                 continue;
             }
-            // _id must resolve (the delete/serializer-path bugs nulled it).
             if (($node['_id'] ?? null) === null) {
                 $failures[] = "$mutation: `_id` resolved null on the result";
             }
-            // Every explicitly-selected field must resolve non-null (the camelCase-null class).
             foreach (explode(' ', trim($select)) as $field) {
                 if (isset($nullableOnCreate[$field])) {
                     continue;

@@ -8,24 +8,30 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerReturn;
 use Webkul\BagistoApi\State\Concerns\BuildsCustomerReturn;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\RMA\Repositories\RMARepository;
 
 class CustomerReturnProvider implements ProviderInterface
 {
     use BuildsCustomerReturn;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly RMARepository $rmaRepository,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -38,6 +44,9 @@ class CustomerReturnProvider implements ProviderInterface
             : $this->provideItem($customer, $uriVariables, $context);
     }
 
+    /**
+     * Provide item.
+     */
     private function provideItem(object $customer, array $uriVariables, array $context): CustomerReturn
     {
         $id = $uriVariables['id'] ?? $context['args']['id'] ?? null;
@@ -55,6 +64,9 @@ class CustomerReturnProvider implements ProviderInterface
         return $this->buildCustomerReturn($rma, true, $this->rmaRepository);
     }
 
+    /**
+     * Provide collection.
+     */
     private function provideCollection(object $customer, array $context): Paginator
     {
         $args = $context['args'] ?? [];
@@ -97,6 +109,9 @@ class CustomerReturnProvider implements ProviderInterface
         );
     }
 
+    /**
+     * Scoped query.
+     */
     private function scopedQuery(int $customerId)
     {
         return $this->rmaRepository->with(self::RETURN_RELATIONS)

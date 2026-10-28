@@ -6,12 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Marketing event — shared nested sub-resource for Marketing resources that
- * reference an event (campaigns `marketingEvent` to-one, nullable). Backed by
- * `marketing_events`; used as a BelongsTo typed object. `name`/`date` are real
- * columns.
- */
 #[ApiResource(
     shortName: 'AdminMarketingEventRef',
     operations: [],
@@ -20,17 +14,32 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminMarketingEventRef extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the marketing events.
+     *
+     * @var string
+     */
     protected $table = 'marketing_events';
 
-    /** @var bool */
+    /**
+     * Indicates the marketing event reference does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The native types the marketing event reference attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

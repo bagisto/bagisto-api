@@ -8,12 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTaxRate;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Placeholder provider for PUT / DELETE on AdminSettingsTaxRate.
- * The real lookup is in AdminSettingsTaxRateProcessor.
- */
 class AdminSettingsTaxRateWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminSettingsTaxRate
     {
         if (! AdminAuthHelper::resolveAdmin()) {

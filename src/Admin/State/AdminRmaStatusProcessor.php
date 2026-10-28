@@ -6,13 +6,13 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Admin\Dto\AdminRmaStatusCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminRmaStatusUpdateInput;
 use Webkul\BagistoApi\Admin\Models\AdminRmaStatus;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\RMA\Repositories\RMAStatusRepository;
@@ -21,11 +21,16 @@ class AdminRmaStatusProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
-        private readonly ProcessorInterface $persistProcessor,
         private readonly RMAStatusRepository $rmaStatusRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof AdminRmaStatusCreateInput) {
@@ -52,9 +57,12 @@ class AdminRmaStatusProcessor implements ProcessorInterface
             return $this->handleDelete((int) ($uriVariables['id'] ?? $data->id));
         }
 
-        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        throw new AuthorizationException(__('bagistoapi::app.admin.rma.no-permission'));
     }
 
+    /**
+     * Handle create.
+     */
     private function handleCreate(AdminRmaStatusCreateInput $input): AdminRmaStatus
     {
         $this->authorizedAdmin('sales.rma.statuses.create', 'bagistoapi::app.admin.rma.no-permission');
@@ -77,6 +85,9 @@ class AdminRmaStatusProcessor implements ProcessorInterface
         return $this->map((int) $status->id);
     }
 
+    /**
+     * Handle update.
+     */
     private function handleUpdate(int $id, AdminRmaStatusUpdateInput $input): AdminRmaStatus
     {
         $this->authorizedAdmin('sales.rma.statuses.edit', 'bagistoapi::app.admin.rma.no-permission');
@@ -103,6 +114,9 @@ class AdminRmaStatusProcessor implements ProcessorInterface
         return $this->map($id);
     }
 
+    /**
+     * Handle delete.
+     */
     private function handleDelete(int $id): AdminRmaStatus
     {
         $this->authorizedAdmin('sales.rma.statuses.delete', 'bagistoapi::app.admin.rma.no-permission');
@@ -121,7 +135,7 @@ class AdminRmaStatusProcessor implements ProcessorInterface
 
         Event::dispatch('sales.rma.rma-status.delete.before', $id);
 
-        $this->rmaStatusRepository->where('default', 0)->delete($id);
+        $this->rmaStatusRepository->delete($id);
 
         Event::dispatch('sales.rma.rma-status.delete.after', $id);
 
@@ -130,6 +144,9 @@ class AdminRmaStatusProcessor implements ProcessorInterface
         return $snapshot;
     }
 
+    /**
+     * Validate payload.
+     */
     private function validatePayload(array $data, string $titleRule): void
     {
         $validator = Validator::make($data, [
@@ -142,8 +159,11 @@ class AdminRmaStatusProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Map.
+     */
     private function map(int $id): AdminRmaStatus
     {
-        return AdminRmaStatusItemProvider::toDto(DB::table('rma_statuses')->where('id', $id)->first());
+        return AdminRmaStatusItemProvider::toDto($this->rmaStatusRepository->find($id));
     }
 }

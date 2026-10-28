@@ -67,15 +67,27 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceSendDuplicateProcessor;
 )]
 class AdminInvoiceSendDuplicate
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(writable: false)]
     public ?string $email = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

@@ -8,6 +8,9 @@ use ApiPlatform\Metadata\ApiResource;
 #[ApiResource(operations: [], graphQlOperations: [])]
 class BundleOptionProductDto
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         public ?int $id = null,
         public ?int $product_id = null,

@@ -8,43 +8,18 @@ use Webkul\Category\Models\CategoryTranslation;
 
 class CategoryTest extends RestApiTestCase
 {
+    /**
+     * The collection url.
+     */
     private string $collectionUrl = '/api/shop/categories';
 
-    private function itemUrl(int $id): string
-    {
-        return $this->collectionUrl.'/'.$id;
-    }
+    // ============================================================================
+    // GET Collection
+    // ============================================================================
 
-    private function firstCategory(): Category
-    {
-        $category = Category::query()->orderBy('id')->first();
-
-        if (! $category) {
-            $this->markTestSkipped('No categories found. seedRequiredData must run first.');
-        }
-
-        return $category;
-    }
-
-    private function createCategoryWithTranslation(array $categoryAttrs = [], array $translationAttrs = []): Category
-    {
-        $category = Category::factory()->create(array_merge([
-            'status' => 1,
-            'position' => 1,
-        ], $categoryAttrs));
-
-        CategoryTranslation::factory()->create(array_merge([
-            'category_id' => $category->id,
-            'locale' => 'en',
-            'name' => 'Test Category '.$category->id,
-            'slug' => 'test-category-'.$category->id,
-        ], $translationAttrs));
-
-        return $category->fresh();
-    }
-
-    // ── GET Collection ────────────────────────────────────────
-
+    /**
+     * Test get categories returns ok.
+     */
     public function test_get_categories_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -54,6 +29,9 @@ class CategoryTest extends RestApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test get categories returns array.
+     */
     public function test_get_categories_returns_array(): void
     {
         $this->seedRequiredData();
@@ -64,6 +42,9 @@ class CategoryTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test get categories returns non empty list.
+     */
     public function test_get_categories_returns_non_empty_list(): void
     {
         $this->seedRequiredData();
@@ -74,6 +55,9 @@ class CategoryTest extends RestApiTestCase
         expect(count($response->json()))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test categories have expected fields.
+     */
     public function test_categories_have_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -88,6 +72,9 @@ class CategoryTest extends RestApiTestCase
         expect($first)->toHaveKey('updatedAt');
     }
 
+    /**
+     * Test categories id is integer.
+     */
     public function test_categories_id_is_integer(): void
     {
         $this->seedRequiredData();
@@ -97,6 +84,9 @@ class CategoryTest extends RestApiTestCase
         expect($first['id'])->toBeInt();
     }
 
+    /**
+     * Test categories includes translation.
+     */
     public function test_categories_includes_translation(): void
     {
         $this->seedRequiredData();
@@ -108,6 +98,9 @@ class CategoryTest extends RestApiTestCase
         expect($withTranslation)->not()->toBeNull();
     }
 
+    /**
+     * Test categories translation has expected fields.
+     */
     public function test_categories_translation_has_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -122,6 +115,9 @@ class CategoryTest extends RestApiTestCase
         expect($body['translation'])->toHaveKey('slug');
     }
 
+    /**
+     * Test categories includes children.
+     */
     public function test_categories_includes_children(): void
     {
         $this->seedRequiredData();
@@ -131,8 +127,13 @@ class CategoryTest extends RestApiTestCase
         expect($first)->toHaveKey('children');
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
+    /**
+     * Test items per page limits collection size.
+     */
     public function test_items_per_page_limits_collection_size(): void
     {
         $this->seedRequiredData();
@@ -147,6 +148,9 @@ class CategoryTest extends RestApiTestCase
         expect(count($response->json()))->toBe(1);
     }
 
+    /**
+     * Test page parameter returns different results.
+     */
     public function test_page_parameter_returns_different_results(): void
     {
         $this->seedRequiredData();
@@ -166,6 +170,9 @@ class CategoryTest extends RestApiTestCase
         expect($id1)->not()->toBe($id2);
     }
 
+    /**
+     * Test page beyond total returns empty.
+     */
     public function test_page_beyond_total_returns_empty(): void
     {
         $this->seedRequiredData();
@@ -176,8 +183,13 @@ class CategoryTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
-    // ── GET /categories/{id} ──────────────────────────────────
+    // ============================================================================
+    // GET /categories/{id}
+    // ============================================================================
 
+    /**
+     * Test get single category returns ok.
+     */
     public function test_get_single_category_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -188,6 +200,9 @@ class CategoryTest extends RestApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test get single category returns correct id.
+     */
     public function test_get_single_category_returns_correct_id(): void
     {
         $this->seedRequiredData();
@@ -198,6 +213,9 @@ class CategoryTest extends RestApiTestCase
         expect($body['id'])->toBe($id);
     }
 
+    /**
+     * Test get single category returns expected fields.
+     */
     public function test_get_single_category_returns_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -215,6 +233,9 @@ class CategoryTest extends RestApiTestCase
         expect($body)->toHaveKey('updatedAt');
     }
 
+    /**
+     * Test get single category includes translation.
+     */
     public function test_get_single_category_includes_translation(): void
     {
         $this->seedRequiredData();
@@ -231,6 +252,9 @@ class CategoryTest extends RestApiTestCase
         expect($body['translation']['slug'])->toBe('translated-category');
     }
 
+    /**
+     * Test get single category includes children.
+     */
     public function test_get_single_category_includes_children(): void
     {
         $this->seedRequiredData();
@@ -246,6 +270,9 @@ class CategoryTest extends RestApiTestCase
         expect($body['children'])->toBeArray();
     }
 
+    /**
+     * Test get nonexistent category returns error.
+     */
     public function test_get_nonexistent_category_returns_error(): void
     {
         $this->seedRequiredData();
@@ -255,8 +282,13 @@ class CategoryTest extends RestApiTestCase
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
     }
 
-    // ── Filters: parent_id / parentId / status ────────────────
+    // ============================================================================
+    // Filters: parent_id / ParentId / Status
+    // ============================================================================
 
+    /**
+     * Test parent id filter returns only direct children.
+     */
     public function test_parent_id_filter_returns_only_direct_children(): void
     {
         $this->seedRequiredData();
@@ -273,6 +305,9 @@ class CategoryTest extends RestApiTestCase
         expect($ids)->not()->toContain($parent->id);
     }
 
+    /**
+     * Test parent id alias works same as parent id.
+     */
     public function test_parent_id_alias_works_same_as_parent_id(): void
     {
         $this->seedRequiredData();
@@ -285,6 +320,9 @@ class CategoryTest extends RestApiTestCase
         expect(collect($snake)->pluck('id')->all())->toBe(collect($camel)->pluck('id')->all());
     }
 
+    /**
+     * Test parent id with no children returns empty.
+     */
     public function test_parent_id_with_no_children_returns_empty(): void
     {
         $this->seedRequiredData();
@@ -295,6 +333,9 @@ class CategoryTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
+    /**
+     * Test collection excludes inactive categories by default.
+     */
     public function test_collection_excludes_inactive_categories_by_default(): void
     {
         $this->seedRequiredData();
@@ -314,6 +355,9 @@ class CategoryTest extends RestApiTestCase
         expect($ids)->not()->toContain($inactive->id);
     }
 
+    /**
+     * Test parent id combines with per page.
+     */
     public function test_parent_id_combines_with_per_page(): void
     {
         $this->seedRequiredData();
@@ -329,20 +373,12 @@ class CategoryTest extends RestApiTestCase
 
     /**
      * Regression — Bug 1/2 (e2e wave 2026-05-25):
-     * Categories whose translated `slug` is NULL caused
-     * core Category::getUrlAttribute() to return an UrlGenerator object
-     * (because Laravel's url(null) returns the helper, not a string).
-     * Symfony Serializer then walked into Request::getSession() and threw
-     * SessionNotFoundException, surfacing as HTTP 400 "There is currently
-     * no session available." on /api/shop/categories and HTTP 500 on
-     * /api/shop/categories/{id}. The package now overrides url() to a
-     * safe string in Webkul\BagistoApi\Models\Category::getUrlAttribute().
+     * Categories whose translated `slug` is NULL caused.
      */
     public function test_collection_handles_categories_with_null_slug(): void
     {
         $this->seedRequiredData();
 
-        // Category row created without a matching translation row → null slug.
         Category::factory()->create([
             'status' => 1,
             'position' => 1,
@@ -360,6 +396,9 @@ class CategoryTest extends RestApiTestCase
         }
     }
 
+    /**
+     * Test detail handles category with null slug.
+     */
     public function test_detail_handles_category_with_null_slug(): void
     {
         $this->seedRequiredData();
@@ -373,5 +412,47 @@ class CategoryTest extends RestApiTestCase
 
         $response->assertOk();
         expect($response->json('url'))->toBeString();
+    }
+
+    /**
+     * Item url.
+     */
+    private function itemUrl(int $id): string
+    {
+        return $this->collectionUrl.'/'.$id;
+    }
+
+    /**
+     * First category.
+     */
+    private function firstCategory(): Category
+    {
+        $category = Category::query()->orderBy('id')->first();
+
+        if (! $category) {
+            $this->markTestSkipped('No categories found. seedRequiredData must run first.');
+        }
+
+        return $category;
+    }
+
+    /**
+     * Create category with translation.
+     */
+    private function createCategoryWithTranslation(array $categoryAttrs = [], array $translationAttrs = []): Category
+    {
+        $category = Category::factory()->create(array_merge([
+            'status' => 1,
+            'position' => 1,
+        ], $categoryAttrs));
+
+        CategoryTranslation::factory()->create(array_merge([
+            'category_id' => $category->id,
+            'locale' => 'en',
+            'name' => 'Test Category '.$category->id,
+            'slug' => 'test-category-'.$category->id,
+        ], $translationAttrs));
+
+        return $category->fresh();
     }
 }

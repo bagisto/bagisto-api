@@ -10,8 +10,14 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
 
 class AdminCustomerItemProvider extends AbstractAdminItemProvider
 {
+    /**
+     * The context.
+     */
     protected array $context = [];
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         $this->context = $context;
@@ -19,16 +25,9 @@ class AdminCustomerItemProvider extends AbstractAdminItemProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
-    protected function getNotFoundLangKey(): string
-    {
-        return 'bagistoapi::app.admin.customer.not-found';
-    }
-
-    protected function findEntity(int $id): ?object
-    {
-        return AdminCustomer::with('group')->find($id);
-    }
-
+    /**
+     * Map to dto.
+     */
     public function mapToDto(object $entity): object
     {
         if (! empty($this->context['graphql_operation_name'])) {
@@ -38,11 +37,33 @@ class AdminCustomerItemProvider extends AbstractAdminItemProvider
         return $this->toDetailDto($entity);
     }
 
+    /**
+     * Map for processor.
+     */
     public function mapForProcessor(AdminCustomer $customer, bool $isGraphQL): object
     {
         return $isGraphQL ? $customer : $this->toDetailDto($customer);
     }
 
+    /**
+     * Get not found lang key.
+     */
+    protected function getNotFoundLangKey(): string
+    {
+        return 'bagistoapi::app.admin.customer.not-found';
+    }
+
+    /**
+     * Find entity.
+     */
+    protected function findEntity(int $id): ?object
+    {
+        return AdminCustomer::with('group')->find($id);
+    }
+
+    /**
+     * To detail dto.
+     */
     protected function toDetailDto(AdminCustomer $customer): AdminCustomerDetailDto
     {
         $dto = new AdminCustomerDetailDto;
@@ -69,6 +90,9 @@ class AdminCustomerItemProvider extends AbstractAdminItemProvider
         return $dto;
     }
 
+    /**
+     * Map group.
+     */
     protected function mapGroup(AdminCustomer $customer): ?array
     {
         if ($customer->customer_group_id === null) {
@@ -88,6 +112,9 @@ class AdminCustomerItemProvider extends AbstractAdminItemProvider
         ];
     }
 
+    /**
+     * Total addresses.
+     */
     protected function totalAddresses(AdminCustomer $customer): int
     {
         return (int) \DB::table('addresses')
@@ -96,11 +123,17 @@ class AdminCustomerItemProvider extends AbstractAdminItemProvider
             ->count();
     }
 
+    /**
+     * Total orders.
+     */
     protected function totalOrders(AdminCustomer $customer): int
     {
         return (int) \DB::table('orders')->where('customer_id', $customer->id)->count();
     }
 
+    /**
+     * Total amount spent.
+     */
     protected function totalAmountSpent(AdminCustomer $customer): float
     {
         return (float) \DB::table('orders')

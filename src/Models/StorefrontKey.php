@@ -10,17 +10,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Webkul\BagistoApi\Services\ApiKeyService;
 
-/**
- * StorefrontKey Model
- *
- * Manages API keys for storefront/shop APIs authentication.
- * Features:
- * - Key generation and validation
- * - Expiration tracking and enforcement
- * - Key rotation with deprecation period
- * - Usage tracking (last used timestamp)
- * - Soft deletes for audit trail
- */
 class StorefrontKey extends Model
 {
     use SoftDeletes;
@@ -57,23 +46,6 @@ class StorefrontKey extends Model
     ];
 
     /**
-     * Drop the cached validation whenever a key changes, so a deactivated,
-     * expired or deleted key stops working immediately.
-     */
-    protected static function booted(): void
-    {
-        $forget = function (self $storefrontKey) {
-            foreach (array_filter([$storefrontKey->key, $storefrontKey->getOriginal('key')]) as $value) {
-                ApiKeyService::forgetCachedKey($storefrontKey->key_type ?? ApiKeyService::KEY_TYPE_SHOP, $value);
-            }
-        };
-
-        static::saved($forget);
-        static::deleted($forget);
-        static::restored($forget);
-    }
-
-    /**
      * Generate a new unique API key with proper prefix.
      */
     public static function generateKey(): string
@@ -84,7 +56,7 @@ class StorefrontKey extends Model
     }
 
     /**
-     * Check if key is expired
+     * Check if key is expired.
      */
     public function isExpired(): bool
     {
@@ -93,7 +65,7 @@ class StorefrontKey extends Model
 
     /**
      * Check if key is in deprecation period (deprecated but still valid)
-     * Used during key rotation transition period
+     * Used during key rotation transition period.
      */
     public function isDeprecated(): bool
     {
@@ -101,7 +73,7 @@ class StorefrontKey extends Model
     }
 
     /**
-     * Check if key is completely active and valid
+     * Check if key is completely active and valid.
      */
     public function isValid(): bool
     {
@@ -109,7 +81,7 @@ class StorefrontKey extends Model
     }
 
     /**
-     * Check if key is still usable (includes deprecated keys)
+     * Check if key is still usable (includes deprecated keys).
      */
     public function isUsable(): bool
     {
@@ -117,7 +89,7 @@ class StorefrontKey extends Model
     }
 
     /**
-     * Update the last used timestamp
+     * Update the last used timestamp.
      */
     public function recordUsage(): void
     {
@@ -125,7 +97,7 @@ class StorefrontKey extends Model
     }
 
     /**
-     * Check if key was recently used (within last hour)
+     * Check if key was recently used (within last hour).
      */
     public function wasRecentlyUsed(): bool
     {
@@ -133,7 +105,7 @@ class StorefrontKey extends Model
     }
 
     /**
-     * Deactivate the key immediately
+     * Deactivate the key immediately.
      *
      * @param  string  $reason  Optional reason for deactivation
      */
@@ -141,18 +113,16 @@ class StorefrontKey extends Model
     {
         $this->update(['is_active' => false]);
 
-        // Log the deactivation
         \Log::info("API Key deactivated: {$this->name} (ID: {$this->id}). Reason: {$reason}");
     }
 
     /**
-     * Rotate the key by creating a new one and marking this as deprecated
+     * Rotate the key by creating a new one and marking this as deprecated.
      *
      * @return StorefrontKey The new key
      */
     public function rotate(): self
     {
-        // Create new key with same properties
         $newKey = self::create([
             'name' => $this->name.' (rotated '.now()->format('Y-m-d H:i').')',
             'key' => self::generateKey(),
@@ -164,20 +134,18 @@ class StorefrontKey extends Model
             'rotated_from_id' => $this->id,
         ]);
 
-        // Set deprecation date for old key (allow transition period)
         $transitionDays = config('api-platform.key_rotation_policy.transition_days', 7);
         $this->update([
             'deprecation_date' => now()->addDays($transitionDays),
         ]);
 
-        // Log the rotation
         \Log::info("API Key rotated: {$this->name} (ID: {$this->id}). New key ID: {$newKey->id}");
 
         return $newKey;
     }
 
     /**
-     * Scope query to only active keys
+     * Scope query to only active keys.
      *
      * @param  Builder  $query
      * @return Builder
@@ -189,7 +157,7 @@ class StorefrontKey extends Model
     }
 
     /**
-     * Scope query to only valid (non-expired, active) keys
+     * Scope query to only valid (non-expired, active) keys.
      *
      * @param  Builder  $query
      * @return Builder
@@ -205,7 +173,7 @@ class StorefrontKey extends Model
     }
 
     /**
-     * Scope query to only expired keys
+     * Scope query to only expired keys.
      *
      * @param  Builder  $query
      * @return Builder
@@ -217,7 +185,7 @@ class StorefrontKey extends Model
     }
 
     /**
-     * Scope query to only deprecated keys (in transition period)
+     * Scope query to only deprecated keys (in transition period).
      *
      * @param  Builder  $query
      * @return Builder
@@ -234,7 +202,7 @@ class StorefrontKey extends Model
 
     /**
      * Validate and retrieve a storefront key by key string
-     * Checks expiration, activity status, and IP restrictions
+     * Checks expiration, activity status, and IP restrictions.
      */
     public static function validateKey(string $key, ?string $ipAddress = null): ?self
     {
@@ -246,7 +214,6 @@ class StorefrontKey extends Model
             return null;
         }
 
-        // Check IP whitelist if configured
         if (
             $storefront->allowed_ips
             && is_array($storefront->allowed_ips)
@@ -256,14 +223,13 @@ class StorefrontKey extends Model
             }
         }
 
-        // Record usage
         $storefront->recordUsage();
 
         return $storefront;
     }
 
     /**
-     * Relation: Get the key this was rotated from
+     * Relation: Get the key this was rotated from.
      *
      * @return BelongsTo
      */
@@ -273,12 +239,29 @@ class StorefrontKey extends Model
     }
 
     /**
-     * Relation: Get all keys rotated from this key
+     * Relation: Get all keys rotated from this key.
      *
      * @return HasMany
      */
     public function rotatedKeys()
     {
         return $this->hasMany(self::class, 'rotated_from_id');
+    }
+
+    /**
+     * Drop the cached validation whenever a key changes, so a deactivated,
+     * expired or deleted key stops working immediately.
+     */
+    protected static function booted(): void
+    {
+        $forget = function (self $storefrontKey) {
+            foreach (array_filter([$storefrontKey->key, $storefrontKey->getOriginal('key')]) as $value) {
+                ApiKeyService::forgetCachedKey($storefrontKey->key_type ?? ApiKeyService::KEY_TYPE_SHOP, $value);
+            }
+        };
+
+        static::saved($forget);
+        static::deleted($forget);
+        static::restored($forget);
     }
 }

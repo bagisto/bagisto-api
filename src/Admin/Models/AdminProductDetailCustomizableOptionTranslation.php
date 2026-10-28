@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/** Customizable-option translation — nested in the customizableOptions connection. */
 #[ApiResource(
     shortName: 'AdminProductDetailCustomizableOptionTranslation',
     operations: [],
@@ -15,12 +14,23 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminProductDetailCustomizableOptionTranslation extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the customizable option translations.
+     *
+     * @var string
+     */
     protected $table = 'product_customizable_option_translations';
 
-    /** @var array */
+    /**
+     * The native types the customizable option translation attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = ['id' => 'int'];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

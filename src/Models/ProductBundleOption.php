@@ -57,8 +57,14 @@ use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
         ),
     ],
     graphQlOperations: [
-        new QueryCollection(provider: CursorAwareCollectionProvider::class),
-        new Query(resolver: BaseQueryItemResolver::class),
+        new QueryCollection(
+            provider: CursorAwareCollectionProvider::class,
+            description: 'Every bundle option of every bundle product, ordered by ID; read one product\'s options through its `bundleOptions` field instead. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
+        ),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One bundle option. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 #[ApiResource(
@@ -113,12 +119,15 @@ class ProductBundleOption extends BaseProductBundleOption
     use ServesLoadedTranslation;
 
     /**
-     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
-     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     * The required flag is cast so the value is typed identically on every database engine.
      */
-    protected $casts = [];
+    protected $casts = [
+        'is_required' => 'boolean',
+    ];
 
     /**
+     * The relations always eager loaded with the bundle option.
+     *
      * @var list<string>
      */
     protected $with = ['translations'];

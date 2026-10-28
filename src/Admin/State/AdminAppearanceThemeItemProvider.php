@@ -14,11 +14,17 @@ class AdminAppearanceThemeItemProvider implements ProviderInterface
     use ChecksAdminPermission;
     use MapsAppearanceTheme;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected ThemeCatalog $themeCatalog,
         protected AppearanceScopeGuard $scope,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $this->authorizedAdmin('appearance.themes', 'bagistoapi::app.admin.appearance.no-permission');

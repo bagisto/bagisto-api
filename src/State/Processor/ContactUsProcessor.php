@@ -11,15 +11,10 @@ use Webkul\BagistoApi\Dto\ContactUsOutput;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Shop\Mail\ContactUs;
 
-/**
- * Processor for Contact Us form submissions
- *
- * Validates input and queues the contact email to the store admin.
- */
 class ContactUsProcessor implements ProcessorInterface
 {
     /**
-     * Process the Contact Us form submission
+     * Process the Contact Us form submission.
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): object
     {
@@ -59,6 +54,9 @@ class ContactUsProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Output.
+     */
     private function output(bool $success, string $message): ContactUsOutput
     {
         $output = new ContactUsOutput;

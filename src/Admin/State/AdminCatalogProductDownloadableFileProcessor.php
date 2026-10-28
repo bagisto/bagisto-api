@@ -20,8 +20,14 @@ class AdminCatalogProductDownloadableFileProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * The max bytes constant.
+     */
     protected const MAX_BYTES = 128 * 1024 * 1024;
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -44,6 +50,9 @@ class AdminCatalogProductDownloadableFileProcessor implements ProcessorInterface
         return $this->handleUpload($productId, $isSample);
     }
 
+    /**
+     * Handle upload.
+     */
     protected function handleUpload(int $productId, bool $isSample): JsonResponse
     {
         $file = request()->file('file');
@@ -86,6 +95,9 @@ class AdminCatalogProductDownloadableFileProcessor implements ProcessorInterface
         ], 201);
     }
 
+    /**
+     * Safe url.
+     */
     protected function safeUrl(string $path): ?string
     {
         try {

@@ -8,11 +8,11 @@ use Webkul\Customer\Models\CustomerAddress;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * GraphQL coverage for the customer-addresses sub-resource.
- */
 class CustomerAddressTest extends AdminApiTestCase
 {
+    /**
+     * Test query returns customer addresses.
+     */
     public function test_query_returns_customer_addresses(): void
     {
         $customerId = Customer::whereHas('addresses')->value('id');
@@ -40,6 +40,43 @@ class CustomerAddressTest extends AdminApiTestCase
         expect(is_array($data) || is_array($errors))->toBeTrue();
     }
 
+    /**
+     * The address list and the single address resolve their id as the nested address IRI.
+     */
+    public function test_query_resolves_the_address_iri(): void
+    {
+        [$customer, $first] = $this->aCustomerWithTwoAddresses();
+
+        $admin = $this->createAdmin();
+        $iri = '/api/admin/customers/'.$customer->id.'/addresses/'.$first->id;
+
+        $list = $this->adminGraphQL(
+            'query addresses($customerId: Int!) { adminCustomerAddresses(customerId: $customerId) { edges { node { id _id } } } }',
+            ['customerId' => $customer->id],
+            $admin
+        );
+
+        $list->assertOk();
+
+        expect($list->json('errors'))->toBeNull()
+            ->and(array_column(array_column($list->json('data.adminCustomerAddresses.edges'), 'node'), 'id'))->toContain($iri);
+
+        $item = $this->adminGraphQL(
+            'query address($customerId: Int!, $id: ID!) { adminCustomerAddress(customerId: $customerId, id: $id) { id _id } }',
+            ['customerId' => $customer->id, 'id' => $iri],
+            $admin
+        );
+
+        $item->assertOk();
+
+        expect($item->json('errors'))->toBeNull()
+            ->and($item->json('data.adminCustomerAddress.id'))->toBe($iri)
+            ->and((int) $item->json('data.adminCustomerAddress._id'))->toBe($first->id);
+    }
+
+    /**
+     * Test query requires authentication.
+     */
     public function test_query_requires_authentication(): void
     {
         $query = <<<'GQL'
@@ -127,7 +164,7 @@ class CustomerAddressTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, ['input' => [
             'id' => '/api/admin/customers/'.$customer->id.'/addresses/'.$second->id,
             'customerId' => $customer->id,
-        ]], $admin, $this->adminTokenSameAsWeb($admin));
+        ]], $admin, $this->adminAccessToken($admin));
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.customer.no-permission'));
         expect((int) CustomerAddress::find($first->id)->default_address)->toBe(1);
@@ -202,7 +239,7 @@ class CustomerAddressTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, ['input' => [
             'id' => '/api/admin/customers/'.$customer->id.'/addresses/'.$second->id,
-        ]], $admin, $this->adminTokenSameAsWeb($admin));
+        ]], $admin, $this->adminAccessToken($admin));
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.customer.no-permission'));
         $this->assertDatabaseHas('addresses', ['id' => $second->id]);

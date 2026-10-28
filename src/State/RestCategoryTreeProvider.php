@@ -6,22 +6,20 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Models\Category;
 
-/**
- * Provider for fetching category tree structure for REST API
- *
- * This provider handles the /api/shop/categories/tree endpoint and supports:
- * - parentId query parameter to filter by parent category
- * - depth query parameter to control how deep the tree goes (default: 4)
- * - Returns hierarchical category structure with translations
- */
 class RestCategoryTreeProvider implements ProviderInterface
 {
+    /**
+     * The max depth constant.
+     */
     private const MAX_DEPTH = 4;
 
+    /**
+     * The depth limit constant.
+     */
     private const DEPTH_LIMIT = 6;
 
     /**
-     * Provide category tree data from REST API requests
+     * Provide category tree data from REST API requests.
      */
     public function provide(
         Operation $operation,
@@ -59,7 +57,7 @@ class RestCategoryTreeProvider implements ProviderInterface
     }
 
     /**
-     * Attach children recursively to each category up to max depth
+     * Attach children recursively to each category up to max depth.
      */
     private function attachChildrenRecursive($categories, int $currentDepth = 0, int $maxDepth = self::MAX_DEPTH)
     {
@@ -78,7 +76,6 @@ class RestCategoryTreeProvider implements ProviderInterface
                 $currentDepth < $maxDepth - 1
                 && $children->count() > 0
             ) {
-                // Attach nested children recursively
                 $category->setRelation('children', $this->attachChildrenRecursive($children, $currentDepth + 1, $maxDepth));
             } else {
                 $category->setRelation('children', collect([]));

@@ -187,6 +187,9 @@ class AdminBooking
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The sample constant.
+     */
     private const SAMPLE = [
         'id' => 1,
         'orderId' => 8,
@@ -223,6 +226,9 @@ class AdminBooking
         'createdAt' => '2026-05-20 10:00:00',
     ];
 
+    /**
+     * The sample detail constant.
+     */
     private const SAMPLE_DETAIL = [
         'id' => 1,
         'orderId' => 8,
@@ -280,56 +286,134 @@ class AdminBooking
         'createdAt' => '2026-05-20 10:00:00',
     ];
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The order id.
+     */
     public ?int $order_id = null;
 
+    /**
+     * The order increment id.
+     */
     public ?string $order_increment_id = null;
 
+    /**
+     * The order item id.
+     */
     public ?int $order_item_id = null;
 
+    /**
+     * The product id.
+     */
     public ?int $product_id = null;
 
+    /**
+     * The product sku.
+     */
     public ?string $product_sku = null;
 
+    /**
+     * The product name.
+     */
     public ?string $product_name = null;
 
+    /**
+     * The booking type.
+     */
     public ?string $booking_type = null;
 
+    /**
+     * The qty.
+     */
     public ?int $qty = null;
 
+    /**
+     * The from.
+     */
     public ?int $from = null;
 
+    /**
+     * The to.
+     */
     public ?int $to = null;
 
+    /**
+     * The from formatted.
+     */
     public ?string $from_formatted = null;
 
+    /**
+     * The to formatted.
+     */
     public ?string $to_formatted = null;
 
+    /**
+     * The booking product event ticket id.
+     */
     public ?int $booking_product_event_ticket_id = null;
 
+    /**
+     * The order.
+     */
     public ?array $order = null;
 
+    /**
+     * The order item.
+     */
     public ?array $order_item = null;
 
+    /**
+     * The payment method.
+     */
     public ?string $payment_method = null;
 
+    /**
+     * The payment title.
+     */
     public ?string $payment_title = null;
 
+    /**
+     * The shipping method.
+     */
     public ?string $shipping_method = null;
 
+    /**
+     * The shipping title.
+     */
     public ?string $shipping_title = null;
 
+    /**
+     * The billing address.
+     */
     public ?array $billing_address = null;
 
+    /**
+     * The shipping address.
+     */
     public ?array $shipping_address = null;
 
+    /**
+     * The invoices.
+     */
     public ?array $invoices = null;
 
+    /**
+     * The shipments.
+     */
     public ?array $shipments = null;
 
+    /**
+     * The refunds.
+     */
     public ?array $refunds = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 }

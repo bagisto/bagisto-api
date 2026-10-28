@@ -8,6 +8,9 @@ use Webkul\EUWithdrawal\Models\Withdrawal;
 
 trait BuildsEuWithdrawal
 {
+    /**
+     * Fill eu withdrawal.
+     */
     private function fillEuWithdrawal(object $dto, Withdrawal $withdrawal): object
     {
         $dto->id = $withdrawal->id;
@@ -25,9 +28,11 @@ trait BuildsEuWithdrawal
         return $dto;
     }
 
+    /**
+     * Build eu withdrawal.
+     */
     private function buildEuWithdrawal(Withdrawal $withdrawal): EuWithdrawal
     {
-        /** @var EuWithdrawal $dto */
         $dto = $this->fillEuWithdrawal(new EuWithdrawal, $withdrawal);
 
         $dto->updated_at = $withdrawal->updated_at?->toIso8601String();
@@ -39,9 +44,11 @@ trait BuildsEuWithdrawal
         return $dto;
     }
 
+    /**
+     * Build guest eu withdrawal.
+     */
     private function buildGuestEuWithdrawal(Withdrawal $withdrawal): GuestEuWithdrawal
     {
-        /** @var GuestEuWithdrawal $dto */
         return $this->fillEuWithdrawal(new GuestEuWithdrawal, $withdrawal);
     }
 }

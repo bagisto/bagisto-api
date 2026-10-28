@@ -8,16 +8,6 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Checkout\Models\Cart;
 
-/**
- * Shared auth + ownership check for the /api/admin/carts/* endpoints.
- *
- * Validates that:
- *   1) a valid admin token is on the request
- *   2) the cart exists
- *   3) the cart is a draft cart (`is_active = 0`) — admin-built carts only.
- *      Active storefront carts (is_active = 1) are the customer's own session
- *      cart and must not be mutated through the admin API.
- */
 class AdminCartGuard
 {
     /**

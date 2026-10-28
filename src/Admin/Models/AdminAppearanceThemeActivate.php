@@ -50,7 +50,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeActivateProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(
+                    '201' => new Model\Response(
                         description: 'Theme activated.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -83,13 +83,21 @@ class AdminAppearanceThemeActivate
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $code = null;
 
     /**
+     * The channels the theme was activated on, each with its id and name.
+     *
      * @var array<int, array<string, mixed>>
      */
     public array $activated_on = [];
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 }

@@ -4,32 +4,26 @@ namespace Webkul\BagistoApi\Http\Controllers;
 
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Core\Traits\PDFHandler;
 use Webkul\Customer\Models\Customer;
 use Webkul\Sales\Models\Invoice;
 
-/**
- * Invoice PDF Download Controller
- *
- * Generates and streams invoice PDF for authenticated customers.
- * Scopes access through order → customer relationship.
- */
 class InvoicePdfController extends Controller
 {
     use PDFHandler;
 
     /**
-     * Download invoice as PDF
+     * Download invoice as PDF.
      *
      * @param  int  $id  Invoice ID
      * @return Response
      */
     public function __invoke(int $id)
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

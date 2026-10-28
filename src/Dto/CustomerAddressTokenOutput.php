@@ -5,10 +5,6 @@ namespace Webkul\BagistoApi\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * Output of the token address queries. Properties are snake_case so the multi-word
- * fields resolve over a GraphQL query; they are exposed in camelCase.
- */
 class CustomerAddressTokenOutput
 {
     /**

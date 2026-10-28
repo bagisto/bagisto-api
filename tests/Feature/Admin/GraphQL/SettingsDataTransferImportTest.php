@@ -10,28 +10,6 @@ use Webkul\User\Models\Role;
 class SettingsDataTransferImportTest extends AdminApiTestCase
 {
     /**
-     * Insert an import row with sensible defaults and return its id.
-     */
-    protected function insertImport(array $overrides = []): int
-    {
-        return (int) \DB::table('imports')->insertGetId(array_merge([
-            'state' => 'pending',
-            'process_in_queue' => 1,
-            'type' => 'product',
-            'action' => 'append',
-            'validation_strategy' => 'stop-on-errors',
-            'allowed_errors' => 0,
-            'processed_rows_count' => 0,
-            'invalid_rows_count' => 0,
-            'errors_count' => 0,
-            'field_separator' => ',',
-            'file_path' => 'imports/sample-'.uniqid().'.csv',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $overrides));
-    }
-
-    /**
      * The listing query returns the imports as edges.
      */
     public function test_listing_returns_edges(): void
@@ -256,103 +234,6 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     }
 
     /**
-     * Insert a batch of the import in the given state and return its id.
-     */
-    protected function insertBatch(int $importId, string $state, array $rows = []): int
-    {
-        return (int) \DB::table('import_batches')->insertGetId([
-            'import_id' => $importId,
-            'state' => $state,
-            'data' => json_encode($rows),
-
-            'summary' => json_encode([
-                'created' => 1,
-                'updated' => 0,
-                'deleted' => 0,
-            ]),
-        ]);
-    }
-
-    /**
-     * Insert a product import in the given state with one processed row of a real product in a batch of the batch state.
-     */
-    protected function insertProcessableImport(string $state, string $batchState): array
-    {
-        $product = $this->createBaseProduct('simple', [
-            'sku' => 'IMPORT-GQL-'.uniqid(),
-        ]);
-
-        $id = $this->insertImport([
-            'type' => 'products',
-            'state' => $state,
-            'process_in_queue' => 0,
-            'processed_rows_count' => 1,
-        ]);
-
-        return [$id, $this->insertBatch($id, $batchState, [[
-            'sku' => $product->sku,
-            'type' => 'simple',
-        ]])];
-    }
-
-    /**
-     * Create an admin whose role holds only the given permissions, with a role-bound token.
-     */
-    protected function customRoleAdmin(array $permissions): array
-    {
-        $this->seedRequiredData();
-
-        $role = Role::create([
-            'name' => 'Import role '.uniqid(),
-            'description' => 'import-test',
-            'permission_type' => 'custom',
-            'permissions' => $permissions,
-        ]);
-
-        $admin = $this->createAdmin(['role_id' => $role->id]);
-
-        return [$admin, $this->adminTokenSameAsWeb($admin)];
-    }
-
-    /**
-     * Create an admin that may edit imports but not run them, with a role-bound token.
-     */
-    protected function adminWithoutImportPermission(): array
-    {
-        return $this->customRoleAdmin([
-            'settings',
-            'settings.data_transfer',
-            'settings.data_transfer.imports',
-            'settings.data_transfer.imports.edit',
-        ]);
-    }
-
-    /**
-     * Run one of the import action mutations (cancel, link, index) against the given import.
-     */
-    protected function runImportAction(string $action, int $importId, ?Admin $admin = null, ?string $token = null): TestResponse
-    {
-        $operation = $action.'AdminSettingsDataTransferImport'.ucfirst($action);
-        $field = 'adminSettingsDataTransferImport'.ucfirst($action);
-        $selection = $action === 'cancel' ? '_id state success message' : '_id state success stats';
-
-        $mutation = <<<GQL
-            mutation(\$input: {$operation}Input!) {
-              {$operation}(input: \$input) {
-                {$field} { {$selection} }
-              }
-            }
-        GQL;
-
-        return $this->adminGraphQL($mutation, [
-            'input' => [
-                'id' => '/api/admin/settings/data-transfer/imports/'.$importId.'/'.$action,
-                'importId' => $importId,
-            ],
-        ], $admin, $token);
-    }
-
-    /**
      * The cancel mutation moves a pending import to the cancelled state.
      */
     public function test_cancel_mutation_cancels_a_pending_import(): void
@@ -435,10 +316,32 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
 
         expect($node['_id'])->toBe($id);
         expect($node['success'])->toBeTrue();
-        expect($node['stats'])->toBeArray();
+        expect($node['stats']['batches'])->toMatchArray([
+            'total' => 1,
+            'completed' => 1,
+            'remaining' => 0,
+        ]);
+        expect($node['stats']['progress'])->toEqual(100);
 
         expect(\DB::table('import_batches')->where('id', $batchId)->value('state'))->toBe('linked');
         expect(\DB::table('imports')->where('id', $id)->value('state'))->toBe('linking');
+    }
+
+    /**
+     * Linking an import already in linking reports the batch it just linked as completed.
+     */
+    public function test_link_mutation_reports_fresh_stats_for_an_import_already_linking(): void
+    {
+        [$id] = $this->insertProcessableImport('linking', 'processed');
+
+        $response = $this->runImportAction('link', $id, $this->createAdmin());
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.linkAdminSettingsDataTransferImportLink.adminSettingsDataTransferImportLink.stats.batches'))->toMatchArray([
+            'total' => 1,
+            'completed' => 1,
+            'remaining' => 0,
+        ]);
     }
 
     /**
@@ -501,10 +404,32 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
 
         expect($node['_id'])->toBe($id);
         expect($node['success'])->toBeTrue();
-        expect($node['stats'])->toBeArray();
+        expect($node['stats']['batches'])->toMatchArray([
+            'total' => 1,
+            'completed' => 1,
+            'remaining' => 0,
+        ]);
+        expect($node['stats']['progress'])->toEqual(100);
 
         expect(\DB::table('import_batches')->where('id', $batchId)->value('state'))->toBe('indexed');
         expect(\DB::table('imports')->where('id', $id)->value('state'))->toBe('indexing');
+    }
+
+    /**
+     * Indexing an import already in indexing reports the batch it just indexed as completed.
+     */
+    public function test_index_mutation_reports_fresh_stats_for_an_import_already_indexing(): void
+    {
+        [$id] = $this->insertProcessableImport('indexing', 'linked');
+
+        $response = $this->runImportAction('index', $id, $this->createAdmin());
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.indexAdminSettingsDataTransferImportIndex.adminSettingsDataTransferImportIndex.stats.batches'))->toMatchArray([
+            'total' => 1,
+            'completed' => 1,
+            'remaining' => 0,
+        ]);
     }
 
     /**
@@ -547,5 +472,124 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.settings.data-transfer.import.no-permission'));
         expect(\DB::table('import_batches')->where('id', $batchId)->value('state'))->toBe('linked');
+    }
+
+    /**
+     * Insert an import row with sensible defaults and return its id.
+     */
+    protected function insertImport(array $overrides = []): int
+    {
+        return (int) \DB::table('imports')->insertGetId(array_merge([
+            'state' => 'pending',
+            'process_in_queue' => 1,
+            'type' => 'product',
+            'action' => 'append',
+            'validation_strategy' => 'stop-on-errors',
+            'allowed_errors' => 0,
+            'processed_rows_count' => 0,
+            'invalid_rows_count' => 0,
+            'errors_count' => 0,
+            'field_separator' => ',',
+            'file_path' => 'imports/sample-'.uniqid().'.csv',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $overrides));
+    }
+
+    /**
+     * Insert a batch of the import in the given state and return its id.
+     */
+    protected function insertBatch(int $importId, string $state, array $rows = []): int
+    {
+        return (int) \DB::table('import_batches')->insertGetId([
+            'import_id' => $importId,
+            'state' => $state,
+            'data' => json_encode($rows),
+
+            'summary' => json_encode([
+                'created' => 1,
+                'updated' => 0,
+                'deleted' => 0,
+            ]),
+        ]);
+    }
+
+    /**
+     * Insert a product import in the given state with one processed row of a real product in a batch of the batch state.
+     */
+    protected function insertProcessableImport(string $state, string $batchState): array
+    {
+        $product = $this->createBaseProduct('simple', [
+            'sku' => 'IMPORT-GQL-'.uniqid(),
+        ]);
+
+        $id = $this->insertImport([
+            'type' => 'products',
+            'state' => $state,
+            'process_in_queue' => 0,
+            'processed_rows_count' => 1,
+        ]);
+
+        return [$id, $this->insertBatch($id, $batchState, [[
+            'sku' => $product->sku,
+            'type' => 'simple',
+        ]])];
+    }
+
+    /**
+     * Create an admin whose role holds only the given permissions, with a role-bound token.
+     */
+    protected function customRoleAdmin(array $permissions): array
+    {
+        $this->seedRequiredData();
+
+        $role = Role::create([
+            'name' => 'Import role '.uniqid(),
+            'description' => 'import-test',
+            'permission_type' => 'custom',
+            'permissions' => $permissions,
+        ]);
+
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        return [$admin, $this->adminAccessToken($admin)];
+    }
+
+    /**
+     * Create an admin that may edit imports but not run them, with a role-bound token.
+     */
+    protected function adminWithoutImportPermission(): array
+    {
+        return $this->customRoleAdmin([
+            'settings',
+            'settings.data_transfer',
+            'settings.data_transfer.imports',
+            'settings.data_transfer.imports.edit',
+        ]);
+    }
+
+    /**
+     * Run one of the import action mutations (cancel, link, index) against the given import.
+     */
+    protected function runImportAction(string $action, int $importId, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $operation = $action.'AdminSettingsDataTransferImport'.ucfirst($action);
+        $field = 'adminSettingsDataTransferImport'.ucfirst($action);
+        $selection = $action === 'cancel' ? '_id state success message' : '_id state success stats';
+
+        $mutation = <<<GQL
+            mutation(\$input: {$operation}Input!) {
+              {$operation}(input: \$input) {
+                {$field} { {$selection} }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => '/api/admin/settings/data-transfer/imports/'.$importId.'/'.$action,
+                'importId' => $importId,
+            ],
+        ], $admin, $token);
     }
 }

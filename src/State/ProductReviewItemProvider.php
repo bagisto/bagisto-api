@@ -6,9 +6,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Models\ProductReview;
 
-/**
- * Provider for the public single-review lookup; only approved reviews are visible.
- */
 class ProductReviewItemProvider implements ProviderInterface
 {
     /**

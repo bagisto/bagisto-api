@@ -12,19 +12,6 @@ use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\Resolver\AdminReportingOverviewQueryResolver;
 use Webkul\BagistoApi\Admin\State\AdminReportingOverviewProvider;
 
-/**
- * Admin reporting overview (read-only).
- *
- * REST   : GET /api/admin/reporting/stats
- * GraphQL: adminReportingStats query
- *
- * Mirrors `Webkul\Admin\Http\Controllers\Reporting\Controller::stats()`.
- * The `?type=` query param picks one of the overview stat groups:
- *   total-sales (default), total-orders, total-customers,
- *   top-selling-products-by-revenue.
- *
- * `start` / `end` (ISO) + `channel` (code) bound the period.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminReportingOverview',
@@ -73,14 +60,23 @@ class AdminReportingOverview
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The entity.
+     */
     #[ApiProperty(readable: true, writable: false, identifier: true)]
     #[Groups(['query'])]
     public ?string $entity = null;
 
+    /**
+     * The type.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $type = null;
 
+    /**
+     * The current and previous date ranges the figures cover.
+     */
     #[ApiProperty(readable: true, writable: false, example: [
         'previous' => '10 Apr 2026 - 10 May 2026',
         'current' => '10 May 2026 - 09 Jun 2026',
@@ -88,7 +84,11 @@ class AdminReportingOverview
     #[Groups(['query'])]
     public ?array $date_range = null;
 
-    /** @var array<string,mixed>|null */
+    /**
+     * The overview report figures for the current and previous date ranges.
+     *
+     * @var array<string,mixed>|null
+     */
     #[ApiProperty(readable: true, writable: false, example: [
         'sales' => [
             'previous' => 27178.38,

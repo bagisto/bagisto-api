@@ -6,21 +6,11 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Reads pagination metadata stashed by PaginationHeaderNormalizer and
- * adds standard X-* headers to the outgoing response.
- *
- *   X-Total-Count   total number of items across all pages
- *   X-Page          current page (1-based)
- *   X-Per-Page      items per page
- *   X-Total-Pages   total number of pages
- *
- * Headers are added only when the normalizer captured a Paginator — i.e.
- * for paginated REST collection responses. Single-resource and non-paginated
- * collection responses are unchanged.
- */
 class PaginationHeaders
 {
+    /**
+     * Handle the request.
+     */
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);

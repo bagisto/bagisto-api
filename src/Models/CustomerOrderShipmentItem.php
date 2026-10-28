@@ -15,12 +15,6 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CustomerOrderShipmentItemProvider;
 use Webkul\Sales\Models\OrderItem;
 
-/**
- * Customer Order Shipment Item API Resource
- *
- * Nested API resource for items in a customer's order shipment.
- * Contains product details and quantity shipped.
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'CustomerOrderShipmentItem',
@@ -28,17 +22,31 @@ use Webkul\Sales\Models\OrderItem;
         new Get(
             uriTemplate: '/customer-order-shipment-items/{id}',
             provider: CustomerOrderShipmentItemProvider::class,
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'Get a shipped item of the customer',
+                description: 'One shipped item of the authenticated customer\'s shipments; any other item or an unknown ID is a 404. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
         new GetCollection(
             uriTemplate: '/customer-order-shipment-items',
             provider: CustomerOrderShipmentItemProvider::class,
-            openapi: new Operation(tags: ['Customer Order']),
+            openapi: new Operation(
+                tags: ['Customer Order'],
+                summary: 'List the customer\'s shipped items',
+                description: 'Shipped items across the authenticated customer\'s shipments, newest first. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+            ),
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
-        new QueryCollection(provider: CustomerOrderShipmentItemProvider::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One shipped item of the authenticated customer\'s shipments; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
+        new QueryCollection(
+            provider: CustomerOrderShipmentItemProvider::class,
+            description: 'Shipped items across the authenticated customer\'s shipments, newest first. Paginate forward only: `first` (default 30, between 1 and 50) and `after`; `last` and `before` are ignored. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
     ],
 )]
 class CustomerOrderShipmentItem extends Model

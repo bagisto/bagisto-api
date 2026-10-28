@@ -8,6 +8,21 @@
             "quantity": 1
         }
     },
+    "adminApiSessions": {
+        "kind": "query",
+        "tag": "Admin Settings: API Sessions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsApiSession"
+    },
+    "adminApiToken": {
+        "kind": "query",
+        "tag": "Admin Settings: API Tokens",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsApiToken"
+    },
+    "adminApiTokens": {
+        "kind": "query",
+        "tag": "Admin Settings: API Tokens",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsApiToken"
+    },
     "adminAppearanceSection": {
         "kind": "query",
         "tag": "Admin Appearance: Sections",
@@ -147,6 +162,11 @@
         "kind": "query",
         "tag": "Admin Customers",
         "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerAddress"
+    },
+    "adminCustomerApiSessions": {
+        "kind": "query",
+        "tag": "Admin Customers: API Sessions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerApiSession"
     },
     "adminCustomerCartItems": {
         "kind": "query",
@@ -383,6 +403,11 @@
         "tag": "Admin Sales: RMA",
         "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReturnableItem"
     },
+    "adminReturnableOrders": {
+        "kind": "query",
+        "tag": "Admin Sales: RMA",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReturnableOrder"
+    },
     "adminReturns": {
         "kind": "query",
         "tag": "Admin Sales: RMA",
@@ -427,6 +452,11 @@
         "kind": "query",
         "tag": "Admin Sales: RMA",
         "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaStatus"
+    },
+    "adminSessions": {
+        "kind": "query",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSession"
     },
     "adminSettingsChannel": {
         "kind": "query",
@@ -528,6 +558,11 @@
         "tag": "Admin Settings: Users",
         "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUser"
     },
+    "adminSettingsUserSessions": {
+        "kind": "query",
+        "tag": "Admin Settings: Users",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUserSession"
+    },
     "adminSettingsUsers": {
         "kind": "query",
         "tag": "Admin Settings: Users",
@@ -571,6 +606,18 @@
         "kind": "mutation",
         "tag": "Admin Marketing: Promotions",
         "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminMarketingCartRule"
+    },
+    "createAdminAccountUpdate": {
+        "kind": "mutation",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminAccountUpdate",
+        "example": {
+            "name": "Example Admin",
+            "email": "admin@example.com",
+            "password": "new-secret",
+            "password_confirmation": "new-secret",
+            "current_password": "admin123"
+        }
     },
     "createAdminAppearanceSection": {
         "kind": "mutation",
@@ -835,6 +882,11 @@
             "default_address": true
         }
     },
+    "createAdminCustomerApiSessionRevoke": {
+        "kind": "mutation",
+        "tag": "Admin Customers: API Sessions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerApiSessionRevoke"
+    },
     "createAdminCustomerGdprDownloadData": {
         "kind": "mutation",
         "tag": "Admin Customer GDPR",
@@ -868,11 +920,6 @@
                 7
             ]
         }
-    },
-    "createAdminCustomerImpersonate": {
-        "kind": "mutation",
-        "tag": "Admin Customers",
-        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerImpersonate"
     },
     "createAdminCustomerMassDelete": {
         "kind": "mutation",
@@ -938,6 +985,14 @@
         "tag": "Admin: Customer Order creation",
         "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminDraftCart"
     },
+    "createAdminForgotPassword": {
+        "kind": "mutation",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminForgotPassword",
+        "example": {
+            "email": "admin@example.com"
+        }
+    },
     "createAdminInvoice": {
         "kind": "mutation",
         "tag": "Admin Sales: Invoices",
@@ -968,6 +1023,27 @@
         "example": {
             "email": "customer@example.com"
         }
+    },
+    "createAdminLogin": {
+        "kind": "mutation",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminLogin",
+        "example": {
+            "email": "admin@example.com",
+            "password": "admin123",
+            "device_name": "iPhone",
+            "client_type": "mobile"
+        }
+    },
+    "createAdminLogout": {
+        "kind": "mutation",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminLogout"
+    },
+    "createAdminLogoutAll": {
+        "kind": "mutation",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminLogoutAll"
     },
     "createAdminMarketingCampaign": {
         "kind": "mutation",
@@ -1098,6 +1174,17 @@
         "kind": "mutation",
         "tag": "Admin: Customer Order creation",
         "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminReorder"
+    },
+    "createAdminResetPassword": {
+        "kind": "mutation",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminResetPassword",
+        "example": {
+            "token": "6f1c0e...",
+            "email": "admin@example.com",
+            "password": "new-secret",
+            "password_confirmation": "new-secret"
+        }
     },
     "createAdminReturn": {
         "kind": "mutation",
@@ -1273,7 +1360,13 @@
     "createAdminSettingsUser": {
         "kind": "mutation",
         "tag": "Admin Settings: Users",
-        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUser"
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUser",
+        "example": {
+            "name": "Jane Manager",
+            "email": "jane.manager@example.com",
+            "role_id": 2,
+            "status": 1
+        }
     },
     "createAdminSettingsUserDeleteSelf": {
         "kind": "mutation",
@@ -1297,6 +1390,14 @@
             "trackNumber": "1Z999AA1"
         }
     },
+    "createAdminTokenRefresh": {
+        "kind": "mutation",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminTokenRefresh",
+        "example": {
+            "refresh_token": "77|3f9c0d..."
+        }
+    },
     "createAdminTransaction": {
         "kind": "mutation",
         "tag": "Admin Sales: Transactions",
@@ -1307,10 +1408,24 @@
             "amount": 99.99
         }
     },
+    "createAdminTwoFactorVerify": {
+        "kind": "mutation",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminTwoFactorVerify",
+        "example": {
+            "challenge_token": "41|9b1e7c...",
+            "code": "123456"
+        }
+    },
     "declineAdminEuWithdrawal": {
         "kind": "mutation",
         "tag": "Admin Sales: EU Withdrawal",
         "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminEuWithdrawal"
+    },
+    "deleteAdminApiToken": {
+        "kind": "mutation",
+        "tag": "Admin Settings: API Tokens",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsApiToken"
     },
     "deleteAdminAppearanceSection": {
         "kind": "mutation",
@@ -1479,6 +1594,11 @@
             "default_address": true
         }
     },
+    "deleteAdminCustomerApiSession": {
+        "kind": "mutation",
+        "tag": "Admin Customers: API Sessions",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminCustomerApiSession"
+    },
     "deleteAdminCustomerGdprRequest": {
         "kind": "mutation",
         "tag": "Admin Customer GDPR",
@@ -1577,6 +1697,11 @@
         "tag": "Admin Sales: RMA",
         "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminRmaStatus"
     },
+    "deleteAdminSession": {
+        "kind": "mutation",
+        "tag": "Admin Authentication",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSession"
+    },
     "deleteAdminSettingsChannel": {
         "kind": "mutation",
         "tag": "Admin Settings: Channels",
@@ -1656,7 +1781,13 @@
     "deleteAdminSettingsUser": {
         "kind": "mutation",
         "tag": "Admin Settings: Users",
-        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUser"
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUser",
+        "example": {
+            "name": "Jane Manager",
+            "email": "jane.manager@example.com",
+            "role_id": 2,
+            "status": 1
+        }
     },
     "getAdminMenu": {
         "kind": "query",
@@ -1746,6 +1877,17 @@
         "kind": "mutation",
         "tag": "Admin Sales: EU Withdrawal",
         "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminEuWithdrawal"
+    },
+    "revokeSessionsAdminSettingsUser": {
+        "kind": "mutation",
+        "tag": "Admin Settings: Users",
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUser",
+        "example": {
+            "name": "Jane Manager",
+            "email": "jane.manager@example.com",
+            "role_id": 2,
+            "status": 1
+        }
     },
     "saveAddressAdminCart": {
         "kind": "mutation",
@@ -2163,7 +2305,13 @@
     "updateAdminSettingsUser": {
         "kind": "mutation",
         "tag": "Admin Settings: Users",
-        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUser"
+        "resource": "Webkul\\BagistoApi\\Admin\\Models\\AdminSettingsUser",
+        "example": {
+            "name": "Jane Manager",
+            "email": "jane.manager@example.com",
+            "role_id": 2,
+            "status": 1
+        }
     },
     "updateItemsAdminCart": {
         "kind": "mutation",

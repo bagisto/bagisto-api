@@ -9,18 +9,21 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\MapsSitemapChannels;
 use Webkul\BagistoApi\Support\Sql;
 
-/**
- * Provider for GET /api/admin/marketing/sitemaps + adminMarketingSitemaps.
- */
 class AdminMarketingSitemapCollectionProvider extends AbstractAdminCollectionProvider
 {
     use MapsSitemapChannels;
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'file_name'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         $prefix = DB::getTablePrefix();
@@ -57,6 +60,9 @@ class AdminMarketingSitemapCollectionProvider extends AbstractAdminCollectionPro
             );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['file_name'])) {
@@ -75,6 +81,9 @@ class AdminMarketingSitemapCollectionProvider extends AbstractAdminCollectionPro
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -87,6 +96,9 @@ class AdminMarketingSitemapCollectionProvider extends AbstractAdminCollectionPro
         $query->orderBy($columnMap[$column] ?? 'sitemaps.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminMarketingSitemap
     {
         $dto = new AdminMarketingSitemap;

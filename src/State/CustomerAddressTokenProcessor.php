@@ -9,12 +9,12 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Request;
-use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Dto\CustomerAddressInput;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerAddress as AddressModel;
 
@@ -194,7 +194,6 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
      */
     private function handleDelete(Customer $customer, mixed $data): CustomerAddressInput
     {
-        // Get address ID from DTO (GraphQL) or Eloquent model (REST DELETE)
         $addressId = $data->addressId ?? $data->id ?? null;
 
         if (! $addressId) {
@@ -209,7 +208,6 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.graphql.address.address-not-found'));
         }
 
-        /** Capture address data before deletion for response */
         $response = $this->mapAddressToInput($address);
 
         Event::dispatch('customer.addresses.delete.before', $addressId);
@@ -309,7 +307,7 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
     }
 
     /**
-     * Map an address model to a CustomerAddressInput DTO for delete response
+     * Map an address model to a CustomerAddressInput DTO for delete response.
      */
     private function mapAddressToInput(AddressModel $address): CustomerAddressInput
     {
@@ -336,29 +334,10 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
     }
 
     /**
-     * Resolve the customer behind a Sanctum token.
+     * Resolve the customer behind a customer access token.
      */
     private function getCustomerFromToken(string $token): ?Customer
     {
-        try {
-            if (strpos($token, '|') === false) {
-                return null;
-            }
-
-            [$id, $hash] = explode('|', $token, 2);
-
-            $personalAccessToken = PersonalAccessToken::findToken($token);
-            if (! $personalAccessToken) {
-                return null;
-            }
-
-            if (! $personalAccessToken->tokenable instanceof Customer) {
-                return null;
-            }
-
-            return $personalAccessToken->tokenable;
-        } catch (\Exception $exception) {
-            return null;
-        }
+        return CurrentCustomer::fromToken($token);
     }
 }

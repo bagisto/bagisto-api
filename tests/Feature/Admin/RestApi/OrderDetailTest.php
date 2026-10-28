@@ -33,6 +33,8 @@ class OrderDetailTest extends AdminApiTestCase
         expect($response->json())->toHaveKeys([
             'id', 'incrementId', 'status', 'statusLabel', 'grandTotal',
             'totalDue', 'formattedTotalDue', 'paymentMethod',
+            'subTotalInclTax', 'formattedSubTotalInclTax', 'shippingAmountInclTax', 'formattedShippingAmountInclTax',
+            'baseShippingAmount', 'baseTaxAmount', 'baseDiscountAmount', 'baseGrandTotalInvoiced', 'baseGrandTotalRefunded',
             'customer', 'addresses',
             'items', 'invoices', 'shipments', 'refunds', 'comments',
         ]);
@@ -41,6 +43,29 @@ class OrderDetailTest extends AdminApiTestCase
         expect($response->json('items'))->toBeArray();
         expect($response->json('refunds'))->toBeArray();
         expect($response->json('comments'))->toBeArray();
+    }
+
+    /**
+     * The total due is rounded to the currency precision, so a fully invoiced order reads 0.
+     */
+    public function test_total_due_is_rounded_to_the_currency_precision(): void
+    {
+        $id = $this->anOrderId();
+
+        \DB::table('orders')->where('id', $id)->update([
+            'grand_total' => 125.6700,
+            'grand_total_invoiced' => 125.6731,
+            'base_grand_total' => 125.6700,
+            'base_grand_total_invoiced' => 125.6731,
+        ]);
+
+        $admin = $this->createAdmin();
+        $response = $this->adminGet($admin, '/api/admin/orders/'.$id);
+
+        $response->assertOk();
+        expect((float) $response->json('totalDue'))->toBe(0.0)
+            ->and((float) $response->json('baseTotalDue'))->toBe(0.0)
+            ->and($response->json('formattedTotalDue'))->toBe(core()->formatPrice(0));
     }
 
     /**

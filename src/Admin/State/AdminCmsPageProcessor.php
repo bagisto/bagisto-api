@@ -14,39 +14,41 @@ use Webkul\BagistoApi\Admin\Dto\AdminCmsPageCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCmsPageUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCmsPage;
+use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Admin\State\Concerns\SanitisesHtmlContent;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
-use Webkul\CMS\Models\Page;
 use Webkul\CMS\Repositories\PageRepository;
 use Webkul\Core\Repositories\ChannelRepository;
 
-/**
- * Handles POST, PUT, DELETE on the AdminCmsPage resource (Phase 2 — CRUD).
- *
- * Mirrors Webkul\Admin\Http\Controllers\CMS\PageController::
- *   store() / update() / delete()
- * — validation rules, slug regex (replacing the fatal core Slug rule), events.
- *
- * Permission resolution mirrors AdminCategoryProcessor: read role->permission_type
- * / role->permissions directly. Never call bouncer() (Sanctum-token requests have
- * no session-bound admin).
- */
 class AdminCmsPageProcessor implements ProcessorInterface
 {
-    /** Slug regex used in place of \Webkul\Core\Rules\Slug (which is fatal in API context). */
+    use ChecksAdminPermission;
+    use SanitisesHtmlContent;
+
+    /**
+     * Slug regex used in place of \Webkul\Core\Rules\Slug (which is fatal in API context).
+     */
     protected const SLUG_REGEX = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected PageRepository $pageRepository,
         protected ChannelRepository $channelRepository,
         protected AdminCmsPageItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Route the CMS page request to create, update or delete.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
+
         if (! $admin) {
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
@@ -99,9 +101,14 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Create a page from the payload, with its HTML content sanitised as core does.
+     */
     protected function handleCreate(array $input, bool $isGraphQL = false): mixed
     {
         $this->validateCreatePayload($input);
+
+        $input = $this->sanitiseHtmlFields($input, ['html_content']);
 
         Event::dispatch('cms.page.create.before');
 
@@ -120,10 +127,12 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return $this->fetchAndMap((int) $page->id, $isGraphQL);
     }
 
+    /**
+     * Update the page's requested locale, with its HTML content sanitised as core does.
+     */
     protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): mixed
     {
-        $page = Page::find($id);
-        if (! $page) {
+        if (! $this->pageRepository->find($id)) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.cms.page.not-found'));
         }
 
@@ -132,7 +141,7 @@ class AdminCmsPageProcessor implements ProcessorInterface
         $locale = $input['locale'] ?? app()->getLocale();
 
         $payload = [
-            $locale => $input[$locale] ?? [],
+            $locale => $this->sanitiseHtmlFields((array) ($input[$locale] ?? []), ['html_content']),
             'channels' => $input['channels'] ?? [],
             'locale' => $locale,
         ];
@@ -148,10 +157,12 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return $this->fetchAndMap($id, $isGraphQL);
     }
 
-    protected function handleDelete(int $id, bool $asResource = false)
+    /**
+     * Delete the page, returning a snapshot of it when the caller asks for the resource.
+     */
+    protected function handleDelete(int $id, bool $asResource = false): ?AdminCmsPage
     {
-        $page = Page::find($id);
-        if (! $page) {
+        if (! $this->pageRepository->find($id)) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.cms.page.not-found'));
         }
 
@@ -167,6 +178,7 @@ class AdminCmsPageProcessor implements ProcessorInterface
             Event::dispatch('cms.page.delete.after', $id);
         } catch (\Throwable $exception) {
             report($exception);
+
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.cms.page.delete-failed'),
                 500,
@@ -180,6 +192,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return $snapshot;
     }
 
+    /**
+     * Validate the create payload against core's page rules.
+     */
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
@@ -190,11 +205,13 @@ class AdminCmsPageProcessor implements ProcessorInterface
         ];
 
         $value = Validator::make($input, $rules);
+
         if ($value->fails()) {
             throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $urlKey = $input['url_key'] ?? null;
+
         if (
             $urlKey
             && ! $this->pageRepository->isUrlKeyUnique(0, $urlKey)
@@ -205,6 +222,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         $this->validateChannels($input['channels'] ?? []);
     }
 
+    /**
+     * Validate the update payload for the requested locale against core's page rules.
+     */
     protected function validateUpdatePayload(array $input, int $excludeId): void
     {
         $locale = $input['locale'] ?? app()->getLocale();
@@ -218,11 +238,13 @@ class AdminCmsPageProcessor implements ProcessorInterface
         $rules[$locale.'.html_content'] = ['required', 'string'];
 
         $value = Validator::make($input, $rules);
+
         if ($value->fails()) {
             throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $urlKey = $input[$locale]['url_key'] ?? null;
+
         if (
             $urlKey
             && ! $this->pageRepository->isUrlKeyUnique($excludeId, $urlKey)
@@ -233,14 +255,17 @@ class AdminCmsPageProcessor implements ProcessorInterface
         $this->validateChannels($input['channels'] ?? []);
     }
 
+    /**
+     * Refuse an empty channel list or one naming an unknown channel.
+     */
     protected function validateChannels(array $channels): void
     {
         if (empty($channels)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cms.page.channels-required'), 422);
         }
 
-        $existing = \DB::table('channels')
-            ->whereIn('id', array_map('intval', $channels))
+        $existing = $this->channelRepository
+            ->findWhereIn('id', array_map('intval', $channels))
             ->pluck('id')
             ->map(fn ($value) => (int) $value)
             ->all();
@@ -252,33 +277,19 @@ class AdminCmsPageProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Refuse an admin whose role lacks the given permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
-        $role = $admin->role ?? null;
-        if (! $role) {
-            throw new AuthorizationException(__('bagistoapi::app.admin.cms.page.no-permission'));
-        }
-
-        if (($role->permission_type ?? null) === 'all') {
-            return;
-        }
-
-        $perms = $role->permissions ?? [];
-        if (is_string($perms)) {
-            $perms = array_map('trim', explode(',', $perms));
-        }
-        if (! is_array($perms)) {
-            $perms = [];
-        }
-
-        if (
-            ! in_array($permission, $perms, true)
-            && ! in_array('*', $perms, true)
-        ) {
+        if (! $this->adminHasPermission($admin, $permission)) {
             throw new AuthorizationException(__('bagistoapi::app.admin.cms.page.no-permission'));
         }
     }
 
+    /**
+     * Read the create payload from the GraphQL arguments or the REST body.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -294,6 +305,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Read the id of the page to update from the input or the GraphQL arguments.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -306,6 +320,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Read the update payload from the GraphQL arguments or the REST body.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -322,8 +339,8 @@ class AdminCmsPageProcessor implements ProcessorInterface
     }
 
     /**
-     * Map GraphQL camelCase top-level args to the snake_case form the validator + repo expect.
-     * Locale-keyed blocks (e.g. 'en') are passed through as-is.
+     * Map GraphQL camelCase arguments, top level and locale-keyed blocks, to the snake_case keys
+     * the validator and the repository expect.
      */
     protected function dtoToArray(array $rawArgs): array
     {
@@ -348,10 +365,12 @@ class AdminCmsPageProcessor implements ProcessorInterface
                 && ! array_is_list($value)
             ) {
                 $nested = [];
+
                 foreach ($value as $field => $fieldValue) {
                     $snakeK = $camelToSnake[$field] ?? $field;
                     $nested[$snakeK] = $fieldValue;
                 }
+
                 $result[$key] = $nested;
 
                 continue;
@@ -364,6 +383,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Load the page afresh and shape it for the transport that asked.
+     */
     protected function fetchAndMap(int $id, bool $isGraphQL = false): mixed
     {
         if ($isGraphQL) {

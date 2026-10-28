@@ -6,12 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Currency — nested sub-resource of AdminSettingsChannel (`currencies`
- * connection). Backed by `currencies` via belongsToMany over `channel_currencies`
- * (`channel_id`, `currency_id`) — pivot has no own `id`, so the node `_id` is the
- * currency's real id. Surfaces `code`/`name`/`symbol`.
- */
 #[ApiResource(
     shortName: 'AdminSettingsChannelCurrencyRef',
     operations: [],
@@ -20,17 +14,32 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminSettingsChannelCurrencyRef extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the currencies.
+     *
+     * @var string
+     */
     protected $table = 'currencies';
 
-    /** @var bool */
+    /**
+     * Indicates the channel currency reference does not maintain created and updated timestamps.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    /** @var array */
+    /**
+     * The native types the channel currency reference attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

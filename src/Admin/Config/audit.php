@@ -1,12 +1,12 @@
 <?php
 
 use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
-use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
+use Webkul\BagistoApi\Admin\Models\AdminApiRefreshToken;
+use Webkul\BagistoApi\Admin\Models\AdminApiSession;
+use Webkul\BagistoApi\Admin\Models\AdminApiToken;
+use Webkul\BagistoApi\Admin\Models\AdminApiTwoFactorChallenge;
 use Webkul\Core\Models\CoreConfig;
 
-/**
- * Admin-API audit trail config (merged under `bagistoapi.audit`).
- */
 return [
     /**
      * Master switch. When false, no admin-API change is recorded.
@@ -14,9 +14,7 @@ return [
     'enabled' => env('BAGISTO_API_AUDIT_ENABLED', true),
 
     /**
-     * Field names whose values are never stored. Matching keys in
-     * old_values / new_values / payload are replaced with "[redacted]".
-     * A leading "*" matches by suffix (e.g. "*_token" matches "api_token").
+     * Field names whose values are never stored; matching keys are replaced with "[redacted]".
      */
     'redact' => [
         'password',
@@ -24,14 +22,14 @@ return [
         'current_password',
         'remember_token',
         'api_token',
+        'two_factor_backup_codes',
         'secret',
         '*_token',
         '*_secret',
     ],
 
     /**
-     * Substrings that mark an attribute key, or a row's `code`, as secret.
-     * Matching attributes are redacted whatever the model.
+     * Substrings that mark an attribute key, or a row's `code`, as secret, whatever the model.
      */
     'redact_contains' => [
         'secret',
@@ -48,15 +46,19 @@ return [
     ],
 
     /**
-     * Models that are never audited (avoids self-auditing + noise).
+     * Models that are never audited, to avoid self-auditing and noise.
      */
     'exclude_models' => [
         AdminApiAudit::class,
-        AdminPersonalAccessToken::class,
+        AdminApiSession::class,
+        AdminApiRefreshToken::class,
+        AdminApiToken::class,
+        AdminApiTwoFactorChallenge::class,
     ],
 
     /**
-     * Auto-prune cutoff for `bagisto-api:prune-audits`. null = keep forever.
+     * Days `bagisto-api:prune-audits` keeps audit rows for, or null to keep them forever. Used when
+     * Configuration → API → Admin Authentication → Data Retention leaves the field empty.
      */
     'retention_days' => env('BAGISTO_API_AUDIT_RETENTION_DAYS', null),
 ];

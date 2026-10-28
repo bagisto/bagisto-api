@@ -8,27 +8,11 @@ use Webkul\CartRule\Models\CartRuleCoupon;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for Admin Marketing → Cart Rule Coupons (Block F1c).
- */
 class MarketingCartRuleCouponTest extends AdminApiTestCase
 {
-    protected function makeCartRule(array $attrs = []): CartRule
-    {
-        return CartRule::factory()->create($attrs);
-    }
-
-    protected function makeCoupon(int $cartRuleId, array $attrs = []): CartRuleCoupon
-    {
-        $coupon = CartRuleCoupon::factory()->make(array_merge([
-            'cart_rule_id' => $cartRuleId,
-        ], $attrs));
-        $coupon->cart_rule_id = $cartRuleId;
-        $coupon->save();
-
-        return $coupon;
-    }
-
+    /**
+     * Test list requires authentication.
+     */
     public function test_list_requires_authentication(): void
     {
         $rule = $this->makeCartRule();
@@ -37,6 +21,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
             ->assertStatus(401);
     }
 
+    /**
+     * Test create requires authentication.
+     */
     public function test_create_requires_authentication(): void
     {
         $rule = $this->makeCartRule();
@@ -45,6 +32,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
             ->assertStatus(401);
     }
 
+    /**
+     * Test list returns data meta envelope with coupons for the rule.
+     */
     public function test_list_returns_data_meta_envelope_with_coupons_for_the_rule(): void
     {
         $admin = $this->createAdmin();
@@ -63,6 +53,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         expect($codes)->toContain('AAA1', 'AAA2')->not->toContain('OTHERX');
     }
 
+    /**
+     * Test list unknown cart rule returns 404.
+     */
     public function test_list_unknown_cart_rule_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -71,6 +64,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
             ->assertStatus(404);
     }
 
+    /**
+     * Test create single coupon happy path.
+     */
     public function test_create_single_coupon_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -94,6 +90,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * Test create duplicate code returns 422.
+     */
     public function test_create_duplicate_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -106,6 +105,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Test create missing code returns 422.
+     */
     public function test_create_missing_code_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -115,6 +117,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
             ->assertStatus(422);
     }
 
+    /**
+     * Test create unknown cart rule returns 404.
+     */
     public function test_create_unknown_cart_rule_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -124,6 +129,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         ])->assertStatus(404);
     }
 
+    /**
+     * Test generate bulk happy path with prefix.
+     */
     public function test_generate_bulk_happy_path_with_prefix(): void
     {
         $admin = $this->createAdmin();
@@ -149,6 +157,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test generate invalid format returns 422.
+     */
     public function test_generate_invalid_format_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -161,6 +172,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         ])->assertStatus(422);
     }
 
+    /**
+     * Test generate length below min returns 422.
+     */
     public function test_generate_length_below_min_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -173,6 +187,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         ])->assertStatus(422);
     }
 
+    /**
+     * Test generate unknown cart rule returns 404.
+     */
     public function test_generate_unknown_cart_rule_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -184,6 +201,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         ])->assertStatus(404);
     }
 
+    /**
+     * Test delete coupon happy path.
+     */
     public function test_delete_coupon_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -200,6 +220,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $this->assertDatabaseMissing('cart_rule_coupons', ['id' => $coupon->id]);
     }
 
+    /**
+     * Test delete cross rule returns 404.
+     */
     public function test_delete_cross_rule_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -217,6 +240,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $this->assertDatabaseHas('cart_rule_coupons', ['id' => $couponOnA->id]);
     }
 
+    /**
+     * Test delete unknown id returns 404.
+     */
     public function test_delete_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -229,6 +255,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         )->assertStatus(404);
     }
 
+    /**
+     * Test mass delete happy path skips cross rule.
+     */
     public function test_mass_delete_happy_path_skips_cross_rule(): void
     {
         $admin = $this->createAdmin();
@@ -251,6 +280,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $this->assertDatabaseHas('cart_rule_coupons', ['id' => $foreign->id]);
     }
 
+    /**
+     * Test mass delete empty indices returns 422.
+     */
     public function test_mass_delete_empty_indices_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -261,6 +293,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         ])->assertStatus(422);
     }
 
+    /**
+     * Test create without permission returns 403.
+     */
     public function test_create_without_permission_returns_403(): void
     {
         $rule = $this->makeCartRule();
@@ -271,6 +306,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         ])->assertStatus(403);
     }
 
+    /**
+     * Test delete without permission returns 403.
+     */
     public function test_delete_without_permission_returns_403(): void
     {
         $rule = $this->makeCartRule();
@@ -282,6 +320,28 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
             [],
             $this->adminHeaders($admin),
         )->assertStatus(403);
+    }
+
+    /**
+     * Make cart rule.
+     */
+    protected function makeCartRule(array $attrs = []): CartRule
+    {
+        return CartRule::factory()->create($attrs);
+    }
+
+    /**
+     * Make coupon.
+     */
+    protected function makeCoupon(int $cartRuleId, array $attrs = []): CartRuleCoupon
+    {
+        $coupon = CartRuleCoupon::factory()->make(array_merge([
+            'cart_rule_id' => $cartRuleId,
+        ], $attrs));
+        $coupon->cart_rule_id = $cartRuleId;
+        $coupon->save();
+
+        return $coupon;
     }
 
     /**

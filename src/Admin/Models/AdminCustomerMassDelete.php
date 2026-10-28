@@ -75,17 +75,31 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerMassDeleteProcessor;
 )]
 class AdminCustomerMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the customers that were deleted.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
-    /** @var array<int, array{id:int,reason:string}>|null */
+    /**
+     * The customers that were not deleted, each with the reason.
+     *
+     * @var array<int, array{id:int,reason:string}>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $skipped = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

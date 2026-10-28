@@ -2,7 +2,7 @@
 
 namespace Webkul\BagistoApi\State\Concerns;
 
-use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
 use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CartInput;
@@ -23,7 +23,7 @@ use Webkul\Product\Repositories\ProductBundleOptionRepository;
 trait HandlesCartItems
 {
     /**
-     * Handle adding a product to cart
+     * Handle adding a product to cart.
      */
     private function handleAddProduct(?CartModel $cart, ?Customer $customer, CartInput $data): array
     {
@@ -31,10 +31,6 @@ trait HandlesCartItems
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.product-id-required'));
         }
 
-        /**
-         * Quantity is required by most product types, but for some types (e.g. booking appointment/event)
-         * the storefront does not allow changing quantity. Default to 1 when omitted.
-         */
         if ($data->quantity === null) {
             $data->quantity = 1;
         }
@@ -145,16 +141,12 @@ trait HandlesCartItems
                 }
             }
 
-            Event::dispatch('cart.before.add', ['cartItem' => null]);
-
             CartFacade::setCart($cart);
 
             $bundleOptions = $this->normalizeJsonFieldToArray($data->bundleOptions, 'bundleOptions');
             $bundleOptionQty = $this->normalizeJsonFieldToArray($data->bundleOptionQty, 'bundleOptionQty');
             $booking = $this->normalizeJsonFieldToArray($data->booking, 'booking');
 
-            // For bundle products, enforce admin-defined quantities.
-            // Only allow user-provided qty where is_user_defined is true on the bundle option product.
             if (
                 $product->type === 'bundle'
                 && is_array($bundleOptions)
@@ -209,10 +201,10 @@ trait HandlesCartItems
             CartFacade::collectTotals();
 
             $updatedCart = CartFacade::getCart();
-
-            Event::dispatch('cart.after.add', ['cart' => $updatedCart]);
+        } catch (HttpExceptionInterface $exception) {
+            throw $exception;
         } catch (\Exception $exception) {
-            throw new OperationFailedException($exception->getMessage(), 0, $exception);
+            throw new InvalidInputException($exception->getMessage(), 400);
         }
 
         if (! $updatedCart) {
@@ -231,7 +223,6 @@ trait HandlesCartItems
 
         $responseData->message = __('bagistoapi::app.graphql.cart.product-added-successfully');
 
-        // Add redirect URI for buy now
         if ($redirectUri) {
             $responseData->redirectUri = $redirectUri;
         }
@@ -242,7 +233,6 @@ trait HandlesCartItems
     /**
      * Enforce required customizable options and resolve file-option upload tokens
      * into UploadedFile instances that core stores at carts/{cartId}.
-     * Returns a map of used token => staged path for post-add cleanup.
      */
     private function resolveCustomizableOptions(Product $product, ?Customer $customer, CartInput $data): array
     {
@@ -319,6 +309,9 @@ trait HandlesCartItems
         return $usedTokens;
     }
 
+    /**
+     * Current owner id.
+     */
     private function currentOwnerId(?Customer $customer): string
     {
         if ($customer) {
@@ -328,6 +321,9 @@ trait HandlesCartItems
         return 'cart:'.(string) request()->bearerToken();
     }
 
+    /**
+     * Customizable option label.
+     */
     private function customizableOptionLabel($option): string
     {
         try {
@@ -378,9 +374,7 @@ trait HandlesCartItems
 
     /**
      * Validate and sanitize bundle option quantities.
-     *
-     * Checkbox/Multiselect options: qty is fixed by admin — throws error if customer tries to change
-     * Radio/Select options: qty can be changed by customer
+     * Checkbox/Multiselect options: qty is fixed by admin — throws error if customer tries to change.
      *
      * @param  array  $bundleOptions  [optionId => [optionProductId, ...]]
      * @param  array  $bundleOptionQty  [optionId => qty]
@@ -443,7 +437,7 @@ trait HandlesCartItems
     }
 
     /**
-     * Handle updating cart item quantity
+     * Handle updating cart item quantity.
      */
     private function handleUpdateItem(?CartModel $cart, ?Customer $customer, CartInput $data): array
     {
@@ -465,7 +459,6 @@ trait HandlesCartItems
             throw new AuthorizationException(__('bagistoapi::app.graphql.cart.unauthorized-access'));
         }
 
-        // Prevent quantity update for event and appointment booking products
         $this->guardBookingCartItemUpdate($cart, (int) $data->cartItemId);
 
         CartFacade::setCart($cart);
@@ -482,8 +475,10 @@ trait HandlesCartItems
             CartFacade::collectTotals();
 
             Event::dispatch('cart.item.after.update', ['cartItem' => $data->cartItemId]);
+        } catch (HttpExceptionInterface $exception) {
+            throw $exception;
         } catch (\Exception $exception) {
-            throw new OperationFailedException($exception->getMessage(), 0, $exception);
+            throw new InvalidInputException($exception->getMessage(), 400);
         }
 
         $cart = CartFacade::getCart();
@@ -500,7 +495,7 @@ trait HandlesCartItems
     }
 
     /**
-     * Handle removing item from cart
+     * Handle removing item from cart.
      */
     private function handleRemoveItem(?CartModel $cart, ?Customer $customer, CartInput $data): array
     {
@@ -519,6 +514,10 @@ trait HandlesCartItems
             throw new AuthorizationException(__('bagistoapi::app.graphql.cart.unauthorized-access'));
         }
 
+        if (! $cart->items->pluck('id')->contains((int) $data->cartItemId)) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.cart-item-not-found'));
+        }
+
         CartFacade::setCart($cart);
 
         Event::dispatch('cart.item.before.remove', ['cartItem' => $data->cartItemId]);
@@ -527,7 +526,7 @@ trait HandlesCartItems
             $removed = CartFacade::removeItem($data->cartItemId);
 
             if (! $removed) {
-                throw new InvalidInputException(__('bagistoapi::app.graphql.cart.cart-item-not-found'));
+                throw new OperationFailedException(__('bagistoapi::app.graphql.cart.remove-item-failed'));
             }
 
             CartFacade::collectTotals();
@@ -558,7 +557,7 @@ trait HandlesCartItems
     }
 
     /**
-     * Handle removing multiple items from cart
+     * Handle removing multiple items from cart.
      */
     private function handleRemoveItems(?CartModel $cart, ?Customer $customer, CartInput $data): array
     {
@@ -574,9 +573,22 @@ trait HandlesCartItems
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.item-ids-required'));
         }
 
+        if (
+            $customer
+            && $cart->customer_id !== $customer->id
+        ) {
+            throw new AuthorizationException(__('bagistoapi::app.graphql.cart.unauthorized-access'));
+        }
+
+        $itemIds = array_values(array_unique(array_map('intval', $data->itemIds)));
+
+        if (array_diff($itemIds, $cart->items->pluck('id')->all()) !== []) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.cart-item-not-found'));
+        }
+
         CartFacade::setCart($cart);
 
-        foreach ($data->itemIds as $itemId) {
+        foreach ($itemIds as $itemId) {
             try {
                 CartFacade::removeItem($itemId);
             } catch (\Exception $exception) {
@@ -609,9 +621,7 @@ trait HandlesCartItems
 
     /**
      * Prevent quantity updates for booking products that don't allow it.
-     *
      * - Event booking: quantity is determined by ticket selection, not changeable after add-to-cart.
-     * - Appointment booking: always quantity 1, cannot be changed.
      */
     private function guardBookingCartItemUpdate(CartModel $cart, int $cartItemId): void
     {
@@ -624,7 +634,6 @@ trait HandlesCartItems
             return;
         }
 
-        // Check additional.booking.type first, then fall back to DB lookup
         $bookingType = $cartItem->additional['booking']['type'] ?? null;
 
         if (! $bookingType) {

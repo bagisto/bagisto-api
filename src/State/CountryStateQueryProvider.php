@@ -5,13 +5,18 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Models\CountryState;
+use Webkul\BagistoApi\Repositories\CountryStateRepository;
 
-/**
- * Provides CountryState data for single item REST API queries.
- * Supports both numeric ID and IRI format
- */
 class CountryStateQueryProvider implements ProviderInterface
 {
+    /**
+     * Create a new provider instance.
+     */
+    public function __construct(protected CountryStateRepository $countryStateRepository) {}
+
+    /**
+     * Provide the state, scoped to the country in the URI when the route is nested under one.
+     */
     public function provide(
         Operation $operation,
         array $uriVariables = [],
@@ -23,31 +28,38 @@ class CountryStateQueryProvider implements ProviderInterface
             return null;
         }
 
-        // Extract numeric ID from any format (numeric or IRI)
         $numericId = $this->extractNumericId($id);
 
         if ($numericId === null) {
             return null;
         }
 
-        return CountryState::find($numericId);
+        $countryId = null;
+
+        if (array_key_exists('country_id', $uriVariables)) {
+            $countryId = $this->extractNumericId($uriVariables['country_id']);
+
+            if ($countryId === null) {
+                return null;
+            }
+        }
+
+        return $this->countryStateRepository->findForCountry($numericId, $countryId);
     }
 
     /**
-     * Extract numeric ID from any format
-     * Supports:
-     * - /api/shop/country-states/1 (IRI format)
-     * - 1 (numeric only)
-     * Returns null if invalid format
+     * Extract the numeric id from a numeric value, an IRI or a single-identifier array.
      */
     private function extractNumericId($id): ?int
     {
-        // If already numeric, return as is
+        if (is_array($id)) {
+            $id = $id['id'] ?? reset($id);
+        }
+
         if (is_numeric($id)) {
             return intval($id);
         }
 
-        // If string, extract from IRI format
         if (
             is_string($id)
             && str_contains($id, '/')
@@ -60,7 +72,6 @@ class CountryStateQueryProvider implements ProviderInterface
             }
         }
 
-        // Invalid format
         return null;
     }
 }

@@ -7,6 +7,9 @@ use ApiPlatform\Metadata\ApiResource;
 #[ApiResource(operations: [], graphQlOperations: [])]
 class ChannelSummaryDto
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         public ?int $id = null,
         public ?string $code = null,

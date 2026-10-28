@@ -10,21 +10,33 @@ class AdminCatalogProductExportProvider implements ProviderInterface
 {
     use StreamsAdminExport;
 
+    /**
+     * Export permission.
+     */
     protected function exportPermission(): string
     {
         return 'catalog.products';
     }
 
+    /**
+     * Export filename.
+     */
     protected function exportFilename(): string
     {
         return 'products';
     }
 
+    /**
+     * Export headers.
+     */
     protected function exportHeaders(): array
     {
         return ['ID', 'Name', 'SKU', 'Attribute Family', 'Price', 'Quantity', 'Status', 'Category', 'Type'];
     }
 
+    /**
+     * Export row.
+     */
     protected function exportRow(object $row): array
     {
         return [
@@ -40,6 +52,9 @@ class AdminCatalogProductExportProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Export query.
+     */
     protected function exportQuery(array $args)
     {
         $tablePrefix = DB::getTablePrefix();

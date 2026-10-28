@@ -6,6 +6,9 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class SalesRefundsListTest extends AdminApiTestCase
 {
+    /**
+     * Test query returns cursor collection.
+     */
     public function test_query_returns_cursor_collection(): void
     {
         $admin = $this->createAdmin();
@@ -27,6 +30,9 @@ class SalesRefundsListTest extends AdminApiTestCase
         expect($response->json('data.adminRefunds.totalCount'))->toBeInt();
     }
 
+    /**
+     * Test query requires authentication.
+     */
     public function test_query_requires_authentication(): void
     {
         $query = 'query { adminRefunds(first: 1) { edges { node { id } } } }';

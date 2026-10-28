@@ -10,17 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCmsPageMassDeleteInput;
 use Webkul\BagistoApi\Admin\State\AdminCmsPageMassDeleteProcessor;
 
-/**
- * One-operation resource for mass-deleting CMS pages.
- *
- * REST:
- *   POST /api/admin/cms/pages/mass-delete
- *     Body: { "indices": [12, 18] }
- *     200:  { "deleted": [12, 18], "message": "..." }
- *
- * GraphQL:
- *   createAdminCmsPageMassDelete
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCmsPageMassDelete',
@@ -82,13 +71,23 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageMassDeleteProcessor;
 )]
 class AdminCmsPageMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the CMS pages that were deleted.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

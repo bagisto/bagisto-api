@@ -27,7 +27,7 @@ trait HandlesBookingCartItems
                 ! is_string($note)
                 || trim($note) === ''
             ) {
-                throw new InvalidInputException('booking.note is required for table booking.');
+                throw new InvalidInputException(__('bagistoapi::app.graphql.cart.booking-note-required'));
             }
         }
 
@@ -48,7 +48,7 @@ trait HandlesBookingCartItems
             ! is_string($date)
             || $date === ''
         ) {
-            throw new InvalidInputException('booking.date is required when booking.slot is a formatted time range.');
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.booking-date-required'));
         }
 
         $timestamps = (new BookingSlotParser)->parse($date, $booking['slot'], $this->getChannelTimezone());
@@ -75,6 +75,9 @@ trait HandlesBookingCartItems
         return $booking;
     }
 
+    /**
+     * Validate event booking payload.
+     */
     private function validateEventBookingPayload(array $booking): void
     {
         $qty = $booking['qty'] ?? null;
@@ -83,7 +86,7 @@ trait HandlesBookingCartItems
             ! is_array($qty)
             || empty($qty)
         ) {
-            throw new InvalidInputException('booking.qty is required for event booking.');
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.booking-qty-required'));
         }
 
         $hasAtLeastOne = false;
@@ -100,7 +103,7 @@ trait HandlesBookingCartItems
                 ! is_numeric($count)
                 || (int) $count < 0
             ) {
-                throw new InvalidInputException('Event ticket quantity must be a non-negative number.');
+                throw new InvalidInputException(__('bagistoapi::app.graphql.cart.booking-ticket-qty-invalid'));
             }
 
             if ((int) $count > 0) {
@@ -109,10 +112,13 @@ trait HandlesBookingCartItems
         }
 
         if (! $hasAtLeastOne) {
-            throw new InvalidInputException('Select at least one ticket quantity for event booking.');
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.booking-ticket-required'));
         }
     }
 
+    /**
+     * Get channel timezone.
+     */
     private function getChannelTimezone(): ?string
     {
         $channel = core()->getCurrentChannel();
@@ -120,6 +126,9 @@ trait HandlesBookingCartItems
         return $channel?->timezone ?: config('app.timezone');
     }
 
+    /**
+     * Get booking duration minutes.
+     */
     private function getBookingDurationMinutes(int $productId, ?string $bookingType): ?int
     {
         if (
@@ -141,6 +150,9 @@ trait HandlesBookingCartItems
         } ?: null;
     }
 
+    /**
+     * Validate formatted slot exists.
+     */
     private function validateFormattedSlotExists(int $productId, mixed $bookingType, string $date, string $slot): void
     {
         if (
@@ -169,10 +181,13 @@ trait HandlesBookingCartItems
         });
 
         if (! $exists) {
-            throw new InvalidInputException('Selected slot is not available for the given date.');
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.booking-slot-unavailable'));
         }
     }
 
+    /**
+     * Looks like formatted time range.
+     */
     private function looksLikeFormattedTimeRange(string $value): bool
     {
         $slot = trim($value);

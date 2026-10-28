@@ -16,20 +16,18 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Inventory\Models\InventorySource;
 use Webkul\Inventory\Repositories\InventorySourceRepository;
 
-/**
- * POST /api/admin/settings/inventory-sources/mass-delete +
- * createAdminSettingsInventorySourceMassDelete.
- *
- * Pre-validates the whole batch — refuses if deleting all of them would leave
- * zero sources, and refuses if any of the provided IDs is referenced by
- * product_inventories.
- */
 class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected InventorySourceRepository $inventorySourceRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -104,6 +102,9 @@ class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterf
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -131,6 +132,9 @@ class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterf
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

@@ -17,7 +17,7 @@ class GuestCartTokensRepository extends Repository
     }
 
     /**
-     * Find token by value
+     * Find token by value.
      */
     public function findByToken(string $token)
     {
@@ -25,7 +25,7 @@ class GuestCartTokensRepository extends Repository
     }
 
     /**
-     * Find cart by token
+     * Find cart by token.
      */
     public function findCartByToken(string $token)
     {
@@ -42,7 +42,7 @@ class GuestCartTokensRepository extends Repository
     }
 
     /**
-     * Create a new guest cart token
+     * Create a new guest cart token.
      */
     public function createToken(int $cartId): GuestCartTokens
     {
@@ -53,7 +53,7 @@ class GuestCartTokensRepository extends Repository
     }
 
     /**
-     * Update device token for a guest cart
+     * Update device token for a guest cart.
      */
     public function updateDeviceToken(string $token, string $deviceToken): ?GuestCartTokens
     {

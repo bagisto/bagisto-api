@@ -1,64 +1,73 @@
-// tests/restAPI/api/automation/newsletter.spec.ts
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import { expectProblem, readJson, uniqueSuffix } from '../../rest/helpers/coverage/shopCart.helpers';
 
-function assertStatus(resp: any, debugLabel: string) {
-  expect([0, 200, 201, 204, 400, 401, 404, 422, 500]).toContain(resp.status());
-  console.log(`${debugLabel}:`, resp.status());
+const MSG = {
+  SUBSCRIBED: 'You have successfully subscribed to our newsletter.',
+  ALREADY_SUBSCRIBED: 'You are already subscribed to our newsletter.',
+  EMAIL_REQUIRED: 'The customer email field is required.',
+  EMAIL_INVALID: 'The customer email field must be a valid email address.',
+};
+
+function uniqueEmail(): string {
+  return `newsletter.${uniqueSuffix()}@example.com`;
 }
 
-test.describe('Newsletter Subscribe REST API', () => {
-  test('Should subscribe a new email', async ({ request }) => {
-    const email = `newsletter_${Date.now()}@example.com`;
+test.describe('newsletter subscribe rest api', () => {
+  test('a new email is subscribed', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.NEWSLETTER_SUBSCRIBE, {
       method: 'POST',
-      data: { email },
+      data: { customerEmail: uniqueEmail() },
     });
-    assertStatus(response, `POST /api/shop/newsletters (${email})`);
+    const body = await readJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(201);
+    expect(body.success).toBe(true);
+    expect(body.message).toBe(MSG.SUBSCRIBED);
   });
 
-  test('Should handle duplicate subscription gracefully', async ({ request }) => {
-    const email = `dup_${Date.now()}@example.com`;
+  test('a second subscription of the same email is rejected as already subscribed', async ({ request }) => {
+    const customerEmail = uniqueEmail();
+
     const first = await sendRestRequest(request, ENDPOINTS.NEWSLETTER_SUBSCRIBE, {
       method: 'POST',
-      data: { email },
+      data: { customerEmail },
     });
-    assertStatus(first, 'POST /api/shop/newsletters first');
+    expect(first.status()).toBe(201);
 
     const second = await sendRestRequest(request, ENDPOINTS.NEWSLETTER_SUBSCRIBE, {
       method: 'POST',
-      data: { email },
+      data: { customerEmail },
     });
-    // Duplicate may return 200 (idempotent toggle), 201 (created), 400/422 (validation)
-    expect([200, 201, 204, 400, 409, 422, 500]).toContain(second.status());
-    console.log('POST /api/shop/newsletters duplicate:', second.status());
+
+    await expectProblem(second, 400, MSG.ALREADY_SUBSCRIBED);
   });
 
-  test('Should reject invalid email', async ({ request }) => {
+  test('an invalid email is rejected', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.NEWSLETTER_SUBSCRIBE, {
       method: 'POST',
-      data: { email: 'not-an-email' },
+      data: { customerEmail: 'not-an-email' },
     });
-    expect([400, 422, 500]).toContain(response.status());
-    console.log('POST /api/shop/newsletters invalid email:', response.status());
+
+    await expectProblem(response, 400, MSG.EMAIL_INVALID);
   });
 
-  test('Should reject missing email', async ({ request }) => {
+  test('a missing email is rejected', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.NEWSLETTER_SUBSCRIBE, {
       method: 'POST',
       data: {},
     });
-    expect([400, 422, 500]).toContain(response.status());
-    console.log('POST /api/shop/newsletters empty:', response.status());
+
+    await expectProblem(response, 400, MSG.EMAIL_REQUIRED);
   });
 
-  test('Should reject empty email string', async ({ request }) => {
+  test('an empty email string is rejected', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.NEWSLETTER_SUBSCRIBE, {
       method: 'POST',
-      data: { email: '' },
+      data: { customerEmail: '' },
     });
-    expect([400, 422, 500]).toContain(response.status());
-    console.log('POST /api/shop/newsletters empty string:', response.status());
+
+    await expectProblem(response, 400, MSG.EMAIL_REQUIRED);
   });
 });

@@ -30,6 +30,8 @@ use Webkul\BagistoApi\Admin\Models\AdminConfigurationSlug;
 use Webkul\BagistoApi\Admin\Models\AdminConfigurationValues;
 use Webkul\BagistoApi\Admin\Models\AdminCustomer;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerAddress;
+use Webkul\BagistoApi\Admin\Models\AdminCustomerApiSession;
+use Webkul\BagistoApi\Admin\Models\AdminCustomerApiSessionRevoke;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerCartItem;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerCompareItem;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerGdprRequest;
@@ -65,12 +67,17 @@ use Webkul\BagistoApi\Admin\Models\AdminReportingProducts;
 use Webkul\BagistoApi\Admin\Models\AdminReportingSales;
 use Webkul\BagistoApi\Admin\Models\AdminReturn;
 use Webkul\BagistoApi\Admin\Models\AdminReturnableItem;
+use Webkul\BagistoApi\Admin\Models\AdminReturnableOrder;
+use Webkul\BagistoApi\Admin\Models\AdminReturnFile;
 use Webkul\BagistoApi\Admin\Models\AdminReturnMessage;
 use Webkul\BagistoApi\Admin\Models\AdminReturnReason;
 use Webkul\BagistoApi\Admin\Models\AdminRmaCustomField;
 use Webkul\BagistoApi\Admin\Models\AdminRmaReason;
 use Webkul\BagistoApi\Admin\Models\AdminRmaRule;
 use Webkul\BagistoApi\Admin\Models\AdminRmaStatus;
+use Webkul\BagistoApi\Admin\Models\AdminSession;
+use Webkul\BagistoApi\Admin\Models\AdminSettingsApiSession;
+use Webkul\BagistoApi\Admin\Models\AdminSettingsApiToken;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsChannel;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsCurrency;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsDataTransferImport;
@@ -84,6 +91,7 @@ use Webkul\BagistoApi\Admin\Models\AdminSettingsTaxCategory;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTaxRate;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTheme;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsUser;
+use Webkul\BagistoApi\Admin\Models\AdminSettingsUserSession;
 use Webkul\BagistoApi\Admin\Models\AdminShipment;
 use Webkul\BagistoApi\Admin\Models\AdminTransaction;
 use Webkul\BagistoApi\Admin\Models\OrderDetail;
@@ -93,7 +101,7 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 class AdminReadPermissions
 {
     /**
-     * Resource class => ACL key from packages/Webkul/Admin/src/Config/acl.php.
+     * The core ACL key of each admin resource class, or null for the classes any signed-in admin may read.
      *
      * @var array<class-string, string|null>
      */
@@ -101,6 +109,7 @@ class AdminReadPermissions
         AdminProfile::class => null,
         AdminMenu::class => null,
         AdminPermissions::class => null,
+        AdminSession::class => null,
 
         AdminDashboard::class => 'dashboard',
 
@@ -111,10 +120,10 @@ class AdminReadPermissions
         AdminCartPaymentMethod::class => 'sales.orders.create',
         AdminCartShippingRate::class => 'sales.orders.create',
         AdminProduct::class => 'sales.orders.create',
-        AdminCustomerCartItem::class => 'sales.orders.create',
-        AdminCustomerCompareItem::class => 'sales.orders.create',
-        AdminCustomerWishlistItem::class => 'sales.orders.create',
-        AdminCustomerRecentOrderItem::class => 'sales.orders.create',
+        AdminCustomerCartItem::class => 'customers.customers',
+        AdminCustomerCompareItem::class => 'customers.customers',
+        AdminCustomerWishlistItem::class => 'customers.customers',
+        AdminCustomerRecentOrderItem::class => 'customers.customers',
         AdminInvoice::class => 'sales.invoices',
         AdminShipment::class => 'sales.shipments',
         AdminRefund::class => 'sales.refunds',
@@ -123,6 +132,8 @@ class AdminReadPermissions
         AdminEuWithdrawal::class => 'sales.eu_withdrawals',
         AdminReturn::class => 'sales.rma.requests',
         AdminReturnableItem::class => 'sales.rma.requests',
+        AdminReturnableOrder::class => 'sales.rma.requests.create',
+        AdminReturnFile::class => 'sales.rma.requests',
         AdminReturnMessage::class => 'sales.rma.requests',
         AdminReturnReason::class => 'sales.rma.requests',
         AdminRmaReason::class => 'sales.rma.reasons',
@@ -175,6 +186,11 @@ class AdminReadPermissions
         AdminSettingsChannel::class => 'settings.channels',
         AdminSettingsUser::class => 'settings.users',
         AdminSettingsRole::class => 'settings.roles',
+        AdminSettingsUserSession::class => 'settings.api_sessions',
+        AdminSettingsApiSession::class => 'settings.api_sessions',
+        AdminCustomerApiSession::class => 'customers.api_sessions',
+        AdminCustomerApiSessionRevoke::class => 'customers.api_sessions.delete',
+        AdminSettingsApiToken::class => 'settings.api_tokens',
         AdminSettingsTaxCategory::class => 'settings.taxes.tax_categories',
         AdminSettingsTaxRate::class => 'settings.taxes.tax_rates',
         AdminSettingsTheme::class => 'settings.themes',
@@ -197,7 +213,7 @@ class AdminReadPermissions
      * Resolve the calling admin and enforce the read permission of the resource.
      *
      * @throws AuthenticationException When no admin is resolved (401).
-     * @throws AuthorizationException When the admin's role lacks the key (403).
+     * @throws AuthorizationException When the admin's role lacks the key, or the resource has no mapped key (403).
      */
     public static function authorize(?Operation $operation = null, ?string $fallbackClass = null, ?string $override = null): object
     {
@@ -220,14 +236,19 @@ class AdminReadPermissions
     }
 
     /**
-     * The ACL key for a resource class, or null when only authentication is needed.
+     * The ACL key for a resource class, or null when the class is explicitly mapped to authentication only.
+     *
+     * @throws AuthorizationException When the class has no entry in the map, so a new resource is closed by default.
      */
     public static function permissionFor(?string $resourceClass): ?string
     {
-        if ($resourceClass === null) {
-            return null;
+        if (
+            $resourceClass === null
+            || ! array_key_exists($resourceClass, self::MAP)
+        ) {
+            throw new AuthorizationException(__('bagistoapi::app.admin.customer.no-permission'));
         }
 
-        return self::MAP[$resourceClass] ?? null;
+        return self::MAP[$resourceClass];
     }
 }

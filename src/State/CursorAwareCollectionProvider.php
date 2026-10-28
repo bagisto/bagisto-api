@@ -7,28 +7,29 @@ use ApiPlatform\Laravel\Eloquent\State\LinksHandler;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Webkul\BagistoApi\Contracts\PreloadsCollection;
 use Webkul\BagistoApi\Models\Category;
+use Webkul\BagistoApi\Models\Page;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
+use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
+use Webkul\BagistoApi\State\Concerns\ScopesNestedConnections;
 
-/**
- * Generic cursor-aware collection provider for GraphQL queries.
- *
- * API Platform's default CollectionProvider uses page-based pagination
- * which ignores cursor arguments (after/before). This provider properly
- * decodes cursor arguments and applies offset-based pagination so that
- * Relay-style cursor pagination works correctly.
- *
- * Can be used by any model that needs working cursor pagination without
- * custom query logic.
- */
 class CursorAwareCollectionProvider implements ProviderInterface
 {
     use ClampsPageSize;
+    use ResolvesCursorWindow;
+    use ScopesNestedConnections;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly LinksHandler $linksHandler,
     ) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $resourceClass = $operation->getClass();
@@ -38,22 +39,8 @@ class CursorAwareCollectionProvider implements ProviderInterface
 
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
-        $after = $args['after'] ?? null;
-        $before = $args['before'] ?? null;
-
-        $limit = $this->clampPageSize($first ?? $last ?? 10);
-        $offset = 0;
-
-        if ($after) {
-            $decoded = base64_decode($after, true);
-            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
-        }
-
-        if ($before) {
-            $decoded = base64_decode($before, true);
-            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset = max(0, $cursor - $limit);
-        }
+        $requested = $first ?? $last ?? 10;
+        $limit = $requested > 0 ? $this->clampPageSize($requested, $operation->getPaginationMaximumItemsPerPage()) : 0;
 
         $query = $this->linksHandler->handleLinks(
             $model->newQuery(),
@@ -64,8 +51,14 @@ class CursorAwareCollectionProvider implements ProviderInterface
             ] + $context
         );
 
+        $this->scopeToParent($query, $context);
+
         if ($model instanceof Category) {
             $query->where($model->getTable().'.status', 1);
+        }
+
+        if ($model instanceof Page) {
+            $query->inCurrentChannel();
         }
 
         $filters = $context['filters'] ?? [];
@@ -76,20 +69,22 @@ class CursorAwareCollectionProvider implements ProviderInterface
             }
         }
 
-        $total = (clone $query)->count();
-
-        if ($offset > $total) {
-            $offset = max(0, $total - $limit);
+        if (empty($query->getQuery()->orders)) {
+            $query->orderBy($model->getQualifiedKeyName());
         }
 
-        $items = $query
-            ->offset($offset)
-            ->limit($limit)
-            ->get();
+        $total = (clone $query)->count();
 
-        // `first: 0` yields an empty page (the query's LIMIT 0 returns no rows).
-        // Guard the page math + paginator perPage so a zero limit never divides
-        // by zero — that previously surfaced as an "Internal server error".
+        [$offset, $limit] = $this->resolveCursorWindow($args, $total, $limit);
+
+        $items = $limit > 0
+            ? $query->offset($offset)->limit($limit)->get()
+            : $model->newCollection();
+
+        if (is_a($model, PreloadsCollection::class)) {
+            $model::preloadCollection($items);
+        }
+
         $divisor = max(1, $limit);
         $currentPage = $total > 0 ? (int) floor($offset / $divisor) + 1 : 1;
 

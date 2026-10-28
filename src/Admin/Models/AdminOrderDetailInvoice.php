@@ -6,10 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Slim invoice summary — nested sub-resource of AdminOrderDetail (the order-view
- * Invoices panel). For the full invoice use GET /api/admin/invoices/{id}.
- */
 #[ApiResource(
     shortName: 'AdminOrderDetailInvoice',
     operations: [],
@@ -23,10 +19,18 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminOrderDetailInvoice extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the invoices.
+     *
+     * @var string
+     */
     protected $table = 'invoices';
 
-    /** @var array */
+    /**
+     * The native types the order invoice attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'email_sent' => 'boolean',
@@ -39,6 +43,9 @@ class AdminOrderDetailInvoice extends Model
         'created_at' => 'datetime',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

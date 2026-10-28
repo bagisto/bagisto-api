@@ -1,63 +1,106 @@
-// Admin Catalog — Attributes REST e2e.
-// Listing, detail, CRUD, mass-delete + nested option CRUD.
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_CATALOG } from '../../../../rest/endpoints/admin.catalog.endpoints';
 
 test.describe.configure({ timeout: 60_000 });
 
-async function safeJson(resp: any): Promise<any> {
-  try { return await resp.json(); } catch { return null; }
+const MISSING_ID = 99999999;
+const ATTRIBUTE_NOT_FOUND = 'Attribute not found.';
+
+function uniqueSuffix(): string {
+  return `${Date.now()}_${Math.floor(Math.random() * 1_000_000)}`;
 }
 
-async function findFirstId(request: any, endpoint: string): Promise<number | null> {
-  const r = await sendAdminRequest(request, endpoint, { params: { per_page: '1' } });
-  if (r.status() !== 200) return null;
-  const body = await safeJson(r);
-  const rows = body?.data ?? (Array.isArray(body) ? body : []);
-  return rows[0]?.id ?? null;
+async function createAttribute(request: APIRequestContext, type: string, codePrefix = `e2e_${type}`): Promise<any> {
+  const suffix = uniqueSuffix();
+  const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTES, {
+    method: 'POST',
+    data: {
+      code: `${codePrefix}_${suffix}`,
+      admin_name: `E2E ${type} ${suffix}`,
+      type,
+    },
+  });
+  expect(resp.status()).toBe(201);
+  const body = await resp.json();
+  expect(typeof body.id).toBe('number');
+  expect(body.type).toBe(type);
+
+  return body;
 }
 
-test.describe('Admin Catalog Attributes REST API', () => {
-  test('listing returns 200 + envelope', async ({ request }) => {
-    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTES);
-    expect(resp.status()).toBe(200);
-    const body = await safeJson(resp);
-    expect(body?.data ? Array.isArray(body.data) : Array.isArray(body)).toBe(true);
+test.describe('admin catalog attributes rest api', () => {
+  let createdIds: number[];
+
+  test.beforeEach(() => {
+    createdIds = [];
   });
 
-  test('listing with filter + sort + pagination', async ({ request }) => {
-    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTES, {
-      params: { per_page: '5', sort: 'id-desc', type: 'text' },
-    });
-    expect([200, 400, 422]).toContain(resp.status());
-  });
-
-  test('detail for first listed attribute', async ({ request }) => {
-    const id = await findFirstId(request, ADMIN_CATALOG.ATTRIBUTES);
-    if (!id) test.skip(true, 'no attributes seeded');
-    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(id!));
-    expect([200, 404]).toContain(resp.status());
-    if (resp.status() === 200) {
-      const body = await safeJson(resp);
-      expect(body?.id ?? body?.data?.id).toBeTruthy();
+  test.afterEach(async ({ request }) => {
+    for (const id of createdIds) {
+      await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(id), { method: 'DELETE' });
     }
   });
 
-  test('detail for non-existent id returns 404', async ({ request }) => {
-    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(99999999));
-    expect([404, 400]).toContain(resp.status());
+  test('listing returns 200 + envelope', async ({ request }) => {
+    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTES);
+    expect(resp.status()).toBe(200);
+    const body = await resp.json();
+    expect(Array.isArray(body.data)).toBe(true);
+    expect(body.meta.currentPage).toBe(1);
+    expect(body.meta.perPage).toBe(10);
   });
 
-  test('create attribute happy-ish then cleanup', async ({ request }) => {
-    const ts = Date.now();
-    const code = `e2e_attr_${ts}`;
+  test('listing with filter + sort + pagination', async ({ request }) => {
+    const prefix = `e2e_flt_${uniqueSuffix()}`;
+    const first = await createAttribute(request, 'text', prefix);
+    createdIds.push(first.id);
+    const second = await createAttribute(request, 'text', prefix);
+    createdIds.push(second.id);
+    const other = await createAttribute(request, 'textarea', prefix);
+    createdIds.push(other.id);
+
+    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTES, {
+      params: { per_page: '5', sort: 'id-desc', type: 'text', code: prefix },
+    });
+    expect(resp.status()).toBe(200);
+    const body = await resp.json();
+    expect(body.meta.perPage).toBe(5);
+    expect(body.meta.total).toBe(2);
+    expect(body.data.map((row: any) => row.id)).toEqual([second.id, first.id]);
+    for (const row of body.data) {
+      expect(row.type).toBe('text');
+    }
+  });
+
+  test('detail for a freshly created attribute', async ({ request }) => {
+    const created = await createAttribute(request, 'text');
+    createdIds.push(created.id);
+
+    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(created.id));
+    expect(resp.status()).toBe(200);
+    const body = await resp.json();
+    expect(body.id).toBe(created.id);
+    expect(body.code).toBe(created.code);
+    expect(body.type).toBe('text');
+    expect(body.adminName).toBe(created.adminName);
+    expect(body.isUserDefined).toBe(1);
+  });
+
+  test('detail for non-existent id returns 404', async ({ request }) => {
+    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(MISSING_ID));
+    expect(resp.status()).toBe(404);
+    expect((await resp.json()).detail).toBe(ATTRIBUTE_NOT_FOUND);
+  });
+
+  test('create attribute then delete it', async ({ request }) => {
+    const suffix = uniqueSuffix();
+    const code = `e2e_attr_${suffix}`;
     const createResp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTES, {
       method: 'POST',
       data: {
         code,
-        admin_name: `E2E Attr ${ts}`,
+        admin_name: `E2E Attr ${suffix}`,
         type: 'text',
         is_required: false,
         is_unique: false,
@@ -65,20 +108,23 @@ test.describe('Admin Catalog Attributes REST API', () => {
         position: 0,
       },
     });
-    const status = createResp.status();
-    console.log('attributes create:', status);
-    expect([200, 201, 400, 422, 429]).toContain(status);
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json();
+    expect(created.code).toBe(code);
+    expect(created.adminName).toBe(`E2E Attr ${suffix}`);
+    expect(created.type).toBe('text');
+    expect(created.isRequired).toBe(0);
+    expect(created.isUnique).toBe(0);
+    expect(created.isUserDefined).toBe(1);
 
-    if (status === 200 || status === 201) {
-      const body = await safeJson(createResp);
-      const id = body?.id ?? body?.data?.id;
-      if (id) {
-        const delResp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(id), {
-          method: 'DELETE',
-        });
-        expect([200, 204, 400, 404, 409, 422]).toContain(delResp.status());
-      }
-    }
+    const delResp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(created.id), {
+      method: 'DELETE',
+    });
+    expect(delResp.status()).toBe(200);
+    expect((await delResp.json()).message).toBe('Attribute deleted successfully.');
+
+    const gone = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(created.id));
+    expect(gone.status()).toBe(404);
   });
 
   test('create attribute with empty body is rejected', async ({ request }) => {
@@ -86,22 +132,25 @@ test.describe('Admin Catalog Attributes REST API', () => {
       method: 'POST',
       data: {},
     });
-    expect([400, 422, 500]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('The code field is required.');
   });
 
-  test('update non-existent attribute returns 404/422', async ({ request }) => {
-    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(99999999), {
-      method: 'PUT' as any,
+  test('update non-existent attribute returns 404', async ({ request }) => {
+    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(MISSING_ID), {
+      method: 'PUT',
       data: { admin_name: 'no' },
     });
-    expect([400, 404, 422]).toContain(resp.status());
+    expect(resp.status()).toBe(404);
+    expect((await resp.json()).detail).toBe(ATTRIBUTE_NOT_FOUND);
   });
 
   test('delete non-existent attribute returns 404', async ({ request }) => {
-    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(99999999), {
+    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(MISSING_ID), {
       method: 'DELETE',
     });
-    expect([400, 404, 422]).toContain(resp.status());
+    expect(resp.status()).toBe(404);
+    expect((await resp.json()).detail).toBe(ATTRIBUTE_NOT_FOUND);
   });
 
   test('mass-delete empty indices is rejected', async ({ request }) => {
@@ -109,108 +158,96 @@ test.describe('Admin Catalog Attributes REST API', () => {
       method: 'POST',
       data: { indices: [] },
     });
-    expect([400, 422]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe('The indices field is required and must be a non-empty array.');
   });
 
   test('mass-delete on freshly created attributes', async ({ request }) => {
-    const ts = Date.now();
     const ids: number[] = [];
     for (let i = 0; i < 2; i++) {
-      const r = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTES, {
-        method: 'POST',
-        data: {
-          code: `e2e_mass_attr_${ts}_${i}`,
-          admin_name: `E2E Mass ${ts} ${i}`,
-          type: 'text',
-        },
-      });
-      if (r.status() === 200 || r.status() === 201) {
-        const b = await safeJson(r);
-        const id = b?.id ?? b?.data?.id;
-        if (id) ids.push(id);
-      }
+      const created = await createAttribute(request, 'text');
+      ids.push(created.id);
+      createdIds.push(created.id);
     }
-    if (ids.length > 0) {
-      const del = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTES_MASS_DELETE, {
-        method: 'POST',
-        data: { indices: ids },
-      });
-      expect([200, 201, 400, 422]).toContain(del.status());
+
+    const del = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTES_MASS_DELETE, {
+      method: 'POST',
+      data: { indices: ids },
+    });
+    expect(del.status()).toBe(200);
+    const body = await del.json();
+    expect(body.deleted).toEqual(ids);
+    expect(body.message).toBe('Attributes deleted successfully.');
+
+    for (const id of ids) {
+      const gone = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(id));
+      expect(gone.status()).toBe(404);
     }
   });
 });
 
-test.describe('Admin Catalog Attribute Options REST API', () => {
-  // Helper: spin up a select-type attribute we can attach options to.
-  async function createSelectAttribute(request: any): Promise<number | null> {
-    const ts = Date.now();
-    const r = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTES, {
+test.describe('admin catalog attribute options rest api', () => {
+  let attributeId: number;
+
+  test.afterEach(async ({ request }) => {
+    if (attributeId) {
+      await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(attributeId), { method: 'DELETE' });
+    }
+  });
+
+  test('create option + update + delete on a select attribute', async ({ request }) => {
+    attributeId = 0;
+    attributeId = (await createAttribute(request, 'select')).id;
+
+    const suffix = uniqueSuffix();
+    const createResp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE_OPTIONS(attributeId), {
       method: 'POST',
       data: {
-        code: `e2e_select_${ts}`,
-        admin_name: `E2E Select ${ts}`,
-        type: 'select',
-      },
-    });
-    if (r.status() !== 200 && r.status() !== 201) return null;
-    const b = await safeJson(r);
-    return b?.id ?? b?.data?.id ?? null;
-  }
-
-  test('create option happy-ish + update + delete + attr cleanup', async ({ request }) => {
-    const attrId = await createSelectAttribute(request);
-    if (!attrId) test.skip(true, 'select-attribute fixture not creatable');
-
-    const ts = Date.now();
-    const createResp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE_OPTIONS(attrId!), {
-      method: 'POST',
-      data: {
-        admin_name: `Option ${ts}`,
+        admin_name: `Option ${suffix}`,
         sort_order: 0,
       },
     });
-    const status = createResp.status();
-    console.log('attribute option create:', status);
-    expect([200, 201, 400, 422, 429]).toContain(status);
+    expect(createResp.status()).toBe(201);
+    const created = await createResp.json();
+    expect(created.id).toBe(attributeId);
+    const option = created.options.find((row: any) => row.adminName === `Option ${suffix}`);
+    expect(option).toBeDefined();
+    expect(option.sortOrder).toBe(0);
 
-    let optionId: number | null = null;
-    if (status === 200 || status === 201) {
-      const b = await safeJson(createResp);
-      optionId = b?.id ?? b?.data?.id ?? null;
-    }
+    const upd = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE_OPTION(attributeId, option.id), {
+      method: 'PUT',
+      data: { admin_name: `Option ${suffix} v2` },
+    });
+    expect(upd.status()).toBe(200);
+    const updated = await upd.json();
+    expect(updated.options.find((row: any) => row.id === option.id).adminName).toBe(`Option ${suffix} v2`);
 
-    if (optionId) {
-      const upd = await sendAdminRequest(
-        request,
-        ADMIN_CATALOG.ATTRIBUTE_OPTION(attrId!, optionId),
-        {
-          method: 'PUT' as any,
-          data: { admin_name: `Option ${ts} v2` },
-        }
-      );
-      expect([200, 201, 400, 404, 422]).toContain(upd.status());
+    const del = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE_OPTION(attributeId, option.id), {
+      method: 'DELETE',
+    });
+    expect(del.status()).toBe(200);
+    expect((await del.json()).message).toBe('Attribute option deleted successfully.');
 
-      const del = await sendAdminRequest(
-        request,
-        ADMIN_CATALOG.ATTRIBUTE_OPTION(attrId!, optionId),
-        { method: 'DELETE' }
-      );
-      expect([200, 204, 400, 404, 409, 422]).toContain(del.status());
-    }
-
-    // Always try to clean up the parent attribute.
-    await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(attrId!), { method: 'DELETE' });
+    const detail = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(attributeId));
+    expect(detail.status()).toBe(200);
+    expect((await detail.json()).options.map((row: any) => row.id)).not.toContain(option.id);
   });
 
   test('create option on non-select attribute is rejected', async ({ request }) => {
-    // Find an attribute and try options regardless — for many text-type attrs the API rejects.
-    const id = await findFirstId(request, ADMIN_CATALOG.ATTRIBUTES);
-    if (!id) test.skip(true, 'no attribute available');
-    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE_OPTIONS(id!), {
+    attributeId = 0;
+    attributeId = (await createAttribute(request, 'text')).id;
+
+    const resp = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE_OPTIONS(attributeId), {
       method: 'POST',
       data: { admin_name: 'nope' },
     });
-    // text/textarea/etc → 400/422; if attribute happens to be select it'd succeed.
-    expect([200, 201, 400, 404, 422, 500]).toContain(resp.status());
+    expect(resp.status()).toBe(422);
+    expect((await resp.json()).detail).toBe(
+      'Attribute type "text" does not support options. Only select, multiselect, and checkbox attributes can have options.'
+    );
+
+    const detail = await sendAdminRequest(request, ADMIN_CATALOG.ATTRIBUTE(attributeId));
+    expect(detail.status()).toBe(200);
+    expect((await detail.json()).options).toEqual([]);
   });
 });

@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Dto\CreateEuWithdrawalInput;
@@ -15,6 +14,7 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\EuWithdrawal;
 use Webkul\BagistoApi\Models\GuestEuWithdrawal;
 use Webkul\BagistoApi\State\Concerns\BuildsEuWithdrawal;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\EUWithdrawal\Services\WithdrawalService;
 use Webkul\Sales\Repositories\OrderRepository;
 
@@ -27,12 +27,18 @@ class EuWithdrawalProcessor implements ProcessorInterface
 
     use BuildsEuWithdrawal;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
         private readonly OrderRepository $orders,
         private readonly WithdrawalService $service,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof CreateEuWithdrawalInput) {
@@ -61,9 +67,12 @@ class EuWithdrawalProcessor implements ProcessorInterface
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }
 
+    /**
+     * Handle customer.
+     */
     private function handleCustomer(int $orderId, ?string $reasonText): EuWithdrawal
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
@@ -88,6 +97,9 @@ class EuWithdrawalProcessor implements ProcessorInterface
         return $this->buildEuWithdrawal($withdrawal->loadMissing('order'));
     }
 
+    /**
+     * Handle guest.
+     */
     private function handleGuest(?string $incrementId, ?string $email, ?string $reasonText): GuestEuWithdrawal
     {
         $this->validateGuest($incrementId, $email, $reasonText);
@@ -133,6 +145,9 @@ class EuWithdrawalProcessor implements ProcessorInterface
         RateLimiter::hit($key, 60);
     }
 
+    /**
+     * Assert channel enabled.
+     */
     private function assertChannelEnabled(object $order): void
     {
         if (! $this->channelEnabled($order)) {
@@ -140,11 +155,17 @@ class EuWithdrawalProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Channel enabled.
+     */
     private function channelEnabled(object $order): bool
     {
         return (bool) core()->getConfigData('sales.eu_withdrawal.general.enabled', optional($order->channel)->code);
     }
 
+    /**
+     * Validate reason.
+     */
     private function validateReason(?string $reasonText): void
     {
         $validator = Validator::make(['reason_text' => $reasonText], [
@@ -156,6 +177,9 @@ class EuWithdrawalProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Validate guest.
+     */
     private function validateGuest(?string $incrementId, ?string $email, ?string $reasonText): void
     {
         $validator = Validator::make([

@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 trait ServesLoadedTranslation
 {
+    /**
+     * Get relation value.
+     */
     public function getRelationValue($key)
     {
         if (
@@ -19,6 +22,9 @@ trait ServesLoadedTranslation
         return parent::getRelationValue($key);
     }
 
+    /**
+     * Translation from loaded.
+     */
     protected function translationFromLoaded(): ?Model
     {
         return $this->translations->firstWhere('locale', app()->getLocale())

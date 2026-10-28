@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
+use Webkul\Checkout\Models\CartItem;
 use Webkul\Product\Models\Product;
 
 class CartTest extends RestApiTestCase
@@ -201,9 +202,9 @@ class CartTest extends RestApiTestCase
     }
 
     /**
-     * Applying an unknown coupon code returns an error or an unsuccessful response.
+     * Applying an unknown coupon code is refused with 422, as the storefront does.
      */
-    public function test_apply_invalid_coupon_code_returns_error_or_failure(): void
+    public function test_apply_invalid_coupon_code_returns_422(): void
     {
         $this->seedRequiredData();
         $cart = $this->createGuestCartWithProduct();
@@ -212,11 +213,25 @@ class CartTest extends RestApiTestCase
             'couponCode' => 'INVALID_COUPON_'.uniqid(),
         ]);
 
-        if ($response->getStatusCode() === 201) {
-            expect((bool) $response->json('success'))->toBeFalse();
-        } else {
-            expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
-        }
+        $response->assertStatus(422);
+        expect($response->json('message') ?? $response->json('detail'))->toBe(__('shop::app.checkout.coupon.invalid'));
+    }
+
+    /**
+     * Applying the coupon the cart already carries is refused with 422.
+     */
+    public function test_apply_already_applied_coupon_returns_422(): void
+    {
+        $this->seedRequiredData();
+        $code = $this->seedActiveCoupon();
+        $cart = $this->createGuestCartWithProduct();
+
+        $this->postWithToken($this->applyCouponUrl, $cart['token'], ['couponCode' => $code])->assertSuccessful();
+
+        $response = $this->postWithToken($this->applyCouponUrl, $cart['token'], ['couponCode' => $code]);
+
+        $response->assertStatus(422);
+        expect($response->json('message') ?? $response->json('detail'))->toBe(__('shop::app.checkout.coupon.already-applied'));
     }
 
     /**
@@ -293,6 +308,26 @@ class CartTest extends RestApiTestCase
         $read = $this->postWithToken('/api/shop/cart', $cart['token'], []);
         expect($read->getStatusCode())->toBeIn([200, 201]);
         expect($read->json('couponCode'))->toBe($code);
+    }
+
+    /**
+     * Reading an empty guest cart returns it with no items and keeps it for the next read.
+     */
+    public function test_read_empty_cart_returns_the_cart(): void
+    {
+        $this->seedRequiredData();
+        $token = $this->createGuestCartToken();
+
+        $read = $this->postWithToken('/api/shop/cart', $token, []);
+
+        expect($read->getStatusCode())->toBe(201);
+        expect($read->json('itemsCount'))->toBe(0);
+        expect($read->json('items'))->toBe([]);
+
+        $again = $this->postWithToken('/api/shop/cart', $token, []);
+
+        expect($again->getStatusCode())->toBe(201);
+        expect($again->json('id'))->toBe($read->json('id'));
     }
 
     /**
@@ -406,7 +441,9 @@ class CartTest extends RestApiTestCase
             'cartItemId' => 999999,
         ]);
 
-        expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
+        $response->assertStatus(400);
+
+        expect($response->json('detail') ?? $response->json('message'))->toBe(__('bagistoapi::app.graphql.cart.cart-item-not-found'));
     }
 
     /**
@@ -428,15 +465,61 @@ class CartTest extends RestApiTestCase
             'quantity' => 1,
         ]);
 
-        $id1 = (int) ($resp1->json('items.0.id') ?? 0);
-        $id2 = (int) ($resp2->json('items.1.id') ?? $resp2->json('items.0.id') ?? 0);
+        $resp1->assertSuccessful();
+        $items = collect($resp2->json('items'));
+        $id1 = (int) $items->firstWhere('productId', $product1->id)['id'];
+        $id2 = (int) $items->firstWhere('productId', $product2->id)['id'];
 
         $response = $this->postWithToken($this->removeItemsUrl, $token, [
-            'itemIds' => array_filter([$id1, $id2]),
+            'itemIds' => [$id1, $id2],
         ]);
 
-        expect($response->getStatusCode())->toBeIn([200, 201]);
+        $response->assertSuccessful();
         expect((int) $response->json('itemsCount'))->toBe(0);
+    }
+
+    /**
+     * Removing the same cart item twice in one request removes it once.
+     */
+    public function test_remove_multiple_cart_items_ignores_duplicate_ids(): void
+    {
+        $this->seedRequiredData();
+        $product1 = $this->createSimpleProduct();
+        $product2 = $this->createSimpleProduct();
+        $token = $this->createGuestCartToken();
+
+        $this->postWithToken($this->addProductUrl, $token, ['productId' => $product1->id, 'quantity' => 1])->assertSuccessful();
+        $items = collect($this->postWithToken($this->addProductUrl, $token, ['productId' => $product2->id, 'quantity' => 1])->json('items'));
+        $id1 = (int) $items->firstWhere('productId', $product1->id)['id'];
+
+        $response = $this->postWithToken($this->removeItemsUrl, $token, [
+            'itemIds' => [$id1, $id1],
+        ]);
+
+        $response->assertSuccessful();
+        expect((int) $response->json('itemsCount'))->toBe(1);
+        expect(collect($response->json('items'))->pluck('productId')->all())->toBe([$product2->id]);
+    }
+
+    /**
+     * Removing a list that names an item outside the cart removes nothing.
+     */
+    public function test_remove_multiple_cart_items_rejects_an_item_outside_the_cart(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->createSimpleProduct();
+        $token = $this->createGuestCartToken();
+
+        $items = collect($this->postWithToken($this->addProductUrl, $token, ['productId' => $product->id, 'quantity' => 1])->json('items'));
+        $itemId = (int) $items->first()['id'];
+
+        $response = $this->postWithToken($this->removeItemsUrl, $token, [
+            'itemIds' => [$itemId, 99999999],
+        ]);
+
+        $response->assertStatus(400);
+        expect($response->json('detail') ?? $response->json('message'))->toBe(__('bagistoapi::app.graphql.cart.cart-item-not-found'));
+        expect(CartItem::query()->whereKey($itemId)->exists())->toBeTrue();
     }
 
     /**

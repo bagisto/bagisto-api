@@ -5,18 +5,18 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\Request;
-use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Models\CustomerAddress;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 use Webkul\Customer\Models\Customer;
 
-/**
- * Serves a single customer address, scoped to the authenticated customer.
- */
 class CustomerAddressItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $request = Request::instance() ?? ($context['request'] ?? null);
@@ -51,25 +51,11 @@ class CustomerAddressItemProvider implements ProviderInterface
         return $address;
     }
 
+    /**
+     * The id of the customer behind a customer access token.
+     */
     private function getCustomerIdFromToken(string $token): ?int
     {
-        try {
-            if (! str_contains($token, '|')) {
-                return null;
-            }
-
-            $personalAccessToken = PersonalAccessToken::findToken($token);
-
-            if (
-                ! $personalAccessToken
-                || ! $personalAccessToken->tokenable instanceof Customer
-            ) {
-                return null;
-            }
-
-            return (int) $personalAccessToken->tokenable->id;
-        } catch (\Throwable) {
-            return null;
-        }
+        return CurrentCustomer::fromToken($token)?->id;
     }
 }

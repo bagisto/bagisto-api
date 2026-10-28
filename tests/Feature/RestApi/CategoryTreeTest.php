@@ -8,43 +8,18 @@ use Webkul\Category\Models\CategoryTranslation;
 
 class CategoryTreeTest extends RestApiTestCase
 {
+    /**
+     * The url.
+     */
     private string $url = '/api/shop/category-trees';
 
-    private function createCategory(array $categoryAttrs = [], array $translationAttrs = []): Category
-    {
-        $category = Category::factory()->create(array_merge([
-            'status' => 1,
-            'position' => 1,
-        ], $categoryAttrs));
+    // ============================================================================
+    // GET /category-trees (No ParentId)
+    // ============================================================================
 
-        CategoryTranslation::factory()->create(array_merge([
-            'category_id' => $category->id,
-            'locale' => 'en',
-            'name' => 'Category '.$category->id,
-            'slug' => 'category-'.$category->id,
-        ], $translationAttrs));
-
-        return $category->fresh();
-    }
-
-    private function createChildCategory(int $parentId, array $attrs = []): Category
-    {
-        return $this->createCategory(array_merge(['parent_id' => $parentId], $attrs));
-    }
-
-    private function rootCategoryId(): int
-    {
-        $id = Category::query()->whereNull('parent_id')->orderBy('id')->value('id');
-
-        if (! $id) {
-            $this->markTestSkipped('No root categories found. seedRequiredData must run first.');
-        }
-
-        return (int) $id;
-    }
-
-    // ── GET /category-trees (no parentId) ─────────────────────
-
+    /**
+     * Test get tree returns ok.
+     */
     public function test_get_tree_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -54,6 +29,9 @@ class CategoryTreeTest extends RestApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test get tree returns array.
+     */
     public function test_get_tree_returns_array(): void
     {
         $this->seedRequiredData();
@@ -64,6 +42,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    /**
+     * Test get tree returns non empty list.
+     */
     public function test_get_tree_returns_non_empty_list(): void
     {
         $this->seedRequiredData();
@@ -74,6 +55,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect(count($response->json()))->toBeGreaterThan(0);
     }
 
+    /**
+     * Test get tree is not paginated.
+     */
     public function test_get_tree_is_not_paginated(): void
     {
         $this->seedRequiredData();
@@ -81,12 +65,14 @@ class CategoryTreeTest extends RestApiTestCase
         $response = $this->publicGet($this->url);
 
         $response->assertOk();
-        // Paginated responses include hydra:member; this endpoint is a plain array
         $body = $response->json();
         expect(is_array($body))->toBeTrue();
         expect(array_key_exists('hydra:member', $body))->toBeFalse();
     }
 
+    /**
+     * Test tree items have expected fields.
+     */
     public function test_tree_items_have_expected_fields(): void
     {
         $this->seedRequiredData();
@@ -102,6 +88,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect($first)->toHaveKey('children');
     }
 
+    /**
+     * Test tree items include translation.
+     */
     public function test_tree_items_include_translation(): void
     {
         $this->seedRequiredData();
@@ -122,6 +111,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect($found['translation'])->toHaveKey('urlPath');
     }
 
+    /**
+     * Test tree items children is array.
+     */
     public function test_tree_items_children_is_array(): void
     {
         $this->seedRequiredData();
@@ -131,6 +123,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect($first['children'])->toBeArray();
     }
 
+    /**
+     * Test tree items id is integer.
+     */
     public function test_tree_items_id_is_integer(): void
     {
         $this->seedRequiredData();
@@ -140,6 +135,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect($first['id'])->toBeInt();
     }
 
+    /**
+     * Test tree children are nested.
+     */
     public function test_tree_children_are_nested(): void
     {
         $this->seedRequiredData();
@@ -167,8 +165,13 @@ class CategoryTreeTest extends RestApiTestCase
         expect(in_array($child->id, $childIds))->toBeTrue();
     }
 
-    // ── GET /category-trees?parentId={id} ─────────────────────
+    // ============================================================================
+    // GET /category-trees?parentId={id}
+    // ============================================================================
 
+    /**
+     * Test get tree with parent id returns ok.
+     */
     public function test_get_tree_with_parent_id_returns_ok(): void
     {
         $this->seedRequiredData();
@@ -179,6 +182,9 @@ class CategoryTreeTest extends RestApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Test get tree with parent id returns children.
+     */
     public function test_get_tree_with_parent_id_returns_children(): void
     {
         $this->seedRequiredData();
@@ -191,6 +197,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect(in_array($child->id, $childIds))->toBeTrue();
     }
 
+    /**
+     * Test get tree with parent id excludes parent itself.
+     */
     public function test_get_tree_with_parent_id_excludes_parent_itself(): void
     {
         $this->seedRequiredData();
@@ -202,6 +211,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect(in_array($rootId, $ids))->toBeFalse();
     }
 
+    /**
+     * Test get tree with parent id nests grandchildren.
+     */
     public function test_get_tree_with_parent_id_nests_grandchildren(): void
     {
         $this->seedRequiredData();
@@ -218,6 +230,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect(in_array($grand->id, $grandIds))->toBeTrue();
     }
 
+    /**
+     * Test get tree with nonexistent parent id returns empty.
+     */
     public function test_get_tree_with_nonexistent_parent_id_returns_empty(): void
     {
         $this->seedRequiredData();
@@ -228,6 +243,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect($response->json())->toBe([]);
     }
 
+    /**
+     * Test get tree with parent id omits inactive children.
+     */
     public function test_get_tree_with_parent_id_omits_inactive_children(): void
     {
         $this->seedRequiredData();
@@ -240,6 +258,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect(in_array($inactive->id, $ids))->toBeFalse();
     }
 
+    /**
+     * Test get tree with parent id children have translation.
+     */
     public function test_get_tree_with_parent_id_children_have_translation(): void
     {
         $this->seedRequiredData();
@@ -255,23 +276,30 @@ class CategoryTreeTest extends RestApiTestCase
         expect($inTree['translation'])->toHaveKey('slug');
     }
 
-    // ── depth parameter ───────────────────────────────────────
+    // ============================================================================
+    // Depth Parameter
+    // ============================================================================
 
+    /**
+     * Test depth one produces empty children.
+     */
     public function test_depth_one_produces_empty_children(): void
     {
         $this->seedRequiredData();
         $rootId = $this->rootCategoryId();
         $child = $this->createChildCategory($rootId);
-        $this->createChildCategory($child->id); // grandchild
+        $this->createChildCategory($child->id);
 
         $tree = $this->publicGet($this->url.'?parentId='.$rootId.'&depth=1')->json();
         $childInTree = collect($tree)->firstWhere('id', $child->id);
 
         expect($childInTree)->not()->toBeNull();
-        // depth=1 means no nesting below the immediate children
         expect($childInTree['children'])->toBe([]);
     }
 
+    /**
+     * Test depth two shows grandchildren.
+     */
     public function test_depth_two_shows_grandchildren(): void
     {
         $this->seedRequiredData();
@@ -287,11 +315,13 @@ class CategoryTreeTest extends RestApiTestCase
         expect(in_array($grand->id, $grandIds))->toBeTrue();
     }
 
+    /**
+     * Test default depth is applied when omitted.
+     */
     public function test_default_depth_is_applied_when_omitted(): void
     {
         $this->seedRequiredData();
 
-        // Without depth param the endpoint still returns valid tree data
         $response = $this->publicGet($this->url);
 
         $response->assertOk();
@@ -300,11 +330,7 @@ class CategoryTreeTest extends RestApiTestCase
 
     /**
      * Regression — Bug 3 (e2e wave 2026-05-25):
-     * CategoryTreeProvider read $category->url straight from the core model,
-     * which returns an UrlGenerator object instead of a string when the
-     * translated slug is null. That object then tripped Symfony Serializer
-     * into reading Request::getSession() → HTTP 400 "no session available".
-     * Provider now calls safeCategoryUrl() which always returns a string.
+     * CategoryTreeProvider read $category->url straight from the core model,.
      */
     public function test_tree_handles_categories_with_null_slug(): void
     {
@@ -322,6 +348,9 @@ class CategoryTreeTest extends RestApiTestCase
         }
     }
 
+    /**
+     * Test tree roots are limited to the channel root category.
+     */
     public function test_tree_roots_are_limited_to_the_channel_root_category(): void
     {
         $this->seedRequiredData();
@@ -337,6 +366,9 @@ class CategoryTreeTest extends RestApiTestCase
         expect($ids)->not->toContain($otherRoot->id);
     }
 
+    /**
+     * Test depth is clamped to a valid range.
+     */
     public function test_depth_is_clamped_to_a_valid_range(): void
     {
         $this->seedRequiredData();
@@ -348,5 +380,47 @@ class CategoryTreeTest extends RestApiTestCase
         $huge->assertOk();
         expect($zero->json())->not->toBeEmpty();
         expect($huge->json())->not->toBeEmpty();
+    }
+
+    /**
+     * Create category.
+     */
+    private function createCategory(array $categoryAttrs = [], array $translationAttrs = []): Category
+    {
+        $category = Category::factory()->create(array_merge([
+            'status' => 1,
+            'position' => 1,
+        ], $categoryAttrs));
+
+        CategoryTranslation::factory()->create(array_merge([
+            'category_id' => $category->id,
+            'locale' => 'en',
+            'name' => 'Category '.$category->id,
+            'slug' => 'category-'.$category->id,
+        ], $translationAttrs));
+
+        return $category->fresh();
+    }
+
+    /**
+     * Create child category.
+     */
+    private function createChildCategory(int $parentId, array $attrs = []): Category
+    {
+        return $this->createCategory(array_merge(['parent_id' => $parentId], $attrs));
+    }
+
+    /**
+     * Root category id.
+     */
+    private function rootCategoryId(): int
+    {
+        $id = Category::query()->whereNull('parent_id')->orderBy('id')->value('id');
+
+        if (! $id) {
+            $this->markTestSkipped('No root categories found. seedRequiredData must run first.');
+        }
+
+        return (int) $id;
     }
 }

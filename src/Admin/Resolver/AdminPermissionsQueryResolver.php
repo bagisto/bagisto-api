@@ -10,6 +10,9 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 
 class AdminPermissionsQueryResolver implements QueryItemResolverInterface
 {
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?object $item, array $context): AdminPermissions
     {
         $admin = AdminAuthHelper::resolveAdmin();

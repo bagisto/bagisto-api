@@ -3,17 +3,20 @@
 namespace Webkul\BagistoApi\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\QueryItemResolverInterface;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\Wishlist;
 use Webkul\BagistoApi\Service\GenericIdNormalizer;
+use Webkul\BagistoApi\Support\CurrentCustomer;
 
 class WishlistQueryResolver implements QueryItemResolverInterface
 {
+    /**
+     * Handle the invoke magic method.
+     */
     public function __invoke(?object $item, array $context): object
     {
-        $customer = Auth::guard('sanctum')->user();
+        $customer = CurrentCustomer::user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));

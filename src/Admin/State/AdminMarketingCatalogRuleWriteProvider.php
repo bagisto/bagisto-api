@@ -8,12 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCatalogRule;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Placeholder provider for AdminMarketingCatalogRule PUT/DELETE so API Platform
- * can resolve the resource before dispatching to the processor.
- */
 class AdminMarketingCatalogRuleWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminMarketingCatalogRule
     {
         if (! AdminAuthHelper::resolveAdmin()) {

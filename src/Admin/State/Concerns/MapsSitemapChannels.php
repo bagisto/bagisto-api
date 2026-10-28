@@ -4,9 +4,6 @@ namespace Webkul\BagistoApi\Admin\State\Concerns;
 
 use Illuminate\Support\Facades\File;
 
-/**
- * Channel-aware sitemap output, shared by the listing, the detail and the generate result.
- */
 trait MapsSitemapChannels
 {
     /**

@@ -22,36 +22,24 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\CatalogRule\Models\CatalogRule;
 use Webkul\CatalogRule\Repositories\CatalogRuleRepository;
 
-/**
- * Handles POST, PUT, DELETE on AdminMarketingCatalogRule.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Promotions\CatalogRuleController:
- *   store / update / destroy. Events fired:
- *     promotions.catalog_rule.create.before / after
- *     promotions.catalog_rule.update.before / after
- *     promotions.catalog_rule.delete.before / after
- *
- * Permission resolution: Sanctum pattern — read role->permission_type /
- * role->permissions directly. Never calls bouncer().
- *
- * Validation mirrors Webkul\Admin\Http\Requests\CatalogRuleRequest:
- *   - name             required
- *   - channels         required|array|min:1
- *   - customer_groups  required|array|min:1
- *   - starts_from      nullable|date
- *   - ends_till        nullable|date|after_or_equal:starts_from
- *   - action_type      required|in:by_percent,by_fixed,to_percent,to_fixed
- *   - discount_amount  required|numeric|min:0  (max 100 when action_type=by_percent)
- */
 class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 {
+    /**
+     * The allowed action types constant.
+     */
     protected const ALLOWED_ACTION_TYPES = ['by_percent', 'by_fixed', 'to_percent', 'to_fixed'];
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CatalogRuleRepository $catalogRuleRepository,
         protected AdminMarketingCatalogRuleItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -107,6 +95,9 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input, bool $isGraphQL = false): AdminMarketingCatalogRule|AdminMarketingCatalogRuleRestDto
     {
         $this->validatePayload($input);
@@ -122,6 +113,9 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         return $this->buildResult((int) $rule->id, $isGraphQL);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): AdminMarketingCatalogRule|AdminMarketingCatalogRuleRestDto
     {
         $rule = CatalogRule::with(['channels', 'customer_groups'])->find($id);
@@ -165,8 +159,7 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
     /**
      * Build the write response: GraphQL → the AdminMarketingCatalogRule Eloquent
-     * model (channels / customerGroups connections resolve), the flat RestDto for
-     * REST (channels / customer_groups as object arrays).
+     * model (channels / customerGroups connections resolve), the flat RestDto for.
      */
     protected function buildResult(int $id, bool $isGraphQL): AdminMarketingCatalogRule|AdminMarketingCatalogRuleRestDto
     {
@@ -179,6 +172,9 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         return $this->itemProvider->buildRestDtoPublic($fresh);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingCatalogRule
     {
         $rule = CatalogRule::find($id);
@@ -214,6 +210,9 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.catalog-rule.deleted')];
     }
 
+    /**
+     * Validate payload.
+     */
     protected function validatePayload(array $input): void
     {
         $rules = [
@@ -239,6 +238,9 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -266,6 +268,9 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -281,6 +286,9 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         return $this->normaliseArgs(request()->all());
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -293,6 +301,9 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -339,6 +350,9 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         return $input;
     }
 
+    /**
+     * Dto to array.
+     */
     protected function dtoToArray(object $dto, array $rawArgs = []): array
     {
         $result = [];

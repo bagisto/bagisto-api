@@ -15,24 +15,28 @@ use Webkul\BagistoApi\Admin\State\Concerns\ResolvesAdminDateRange;
 use Webkul\BagistoApi\Support\Sql;
 use Webkul\Sales\Models\Order;
 
-/**
- * Provides the admin Orders listing for REST GET /api/admin/orders and the
- * GraphQL adminOrders query.
- *
- * Returns a Paginator of slim AdminOrder rows. For REST the
- * AdminCollectionEnvelopeNormalizer wraps it as `{ data, meta }`; for GraphQL
- * API Platform applies native cursor pagination.
- */
 class OrderCollectionProvider implements ProviderInterface
 {
     use ResolvesAdminDateRange;
 
+    /**
+     * The default per page constant.
+     */
     protected const DEFAULT_PER_PAGE = 10;
 
+    /**
+     * The max per page constant.
+     */
     protected const MAX_PER_PAGE = 50;
 
+    /**
+     * The sortable constant.
+     */
     protected const SORTABLE = ['id', 'increment_id', 'status', 'grand_total', 'base_grand_total', 'created_at'];
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         AdminReadPermissions::authorize($operation, AdminOrder::class);
@@ -119,8 +123,6 @@ class OrderCollectionProvider implements ProviderInterface
             $query->where('status', $status);
         }
 
-        // Grand total filters the base_grand_total column (the value the admin
-        // datagrid shows + sorts on), with optional from/to range support.
         $grandTotal = $this->filterValue($args, 'grand_total');
         if (
             $grandTotal !== null
@@ -161,9 +163,6 @@ class OrderCollectionProvider implements ProviderInterface
             $query->where('customer_email', db_grammar()->caseInsensitiveLike(), '%'.$email.'%');
         }
 
-        // Date filter — preset (today, yesterday, this_week, …, last_three_months,
-        // last_six_months, this_year) or custom date_from/date_to. Preset keys +
-        // ranges match the admin datagrid exactly (see ResolvesAdminDateRange).
         [$from, $to] = $this->resolveAdminDateRange($args);
 
         if ($from) {
@@ -233,6 +232,9 @@ class OrderCollectionProvider implements ProviderInterface
         return $model;
     }
 
+    /**
+     * To admin order dto.
+     */
     protected function toAdminOrderDto(Order $order): AdminOrderListDto
     {
         $row = new AdminOrderListDto;
@@ -265,8 +267,7 @@ class OrderCollectionProvider implements ProviderInterface
 
     /**
      * Returns the raw amount as a string when the order's currency code
-     * doesn't match any row in the `currencies` table (otherwise
-     * core()->formatPrice would TypeError on a null Currency).
+     * doesn't match any row in the `currencies` table (otherwise.
      */
     protected function safeFormatPrice($amount, ?string $code): string
     {
@@ -277,6 +278,9 @@ class OrderCollectionProvider implements ProviderInterface
         }
     }
 
+    /**
+     * To item preview.
+     */
     protected function toItemPreview($orderItem): array
     {
         $image = $orderItem->product?->images?->first();

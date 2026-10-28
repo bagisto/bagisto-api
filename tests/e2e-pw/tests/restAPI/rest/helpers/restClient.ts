@@ -1,4 +1,4 @@
-import { APIRequestContext, test } from '@playwright/test';
+import { APIRequestContext, APIResponse, test } from '@playwright/test';
 import { env } from '../../config/env';
 
 const RETRY_ON_STATUS = [429];
@@ -13,7 +13,7 @@ function sleep(ms: number): Promise<void> {
 async function fetchWithRetry(
   request: APIRequestContext,
   url: string,
-  init: RequestInit & { retries?: number }
+  init: Parameters<APIRequestContext['fetch']>[1] & { retries?: number }
 ): Promise<APIResponse> {
   const { retries = 0, ...rest } = init;
   let lastResponse: APIResponse | null = null;
@@ -49,7 +49,6 @@ async function fetchWithRetry(
         }
       }
     } catch {
-      // Non-JSON or missing retry_after in body; fall back to exponential backoff.
     }
     await sleep(delay);
   }
@@ -88,11 +87,6 @@ export async function sendRestRequest(
     retries: MAX_RETRIES,
   });
 
-  // Central rate-limit safety net: when the API surrenders after all retries
-  // and still returns 429, skip the calling test instead of letting it fail
-  // assertion arrays that don't include 429. test.skip() throws a special
-  // exception that Playwright recognises — let it propagate up through the
-  // test body so the test is marked skipped rather than failed.
   if (response.status() === 429) {
     test.skip(true, `Rate limited on ${url}`);
   }

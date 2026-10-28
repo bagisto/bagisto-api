@@ -10,20 +10,9 @@ use Webkul\Sales\Models\Order;
 
 class EuWithdrawalTest extends GraphQLTestCase
 {
-    private function enable(Channel $channel): void
-    {
-        DB::table('core_config')->updateOrInsert(
-            [
-                'code' => 'sales.eu_withdrawal.general.enabled',
-                'channel_code' => $channel->code,
-                'locale_code' => null,
-            ],
-            ['value' => 1]
-        );
-
-        $this->forgetCoreConfigCache();
-    }
-
+    /**
+     * Test customer create and list.
+     */
     public function test_customer_create_and_list(): void
     {
         Mail::fake();
@@ -55,6 +44,9 @@ class EuWithdrawalTest extends GraphQLTestCase
         expect($list->json('data.euWithdrawals.edges'))->toBeArray();
     }
 
+    /**
+     * Test guest create.
+     */
     public function test_guest_create(): void
     {
         Mail::fake();
@@ -81,11 +73,78 @@ class EuWithdrawalTest extends GraphQLTestCase
         expect((bool) $node['isGuest'])->toBeTrue();
     }
 
+    /**
+     * Test guest confirmation query requires matching order email.
+     */
+    public function test_guest_confirmation_query_requires_matching_order_email(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+        $order = Order::factory()->create([
+            'customer_id' => null,
+            'customer_email' => 'g@example.com',
+            'increment_id' => 'GQ-'.uniqid(),
+            'channel_id' => $channel->id,
+            'is_guest' => 1,
+            'status' => 'completed',
+        ]);
+
+        $created = $this->graphQL(<<<GQL
+                        mutation {
+                            createGuestEuWithdrawal(input: {orderIncrementId: "{$order->increment_id}", email: "g@example.com"}) {
+                                guestEuWithdrawal { uuid }
+                            }
+                        }
+                        GQL);
+
+        $created->assertOk();
+        $uuid = $created->json('data.createGuestEuWithdrawal.guestEuWithdrawal.uuid');
+
+        $response = $this->graphQL(<<<'GQL'
+                        query ($uuid: String!, $email: String!) {
+                            guestEuWithdrawalConfirmation(uuid: $uuid, email: $email) {
+                                uuid
+                                orderIncrementId
+                                status
+                            }
+                        }
+                        GQL, [
+            'uuid' => $uuid,
+            'email' => 'g@example.com',
+        ]);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.guestEuWithdrawalConfirmation.uuid'))->toBe($uuid);
+    }
+
+    /**
+     * Test create requires auth.
+     */
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
         $response = $this->graphQL('mutation { createEuWithdrawal(input: {orderId: 1}) { euWithdrawal { _id } } }');
         $response->assertOk();
         expect($response->json('errors'))->not->toBeNull();
+    }
+
+    /**
+     * Enable.
+     */
+    private function enable(Channel $channel): void
+    {
+        DB::table('core_config')->updateOrInsert(
+            [
+                'code' => 'sales.eu_withdrawal.general.enabled',
+                'channel_code' => $channel->code,
+                'locale_code' => null,
+            ],
+            ['value' => 1]
+        );
+
+        $this->forgetCoreConfigCache();
     }
 }

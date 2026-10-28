@@ -10,20 +10,16 @@ use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCartRule;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/marketing/cart-rules + adminMarketingCartRules GraphQL query.
- *
- * Branches: GraphQL → forceFilled AdminMarketingCartRule Eloquent rows (channels /
- * customerGroups connections set empty — detail-only, no per-row N+1); REST → the
- * flat AdminMarketingCartRuleRestDto.
- *
- * Listing rows omit conditions, channels, customerGroups (detail-only) — keeps the
- * listing query cheap. The primary coupon code IS surfaced via a subquery.
- */
 class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * The listing is graph ql.
+     */
     protected bool $listingIsGraphQL = false;
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
@@ -31,11 +27,17 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'name', 'sort_order'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         $tablePrefix = DB::getTablePrefix();
@@ -51,6 +53,9 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
         )->selectRaw('(SELECT code FROM '.$tablePrefix.'cart_rule_coupons WHERE '.$tablePrefix.'cart_rule_coupons.cart_rule_id = '.$tablePrefix.'cart_rules.id AND '.$tablePrefix.'cart_rule_coupons.is_primary = true LIMIT 1) as coupon_code');
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['id'])) {
@@ -115,6 +120,9 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -126,6 +134,9 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
         $query->orderBy($columnMap[$column] ?? 'id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): object
     {
         if ($this->listingIsGraphQL) {
@@ -158,16 +169,12 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
         $dto->createdAt = $row->created_at ? Carbon::parse($row->created_at)->toIso8601String() : null;
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
 
-        // channels / customerGroups / conditions are detail-only — null on list rows.
-
         return $dto;
     }
 
     /**
      * GraphQL listing row → Eloquent AdminMarketingCartRule. The channels /
      * customerGroups connections are set empty (detail-only — no per-row N+1).
-     * The primary coupon_code is forceFilled (the accessor reads it from the
-     * attribute bag as a no-N+1 fast-path).
      */
     protected function mapRowToEloquent(object $row): AdminMarketingCartRule
     {

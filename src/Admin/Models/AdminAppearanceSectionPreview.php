@@ -11,10 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\Resolver\AdminAppearanceSectionPreviewQueryResolver;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionPreviewProvider;
 
-/**
- * A theme and channel as the editor is holding it: staged options, status and order
- * applied, so a headless storefront can render the preview the admin panel renders.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAppearanceSectionPreview',
@@ -68,6 +64,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionPreviewProvider;
     graphQlOperations: [
         new Query(
             resolver: AdminAppearanceSectionPreviewQueryResolver::class,
+            description: 'The sections of theme `code` that `channel` would draw if its staged edits were published: draft options, status and order applied, switched-off sections left out, footer links last. Needs the `appearance.sections` permission.',
             args: [
                 'code' => ['type' => 'String!'],
                 'channel' => ['type' => 'Int'],
@@ -80,14 +77,25 @@ class AdminAppearanceSectionPreview
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The theme code.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?string $theme_code = null;
 
+    /**
+     * The channel id.
+     */
     public ?int $channel_id = null;
 
+    /**
+     * The locale.
+     */
     public ?string $locale = null;
 
     /**
+     * The sections, with their drafts applied, rendered in the storefront preview.
+     *
      * @var array<int, array<string, mixed>>
      */
     public array $sections = [];

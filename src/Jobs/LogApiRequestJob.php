@@ -9,13 +9,13 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Queued job for asynchronous API request logging
- */
 class LogApiRequestJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         public array $logData
     ) {
@@ -23,12 +23,14 @@ class LogApiRequestJob implements ShouldQueue
         $this->timeout = 30;
     }
 
+    /**
+     * Handle the request.
+     */
     public function handle(): void
     {
         try {
             $level = $this->getLogLevel($this->logData['status']);
 
-            // Use 'api' channel if configured, otherwise fall back to default
             try {
                 if (config('logging.channels.api')) {
                     Log::channel('api')->log($level, 'API Request', $this->logData);
@@ -36,7 +38,6 @@ class LogApiRequestJob implements ShouldQueue
                     Log::log($level, 'API Request', $this->logData);
                 }
             } catch (\Throwable $exception) {
-                // If channel logging fails, use default logger
                 Log::log($level, 'API Request', $this->logData);
             }
         } catch (\Throwable $exception) {
@@ -49,6 +50,21 @@ class LogApiRequestJob implements ShouldQueue
         }
     }
 
+    /**
+     * Failed.
+     */
+    public function failed(\Throwable $exception): void
+    {
+        Log::critical('API request logging job failed', [
+            'error' => $exception->getMessage(),
+            'log_data' => $this->logData,
+            'attempts' => $this->attempts(),
+        ]);
+    }
+
+    /**
+     * Get log level.
+     */
     private function getLogLevel(int $statusCode): string
     {
         if ($statusCode >= 500) {
@@ -60,14 +76,5 @@ class LogApiRequestJob implements ShouldQueue
         }
 
         return 'info';
-    }
-
-    public function failed(\Throwable $exception): void
-    {
-        Log::critical('API request logging job failed', [
-            'error' => $exception->getMessage(),
-            'log_data' => $this->logData,
-            'attempts' => $this->attempts(),
-        ]);
     }
 }

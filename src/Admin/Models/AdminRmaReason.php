@@ -76,6 +76,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'Get an RMA reason',
+                description: 'One RMA reason by ID with its resolution types. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'The RMA reason.',
@@ -249,14 +250,9 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonWriteProvider;
                 summary: 'Delete an RMA reason',
                 description: 'Permission: sales.rma.reasons.delete.',
                 responses: [
-                    '200' => new Model\Response(
-                        description: 'The RMA reason was deleted.',
-                        content: new \ArrayObject([
-                            'application/json' => [
-                                'example' => ['message' => 'RMA reason deleted successfully.'],
-                            ],
-                        ]),
-                    ),
+                    '204' => new Model\Response(description: 'The RMA reason was deleted. No body is returned.'),
+                    '403' => new Model\Response(description: 'Admin role lacks sales.rma.reasons.delete.'),
+                    '404' => new Model\Response(description: 'The RMA reason was not found.'),
                 ],
             ),
         ),
@@ -265,6 +261,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonWriteProvider;
         new QueryCollection(
             provider: AdminRmaReasonCollectionProvider::class,
             paginationType: 'cursor',
+            description: 'The return and cancel reasons the RMA form offers, each with its resolution types. Filters: `title` (partial match), `status` (0 or 1). Sortable by id, position or title. `sort` names a column (or `column-asc`/`column-desc`) and `order` is `asc` or `desc` (default `desc`). Paginate with `first` (page size, default 10, max 50; 0 or less falls back to 10) and `after` (the previous page\'s `endCursor`, sent with the same `first`); `last` and `before` are not supported. Needs the `sales.rma.reasons` permission.',
             args: [
                 'title' => ['type' => 'String'],
                 'status' => ['type' => 'Int'],
@@ -274,7 +271,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonWriteProvider;
                 'after' => ['type' => 'String'],
             ],
         ),
-        new Query(provider: AdminRmaReasonItemProvider::class),
+        new Query(
+            provider: AdminRmaReasonItemProvider::class,
+            description: 'One RMA reason with its resolution types. Needs the `sales.rma.reasons` permission.',
+        ),
         new Mutation(name: 'create', input: AdminRmaReasonCreateInput::class, processor: AdminRmaReasonProcessor::class),
         new Mutation(name: 'update', input: AdminRmaReasonUpdateInput::class, processor: AdminRmaReasonProcessor::class),
         new Mutation(name: 'delete', input: AdminRmaReasonUpdateInput::class, processor: AdminRmaReasonProcessor::class),
@@ -284,24 +284,52 @@ class AdminRmaReason
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The title.
+     */
     public ?string $title = null;
 
+    /**
+     * The status.
+     */
     public ?int $status = null;
 
+    /**
+     * The position.
+     */
     public ?int $position = null;
 
+    /**
+     * The is admin.
+     */
     public ?int $is_admin = null;
 
-    /** @var array<int,string>|null */
+    /**
+     * The resolutions the RMA reason allows: return, cancel_items or both.
+     *
+     * @var array<int,string>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $resolution_type = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * The updated at.
+     */
     public ?string $updated_at = null;
 }

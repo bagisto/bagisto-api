@@ -12,12 +12,11 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\CartRule\Models\CartRule;
 use Webkul\CartRule\Models\CartRuleCoupon;
 
-/**
- * Lists all coupons for a given cart rule. Wraps results in the standard admin
- * `{ data, meta }` envelope through the framework's PaginatorInterface.
- */
 class AdminMarketingCartRuleCouponCollectionProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         AdminReadPermissions::authorize($operation, AdminMarketingCartRuleCoupon::class);

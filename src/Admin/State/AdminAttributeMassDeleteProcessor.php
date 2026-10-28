@@ -12,20 +12,18 @@ use Webkul\BagistoApi\Admin\Models\AdminAttributeMassDelete;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 
-/**
- * POST /api/admin/catalog/attributes/mass-delete
- * + massDeleteAdminCatalogAttributes GraphQL mutation.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Catalog\AttributeController::massDestroy:
- *   - Pre-validate all IDs: if ANY is a system attribute (is_user_defined = 0), reject the whole batch.
- *   - If all pass, delete them all.
- */
 class AdminAttributeMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected AttributeRepository $attributeRepository,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         AdminReadPermissions::authorize(null, null, 'catalog.attributes.delete');
@@ -79,6 +77,9 @@ class AdminAttributeMassDeleteProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

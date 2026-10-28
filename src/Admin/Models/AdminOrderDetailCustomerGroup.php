@@ -6,10 +6,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Customer group — nested to-one sub-resource of AdminOrderDetailCustomer
- * (the order customer's group). Typed object: customer { group { code name } }.
- */
 #[ApiResource(
     shortName: 'AdminOrderDetailCustomerGroup',
     operations: [],
@@ -18,14 +14,25 @@ use Illuminate\Database\Eloquent\Model;
 )]
 class AdminOrderDetailCustomerGroup extends Model
 {
-    /** @var string */
+    /**
+     * The table that stores the customer groups.
+     *
+     * @var string
+     */
     protected $table = 'customer_groups';
 
-    /** @var array */
+    /**
+     * The native types the order customer group attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
     ];
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

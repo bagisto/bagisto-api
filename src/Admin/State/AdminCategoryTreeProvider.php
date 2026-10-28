@@ -10,20 +10,11 @@ use Webkul\BagistoApi\Admin\Models\AdminCategoryTree;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\Category\Models\Category;
 
-/**
- * Provider for the admin Catalog → Categories tree endpoint.
- *
- * REST: GET /api/admin/catalog/categories/tree
- *
- * Uses Kalnoy\Nestedset's toTree() to build a recursive tree of categories.
- * Supports optional ?locale=, ?status=, and ?rootId= filters.
- *
- * The response is wrapped in the { data, meta } envelope automatically by
- * AdminCollectionEnvelopeNormalizer (triggered for any /api/admin path that
- * returns a PaginatorInterface).
- */
 class AdminCategoryTreeProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         AdminReadPermissions::authorize($operation, AdminCategoryTree::class);
@@ -71,14 +62,7 @@ class AdminCategoryTreeProvider implements ProviderInterface
 
     /**
      * Recursively map a Nestedset node to the AdminCategoryTree DTO shape.
-     *
-     * The top-level return is an AdminCategoryTree DTO so API Platform can
-     * serialize the scalar fields correctly. However, children are built as
-     * plain arrays (not nested DTOs) to prevent API Platform from converting
-     * them into IRI references — any object with #[ApiResource] + identifier
-     * would be serialized as an IRI string, losing the inline shape.
-     *
-     * Returns null if the node (and all its descendants) fail the status filter.
+     * The top-level return is an AdminCategoryTree DTO so API Platform can.
      */
     protected function mapNode(mixed $node, string $locale, ?int $statusFilter): ?AdminCategoryTree
     {
@@ -114,9 +98,7 @@ class AdminCategoryTreeProvider implements ProviderInterface
 
     /**
      * Recursively map a node (and its descendants) to a plain associative array.
-     *
-     * Used for all non-root nodes so they are never treated as ApiResource objects
-     * and serialized as IRIs by API Platform.
+     * Used for all non-root nodes so they are never treated as ApiResource objects.
      *
      * @return array<string, mixed>|null
      */

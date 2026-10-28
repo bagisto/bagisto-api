@@ -7,102 +7,7 @@ use Webkul\BagistoApi\Tests\GraphQLTestCase;
 class GuestCheckoutTest extends GraphQLTestCase
 {
     /**
-     * Get guest cart token from the createCart mutation response
-     */
-    private function getGuestCartToken(): string
-    {
-        $mutation = <<<'GQL'
-            mutation createCart {
-              createCartToken(input: {}) {
-                cartToken {
-                  id
-                  _id
-                  cartToken
-                  customerId
-                  channelId
-                  itemsCount
-                  subtotal
-                  baseSubtotal
-                  discountAmount
-                  baseDiscountAmount
-                  taxAmount
-                  baseTaxAmount
-                  shippingAmount
-                  baseShippingAmount
-                  grandTotal
-                  baseGrandTotal
-                  formattedSubtotal
-                  formattedDiscountAmount
-                  formattedTaxAmount
-                  formattedShippingAmount
-                  formattedGrandTotal
-                  couponCode
-                  success
-                  message
-                  sessionToken
-                  isGuest
-                }
-              }
-            }
-        GQL;
-
-        $response = $this->graphQL($mutation);
-        $response->assertSuccessful();
-
-        $data = $response->json('data.createCartToken.cartToken');
-
-        $this->assertNotNull($data, 'cartToken response is null');
-        $this->assertTrue((bool) ($data['success'] ?? false));
-
-        // Use cartToken as the bearer token
-        $token = $data['cartToken'] ?? null;
-        $this->assertNotEmpty($token, 'guest cart token is missing');
-
-        return $token;
-    }
-
-    /**
-     * Helper method to get authorization headers with guest cart token
-     */
-    private function guestHeaders(string $token): array
-    {
-        return [
-            'Authorization' => 'Bearer '.$token,
-        ];
-    }
-
-    /**
-     * Add product to cart first for checkout tests
-     */
-    private function addProductToCart(string $token): int
-    {
-        // Use test product helper to get a product with inventory
-        $productData = $this->createTestProduct();
-        $product = $productData['product'];
-
-        $mutation = <<<'GQL'
-            mutation createAddProductInCart($productId: Int!, $quantity: Int!) {
-              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
-                addProductInCart {
-                  id
-                  itemsCount
-                }
-              }
-            }
-        GQL;
-
-        $response = $this->graphQL($mutation, [
-            'productId' => $product->id,
-            'quantity' => 1,
-        ], $this->guestHeaders($token));
-
-        $response->assertSuccessful();
-
-        return $product->id;
-    }
-
-    /**
-     * Get Shipping Methods
+     * Get Shipping Methods.
      */
     public function test_get_shipping_methods(): void
     {
@@ -133,7 +38,7 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Get Payment Methods
+     * Get Payment Methods.
      */
     public function test_get_payment_methods(): void
     {
@@ -164,13 +69,12 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Set Billing/Shipping Address (Guest)
+     * Set Billing/Shipping Address (Guest).
      */
     public function test_set_checkout_address(): void
     {
         $token = $this->getGuestCartToken();
 
-        // First add product to cart
         $this->addProductToCart($token);
 
         $headers = $this->guestHeaders($token);
@@ -247,6 +151,9 @@ class GuestCheckoutTest extends GraphQLTestCase
         $this->assertArrayHasKey('success', $data);
     }
 
+    /**
+     * Test checkout address returns the real guest cart token.
+     */
     public function test_checkout_address_returns_the_real_guest_cart_token(): void
     {
         $token = $this->getGuestCartToken();
@@ -290,16 +197,14 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Set Shipping Method (Guest)
+     * Set Shipping Method (Guest).
      */
     public function test_set_shipping_method(): void
     {
         $token = $this->getGuestCartToken();
 
-        // First add product to cart and set address
         $this->addProductToCart($token);
 
-        // Set address first
         $this->setCheckoutAddress($token);
 
         $headers = $this->guestHeaders($token);
@@ -337,13 +242,12 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Set Payment Method (Guest)
+     * Set Payment Method (Guest).
      */
     public function test_set_payment_method(): void
     {
         $token = $this->getGuestCartToken();
 
-        // First add product to cart, set address, and set shipping
         $this->addProductToCart($token);
         $this->setCheckoutAddress($token);
         $this->setShippingMethod($token);
@@ -393,13 +297,12 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Place Order (Guest)
+     * Place Order (Guest).
      */
     public function test_place_order(): void
     {
         $token = $this->getGuestCartToken();
 
-        // First add product to cart, set address, shipping and payment
         $this->addProductToCart($token);
         $this->setCheckoutAddress($token);
         $this->setShippingMethod($token);
@@ -430,7 +333,7 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Set billing address only with separate shipping address fields
+     * Set billing address only with separate shipping address fields.
      */
     public function test_set_checkout_address_billing_only_with_separate_shipping(): void
     {
@@ -519,7 +422,7 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Set checkout address without token returns error
+     * Set checkout address without token returns error.
      */
     public function test_set_checkout_address_without_token_returns_error(): void
     {
@@ -555,7 +458,6 @@ class GuestCheckoutTest extends GraphQLTestCase
             }
         GQL;
 
-        // No Authorization header
         $response = $this->graphQL($mutation, [
             'billingFirstName' => 'John',
             'billingEmail' => 'john@example.com',
@@ -572,7 +474,7 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Set shipping method with invalid code returns error
+     * Set shipping method with invalid code returns error.
      */
     public function test_set_invalid_shipping_method_returns_error(): void
     {
@@ -600,7 +502,7 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Set shipping method without token returns error
+     * Set shipping method without token returns error.
      */
     public function test_set_shipping_method_without_token_returns_error(): void
     {
@@ -621,7 +523,7 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Set invalid payment method returns error
+     * Set invalid payment method returns error.
      */
     public function test_set_invalid_payment_method_returns_error(): void
     {
@@ -650,7 +552,7 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Set payment method without token returns error
+     * Set payment method without token returns error.
      */
     public function test_set_payment_method_without_token_returns_error(): void
     {
@@ -671,7 +573,7 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Place order without token returns error
+     * Place order without token returns error.
      */
     public function test_place_order_without_token_returns_error(): void
     {
@@ -693,11 +595,10 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Place order with empty cart returns error
+     * Place order with empty cart returns error.
      */
     public function test_place_order_with_empty_cart_returns_error(): void
     {
-        // Cart created but no product added
         $token = $this->getGuestCartToken();
 
         $mutation = <<<'GQL'
@@ -718,13 +619,12 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Place order without billing address returns error
+     * Place order without billing address returns error.
      */
     public function test_place_order_without_billing_address_returns_error(): void
     {
         $token = $this->getGuestCartToken();
         $this->addProductToCart($token);
-        // Deliberately skip setCheckoutAddress
 
         $mutation = <<<'GQL'
             mutation createCheckoutOrder {
@@ -744,7 +644,7 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Place order without payment method returns error
+     * Place order without payment method returns error.
      */
     public function test_place_order_without_payment_method_returns_error(): void
     {
@@ -752,7 +652,6 @@ class GuestCheckoutTest extends GraphQLTestCase
         $this->addProductToCart($token);
         $this->setCheckoutAddress($token);
         $this->setShippingMethod($token);
-        // Deliberately skip setPaymentMethod
 
         $mutation = <<<'GQL'
             mutation createCheckoutOrder {
@@ -772,7 +671,100 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Helper to set checkout address
+     * Get guest cart token from the createCart mutation response.
+     */
+    private function getGuestCartToken(): string
+    {
+        $mutation = <<<'GQL'
+            mutation createCart {
+              createCartToken(input: {}) {
+                cartToken {
+                  id
+                  _id
+                  cartToken
+                  customerId
+                  channelId
+                  itemsCount
+                  subtotal
+                  baseSubtotal
+                  discountAmount
+                  baseDiscountAmount
+                  taxAmount
+                  baseTaxAmount
+                  shippingAmount
+                  baseShippingAmount
+                  grandTotal
+                  baseGrandTotal
+                  formattedSubtotal
+                  formattedDiscountAmount
+                  formattedTaxAmount
+                  formattedShippingAmount
+                  formattedGrandTotal
+                  couponCode
+                  success
+                  message
+                  sessionToken
+                  isGuest
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation);
+        $response->assertSuccessful();
+
+        $data = $response->json('data.createCartToken.cartToken');
+
+        $this->assertNotNull($data, 'cartToken response is null');
+        $this->assertTrue((bool) ($data['success'] ?? false));
+
+        $token = $data['cartToken'] ?? null;
+        $this->assertNotEmpty($token, 'guest cart token is missing');
+
+        return $token;
+    }
+
+    /**
+     * Helper method to get authorization headers with guest cart token.
+     */
+    private function guestHeaders(string $token): array
+    {
+        return [
+            'Authorization' => 'Bearer '.$token,
+        ];
+    }
+
+    /**
+     * Add product to cart first for checkout tests.
+     */
+    private function addProductToCart(string $token): int
+    {
+        $productData = $this->createTestProduct();
+        $product = $productData['product'];
+
+        $mutation = <<<'GQL'
+            mutation createAddProductInCart($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
+                addProductInCart {
+                  id
+                  itemsCount
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ], $this->guestHeaders($token));
+
+        $response->assertSuccessful();
+
+        return $product->id;
+    }
+
+    /**
+     * Helper to set checkout address.
      */
     private function setCheckoutAddress(string $token): void
     {
@@ -830,7 +822,7 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Helper to set shipping method
+     * Helper to set shipping method.
      */
     private function setShippingMethod(string $token): void
     {
@@ -860,7 +852,7 @@ class GuestCheckoutTest extends GraphQLTestCase
     }
 
     /**
-     * Helper to set payment method
+     * Helper to set payment method.
      */
     private function setPaymentMethod(string $token): void
     {

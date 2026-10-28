@@ -11,40 +11,49 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProductVideo;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
-use Webkul\BagistoApi\Exception\AuthenticationException;
-use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
-use Webkul\Product\Models\Product;
+use Webkul\Core\Helpers\MediaFileName;
 use Webkul\Product\Models\ProductVideo;
+use Webkul\Product\Repositories\ProductRepository;
+use Webkul\Product\Repositories\ProductVideoRepository;
 
 class AdminCatalogProductVideoProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Content types an uploaded video may have, as detected from its bytes.
+     */
     protected const ALLOWED_MIMES = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
 
+    /**
+     * Extensions an uploaded video may be sent with.
+     */
     protected const ALLOWED_EXTS = ['mp4', 'webm', 'ogg', 'mov'];
 
+    /**
+     * Largest video accepted, in bytes.
+     */
     protected const MAX_BYTES = 100 * 1024 * 1024;
+
+    /**
+     * Create a new processor instance.
+     */
+    public function __construct(
+        protected ProductRepository $productRepository,
+        protected ProductVideoRepository $productVideoRepository,
+        protected MediaFileName $mediaFileName,
+    ) {}
 
     /**
      * Route the video request to upload or delete.
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        $admin = AdminAuthHelper::resolveAdmin();
-        if (! $admin) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
-
-        if (! $this->adminHasPermission($admin, 'catalog.products.edit')) {
-            throw new AuthorizationException(__('bagistoapi::app.admin.product.video.no-permission'));
-        }
+        $this->authorizedAdmin('catalog.products.edit', 'bagistoapi::app.admin.product.video.no-permission');
 
         $isGraphQL = $operation instanceof Mutation;
 
@@ -63,7 +72,7 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
             $videoId = ! empty($rawArgs['id'])
                 ? (int) basename((string) $rawArgs['id'])
                 : (int) ($rawArgs['videoId'] ?? 0);
-            $productId = (int) (ProductVideo::where('id', $videoId)->value('product_id') ?? 0);
+            $productId = (int) ($this->productVideoRepository->find($videoId)?->product_id ?? 0);
 
             return $this->handleDelete($productId, $videoId);
         }
@@ -87,11 +96,12 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
     }
 
     /**
-     * Store an uploaded video file and create its row for the product.
+     * Store an uploaded video file under a generated name and create its row for the product.
      */
     protected function handleUpload(int $productId, mixed $file, ?int $position): AdminCatalogProductVideo
     {
-        $product = Product::find($productId);
+        $product = $this->productRepository->find($productId);
+
         if (! $product) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
@@ -103,13 +113,7 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.product.video.video-required'), 422);
         }
 
-        $mime = strtolower((string) $file->getMimeType());
-        $extension = strtolower((string) $file->getClientOriginalExtension());
-
-        if (
-            ! in_array($mime, self::ALLOWED_MIMES, true)
-            && ! in_array($extension, self::ALLOWED_EXTS, true)
-        ) {
+        if (! $this->isAllowedVideo($file)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.video.video-invalid-type'), 422);
         }
 
@@ -120,18 +124,21 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
         try {
             Event::dispatch('catalog.product.update.before', $productId);
 
-            $filename = Str::random(40).'.'.($extension ?: 'mp4');
-            $path = Storage::disk('public')->putFileAs('product/'.$productId, $file, $filename);
+            $path = $this->mediaFileName->resolve(
+                $this->productVideoRepository->getProductDirectory($product),
+                null,
+                $this->mediaFileName->extension($file),
+            );
 
-            if (! $path) {
+            if (! Storage::putFileAs(dirname($path), $file, basename($path))) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.video.upload-failed'), 500);
             }
 
             if ($position === null) {
-                $position = (int) ProductVideo::where('product_id', $productId)->max('position') + 1;
+                $position = (int) $this->productVideoRepository->where('product_id', $productId)->max('position') + 1;
             }
 
-            $video = ProductVideo::create([
+            $video = $this->productVideoRepository->create([
                 'type' => 'videos',
                 'path' => $path,
                 'product_id' => $productId,
@@ -143,10 +150,11 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
             throw $exception;
         } catch (\Throwable $exception) {
             report($exception);
+
             throw new InvalidInputException(__('bagistoapi::app.admin.product.video.upload-failed'), 500);
         }
 
-        return $this->mapRow(ProductVideo::find($video->id), __('bagistoapi::app.admin.product.video.uploaded'));
+        return $this->mapRow($this->productVideoRepository->find($video->id), __('bagistoapi::app.admin.product.video.uploaded'));
     }
 
     /**
@@ -154,12 +162,17 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
      */
     protected function handleDelete(int $productId, int $videoId): AdminCatalogProductVideo
     {
-        $product = Product::find($productId);
+        $product = $this->productRepository->find($productId);
+
         if (! $product) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
 
-        $video = ProductVideo::where('id', $videoId)->where('product_id', $productId)->first();
+        $video = $this->productVideoRepository->findOneWhere([
+            'id' => $videoId,
+            'product_id' => $productId,
+        ]);
+
         if (! $video) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.video.not-found'));
         }
@@ -169,13 +182,16 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
 
             if ($video->path) {
                 Storage::disk('public')->delete($video->path);
+
+                Storage::delete($video->path);
             }
 
-            $video->delete();
+            $this->productVideoRepository->delete($video->id);
 
             Event::dispatch('catalog.product.update.after', $product);
         } catch (\Throwable $exception) {
             report($exception);
+
             throw new InvalidInputException(__('bagistoapi::app.admin.product.video.delete-failed'), 500);
         }
 
@@ -185,6 +201,15 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
         $result->message = __('bagistoapi::app.admin.product.video.deleted');
 
         return $result;
+    }
+
+    /**
+     * Whether the file's detected content type and its sent extension are both an allowed video type.
+     */
+    protected function isAllowedVideo(UploadedFile $file): bool
+    {
+        return in_array(strtolower((string) $file->getMimeType()), self::ALLOWED_MIMES, true)
+            && in_array(strtolower((string) $file->getClientOriginalExtension()), self::ALLOWED_EXTS, true);
     }
 
     /**

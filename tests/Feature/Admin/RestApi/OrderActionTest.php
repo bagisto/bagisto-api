@@ -9,34 +9,21 @@ use Webkul\Core\Models\CoreConfig;
 use Webkul\Sales\Models\Order;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for the per-order admin actions: Reorder (+ Cancel, Refund as
- * they land in future milestones).
- */
 class OrderActionTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    /** Resolve or create a reorderable (non-guest) order id. Never returns null. */
-    protected function aReorderableOrderId(): int
-    {
-        $admin = $this->createAdmin();
-        $rows = $this->adminGet($admin, '/api/admin/orders?per_page=20')->json('data');
-
-        foreach ($rows ?? [] as $row) {
-            if (! ($row['isGuest'] ?? true)) {
-                return $row['id'];
-            }
-        }
-
-        return $this->bootstrapAdminOrder('pending', false)->id;
-    }
-
+    /**
+     * Test reorder requires authentication.
+     */
     public function test_reorder_requires_authentication(): void
     {
         $this->publicPost('/api/admin/orders/1/reorder')->assertStatus(401);
     }
 
+    /**
+     * Test reorder returns 404 for unknown order.
+     */
     public function test_reorder_returns_404_for_unknown_order(): void
     {
         $admin = $this->createAdmin();
@@ -44,6 +31,9 @@ class OrderActionTest extends AdminApiTestCase
         $this->adminPost($admin, '/api/admin/orders/999999999/reorder')->assertStatus(404);
     }
 
+    /**
+     * Test reorder creates a draft cart for a valid order.
+     */
     public function test_reorder_creates_a_draft_cart_for_a_valid_order(): void
     {
         $id = $this->aReorderableOrderId();
@@ -65,7 +55,9 @@ class OrderActionTest extends AdminApiTestCase
         }
     }
 
-    /** Edge case A1: guest orders cannot be reordered (HTTP 422). */
+    /**
+     * Edge case A1: guest orders cannot be reordered (HTTP 422).
+     */
     public function test_reorder_rejects_guest_orders_with_422(): void
     {
         $admin = $this->createAdmin();
@@ -93,7 +85,9 @@ class OrderActionTest extends AdminApiTestCase
             ->toBe(trans('bagistoapi::app.admin.order.reorder.guest-not-supported'));
     }
 
-    /** Edge case A2: at least one item not saleable -> HTTP 422. */
+    /**
+     * Edge case A2: at least one item not saleable -> HTTP 422.
+     */
     public function test_reorder_rejects_when_items_not_saleable(): void
     {
         $admin = $this->createAdmin();
@@ -124,7 +118,9 @@ class OrderActionTest extends AdminApiTestCase
             ->toBe(trans('bagistoapi::app.admin.order.reorder.items-not-saleable'));
     }
 
-    /** Edge case B: admin lacks `sales.orders.create` permission -> HTTP 422. */
+    /**
+     * Edge case B: admin lacks `sales.orders.create` permission -> HTTP 403.
+     */
     public function test_reorder_rejects_when_admin_lacks_permission(): void
     {
         $id = $this->aReorderableOrderId() ?? Order::where('is_guest', 0)->value('id');
@@ -140,16 +136,18 @@ class OrderActionTest extends AdminApiTestCase
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->adminTokenSameAsWeb($admin);
+        $token = $this->adminAccessToken($admin);
 
         $response = $this->adminPost($admin, '/api/admin/orders/'.$id.'/reorder', [], $token);
 
-        $response->assertStatus(422);
+        $response->assertStatus(403);
         expect($response->json('detail') ?? $response->json('message'))
             ->toBe(trans('bagistoapi::app.admin.order.reorder.no-permission'));
     }
 
-    /** Edge case C: admin reorder disabled in store settings -> HTTP 422. */
+    /**
+     * Edge case C: admin reorder disabled in store settings -> HTTP 422.
+     */
     public function test_reorder_rejects_when_disabled_in_settings(): void
     {
         $admin = $this->createAdmin();
@@ -168,5 +166,22 @@ class OrderActionTest extends AdminApiTestCase
         $response->assertStatus(422);
         expect($response->json('detail') ?? $response->json('message'))
             ->toBe(trans('bagistoapi::app.admin.order.reorder.disabled-in-settings'));
+    }
+
+    /**
+     * Resolve or create a reorderable (non-guest) order id. Never returns null.
+     */
+    protected function aReorderableOrderId(): int
+    {
+        $admin = $this->createAdmin();
+        $rows = $this->adminGet($admin, '/api/admin/orders?per_page=20')->json('data');
+
+        foreach ($rows ?? [] as $row) {
+            if (! ($row['isGuest'] ?? true)) {
+                return $row['id'];
+            }
+        }
+
+        return $this->bootstrapAdminOrder('pending', false)->id;
     }
 }

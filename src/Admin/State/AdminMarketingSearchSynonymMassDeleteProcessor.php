@@ -14,18 +14,16 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Marketing\Models\SearchSynonym;
 use Webkul\Marketing\Repositories\SearchSynonymRepository;
 
-/**
- * POST /api/admin/marketing/search-synonyms/mass-delete
- *      + createAdminMarketingSearchSynonymMassDelete.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\SearchSEO\SearchSynonymController::massDestroy:
- *   - Iterate indices, fire before/after events per id, delete each one.
- *   - Non-existent IDs are silently skipped (mirrors monolith).
- */
 class AdminMarketingSearchSynonymMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected SearchSynonymRepository $searchSynonymRepository) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -72,6 +70,9 @@ class AdminMarketingSearchSynonymMassDeleteProcessor implements ProcessorInterfa
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -99,6 +100,9 @@ class AdminMarketingSearchSynonymMassDeleteProcessor implements ProcessorInterfa
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

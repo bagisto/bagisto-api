@@ -7,40 +7,76 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminCustomerUpdateInput
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(description: 'Resource IRI (e.g. /api/admin/customers/4).')]
     #[Groups(['mutation'])]
     public ?string $id = null;
 
+    /**
+     * The first name.
+     */
     #[ApiProperty] #[Groups(['mutation'])]
     public ?string $first_name = null;
 
+    /**
+     * The last name.
+     */
     #[ApiProperty] #[Groups(['mutation'])]
     public ?string $last_name = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty] #[Groups(['mutation'])]
     public ?string $email = null;
 
+    /**
+     * The phone.
+     */
     #[ApiProperty] #[Groups(['mutation'])]
     public ?string $phone = null;
 
+    /**
+     * The gender.
+     */
     #[ApiProperty] #[Groups(['mutation'])]
     public ?string $gender = null;
 
+    /**
+     * The date of birth.
+     */
     #[ApiProperty] #[Groups(['mutation'])]
     public ?string $date_of_birth = null;
 
+    /**
+     * The customer group id.
+     */
     #[ApiProperty] #[Groups(['mutation'])]
     public ?int $customer_group_id = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty] #[Groups(['mutation'])]
     public ?int $status = null;
 
+    /**
+     * The is suspended.
+     */
     #[ApiProperty] #[Groups(['mutation'])]
     public ?int $is_suspended = null;
 
+    /**
+     * The subscribed to news letter.
+     */
     #[ApiProperty] #[Groups(['mutation'])]
     public ?bool $subscribed_to_news_letter = null;
 
+    /**
+     * The password.
+     */
     #[ApiProperty] #[Groups(['mutation'])]
     public ?string $password = null;
 }

@@ -6,13 +6,13 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Request;
-use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CartInput;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Repositories\GuestCartTokensRepository;
+use Webkul\BagistoApi\Services\Cart\GuestCartMerger;
 use Webkul\BagistoApi\State\Concerns\HandlesBookingCartItems;
 use Webkul\BagistoApi\State\Concerns\HandlesCartCouponsAndExtras;
 use Webkul\BagistoApi\State\Concerns\HandlesCartItems;
@@ -25,17 +25,6 @@ use Webkul\Customer\Models\Customer;
 use Webkul\Product\Models\Product;
 use Webkul\Shipping\Facades\Shipping;
 
-/**
- * CartTokenProcessor - Handles cart operations with token-based authentication
- *
- * Supports:
- * - Create/add product to cart
- * - Update cart item quantity
- * - Remove cart item
- * - Get single cart
- * - Get all customer carts
- * - Merge guest cart to customer cart
- */
 class CartTokenProcessor implements ProcessorInterface
 {
     use HandlesBookingCartItems;
@@ -43,12 +32,19 @@ class CartTokenProcessor implements ProcessorInterface
     use HandlesCartItems;
     use HandlesCartLifecycle;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected CartRepository $cartRepository,
         protected GuestCartTokensRepository $guestCartTokensRepository,
+        protected GuestCartMerger $guestCartMerger,
         protected CartOptionFileStaging $optionFileStaging
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(
         mixed $data,
         Operation $operation,
@@ -72,12 +68,18 @@ class CartTokenProcessor implements ProcessorInterface
 
         $cart = $this->resolveCart($operationName, $data, $customer, $token);
 
-        $result = $this->executeOperation($operationName, $cart, $customer, $data);
+        $guestToken = ! $customer
+            && $cart
+            && $operationName !== 'mergeGuest'
+            ? $token
+            : null;
 
-        // REST nested-object workaround: CartItemData is marked #[ApiResource], so when
-        // it appears inside CartData::$items the REST serializer emits a resource reference
-        // (just `{id}`). Flatten each CartItemData instance to an associative array so the
-        // serializer inlines all fields. GraphQL resolvers read public properties either way.
+        try {
+            $result = $this->executeOperation($operationName, $cart, $customer, $data);
+        } finally {
+            $this->keepGuestTokenBound($guestToken);
+        }
+
         if (
             $operation instanceof Post
             && is_array($result)
@@ -94,7 +96,27 @@ class CartTokenProcessor implements ProcessorInterface
     }
 
     /**
-     * Map BagistoApi operation to internal operation name
+     * Give a guest token a new empty cart when core deleted its cart for being empty, so the token keeps working.
+     */
+    private function keepGuestTokenBound(?string $guestToken): void
+    {
+        if (
+            ! $guestToken
+            || $this->guestCartTokensRepository->findCartByToken($guestToken)
+        ) {
+            return;
+        }
+
+        $cart = CartTokenFacade::createCart();
+
+        $this->guestCartTokensRepository->updateOrCreate(
+            ['token' => $guestToken],
+            ['cart_id' => $cart->id],
+        );
+    }
+
+    /**
+     * Map BagistoApi operation to internal operation name.
      */
     private function mapOperation(Operation $operation, mixed $data, array $context): string
     {
@@ -243,7 +265,7 @@ class CartTokenProcessor implements ProcessorInterface
     }
 
     /**
-     * Extract parameters for read operations from multiple sources
+     * Extract parameters for read operations from multiple sources.
      */
     private function extractReadOperationParameters(CartInput $data, array $uriVariables, array $context): CartInput
     {
@@ -285,7 +307,7 @@ class CartTokenProcessor implements ProcessorInterface
     }
 
     /**
-     * Validate operation has required parameters
+     * Validate operation has required parameters.
      */
     private function validateOperation(string $operationName, ?string $token): void
     {
@@ -300,7 +322,7 @@ class CartTokenProcessor implements ProcessorInterface
     }
 
     /**
-     * Validate add product operation
+     * Validate add product operation.
      */
     private function validateAddProduct(CartInput $data): void
     {
@@ -317,7 +339,7 @@ class CartTokenProcessor implements ProcessorInterface
     }
 
     /**
-     * Validate update item operation
+     * Validate update item operation.
      */
     private function validateUpdateItem(CartInput $data): void
     {
@@ -334,7 +356,7 @@ class CartTokenProcessor implements ProcessorInterface
     }
 
     /**
-     * Validate remove item operation
+     * Validate remove item operation.
      */
     private function validateRemoveItem(CartInput $data): void
     {
@@ -344,17 +366,17 @@ class CartTokenProcessor implements ProcessorInterface
     }
 
     /**
-     * Validate remove items operation
+     * Validate remove items operation.
      */
     private function validateRemoveItems(CartInput $data): void
     {
         if (empty($data->itemIds)) {
-            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.cart-item-ids-required'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.cart.item-ids-required'));
         }
     }
 
     /**
-     * Validate apply coupon operation
+     * Validate apply coupon operation.
      */
     private function validateApplyCoupon(CartInput $data): void
     {
@@ -364,7 +386,7 @@ class CartTokenProcessor implements ProcessorInterface
     }
 
     /**
-     * Validate estimate shipping operation
+     * Validate estimate shipping operation.
      */
     private function validateEstimateShipping(CartInput $data): void
     {
@@ -377,7 +399,7 @@ class CartTokenProcessor implements ProcessorInterface
     }
 
     /**
-     * Resolve cart based on operation and data
+     * Resolve cart based on operation and data.
      */
     private function resolveCart(string $operationName, CartInput $data, ?Customer $customer, ?string $token): ?CartModel
     {
@@ -404,29 +426,11 @@ class CartTokenProcessor implements ProcessorInterface
      */
     private function resolveGuestCartForMerge(CartInput $data): ?CartModel
     {
-        if (! $data->guestCartToken) {
-            return null;
-        }
-
-        $guestCart = $this->guestCartTokensRepository->findCartByToken($data->guestCartToken);
-
-        if (
-            ! $guestCart
-            || ! $guestCart->is_active
-            || $guestCart->customer_id
-            || (
-                $data->cartId
-                && (int) $data->cartId !== (int) $guestCart->id
-            )
-        ) {
-            return null;
-        }
-
-        return $guestCart;
+        return $this->guestCartMerger->findMergeable($data->guestCartToken, $data->cartId ? (int) $data->cartId : null);
     }
 
     /**
-     * Execute the operation handler
+     * Execute the operation handler.
      */
     private function executeOperation(
         string $operationName,

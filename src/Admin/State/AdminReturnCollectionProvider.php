@@ -15,8 +15,14 @@ class AdminReturnCollectionProvider extends AbstractAdminCollectionProvider
 {
     use ChecksAdminPermission;
 
+    /**
+     * The permission constant.
+     */
     protected const PERMISSION = 'sales.rma.requests';
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin(self::PERMISSION);
@@ -24,11 +30,17 @@ class AdminReturnCollectionProvider extends AbstractAdminCollectionProvider
         return parent::provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'order_id', 'created_at'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         $prefix = DB::getTablePrefix();
@@ -52,6 +64,9 @@ class AdminReturnCollectionProvider extends AbstractAdminCollectionProvider
             );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         $prefix = DB::getTablePrefix();
@@ -81,6 +96,9 @@ class AdminReturnCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -94,6 +112,9 @@ class AdminReturnCollectionProvider extends AbstractAdminCollectionProvider
         $query->orderBy($map[$column] ?? 'rma.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminReturn
     {
         $dto = new AdminReturn;

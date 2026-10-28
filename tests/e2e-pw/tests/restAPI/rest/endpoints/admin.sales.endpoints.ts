@@ -1,15 +1,7 @@
-// rest/endpoints/admin.sales.endpoints.ts
-//
-// W3 — Admin Sales endpoint registry. Self-contained (not added to the central
-// ENDPOINTS const) so this file can land without conflicting with parallel
-// admin waves touching endpoints.ts.
 
 export const ADMIN_SALES = {
-  // ── Orders ──────────────────────────────────────────────────
   ORDERS: '/api/admin/orders',
   ORDER: (id: number | string) => `/api/admin/orders/${id}`,
-
-  // ── Per-order actions ───────────────────────────────────────
   ORDER_CANCEL: (id: number | string) => `/api/admin/orders/${id}/cancel`,
   ORDER_REORDER: (id: number | string) => `/api/admin/orders/${id}/reorder`,
   ORDER_COMMENTS: (id: number | string) => `/api/admin/orders/${id}/comments`,
@@ -18,8 +10,6 @@ export const ADMIN_SALES = {
   ORDER_REFUNDS: (id: number | string) => `/api/admin/orders/${id}/refunds`,
   ORDER_REFUND_PREVIEW: (id: number | string) =>
     `/api/admin/orders/${id}/refunds/preview`,
-
-  // ── Standalone listings + details ───────────────────────────
   INVOICES: '/api/admin/invoices',
   INVOICE: (id: number | string) => `/api/admin/invoices/${id}`,
   INVOICE_PRINT: (id: number | string) => `/api/admin/invoices/${id}/print`,
@@ -35,4 +25,11 @@ export const ADMIN_SALES = {
 
   BOOKINGS: '/api/admin/bookings',
   BOOKING: (id: number | string) => `/api/admin/bookings/${id}`,
+
+  RMA_REQUESTS: '/api/admin/rma/requests',
+  RMA_REQUEST: (id: number | string) => `/api/admin/rma/requests/${id}`,
+  RMA_RETURNABLE_ORDERS: '/api/admin/rma/requests/orders',
+  RMA_REQUEST_IMAGE: (id: number | string) => `/api/admin/rma/requests/images/${id}`,
+  RMA_MESSAGES: '/api/admin/rma/messages',
+  RMA_MESSAGE_ATTACHMENT: (id: number | string) => `/api/admin/rma/messages/${id}/attachment`,
 };

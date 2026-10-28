@@ -1,20 +1,10 @@
 import { expect } from '@playwright/test';
 
-/* ===================================================
- * ATOMIC ASSERTIONS (Reusable)
- * =================================================== */
-
-/**
- * Assert no GraphQL errors in response
- */
 export function assertNoGraphQLErrors(body: any) {
   expect(body.errors, 'GraphQL errors found').toBeUndefined();
   expect(body.data).toBeTruthy();
 }
 
-/**
- * Assert GraphQL errors exist (for negative tests)
- */
 export function assertGraphQLErrors(body: any, expectedErrorMessage?: string) {
   expect(body.errors).toBeTruthy();
   if (expectedErrorMessage) {
@@ -23,9 +13,6 @@ export function assertGraphQLErrors(body: any, expectedErrorMessage?: string) {
   }
 }
 
-/**
- * Assert basic country structure
- */
 export function assertBasicCountry(country: any) {
   expect(country).toBeTruthy();
   expect(country).toHaveProperty('id');
@@ -42,22 +29,12 @@ export function assertBasicCountry(country: any) {
   expect(country.name.trim().length).toBeGreaterThan(0);
 }
 
-/**
- * Assert country with internal ID
- */
 export function assertCountryWithInternalId(country: any) {
   assertBasicCountry(country);
   expect(country).toHaveProperty('_id');
   expect(typeof country._id).toBe('number');
 }
 
-/* ===================================================
- * STATE ASSERTIONS
- * =================================================== */
-
-/**
- * Assert basic state structure
- */
 export function assertBasicState(state: any) {
   expect(state).toBeTruthy();
   expect(state).toHaveProperty('id');
@@ -69,22 +46,16 @@ export function assertBasicState(state: any) {
   expect(typeof state.id).toBe('string');
   expect(typeof state.code).toBe('string');
   expect(typeof state.defaultName).toBe('string');
-  expect(typeof state.countryId).toBe('string');
+  expect(typeof state.countryId).toBe('number');
   expect(typeof state.countryCode).toBe('string');
 }
 
-/**
- * Assert state with internal ID
- */
 export function assertStateWithInternalId(state: any) {
   assertBasicState(state);
   expect(state).toHaveProperty('_id');
   expect(typeof state._id).toBe('number');
 }
 
-/**
- * Assert states connection
- */
 export function assertStatesConnection(states: any) {
   expect(states).toBeTruthy();
   expect(states).toHaveProperty('edges');
@@ -97,13 +68,6 @@ export function assertStatesConnection(states: any) {
   });
 }
 
-/* ===================================================
- * TRANSLATION ASSERTIONS
- * =================================================== */
-
-/**
- * Assert country translation
- */
 export function assertCountryTranslation(translation: any) {
   expect(translation).toBeTruthy();
   expect(translation).toHaveProperty('id');
@@ -115,9 +79,6 @@ export function assertCountryTranslation(translation: any) {
   expect(typeof translation.name).toBe('string');
 }
 
-/**
- * Assert state translation
- */
 export function assertStateTranslation(translation: any) {
   expect(translation).toBeTruthy();
   expect(translation).toHaveProperty('id');
@@ -129,9 +90,6 @@ export function assertStateTranslation(translation: any) {
   expect(typeof translation.defaultName).toBe('string');
 }
 
-/**
- * Assert translations connection
- */
 export function assertTranslationsConnection(translations: any) {
   expect(translations).toBeTruthy();
   expect(translations).toHaveProperty('edges');
@@ -144,9 +102,6 @@ export function assertTranslationsConnection(translations: any) {
   });
 }
 
-/**
- * Assert state translations connection
- */
 export function assertStateTranslationsConnection(translations: any) {
   expect(translations).toBeTruthy();
   expect(translations).toHaveProperty('edges');
@@ -158,13 +113,6 @@ export function assertStateTranslationsConnection(translations: any) {
   });
 }
 
-/* ===================================================
- * PAGINATION ASSERTIONS
- * =================================================== */
-
-/**
- * Assert pagination info
- */
 export function assertPageInfo(pageInfo: any) {
   expect(pageInfo).toBeTruthy();
   expect(pageInfo).toHaveProperty('hasNextPage');
@@ -173,13 +121,6 @@ export function assertPageInfo(pageInfo: any) {
   expect(typeof pageInfo.hasNextPage).toBe('boolean');
 }
 
-/* ===================================================
- * COUNTRY STATES RESPONSE ASSERTIONS
- * =================================================== */
-
-/**
- * Assert country states connection
- */
 export function assertCountryStatesConnection(states: any) {
   expect(states).toBeTruthy();
   expect(states).toHaveProperty('edges');
@@ -192,9 +133,6 @@ export function assertCountryStatesConnection(states: any) {
   });
 }
 
-/**
- * Assert country states connection with translations
- */
 export function assertCountryStatesWithTranslationsConnection(states: any) {
   expect(states).toBeTruthy();
   expect(states).toHaveProperty('edges');
@@ -210,9 +148,6 @@ export function assertCountryStatesWithTranslationsConnection(states: any) {
   });
 }
 
-/**
- * Assert country states pagination connection
- */
 export function assertCountryStatesPaginationConnection(states: any) {
   expect(states).toBeTruthy();
   expect(states).toHaveProperty('edges');
@@ -236,9 +171,6 @@ export function assertCountryStatesPaginationConnection(states: any) {
   expect(typeof pageInfo.hasPreviousPage).toBe('boolean');
 }
 
-/**
- * Assert country states dropdown connection
- */
 export function assertCountryStatesDropdownConnection(states: any) {
   expect(states).toBeTruthy();
   expect(states).toHaveProperty('edges');
@@ -259,9 +191,6 @@ export function assertCountryStatesDropdownConnection(states: any) {
   });
 }
 
-/**
- * Assert single country state basic response
- */
 export function assertGetCountryStateBasicResponse(body: any) {
   assertNoGraphQLErrors(body);
   const countryState = body.data.countryState;
@@ -269,9 +198,6 @@ export function assertGetCountryStateBasicResponse(body: any) {
   assertStateWithInternalId(countryState);
 }
 
-/**
- * Assert single country state with translations response
- */
 export function assertGetCountryStateWithTranslationsResponse(body: any) {
   assertNoGraphQLErrors(body);
   const countryState = body.data.countryState;
@@ -281,9 +207,6 @@ export function assertGetCountryStateWithTranslationsResponse(body: any) {
   assertStateTranslationsConnection(countryState.translations);
 }
 
-/**
- * Assert single country state for address validation response
- */
 export function assertGetCountryStateForAddressValidationResponse(body: any) {
   assertNoGraphQLErrors(body);
   const countryState = body.data.countryState;
@@ -291,9 +214,6 @@ export function assertGetCountryStateForAddressValidationResponse(body: any) {
   assertStateWithInternalId(countryState);
 }
 
-/**
- * Assert single country state complete details response
- */
 export function assertGetCountryStateCompleteResponse(body: any) {
   assertNoGraphQLErrors(body);
   const countryState = body.data.countryState;
@@ -303,49 +223,30 @@ export function assertGetCountryStateCompleteResponse(body: any) {
   assertStateTranslationsConnection(countryState.translations);
 }
 
-/**
- * Assert getCountryStates basic response
- */
 export function assertGetCountryStatesBasicResponse(body: any) {
   assertNoGraphQLErrors(body);
   const countryStates = body.data.countryStates;
   assertCountryStatesConnection(countryStates);
 }
 
-/**
- * Assert getCountryStates with translations response
- */
 export function assertGetCountryStatesWithTranslationsResponse(body: any) {
   assertNoGraphQLErrors(body);
   const countryStates = body.data.countryStates;
   assertCountryStatesWithTranslationsConnection(countryStates);
 }
 
-/**
- * Assert getCountryStates with pagination response
- */
 export function assertGetCountryStatesWithPaginationResponse(body: any) {
   assertNoGraphQLErrors(body);
   const countryStates = body.data.countryStates;
   assertCountryStatesPaginationConnection(countryStates);
 }
 
-/**
- * Assert getCountryStates for dropdown response
- */
 export function assertGetCountryStatesForDropdownResponse(body: any) {
   assertNoGraphQLErrors(body);
   const countryStates = body.data.countryStates;
   assertCountryStatesDropdownConnection(countryStates);
 }
 
-/* ===================================================
- * RESPONSE ASSERTIONS
- * =================================================== */
-
-/**
- * Assert getCountry basic response
- */
 export function assertGetCountryBasicResponse(body: any) {
   assertNoGraphQLErrors(body);
   const country = body.data.country;
@@ -353,9 +254,6 @@ export function assertGetCountryBasicResponse(body: any) {
   assertCountryWithInternalId(country);
 }
 
-/**
- * Assert getCountry with states response
- */
 export function assertGetCountryWithStatesResponse(body: any) {
   assertNoGraphQLErrors(body);
   const country = body.data.country;
@@ -365,7 +263,6 @@ export function assertGetCountryWithStatesResponse(body: any) {
   expect(country).toHaveProperty('states');
   assertStatesConnection(country.states);
 
-  // Verify each state has translations
   country.states.edges.forEach((edge: any) => {
     const state = edge.node;
     if (state.translations) {
@@ -374,9 +271,6 @@ export function assertGetCountryWithStatesResponse(body: any) {
   });
 }
 
-/**
- * Assert getCountry with translations response
- */
 export function assertGetCountryWithTranslationsResponse(body: any) {
   assertNoGraphQLErrors(body);
   const country = body.data.country;
@@ -387,9 +281,6 @@ export function assertGetCountryWithTranslationsResponse(body: any) {
   assertTranslationsConnection(country.translations);
 }
 
-/**
- * Assert countries with all translations response
- */
 export function assertGetCountriesWithAllTranslationsResponse(body: any) {
   assertNoGraphQLErrors(body);
   const countries = body.data.countries;
@@ -416,9 +307,6 @@ export function assertGetCountriesWithAllTranslationsResponse(body: any) {
   expect(countries.totalCount).toBeGreaterThan(0);
 }
 
-/**
- * Assert countries for address form response
- */
 export function assertGetCountriesForAddressFormResponse(body: any) {
   assertNoGraphQLErrors(body);
   const countries = body.data.countries;
@@ -444,43 +332,29 @@ export function assertGetCountriesForAddressFormResponse(body: any) {
   expect(typeof pageInfo.hasNextPage).toBe('boolean');
 }
 
-/**
- * Assert getCountry complete response
- */
 export function assertGetCountryCompleteResponse(body: any) {
   assertNoGraphQLErrors(body);
   const country = body.data.country;
   expect(country).toBeTruthy();
   assertCountryWithInternalId(country);
 
-  // Assert states
   expect(country).toHaveProperty('states');
   assertStatesConnection(country.states);
 
-  // Assert translations
   expect(country).toHaveProperty('translations');
   assertTranslationsConnection(country.translations);
 }
 
-/**
- * Assert country not found (null response)
- */
 export function assertCountryNotFound(body: any) {
   assertNoGraphQLErrors(body);
   const country = body.data.country;
   expect(country).toBeNull();
 }
 
-/**
- * Assert invalid ID format error
- */
 export function assertInvalidIDFormatError(body: any) {
   assertGraphQLErrors(body);
 }
 
-/**
- * Assert country edge structure
- */
 export function assertCountryEdge(edge: any) {
   expect(edge).toBeTruthy();
   expect(edge).toHaveProperty('node');
@@ -489,9 +363,6 @@ export function assertCountryEdge(edge: any) {
   }
 }
 
-/**
- * Assert countries connection
- */
 export function assertCountriesConnection(countries: any) {
   expect(countries).toBeTruthy();
   expect(countries).toHaveProperty('edges');
@@ -505,9 +376,6 @@ export function assertCountriesConnection(countries: any) {
   assertPageInfo(countries.pageInfo);
 }
 
-/**
- * Assert getCountries basic response
- */
 export function assertGetCountriesBasicResponse(body: any) {
   assertNoGraphQLErrors(body);
   const countries = body.data.countries;
@@ -523,9 +391,6 @@ export function assertGetCountriesBasicResponse(body: any) {
   }
 }
 
-/**
- * Assert getCountries with states response
- */
 export function assertGetCountriesWithStatesResponse(body: any) {
   assertNoGraphQLErrors(body);
   const countries = body.data.countries;
@@ -538,7 +403,6 @@ export function assertGetCountriesWithStatesResponse(body: any) {
     if (country.states) {
       assertStatesConnection(country.states);
       
-      // Verify each state has translations
       country.states.edges.forEach((stateEdge: any) => {
         const state = stateEdge.node;
         if (state.translations) {
@@ -558,9 +422,6 @@ export function assertGetCountriesWithStatesResponse(body: any) {
   }
 }
 
-/**
- * Assert getCountries with pagination response
- */
 export function assertGetCountriesWithPaginationResponse(body: any, expectedCount?: number) {
   assertNoGraphQLErrors(body);
   const countries = body.data.countries;
@@ -579,13 +440,8 @@ export function assertGetCountriesWithPaginationResponse(body: any, expectedCoun
   expect(countries.totalCount).toBeGreaterThanOrEqual(0);
 }
 
-/**
- * Assert country data is null for non-existent ID
- */
 export function assertNonExistentCountryResponse(body: any) {
-  // Handle GraphQL errors - the API may return errors for invalid IDs
   if (body.errors) {
-    // If there are errors, the country should be null
     expect(body.data.country).toBeNull();
   } else {
     assertNoGraphQLErrors(body);

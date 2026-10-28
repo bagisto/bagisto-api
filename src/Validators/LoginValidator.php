@@ -8,6 +8,9 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 
 class LoginValidator
 {
+    /**
+     * Validate login input.
+     */
     public function validateLoginInput(LoginInput $login): void
     {
         $data = [

@@ -16,22 +16,26 @@ class CartTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    protected function bootstrapDraftCart(Admin $admin): int
-    {
-        return $this->bootstrapAdminDraftCart();
-    }
-
+    /**
+     * Test get cart requires authentication.
+     */
     public function test_get_cart_requires_authentication(): void
     {
         $this->publicGet('/api/admin/carts/1')->assertStatus(401);
     }
 
+    /**
+     * Test get cart returns 404 for unknown cart.
+     */
     public function test_get_cart_returns_404_for_unknown_cart(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/carts/999999999')->assertStatus(404);
     }
 
+    /**
+     * Test get cart refuses active storefront cart.
+     */
     public function test_get_cart_refuses_active_storefront_cart(): void
     {
         $admin = $this->createAdmin();
@@ -49,6 +53,9 @@ class CartTest extends AdminApiTestCase
         $this->adminGet($admin, '/api/admin/carts/'.$cart->id)->assertStatus(403);
     }
 
+    /**
+     * Test get cart returns full payload.
+     */
     public function test_get_cart_returns_full_payload(): void
     {
         $admin = $this->createAdmin();
@@ -65,6 +72,9 @@ class CartTest extends AdminApiTestCase
         expect($response->json('isActive'))->toBeFalse();
     }
 
+    /**
+     * Test add item rejects missing product.
+     */
     public function test_add_item_rejects_missing_product(): void
     {
         $admin = $this->createAdmin();
@@ -74,6 +84,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test add item returns 404 when product unknown.
+     */
     public function test_add_item_returns_404_when_product_unknown(): void
     {
         $admin = $this->createAdmin();
@@ -83,6 +96,9 @@ class CartTest extends AdminApiTestCase
             ->assertStatus(404);
     }
 
+    /**
+     * Test update items requires qty.
+     */
     public function test_update_items_requires_qty(): void
     {
         $admin = $this->createAdmin();
@@ -92,6 +108,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test update items updates quantities.
+     */
     public function test_update_items_updates_quantities(): void
     {
         $admin = $this->createAdmin();
@@ -122,6 +141,9 @@ class CartTest extends AdminApiTestCase
         expect((int) $persisted['quantity'])->toBe($target);
     }
 
+    /**
+     * Test update items beyond available stock returns 422.
+     */
     public function test_update_items_beyond_available_stock_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -145,6 +167,9 @@ class CartTest extends AdminApiTestCase
         expect((int) $persisted['quantity'])->toBe((int) $first['quantity']);
     }
 
+    /**
+     * Test remove item requires cart item id.
+     */
     public function test_remove_item_requires_cart_item_id(): void
     {
         $admin = $this->createAdmin();
@@ -154,6 +179,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test remove item removes a line.
+     */
     public function test_remove_item_removes_a_line(): void
     {
         $admin = $this->createAdmin();
@@ -175,6 +203,9 @@ class CartTest extends AdminApiTestCase
         expect(collect($remaining)->pluck('id')->contains($first['id']))->toBeFalse();
     }
 
+    /**
+     * Test save address requires billing.
+     */
     public function test_save_address_requires_billing(): void
     {
         $admin = $this->createAdmin();
@@ -184,6 +215,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test remove coupon is idempotent.
+     */
     public function test_remove_coupon_is_idempotent(): void
     {
         $admin = $this->createAdmin();
@@ -194,6 +228,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('success'))->toBeTrue();
     }
 
+    /**
+     * Test apply coupon requires code.
+     */
     public function test_apply_coupon_requires_code(): void
     {
         $admin = $this->createAdmin();
@@ -203,6 +240,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test apply unknown coupon returns 404.
+     */
     public function test_apply_unknown_coupon_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -212,6 +252,9 @@ class CartTest extends AdminApiTestCase
         $resp->assertStatus(404);
     }
 
+    /**
+     * Test get cart with non numeric id returns 404.
+     */
     public function test_get_cart_with_non_numeric_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -219,12 +262,18 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 404]);
     }
 
+    /**
+     * Test get cart with zero id returns 404.
+     */
     public function test_get_cart_with_zero_id_returns_404(): void
     {
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/carts/0')->assertStatus(404);
     }
 
+    /**
+     * Test get cart with negative id returns 404.
+     */
     public function test_get_cart_with_negative_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -232,6 +281,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 404]);
     }
 
+    /**
+     * Test add item rejects zero product id.
+     */
     public function test_add_item_rejects_zero_product_id(): void
     {
         $admin = $this->createAdmin();
@@ -241,6 +293,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test add item rejects negative product id.
+     */
     public function test_add_item_rejects_negative_product_id(): void
     {
         $admin = $this->createAdmin();
@@ -250,6 +305,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test add item disabled product is rejected.
+     */
     public function test_add_item_disabled_product_is_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -281,6 +339,9 @@ class CartTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test add non saleable product returns 400 and preserves cart.
+     */
     public function test_add_non_saleable_product_returns_400_and_preserves_cart(): void
     {
         $admin = $this->createAdmin();
@@ -305,6 +366,9 @@ class CartTest extends AdminApiTestCase
         $this->adminGet($admin, '/api/admin/carts/'.$cartId)->assertOk();
     }
 
+    /**
+     * Test add item blocks booking products.
+     */
     public function test_add_item_blocks_booking_products(): void
     {
         $admin = $this->createAdmin();
@@ -326,6 +390,9 @@ class CartTest extends AdminApiTestCase
             ->toContain('Booking');
     }
 
+    /**
+     * Test add item quantity zero is handled.
+     */
     public function test_add_item_quantity_zero_is_handled(): void
     {
         $admin = $this->createAdmin();
@@ -340,6 +407,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
     }
 
+    /**
+     * Test add item quantity negative is handled.
+     */
     public function test_add_item_quantity_negative_is_handled(): void
     {
         $admin = $this->createAdmin();
@@ -354,11 +424,17 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
     }
 
+    /**
+     * Test add item quantity as string is cast.
+     */
     public function test_add_item_quantity_as_string_is_cast(): void
     {
         $this->markTestSkipped('TODO: relax DTO typing to accept stringly-typed quantity ("2") — currently produces a 500 from the Symfony denormalizer because $quantity is `?int`. Tightening the DTO at deserialisation time is acceptable for now.');
     }
 
+    /**
+     * Test add item configurable missing super attribute.
+     */
     public function test_add_item_configurable_missing_super_attribute(): void
     {
         $admin = $this->createAdmin();
@@ -379,6 +455,9 @@ class CartTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test update items empty qty object rejected.
+     */
     public function test_update_items_empty_qty_object_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -388,6 +467,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test update items with foreign item id is safe.
+     */
     public function test_update_items_with_foreign_item_id_is_safe(): void
     {
         $admin = $this->createAdmin();
@@ -397,6 +479,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
     }
 
+    /**
+     * Test update items qty zero treated as remove.
+     */
     public function test_update_items_qty_zero_treated_as_remove(): void
     {
         $admin = $this->createAdmin();
@@ -415,6 +500,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
     }
 
+    /**
+     * Test update items qty as string is accepted.
+     */
     public function test_update_items_qty_as_string_is_accepted(): void
     {
         $admin = $this->createAdmin();
@@ -433,6 +521,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
     }
 
+    /**
+     * Test remove item unknown id is safe.
+     */
     public function test_remove_item_unknown_id_is_safe(): void
     {
         $admin = $this->createAdmin();
@@ -442,6 +533,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([200, 400, 404, 422]);
     }
 
+    /**
+     * Test remove last item keeps cart retrievable.
+     */
     public function test_remove_last_item_keeps_cart_retrievable(): void
     {
         $admin = $this->createAdmin();
@@ -463,6 +557,9 @@ class CartTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test save address invalid country is handled.
+     */
     public function test_save_address_invalid_country_is_handled(): void
     {
         $admin = $this->createAdmin();
@@ -479,6 +576,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
     }
 
+    /**
+     * Test save address rejects incomplete billing.
+     */
     public function test_save_address_rejects_incomplete_billing(): void
     {
         $admin = $this->createAdmin();
@@ -494,6 +594,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test save address shipping when use for shipping false without shipping block.
+     */
     public function test_save_address_shipping_when_use_for_shipping_false_without_shipping_block(): void
     {
         $admin = $this->createAdmin();
@@ -513,6 +616,9 @@ class CartTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * Test apply coupon with empty string rejected.
+     */
     public function test_apply_coupon_with_empty_string_rejected(): void
     {
         $admin = $this->createAdmin();
@@ -522,6 +628,9 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
 
+    /**
+     * Test apply coupon to empty cart returns 404 for unknown code.
+     */
     public function test_apply_coupon_to_empty_cart_returns_404_for_unknown_code(): void
     {
         $admin = $this->createAdmin();
@@ -536,6 +645,9 @@ class CartTest extends AdminApiTestCase
         $resp->assertStatus(404);
     }
 
+    /**
+     * Test remove coupon on unknown cart returns 404.
+     */
     public function test_remove_coupon_on_unknown_cart_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -543,42 +655,63 @@ class CartTest extends AdminApiTestCase
         $resp->assertStatus(404);
     }
 
+    /**
+     * Test add item requires auth.
+     */
     public function test_add_item_requires_auth(): void
     {
         $resp = $this->postJson('/api/admin/carts/1/items', ['productId' => 1]);
         expect($resp->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test update items requires auth.
+     */
     public function test_update_items_requires_auth(): void
     {
         $resp = $this->putJson('/api/admin/carts/1/items', ['qty' => ['1' => 1]]);
         expect($resp->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test remove item requires auth.
+     */
     public function test_remove_item_requires_auth(): void
     {
         $resp = $this->json('DELETE', '/api/admin/carts/1/items', ['cartItemId' => 1]);
         expect($resp->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test save address requires auth.
+     */
     public function test_save_address_requires_auth(): void
     {
         $resp = $this->postJson('/api/admin/carts/1/addresses', ['billing' => ['firstName' => 'X']]);
         expect($resp->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test apply coupon requires auth.
+     */
     public function test_apply_coupon_requires_auth(): void
     {
         $resp = $this->postJson('/api/admin/carts/1/coupon', ['code' => 'X']);
         expect($resp->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test remove coupon requires auth.
+     */
     public function test_remove_coupon_requires_auth(): void
     {
         $resp = $this->json('DELETE', '/api/admin/carts/1/coupon');
         expect($resp->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test mutations refuse active storefront cart.
+     */
     public function test_mutations_refuse_active_storefront_cart(): void
     {
         $admin = $this->createAdmin();
@@ -601,5 +734,13 @@ class CartTest extends AdminApiTestCase
         expect($this->adminPost($admin, "/api/admin/carts/{$id}/addresses", ['billing' => ['firstName' => 'X']])->getStatusCode())->toBe(403);
         expect($this->adminPost($admin, "/api/admin/carts/{$id}/coupon", ['code' => 'X'])->getStatusCode())->toBe(403);
         expect($this->json('DELETE', "/api/admin/carts/{$id}/coupon", [], $this->adminHeaders($admin))->getStatusCode())->toBe(403);
+    }
+
+    /**
+     * Bootstrap draft cart.
+     */
+    protected function bootstrapDraftCart(Admin $admin): int
+    {
+        return $this->bootstrapAdminDraftCart();
     }
 }

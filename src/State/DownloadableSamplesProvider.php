@@ -11,9 +11,6 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Models\Product;
 
-/**
- * Filters downloadable samples by parent product for nested BagistoApi queries.
- */
 class DownloadableSamplesProvider implements ProviderInterface
 {
     /**

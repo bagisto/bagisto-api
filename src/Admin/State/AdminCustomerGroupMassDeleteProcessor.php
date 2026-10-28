@@ -16,8 +16,14 @@ use Webkul\Customer\Repositories\CustomerGroupRepository;
 
 class AdminCustomerGroupMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected CustomerGroupRepository $customerGroupRepository) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -82,6 +88,9 @@ class AdminCustomerGroupMassDeleteProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin): void
     {
         $role = $admin->role ?? null;
@@ -106,6 +115,9 @@ class AdminCustomerGroupMassDeleteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

@@ -14,109 +14,12 @@ use Webkul\Sales\Models\OrderPayment;
 
 class CustomerInvoiceTest extends GraphQLTestCase
 {
-    /**
-     * Create test data — customer with order and invoices
-     */
-    private function createTestData(): array
-    {
-        $this->seedRequiredData();
-
-        $customer = $this->createCustomer();
-        $channel = Channel::first();
-        $product = Product::factory()->create();
-
-        $order = Order::factory()->create([
-            'customer_id' => $customer->id,
-            'customer_email' => $customer->email,
-            'customer_first_name' => $customer->first_name,
-            'customer_last_name' => $customer->last_name,
-            'channel_id' => $channel->id,
-            'status' => 'completed',
-        ]);
-
-        $orderItem = OrderItem::factory()->create([
-            'order_id' => $order->id,
-            'product_id' => $product->id,
-            'sku' => 'TEST-INV-SKU-001',
-            'type' => 'simple',
-            'name' => 'Test Invoice Product',
-        ]);
-
-        OrderPayment::factory()->create([
-            'order_id' => $order->id,
-        ]);
-
-        /** Create first invoice (paid) */
-        $invoice1 = Invoice::factory()->create([
-            'order_id' => $order->id,
-            'state' => 'paid',
-            'total_qty' => 2,
-            'sub_total' => 100.00,
-            'base_sub_total' => 100.00,
-            'grand_total' => 110.00,
-            'base_grand_total' => 110.00,
-            'shipping_amount' => 5.00,
-            'base_shipping_amount' => 5.00,
-            'tax_amount' => 5.00,
-            'base_tax_amount' => 5.00,
-            'discount_amount' => 0.00,
-            'base_discount_amount' => 0.00,
-            'base_currency_code' => 'USD',
-            'order_currency_code' => 'USD',
-            'increment_id' => 'INV-001',
-        ]);
-
-        InvoiceItem::factory()->create([
-            'invoice_id' => $invoice1->id,
-            'order_item_id' => $orderItem->id,
-            'name' => 'Test Invoice Product',
-            'sku' => 'TEST-INV-SKU-001',
-            'qty' => 2,
-            'price' => 50.00,
-            'base_price' => 50.00,
-            'total' => 100.00,
-            'base_total' => 100.00,
-        ]);
-
-        /** Create second invoice (pending) */
-        $invoice2 = Invoice::factory()->create([
-            'order_id' => $order->id,
-            'state' => 'pending',
-            'total_qty' => 1,
-            'sub_total' => 50.00,
-            'base_sub_total' => 50.00,
-            'grand_total' => 55.00,
-            'base_grand_total' => 55.00,
-            'shipping_amount' => 3.00,
-            'base_shipping_amount' => 3.00,
-            'tax_amount' => 2.00,
-            'base_tax_amount' => 2.00,
-            'discount_amount' => 0.00,
-            'base_discount_amount' => 0.00,
-            'base_currency_code' => 'USD',
-            'order_currency_code' => 'USD',
-            'increment_id' => 'INV-002',
-        ]);
-
-        InvoiceItem::factory()->create([
-            'invoice_id' => $invoice2->id,
-            'order_item_id' => $orderItem->id,
-            'name' => 'Test Invoice Product',
-            'sku' => 'TEST-INV-SKU-001',
-            'qty' => 1,
-            'price' => 50.00,
-            'base_price' => 50.00,
-            'total' => 50.00,
-            'base_total' => 50.00,
-        ]);
-
-        return compact('customer', 'channel', 'product', 'order', 'orderItem', 'invoice1', 'invoice2');
-    }
-
-    // ── Collection Queries ────────────────────────────────────
+    // ============================================================================
+    // Collection Queries
+    // ============================================================================
 
     /**
-     * Test: Query all customer invoices collection
+     * Test: Query all customer invoices collection.
      */
     public function test_get_customer_invoices_collection(): void
     {
@@ -165,7 +68,7 @@ class CustomerInvoiceTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Unauthenticated request returns error
+     * Test: Unauthenticated request returns error.
      */
     public function test_get_customer_invoices_requires_authentication(): void
     {
@@ -190,13 +93,12 @@ class CustomerInvoiceTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Customer only sees invoices from their own orders
+     * Test: Customer only sees invoices from their own orders.
      */
     public function test_customer_only_sees_own_invoices(): void
     {
         $testData = $this->createTestData();
 
-        /** Create another customer with their own order and invoice */
         $otherCustomer = $this->createCustomer();
         $channel = Channel::first();
 
@@ -234,12 +136,11 @@ class CustomerInvoiceTest extends GraphQLTestCase
         $response->assertOk();
         $data = $response->json('data.customerInvoices');
 
-        /** Should only see the 2 invoices belonging to testData customer */
         expect($data['totalCount'])->toBe(2);
     }
 
     /**
-     * Test: Filter invoices by orderId
+     * Test: Filter invoices by orderId.
      */
     public function test_filter_invoices_by_order_id(): void
     {
@@ -269,7 +170,7 @@ class CustomerInvoiceTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Filter invoices by state
+     * Test: Filter invoices by state.
      */
     public function test_filter_invoices_by_state(): void
     {
@@ -303,7 +204,7 @@ class CustomerInvoiceTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Filter by pending state
+     * Test: Filter by pending state.
      */
     public function test_filter_invoices_by_pending_state(): void
     {
@@ -336,10 +237,12 @@ class CustomerInvoiceTest extends GraphQLTestCase
         expect($node['state'])->toBe('pending');
     }
 
-    // ── Single Item Query ─────────────────────────────────────
+    // ============================================================================
+    // Single Item Query
+    // ============================================================================
 
     /**
-     * Test: Query single customer invoice by ID
+     * Test: Query single customer invoice by ID.
      */
     public function test_get_customer_invoice_by_id(): void
     {
@@ -381,7 +284,7 @@ class CustomerInvoiceTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query invoice returns correct financial data
+     * Test: Query invoice returns correct financial data.
      */
     public function test_invoice_returns_financial_data(): void
     {
@@ -421,7 +324,7 @@ class CustomerInvoiceTest extends GraphQLTestCase
     }
 
     /**
-     * Test: A guest cannot read a customer's invoice by ID
+     * Test: A guest cannot read a customer's invoice by ID.
      */
     public function test_guest_cannot_get_customer_invoice_by_id(): void
     {
@@ -446,7 +349,7 @@ class CustomerInvoiceTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Another customer cannot read someone else's invoice by ID
+     * Test: Another customer cannot read someone else's invoice by ID.
      */
     public function test_other_customer_cannot_get_customer_invoice_by_id(): void
     {
@@ -472,7 +375,7 @@ class CustomerInvoiceTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query non-existent invoice returns error
+     * Test: Query non-existent invoice returns error.
      */
     public function test_get_nonexistent_invoice_returns_error(): void
     {
@@ -495,10 +398,12 @@ class CustomerInvoiceTest extends GraphQLTestCase
         expect($errors)->not()->toBeEmpty();
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
     /**
-     * Test: Pagination with first parameter
+     * Test: Pagination with first parameter.
      */
     public function test_pagination_with_first_parameter(): void
     {
@@ -532,13 +437,12 @@ class CustomerInvoiceTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Forward pagination with after cursor
+     * Test: Forward pagination with after cursor.
      */
     public function test_pagination_with_after_cursor(): void
     {
         $testData = $this->createTestData();
 
-        /** First page */
         $query = <<<'GQL'
             query getCustomerInvoices {
               customerInvoices(first: 1) {
@@ -563,7 +467,6 @@ class CustomerInvoiceTest extends GraphQLTestCase
         $endCursor = $firstPageData['pageInfo']['endCursor'];
         $firstInvoiceId = $firstPageData['edges'][0]['node']['_id'];
 
-        /** Second page */
         $query2 = <<<GQL
             query getCustomerInvoices {
               customerInvoices(first: 1, after: "{$endCursor}") {
@@ -582,14 +485,15 @@ class CustomerInvoiceTest extends GraphQLTestCase
         $secondPageData = $response2->json('data.customerInvoices');
         $secondInvoiceId = $secondPageData['edges'][0]['node']['_id'] ?? null;
 
-        /** Second page should have a different invoice */
         expect($secondInvoiceId)->not()->toBe($firstInvoiceId);
     }
 
-    // ── Schema Introspection ──────────────────────────────────
+    // ============================================================================
+    // Schema Introspection
+    // ============================================================================
 
     /**
-     * Test: CustomerInvoice type has expected fields in schema
+     * Test: CustomerInvoice type has expected fields in schema.
      */
     public function test_customer_invoice_schema_has_expected_fields(): void
     {
@@ -628,5 +532,102 @@ class CustomerInvoiceTest extends GraphQLTestCase
             ->toContain('baseCurrencyCode')
             ->toContain('orderCurrencyCode')
             ->toContain('createdAt');
+    }
+
+    /**
+     * Create test data — customer with order and invoices.
+     */
+    private function createTestData(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $channel = Channel::first();
+        $product = Product::factory()->create();
+
+        $order = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'customer_first_name' => $customer->first_name,
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
+        ]);
+
+        $orderItem = OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'TEST-INV-SKU-001',
+            'type' => 'simple',
+            'name' => 'Test Invoice Product',
+        ]);
+
+        OrderPayment::factory()->create([
+            'order_id' => $order->id,
+        ]);
+
+        $invoice1 = Invoice::factory()->create([
+            'order_id' => $order->id,
+            'state' => 'paid',
+            'total_qty' => 2,
+            'sub_total' => 100.00,
+            'base_sub_total' => 100.00,
+            'grand_total' => 110.00,
+            'base_grand_total' => 110.00,
+            'shipping_amount' => 5.00,
+            'base_shipping_amount' => 5.00,
+            'tax_amount' => 5.00,
+            'base_tax_amount' => 5.00,
+            'discount_amount' => 0.00,
+            'base_discount_amount' => 0.00,
+            'base_currency_code' => 'USD',
+            'order_currency_code' => 'USD',
+            'increment_id' => 'INV-001',
+        ]);
+
+        InvoiceItem::factory()->create([
+            'invoice_id' => $invoice1->id,
+            'order_item_id' => $orderItem->id,
+            'name' => 'Test Invoice Product',
+            'sku' => 'TEST-INV-SKU-001',
+            'qty' => 2,
+            'price' => 50.00,
+            'base_price' => 50.00,
+            'total' => 100.00,
+            'base_total' => 100.00,
+        ]);
+
+        $invoice2 = Invoice::factory()->create([
+            'order_id' => $order->id,
+            'state' => 'pending',
+            'total_qty' => 1,
+            'sub_total' => 50.00,
+            'base_sub_total' => 50.00,
+            'grand_total' => 55.00,
+            'base_grand_total' => 55.00,
+            'shipping_amount' => 3.00,
+            'base_shipping_amount' => 3.00,
+            'tax_amount' => 2.00,
+            'base_tax_amount' => 2.00,
+            'discount_amount' => 0.00,
+            'base_discount_amount' => 0.00,
+            'base_currency_code' => 'USD',
+            'order_currency_code' => 'USD',
+            'increment_id' => 'INV-002',
+        ]);
+
+        InvoiceItem::factory()->create([
+            'invoice_id' => $invoice2->id,
+            'order_item_id' => $orderItem->id,
+            'name' => 'Test Invoice Product',
+            'sku' => 'TEST-INV-SKU-001',
+            'qty' => 1,
+            'price' => 50.00,
+            'base_price' => 50.00,
+            'total' => 50.00,
+            'base_total' => 50.00,
+        ]);
+
+        return compact('customer', 'channel', 'product', 'order', 'orderItem', 'invoice1', 'invoice2');
     }
 }

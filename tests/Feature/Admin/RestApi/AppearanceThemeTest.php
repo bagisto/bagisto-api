@@ -6,47 +6,11 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for Admin Appearance → Themes.
- *
- *   GET  /api/admin/appearance/themes
- *   GET  /api/admin/appearance/themes/{code}
- *   GET  /api/admin/appearance/themes/{code}/impact
- *   POST /api/admin/appearance/themes/{code}/activate
- */
 class AppearanceThemeTest extends AdminApiTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // BACKWARD COMPATIBILITY: remove when the minimum supported core is 2.4.10.
-        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
-    }
-
-    private function channelId(): int
-    {
-        $this->seedRequiredData();
-
-        return (int) \DB::table('channels')->orderBy('id')->value('id');
-    }
-
-    private function adminWithRole(string $permissionType, array $permissions = []): array
-    {
-        $this->seedRequiredData();
-
-        $role = Role::create([
-            'name' => 'appearance-role-'.uniqid(),
-            'description' => 'test',
-            'permission_type' => $permissionType,
-            'permissions' => $permissions,
-        ]);
-
-        $admin = $this->createAdmin(['role_id' => $role->id]);
-
-        return [$admin, $this->adminTokenSameAsWeb($admin)];
-    }
-
+    /**
+     * Test list returns the theme gallery.
+     */
     public function test_list_returns_the_theme_gallery(): void
     {
         $admin = $this->createAdmin();
@@ -62,6 +26,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         expect($body[0])->toHaveKeys(['code', 'name', 'isInstalled', 'status', 'activeOn']);
     }
 
+    /**
+     * Test list requires authentication.
+     */
     public function test_list_requires_authentication(): void
     {
         $this->seedRequiredData();
@@ -71,6 +38,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403]);
     }
 
+    /**
+     * Test list requires permission.
+     */
     public function test_list_requires_permission(): void
     {
         [$admin, $token] = $this->adminWithRole('custom', ['sales.orders']);
@@ -80,6 +50,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         $response->assertForbidden();
     }
 
+    /**
+     * Test get returns a single theme.
+     */
     public function test_get_returns_a_single_theme(): void
     {
         $admin = $this->createAdmin();
@@ -92,6 +65,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         expect($response->json('isInstalled'))->toBeTrue();
     }
 
+    /**
+     * Test get unknown theme returns 404.
+     */
     public function test_get_unknown_theme_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -101,6 +77,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         $response->assertNotFound();
     }
 
+    /**
+     * Test impact reports nothing for the active theme.
+     */
     public function test_impact_reports_nothing_for_the_active_theme(): void
     {
         $admin = $this->createAdmin();
@@ -114,6 +93,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         expect($response->json('impact'))->toBe([]);
     }
 
+    /**
+     * Test impact without channels returns 422.
+     */
     public function test_impact_without_channels_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -123,6 +105,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test impact with unknown channel returns 422.
+     */
     public function test_impact_with_unknown_channel_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -132,6 +117,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test activate points the channel at the theme.
+     */
     public function test_activate_points_the_channel_at_the_theme(): void
     {
         $admin = $this->createAdmin();
@@ -149,6 +137,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         expect(\DB::table('channels')->where('id', $channelId)->value('theme'))->toBe('default');
     }
 
+    /**
+     * Test activate unknown theme returns 404.
+     */
     public function test_activate_unknown_theme_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -161,6 +152,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         $response->assertNotFound();
     }
 
+    /**
+     * Test activate without channels returns 422.
+     */
     public function test_activate_without_channels_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -170,6 +164,9 @@ class AppearanceThemeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Test activate requires the activate permission.
+     */
     public function test_activate_requires_the_activate_permission(): void
     {
         [$admin, $token] = $this->adminWithRole('custom', ['appearance.themes']);
@@ -180,5 +177,44 @@ class AppearanceThemeTest extends AdminApiTestCase
         ], $token);
 
         $response->assertForbidden();
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
+    }
+
+    /**
+     * Channel id.
+     */
+    private function channelId(): int
+    {
+        $this->seedRequiredData();
+
+        return (int) \DB::table('channels')->orderBy('id')->value('id');
+    }
+
+    /**
+     * Admin with role.
+     */
+    private function adminWithRole(string $permissionType, array $permissions = []): array
+    {
+        $this->seedRequiredData();
+
+        $role = Role::create([
+            'name' => 'appearance-role-'.uniqid(),
+            'description' => 'test',
+            'permission_type' => $permissionType,
+            'permissions' => $permissions,
+        ]);
+
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        return [$admin, $this->adminAccessToken($admin)];
     }
 }

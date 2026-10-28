@@ -8,14 +8,11 @@ use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerReview;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 
-/**
- * Placeholder provider for PUT / DELETE on AdminCustomerReview.
- *
- * API Platform requires a provider for Put/Delete operations even when the
- * resource is not Eloquent-backed.
- */
 class AdminCustomerReviewWriteProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminCustomerReview
     {
         if (! AdminAuthHelper::resolveAdmin()) {

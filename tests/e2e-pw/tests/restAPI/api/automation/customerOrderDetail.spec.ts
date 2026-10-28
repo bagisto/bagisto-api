@@ -1,172 +1,98 @@
-// tests/restAPI/api/automation/customerOrderDetail.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import { bearer, expectProblem, readJson, registerShopCustomer } from '../../rest/helpers/coverage/shopCart.helpers';
+import { e2eFixtures, missingFixtureReason, E2eCustomerFixture } from '../../../fixtures/e2eFixtures';
 
-function assertStatus(resp: any, debugLabel: string) {
-  expect([0, 200, 201, 400, 401, 403, 404, 422, 500]).toContain(resp.status());
-  console.log(`${debugLabel}:`, resp.status());
+const MSG = {
+  UNAUTHENTICATED: 'Unauthenticated. Please login to perform this action',
+  ORDER_NOT_FOUND: (id: number) => `Customer order with ID "${id}" not found`,
+};
+
+const MISSING_ORDER_ID = 2147480000;
+
+async function loginToken(request: APIRequestContext, customer: E2eCustomerFixture): Promise<string> {
+  const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
+    method: 'POST',
+    data: { email: customer.email, password: customer.password },
+  });
+  const body = await readJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(201);
+  expect(body.success).toBe(true);
+
+  return body.accessToken;
 }
 
-function authHeaders(token: string) {
-  return { Authorization: `Bearer ${token}` };
-}
-
-function generateUniqueEmail() {
-  return `order_${Date.now()}@example.com`;
-}
-
-function generatePassword() {
-  return `Order${Math.floor(Math.random() * 10000)}!`;
-}
-
-let authToken: string | null = null;
-let customerEmail: string;
-let customerPassword: string;
-
-test.describe('Customer Order — GET /detail', () => {
-  test('Should return status for /customer-orders/1 without auth', async ({ request }) => {
+test.describe('customer order detail rest api without a token', () => {
+  test('order detail without a bearer token is refused', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDER(1));
-    assertStatus(response, 'GET /api/shop/customer-orders/1 (no auth)');
+
+    await expectProblem(response, 403, MSG.UNAUTHENTICATED);
   });
 
-  test('Should return status for /customer-orders/999999 without auth', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDER(999999));
-    assertStatus(response, 'GET /api/shop/customer-orders/999999 (no auth)');
+  test('order detail of a missing order without a bearer token is refused before the lookup', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDER(MISSING_ORDER_ID));
+
+    await expectProblem(response, 403, MSG.UNAUTHENTICATED);
   });
 });
 
-test.describe('Customer Order — Single Order Detail', () => {
-  let orderId: number | null = null;
+test.describe('customer order detail rest api', () => {
+  test('own order detail carries the order and its items', async ({ request }) => {
+    const fx = e2eFixtures();
+    test.skip(!fx.order, missingFixtureReason('order'));
+    test.skip(!fx.customer, missingFixtureReason('customer'));
 
-  test.beforeAll(async ({ request }) => {
-    customerEmail = generateUniqueEmail();
-    customerPassword = generatePassword();
-    console.log(`Customer order test credentials - Email: ${customerEmail}, Password: ${customerPassword}`);
+    const token = await loginToken(request, fx.customer!);
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDER(fx.order!.id), { headers: bearer(token) });
+    const body = await readJson(response);
 
-    const loginResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-      method: 'POST',
-      data: { email: customerEmail, password: customerPassword },
-    });
-
-    const body = [200, 201].includes(loginResp.status())
-        ? await loginResp.json()
-        : null;
-    if (body?.token) {
-      authToken = body.token as string;
-      console.log('Logged in. Token:', authToken?.slice(0, 12) + '...');
-    } else {
-      // Try to register first
-      const registerResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_REGISTER, {
-        method: 'POST',
-        data: {
-          first_name: 'Order',
-          last_name: 'User',
-          email: customerEmail,
-          password: customerPassword,
-          password_confirmation: customerPassword,
-        },
-      });
-
-      if (registerResp.status() === 200 || registerResp.status() === 201) {
-        const loginRetry = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
-          method: 'POST',
-          data: { email: customerEmail, password: customerPassword },
-        });
-        const body = [200, 201].includes(loginRetry.status())
-            ? await loginRetry.json()
-            : null;
-        if (body?.token) {
-          authToken = body.token as string;
-          console.log('Registered and logged in for customer order tests');
-        }
-      }
-    }
-
-    if (authToken) {
-      const ordersResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDERS, {
-        headers: authHeaders(authToken),
-      });
-      if (ordersResp.status() === 200) {
-        const ordersBody = await ordersResp.json();
-        if (Array.isArray(ordersBody) && ordersBody.length > 0) {
-          orderId = ordersBody[0].id;
-        }
-      }
-    }
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+    expect(body.id).toBe(fx.order!.id);
+    expect(body.incrementId).toBe(fx.order!.incrementId);
+    expect(body.customerEmail).toBe(fx.customer!.email);
+    expect(typeof body.status).toBe('string');
+    expect(Array.isArray(body.items)).toBe(true);
+    expect(body.items.map((item: any) => item.productId)).toContain(fx.order!.productId);
   });
 
-  test('Should return 401/403 when fetching order without auth token', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDER(1));
-    assertStatus(response, 'GET /api/shop/customer-orders/1 (no auth token)');
+  test('own order items carry id, name and ordered quantity', async ({ request }) => {
+    const fx = e2eFixtures();
+    test.skip(!fx.order, missingFixtureReason('order'));
+    test.skip(!fx.customer, missingFixtureReason('customer'));
+
+    const token = await loginToken(request, fx.customer!);
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDER(fx.order!.id), { headers: bearer(token) });
+    const body = await readJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
+
+    const item = body.items.find((row: any) => row.productId === fx.order!.productId);
+    expect(item, JSON.stringify(body.items)).toBeDefined();
+    expect(typeof item.id).toBe('number');
+    expect(typeof item.name).toBe('string');
+    expect(item.qtyOrdered).toBeGreaterThanOrEqual(1);
   });
 
-  test('Should return own order details when authenticated', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'Login failed');
-      return;
-    }
-    if (!orderId) {
-      test.skip(true, 'No customer orders found');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDER(orderId), {
-      headers: authHeaders(authToken),
-    });
-    assertStatus(response, `GET /api/shop/customer-orders/${orderId} (authenticated)`);
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(body.id).toBe(orderId);
-      expect(body).toHaveProperty('status');
-      expect(body).toHaveProperty('items');
-      console.log('Order detail:', JSON.stringify({
-        id: body.id,
-        status: body.status,
-        items: body.items?.length,
-        total: body.total,
-        grandTotal: body.grandTotal,
-      }, null, 2));
-    }
+  test('order detail of another customer order is not found', async ({ request }) => {
+    const fx = e2eFixtures();
+    test.skip(!fx.order, missingFixtureReason('order'));
+    test.skip(!fx.otherCustomer, missingFixtureReason('otherCustomer'));
+
+    const token = await loginToken(request, fx.otherCustomer!);
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDER(fx.order!.id), { headers: bearer(token) });
+
+    await expectProblem(response, 404, MSG.ORDER_NOT_FOUND(fx.order!.id));
   });
 
-  test('Should return order items when authenticated', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'Login failed');
-      return;
-    }
-    if (!orderId) {
-      test.skip(true, 'No customer orders found');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDER(orderId), {
-      headers: authHeaders(authToken),
-    });
-    if (response.status() === 200) {
-      const body = await response.json();
-      const items = body.items ?? [];
-      expect(Array.isArray(items)).toBeTruthy();
-      if (items.length > 0) {
-        items.forEach((item: any) => {
-          expect(item).toHaveProperty('id');
-          expect(item).toHaveProperty('name');
-          expect(item).toHaveProperty('qty');
-        });
-        console.log(`Order ${orderId} item details:`, items.map((i: any) => ({
-          id: i.id, name: i.name, qty: i.qty, unitPrice: i.unitPrice,
-        })));
-      }
-    }
-  });
+  test('order detail of a missing order is not found', async ({ request }) => {
+    const customer = await registerShopCustomer(request);
 
-  test('Should return 404 for non-existent order when authenticated', async ({ request }) => {
-    if (!authToken) {
-      test.skip(true, 'Login failed');
-      return;
-    }
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDER(999999), {
-      headers: authHeaders(authToken),
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDER(MISSING_ORDER_ID), {
+      headers: bearer(customer.token),
     });
-    expect([200, 404]).toContain(response.status());
-    console.log(`GET /api/shop/customer-orders/999999 (authenticated):`, response.status());
+
+    await expectProblem(response, 404, MSG.ORDER_NOT_FOUND(MISSING_ORDER_ID));
   });
 });

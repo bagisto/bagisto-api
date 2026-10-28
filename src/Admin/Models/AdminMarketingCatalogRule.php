@@ -23,35 +23,6 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
 
-/**
- * Admin Marketing → Catalog Rules endpoints (Block F1a; objectified 2026-06-23).
- *
- * Bare Eloquent `#[ApiResource]` parent. The assigned channels / customer groups
- * are field-selectable:
- *   GraphQL → `channels { edges { node { id code name } } }` and
- *             `customerGroups { edges { node { id code name } } }` Relay connections.
- *   REST    → the same data as flat arrays of objects `[{id, code, name}]`.
- *
- * BREAKING (user-approved): the old bare int arrays `channels: [1]` /
- * `customerGroups: [2]` are REPLACED by the object connections (GraphQL) /
- * object arrays (REST). `conditions` stays a JSON scalar (dynamic rule rows).
- *
- * REST shape stays flat via `output: AdminMarketingCatalogRuleRestDto`; GraphQL
- * ops carry NO output so they return this Eloquent model → connections resolve.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Promotions\CatalogRuleController 1:1.
- *
- * REST:
- *   GET    /api/admin/marketing/catalog-rules
- *   GET    /api/admin/marketing/catalog-rules/{id}
- *   POST   /api/admin/marketing/catalog-rules
- *   PUT    /api/admin/marketing/catalog-rules/{id}
- *   DELETE /api/admin/marketing/catalog-rules/{id}
- *
- * GraphQL:
- *   adminMarketingCatalogRules / adminMarketingCatalogRule(id:)
- *   createAdminMarketingCatalogRule / updateAdminMarketingCatalogRule / deleteAdminMarketingCatalogRule
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingCatalogRule',
@@ -66,6 +37,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Create a catalog rule',
+                description: 'Creates a catalog price rule. `name`, `channels`, `customer_groups`, `action_type` (by_percent, by_fixed, to_percent or to_fixed) and a non-negative `discount_amount` are required; `ends_till` may not be before `starts_from`.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -343,6 +315,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Delete a catalog rule',
+                description: 'Deletes the catalog rule. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Catalog rule deleted.',
@@ -364,6 +337,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Catalog rule detail',
+                description: 'One catalog rule by ID, with its channels, customer groups and conditions. An unknown ID is a 404.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'Single catalog rule with channels + customerGroups (object arrays) + conditions.',
@@ -536,10 +510,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
 )]
 class AdminMarketingCatalogRule extends EloquentModel
 {
-    /** @var string */
+    /**
+     * The table that stores the catalog rules.
+     *
+     * @var string
+     */
     protected $table = 'catalog_rules';
 
-    /** @var array */
+    /**
+     * The native types the catalog rule attributes are cast to.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'status' => 'int',
@@ -554,18 +536,30 @@ class AdminMarketingCatalogRule extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
-    /** @var array */
+    /**
+     * The computed attributes appended when the catalog rule is serialized.
+     *
+     * @var array
+     */
     protected $appends = ['message'];
 
-    /** Success signal — populated only on the delete mutation result. */
+    /**
+     * Success signal — populated only on the delete mutation result.
+     */
     public ?string $actionMessage = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
         return $this->id !== null ? (int) $this->id : null;
     }
 
+    /**
+     * Get message attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getMessageAttribute(): ?string
     {
@@ -574,8 +568,7 @@ class AdminMarketingCatalogRule extends EloquentModel
 
     /**
      * Assigned channels (GraphQL connection — `channels { edges }`). belongsToMany
-     * over `catalog_rule_channels` — the pivot has no own id, so the node `_id` is
-     * the channel's real id.
+     * over `catalog_rule_channels` — the pivot has no own id, so the node `_id` is.
      */
     #[ApiProperty(writable: false)]
     public function channels(): BelongsToMany
@@ -590,8 +583,7 @@ class AdminMarketingCatalogRule extends EloquentModel
 
     /**
      * Assigned customer groups (GraphQL connection — `customerGroups { edges }`).
-     * The relation METHOD is snake_case (`customer_groups`) so the central
-     * converter resolves it; the GraphQL field surfaces as `customerGroups`.
+     * The relation METHOD is snake_case (`customer_groups`) so the central.
      */
     #[ApiProperty(writable: false)]
     public function customer_groups(): BelongsToMany

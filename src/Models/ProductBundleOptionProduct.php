@@ -82,6 +82,7 @@ use Webkul\Product\Models\ProductBundleOptionProduct as BaseProductBundleOptionP
     graphQlOperations: [
         new QueryCollection(
             provider: BundleOptionProductsProvider::class,
+            description: 'Every product of every bundle option. Read one option\'s products through its `bundleOptionProducts` field instead, which returns the first page of that option. Standard cursor pagination with `first`/`after` or `last`/`before`, 10 rows by default and at most 50. Needs the X-STOREFRONT-KEY header.',
             links: [
                 new Link(
                     fromProperty: 'bundleOptionProducts',
@@ -91,16 +92,21 @@ use Webkul\Product\Models\ProductBundleOptionProduct as BaseProductBundleOptionP
                 ),
             ],
         ),
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One bundle option product. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 class ProductBundleOptionProduct extends BaseProductBundleOptionProduct
 {
     /**
-     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
-     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     * The boolean flags are cast so the value is typed identically on every database engine.
      */
-    protected $casts = [];
+    protected $casts = [
+        'is_user_defined' => 'boolean',
+        'is_default' => 'boolean',
+    ];
 
     /**
      * Get the product bundle option product identifier.

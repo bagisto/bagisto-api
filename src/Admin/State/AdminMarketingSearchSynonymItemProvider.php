@@ -8,19 +8,35 @@ use Webkul\Marketing\Models\SearchSynonym;
 
 class AdminMarketingSearchSynonymItemProvider extends AbstractAdminItemProvider
 {
+    /**
+     * Map to dto public.
+     */
+    public function mapToDtoPublic(object $synonym): AdminMarketingSearchSynonym
+    {
+        return $this->mapToDto($synonym);
+    }
+
+    /**
+     * Get not found lang key.
+     */
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.marketing.search-synonym.not-found';
     }
 
+    /**
+     * Find entity.
+     */
     protected function findEntity(int $id): ?object
     {
         return SearchSynonym::find($id);
     }
 
+    /**
+     * Map to dto.
+     */
     protected function mapToDto(object $synonym): AdminMarketingSearchSynonym
     {
-        /** @var SearchSynonym $synonym */
         $dto = new AdminMarketingSearchSynonym;
 
         $dto->id = (int) $synonym->id;
@@ -30,10 +46,5 @@ class AdminMarketingSearchSynonymItemProvider extends AbstractAdminItemProvider
         $dto->updatedAt = $synonym->updated_at?->toIso8601String();
 
         return $dto;
-    }
-
-    public function mapToDtoPublic(object $synonym): AdminMarketingSearchSynonym
-    {
-        return $this->mapToDto($synonym);
     }
 }

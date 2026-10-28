@@ -9,16 +9,27 @@ use Illuminate\Support\Str;
 use Webkul\BagistoApi\Dto\SocialLoginInput;
 use Webkul\BagistoApi\Exception\SocialLoginException;
 use Webkul\BagistoApi\Models\SocialLogin;
+use Webkul\BagistoApi\Services\CustomerAuth\CustomerApiAuthService;
 use Webkul\BagistoApi\Services\SocialLoginService;
 use Webkul\BagistoApi\Services\SocialLoginTokenVerifier;
+use Webkul\BagistoApi\State\Concerns\MapsCustomerTokenPair;
 
 class SocialLoginProcessor implements ProcessorInterface
 {
+    use MapsCustomerTokenPair;
+
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected SocialLoginTokenVerifier $verifier,
         protected SocialLoginService $socialLogin,
+        protected CustomerApiAuthService $authService,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): SocialLogin
     {
         try {
@@ -47,6 +58,8 @@ class SocialLoginProcessor implements ProcessorInterface
     }
 
     /**
+     * Resolve the provider, id token, access token and device token from the request.
+     *
      * @return array{0: ?string, 1: ?string, 2: ?string, 3: ?string}
      */
     protected function resolveInput(mixed $data, array $context): array
@@ -65,6 +78,9 @@ class SocialLoginProcessor implements ProcessorInterface
         ];
     }
 
+    /**
+     * First filled.
+     */
     protected function firstFilled(array $values): ?string
     {
         foreach ($values as $value) {
@@ -79,6 +95,9 @@ class SocialLoginProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Success.
+     */
     protected function success(mixed $customer, bool $isNew, ?string $deviceToken): SocialLogin
     {
         if (empty($customer->api_token)) {
@@ -94,11 +113,13 @@ class SocialLoginProcessor implements ProcessorInterface
             ]);
         }
 
-        $output = new SocialLogin;
+        $pair = $this->authService->startSession($customer, request());
+
+        $output = $this->mapTokenPair($pair, new SocialLogin);
 
         $output->id = (int) $customer->id;
         $output->_id = (int) $customer->id;
-        $output->token = $customer->createToken('customer-login')->plainTextToken;
+        $output->token = $pair->accessToken;
         $output->api_token = $customer->api_token;
         $output->first_name = $customer->first_name;
         $output->last_name = $customer->last_name;
@@ -112,6 +133,9 @@ class SocialLoginProcessor implements ProcessorInterface
         return $output;
     }
 
+    /**
+     * Failure.
+     */
     protected function failure(string $code, string $message): SocialLogin
     {
         $output = new SocialLogin;

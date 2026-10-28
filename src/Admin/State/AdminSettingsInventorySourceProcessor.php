@@ -23,26 +23,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Inventory\Models\InventorySource;
 use Webkul\Inventory\Repositories\InventorySourceRepository;
 
-/**
- * Handles POST / PUT / DELETE for the AdminSettingsInventorySource resource.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\InventorySourceController.
- *
- * Permission resolution mirrors AdminSettingsExchangeRateProcessor — read
- * role->permission_type / role->permissions directly, never call bouncer()
- * (Sanctum-token requests have no session-bound admin).
- *
- * Delete guards (parity with monolith + FK guard):
- *  - last remaining source → 400.
- *  - referenced by any product_inventories row → 400.
- */
 class AdminSettingsInventorySourceProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         protected InventorySourceRepository $inventorySourceRepository,
         protected AdminSettingsInventorySourceItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -98,6 +91,9 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Handle create.
+     */
     protected function handleCreate(array $input): AdminSettingsInventorySource
     {
         $input = $this->normalizePayload($input);
@@ -112,6 +108,9 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
         return $this->fetchAndMap((int) $source->id);
     }
 
+    /**
+     * Handle update.
+     */
     protected function handleUpdate(int $id, array $input): AdminSettingsInventorySource
     {
         $existing = InventorySource::find($id);
@@ -119,7 +118,7 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.inventory-source.not-found'));
         }
 
-        $merged = array_merge($existing->toArray(), $this->normalizePayload($input));
+        $merged = $this->normalizePayload(array_merge($existing->toArray(), $input));
 
         $this->validatePayload($merged, $id);
 
@@ -132,6 +131,9 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
+    /**
+     * Handle delete.
+     */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsInventorySource
     {
         $existing = InventorySource::find($id);
@@ -182,9 +184,7 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
 
     /**
      * Mirrors Webkul\Admin\Http\Requests\InventorySourceRequest::rules() but uses
-     * plain Laravel validators instead of the heavier Bagisto Address / PhoneNumber
-     * / PostCode rules (those reject any non-ASCII / odd formats and would block
-     * legitimate-looking test fixtures).
+     * plain Laravel validators instead of the heavier Bagisto Address / PhoneNumber.
      *
      * @param  int|null  $excludeId  null on create, the row id on update.
      */
@@ -224,6 +224,9 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -251,6 +254,9 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve create input.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -266,6 +272,9 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve update id.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
         if (
@@ -278,6 +287,9 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve update input.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
         if (
@@ -375,11 +387,17 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
         return array_intersect_key($input, array_flip($allowed));
     }
 
+    /**
+     * Fetch and map.
+     */
     protected function fetchAndMap(int $id): AdminSettingsInventorySource
     {
         return $this->mapModel(InventorySource::find($id));
     }
 
+    /**
+     * Map model.
+     */
     protected function mapModel(object $model): AdminSettingsInventorySource
     {
         $reflection = new \ReflectionClass($this->itemProvider);

@@ -8,16 +8,10 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCancelOrderInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\Dto\OrderDetailRestDto;
 use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
 
-/**
- * Admin Cancel Order — POST /api/admin/orders/{id}/cancel
- * (GraphQL: createAdminCancelOrder).
- *
- * The mutation returns the updated `OrderDetail` shape directly so the client
- * can refresh the order-view screen without a follow-up GET.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCancelOrder',
@@ -44,7 +38,7 @@ use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'The updated order detail.'),
+                    '201' => new Model\Response(description: 'The updated order detail.'),
                     '404' => new Model\Response(description: 'Order not found.'),
                     '422' => new Model\Response(description: 'Order is closed / fraud / has nothing to cancel, or admin lacks `sales.orders.cancel`.'),
                 ],
@@ -62,33 +56,65 @@ use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
 )]
 class AdminCancelOrder
 {
+    use AcceptsCamelCaseWrites;
+
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The order id.
+     */
     #[ApiProperty(writable: false)]
-    public ?int $orderId = null;
+    public ?int $order_id = null;
 
+    /**
+     * The increment id.
+     */
     #[ApiProperty(writable: false)]
-    public ?string $incrementId = null;
+    public ?string $increment_id = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty(writable: false)]
     public ?string $status = null;
 
+    /**
+     * The status label.
+     */
     #[ApiProperty(writable: false)]
-    public ?string $statusLabel = null;
+    public ?string $status_label = null;
 
+    /**
+     * The grand total.
+     */
     #[ApiProperty(writable: false)]
-    public ?float $grandTotal = null;
+    public ?float $grand_total = null;
 
+    /**
+     * The base grand total.
+     */
     #[ApiProperty(writable: false)]
-    public ?float $baseGrandTotal = null;
+    public ?float $base_grand_total = null;
 
+    /**
+     * The total qty ordered.
+     */
     #[ApiProperty(writable: false)]
-    public ?int $totalQtyOrdered = null;
+    public ?int $total_qty_ordered = null;
 
+    /**
+     * The success.
+     */
     #[ApiProperty(writable: false)]
     public ?bool $success = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

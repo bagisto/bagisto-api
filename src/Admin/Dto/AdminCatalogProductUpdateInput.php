@@ -5,25 +5,6 @@ namespace Webkul\BagistoApi\Admin\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * Input DTO for Admin Catalog Product update (Phase 5.9).
- *
- * Pass-through shape: declares the most common scalar fields so GraphQL has
- * a typed schema surface, plus an `extras` catch-all for custom-attribute
- * values that vary by family. The processor merges every set property +
- * `extras` into a single payload and forwards to ProductRepository::update.
- *
- * Type-specific blocks (superAttributes/variants, bundleOptions, links,
- * downloadableLinks/downloadableSamples, booking) pass through as-is to the
- * type instance's update().
- *
- * Sub-resource fields (images, inventories, customer_group_prices) are
- * silently stripped — they have dedicated endpoints (5.11/5.12/5.13). The
- * response includes a `_warnings` array noting which fields were dropped.
- *
- * REST   : PUT /api/admin/catalog/products/{id}
- * GraphQL: updateAdminCatalogProduct
- */
 class AdminCatalogProductUpdateInput
 {
     /**
@@ -34,117 +15,197 @@ class AdminCatalogProductUpdateInput
     #[Groups(['mutation'])]
     public ?string $id = null;
 
+    /**
+     * The sku.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?string $sku = null;
 
+    /**
+     * The url key.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?string $urlKey = null;
 
+    /**
+     * The status.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?int $status = null;
 
+    /**
+     * The visible individually.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?int $visibleIndividually = null;
 
+    /**
+     * The guest checkout.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?int $guestCheckout = null;
 
+    /**
+     * The new.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?int $new = null;
 
+    /**
+     * The featured.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?int $featured = null;
 
+    /**
+     * The price.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?string $price = null;
 
+    /**
+     * The special price.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?string $specialPrice = null;
 
+    /**
+     * The special price from.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?string $specialPriceFrom = null;
 
+    /**
+     * The special price to.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?string $specialPriceTo = null;
 
+    /**
+     * The cost.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?string $cost = null;
 
+    /**
+     * The weight.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?string $weight = null;
 
+    /**
+     * The tax category id.
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?int $taxCategoryId = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the categories the product is assigned to.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $categories = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the channels the product is available in.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $channels = null;
 
-    /** @var array<string, mixed>|null  Locale-keyed translation map */
+    /**
+     * The per-locale attribute values of the product.
+     *
+     * @var array<string, mixed>|null Locale-keyed translation map
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $translations = null;
 
-    /** @var array<string, int[]>|null */
+    /**
+     * The configurable attribute codes mapped to their selected option ids.
+     *
+     * @var array<string, int[]>|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $superAttributes = null;
 
-    /** @var array<int, mixed>|null */
+    /**
+     * The variants of a configurable product.
+     *
+     * @var array<int, mixed>|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $variants = null;
 
-    /** @var array<int, mixed>|null */
+    /**
+     * The options of a bundle product and their products.
+     *
+     * @var array<int, mixed>|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $bundleOptions = null;
 
-    /** @var array<int, mixed>|null  Grouped product links */
+    /**
+     * The products linked to a grouped product.
+     *
+     * @var array<int, mixed>|null Grouped product links
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $links = null;
 
-    /** @var array<int, mixed>|null */
+    /**
+     * The links of a downloadable product.
+     *
+     * @var array<int, mixed>|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $downloadableLinks = null;
 
-    /** @var array<int, mixed>|null */
+    /**
+     * The samples of a downloadable product.
+     *
+     * @var array<int, mixed>|null
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $downloadableSamples = null;
 
-    /** @var array<string, mixed>|null  Booking sub-type payload */
+    /**
+     * The booking settings of a booking product.
+     *
+     * @var array<string, mixed>|null Booking sub-type payload
+     */
     #[ApiProperty]
     #[Groups(['mutation'])]
     public ?array $booking = null;
 
     /**
      * Catch-all for custom-attribute values (any other field accepted by
-     * ProductRepository::update). Merged into the payload alongside the typed
-     * fields above. Use this for attributes the family defines but this DTO
-     * doesn't enumerate (e.g. `material`, `brand`, etc.).
+     * ProductRepository::update). Merged into the payload alongside the typed.
      *
      * @var array<string, mixed>|null
      */

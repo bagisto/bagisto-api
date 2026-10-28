@@ -9,7 +9,6 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
-use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Dto\SendAdminReturnMessageInput;
 use Webkul\BagistoApi\Admin\State\AdminReturnMessageProcessor;
 use Webkul\BagistoApi\Admin\State\AdminReturnMessageProvider;
@@ -27,7 +26,7 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'List the conversation messages of an RMA request',
-                description: 'Messages on the RMA named by `?return_id=`, newest first.',
+                description: 'Messages on the RMA named by `?return_id=`, newest first. `attachment` is the original file name and `attachmentUrl` points at `GET /api/admin/rma/messages/{id}/attachment`, which needs the admin token.',
                 parameters: [
                     new Model\Parameter('return_id', 'query', 'Return (RMA) id', true, schema: ['type' => 'integer']),
                 ],
@@ -50,8 +49,8 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
                                         'rmaId' => 12,
                                         'message' => 'The hoodie zipper is broken.',
                                         'isAdmin' => false,
-                                        'attachment' => 'rma/12/messages/zipper.jpg',
-                                        'attachmentUrl' => 'https://example.com/storage/rma/12/messages/zipper.jpg',
+                                        'attachment' => 'zipper.jpg',
+                                        'attachmentUrl' => 'https://example.com/api/admin/rma/messages/87/attachment',
                                         'createdAt' => '2026-07-20T10:20:00+00:00',
                                     ],
                                 ],
@@ -63,11 +62,16 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
         ),
         new Post(
             uriTemplate: '/rma/messages',
+            inputFormats: [
+                'json' => ['application/json'],
+                'multipart' => ['multipart/form-data'],
+            ],
+            deserialize: false,
             processor: AdminReturnMessageProcessor::class,
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'Send an admin message on an RMA request',
-                description: 'Adds an admin message to the RMA conversation and notifies the customer. Body `{ return_id, message }`; optional multipart `file` (REST only). Permission: sales.rma.requests.',
+                description: 'Adds an admin message to the RMA conversation and notifies the customer. Body `{ return_id, message }`; optional multipart `file` (REST only), stored on the private disk under `rmas/{return_id}/conversations/{message_id}`. Permission: sales.rma.requests.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -85,6 +89,31 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
                                     'message' => [
                                         'type' => 'string',
                                         'example' => 'We have received your package.',
+                                    ],
+                                ],
+                            ],
+                        ],
+
+                        'multipart/form-data' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['return_id', 'message'],
+
+                                'properties' => [
+                                    'return_id' => [
+                                        'type' => 'integer',
+                                        'example' => 12,
+                                    ],
+
+                                    'message' => [
+                                        'type' => 'string',
+                                        'example' => 'We have received your package.',
+                                    ],
+
+                                    'file' => [
+                                        'type' => 'string',
+                                        'format' => 'binary',
+                                        'description' => 'Attachment for this message.',
                                     ],
                                 ],
                             ],
@@ -116,6 +145,7 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
         new QueryCollection(
             provider: AdminReturnMessageProvider::class,
             paginationType: 'cursor',
+            description: 'Every message in the conversation of return request `returnId`, newest first, as a plain list (not paginated). Needs the `sales.rma.requests` permission; an unknown return is an error.',
             args: [
                 'returnId' => [
                     'type' => 'Int!',
@@ -132,21 +162,45 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
 )]
 class AdminReturnMessage implements SnakeCaseFieldsResource
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
+    /**
+     * The rma id.
+     */
     public ?int $rma_id = null;
 
+    /**
+     * The message.
+     */
     public ?string $message = null;
 
+    /**
+     * The is admin.
+     */
     public ?bool $is_admin = null;
 
+    /**
+     * The attachment.
+     */
     public ?string $attachment = null;
 
+    /**
+     * The attachment url.
+     */
     public ?string $attachment_url = null;
 
+    /**
+     * The created at.
+     */
     public ?string $created_at = null;
 
+    /**
+     * From model.
+     */
     public static function fromModel($message): self
     {
         $result = new self;
@@ -156,7 +210,7 @@ class AdminReturnMessage implements SnakeCaseFieldsResource
         $result->is_admin = (bool) $message->is_admin;
         $result->attachment = $message->attachment;
         $result->attachment_url = $message->attachment_path
-            ? Storage::url($message->attachment_path)
+            ? url('/api/admin/rma/messages/'.$result->id.'/attachment')
             : null;
         $result->created_at = $message->created_at?->toIso8601String();
 

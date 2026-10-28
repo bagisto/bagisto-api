@@ -23,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionProcessor;
 use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionWriteProvider;
 use Webkul\Theme\Models\Section;
+use Webkul\Theme\SectionSchema;
 
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -98,6 +99,7 @@ use Webkul\Theme\Models\Section;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Get a section',
+                description: 'One section by ID with its published values, any staged draft (`draftStatus`, `draftSortOrder` and each translation\'s `draftOptions`) and the content of every locale. Needs the `appearance.sections` permission; an unknown ID is a 404.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Section ID', true, schema: ['type' => 'integer']),
                 ],
@@ -312,6 +314,7 @@ use Webkul\Theme\Models\Section;
             openapi: new Model\Operation(
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Delete a section',
+                description: 'Deletes the section and its content straight away, without staging; the storefront stops drawing it at once. Needs the `appearance.sections.delete` permission.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Section ID', true, schema: ['type' => 'integer']),
                 ],
@@ -323,9 +326,13 @@ use Webkul\Theme\Models\Section;
         ),
     ],
     graphQlOperations: [
-        new Query(provider: AdminAppearanceSectionItemProvider::class),
+        new Query(
+            provider: AdminAppearanceSectionItemProvider::class,
+            description: 'One theme section by its IRI or numeric ID, with its published values, staged draft and the content of every locale. Needs the `appearance.sections` permission.',
+        ),
         new QueryCollection(
             provider: AdminAppearanceSectionCollectionProvider::class,
+            description: 'Every section of the theme `code` for one channel, as a plain list (not paginated), in sort order with the footer links section last. An unknown `channel` falls back to the current channel, and `locale` to one the channel runs. Needs the `appearance.sections` permission; an unknown theme is an error.',
             paginationEnabled: false,
             extraArgs: [
                 'code' => ['type' => 'String!'],
@@ -353,8 +360,14 @@ use Webkul\Theme\Models\Section;
 )]
 class AdminAppearanceSection extends EloquentModel
 {
+    /**
+     * The table.
+     */
     protected $table = 'theme_sections';
 
+    /**
+     * The casts.
+     */
     protected $casts = [
         'id' => 'int',
         'name' => 'string',
@@ -369,16 +382,28 @@ class AdminAppearanceSection extends EloquentModel
         'updated_at' => 'datetime',
     ];
 
+    /**
+     * The appends.
+     */
     protected $appends = ['has_draft', 'is_pinned', 'message'];
 
+    /**
+     * The action message.
+     */
     public ?string $actionMessage = null;
 
+    /**
+     * Get id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
     {
         return $this->id;
     }
 
+    /**
+     * Translations.
+     */
     #[ApiProperty(writable: false)]
     public function translations(): HasMany
     {
@@ -407,7 +432,7 @@ class AdminAppearanceSection extends EloquentModel
     }
 
     /**
-     * Footer links are drawn at the bottom, so they cannot be reordered away from it.
+     * Whether the section's type is fixed to the bottom of the page, so it cannot be reordered away from it.
      */
     #[ApiProperty(writable: false, schema: [
         'type' => 'integer',
@@ -415,9 +440,12 @@ class AdminAppearanceSection extends EloquentModel
     ])]
     public function getIsPinnedAttribute(): int
     {
-        return $this->type === Section::FOOTER_LINKS ? 1 : 0;
+        return app(SectionSchema::class)->type($this->theme_code, $this->type)?->isPinned() ? 1 : 0;
     }
 
+    /**
+     * Get message attribute.
+     */
     #[ApiProperty(writable: false)]
     public function getMessageAttribute(): ?string
     {

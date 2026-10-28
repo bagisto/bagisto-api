@@ -21,20 +21,6 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyProcessor;
 use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
 
-/**
- * Admin Catalog → Attribute Families endpoints.
- *
- * Phase 1.5 (read):
- *   GET    /api/admin/catalog/families          datagrid-parity listing
- *   GET    /api/admin/catalog/families/{id}     detail with attribute groups
- *
- * Phase 4 (CRUD):
- *   POST   /api/admin/catalog/families          create
- *   PUT    /api/admin/catalog/families/{id}     update
- *   DELETE /api/admin/catalog/families/{id}     delete
- *
- * GraphQL mutations (Phase 4): createAdminAttributeFamily / updateAdminAttributeFamily / deleteAdminAttributeFamily.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminAttributeFamily',
@@ -469,12 +455,21 @@ class AdminAttributeFamily
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    /**
+     * The code.
+     */
     #[ApiProperty(writable: false)]
     public ?string $code = null;
 
+    /**
+     * The name.
+     */
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 

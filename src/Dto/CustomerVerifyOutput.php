@@ -5,35 +5,53 @@ namespace Webkul\BagistoApi\Dto;
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
-/**
- * DTO for customer info returned from token verification
- */
 class CustomerVerifyOutput
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(writable: false, readable: true)]
     #[SerializedName('id')]
     public ?int $id = null;
 
+    /**
+     * The first name.
+     */
     #[ApiProperty(writable: false, readable: true)]
     #[SerializedName('firstName')]
     public ?string $firstName = null;
 
+    /**
+     * The last name.
+     */
     #[ApiProperty(writable: false, readable: true)]
     #[SerializedName('lastName')]
     public ?string $lastName = null;
 
+    /**
+     * The email.
+     */
     #[ApiProperty(writable: false, readable: true)]
     #[SerializedName('email')]
     public ?string $email = null;
 
+    /**
+     * The is valid.
+     */
     #[ApiProperty(writable: false, readable: true)]
     #[SerializedName('isValid')]
     public ?bool $isValid = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false, readable: true)]
     #[SerializedName('message')]
     public ?string $message = null;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(
         ?int $id = null,
         ?string $firstName = null,

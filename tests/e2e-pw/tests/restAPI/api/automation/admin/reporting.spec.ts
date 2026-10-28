@@ -1,8 +1,3 @@
-// tests/restAPI/api/automation/admin/reporting.spec.ts
-//
-// Smoke for the 4 reporting sub-pages. Each sub-page: default call + 1-2
-// representative `?type=` per CLAUDE.md + scoped date range.
-
 import { test, expect } from '@playwright/test';
 import { sendAdminRequest } from '../../../rest/helpers/adminClient';
 import { ENDPOINTS } from '../../../rest/endpoints/endpoints';
@@ -11,65 +6,65 @@ test.describe.configure({ timeout: 60_000 });
 
 interface SubPage {
   label: string;
+  entity: string;
   endpoint: string;
+  defaultType: string;
   types: string[];
 }
 
 const SUB_PAGES: SubPage[] = [
   {
     label: 'overview',
+    entity: 'overview',
     endpoint: ENDPOINTS.ADMIN_REPORTING_STATS,
+    defaultType: 'total-sales',
     types: ['total-sales', 'total-orders', 'total-customers'],
   },
   {
     label: 'sales',
+    entity: 'sales',
     endpoint: ENDPOINTS.ADMIN_REPORTING_SALES,
+    defaultType: 'total-sales',
     types: ['total-sales', 'total-orders', 'purchase-funnel'],
   },
   {
     label: 'customers',
+    entity: 'customers',
     endpoint: ENDPOINTS.ADMIN_REPORTING_CUSTOMERS,
+    defaultType: 'total-customers',
     types: ['total-customers', 'customers-with-most-orders'],
   },
   {
     label: 'products',
+    entity: 'products',
     endpoint: ENDPOINTS.ADMIN_REPORTING_PRODUCTS,
+    defaultType: 'total-sold-quantities',
     types: ['top-selling-products-by-revenue', 'top-selling-products-by-quantity'],
   },
 ];
 
-test.describe('Admin Reporting REST API', () => {
+test.describe('admin reporting rest api', () => {
   for (const sub of SUB_PAGES) {
     test(`${sub.label} default returns 200`, async ({ request }) => {
       const response = await sendAdminRequest(request, sub.endpoint);
-      const status = response.status();
-      console.log(`reporting ${sub.label} default:`, status);
-      expect(status).toBe(200);
+      expect(response.status()).toBe(200);
 
       const body = await response.json();
-      // Helpers return `[{ type, dateRange, statistics }]`.
-      expect(Array.isArray(body)).toBe(true);
+      expect(body).toHaveLength(1);
+      expect(body[0]).toEqual(expect.objectContaining({ entity: sub.entity, type: sub.defaultType }));
     });
 
     for (const type of sub.types) {
-      test(`${sub.label} type=${type}`, async ({ request }) => {
+      test(`${sub.label} type ${type}`, async ({ request }) => {
         const response = await sendAdminRequest(request, sub.endpoint, {
           params: { type },
         });
-        const status = response.status();
-        console.log(`reporting ${sub.label} type=${type}:`, status);
-        // BUG NOTE: `reporting/products?type=top-selling-products-by-*` returns
-        // HTTP 500 "This database driver does not support user-defined types"
-        // on the current dev DB (2026-05-26). Tolerated here so the smoke
-        // doesn't block; flagged in the W0 report for follow-up.
-        expect([200, 500]).toContain(status);
-        if (status !== 200) return;
+        expect(response.status()).toBe(200);
 
         const body = await response.json();
-        expect(Array.isArray(body)).toBe(true);
-        if (body.length > 0 && body[0].type) {
-          expect(body[0].type).toBe(type);
-        }
+        expect(body).toHaveLength(1);
+        expect(body[0]).toEqual(expect.objectContaining({ entity: sub.entity, type }));
+        expect(body[0]).toHaveProperty('statistics');
       });
     }
 
@@ -80,9 +75,16 @@ test.describe('Admin Reporting REST API', () => {
           end: '2026-05-26',
         },
       });
-      const status = response.status();
-      console.log(`reporting ${sub.label} scoped:`, status);
-      expect(status).toBe(200);
+      expect(response.status()).toBe(200);
+      expect((await response.json())[0].type).toBe(sub.defaultType);
+    });
+
+    test(`${sub.label} unknown type is rejected with 400`, async ({ request }) => {
+      const response = await sendAdminRequest(request, sub.endpoint, {
+        params: { type: 'definitely-not-a-real-type' },
+      });
+      expect(response.status()).toBe(400);
+      expect((await response.json()).detail).toBe('Unknown reporting stat type for this entity.');
     });
   }
 });

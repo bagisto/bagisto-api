@@ -7,19 +7,19 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingUrlRewrite;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/marketing/url-rewrites + adminMarketingUrlRewrites.
- *
- * Filters: entity_type (exact), request_path (LIKE), redirect_type (exact), locale (exact).
- * Sort:    id (default desc), entity_type, locale, redirect_type.
- */
 class AdminMarketingUrlRewriteCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'entity_type', 'locale', 'redirect_type'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('url_rewrites')->select(
@@ -34,6 +34,9 @@ class AdminMarketingUrlRewriteCollectionProvider extends AbstractAdminCollection
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['entity_type'])) {
@@ -53,6 +56,9 @@ class AdminMarketingUrlRewriteCollectionProvider extends AbstractAdminCollection
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -67,6 +73,9 @@ class AdminMarketingUrlRewriteCollectionProvider extends AbstractAdminCollection
         $query->orderBy($columnMap[$column] ?? 'url_rewrites.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminMarketingUrlRewrite
     {
         $dto = new AdminMarketingUrlRewrite;

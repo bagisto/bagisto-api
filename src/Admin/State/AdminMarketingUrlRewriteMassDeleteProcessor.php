@@ -14,17 +14,16 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Marketing\Models\URLRewrite;
 use Webkul\Marketing\Repositories\URLRewriteRepository;
 
-/**
- * POST /api/admin/marketing/url-rewrites/mass-delete + createAdminMarketingUrlRewriteMassDelete.
- *
- * Mirrors URLRewriteController::massDestroy — iterate indices, fire
- * before/after events per id, delete each one. Non-existent IDs silently
- * skipped.
- */
 class AdminMarketingUrlRewriteMassDeleteProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected URLRewriteRepository $urlRewriteRepository) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -71,6 +70,9 @@ class AdminMarketingUrlRewriteMassDeleteProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Assert permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -98,6 +100,9 @@ class AdminMarketingUrlRewriteMassDeleteProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Resolve indices.
+     */
     protected function resolveIndices(mixed $data, array $context): array
     {
         if (

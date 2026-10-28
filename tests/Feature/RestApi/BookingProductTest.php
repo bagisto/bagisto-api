@@ -4,12 +4,19 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\BookingProduct\Models\BookingProduct;
+use Webkul\BookingProduct\Models\BookingProductDefaultSlot;
 use Webkul\BookingProduct\Models\BookingProductEventTicket;
 
 class BookingProductTest extends RestApiTestCase
 {
+    /**
+     * The base url.
+     */
     private string $baseUrl = '/api/shop/booking-products';
 
+    /**
+     * Test get single booking product.
+     */
     public function test_get_single_booking_product(): void
     {
         $this->seedRequiredData();
@@ -27,6 +34,9 @@ class BookingProductTest extends RestApiTestCase
         expect((int) $response->json('id'))->toBe($booking->id);
     }
 
+    /**
+     * Test event booking exposes starting price.
+     */
     public function test_event_booking_exposes_starting_price(): void
     {
         $this->seedRequiredData();
@@ -53,6 +63,9 @@ class BookingProductTest extends RestApiTestCase
         expect($response->json('formattedStartingPrice'))->not->toBeNull();
     }
 
+    /**
+     * Test default booking has null starting price.
+     */
     public function test_default_booking_has_null_starting_price(): void
     {
         $this->seedRequiredData();
@@ -70,6 +83,35 @@ class BookingProductTest extends RestApiTestCase
         expect($response->json('startingPrice'))->toBeNull();
     }
 
+    /**
+     * The default slot endpoint returns the booking product the slot belongs to.
+     */
+    public function test_default_slot_exposes_booking_product_id(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->createBaseProduct('booking', ['sku' => 'BP-SLOT-'.uniqid()]);
+        $booking = BookingProduct::create([
+            'product_id' => $product->id,
+            'type' => 'default',
+            'qty' => 10,
+            'available_every_week' => 1,
+        ]);
+        $slot = BookingProductDefaultSlot::create([
+            'booking_product_id' => $booking->id,
+            'booking_type' => 'one',
+            'slots' => [],
+        ]);
+
+        $response = $this->publicGet('/api/shop/booking_product_default_slots/'.$slot->id);
+
+        $response->assertOk();
+        expect($response->json('bookingProductId'))->toBe($booking->id);
+        expect($response->json('bookingType'))->toBe('one');
+    }
+
+    /**
+     * Test get nonexistent booking product returns error.
+     */
     public function test_get_nonexistent_booking_product_returns_error(): void
     {
         $this->seedRequiredData();

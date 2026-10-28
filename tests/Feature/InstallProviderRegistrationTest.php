@@ -8,16 +8,14 @@ use Webkul\BagistoApi\Tests\BagistoApiTest;
 
 class InstallProviderRegistrationTest extends BagistoApiTest
 {
+    /**
+     * The provider constant.
+     */
     private const PROVIDER = 'Webkul\\BagistoApi\\Providers\\BagistoApiServiceProvider::class';
 
     /**
-     * Build the command under test.
+     * Test registers provider in a modern providers file.
      */
-    private function command(): InstallApiPlatformCommand
-    {
-        return new InstallApiPlatformCommand(new Filesystem);
-    }
-
     public function test_registers_provider_in_a_modern_providers_file(): void
     {
         $content = "<?php\n\nreturn [\n    App\\Providers\\AppServiceProvider::class,\n];\n";
@@ -28,6 +26,9 @@ class InstallProviderRegistrationTest extends BagistoApiTest
         expect(substr_count($updated, self::PROVIDER))->toBe(1);
     }
 
+    /**
+     * Test registers provider in a legacy array helper file.
+     */
     public function test_registers_provider_in_a_legacy_array_helper_file(): void
     {
         $content = "<?php\n\nreturn array(\n    A::class,\n]);\n";
@@ -37,8 +38,19 @@ class InstallProviderRegistrationTest extends BagistoApiTest
         expect($updated)->toContain(self::PROVIDER);
     }
 
+    /**
+     * Test returns null when the array end cannot be found.
+     */
     public function test_returns_null_when_the_array_end_cannot_be_found(): void
     {
         expect($this->command()->injectProvider("<?php\n\nreturn config('providers');\n", self::PROVIDER))->toBeNull();
+    }
+
+    /**
+     * Build the command under test.
+     */
+    private function command(): InstallApiPlatformCommand
+    {
+        return new InstallApiPlatformCommand(new Filesystem);
     }
 }

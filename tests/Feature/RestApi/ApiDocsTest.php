@@ -4,9 +4,6 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 
-/**
- * Smoke coverage for the API documentation and playground pages.
- */
 class ApiDocsTest extends RestApiTestCase
 {
     /**

@@ -7,20 +7,19 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsExchangeRate;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/settings/exchange-rates +
- * adminSettingsExchangeRates GraphQL query.
- *
- * Joins currency_exchange_rates × currencies so the row carries the target
- * currency code + name without a follow-up call.
- */
 class AdminSettingsExchangeRateCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'target_currency', 'rate'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('currency_exchange_rates as cer')
@@ -36,6 +35,9 @@ class AdminSettingsExchangeRateCollectionProvider extends AbstractAdminCollectio
             );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['target_currency'])) {
@@ -59,6 +61,9 @@ class AdminSettingsExchangeRateCollectionProvider extends AbstractAdminCollectio
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -72,6 +77,9 @@ class AdminSettingsExchangeRateCollectionProvider extends AbstractAdminCollectio
         $query->orderBy($columnMap[$column] ?? 'cer.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminSettingsExchangeRate
     {
         $dto = new AdminSettingsExchangeRate;

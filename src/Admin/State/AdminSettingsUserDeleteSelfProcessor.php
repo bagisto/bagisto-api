@@ -13,15 +13,11 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\User\Models\Admin;
 
-/**
- * POST /api/admin/settings/users/delete-self + createAdminSettingsUserDeleteSelf.
- *
- * Mirrors Webkul\Admin UserController::destroySelf — deletes the authenticated
- * admin's OWN account after re-confirming their password. No ACL permission gate
- * (parity with core: the password IS the gate). Refuses the last remaining admin.
- */
 class AdminSettingsUserDeleteSelfProcessor implements ProcessorInterface
 {
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -67,6 +63,9 @@ class AdminSettingsUserDeleteSelfProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Resolve password.
+     */
     protected function resolvePassword(mixed $data, array $context): ?string
     {
         if (

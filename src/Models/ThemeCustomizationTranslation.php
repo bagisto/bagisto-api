@@ -12,12 +12,15 @@ use ApiPlatform\Metadata\ApiResource;
 )]
 class ThemeCustomizationTranslation extends \Webkul\Theme\Models\ThemeCustomizationTranslation
 {
+    /**
+     * The casts.
+     */
     protected $casts = [
         'options' => 'string',
     ];
 
     /**
-     * Get unique translation identifier for API
+     * Get unique translation identifier for API.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int

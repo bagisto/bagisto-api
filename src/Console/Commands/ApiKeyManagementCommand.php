@@ -6,9 +6,6 @@ use Illuminate\Console\Command;
 use Webkul\BagistoApi\Models\StorefrontKey;
 use Webkul\BagistoApi\Services\KeyRotationService;
 
-/**
- * Manage API key rotation, expiration, and lifecycle.
- */
 class ApiKeyManagementCommand extends Command
 {
     /**
@@ -316,7 +313,6 @@ class ApiKeyManagementCommand extends Command
     /**
      * Find a key by ID or name.
      *
-     *
      * @throws \Exception
      */
     private function findKey(string $keyIdentifier): StorefrontKey
@@ -333,6 +329,6 @@ class ApiKeyManagementCommand extends Command
             return $key;
         }
 
-        throw new \Exception(__('bagistoapi::app.graphql.key-not-found', ['identifier' => $keyIdentifier]));
+        throw new \Exception(__('bagistoapi::app.graphql.install.key-not-found', ['identifier' => $keyIdentifier]));
     }
 }

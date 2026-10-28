@@ -396,7 +396,10 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One saved address of the authenticated customer; another customer\'s address is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token.',
+        ),
     ]
 )]
 class CustomerAddress extends CustomerAddressModel {}

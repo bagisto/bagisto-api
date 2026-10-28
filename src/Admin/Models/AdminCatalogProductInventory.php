@@ -14,28 +14,6 @@ use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProvider;
 
-/**
- * Per-source inventory row for a catalog product.
- *
- * REST:
- *   GET /api/admin/catalog/products/{productId}/inventories
- *     200: { data: [{ id, sourceId, sourceCode, sourceName, qty }, ...], meta: { ..., totalQty } }
- *
- *   PUT /api/admin/catalog/products/{productId}/inventories
- *     Body: { "inventories": { "1": 25, "2": 0, "3": 10 } }
- *     200: same listing payload as GET (totals refreshed)
- *
- * GraphQL:
- *   adminCatalogProductInventories(productId: Int!) — cursor connection of rows.
- *   updateAdminCatalogProductInventories(input: { productId: Int!, inventories: ... }).
- *
- * Bulk-upsert semantics — mirrors Bagisto core:
- *   - Pass an inventory source id with a positive qty → upsert that source's qty.
- *   - Pass an inventory source id with qty=0 → row is kept but zeroed-out
- *     (saveInventories writes 0; the row is NOT deleted unless the underlying
- *     repository decides to). Sources NOT included in the request are left
- *     untouched.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCatalogProductInventory',
@@ -191,18 +169,33 @@ class AdminCatalogProductInventory
 {
     use AcceptsCamelCaseWrites;
 
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, description: 'product_inventories row id.')]
     public ?int $id = null;
 
+    /**
+     * The source id.
+     */
     #[ApiProperty(writable: false, description: 'inventory_source_id this row belongs to.')]
     public ?int $source_id = null;
 
+    /**
+     * The source code.
+     */
     #[ApiProperty(writable: false, description: 'Inventory source code (e.g. "default").')]
     public ?string $source_code = null;
 
+    /**
+     * The source name.
+     */
     #[ApiProperty(writable: false, description: 'Inventory source display name.')]
     public ?string $source_name = null;
 
+    /**
+     * The qty.
+     */
     #[ApiProperty(writable: false, description: 'Quantity on hand at this source.')]
     public ?int $qty = null;
 }

@@ -13,11 +13,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\DeleteAllCompareItemsInput;
 use Webkul\BagistoApi\State\DeleteAllCompareItemsProcessor;
 
-/**
- * Delete All Compare Items Response Model
- *
- * Response object for bulk delete compare item operations
- */
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'DeleteAllCompareItems',
@@ -72,17 +67,29 @@ use Webkul\BagistoApi\State\DeleteAllCompareItemsProcessor;
 )]
 class DeleteAllCompareItems
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false, readable: true)]
     public ?int $id = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $message = null;
 
+    /**
+     * The deleted count.
+     */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?int $deletedCount = null;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(?string $message = null, ?int $deletedCount = null, ?int $id = null)
     {
         $this->message = $message;

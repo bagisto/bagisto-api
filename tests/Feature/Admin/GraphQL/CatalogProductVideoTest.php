@@ -9,92 +9,8 @@ use Webkul\Product\Models\ProductVideo;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * GraphQL coverage for the admin catalog product video mutations: the upload placeholder,
- * which points callers at the REST upload, and the delete.
- */
 class CatalogProductVideoTest extends AdminApiTestCase
 {
-    /**
-     * Keep video files on a temporary public disk.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Storage::fake('public');
-    }
-
-    /**
-     * Create an admin whose role holds only the given permissions, with a role-bound token.
-     */
-    protected function customRoleAdmin(array $permissions = []): array
-    {
-        $this->seedRequiredData();
-
-        $role = Role::create([
-            'name' => 'vid-gql-'.uniqid(),
-            'description' => 'video-test',
-            'permission_type' => 'custom',
-            'permissions' => $permissions,
-        ]);
-
-        $admin = $this->createAdmin(['role_id' => $role->id]);
-
-        return [$admin, $this->adminTokenSameAsWeb($admin)];
-    }
-
-    /**
-     * Store a video file on the fake disk and attach it to the product.
-     */
-    protected function seedVideo(int $productId, int $position = 1): ProductVideo
-    {
-        $path = 'product/'.$productId.'/'.uniqid('vid_').'.mp4';
-
-        Storage::disk('public')->put($path, 'fake');
-
-        return ProductVideo::create([
-            'type' => 'videos',
-            'path' => $path,
-            'product_id' => $productId,
-            'position' => $position,
-        ]);
-    }
-
-    /**
-     * Run the create (upload placeholder) mutation.
-     */
-    protected function runCreate(int $productId, ?Admin $admin = null, ?string $token = null): TestResponse
-    {
-        $mutation = <<<'GQL'
-            mutation($input: createAdminCatalogProductVideoInput!) {
-              createAdminCatalogProductVideo(input: $input) {
-                adminCatalogProductVideo { _id }
-              }
-            }
-        GQL;
-
-        return $this->adminGraphQL($mutation, ['input' => ['productId' => $productId]], $admin, $token);
-    }
-
-    /**
-     * Run the delete mutation for the given video id.
-     */
-    protected function runDelete(int $videoId, ?Admin $admin = null, ?string $token = null): TestResponse
-    {
-        $mutation = <<<'GQL'
-            mutation($input: deleteAdminCatalogProductVideoInput!) {
-              deleteAdminCatalogProductVideo(input: $input) {
-                adminCatalogProductVideo { _id }
-              }
-            }
-        GQL;
-
-        return $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/catalog/product-videos/'.$videoId],
-        ], $admin, $token);
-    }
-
     /**
      * The create mutation refuses the upload and points at the REST endpoint, storing nothing.
      */
@@ -196,5 +112,85 @@ class CatalogProductVideoTest extends AdminApiTestCase
 
         expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.product.video.no-permission'));
         expect(ProductVideo::find($video->id))->not->toBeNull();
+    }
+
+    /**
+     * Keep video files on a temporary public disk.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Storage::fake('public');
+    }
+
+    /**
+     * Create an admin whose role holds only the given permissions, with a role-bound token.
+     */
+    protected function customRoleAdmin(array $permissions = []): array
+    {
+        $this->seedRequiredData();
+
+        $role = Role::create([
+            'name' => 'vid-gql-'.uniqid(),
+            'description' => 'video-test',
+            'permission_type' => 'custom',
+            'permissions' => $permissions,
+        ]);
+
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        return [$admin, $this->adminAccessToken($admin)];
+    }
+
+    /**
+     * Store a video file on the fake disk and attach it to the product.
+     */
+    protected function seedVideo(int $productId, int $position = 1): ProductVideo
+    {
+        $path = 'product/'.$productId.'/'.uniqid('vid_').'.mp4';
+
+        Storage::disk('public')->put($path, 'fake');
+
+        return ProductVideo::create([
+            'type' => 'videos',
+            'path' => $path,
+            'product_id' => $productId,
+            'position' => $position,
+        ]);
+    }
+
+    /**
+     * Run the create (upload placeholder) mutation.
+     */
+    protected function runCreate(int $productId, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $mutation = <<<'GQL'
+            mutation($input: createAdminCatalogProductVideoInput!) {
+              createAdminCatalogProductVideo(input: $input) {
+                adminCatalogProductVideo { _id }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, ['input' => ['productId' => $productId]], $admin, $token);
+    }
+
+    /**
+     * Run the delete mutation for the given video id.
+     */
+    protected function runDelete(int $videoId, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $mutation = <<<'GQL'
+            mutation($input: deleteAdminCatalogProductVideoInput!) {
+              deleteAdminCatalogProductVideo(input: $input) {
+                adminCatalogProductVideo { _id }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, [
+            'input' => ['id' => '/api/admin/catalog/product-videos/'.$videoId],
+        ], $admin, $token);
     }
 }

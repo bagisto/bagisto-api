@@ -7,11 +7,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 class AdminAppearanceThemeActivateInput
 {
+    /**
+     * The code.
+     */
     #[ApiProperty(description: 'Theme code to activate')]
     #[Groups(['mutation'])]
     public ?string $code = null;
 
     /**
+     * The ids of the channels the theme is applied to.
+     *
      * @var array<int, int>|null
      */
     #[ApiProperty(description: 'Channels the theme is applied to')]

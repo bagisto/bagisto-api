@@ -8,11 +8,17 @@ use Webkul\User\Models\Role;
 
 class PermissionsTest extends AdminApiTestCase
 {
+    /**
+     * Test permissions requires authentication.
+     */
     public function test_permissions_requires_authentication(): void
     {
         $this->publicGet('/api/admin/permissions')->assertStatus(401);
     }
 
+    /**
+     * Test all access admin gets wildcard.
+     */
     public function test_all_access_admin_gets_wildcard(): void
     {
         $admin = $this->createAdmin();
@@ -27,6 +33,9 @@ class PermissionsTest extends AdminApiTestCase
         expect($payload['permissions'])->toBe(['*']);
     }
 
+    /**
+     * Test custom role returns granted keys.
+     */
     public function test_custom_role_returns_granted_keys(): void
     {
         $role = Role::create([
@@ -37,7 +46,7 @@ class PermissionsTest extends AdminApiTestCase
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->adminTokenSameAsWeb($admin);
+        $token = $this->adminAccessToken($admin);
 
         $payload = $this->adminGet($admin, '/api/admin/permissions', $token)->json('0');
 

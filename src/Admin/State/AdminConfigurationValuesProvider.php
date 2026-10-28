@@ -9,13 +9,16 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
-/**
- * Returns the flat effective values map for one configuration slug.
- */
 class AdminConfigurationValuesProvider implements ProviderInterface
 {
+    /**
+     * Create a new instance.
+     */
     public function __construct(protected AdminConfigurationSchemaResolver $resolver) {}
 
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         AdminReadPermissions::authorize($operation, AdminConfigurationValues::class);
@@ -69,6 +72,9 @@ class AdminConfigurationValuesProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * To dto.
+     */
     public static function toDto(array $payload): AdminConfigurationValues
     {
         $dto = new AdminConfigurationValues;

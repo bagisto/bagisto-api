@@ -14,8 +14,14 @@ class AdminRmaCustomFieldMassDeleteProcessor implements ProcessorInterface
 {
     use ChecksAdminPermission;
 
+    /**
+     * Create a new instance.
+     */
     public function __construct(private readonly RMACustomFieldRepository $rmaCustomFieldRepository) {}
 
+    /**
+     * Process.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminRmaCustomFieldMassDelete
     {
         $this->authorizedAdmin('sales.rma.custom-fields.delete', 'bagistoapi::app.admin.rma.no-permission');

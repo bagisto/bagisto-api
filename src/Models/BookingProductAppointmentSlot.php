@@ -69,34 +69,49 @@ use Webkul\BookingProduct\Models\BookingProductAppointmentSlot as BaseModel;
 class BookingProductAppointmentSlot extends BaseModel
 {
     /**
-     * Override to prevent API Platform from using Laravel's auto-generated getter for 'slots'
+     * Override to prevent API Platform from using Laravel's auto-generated getter for 'slots'.
      */
     protected $casts = [];
 
+    /**
+     * Get duration.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getDuration()
     {
         return $this->duration;
     }
 
+    /**
+     * Get break time.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getBreakTime()
     {
         return $this->break_time;
     }
 
+    /**
+     * Get same slot all days.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getSameSlotAllDays()
     {
         return $this->same_slot_all_days;
     }
 
+    /**
+     * Get slots.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getSlots()
     {
         return $this->slots;
     }
 
+    /**
+     * Get booking product id.
+     */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getBookingProductId()
     {

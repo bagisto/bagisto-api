@@ -10,11 +10,11 @@ use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Theme\Models\ThemeCustomization;
 
-/**
- * Theme detail — GET /api/admin/settings/themes/{id} + adminSettingsTheme query.
- */
 class AdminSettingsThemeItemProvider implements ProviderInterface
 {
+    /**
+     * Provide.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminSettingsTheme|AdminSettingsThemeRestDto
     {
         AdminReadPermissions::authorize($operation, AdminSettingsTheme::class);
@@ -52,9 +52,11 @@ class AdminSettingsThemeItemProvider implements ProviderInterface
         return $this->buildRestDto($theme);
     }
 
+    /**
+     * Build rest dto.
+     */
     protected function buildRestDto(object $theme): AdminSettingsThemeRestDto
     {
-        /** @var ThemeCustomization $theme */
         $dto = new AdminSettingsThemeRestDto;
 
         $dto->id = (int) $theme->id;

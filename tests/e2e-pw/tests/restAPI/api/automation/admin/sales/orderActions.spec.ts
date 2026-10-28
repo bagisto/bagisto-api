@@ -1,232 +1,241 @@
-// tests/restAPI/api/automation/admin/sales/orderActions.spec.ts
-//
-// W3 — Per-order actions: Cancel / Reorder / Comments (POST + GET) and the
-// 3 write-actions (Invoice / Shipment / Refund creation) as smoke checks.
-//
-// Action endpoints carry guards (4-check cancel, 3-check reorder, 5-check
-// invoice, 4-check shipment + refund). We can't easily seed a clean
-// "pending+saleable+permission+config" order, so smoke tests tolerate 4xx
-// guard responses as well as 2xx happy paths.
-
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminRequest } from '../../../../rest/helpers/adminClient';
 import { ADMIN_SALES } from '../../../../rest/endpoints/admin.sales.endpoints';
+import {
+  ADMIN_SALES_COVERAGE,
+  UNKNOWN_ID,
+  expectProblem,
+  invoiceOrder,
+  placeOrder,
+  safeJson,
+} from '../../../../rest/helpers/coverage/adminSales.helpers';
 
-test.describe.configure({ timeout: 60_000 });
+test.describe.configure({ timeout: 240_000 });
 
-async function firstOrderId(request: any): Promise<number | null> {
-  const resp = await sendAdminRequest(request, ADMIN_SALES.ORDERS, {
-    params: { per_page: '1' },
-  });
-  if (resp.status() !== 200) return null;
-  const body = await resp.json();
-  const rows = body.data ?? body;
-  return rows.length ? rows[0].id : null;
+const REORDER_SLUG = 'sales.order_settings.reorder';
+
+const REORDER_ADMIN_KEY = 'sales.order_settings.reorder.admin';
+
+const MSG = {
+  ORDER_NOT_FOUND: 'Order not found.',
+  REORDER_SUCCESS: 'Reorder successful. A new draft cart has been created.',
+  CANCEL_NOTHING: 'There is nothing to cancel on this order.',
+  COMMENT_EMPTY: 'Comment is required.',
+  INVOICE_ITEMS_REQUIRED: 'At least one item with a positive quantity is required.',
+  SHIPMENT_SOURCE_REQUIRED: 'Inventory source is required.',
+  REFUND_NOTHING: 'There is nothing left to refund on this order.',
+};
+
+async function readOrder(request: APIRequestContext, orderId: number): Promise<any> {
+  const response = await sendAdminRequest(request, ADMIN_SALES.ORDER(orderId));
+  const body = await safeJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(200);
+
+  return body;
 }
 
-async function orderWithStatus(request: any, status: string): Promise<number | null> {
-  const resp = await sendAdminRequest(request, ADMIN_SALES.ORDERS, {
-    params: { status, per_page: '1' },
+async function adminReorderSetting(request: APIRequestContext): Promise<string | null> {
+  const response = await sendAdminRequest(request, ADMIN_SALES_COVERAGE.CONFIGURATION, {
+    params: { slug: REORDER_SLUG, channel: 'default' },
   });
-  if (resp.status() !== 200) return null;
-  const body = await resp.json();
-  const rows = body.data ?? body;
-  return rows.length ? rows[0].id : null;
+  const body = await safeJson(response);
+
+  expect(response.status(), JSON.stringify(body)).toBe(200);
+
+  const payload = Array.isArray(body) ? body[0] : body;
+
+  return payload?.values?.[REORDER_ADMIN_KEY] ?? null;
 }
 
-test.describe('Admin Order Actions REST API', () => {
-  // ── Reorder ──────────────────────────────────────────────────
-  test('reorder creates a draft cart', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
+async function setAdminReorderSetting(request: APIRequestContext, value: string): Promise<void> {
+  const response = await sendAdminRequest(request, ADMIN_SALES_COVERAGE.CONFIGURATION, {
+    method: 'POST',
+    data: {
+      slug: REORDER_SLUG,
+      channel: 'default',
+      locale: 'en',
+      values: { [REORDER_ADMIN_KEY]: value },
+    },
+  });
+
+  expect(response.status(), await response.text()).toBe(200);
+  expect((await adminReorderSetting(request)) ?? '').toBe(value);
+}
+
+test.describe('admin order actions rest api', () => {
+  test('reorder creates a draft cart for a customer order', async ({ request }) => {
+    const order = await placeOrder(request);
+    const original = await adminReorderSetting(request);
+
+    if (original !== '1') {
+      await setAdminReorderSetting(request, '1');
     }
-    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_REORDER(id), {
-      method: 'POST',
-      data: {},
-    });
-    const status = response.status();
-    console.log(`reorder (${id}):`, status);
-    // Tolerated: guest order (422), unsaleable items (422), no permission (422),
-    // disabled in settings (422), or happy path (200/201).
-    expect([200, 201, 422]).toContain(status);
-    if (status === 200 || status === 201) {
-      const body = await response.json();
+
+    try {
+      const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_REORDER(order.orderId), {
+        method: 'POST',
+        data: {},
+      });
+      const body = await safeJson(response);
+
+      expect(response.status(), JSON.stringify(body)).toBe(201);
       expect(body.success).toBe(true);
+      expect(body.message).toBe(MSG.REORDER_SUCCESS);
       expect(typeof body.cartId).toBe('number');
-      expect(typeof body.message).toBe('string');
+      expect(body.cartId).not.toBe(order.cartId);
+    } finally {
+      if (original !== '1') {
+        await setAdminReorderSetting(request, original ?? '0');
+      }
     }
   });
 
   test('reorder on non-existent order returns 404', async ({ request }) => {
-    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_REORDER(99999999), {
+    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_REORDER(UNKNOWN_ID), {
       method: 'POST',
       data: {},
     });
-    const status = response.status();
-    console.log('reorder bogus:', status);
-    expect([404, 400, 422]).toContain(status);
+
+    await expectProblem(response, 404, MSG.ORDER_NOT_FOUND);
   });
 
-  // ── Cancel ───────────────────────────────────────────────────
-  test('cancel returns 200 or guard 422', async ({ request }) => {
-    const id = (await orderWithStatus(request, 'pending')) ?? (await firstOrderId(request));
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_CANCEL(id), {
+  test('cancel cancels a pending order and refuses a second cancel', async ({ request }) => {
+    const order = await placeOrder(request);
+
+    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_CANCEL(order.orderId), {
       method: 'POST',
       data: {},
     });
-    const status = response.status();
-    console.log(`cancel (${id}):`, status);
-    // 4-check guard (closed/fraud/nothing-to-cancel/no-permission) → 422.
-    // BUG SURFACED 2026-05-26: cancelling a pending order returned HTTP 500
-    // for at least one fixture (order id 56). The guard let the request
-    // through but the underlying OrderRepository::cancel() crashed. Repro:
-    //   curl -X POST -H "X-Admin-Key: $K" -H "Authorization: Bearer $T" \
-    //        -H "Content-Type: application/json" -d '{}' \
-    //        http://localhost:8000/api/admin/orders/56/cancel
-    // Tolerated until the underlying defect is fixed.
-    expect([200, 201, 422, 500]).toContain(status);
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(201);
+    expect(body.id).toBe(order.orderId);
+    expect(body.status).toBe('canceled');
+    expect((await readOrder(request, order.orderId)).status).toBe('canceled');
+
+    const again = await sendAdminRequest(request, ADMIN_SALES.ORDER_CANCEL(order.orderId), {
+      method: 'POST',
+      data: {},
+    });
+
+    await expectProblem(again, 422, MSG.CANCEL_NOTHING);
   });
 
   test('cancel non-existent order returns 404', async ({ request }) => {
-    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_CANCEL(99999999), {
+    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_CANCEL(UNKNOWN_ID), {
       method: 'POST',
       data: {},
     });
-    const status = response.status();
-    expect([404, 400, 422]).toContain(status);
+
+    await expectProblem(response, 404, MSG.ORDER_NOT_FOUND);
   });
 
-  // ── Comments ─────────────────────────────────────────────────
   test('list comments returns paginated envelope', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_COMMENTS(id));
-    const status = response.status();
-    console.log(`list comments (${id}):`, status);
-    expect(status).toBe(200);
+    const order = await placeOrder(request);
 
-    const body = await response.json();
-    expect(body).toHaveProperty('data');
-    expect(body).toHaveProperty('meta');
+    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_COMMENTS(order.orderId));
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(200);
     expect(Array.isArray(body.data)).toBe(true);
+    expect(body).toHaveProperty('meta');
   });
 
   test('add comment creates a new row', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_COMMENTS(id), {
-      method: 'POST',
-      data: {
-        comment: `E2E comment ${Date.now()}`,
-        customerNotified: false,
-      },
-    });
-    const status = response.status();
-    console.log(`add comment (${id}):`, status);
-    expect([200, 201]).toContain(status);
+    const order = await placeOrder(request);
+    const comment = `E2E comment ${Date.now()}`;
 
-    const body = await response.json();
+    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_COMMENTS(order.orderId), {
+      method: 'POST',
+      data: { comment, customerNotified: false },
+    });
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(201);
     expect(typeof body.id).toBe('number');
-    expect(body).toHaveProperty('comment');
+    expect(body.comment).toBe(comment);
+
+    const list = await sendAdminRequest(request, ADMIN_SALES.ORDER_COMMENTS(order.orderId));
+    const listBody = await safeJson(list);
+
+    expect(list.status(), JSON.stringify(listBody)).toBe(200);
+    expect(listBody.data.map((row: any) => row.comment)).toContain(comment);
   });
 
   test('add comment with empty body is rejected', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_COMMENTS(id), {
+    const order = await placeOrder(request);
+
+    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_COMMENTS(order.orderId), {
       method: 'POST',
       data: { comment: '' },
     });
-    const status = response.status();
-    console.log('add comment empty:', status);
-    expect([400, 422]).toContain(status);
+
+    await expectProblem(response, 422, MSG.COMMENT_EMPTY);
+
+    const list = await sendAdminRequest(request, ADMIN_SALES.ORDER_COMMENTS(order.orderId));
+    const listBody = await safeJson(list);
+
+    expect(list.status(), JSON.stringify(listBody)).toBe(200);
+    expect(listBody.data).toHaveLength(0);
   });
 
-  // ── Invoice create (smoke; usually blocked by guard) ─────────
-  test('invoice create returns 2xx or guard 422', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_INVOICES(id), {
+  test('invoice create rejects an empty item list and leaves the order invoiceable', async ({ request }) => {
+    const order = await placeOrder(request);
+
+    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_INVOICES(order.orderId), {
       method: 'POST',
       data: { invoice: { items: {} } },
     });
-    const status = response.status();
-    console.log(`invoice create (${id}):`, status);
-    // 5-check guard (closed/fraud/paypal_standard/nothing-to-invoice/no-perm).
-    expect([200, 201, 400, 422]).toContain(status);
+
+    await expectProblem(response, 422, MSG.INVOICE_ITEMS_REQUIRED);
+
+    const invoice = await invoiceOrder(request, order.orderId);
+    expect(invoice.id).toBeGreaterThan(0);
   });
 
-  // ── Shipment create (smoke) ──────────────────────────────────
-  test('shipment create returns 2xx or guard 422', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_SHIPMENTS(id), {
+  test('shipment create without a top level source is rejected', async ({ request }) => {
+    const order = await placeOrder(request);
+
+    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_SHIPMENTS(order.orderId), {
       method: 'POST',
       data: { shipment: { source: 1, items: {} } },
     });
-    const status = response.status();
-    console.log(`shipment create (${id}):`, status);
-    expect([200, 201, 400, 422]).toContain(status);
+
+    await expectProblem(response, 422, MSG.SHIPMENT_SOURCE_REQUIRED);
   });
 
-  // ── Refund create (smoke) ────────────────────────────────────
-  test('refund create returns 2xx or guard 422', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_REFUNDS(id), {
+  test('refund create on an uninvoiced order is refused', async ({ request }) => {
+    const order = await placeOrder(request);
+
+    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_REFUNDS(order.orderId), {
       method: 'POST',
       data: { items: {}, shippingAmount: 0, adjustmentRefund: 0, adjustmentFee: 0 },
     });
-    const status = response.status();
-    console.log(`refund create (${id}):`, status);
-    expect([200, 201, 400, 422]).toContain(status);
+
+    await expectProblem(response, 422, MSG.REFUND_NOTHING);
+    expect((await readOrder(request, order.orderId)).grandTotalRefunded).toBe(0);
   });
 
-  // ── Refund preview (no write) ────────────────────────────────
   test('refund preview returns totals without writing', async ({ request }) => {
-    const id = await firstOrderId(request);
-    if (!id) {
-      test.skip(true, 'no orders in DB');
-      return;
-    }
-    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_REFUND_PREVIEW(id), {
-      method: 'POST',
-      data: { items: {}, shippingAmount: 0, adjustmentRefund: 0, adjustmentFee: 0 },
-    });
-    const status = response.status();
-    console.log(`refund preview (${id}):`, status);
-    // Eligibility gates may still fire (closed/fraud/no-permission).
-    expect([200, 201, 400, 422]).toContain(status);
+    const order = await placeOrder(request);
+    await invoiceOrder(request, order.orderId);
 
-    if (status === 200 || status === 201) {
-      const body = await response.json();
-      expect(body).toHaveProperty('grandTotal');
-      expect(body).toHaveProperty('subtotal');
-      expect(body).toHaveProperty('formattedGrandTotal');
-    }
+    const detail = await readOrder(request, order.orderId);
+    const [item] = detail.items;
+
+    const response = await sendAdminRequest(request, ADMIN_SALES.ORDER_REFUND_PREVIEW(order.orderId), {
+      method: 'POST',
+      data: { items: [{ orderItemId: item.id, quantity: 1 }], shipping: 0, adjustmentRefund: 0, adjustmentFee: 0 },
+    });
+    const body = await safeJson(response);
+
+    expect(response.status(), JSON.stringify(body)).toBe(201);
+    expect(body.orderId).toBe(order.orderId);
+    expect(body.subtotal).toBeGreaterThan(0);
+    expect(body.shipping).toBe(0);
+    expect(body.grandTotal).toBeCloseTo(body.subtotal + body.tax - body.discount, 2);
+    expect(typeof body.formattedGrandTotal).toBe('string');
+    expect((await readOrder(request, order.orderId)).grandTotalRefunded).toBe(0);
   });
 });

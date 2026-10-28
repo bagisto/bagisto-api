@@ -331,6 +331,65 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
     }
 
     /**
+     * A customer order query returns only that order's shipments, not those of the customer's other orders.
+     */
+    public function test_order_shipments_exclude_the_customers_other_orders(): void
+    {
+        $testData = $this->createTestData();
+
+        $customer = $testData['customer'];
+
+        $otherOrder = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'customer_first_name' => $customer->first_name,
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $testData['channel']->id,
+            'status' => 'completed',
+        ]);
+
+        $otherAddress = OrderAddress::factory()->create([
+            'order_id' => $otherOrder->id,
+            'address_type' => 'shipping',
+        ]);
+
+        $otherShipment = Shipment::factory()->create([
+            'order_id' => $otherOrder->id,
+            'order_address_id' => $otherAddress->id,
+            'customer_id' => $customer->id,
+            'customer_type' => Customer::class,
+            'status' => 'shipped',
+            'total_qty' => 1,
+        ]);
+
+        $orderId = "/api/shop/customer-orders/{$testData['order']->id}";
+        $shipmentSelection = $this->shipmentConnectionSelection('_id');
+
+        $response = $this->authenticatedGraphQL($customer, <<<GQL
+            query getCustomerOrder {
+              customerOrder(id: "{$orderId}") {
+                _id
+                {$shipmentSelection}
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $ids = array_map('intval', array_column($this->shipmentNodes($response->json('data.customerOrder')), '_id'));
+
+        sort($ids);
+
+        $expected = [(int) $testData['shipment1']->id, (int) $testData['shipment2']->id];
+
+        sort($expected);
+
+        expect($ids)->toBe($expected);
+        expect($ids)->not->toContain((int) $otherShipment->id);
+    }
+
+    /**
      * The shipment item queries return only the calling customer's items.
      */
     public function test_shipment_item_queries_never_return_another_customers_items(): void

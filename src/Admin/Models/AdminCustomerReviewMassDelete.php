@@ -23,6 +23,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassDeleteProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Customer Reviews'],
                 summary: 'Mass delete reviews',
+                description: 'Deletes the product reviews whose IDs are sent in `indices`. Unknown IDs are ignored, and a review that fails to delete is listed under `skipped` with the reason; an empty `indices` is a 422.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -71,17 +72,31 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassDeleteProcessor;
 )]
 class AdminCustomerReviewMassDelete
 {
+    /**
+     * The id.
+     */
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
-    /** @var int[]|null */
+    /**
+     * The ids of the product reviews that were deleted.
+     *
+     * @var int[]|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
-    /** @var array<int, array{id:int,reason:string}>|null */
+    /**
+     * The product reviews that were not deleted, each with the reason.
+     *
+     * @var array<int, array{id:int,reason:string}>|null
+     */
     #[ApiProperty(writable: false)]
     public ?array $skipped = null;
 
+    /**
+     * The message.
+     */
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 }

@@ -9,44 +9,12 @@ use Webkul\Product\Models\ProductReview;
 
 class CustomerReviewTest extends GraphQLTestCase
 {
-    /**
-     * Create test data — customer with reviews on multiple products
-     */
-    private function createTestData(): array
-    {
-        $this->seedRequiredData();
-
-        $customer = $this->createCustomer();
-        $product1 = Product::factory()->create();
-        $product2 = Product::factory()->create();
-
-        $review1 = ProductReview::factory()->create([
-            'customer_id' => $customer->id,
-            'product_id' => $product1->id,
-            'title' => 'Great product',
-            'comment' => 'Really enjoyed using this product.',
-            'rating' => 5,
-            'status' => 'approved',
-            'name' => $customer->first_name,
-        ]);
-
-        $review2 = ProductReview::factory()->create([
-            'customer_id' => $customer->id,
-            'product_id' => $product2->id,
-            'title' => 'Average product',
-            'comment' => 'It was okay, nothing special.',
-            'rating' => 3,
-            'status' => 'pending',
-            'name' => $customer->first_name,
-        ]);
-
-        return compact('customer', 'product1', 'product2', 'review1', 'review2');
-    }
-
-    // ── Collection Queries ────────────────────────────────────
+    // ============================================================================
+    // Collection Queries
+    // ============================================================================
 
     /**
-     * Test: Query all customer reviews collection
+     * Test: Query all customer reviews collection.
      */
     public function test_get_customer_reviews_collection(): void
     {
@@ -96,7 +64,7 @@ class CustomerReviewTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Unauthenticated request returns error
+     * Test: Unauthenticated request returns error.
      */
     public function test_get_customer_reviews_requires_authentication(): void
     {
@@ -121,13 +89,12 @@ class CustomerReviewTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Customer only sees their own reviews
+     * Test: Customer only sees their own reviews.
      */
     public function test_customer_only_sees_own_reviews(): void
     {
         $testData = $this->createTestData();
 
-        /** Create another customer with their own review */
         $otherCustomer = $this->createCustomer();
         $product = Product::factory()->create();
 
@@ -155,14 +122,15 @@ class CustomerReviewTest extends GraphQLTestCase
         $response->assertOk();
         $data = $response->json('data.customerReviews');
 
-        /** Should only see the 2 reviews belonging to testData customer */
         expect($data['totalCount'])->toBe(2);
     }
 
-    // ── Single Item Query ─────────────────────────────────────
+    // ============================================================================
+    // Single Item Query
+    // ============================================================================
 
     /**
-     * Test: Query single customer review by ID
+     * Test: Query single customer review by ID.
      */
     public function test_get_customer_review_by_id(): void
     {
@@ -204,7 +172,7 @@ class CustomerReviewTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Query with invalid ID returns null/error
+     * Test: Query with invalid ID returns null/error.
      */
     public function test_invalid_customer_review_id_returns_error(): void
     {
@@ -222,10 +190,12 @@ class CustomerReviewTest extends GraphQLTestCase
         expect($response->json('data.customerReview'))->toBeNull();
     }
 
-    // ── Filtering ─────────────────────────────────────────────
+    // ============================================================================
+    // Filtering
+    // ============================================================================
 
     /**
-     * Test: Filter reviews by status
+     * Test: Filter reviews by status.
      */
     public function test_filter_reviews_by_status(): void
     {
@@ -257,7 +227,7 @@ class CustomerReviewTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Filter reviews by rating
+     * Test: Filter reviews by rating.
      */
     public function test_filter_reviews_by_rating(): void
     {
@@ -289,7 +259,7 @@ class CustomerReviewTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Filter with no matching results returns empty collection
+     * Test: Filter with no matching results returns empty collection.
      */
     public function test_filter_with_no_matches_returns_empty(): void
     {
@@ -317,10 +287,12 @@ class CustomerReviewTest extends GraphQLTestCase
         expect($data['edges'])->toBeEmpty();
     }
 
-    // ── Pagination ────────────────────────────────────────────
+    // ============================================================================
+    // Pagination
+    // ============================================================================
 
     /**
-     * Test: Pagination with first parameter
+     * Test: Pagination with first parameter.
      */
     public function test_pagination_first(): void
     {
@@ -350,13 +322,12 @@ class CustomerReviewTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Cursor-based pagination with after parameter
+     * Test: Cursor-based pagination with after parameter.
      */
     public function test_pagination_with_cursor(): void
     {
         $testData = $this->createTestData();
 
-        /** Fetch first page to get cursor */
         $firstQuery = <<<'GQL'
             query getCustomerReviews {
               customerReviews(first: 1) {
@@ -373,7 +344,6 @@ class CustomerReviewTest extends GraphQLTestCase
         $firstResponse = $this->authenticatedGraphQL($testData['customer'], $firstQuery);
         $cursor = $firstResponse->json('data.customerReviews.edges.0.cursor');
 
-        /** Fetch second page using cursor */
         $secondQuery = <<<GQL
             query getCustomerReviews {
               customerReviews(first: 1, after: "{$cursor}") {
@@ -391,10 +361,12 @@ class CustomerReviewTest extends GraphQLTestCase
         $secondResponse->assertOk();
     }
 
-    // ── Field & Format Assertions ─────────────────────────────
+    // ============================================================================
+    // Field & Format Assertions
+    // ============================================================================
 
     /**
-     * Test: All expected fields are present on the review node
+     * Test: All expected fields are present on the review node.
      */
     public function test_query_all_fields(): void
     {
@@ -439,7 +411,7 @@ class CustomerReviewTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Timestamps are returned in ISO8601 format
+     * Test: Timestamps are returned in ISO8601 format.
      */
     public function test_timestamps_are_iso8601_format(): void
     {
@@ -469,7 +441,7 @@ class CustomerReviewTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Numeric ID (_id) is an integer
+     * Test: Numeric ID (_id) is an integer.
      */
     public function test_numeric_id_is_integer(): void
     {
@@ -495,10 +467,12 @@ class CustomerReviewTest extends GraphQLTestCase
         expect($node['_id'])->toBeInt();
     }
 
-    // ── Schema Introspection ──────────────────────────────────
+    // ============================================================================
+    // Schema Introspection
+    // ============================================================================
 
     /**
-     * Test: CustomerReview type exists in GraphQL schema
+     * Test: CustomerReview type exists in GraphQL schema.
      */
     public function test_introspection_query(): void
     {
@@ -526,10 +500,12 @@ class CustomerReviewTest extends GraphQLTestCase
         expect($fieldNames)->toContain('id', '_id', 'title', 'comment', 'rating', 'status', 'name');
     }
 
-    // ── Edge Cases ────────────────────────────────────────────
+    // ============================================================================
+    // Edge Cases
+    // ============================================================================
 
     /**
-     * Test: Customer with no reviews returns empty collection
+     * Test: Customer with no reviews returns empty collection.
      */
     public function test_customer_with_no_reviews_returns_empty(): void
     {
@@ -559,7 +535,7 @@ class CustomerReviewTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Reviews include product relationship data
+     * Test: Reviews include product relationship data.
      */
     public function test_reviews_include_product_relationship(): void
     {
@@ -587,5 +563,39 @@ class CustomerReviewTest extends GraphQLTestCase
 
         expect($node)->toHaveKey('product');
         expect($node['product'])->toHaveKey('id');
+    }
+
+    /**
+     * Create test data — customer with reviews on multiple products.
+     */
+    private function createTestData(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $product1 = Product::factory()->create();
+        $product2 = Product::factory()->create();
+
+        $review1 = ProductReview::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product1->id,
+            'title' => 'Great product',
+            'comment' => 'Really enjoyed using this product.',
+            'rating' => 5,
+            'status' => 'approved',
+            'name' => $customer->first_name,
+        ]);
+
+        $review2 = ProductReview::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product2->id,
+            'title' => 'Average product',
+            'comment' => 'It was okay, nothing special.',
+            'rating' => 3,
+            'status' => 'pending',
+            'name' => $customer->first_name,
+        ]);
+
+        return compact('customer', 'product1', 'product2', 'review1', 'review2');
     }
 }

@@ -7,16 +7,19 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsRole;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
-/**
- * Provider for GET /api/admin/settings/roles + adminSettingsRoles.
- */
 class AdminSettingsRoleCollectionProvider extends AbstractAdminCollectionProvider
 {
+    /**
+     * Get sortable.
+     */
     protected function getSortable(): array
     {
         return ['id', 'name'];
     }
 
+    /**
+     * Build query.
+     */
     protected function buildQuery(array $args)
     {
         return DB::table('roles')->select(
@@ -30,6 +33,9 @@ class AdminSettingsRoleCollectionProvider extends AbstractAdminCollectionProvide
         );
     }
 
+    /**
+     * Apply filters.
+     */
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
@@ -41,6 +47,9 @@ class AdminSettingsRoleCollectionProvider extends AbstractAdminCollectionProvide
         }
     }
 
+    /**
+     * Apply sort.
+     */
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
@@ -53,6 +62,9 @@ class AdminSettingsRoleCollectionProvider extends AbstractAdminCollectionProvide
         $query->orderBy($columnMap[$column] ?? 'roles.id', $direction);
     }
 
+    /**
+     * Map row.
+     */
     protected function mapRow(object $row): AdminSettingsRole
     {
         $dto = new AdminSettingsRole;

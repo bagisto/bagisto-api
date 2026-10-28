@@ -20,10 +20,11 @@ use Webkul\Core\Models\Country as BaseCountry;
     operations: [
         new GetCollection(
             paginationClientItemsPerPage: true,
+            paginationMaximumItemsPerPage: 300,
             openapi: new Operation(
                 tags: ['Country'],
                 summary: 'List countries',
-                description: 'Returns all countries with their `states` and per-locale `translations`. Public endpoint.',
+                description: 'Returns the countries with their `states` and per-locale `translations`, 10 per page by default; `per_page` takes up to 300, so every country fits in one request. Public endpoint.',
                 responses: [
                     '200' => new Response(
                         description: 'List of countries.',
@@ -96,34 +97,63 @@ use Webkul\Core\Models\Country as BaseCountry;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
-        new QueryCollection(provider: CursorAwareCollectionProvider::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One country with its states. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
+        new QueryCollection(
+            provider: CursorAwareCollectionProvider::class,
+            paginationMaximumItemsPerPage: 300,
+            description: 'Every country with its states, ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is capped at 300, so every country fits in one request, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 class Country extends BaseCountry
 {
+    /**
+     * The relations to eager load on every query.
+     *
+     * @var array
+     */
+    protected $with = ['translations', 'states'];
+
+    /**
+     * Get states.
+     */
     #[ApiProperty(readableLink: true)]
     public function getStates()
     {
         return $this->states;
     }
 
+    /**
+     * Get name attribute.
+     */
     public function getNameAttribute($value)
     {
         return $value;
     }
 
+    /**
+     * States.
+     */
     public function states()
     {
         return $this->hasMany(CountryState::class, 'country_id');
     }
 
+    /**
+     * Get translation.
+     */
     #[ApiProperty(readable: false)]
     public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
     {
         return parent::getTranslation($locale, $withFallback);
     }
 
+    /**
+     * Get translations.
+     */
     #[ApiProperty(readableLink: true, description: 'Translations for the country')]
     public function getTranslations()
     {

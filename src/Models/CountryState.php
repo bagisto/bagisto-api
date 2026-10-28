@@ -17,10 +17,7 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
 
 /**
  * CountryState - Subresource of Country with REST and GraphQL support
- *
- * Pattern: Like AttributeOption - multiple #[ApiResource] annotations
- * - Subresource routes: /countries/{country_id}/states
- * - Root routes: /country-states (for GraphQL queries and root REST access)
+ * Pattern: Like AttributeOption - multiple #[ApiResource] annotations.
  */
 
 // Subresource nested collection: /countries/{country_id}/states
@@ -154,6 +151,7 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
     graphQlOperations: [
         new QueryCollection(
             provider: CountryStateCollectionProvider::class,
+            description: 'The states of country `countryId` (required), ordered by ID. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 10 and is not capped, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header.',
             paginationType: 'cursor',
             args: [
                 'countryId' => [
@@ -221,7 +219,10 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(
+            resolver: BaseQueryItemResolver::class,
+            description: 'One country state. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header.',
+        ),
     ]
 )]
 class CountryState extends BaseCountryState {}

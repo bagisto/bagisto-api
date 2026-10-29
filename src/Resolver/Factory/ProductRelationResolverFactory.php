@@ -140,7 +140,7 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                 ];
             }
 
-            $relationFields = ['upSells', 'crossSells', 'relatedProducts', 'superAttributes', 'reviews', 'bookingProducts'];
+            $relationFields = ['upSells', 'crossSells', 'relatedProducts', 'superAttributes', 'reviews', 'approvedReviews', 'bookingProducts'];
 
             if (
                 $rootClass === Product::class

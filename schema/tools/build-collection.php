@@ -61,6 +61,37 @@ final class CollectionBuilder
         'categoryAttributeFilters' => 4,
     ];
 
+    /**
+     * The booking starting price, added to the product queries.
+     *
+     * It lives on the bookingProducts connection, which the depth-1 selection skips, yet the app
+     * needs it to show "Starting from" on a booking card as the storefront does.
+     */
+    private const BOOKING_PRICE_SELECTION = [
+        'bookingProducts' => [
+            'edges' => [
+                'node' => [
+                    'type' => null,
+                    'startingPrice' => null,
+                    'formattedStartingPrice' => null,
+                    'startingRegularPrice' => null,
+                    'formattedStartingRegularPrice' => null,
+                ],
+            ],
+        ],
+    ];
+
+    /**
+     * How the storefront labels a product's price, added to the product query descriptions.
+     */
+    private const PRICE_LABEL_RULES = "Show the price label by product type, as the storefront does:\n"
+        ."- grouped: \"Starting at\" + formattedMinimumPrice (price is 0 for a grouped product).\n"
+        ."- booking with bookingType event or rental: \"Starting from\" + bookingProducts[0].formattedStartingPrice; strike formattedStartingRegularPrice when startingRegularPrice is higher than startingPrice.\n"
+        ."- configurable: \"As low as\" + formattedMinimumPrice.\n"
+        ."- bundle: formattedMinimumPrice \"To\" formattedMaximumPrice when the two differ.\n"
+        ."- every other type, and booking default / appointment / table: formattedMinimumPrice.\n"
+        .'For every type, show the regular price struck through when it is higher than the final one (regularMinimumPrice / regularMaximumPrice against minimumPrice / maximumPrice).';
+
     private const HEADER_VARS = [
         'X-STOREFRONT-KEY' => '{{storefrontKey}}',
         'X-Locale' => '{{locale}}',
@@ -716,6 +747,7 @@ query SectionProducts($first: Int, $sortKey: String, $reverse: Boolean, $filter:
         _id
         sku
         type
+        bookingType
         name
         urlKey
         price
@@ -724,12 +756,29 @@ query SectionProducts($first: Int, $sortKey: String, $reverse: Boolean, $filter:
         formattedSpecialPrice
         minimumPrice
         formattedMinimumPrice
+        maximumPrice
+        formattedMaximumPrice
+        regularMinimumPrice
+        formattedRegularMinimumPrice
+        regularMaximumPrice
+        formattedRegularMaximumPrice
         new
         featured
         isSaleable
         isInWishlist
         isInCompare
         baseImageUrl
+        bookingProducts {
+          edges {
+            node {
+              type
+              startingPrice
+              formattedStartingPrice
+              startingRegularPrice
+              formattedStartingRegularPrice
+            }
+          }
+        }
       }
     }
     pageInfo {
@@ -744,7 +793,8 @@ GQL;
         $mapping = "Build the variables from the section's `options.filters`:\n"
             ."- `limit` -> `first` (missing: the first value of `storeConfig.productsPerPage`, else 12).\n"
             ."- `sort` -> `sortKey` + `reverse`: split at the last `-`, uppercase the field (`name` -> `NAME`, `price` -> `PRICE`, `created_at` -> `CREATED_AT`), `desc` -> `reverse: true`, `asc` -> `reverse: false`.\n"
-            .'- Every other key (`new`, `featured`, `category_id`, ...) -> one object passed as `filter`, encoded as a JSON string. Leave `filter` out when there is none.';
+            .'- Every other key (`new`, `featured`, `category_id`, ...) -> one object passed as `filter`, encoded as a JSON string. Leave `filter` out when there is none.'
+            ."\n\n".self::PRICE_LABEL_RULES;
 
         $request = fn (string $name, string $query, array $variables, string $description): array => [
             'name' => $name,
@@ -817,6 +867,16 @@ GQL;
 
         $tree = $this->selectionTree($definition->getType(), 0, self::SELECTION_DEPTH_OVERRIDES[$field] ?? self::MAX_SELECTION_DEPTH);
 
+        $isProductQuery = $surface === 'shop' && in_array($field, ['product', 'products'], true);
+
+        if ($isProductQuery && $tree !== null) {
+            if (isset($tree['edges']['node'])) {
+                $tree['edges']['node'] += self::BOOKING_PRICE_SELECTION;
+            } else {
+                $tree += self::BOOKING_PRICE_SELECTION;
+            }
+        }
+
         $query = sprintf(
             "%s %s%s {\n  %s%s%s\n}\n",
             $kind,
@@ -851,6 +911,10 @@ GQL;
 
         if ($description = $definition->description) {
             $item['request']['description'] = $description;
+        }
+
+        if ($isProductQuery) {
+            $item['request']['description'] = trim(($item['request']['description'] ?? '')."\n\n".self::PRICE_LABEL_RULES);
         }
 
         if ($event = $this->graphQlTokenScript($field)) {

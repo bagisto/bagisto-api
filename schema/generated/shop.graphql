@@ -944,6 +944,8 @@ type AttributeOption implements Node {
   adminName: String
   sortOrder: Int
   swatchValue: String
+  label: String
+  swatchAlt: String
   swatchValueUrl: String
   swatchFileName: String
 
@@ -1456,6 +1458,10 @@ type Product implements Node {
   index: String @deprecated(reason: "Use the VariantAttributeMap property instead")
   combinations: String
   superAttributeOptions: String
+
+  "Configurable only: the storefront product page's option-selector configuration as JSON — attributes with translated labels, swatch type, swatch value and alt text, the options each saleable variant uses (index), and each variant's prices, images and videos."
+  configurationConfig: String
+
   bookingType: String
   name: String
   urlKey: String

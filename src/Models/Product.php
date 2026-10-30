@@ -43,7 +43,7 @@ use Webkul\Product\Models\Product as BaseProduct;
             openapi: new Operation(
                 tags: ['Product'],
                 summary: 'Get a single product by ID with all relations embedded',
-                description: 'Returns one product with every relation (categories, channels, images, videos, variants, bundle/grouped/downloadable options, customizable options, related/up-sell/cross-sell products) embedded inline. Public endpoint.',
+                description: 'Returns one product with every relation (categories, channels, images, videos, variants, bundle/grouped/downloadable options, customizable options, related/up-sell/cross-sell products) embedded inline. Public endpoint.'."\n\n".'Configurable products: superAttributes carries swatchType on each attribute, and on each option the translated label, swatchValue, swatchValueUrl (image swatch), swatchAlt and products (the saleable variants carrying it). Only saleable variants count and options follow the admin sort order, as on the storefront product page.',
                 responses: [
                     '200' => new Response(
                         description: 'The product with all relations embedded inline.',

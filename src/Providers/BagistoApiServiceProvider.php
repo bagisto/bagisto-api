@@ -147,6 +147,7 @@ use Webkul\BagistoApi\Routing\CustomIriConverter;
 use Webkul\BagistoApi\Serializer\AdminCollectionEnvelopeNormalizer;
 use Webkul\BagistoApi\Serializer\PaginationHeaderNormalizer;
 use Webkul\BagistoApi\Serializer\TokenHeaderDenormalizer;
+use Webkul\BagistoApi\Service\ConfigurableConfig;
 use Webkul\BagistoApi\Services\CartTokenService;
 use Webkul\BagistoApi\Services\StorefrontKeyService;
 use Webkul\BagistoApi\Services\TokenHeaderService;
@@ -670,6 +671,8 @@ class BagistoApiServiceProvider extends ServiceProvider
 
         // Request-scoped: membership sets loaded once per request, reused across the page.
         $this->app->singleton(ProductRelationFlagResolver::class);
+
+        $this->app->scoped(ConfigurableConfig::class);
 
         $this->app->singleton(ProductRelationProvider::class, function ($app) {
             return new ProductRelationProvider(

@@ -13,6 +13,7 @@ use Webkul\BagistoApi\Dto\DownloadLinkOutput;
 use Webkul\BagistoApi\Models\Attribute;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\ReadCart;
+use Webkul\BagistoApi\Service\ConfigurableConfig;
 use Webkul\BagistoApi\State\ProductRelationProvider;
 use Webkul\Checkout\Models\Cart;
 
@@ -283,6 +284,11 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                                 } elseif ($modelClass === 'Attribute') {
                                     $node['id'] = '/api/shop/attributes/'.$item->id;
                                     $node['code'] = $item->code;
+                                    $node['swatchType'] = $item->swatch_type;
+
+                                    if ($info->fieldName === 'superAttributes') {
+                                        $node['options'] = $this->superAttributeOptionsConnection($product, $item, $listToConnection);
+                                    }
                                 } elseif ($modelClass === 'ProductReview') {
                                     $node['id'] = '/api/shop/reviews/'.$item->id;
 
@@ -315,5 +321,41 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
 
             return $result;
         };
+    }
+
+    /**
+     * The options of a super attribute that the product's variants use, as a connection.
+     */
+    private function superAttributeOptionsConnection(Product $product, object $attribute, callable $listToConnection): array
+    {
+        $configurable = app(ConfigurableConfig::class);
+
+        $offered = $configurable->options($product)[$attribute->id] ?? [];
+
+        $locale = app()->getLocale();
+
+        $options = array_map(function ($option) use ($locale, $offered) {
+            $translation = $option->translate($locale);
+
+            return [
+                'id' => '/api/shop/attribute-options/'.$option->id,
+                '_id' => (int) $option->id,
+                'adminName' => $option->admin_name,
+                'label' => $offered[$option->id]['label'] ?? $option->admin_name,
+                'sortOrder' => $option->sort_order,
+                'swatchValue' => $option->swatch_value,
+                'swatchValueUrl' => $option->swatch_value_url,
+                'swatchAlt' => $offered[$option->id]['swatch_alt'] ?? null,
+                'translation' => $translation ? [
+                    'id' => '/api/shop/attribute_option_translations/'.$translation->id,
+                    '_id' => (int) $translation->id,
+                    'attributeOptionId' => (int) $translation->attribute_option_id,
+                    'locale' => $translation->locale,
+                    'label' => $translation->label,
+                ] : null,
+            ];
+        }, $configurable->optionModels($product, $attribute));
+
+        return $listToConnection($options);
     }
 }

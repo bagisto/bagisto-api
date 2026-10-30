@@ -24,6 +24,7 @@ use Webkul\BagistoApi\Dto\ProductDetail\SuperAttributeOptionDto;
 use Webkul\BagistoApi\Dto\ProductDetail\VariantSummaryDto;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Product;
+use Webkul\BagistoApi\Service\ConfigurableConfig;
 
 class ProductDetailProvider implements ProviderInterface
 {
@@ -149,38 +150,26 @@ class ProductDetailProvider implements ProviderInterface
             $superAttributeIds = $product->super_attributes->pluck('id')->toArray();
             $superAttributeCodeMap = $product->super_attributes->pluck('code', 'id')->toArray();
 
-            // Find which option IDs are actually used by variants
-            $usedOptions = [];
-            foreach ($product->variants as $variant) {
-                foreach ($variant->attribute_values as $av) {
-                    if (in_array($av->attribute_id, $superAttributeIds)) {
-                        $usedOptions[$av->attribute_id][] = $av->value;
-                    }
-                }
-            }
+            $configurable = app(ConfigurableConfig::class);
+
+            $offered = $configurable->options($product);
 
             $dto->super_attributes = $product->super_attributes
-                ->map(function ($attr) use ($usedOptions) {
-                    $used = array_unique($usedOptions[$attr->id] ?? []);
-                    $opts = [];
-                    foreach ($attr->options as $opt) {
-                        if (in_array($opt->id, $used)) {
-                            $opts[] = new SuperAttributeOptionDto(
-                                id: (int) $opt->id,
-                                label: $opt->admin_name ?? $opt->label ?? null,
-                                swatch_value: $opt->swatch_value ?? null,
-                            );
-                        }
-                    }
-
-                    return new SuperAttributeDto(
-                        id: (int) $attr->id,
-                        code: $attr->code,
-                        label: $attr->admin_name ?? $attr->name ?? null,
-                        type: $attr->type ?? null,
-                        options: $opts,
-                    );
-                })->values()->all();
+                ->map(fn ($attr) => new SuperAttributeDto(
+                    id: (int) $attr->id,
+                    code: $attr->code,
+                    label: $attr->name ?: $attr->admin_name,
+                    type: $attr->type ?? null,
+                    swatch_type: $attr->swatch_type ?? null,
+                    options: array_map(fn ($opt) => new SuperAttributeOptionDto(
+                        id: (int) $opt->id,
+                        label: $offered[$attr->id][$opt->id]['label'] ?? $opt->admin_name,
+                        swatch_value: $opt->swatch_value ?? null,
+                        swatch_value_url: $opt->swatch_value_url,
+                        swatch_alt: $offered[$attr->id][$opt->id]['swatch_alt'] ?? null,
+                        products: $offered[$attr->id][$opt->id]['products'] ?? [],
+                    ), $configurable->optionModels($product, $attr)),
+                ))->values()->all();
 
             $dto->variants = $product->variants
                 ->map(function ($variant) use ($superAttributeIds, $superAttributeCodeMap) {

@@ -5,6 +5,19 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `configurationConfig` on the storefront `Product` (GraphQL): the storefront product page's whole option-selector configuration as JSON — the super attributes with translated labels, swatch type, swatch value and alt text, the options each saleable variant uses (`index`), and each variant's prices, images and videos. It is built by the same helper the web page uses, so an app can render the selector exactly as the web does.
+- Swatch data on a configurable product's super attributes: `swatchType` on each attribute, and `swatchValueUrl` (the image swatch URL), `swatchAlt` and `products` (the variants carrying the option) on each option. On `GET /api/shop/products/{id}` (`superAttributes`), in `superAttributeOptions`, and on the GraphQL `superAttributes` options.
+- `label` and `swatchAlt` on `AttributeOption`, in the requested locale.
+
+### Fixed
+
+- The GraphQL `superAttributes { options }` connection returned `null`, so an app could not read a configurable product's option labels or swatches.
+- The configurable option selector now matches the storefront: `index`, `combinations`, `superAttributeOptions` and `superAttributes` count only saleable variants, list options in their admin sort order and use translated labels. A disabled or out-of-stock variant's option was offered before, and labels were the admin names in every locale.
+
 ## [2.4.10] - 2026-10-15
 
 Security and correctness release from the Bagisto v2.4.10 API audit. Tested against Bagisto v2.4.10.

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Installing on a store with a database table prefix (`DB_PREFIX`) failed at the admin-token migration with `Unknown table '..._KEY_COLUMN_USAGE' in information_schema`. The migrations now work with or without a prefix, and the admin-token foreign key names fit MySQL's 64-character limit for any prefix core Bagisto supports.
+- `bagisto-api-platform:install` no longer leaves the store without `config/api-platform.php` when a migration fails: the config is copied before migrations run. Migrations now run with `--force`, so the installer no longer stops on the production confirmation prompt, and a failed migration reports its real error.
 - The GraphQL `superAttributes { options }` connection returned `null`, so an app could not read a configurable product's option labels or swatches.
 - The configurable option selector now matches the storefront: `index`, `combinations`, `superAttributeOptions` and `superAttributes` count only saleable variants, list options in their admin sort order and use translated labels. A disabled or out-of-stock variant's option was offered before, and labels were the admin names in every locale.
 

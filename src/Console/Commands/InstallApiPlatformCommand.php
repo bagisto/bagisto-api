@@ -37,13 +37,13 @@ class InstallApiPlatformCommand extends Command
 
             $this->registerApiPlatformProviders();
 
+            $this->publishConfiguration();
+
             $this->runDatabaseMigrations();
 
             $this->clearAndOptimizeCaches();
 
             $this->generateApiKey();
-
-            $this->publishConfiguration();
 
             $this->clearAndOptimizeCaches();
 
@@ -316,12 +316,13 @@ class InstallApiPlatformCommand extends Command
                 'php',
                 'artisan',
                 'migrate',
+                '--force',
             ]);
 
             $process->run();
 
             if (! $process->isSuccessful()) {
-                throw new \Exception(__('bagistoapi::app.graphql.install.migrations-error').' '.$process->getErrorOutput());
+                throw new \Exception(__('bagistoapi::app.graphql.install.migrations-error').' '.($process->getErrorOutput() ?: $process->getOutput()));
             }
 
             $this->line(__('bagistoapi::app.graphql.install.migrations-completed'));

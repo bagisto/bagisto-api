@@ -507,6 +507,7 @@ return [
             'config-permission-denied' => 'Permission denied: Cannot write to :directory. Please check directory permissions.',
 
             'composer-updated' => '✓ Composer autoload configuration updated',
+            'package-discover-error' => 'Refreshing the discovered package list failed.',
             'composer-file-not-found' => 'File not found: :file',
             'composer-permission-denied' => 'Permission denied: Cannot write to :file. Please check file permissions.',
 

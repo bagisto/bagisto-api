@@ -189,6 +189,25 @@ class InstallApiPlatformCommand extends Command
 
         $this->files->put($composerPath, json_encode($composer, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT).PHP_EOL);
         $this->line(__('bagistoapi::app.graphql.install.composer-updated'));
+
+        $this->refreshPackageManifest();
+    }
+
+    /**
+     * Rebuild the discovered-package cache so the new `dont-discover` entry applies to every
+     * command the installer runs next. Otherwise API Platform stays auto-discovered, boots before
+     * Concord binds the model contracts, and the first boot with `config/api-platform.php` in
+     * place dies building the GraphQL schema.
+     */
+    protected function refreshPackageManifest(): void
+    {
+        $process = new Process(['php', 'artisan', 'package:discover', '--ansi']);
+
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            throw new \Exception(__('bagistoapi::app.graphql.install.package-discover-error').' '.($process->getErrorOutput() ?: $process->getOutput()));
+        }
     }
 
     /**

@@ -136,7 +136,7 @@ class CheckoutPaymentTest extends GraphQLTestCase
         $customer = $this->readyCart('paypal_smart_button');
         $cartId = $this->activeCartId($customer);
         $this->enableSmartButton((string) DB::table('cart')->where('id', $cartId)->value('cart_currency_code'));
-        $this->fakeSmartButton($this->smartButtonOrder($cartId + 1000));
+        $this->fakeSmartButton($this->smartButtonOrder($cartId, customId: $cartId + 1000));
 
         $response = $this->checkoutGraphQL(<<<'GQL'
             mutation confirm($input: createCheckoutPaymentConfirmationInput!) {

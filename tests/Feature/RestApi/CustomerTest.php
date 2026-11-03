@@ -310,7 +310,7 @@ class CustomerTest extends RestApiTestCase
             ['email' => $other->email]
         );
 
-        expect($response->getStatusCode())->toBe(400);
+        expect($response->getStatusCode())->toBe(422);
         expect($customer->fresh()->email)->not()->toBe($other->email);
     }
 

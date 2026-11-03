@@ -214,7 +214,7 @@ class CheckoutPaymentTest extends RestApiTestCase
     public function test_confirm_smart_button_refuses_a_paypal_order_of_another_cart(): void
     {
         $cartId = $this->readySmartButtonCart();
-        $smartButton = $this->fakeSmartButton($this->smartButtonOrder($cartId + 1000));
+        $smartButton = $this->fakeSmartButton($this->smartButtonOrder($cartId, customId: $cartId + 1000));
 
         $this->checkoutPost('/api/shop/checkout-payments/confirm', ['paypal_order_id' => 'PAYPAL-ORDER-1'])->assertStatus(422);
 

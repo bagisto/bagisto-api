@@ -37,7 +37,7 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $query = <<<'GQL'
             query ($cartRuleId: Int!) {
               adminMarketingCartRuleCoupons(cartRuleId: $cartRuleId) {
-                edges { node { id _id code } }
+                edges { node { _id code } }
               }
             }
         GQL;

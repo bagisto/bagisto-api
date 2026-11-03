@@ -171,7 +171,7 @@ class OrderTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($query, [
-            'query' => $order->increment_id,
+            'query' => (string) $order->increment_id,
             'customerId' => (int) $order->customer_id,
         ], $admin);
 

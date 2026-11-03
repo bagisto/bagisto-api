@@ -138,9 +138,9 @@ trait PreparesCheckoutPayment
     }
 
     /**
-     * The approved PayPal order core would have created for the cart.
+     * The approved PayPal order core would have created for the cart. Pass `$customId` to fake an order made for another cart.
      */
-    protected function smartButtonOrder(int $cartId, string $status = 'APPROVED'): array
+    protected function smartButtonOrder(int $cartId, string $status = 'APPROVED', ?int $customId = null): array
     {
         $cart = DB::table('cart')->where('id', $cartId)->first();
 
@@ -149,7 +149,7 @@ trait PreparesCheckoutPayment
             'intent' => 'CAPTURE',
             'status' => $status,
             'purchase_units' => [[
-                'custom_id' => (string) $cartId,
+                'custom_id' => (string) ($customId ?? $cartId),
                 'amount' => ['currency_code' => $cart->cart_currency_code, 'value' => number_format((float) $cart->grand_total, 2, '.', '')],
             ]],
             'payer' => ['email_address' => 'john@example.com'],

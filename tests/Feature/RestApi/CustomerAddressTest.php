@@ -153,7 +153,7 @@ class CustomerAddressTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, $this->baseUrl, []);
 
-        expect($response->getStatusCode())->toBe(400);
+        expect($response->getStatusCode())->toBe(422);
         $this->assertDatabaseMissing('addresses', ['customer_id' => $customer->id]);
     }
 

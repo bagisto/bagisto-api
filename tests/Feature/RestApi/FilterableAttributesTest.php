@@ -135,10 +135,10 @@ class FilterableAttributesTest extends RestApiTestCase
             ]
         );
 
+        $currency = $this->seedTestCurrency(25.0);
+
         $base = $this->publicGet($this->filtersUrl);
         $base->assertOk();
-
-        $currency = $this->seedTestCurrency(25.0);
 
         $converted = $this->getJson($this->filtersUrl, array_merge($this->storefrontHeaders(), ['X-Currency' => $currency]));
         $converted->assertOk();

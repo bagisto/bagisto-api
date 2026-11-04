@@ -14,6 +14,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('admin_api_audits')) {
+            return;
+        }
+
         Schema::create('admin_api_audits', function (Blueprint $table) {
             $table->bigIncrements('id');
 

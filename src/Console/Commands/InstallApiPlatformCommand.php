@@ -338,6 +338,8 @@ class InstallApiPlatformCommand extends Command
                 '--force',
             ]);
 
+            $process->setTimeout(null);
+
             $process->run();
 
             if (! $process->isSuccessful()) {

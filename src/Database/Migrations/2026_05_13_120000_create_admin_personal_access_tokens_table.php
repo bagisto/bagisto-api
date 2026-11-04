@@ -9,6 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('admin_personal_access_tokens')) {
+            return;
+        }
+
         Schema::create('admin_personal_access_tokens', function (Blueprint $table) {
             $table->id();
 

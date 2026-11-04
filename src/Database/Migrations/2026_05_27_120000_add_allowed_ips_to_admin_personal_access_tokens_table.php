@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasColumn('admin_personal_access_tokens', 'allowed_ips')) {
+            return;
+        }
+
         Schema::table('admin_personal_access_tokens', function (Blueprint $table) {
             $table->text('allowed_ips')
                 ->nullable()
@@ -18,6 +22,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasColumn('admin_personal_access_tokens', 'allowed_ips')) {
+            return;
+        }
+
         Schema::table('admin_personal_access_tokens', function (Blueprint $table) {
             $table->dropColumn('allowed_ips');
         });

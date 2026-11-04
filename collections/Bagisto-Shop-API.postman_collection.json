@@ -1700,10 +1700,10 @@
                                         "confirm"
                                     ]
                                 },
-                                "description": "Places the order of the cart of the Bearer token after the customer paid, for Razorpay, PayPal Standard and PayPal Smart Button (the other gateways place the order on their own return). Razorpay: send the three values the Razorpay checkout returns; the signature is verified and the Razorpay order must belong to this cart and amount. PayPal Standard: send an empty body after PayPal returns the customer; as on the storefront the order is created pending and PayPal's IPN marks it paid. PayPal Smart Button: send `paypal_order_id` once the customer approved the payment in the PayPal SDK; the PayPal order must belong to this cart and total, it is captured, and the order is placed paid and invoiced.",
+                                "description": "Places the order of the cart of the Bearer token after the customer paid, for Razorpay, PayPal Standard and PayPal Smart Button (the other gateways place the order on their own return). Razorpay: send the three values the Razorpay checkout returns; the signature is verified and the Razorpay order must belong to this cart and amount. PayPal Standard: send an empty body after PayPal returns the customer; as on the storefront the order is created pending and PayPal's IPN marks it paid. PayPal Smart Button: send `paypal_order_id` once the customer approved the payment in the PayPal SDK; the PayPal order must belong to this cart and total, it is captured, and the order is placed paid and invoiced. Stripe, PhonePe, PayU and PayGlocal: the gateway's own callback verifies the payment and places the order, so once the WebView reaches `successUrl` or `failureUrl` from the initiation, send the initiation `reference`; the response carries the placed order with `paymentStatus: success`, or `paymentStatus: pending` while no order exists. With `reference`, any method returns the order already placed for that cart instead of placing a second one, so the call is safe to repeat.",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"razorpay_order_id\": \"order_P9xYz\",\n    \"razorpay_payment_id\": \"pay_P9xZa\",\n    \"razorpay_signature\": \"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\",\n    \"paypal_order_id\": \"5O190127TN364715T\"\n}",
+                                    "raw": "{\n    \"razorpay_order_id\": \"order_P9xYz\",\n    \"razorpay_payment_id\": \"pay_P9xZa\",\n    \"razorpay_signature\": \"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\",\n    \"paypal_order_id\": \"5O190127TN364715T\",\n    \"reference\": \"12\"\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -2080,7 +2080,7 @@
                                         "initiate"
                                     ]
                                 },
-                                "description": "Call this instead of placing the order when the selected payment method is an online gateway (the place-order response then has `redirect: true`). Uses the cart of the Bearer token; addresses, shipping and payment method must already be saved. The response says how to hand the customer to the gateway: `redirect` (open `redirectUrl`: Stripe, PhonePe, PayGlocal), `form` (POST `formFields` to `formAction`: PayPal Standard, PayU) or `sdk` (open the gateway SDK with `sdkData`: Razorpay, PayPal Smart Button). PayPal Smart Button returns the PayPal `order_id` to hand to the PayPal JS SDK `createOrder` callback, with the `client_id` and `currency` to load the SDK with. Stripe, PhonePe, PayGlocal and PayU create the order on their own return. For Razorpay, PayPal Standard and PayPal Smart Button, call `POST /api/shop/checkout-payments/confirm` after payment."
+                                "description": "Call this instead of placing the order when the selected payment method is an online gateway (the place-order response then has `redirect: true`). Uses the cart of the Bearer token; addresses, shipping and payment method must already be saved. The response says how to hand the customer to the gateway: `redirect` (open `redirectUrl`: Stripe, PhonePe, PayGlocal), `form` (POST `formFields` to `formAction`: PayPal Standard, PayU) or `sdk` (open the gateway SDK with `sdkData`: Razorpay, PayPal Smart Button). PayPal Smart Button returns the PayPal `order_id` to hand to the PayPal JS SDK `createOrder` callback, with the `client_id` and `currency` to load the SDK with. Stripe, PhonePe, PayGlocal and PayU create the order on their own return: open the page in a WebView, watch for `successUrl` (paid) or `failureUrl` (failed, cancelled or still pending), then call `POST /api/shop/checkout-payments/confirm` with `reference` to read the order. For Razorpay, PayPal Standard and PayPal Smart Button, call the same endpoint after payment. `reference` identifies this cart's payment; keep it, as it still resolves after the order is placed."
                             }
                         }
                     ]
@@ -10952,11 +10952,11 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "mutation CreateCheckoutPaymentConfirmation($input: createCheckoutPaymentConfirmationInput!) {\n  createCheckoutPaymentConfirmation(input: $input) {\n    checkoutPaymentConfirmation {\n      id\n      orderId\n      orderIncrementId\n      status\n      success\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"razorpayOrderId\": \"sample\",\n        \"razorpayPaymentId\": \"sample\",\n        \"razorpaySignature\": \"sample\",\n        \"paypalOrderId\": \"sample\"\n    }\n}"
+                                                "query": "mutation CreateCheckoutPaymentConfirmation($input: createCheckoutPaymentConfirmationInput!) {\n  createCheckoutPaymentConfirmation(input: $input) {\n    checkoutPaymentConfirmation {\n      id\n      orderId\n      orderIncrementId\n      status\n      paymentStatus\n      success\n      message\n    }\n    clientMutationId\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"razorpayOrderId\": \"sample\",\n        \"razorpayPaymentId\": \"sample\",\n        \"razorpaySignature\": \"sample\",\n        \"paypalOrderId\": \"sample\",\n        \"reference\": \"sample\"\n    }\n}"
                                             }
                                         },
-                                        "description": "Place the order after a Razorpay, PayPal Standard or PayPal Smart Button payment."
+                                        "description": "Place the order after a Razorpay, PayPal Standard or PayPal Smart Button payment, or read the order a Stripe, PhonePe, PayU or PayGlocal callback placed."
                                     }
                                 },
                                 {
@@ -10986,7 +10986,7 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "mutation CreateCheckoutPaymentInitiation($input: createCheckoutPaymentInitiationInput!) {\n  createCheckoutPaymentInitiation(input: $input) {\n    checkoutPaymentInitiation {\n      id\n      method\n      type\n      redirectUrl\n      formAction\n      formFields\n      sdkData\n    }\n    clientMutationId\n  }\n}\n",
+                                                "query": "mutation CreateCheckoutPaymentInitiation($input: createCheckoutPaymentInitiationInput!) {\n  createCheckoutPaymentInitiation(input: $input) {\n    checkoutPaymentInitiation {\n      id\n      method\n      type\n      reference\n      redirectUrl\n      formAction\n      successUrl\n      failureUrl\n      formFields\n      sdkData\n    }\n    clientMutationId\n  }\n}\n",
                                                 "variables": "{\n    \"input\": {\n        \"paymentMethod\": \"sample\"\n    }\n}"
                                             }
                                         },

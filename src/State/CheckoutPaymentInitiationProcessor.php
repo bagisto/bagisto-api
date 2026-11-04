@@ -63,6 +63,12 @@ class CheckoutPaymentInitiationProcessor implements ProcessorInterface
         }
 
         $result->method = $method;
+        $result->reference = (string) $cart->id;
+
+        if ($result->type !== 'sdk') {
+            $result->success_url = route('shop.checkout.onepage.success');
+            $result->failure_url = route('shop.checkout.cart.index');
+        }
 
         return $result;
     }

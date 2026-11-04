@@ -6,7 +6,11 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Dto\CheckoutPaymentConfirmationInput;
+use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
+use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Facades\CartTokenFacade;
+use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Models\CheckoutPaymentConfirmation;
 use Webkul\BagistoApi\State\Concerns\BuildsPaypalSmartButtonOrder;
 use Webkul\BagistoApi\State\Concerns\ResolvesCheckoutCart;
@@ -30,6 +34,11 @@ class CheckoutPaymentConfirmationProcessor implements ProcessorInterface
     use ResolvesCheckoutCart;
     use ValidatesCheckoutCart;
 
+    /**
+     * Gateways whose own callback verifies the payment and places the order.
+     */
+    private const CALLBACK_METHODS = ['stripe', 'phonepe', 'payu', 'payglocal'];
+
     public function __construct(
         protected OrderRepository $orderRepository,
         protected InvoiceRepository $invoiceRepository,
@@ -38,16 +47,34 @@ class CheckoutPaymentConfirmationProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): CheckoutPaymentConfirmation
     {
+        $input = $this->input($data, $context);
+
+        if ($input['reference'] !== null) {
+            $cart = $this->referencedCart($input['reference']);
+
+            if ($order = $this->orderRepository->findOneWhere(['cart_id' => $cart->id])) {
+                return $this->confirmed($order);
+            }
+
+            if (in_array($cart->payment?->method, self::CALLBACK_METHODS, true)) {
+                return $this->pending();
+            }
+        }
+
         $cart = $this->resolveCheckoutCart();
+
+        if (in_array($cart->payment?->method, self::CALLBACK_METHODS, true)) {
+            return $this->pending();
+        }
 
         $this->assertCartHasNoErrors();
 
         $this->validateOrderCreation($cart);
 
         $order = match ($cart->payment->method) {
-            'razorpay' => $this->confirmRazorpay($cart, $this->input($data, $context)),
+            'razorpay' => $this->confirmRazorpay($cart, $input),
             'paypal_standard' => $this->createOrderFromCart($cart),
-            'paypal_smart_button' => $this->confirmPaypalSmartButton($cart, $this->input($data, $context)['paypal_order_id']),
+            'paypal_smart_button' => $this->confirmPaypalSmartButton($cart, $input['paypal_order_id']),
             default => throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.payment-no-confirmation'), 422),
         };
 
@@ -55,14 +82,51 @@ class CheckoutPaymentConfirmationProcessor implements ProcessorInterface
 
         Event::dispatch('order.created.after', $order);
 
-        $order = $this->orderRepository->find($order->id);
+        return $this->confirmed($this->orderRepository->find($order->id));
+    }
 
+    /**
+     * The caller's cart named by the initiation reference, active or already turned into an order.
+     */
+    private function referencedCart(string $reference): object
+    {
+        $token = TokenHeaderFacade::getAuthorizationBearerToken(request());
+
+        if (! $token) {
+            throw new AuthenticationException(__('bagistoapi::app.graphql.cart.authentication-required'));
+        }
+
+        $cart = ctype_digit($reference) ? CartTokenFacade::getOwnedCart($token, (int) $reference) : null;
+
+        if (! $cart) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.graphql.checkout.payment-reference-not-found'));
+        }
+
+        return $cart;
+    }
+
+    private function confirmed(object $order): CheckoutPaymentConfirmation
+    {
         $result = new CheckoutPaymentConfirmation;
         $result->order_id = $order->id;
         $result->order_increment_id = (string) $order->increment_id;
         $result->status = $order->status;
+        $result->payment_status = 'success';
         $result->success = true;
         $result->message = __('bagistoapi::app.graphql.checkout.payment-confirmed');
+
+        return $result;
+    }
+
+    /**
+     * No order exists yet: the gateway has not reported a completed payment to its callback.
+     */
+    private function pending(): CheckoutPaymentConfirmation
+    {
+        $result = new CheckoutPaymentConfirmation;
+        $result->payment_status = 'pending';
+        $result->success = false;
+        $result->message = __('bagistoapi::app.graphql.checkout.payment-pending');
 
         return $result;
     }
@@ -199,7 +263,7 @@ class CheckoutPaymentConfirmationProcessor implements ProcessorInterface
     }
 
     /**
-     * @return array{razorpay_order_id: ?string, razorpay_payment_id: ?string, razorpay_signature: ?string, paypal_order_id: ?string}
+     * @return array{razorpay_order_id: ?string, razorpay_payment_id: ?string, razorpay_signature: ?string, paypal_order_id: ?string, reference: ?string}
      */
     private function input(mixed $data, array $context): array
     {
@@ -217,6 +281,7 @@ class CheckoutPaymentConfirmationProcessor implements ProcessorInterface
             'razorpay_payment_id' => $value('razorpay_payment_id', 'razorpayPaymentId'),
             'razorpay_signature' => $value('razorpay_signature', 'razorpaySignature'),
             'paypal_order_id' => $value('paypal_order_id', 'paypalOrderId') ?? $this->scalar(request()->input('orderID') ?? request()->input('orderId')),
+            'reference' => $value('reference', 'reference'),
         ];
     }
 

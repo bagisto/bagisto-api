@@ -39,6 +39,75 @@ class CheckoutPaymentTest extends GraphQLTestCase
         expect($response->json('data.createCheckoutPaymentInitiation.checkoutPaymentInitiation.formFields.business'))->toBe('merchant@example.com');
     }
 
+    public function test_initiate_returns_the_reference_and_the_return_pages(): void
+    {
+        $this->enablePaymentMethod('paypal_standard', ['business_account' => 'merchant@example.com']);
+        $customer = $this->readyCart('paypal_standard');
+
+        $response = $this->checkoutGraphQL(<<<'GQL'
+            mutation initiate($input: createCheckoutPaymentInitiationInput!) {
+              createCheckoutPaymentInitiation(input: $input) {
+                checkoutPaymentInitiation {
+                  type
+                  reference
+                  successUrl
+                  failureUrl
+                }
+              }
+            }
+        GQL, ['input' => (object) []]);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $initiation = $response->json('data.createCheckoutPaymentInitiation.checkoutPaymentInitiation');
+
+        expect($initiation['reference'])->toBe((string) $this->activeCartId($customer));
+        expect($initiation['successUrl'])->toBe(route('shop.checkout.onepage.success'));
+        expect($initiation['failureUrl'])->toBe(route('shop.checkout.cart.index'));
+    }
+
+    public function test_confirm_reads_the_order_a_gateway_callback_placed(): void
+    {
+        $this->enableStripe();
+        $customer = $this->readyCart('stripe');
+        $cartId = $this->activeCartId($customer);
+
+        $mutation = <<<'GQL'
+            mutation confirm($input: createCheckoutPaymentConfirmationInput!) {
+              createCheckoutPaymentConfirmation(input: $input) {
+                checkoutPaymentConfirmation {
+                  orderId
+                  orderIncrementId
+                  paymentStatus
+                  success
+                  message
+                }
+              }
+            }
+        GQL;
+
+        $pending = $this->checkoutGraphQL($mutation, ['input' => ['reference' => (string) $cartId]]);
+
+        $pending->assertOk();
+        expect($pending->json('errors'))->toBeNull();
+        expect($pending->json('data.createCheckoutPaymentConfirmation.checkoutPaymentConfirmation.paymentStatus'))->toBe('pending');
+        expect($pending->json('data.createCheckoutPaymentConfirmation.checkoutPaymentConfirmation.orderId'))->toBeNull();
+
+        $order = $this->placeOrderAsGatewayCallback($cartId);
+
+        $confirmed = $this->checkoutGraphQL($mutation, ['input' => ['reference' => (string) $cartId]]);
+
+        $confirmed->assertOk();
+        expect($confirmed->json('errors'))->toBeNull();
+
+        $confirmation = $confirmed->json('data.createCheckoutPaymentConfirmation.checkoutPaymentConfirmation');
+
+        expect($confirmation['paymentStatus'])->toBe('success');
+        expect($confirmation['orderId'])->toBe($order->id);
+        expect($confirmation['orderIncrementId'])->toBe((string) $order->increment_id);
+    }
+
     public function test_initiate_refuses_an_offline_payment_method(): void
     {
         $this->readyCart('cashondelivery');

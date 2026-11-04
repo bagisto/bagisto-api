@@ -60,6 +60,89 @@ class CheckoutPaymentTest extends RestApiTestCase
         $this->assertDatabaseHas('cart', ['id' => $cartId, 'is_active' => 0]);
     }
 
+    public function test_initiate_returns_the_reference_and_the_return_pages(): void
+    {
+        $this->enablePaymentMethod('paypal_standard', ['business_account' => 'merchant@example.com']);
+        $customer = $this->readyCart('paypal_standard');
+
+        $response = $this->checkoutPost('/api/shop/checkout-payments/initiate');
+
+        $response->assertCreated();
+        expect($response->json('reference'))->toBe((string) $this->activeCartId($customer));
+        expect($response->json('successUrl'))->toBe(route('shop.checkout.onepage.success'));
+        expect($response->json('failureUrl'))->toBe(route('shop.checkout.cart.index'));
+    }
+
+    public function test_confirm_returns_the_order_a_gateway_callback_placed(): void
+    {
+        $this->enableStripe();
+        $customer = $this->readyCart('stripe');
+        $cartId = $this->activeCartId($customer);
+
+        $order = $this->placeOrderAsGatewayCallback($cartId);
+
+        $response = $this->checkoutPost('/api/shop/checkout-payments/confirm', ['reference' => (string) $cartId]);
+
+        $response->assertCreated();
+        expect($response->json('paymentStatus'))->toBe('success');
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('orderId'))->toBe($order->id);
+        expect($response->json('orderIncrementId'))->toBe((string) $order->increment_id);
+    }
+
+    public function test_confirm_reports_pending_until_the_gateway_callback_places_the_order(): void
+    {
+        $this->enableStripe();
+        $customer = $this->readyCart('stripe');
+        $cartId = $this->activeCartId($customer);
+
+        $response = $this->checkoutPost('/api/shop/checkout-payments/confirm', ['reference' => (string) $cartId]);
+
+        $response->assertCreated();
+        expect($response->json('paymentStatus'))->toBe('pending');
+        expect($response->json('success'))->toBeFalse();
+        expect($response->json('orderId'))->toBeNull();
+        $this->assertDatabaseMissing('orders', ['cart_id' => $cartId]);
+        $this->assertDatabaseHas('cart', ['id' => $cartId, 'is_active' => 1]);
+    }
+
+    public function test_confirm_without_a_reference_reports_pending_for_a_callback_gateway(): void
+    {
+        $this->enableStripe();
+        $this->readyCart('stripe');
+
+        $response = $this->checkoutPost('/api/shop/checkout-payments/confirm');
+
+        $response->assertCreated();
+        expect($response->json('paymentStatus'))->toBe('pending');
+    }
+
+    public function test_confirm_with_the_reference_is_safe_to_repeat(): void
+    {
+        $this->enablePaymentMethod('paypal_standard', ['business_account' => 'merchant@example.com']);
+        $customer = $this->readyCart('paypal_standard');
+        $cartId = $this->activeCartId($customer);
+
+        $first = $this->checkoutPost('/api/shop/checkout-payments/confirm')->assertCreated();
+        $again = $this->checkoutPost('/api/shop/checkout-payments/confirm', ['reference' => (string) $cartId])->assertCreated();
+
+        expect($again->json('orderId'))->toBe($first->json('orderId'));
+        expect($again->json('paymentStatus'))->toBe('success');
+        expect(DB::table('orders')->where('cart_id', $cartId)->count())->toBe(1);
+    }
+
+    public function test_confirm_refuses_a_reference_of_another_customer(): void
+    {
+        $this->enableStripe();
+        $owner = $this->readyCart('stripe');
+        $cartId = $this->activeCartId($owner);
+        $this->placeOrderAsGatewayCallback($cartId);
+
+        $this->readyCart('stripe');
+
+        $this->checkoutPost('/api/shop/checkout-payments/confirm', ['reference' => (string) $cartId])->assertNotFound();
+    }
+
     public function test_confirm_refuses_an_offline_payment_method(): void
     {
         $this->readyCart('cashondelivery');

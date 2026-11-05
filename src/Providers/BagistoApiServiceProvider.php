@@ -119,6 +119,7 @@ use Webkul\BagistoApi\Http\Middleware\SetAdminApiAuditContext;
 use Webkul\BagistoApi\Http\Middleware\SetLocaleChannel;
 use Webkul\BagistoApi\Http\Middleware\ThrottleAdminApi;
 use Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey;
+use Webkul\BagistoApi\Metadata\AccessorNativeTypePropertyMetadataFactory;
 use Webkul\BagistoApi\Metadata\CustomIdentifiersExtractor;
 use Webkul\BagistoApi\Metadata\PathGatedResourceNameCollectionFactory;
 use Webkul\BagistoApi\Metadata\SourceDocblockPropertyMetadataFactory;
@@ -287,6 +288,13 @@ class BagistoApiServiceProvider extends ServiceProvider
             PropertyMetadataFactoryInterface::class,
             function ($decorated) {
                 return new SourceDocblockPropertyMetadataFactory($decorated);
+            }
+        );
+
+        $this->app->extend(
+            PropertyMetadataFactoryInterface::class,
+            function ($decorated) {
+                return new AccessorNativeTypePropertyMetadataFactory($decorated);
             }
         );
 

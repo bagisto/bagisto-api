@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Customer;
@@ -552,6 +553,90 @@ class CustomerOrderTest extends GraphQLTestCase
             ->toContain('totalQtyOrdered')
             ->toContain('baseCurrencyCode')
             ->toContain('orderCurrencyCode')
-            ->toContain('createdAt');
+            ->toContain('createdAt')
+            ->toContain('hasNonCancelableBooking');
+    }
+
+    /**
+     * Give an order a booking item the customer may not cancel.
+     */
+    private function addNonCancelableBooking(Order $order, Product $product): void
+    {
+        $item = OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'TEST-BOOKING-'.$order->id,
+            'type' => 'booking',
+            'name' => 'Test Booking',
+        ]);
+
+        DB::table('bookings')->insert([
+            'product_id' => $product->id,
+            'order_item_id' => $item->id,
+            'order_id' => $order->id,
+            'qty' => 1,
+            'allow_cancellation' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Test: the collection flags only the order that holds a non-cancelable booking.
+     */
+    public function test_collection_flags_non_cancelable_booking(): void
+    {
+        $testData = $this->createTestData();
+        $this->addNonCancelableBooking($testData['order1'], $testData['product']);
+
+        $query = <<<'GQL'
+            query {
+              customerOrders(first: 10) {
+                edges {
+                  node {
+                    _id
+                    hasNonCancelableBooking
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $flags = collect($response->json('data.customerOrders.edges'))
+            ->pluck('node.hasNonCancelableBooking', 'node._id')
+            ->all();
+
+        expect($flags[$testData['order1']->id])->toBeTrue()
+            ->and($flags[$testData['order2']->id])->toBeFalse();
+    }
+
+    /**
+     * Test: the single order query carries the non-cancelable booking flag.
+     */
+    public function test_item_flags_non_cancelable_booking(): void
+    {
+        $testData = $this->createTestData();
+        $this->addNonCancelableBooking($testData['order1'], $testData['product']);
+
+        foreach ([[$testData['order1'], true], [$testData['order2'], false]] as [$order, $expected]) {
+            $query = <<<GQL
+                query {
+                  customerOrder(id: "/api/shop/customer-orders/{$order->id}") {
+                    _id
+                    hasNonCancelableBooking
+                  }
+                }
+            GQL;
+
+            $response = $this->authenticatedGraphQL($testData['customer'], $query);
+
+            expect($response->json('errors'))->toBeNull()
+                ->and($response->json('data.customerOrder.hasNonCancelableBooking'))->toBe($expected);
+        }
     }
 }

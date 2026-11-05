@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `label` and `swatchAlt` on `AttributeOption`, in the requested locale.
 - Mobile apps can now complete a Stripe, PhonePe, PayU or PayGlocal payment and learn which order was placed. `createCheckoutPaymentInitiation` and `POST /api/shop/checkout-payments/initiate` return a `reference` for the payment, and for redirect and form payments the `successUrl` and `failureUrl` the WebView lands on when the gateway returns. Send that `reference` to `createCheckoutPaymentConfirmation` or `POST /api/shop/checkout-payments/confirm`: the response carries the order the gateway's own callback placed, with `paymentStatus: success`, or `paymentStatus: pending` while no order exists yet. The gateway still verifies the payment on the server, so nothing the app reports is trusted.
 - `paymentStatus` on the payment confirmation, `success` or `pending`.
+- `hasNonCancelableBooking` on customer orders: `true` when the order holds a booking item the customer may not cancel, using the same rule as the storefront. On `customerOrders` and `customerOrder` (GraphQL), and on `GET /api/shop/customer-orders` and `GET /api/shop/customer-orders/{id}`.
 
 ### Changed
 

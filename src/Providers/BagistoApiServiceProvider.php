@@ -32,6 +32,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -107,6 +108,7 @@ use Webkul\BagistoApi\Http\Controllers\DownloadSampleController;
 use Webkul\BagistoApi\Http\Controllers\GdprDataPdfController;
 use Webkul\BagistoApi\Http\Controllers\GraphQLPlaygroundController;
 use Webkul\BagistoApi\Http\Controllers\InvoicePdfController;
+use Webkul\BagistoApi\Http\Controllers\PaypalStandardReturnController;
 use Webkul\BagistoApi\Http\Controllers\SwaggerUIController;
 use Webkul\BagistoApi\Http\Middleware\EnforceAdminApiAuth;
 use Webkul\BagistoApi\Http\Middleware\EnsureJsonContentType;
@@ -989,6 +991,18 @@ class BagistoApiServiceProvider extends ServiceProvider
             ->where('id', '[0-9]+')
             ->middleware(['Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey'])
             ->name('bagistoapi.customer-invoice-pdf');
+
+        Route::match(['get', 'post'], '/api/checkout/paypal-standard/{cartId}/{signature}/success', [PaypalStandardReturnController::class, 'success'])
+            ->where('cartId', '[0-9]+')
+            ->middleware('web')
+            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->name('bagistoapi.paypal-standard.success');
+
+        Route::match(['get', 'post'], '/api/checkout/paypal-standard/{cartId}/{signature}/cancel', [PaypalStandardReturnController::class, 'cancel'])
+            ->where('cartId', '[0-9]+')
+            ->middleware('web')
+            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->name('bagistoapi.paypal-standard.cancel');
 
         Route::get('/api/downloadable/download-sample/{type}/{id}', DownloadSampleController::class)
             ->where('type', 'link|sample')

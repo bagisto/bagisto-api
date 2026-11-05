@@ -41,8 +41,8 @@ class CheckoutPaymentTest extends GraphQLTestCase
 
     public function test_initiate_returns_the_reference_and_the_return_pages(): void
     {
-        $this->enablePaymentMethod('paypal_standard', ['business_account' => 'merchant@example.com']);
-        $customer = $this->readyCart('paypal_standard');
+        $this->enablePayU();
+        $customer = $this->readyCart('payu');
 
         $response = $this->checkoutGraphQL(<<<'GQL'
             mutation initiate($input: createCheckoutPaymentInitiationInput!) {

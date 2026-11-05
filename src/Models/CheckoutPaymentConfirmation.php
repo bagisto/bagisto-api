@@ -34,7 +34,7 @@ use Webkul\BagistoApi\State\CheckoutPaymentConfirmationProcessor;
             openapi: new Operation(
                 tags: ['Checkout'],
                 summary: 'Confirm payment and place the order',
-                description: 'Places the order of the cart of the Bearer token after the customer paid, for Razorpay, PayPal Standard and PayPal Smart Button (the other gateways place the order on their own return). Razorpay: send the three values the Razorpay checkout returns; the signature is verified and the Razorpay order must belong to this cart and amount. PayPal Standard: send an empty body after PayPal returns the customer; as on the storefront the order is created pending and PayPal\'s IPN marks it paid. PayPal Smart Button: send `paypal_order_id` once the customer approved the payment in the PayPal SDK; the PayPal order must belong to this cart and total, it is captured, and the order is placed paid and invoiced. Stripe, PhonePe, PayU and PayGlocal: the gateway\'s own callback verifies the payment and places the order, so once the WebView reaches `successUrl` or `failureUrl` from the initiation, send the initiation `reference`; the response carries the placed order with `paymentStatus: success`, or `paymentStatus: pending` while no order exists. With `reference`, any method returns the order already placed for that cart instead of placing a second one, so the call is safe to repeat.',
+                description: 'Places the order of the cart of the Bearer token after the customer paid, for Razorpay and PayPal Smart Button (the other gateways place the order on their own return). Razorpay: send the three values the Razorpay checkout returns; the signature is verified and the Razorpay order must belong to this cart and amount. PayPal Standard: PayPal returns the customer to the initiation `successUrl`, which places the order pending, as the storefront does; send the initiation `reference`. The response carries the order with `paymentStatus: pending` until PayPal\'s IPN records the payment, then `paymentStatus: success`, so repeat the call until it reports success. After `failureUrl` no order is placed. PayPal Smart Button: send `paypal_order_id` once the customer approved the payment in the PayPal SDK; the PayPal order must belong to this cart and total, it is captured, and the order is placed paid and invoiced. Stripe, PhonePe, PayU and PayGlocal: the gateway\'s own callback verifies the payment and places the order, so once the WebView reaches `successUrl` or `failureUrl` from the initiation, send the initiation `reference`; the response carries the placed order with `paymentStatus: success`, or `paymentStatus: pending` while no order exists. With `reference`, any method returns the order already placed for that cart instead of placing a second one, so the call is safe to repeat.',
                 requestBody: new RequestBody(
                     required: false,
                     content: new \ArrayObject([
@@ -85,7 +85,7 @@ use Webkul\BagistoApi\State\CheckoutPaymentConfirmationProcessor;
                 'allow_extra_attributes' => true,
                 'groups' => ['mutation'],
             ],
-            description: 'Place the order after a Razorpay, PayPal Standard or PayPal Smart Button payment, or read the order a Stripe, PhonePe, PayU or PayGlocal callback placed.',
+            description: 'Place the order after a Razorpay or PayPal Smart Button payment, or read the order a Stripe, PhonePe, PayU, PayGlocal or PayPal Standard return placed.',
         ),
     ],
 )]

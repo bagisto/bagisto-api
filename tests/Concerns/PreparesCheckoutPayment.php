@@ -60,6 +60,15 @@ trait PreparesCheckoutPayment
         ]);
     }
 
+    protected function enablePayU(): void
+    {
+        $this->enablePaymentMethod('payu', [
+            'sandbox' => '1',
+            'merchant_key' => 'payu_test_key',
+            'merchant_salt' => 'payu_test_salt',
+        ]);
+    }
+
     /**
      * Places the cart's order and deactivates the cart, as a Stripe, PhonePe, PayU or PayGlocal
      * callback does once the gateway reports the payment paid.

@@ -346,6 +346,7 @@ return [
             'payment-not-verified' => 'The payment could not be verified.',
             'payment-confirmed' => 'Payment confirmed and order placed.',
             'payment-pending' => 'The payment has not been completed yet. No order has been placed.',
+            'payment-awaiting-confirmation' => 'The order is placed. PayPal has not confirmed the payment yet.',
             'payment-reference-not-found' => 'No payment was found for this reference.',
             'payment-method-mismatch' => 'The payment method does not match the one saved on the cart.',
             'invalid-input' => 'Invalid input data for checkout operation',

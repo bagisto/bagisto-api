@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Illuminate\Support\Facades\DB;
+use Webkul\BagistoApi\Services\PaypalStandardReturnUrl;
 use Webkul\BagistoApi\Tests\Concerns\PreparesCheckoutPayment;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 
@@ -46,7 +47,98 @@ class CheckoutPaymentTest extends RestApiTestCase
         expect($response->json('formFields.business'))->toBe('merchant@example.com');
     }
 
-    public function test_confirm_paypal_standard_places_a_pending_order(): void
+    public function test_initiate_paypal_standard_returns_the_api_return_pages(): void
+    {
+        $this->enablePaymentMethod('paypal_standard', ['business_account' => 'merchant@example.com']);
+        $customer = $this->readyCart('paypal_standard');
+        $cartId = $this->activeCartId($customer);
+
+        $response = $this->checkoutPost('/api/shop/checkout-payments/initiate');
+
+        $response->assertCreated();
+        expect($response->json('successUrl'))->toBe(route('shop.checkout.onepage.success'));
+        expect($response->json('failureUrl'))->toBe(route('shop.checkout.cart.index'));
+        expect($response->json('formFields.return'))->toBe(PaypalStandardReturnUrl::success($cartId));
+        expect($response->json('formFields.cancel_return'))->toBe(PaypalStandardReturnUrl::cancel($cartId));
+        expect($response->json('formFields.notify_url'))->toBe(route('paypal.standard.ipn'));
+    }
+
+    public function test_paypal_standard_return_places_the_order_and_confirm_reports_it_pending(): void
+    {
+        $this->enablePaymentMethod('paypal_standard', ['business_account' => 'merchant@example.com']);
+        $customer = $this->readyCart('paypal_standard');
+        $cartId = $this->activeCartId($customer);
+
+        $this->get(PaypalStandardReturnUrl::success($cartId).'?tx=TX1&st=Completed')->assertRedirect(route('shop.checkout.onepage.success'));
+
+        $this->assertDatabaseHas('orders', ['cart_id' => $cartId, 'status' => 'pending']);
+        $this->assertDatabaseHas('cart', ['id' => $cartId, 'is_active' => 0]);
+
+        $response = $this->checkoutPost('/api/shop/checkout-payments/confirm', ['reference' => (string) $cartId]);
+
+        $response->assertCreated();
+        expect($response->json('paymentStatus'))->toBe('pending');
+        expect($response->json('success'))->toBeFalse();
+        expect($response->json('orderId'))->not->toBeNull();
+    }
+
+    public function test_paypal_standard_confirm_reports_success_once_paypal_recorded_the_payment(): void
+    {
+        $this->enablePaymentMethod('paypal_standard', ['business_account' => 'merchant@example.com']);
+        $customer = $this->readyCart('paypal_standard');
+        $cartId = $this->activeCartId($customer);
+
+        $this->get(PaypalStandardReturnUrl::success($cartId))->assertRedirect(route('shop.checkout.onepage.success'));
+
+        $orderId = (int) DB::table('orders')->where('cart_id', $cartId)->value('id');
+
+        DB::table('order_transactions')->insert([
+            'transaction_id' => 'TX1',
+            'status' => 'Completed',
+            'type' => 'instant',
+            'payment_method' => 'paypal_standard',
+            'order_id' => $orderId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->checkoutPost('/api/shop/checkout-payments/confirm', ['reference' => (string) $cartId]);
+
+        $response->assertCreated();
+        expect($response->json('paymentStatus'))->toBe('success');
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('orderId'))->toBe($orderId);
+    }
+
+    public function test_paypal_standard_return_is_safe_to_repeat(): void
+    {
+        $this->enablePaymentMethod('paypal_standard', ['business_account' => 'merchant@example.com']);
+        $customer = $this->readyCart('paypal_standard');
+        $cartId = $this->activeCartId($customer);
+
+        $this->get(PaypalStandardReturnUrl::success($cartId))->assertRedirect(route('shop.checkout.onepage.success'));
+        $this->get(PaypalStandardReturnUrl::success($cartId))->assertRedirect(route('shop.checkout.onepage.success'));
+
+        expect(DB::table('orders')->where('cart_id', $cartId)->count())->toBe(1);
+    }
+
+    public function test_paypal_standard_cancel_places_no_order(): void
+    {
+        $this->enablePaymentMethod('paypal_standard', ['business_account' => 'merchant@example.com']);
+        $customer = $this->readyCart('paypal_standard');
+        $cartId = $this->activeCartId($customer);
+
+        $this->get(PaypalStandardReturnUrl::cancel($cartId))->assertRedirect(route('shop.checkout.cart.index'));
+
+        $response = $this->checkoutPost('/api/shop/checkout-payments/confirm', ['reference' => (string) $cartId]);
+
+        expect($response->json('paymentStatus'))->toBe('pending');
+        expect($response->json('orderId'))->toBeNull();
+        $this->assertDatabaseMissing('orders', ['cart_id' => $cartId]);
+        $this->assertDatabaseHas('cart', ['id' => $cartId, 'is_active' => 1]);
+    }
+
+    public function test_paypal_standard_confirm_without_return_places_no_order(): void
     {
         $this->enablePaymentMethod('paypal_standard', ['business_account' => 'merchant@example.com']);
         $customer = $this->readyCart('paypal_standard');
@@ -54,16 +146,25 @@ class CheckoutPaymentTest extends RestApiTestCase
 
         $response = $this->checkoutPost('/api/shop/checkout-payments/confirm');
 
-        $response->assertCreated();
-        expect($response->json('status'))->toBe('pending');
-        $this->assertDatabaseHas('orders', ['id' => $response->json('orderId'), 'cart_id' => $cartId]);
-        $this->assertDatabaseHas('cart', ['id' => $cartId, 'is_active' => 0]);
+        expect($response->json('paymentStatus'))->toBe('pending');
+        $this->assertDatabaseMissing('orders', ['cart_id' => $cartId]);
+    }
+
+    public function test_paypal_standard_return_refuses_a_forged_signature(): void
+    {
+        $this->enablePaymentMethod('paypal_standard', ['business_account' => 'merchant@example.com']);
+        $customer = $this->readyCart('paypal_standard');
+        $cartId = $this->activeCartId($customer);
+
+        $this->get('/api/checkout/paypal-standard/'.$cartId.'/forged/success')->assertNotFound();
+
+        $this->assertDatabaseMissing('orders', ['cart_id' => $cartId]);
     }
 
     public function test_initiate_returns_the_reference_and_the_return_pages(): void
     {
-        $this->enablePaymentMethod('paypal_standard', ['business_account' => 'merchant@example.com']);
-        $customer = $this->readyCart('paypal_standard');
+        $this->enablePayU();
+        $customer = $this->readyCart('payu');
 
         $response = $this->checkoutPost('/api/shop/checkout-payments/initiate');
 
@@ -119,11 +220,12 @@ class CheckoutPaymentTest extends RestApiTestCase
 
     public function test_confirm_with_the_reference_is_safe_to_repeat(): void
     {
-        $this->enablePaymentMethod('paypal_standard', ['business_account' => 'merchant@example.com']);
-        $customer = $this->readyCart('paypal_standard');
+        $this->enableStripe();
+        $customer = $this->readyCart('stripe');
         $cartId = $this->activeCartId($customer);
+        $this->placeOrderAsGatewayCallback($cartId);
 
-        $first = $this->checkoutPost('/api/shop/checkout-payments/confirm')->assertCreated();
+        $first = $this->checkoutPost('/api/shop/checkout-payments/confirm', ['reference' => (string) $cartId])->assertCreated();
         $again = $this->checkoutPost('/api/shop/checkout-payments/confirm', ['reference' => (string) $cartId])->assertCreated();
 
         expect($again->json('orderId'))->toBe($first->json('orderId'));

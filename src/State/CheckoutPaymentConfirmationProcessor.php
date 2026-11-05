@@ -25,8 +25,8 @@ use Webkul\Sales\Repositories\OrderRepository;
 use Webkul\Sales\Repositories\OrderTransactionRepository;
 
 /**
- * Places the order after payment, mirroring RazorpayController::paymentSuccess, PayPal's
- * StandardController::success and SmartButtonController::captureOrder, which read the session cart.
+ * Places the order after payment, mirroring RazorpayController::paymentSuccess and PayPal's
+ * SmartButtonController::captureOrder, which read the session cart.
  */
 class CheckoutPaymentConfirmationProcessor implements ProcessorInterface
 {
@@ -37,7 +37,7 @@ class CheckoutPaymentConfirmationProcessor implements ProcessorInterface
     /**
      * Gateways whose own callback verifies the payment and places the order.
      */
-    private const CALLBACK_METHODS = ['stripe', 'phonepe', 'payu', 'payglocal'];
+    private const CALLBACK_METHODS = ['stripe', 'phonepe', 'payu', 'payglocal', 'paypal_standard'];
 
     public function __construct(
         protected OrderRepository $orderRepository,
@@ -73,7 +73,6 @@ class CheckoutPaymentConfirmationProcessor implements ProcessorInterface
 
         $order = match ($cart->payment->method) {
             'razorpay' => $this->confirmRazorpay($cart, $input),
-            'paypal_standard' => $this->createOrderFromCart($cart),
             'paypal_smart_button' => $this->confirmPaypalSmartButton($cart, $input['paypal_order_id']),
             default => throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.payment-no-confirmation'), 422),
         };
@@ -111,11 +110,30 @@ class CheckoutPaymentConfirmationProcessor implements ProcessorInterface
         $result->order_id = $order->id;
         $result->order_increment_id = (string) $order->increment_id;
         $result->status = $order->status;
+
+        if (! $this->isPaid($order)) {
+            $result->payment_status = 'pending';
+            $result->success = false;
+            $result->message = __('bagistoapi::app.graphql.checkout.payment-awaiting-confirmation');
+
+            return $result;
+        }
+
         $result->payment_status = 'success';
         $result->success = true;
         $result->message = __('bagistoapi::app.graphql.checkout.payment-confirmed');
 
         return $result;
+    }
+
+    /**
+     * A PayPal Standard order is placed before payment is verified; it is paid once PayPal's IPN
+     * records the transaction. Every other gateway places the order only after verifying payment.
+     */
+    private function isPaid(object $order): bool
+    {
+        return $order->payment?->method !== 'paypal_standard'
+            || $order->transactions()->exists();
     }
 
     /**

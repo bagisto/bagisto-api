@@ -4500,7 +4500,7 @@ type Mutation {
   "Create order from cart. Validates all required fields and creates order. Returns order ID and redirect URL if payment redirect required."
   createCheckoutOrder(input: createCheckoutOrderInput!): createCheckoutOrderPayload
 
-  "Place the order after a Razorpay, PayPal Standard or PayPal Smart Button payment, or read the order a Stripe, PhonePe, PayU or PayGlocal callback placed."
+  "Place the order after a Razorpay or PayPal Smart Button payment, or read the order a Stripe, PhonePe, PayU, PayGlocal or PayPal Standard return placed."
   createCheckoutPaymentConfirmation(input: createCheckoutPaymentConfirmationInput!): createCheckoutPaymentConfirmationPayload
 
   "Start payment for the selected online payment method of the cart of the Bearer token."
@@ -5551,7 +5551,7 @@ type createCheckoutOrderPayloadData implements Node {
   message: String
 }
 
-"Place the order after a Razorpay, PayPal Standard or PayPal Smart Button payment, or read the order a Stripe, PhonePe, PayU or PayGlocal callback placed."
+"Place the order after a Razorpay or PayPal Smart Button payment, or read the order a Stripe, PhonePe, PayU, PayGlocal or PayPal Standard return placed."
 input createCheckoutPaymentConfirmationInput {
   "Razorpay only: razorpay_order_id from the Razorpay checkout response."
   razorpayOrderId: String
@@ -5570,13 +5570,13 @@ input createCheckoutPaymentConfirmationInput {
   clientMutationId: String
 }
 
-"Place the order after a Razorpay, PayPal Standard or PayPal Smart Button payment, or read the order a Stripe, PhonePe, PayU or PayGlocal callback placed."
+"Place the order after a Razorpay or PayPal Smart Button payment, or read the order a Stripe, PhonePe, PayU, PayGlocal or PayPal Standard return placed."
 type createCheckoutPaymentConfirmationPayload {
   checkoutPaymentConfirmation: createCheckoutPaymentConfirmationPayloadData
   clientMutationId: String
 }
 
-"Place the order after a Razorpay, PayPal Standard or PayPal Smart Button payment, or read the order a Stripe, PhonePe, PayU or PayGlocal callback placed."
+"Place the order after a Razorpay or PayPal Smart Button payment, or read the order a Stripe, PhonePe, PayU, PayGlocal or PayPal Standard return placed."
 type createCheckoutPaymentConfirmationPayloadData implements Node {
   id: ID!
   orderId: Int

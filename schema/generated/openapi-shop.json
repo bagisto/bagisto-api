@@ -6457,16 +6457,34 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "Payment verified and order created or already settled.",
+                        "description": "The order of the payment, or no order yet.",
                         "content": {
                             "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/CheckoutPaymentConfirmation-mutation"
-                                }
-                            },
-                            "text/html": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/CheckoutPaymentConfirmation.html-mutation"
+                                "examples": {
+                                    "success": {
+                                        "summary": "Paid and placed",
+                                        "value": {
+                                            "success": true,
+                                            "cartId": 12,
+                                            "orderId": "42",
+                                            "orderIncrementId": "42",
+                                            "status": "processing",
+                                            "paymentStatus": "success",
+                                            "message": "Payment confirmed and order placed."
+                                        }
+                                    },
+                                    "pending": {
+                                        "summary": "No order yet",
+                                        "value": {
+                                            "success": false,
+                                            "cartId": 12,
+                                            "orderId": null,
+                                            "orderIncrementId": null,
+                                            "status": null,
+                                            "paymentStatus": "pending",
+                                            "message": "The payment has not been completed yet. No order has been placed."
+                                        }
+                                    }
                                 }
                             }
                         },
@@ -6477,7 +6495,7 @@
                         "links": []
                     },
                     "401": {
-                        "description": "The `X-STOREFRONT-KEY` header is missing (`missing_key`), or no bearer token (a guest cart token or a customer token) was sent (a problem document).",
+                        "description": "A bearer cart token is required.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -6544,13 +6562,16 @@
                             }
                         }
                     },
+                    "404": {
+                        "description": "The reference is not a cart of the bearer token, or the bearer has no active cart."
+                    },
                     "422": {
-                        "description": "Missing, unpaid, invalid, or cart-mismatched Stripe session.",
+                        "description": "The payment method needs no confirmation, a required value is missing, or the payment could not be verified.",
                         "links": []
                     }
                 },
-                "summary": "Confirm a Stripe checkout payment",
-                "description": "Verifies the Stripe Checkout Session server-side (paid, same cart, same amount and currency) and returns the order for the cart identified by the bearer token. Repeatable: when the Stripe webhook or an earlier call already placed the order, that order is returned and no second order is created.",
+                "summary": "Confirm a payment and return its order",
+                "description": "Returns the order of a payment started with `POST /api/shop/checkout-payments/initiate`, for the cart of the Bearer token. Stripe, PhonePe, PayGlocal, PayU and PayPal Standard: the gateway's own return places the order, so once the WebView reaches `successUrl` or `failureUrl` send `reference`; the answer carries the order with `paymentStatus: success`, or `paymentStatus: pending` while no order exists yet. A PayPal Standard order is placed when PayPal returns the customer and stays `paymentStatus: pending` until PayPal's IPN records the payment, so repeat the call until it reports success. Stripe also accepts `sessionId`, which verifies the session and places the order when neither the webhook nor the return did. Razorpay: send the three values the Razorpay checkout returns; the signature, the Razorpay order and the payment are verified against Razorpay before the order is placed paid and invoiced. PayPal Smart Button: send `paypalOrderId` once the customer approved the payment; the PayPal order must belong to this cart and total, it is captured, and the order is placed paid and invoiced. Nothing the app reports is trusted. Repeatable: once an order exists for the cart, every call returns it and no second order is placed.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
@@ -6615,13 +6636,52 @@
                         "application/json": {
                             "schema": {
                                 "type": "object",
-                                "required": [
-                                    "sessionId"
-                                ],
                                 "properties": {
+                                    "reference": {
+                                        "type": "string",
+                                        "example": "12"
+                                    },
                                     "sessionId": {
                                         "type": "string",
                                         "example": "cs_test_123"
+                                    },
+                                    "razorpayOrderId": {
+                                        "type": "string",
+                                        "example": "order_P9xYz"
+                                    },
+                                    "razorpayPaymentId": {
+                                        "type": "string",
+                                        "example": "pay_P9xZa"
+                                    },
+                                    "razorpaySignature": {
+                                        "type": "string",
+                                        "example": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+                                    },
+                                    "paypalOrderId": {
+                                        "type": "string",
+                                        "example": "5O190127TN364715T"
+                                    }
+                                }
+                            },
+                            "examples": {
+                                "reference": {
+                                    "summary": "Stripe, PhonePe, PayGlocal, PayU, PayPal Standard",
+                                    "value": {
+                                        "reference": "12"
+                                    }
+                                },
+                                "razorpay": {
+                                    "summary": "Razorpay",
+                                    "value": {
+                                        "razorpayOrderId": "order_P9xYz",
+                                        "razorpayPaymentId": "pay_P9xZa",
+                                        "razorpaySignature": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+                                    }
+                                },
+                                "paypal_smart_button": {
+                                    "summary": "PayPal Smart Button",
+                                    "value": {
+                                        "paypalOrderId": "5O190127TN364715T"
                                     }
                                 }
                             }
@@ -6649,15 +6709,97 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "The Stripe Checkout Session was created.",
+                        "description": "What the client needs to start the payment.",
                         "content": {
                             "application/json": {
-                                "example": {
-                                    "success": true,
-                                    "cartId": 12,
-                                    "sessionId": "cs_test_123",
-                                    "redirectUrl": "https://checkout.stripe.com/c/pay/cs_test_123",
-                                    "message": "This payment method requires the shopper to complete payment on the gateway. Send them to redirectUrl; the order is created once the gateway confirms the payment."
+                                "examples": {
+                                    "redirect": {
+                                        "summary": "Stripe, PhonePe, PayGlocal",
+                                        "value": {
+                                            "success": true,
+                                            "cartId": 12,
+                                            "method": "stripe",
+                                            "type": "redirect",
+                                            "reference": "12",
+                                            "sessionId": "cs_test_a1b2c3",
+                                            "redirectUrl": "https://checkout.stripe.com/c/pay/cs_test_a1b2c3",
+                                            "formAction": null,
+                                            "formFields": null,
+                                            "sdkData": null,
+                                            "successUrl": "https://example.com/checkout/onepage/success",
+                                            "failureUrl": "https://example.com/checkout/cart",
+                                            "message": "Payment started. Hand the customer to the gateway."
+                                        }
+                                    },
+                                    "form": {
+                                        "summary": "PayU, PayPal Standard",
+                                        "value": {
+                                            "success": true,
+                                            "cartId": 12,
+                                            "method": "payu",
+                                            "type": "form",
+                                            "reference": "12",
+                                            "sessionId": null,
+                                            "redirectUrl": null,
+                                            "formAction": "https://test.payu.in/_payment",
+                                            "formFields": {
+                                                "key": "gtKFFx",
+                                                "txnid": "12_1730798400",
+                                                "amount": "109.00",
+                                                "hash": "a1b2c3"
+                                            },
+                                            "sdkData": null,
+                                            "successUrl": "https://example.com/checkout/onepage/success",
+                                            "failureUrl": "https://example.com/checkout/cart",
+                                            "message": "Payment started. Hand the customer to the gateway."
+                                        }
+                                    },
+                                    "razorpay": {
+                                        "summary": "Razorpay",
+                                        "value": {
+                                            "success": true,
+                                            "cartId": 12,
+                                            "method": "razorpay",
+                                            "type": "sdk",
+                                            "reference": "12",
+                                            "sessionId": null,
+                                            "redirectUrl": null,
+                                            "formAction": null,
+                                            "formFields": null,
+                                            "sdkData": {
+                                                "key": "rzp_test_xxxxx",
+                                                "amount": 10900,
+                                                "currency": "INR",
+                                                "order_id": "order_P9xYz"
+                                            },
+                                            "successUrl": null,
+                                            "failureUrl": null,
+                                            "message": "Payment started. Hand the customer to the gateway."
+                                        }
+                                    },
+                                    "paypal_smart_button": {
+                                        "summary": "PayPal Smart Button",
+                                        "value": {
+                                            "success": true,
+                                            "cartId": 12,
+                                            "method": "paypal_smart_button",
+                                            "type": "sdk",
+                                            "reference": "12",
+                                            "sessionId": null,
+                                            "redirectUrl": null,
+                                            "formAction": null,
+                                            "formFields": null,
+                                            "sdkData": {
+                                                "orderId": "5O190127TN364715T",
+                                                "clientId": "AbCdEf-sandbox-client-id",
+                                                "currency": "USD",
+                                                "intent": "capture"
+                                            },
+                                            "successUrl": null,
+                                            "failureUrl": null,
+                                            "message": "Payment started. Hand the customer to the gateway."
+                                        }
+                                    }
                                 }
                             }
                         },
@@ -6739,12 +6881,12 @@
                         "description": "The bearer token has no active cart."
                     },
                     "422": {
-                        "description": "The cart is not paying with Stripe, Stripe is not available, or the cart is not ready to be paid.",
+                        "description": "The cart is not ready, its payment method is not an online gateway or is not configured, the store currency is not supported, or the gateway refused the payment.",
                         "links": []
                     }
                 },
-                "summary": "Start a Stripe checkout payment",
-                "description": "Creates a Stripe Checkout Session for the cart identified by the bearer token, after the checkout-order call answered with redirect true. Open redirectUrl for the shopper to pay, then send sessionId to POST /api/shop/checkout-payments/confirm. Send an empty JSON body `{}`.",
+                "summary": "Start payment for an online payment method",
+                "description": "Starts payment for the online payment method saved on the cart of the Bearer token, instead of placing the order. Addresses, shipping method and payment method must already be saved. `type` says how to hand the customer to the gateway: `redirect` (open `redirectUrl`: Stripe, PhonePe, PayGlocal), `form` (POST `formFields` to `formAction`: PayU, PayPal Standard) or `sdk` (open the gateway SDK with `sdkData`: Razorpay, PayPal Smart Button). For `redirect` and `form`, open the page in a WebView and watch for `successUrl` (paid) or `failureUrl` (failed or cancelled); the gateway's own return places the order. Then call `POST /api/shop/checkout-payments/confirm` with `reference` to read it. For `sdk`, call the same endpoint with what the SDK returned. `reference` identifies this cart's payment and still resolves after the order is placed. Cash on delivery and money transfer are placed with `POST /api/shop/checkout-orders` instead. Stripe also returns `sessionId`, which the confirmation still accepts.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
@@ -6809,7 +6951,13 @@
                         "application/json": {
                             "schema": {
                                 "type": "object",
-                                "properties": []
+                                "properties": {
+                                    "paymentMethod": {
+                                        "type": "string",
+                                        "description": "Optional. When sent, it must match the payment method saved on the cart.",
+                                        "example": "razorpay"
+                                    }
+                                }
                             },
                             "example": []
                         }
@@ -35310,60 +35458,6 @@
                     }
                 }
             },
-            "CheckoutPaymentConfirmation-mutation": {
-                "type": "object",
-                "properties": {
-                    "success": {
-                        "readOnly": true,
-                        "type": "boolean"
-                    },
-                    "cartId": {
-                        "readOnly": true,
-                        "type": [
-                            "integer",
-                            "null"
-                        ]
-                    },
-                    "orderId": {
-                        "readOnly": true,
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "message": {
-                        "readOnly": true,
-                        "type": "string"
-                    }
-                }
-            },
-            "CheckoutPaymentConfirmation.html-mutation": {
-                "type": "object",
-                "properties": {
-                    "success": {
-                        "readOnly": true,
-                        "type": "boolean"
-                    },
-                    "cartId": {
-                        "readOnly": true,
-                        "type": [
-                            "integer",
-                            "null"
-                        ]
-                    },
-                    "orderId": {
-                        "readOnly": true,
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "message": {
-                        "readOnly": true,
-                        "type": "string"
-                    }
-                }
-            },
             "CustomerDownloadableProduct": {
                 "type": "object",
                 "properties": {
@@ -36325,6 +36419,12 @@
                             "null"
                         ]
                     },
+                    "hasNonCancelableBooking": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
                     "canReorder": {
                         "type": [
                             "boolean",
@@ -36796,6 +36896,12 @@
                             "null"
                         ]
                     },
+                    "hasNonCancelableBooking": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
                     "canReorder": {
                         "type": [
                             "boolean",
@@ -36990,6 +37096,12 @@
                             "string",
                             "null"
                         ]
+                    },
+                    "hasNonCancelableBooking": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
                     }
                 }
             },
@@ -37131,6 +37243,12 @@
                     "updatedAt": {
                         "type": [
                             "string",
+                            "null"
+                        ]
+                    },
+                    "hasNonCancelableBooking": {
+                        "type": [
+                            "boolean",
                             "null"
                         ]
                     }

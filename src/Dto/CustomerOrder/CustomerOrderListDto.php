@@ -127,4 +127,9 @@ class CustomerOrderListDto
      * The updated at.
      */
     public ?string $updated_at = null;
+
+    /**
+     * Whether the order holds an item the customer may not cancel, such as a booking without cancellation.
+     */
+    public ?bool $has_non_cancelable_booking = null;
 }

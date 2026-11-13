@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => '无效的输入数据',
             'email-required' => '需要电子邮箱',
             'reset-link-sent' => '重置链接已成功发送至您的电子邮箱',
-            'email-not-found' => '未找到电子邮箱地址',
-            'throttled' => '重置尝试次数过多。请稍候再试。',
-            'error-sending-reset-link' => '发送重置链接时发生错误',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => '删除账户需要提供您的密码',
             'delete-password-incorrect' => '您输入的密码不正确',
             'delete-has-active-orders' => '您有待处理或处理中的订单，无法删除账户',
+            'delete-success' => '您的账户已成功删除。',
             'unauthenticated' => '未通过身份验证。请登录以执行此操作',
             'id-required' => '需要客户ID',
             'invalid-id-format' => 'ID格式无效。应为类似"/api/admin/customers/1"的IRI格式或数字ID',

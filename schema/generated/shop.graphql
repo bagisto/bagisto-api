@@ -1376,6 +1376,7 @@ type CheckoutAddress implements Node {
   billingPhoneNumber: String
   billingPostcode: String
   billingState: String
+  billingVatId: String
   cartToken: String
   customerId: Int
   id: ID!
@@ -5165,6 +5166,9 @@ input createCheckoutAddressInput {
 
   "Billing state"
   billingState: String
+
+  "Billing VAT id, validated against the billing country"
+  billingVatId: String
   clientMutationId: String
 
   "Payment cancel callback URL"
@@ -5235,6 +5239,7 @@ type createCheckoutAddressPayloadData implements Node {
   billingPhoneNumber: String
   billingPostcode: String
   billingState: String
+  billingVatId: String
   cartToken: String
   customerId: Int
   id: ID!
@@ -5283,6 +5288,9 @@ input createCheckoutOrderInput {
 
   "Billing state"
   billingState: String
+
+  "Billing VAT id, validated against the billing country"
+  billingVatId: String
   clientMutationId: String
 
   "Payment cancel callback URL"
@@ -5433,6 +5441,9 @@ input createCheckoutPaymentMethodInput {
 
   "Billing state"
   billingState: String
+
+  "Billing VAT id, validated against the billing country"
+  billingVatId: String
   clientMutationId: String
 
   "Payment cancel callback URL"
@@ -5565,6 +5576,9 @@ input createCheckoutShippingMethodInput {
 
   "Billing state"
   billingState: String
+
+  "Billing VAT id, validated against the billing country"
+  billingVatId: String
   clientMutationId: String
 
   "Payment cancel callback URL"
@@ -7669,6 +7683,9 @@ input createMutationCheckoutAddressInput {
 
   "Billing state"
   billingState: String
+
+  "Billing VAT id, validated against the billing country"
+  billingVatId: String
   clientMutationId: String
 
   "Payment cancel callback URL"

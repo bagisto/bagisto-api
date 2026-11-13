@@ -28,6 +28,7 @@ use Webkul\Checkout\Repositories\CartRepository;
 use Webkul\Core\Rules\PhoneNumber;
 use Webkul\Core\Rules\PostCode;
 use Webkul\Customer\Repositories\CustomerRepository;
+use Webkul\Customer\Rules\VatIdRule;
 use Webkul\Payment\Facades\Payment;
 use Webkul\Sales\Repositories\OrderRepository;
 use Webkul\Shipping\Facades\Shipping;
@@ -197,7 +198,10 @@ class CheckoutProcessor implements ProcessorInterface
     {
         $address = $input->{$type.'Address'};
 
+        $vatId = $type === 'billing' ? ['vat_id' => $input->billingVatId] : [];
+
         return [
+            ...$vatId,
             'company_name' => $input->{$type.'CompanyName'},
             'first_name' => $input->{$type.'FirstName'},
             'last_name' => $input->{$type.'LastName'},
@@ -246,6 +250,11 @@ class CheckoutProcessor implements ProcessorInterface
                 "{$type}.postcode" => "{$type}Postcode",
                 "{$type}.phone" => "{$type}PhoneNumber",
             ];
+        }
+
+        if (isset($params['billing'])) {
+            $rules['billing.vat_id'] = [(new VatIdRule)->setCountry($params['billing']['country'] ?? null)];
+            $attributes['billing.vat_id'] = 'billingVatId';
         }
 
         $validator = Validator::make($params, $rules, [], $attributes);
@@ -491,7 +500,7 @@ class CheckoutProcessor implements ProcessorInterface
         }
 
         $fields = [
-            'billingFirstName', 'billingLastName', 'billingEmail', 'billingCompanyName',
+            'billingFirstName', 'billingLastName', 'billingEmail', 'billingCompanyName', 'billingVatId',
             'billingAddress', 'billingCountry', 'billingState', 'billingCity',
             'billingPostcode', 'billingPhoneNumber',
             'shippingFirstName', 'shippingLastName', 'shippingEmail', 'shippingCompanyName',
@@ -542,6 +551,7 @@ class CheckoutProcessor implements ProcessorInterface
             $output->billingLastName = (string) ($billingAddress->last_name ?? '');
             $output->billingEmail = (string) ($billingAddress->email ?? '');
             $output->billingCompanyName = (string) ($billingAddress->company_name ?? '');
+            $output->billingVatId = $billingAddress->vat_id;
             $output->billingAddress = (string) ($billingAddress->address ?? '');
             $output->billingCountry = (string) ($billingAddress->country ?? '');
             $output->billingState = (string) ($billingAddress->state ?? '');
@@ -584,6 +594,7 @@ class CheckoutProcessor implements ProcessorInterface
                 $output->billingLastName = $billingAddress->last_name;
                 $output->billingEmail = $billingAddress->email;
                 $output->billingCompanyName = $billingAddress->company_name;
+                $output->billingVatId = $billingAddress->vat_id;
                 $output->billingAddress = $billingAddress->address;
                 $output->billingCountry = $billingAddress->country;
                 $output->billingState = $billingAddress->state;

@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Invalid input data',
             'email-required' => 'Email is required',
             'reset-link-sent' => 'Reset link sent successfully to your email',
-            'email-not-found' => 'Email address not found',
-            'throttled' => 'Too many reset attempts. Please wait before trying again.',
-            'error-sending-reset-link' => 'An error occurred while sending reset link',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Your password is required to delete your account',
             'delete-password-incorrect' => 'The password you entered is incorrect',
             'delete-has-active-orders' => 'Your account cannot be deleted while you have pending or processing orders',
+            'delete-success' => 'Your account has been deleted successfully.',
             'unauthenticated' => 'Unauthenticated. Please login to perform this action',
             'id-required' => 'Customer ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/admin/customers/1" or numeric ID',

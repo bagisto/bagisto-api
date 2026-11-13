@@ -19,6 +19,7 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
     operations: [
         new Post(
             uriTemplate: '/customer-profile-deletes/{id}',
+            status: 200,
             processor: CustomerProfileProcessor::class,
             openapi: new Operation(
                 tags: ['Customer'],
@@ -46,13 +47,19 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
                     ]),
                 ),
                 responses: [
-                    '201' => new Response(
+                    '200' => new Response(
                         description: 'Customer account deleted',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => [],
+                                'example' => [
+                                    'success' => true,
+                                    'message' => 'Your account has been deleted successfully.',
+                                ],
                             ],
                         ]),
+                    ),
+                    '422' => new Response(
+                        description: 'The password is missing or incorrect, or the customer has pending or processing orders',
                     ),
                 ],
             ),

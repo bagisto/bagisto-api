@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Nieprawidłowe dane wejściowe',
             'email-required' => 'Adres e-mail jest wymagany',
             'reset-link-sent' => 'Link do resetowania został pomyślnie wysłany na Twój adres e-mail',
-            'email-not-found' => 'Adres e-mail nie znaleziony',
-            'throttled' => 'Zbyt wiele prób resetowania. Odczekaj chwilę przed ponowną próbą.',
-            'error-sending-reset-link' => 'Wystąpił błąd podczas wysyłania linku resetującego',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Do usunięcia konta wymagane jest Twoje hasło',
             'delete-password-incorrect' => 'Wprowadzone hasło jest nieprawidłowe',
             'delete-has-active-orders' => 'Nie można usunąć konta, dopóki masz zamówienia oczekujące lub w trakcie realizacji',
+            'delete-success' => 'Twoje konto zostało pomyślnie usunięte.',
             'unauthenticated' => 'Nieuwierzytelniony. Zaloguj się, aby wykonać tę akcję',
             'id-required' => 'Identyfikator klienta jest wymagany',
             'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/admin/customers/1" lub identyfikator liczbowy',

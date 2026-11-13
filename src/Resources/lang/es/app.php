@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Datos de entrada inválidos',
             'email-required' => 'El correo electrónico es obligatorio',
             'reset-link-sent' => 'Enlace de restablecimiento enviado correctamente a su correo electrónico',
-            'email-not-found' => 'Dirección de correo electrónico no encontrada',
-            'throttled' => 'Demasiados intentos de restablecimiento. Espere antes de volver a intentarlo.',
-            'error-sending-reset-link' => 'Ocurrió un error al enviar el enlace de restablecimiento',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Se requiere su contraseña para eliminar su cuenta',
             'delete-password-incorrect' => 'La contraseña que ingresó es incorrecta',
             'delete-has-active-orders' => 'Su cuenta no se puede eliminar mientras tenga pedidos pendientes o en proceso',
+            'delete-success' => 'Tu cuenta se ha eliminado correctamente.',
             'unauthenticated' => 'No autenticado. Por favor, inicie sesión para realizar esta acción',
             'id-required' => 'El ID del cliente es obligatorio',
             'invalid-id-format' => 'Formato de ID inválido. Se esperaba formato IRI como "/api/admin/customers/1" o ID numérico',

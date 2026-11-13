@@ -5566,6 +5566,7 @@
                                     "billingLastName": "Doe",
                                     "billingEmail": "john@example.com",
                                     "billingCompanyName": "",
+                                    "billingVatId": null,
                                     "billingAddress": "123 Main St",
                                     "billingCountry": "US",
                                     "billingState": "NY",
@@ -5761,6 +5762,11 @@
                                     },
                                     "billingCompanyName": {
                                         "type": "string",
+                                        "example": ""
+                                    },
+                                    "billingVatId": {
+                                        "type": "string",
+                                        "description": "Validated against the billing country. Saved on the billing address only, as the storefront does.",
                                         "example": ""
                                     },
                                     "billingAddress": {
@@ -10276,11 +10282,14 @@
                     "Customer"
                 ],
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Customer account deleted",
                         "content": {
                             "application/json": {
-                                "example": []
+                                "example": {
+                                    "success": true,
+                                    "message": "Your account has been deleted successfully."
+                                }
                             }
                         },
                         "links": []
@@ -10368,7 +10377,7 @@
                         }
                     },
                     "422": {
-                        "description": "Validation Error",
+                        "description": "The password is missing or incorrect, or the customer has pending or processing orders",
                         "links": []
                     }
                 },
@@ -13435,12 +13444,12 @@
                         }
                     },
                     "422": {
-                        "description": "Validation Error",
+                        "description": "The email is missing",
                         "links": []
                     }
                 },
                 "summary": "Request password reset link",
-                "description": "Sends a password reset email to the given customer email if the account exists.",
+                "description": "Sends a password reset email when the address belongs to a customer of the current channel. The answer is the same whether or not it does, so the endpoint cannot be used to discover registered addresses.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",

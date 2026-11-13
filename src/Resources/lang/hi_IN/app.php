@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'अमान्य इनपुट डेटा',
             'email-required' => 'ईमेल आवश्यक है',
             'reset-link-sent' => 'रीसेट लिंक सफलतापूर्वक आपके ईमेल पर भेजा गया',
-            'email-not-found' => 'ईमेल पता नहीं मिला',
-            'throttled' => 'बहुत अधिक रीसेट प्रयास। कृपया पुनः प्रयास करने से पहले प्रतीक्षा करें।',
-            'error-sending-reset-link' => 'रीसेट लिंक भेजते समय एक त्रुटि हुई',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'अपना खाता हटाने के लिए आपका पासवर्ड आवश्यक है',
             'delete-password-incorrect' => 'आपके द्वारा दर्ज किया गया पासवर्ड गलत है',
             'delete-has-active-orders' => 'लंबित या प्रोसेसिंग ऑर्डर होने पर आपका खाता हटाया नहीं जा सकता',
+            'delete-success' => 'आपका खाता सफलतापूर्वक हटा दिया गया है।',
             'unauthenticated' => 'अप्रमाणित। इस क्रिया को करने के लिए कृपया लॉगिन करें',
             'id-required' => 'ग्राहक ID आवश्यक है',
             'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/admin/customers/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',

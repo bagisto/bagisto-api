@@ -201,6 +201,64 @@ class CheckoutAddressTest extends RestApiTestCase
     }
 
     /**
+     * Test the billing vat id is saved on the cart's billing address only.
+     */
+    public function test_checkout_address_saves_the_billing_vat_id(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $this->addProductToCart($customer);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/checkout-addresses', $this->germanAddress('DE123456789'));
+
+        $response->assertCreated();
+        expect($response->json('billingVatId'))->toBe('DE123456789');
+
+        expect(CartAddress::where('address_type', CartAddress::ADDRESS_TYPE_BILLING)
+            ->where('email', 'vat@example.com')
+            ->value('vat_id'))->toBe('DE123456789');
+        expect(CartAddress::where('address_type', CartAddress::ADDRESS_TYPE_SHIPPING)
+            ->where('email', 'vat@example.com')
+            ->value('vat_id'))->toBeNull();
+    }
+
+    /**
+     * Test a vat id that does not match the billing country is refused.
+     */
+    public function test_checkout_address_refuses_an_invalid_billing_vat_id(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $this->addProductToCart($customer);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/checkout-addresses', $this->germanAddress('DE12'));
+
+        $response->assertUnprocessable();
+        expect(CartAddress::where('email', 'vat@example.com')->exists())->toBeFalse();
+    }
+
+    /**
+     * A German billing address with the given vat id, also used for shipping.
+     */
+    private function germanAddress(string $vatId): array
+    {
+        return [
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'vat@example.com',
+            'billingCompanyName' => 'Acme GmbH',
+            'billingVatId' => $vatId,
+            'billingAddress' => 'Unter den Linden 1',
+            'billingCity' => 'Berlin',
+            'billingCountry' => 'DE',
+            'billingState' => 'BE',
+            'billingPostcode' => '10117',
+            'billingPhoneNumber' => '2125551234',
+            'useForShipping' => true,
+        ];
+    }
+
+    /**
      * Guest post with token.
      */
     private function guestPostWithToken(string $url, string $token, array $payload): TestResponse

@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'נתוני קלט לא חוקיים',
             'email-required' => 'כתובת אימייל נדרשת',
             'reset-link-sent' => 'קישור לאיפוס נשלח בהצלחה לאימייל שלך',
-            'email-not-found' => 'כתובת האימייל לא נמצאה',
-            'throttled' => 'יותר מדי ניסיונות איפוס. אנא המתן לפני שתנסה שוב.',
-            'error-sending-reset-link' => 'אירעה שגיאה בעת שליחת קישור האיפוס',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'הסיסמה שלך נדרשת כדי למחוק את החשבון',
             'delete-password-incorrect' => 'הסיסמה שהזנת שגויה',
             'delete-has-active-orders' => 'לא ניתן למחוק את החשבון שלך כל עוד יש לך הזמנות ממתינות או בעיבוד',
+            'delete-success' => 'החשבון שלך נמחק בהצלחה.',
             'unauthenticated' => 'לא מאומת. אנא התחבר כדי לבצע פעולה זו',
             'id-required' => 'מזהה הלקוח נדרש',
             'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/admin/customers/1" או מזהה מספרי',

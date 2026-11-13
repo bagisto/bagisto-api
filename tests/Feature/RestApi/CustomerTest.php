@@ -512,12 +512,14 @@ class CustomerTest extends RestApiTestCase
         $customer = $this->createCustomer(['password' => bcrypt('Password123!')]);
         $customerId = $customer->id;
 
-        $this->authenticatedPost(
-            $customer,
+        $response = $this->withHeaders($this->authHeaders($customer))->postJson(
             '/api/shop/customer-profile-deletes/'.$customerId,
             ['password' => 'Password123!']
         );
 
+        $response->assertOk();
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('message'))->toBe(__('bagistoapi::app.graphql.customer.delete-success'));
         expect(Customer::find($customerId))->toBeNull();
     }
 
@@ -781,62 +783,64 @@ class CustomerTest extends RestApiTestCase
     }
 
     /**
-     * Test forgot password with unknown email returns failure.
+     * Test forgot password answers an unknown email as it answers a known one.
      */
-    public function test_forgot_password_with_unknown_email_returns_failure(): void
-    {
-        $this->seedRequiredData();
-
-        $response = $this->publicPost('/api/shop/forgot-passwords', [
-            'email' => 'does-not-exist-'.uniqid().'@example.com',
-        ]);
-
-        $response->assertCreated();
-        expect($response->json('success'))->toBeFalse();
-        expect($response->json('message'))->toBeString()->not()->toBeEmpty();
-    }
-
-    /**
-     * Test forgot password repeat request reports throttling.
-     */
-    public function test_forgot_password_repeat_request_reports_throttling(): void
+    public function test_forgot_password_answers_an_unknown_email_like_a_known_one(): void
     {
         $this->seedRequiredData();
         $customer = $this->createCustomer();
 
-        $this->publicPost('/api/shop/forgot-passwords', ['email' => $customer->email]);
+        $known = $this->publicPost('/api/shop/forgot-passwords', ['email' => $customer->email]);
 
-        $response = $this->publicPost('/api/shop/forgot-passwords', ['email' => $customer->email]);
+        $unknown = $this->publicPost('/api/shop/forgot-passwords', [
+            'email' => 'does-not-exist-'.uniqid().'@example.com',
+        ]);
 
-        $response->assertCreated();
-        expect($response->json('success'))->toBeFalse();
-        expect($response->json('message'))->toBe(__('bagistoapi::app.graphql.forgot-password.throttled'));
+        $unknown->assertCreated();
+        expect($unknown->json())->toBe($known->json());
+        expect($unknown->json('success'))->toBeTrue();
+        expect($unknown->json('message'))->toBe(__('bagistoapi::app.graphql.forgot-password.reset-link-sent'));
     }
 
     /**
-     * Test forgot password missing email returns failure.
+     * Test forgot password answers a throttled repeat request like a first one.
      */
-    public function test_forgot_password_missing_email_returns_failure(): void
+    public function test_forgot_password_answers_a_throttled_repeat_like_a_first_request(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $first = $this->publicPost('/api/shop/forgot-passwords', ['email' => $customer->email]);
+
+        $repeat = $this->publicPost('/api/shop/forgot-passwords', ['email' => $customer->email]);
+
+        $repeat->assertCreated();
+        expect($repeat->json())->toBe($first->json());
+    }
+
+    /**
+     * Test forgot password refuses a request without an email.
+     */
+    public function test_forgot_password_refuses_a_request_without_an_email(): void
     {
         $this->seedRequiredData();
 
         $response = $this->publicPost('/api/shop/forgot-passwords', []);
 
-        $response->assertCreated();
-        expect($response->json('success'))->toBeFalse();
-        expect($response->json('message'))->toBeString()->not()->toBeEmpty();
+        $response->assertUnprocessable();
+        expect($response->json('detail'))->toBe(__('bagistoapi::app.graphql.forgot-password.email-required'));
     }
 
     /**
-     * Test forgot password empty email returns failure.
+     * Test forgot password refuses an empty email.
      */
-    public function test_forgot_password_empty_email_returns_failure(): void
+    public function test_forgot_password_refuses_an_empty_email(): void
     {
         $this->seedRequiredData();
 
         $response = $this->publicPost('/api/shop/forgot-passwords', ['email' => '']);
 
-        $response->assertCreated();
-        expect($response->json('success'))->toBeFalse();
+        $response->assertUnprocessable();
+        expect($response->json('detail'))->toBe(__('bagistoapi::app.graphql.forgot-password.email-required'));
     }
 }

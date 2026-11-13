@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Ungültige Eingabedaten',
             'email-required' => 'E-Mail ist erforderlich',
             'reset-link-sent' => 'Der Link zum Zurücksetzen wurde erfolgreich an Ihre E-Mail-Adresse gesendet',
-            'email-not-found' => 'E-Mail-Adresse nicht gefunden',
-            'throttled' => 'Zu viele Versuche zum Zurücksetzen. Bitte warten Sie, bevor Sie es erneut versuchen.',
-            'error-sending-reset-link' => 'Beim Senden des Links zum Zurücksetzen ist ein Fehler aufgetreten',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Zum Löschen Ihres Kontos ist Ihr Passwort erforderlich',
             'delete-password-incorrect' => 'Das eingegebene Passwort ist falsch',
             'delete-has-active-orders' => 'Ihr Konto kann nicht gelöscht werden, solange Sie ausstehende oder in Bearbeitung befindliche Bestellungen haben',
+            'delete-success' => 'Ihr Konto wurde erfolgreich gelöscht.',
             'unauthenticated' => 'Nicht authentifiziert. Bitte melden Sie sich an, um diese Aktion auszuführen',
             'id-required' => 'Kunden-ID ist erforderlich',
             'invalid-id-format' => 'Ungültiges ID-Format. Erwartet wird ein IRI-Format wie "/api/admin/customers/1" oder eine numerische ID',

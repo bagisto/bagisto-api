@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Dades d\'entrada no vàlides',
             'email-required' => 'Es requereix el correu electrònic',
             'reset-link-sent' => 'Enllaç de restabliment enviat correctament al vostre correu electrònic',
-            'email-not-found' => 'Adreça de correu electrònic no trobada',
-            'throttled' => 'Massa intents de restabliment. Espereu abans de tornar-ho a provar.',
-            'error-sending-reset-link' => 'S\'ha produït un error en enviar l\'enllaç de restabliment',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Cal la vostra contrasenya per suprimir el compte',
             'delete-password-incorrect' => 'La contrasenya que heu introduït és incorrecta',
             'delete-has-active-orders' => 'No es pot suprimir el vostre compte mentre tingueu comandes pendents o en procés',
+            'delete-success' => 'El vostre compte s\'ha suprimit correctament.',
             'unauthenticated' => 'No autenticat. Si us plau, inicieu la sessió per realitzar aquesta acció',
             'id-required' => 'Cal l\'ID del client',
             'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/admin/customers/1" o un ID numèric',

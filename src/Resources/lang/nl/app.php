@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Ongeldige invoergegevens',
             'email-required' => 'E-mailadres is vereist',
             'reset-link-sent' => 'Resetlink succesvol naar uw e-mailadres verzonden',
-            'email-not-found' => 'E-mailadres niet gevonden',
-            'throttled' => 'Te veel resetpogingen. Wacht even voordat u het opnieuw probeert.',
-            'error-sending-reset-link' => 'Er is een fout opgetreden bij het verzenden van de resetlink',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Uw wachtwoord is vereist om uw account te verwijderen',
             'delete-password-incorrect' => 'Het wachtwoord dat u hebt ingevoerd is onjuist',
             'delete-has-active-orders' => 'Uw account kan niet worden verwijderd zolang u openstaande of in behandeling zijnde bestellingen hebt',
+            'delete-success' => 'Je account is succesvol verwijderd.',
             'unauthenticated' => 'Niet geverifieerd. Log in om deze actie uit te voeren',
             'id-required' => 'Klant-ID is vereist',
             'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/admin/customers/1" of een numerieke ID',

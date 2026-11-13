@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => '無効な入力データです',
             'email-required' => 'メールアドレスが必要です',
             'reset-link-sent' => 'リセットリンクがメールに正常に送信されました',
-            'email-not-found' => 'メールアドレスが見つかりません',
-            'throttled' => 'リセットの試行回数が多すぎます。しばらく待ってから再度お試しください。',
-            'error-sending-reset-link' => 'リセットリンクの送信中にエラーが発生しました',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'アカウントを削除するにはパスワードが必要です',
             'delete-password-incorrect' => '入力されたパスワードが正しくありません',
             'delete-has-active-orders' => '保留中または処理中の注文がある間はアカウントを削除できません',
+            'delete-success' => 'アカウントは正常に削除されました。',
             'unauthenticated' => '認証されていません。この操作を行うにはログインしてください',
             'id-required' => '顧客IDが必要です',
             'invalid-id-format' => '無効なID形式です。"/api/admin/customers/1"のようなIRI形式または数値IDが想定されています',

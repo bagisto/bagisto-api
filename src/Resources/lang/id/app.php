@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Data masukan tidak valid',
             'email-required' => 'Email diperlukan',
             'reset-link-sent' => 'Tautan reset berhasil dikirim ke email Anda',
-            'email-not-found' => 'Alamat email tidak ditemukan',
-            'throttled' => 'Terlalu banyak percobaan reset. Silakan tunggu sebelum mencoba lagi.',
-            'error-sending-reset-link' => 'Terjadi kesalahan saat mengirim tautan reset',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Kata sandi Anda diperlukan untuk menghapus akun Anda',
             'delete-password-incorrect' => 'Kata sandi yang Anda masukkan salah',
             'delete-has-active-orders' => 'Akun Anda tidak dapat dihapus selama Anda memiliki pesanan yang tertunda atau sedang diproses',
+            'delete-success' => 'Akun Anda berhasil dihapus.',
             'unauthenticated' => 'Tidak terautentikasi. Silakan masuk untuk melakukan tindakan ini',
             'id-required' => 'ID pelanggan diperlukan',
             'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/admin/customers/1" atau ID numerik',

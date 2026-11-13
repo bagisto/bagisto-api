@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Données d\'entrée invalides',
             'email-required' => 'L\'adresse e-mail est requise',
             'reset-link-sent' => 'Lien de réinitialisation envoyé avec succès à votre adresse e-mail',
-            'email-not-found' => 'Adresse e-mail introuvable',
-            'throttled' => 'Trop de tentatives de réinitialisation. Veuillez patienter avant de réessayer.',
-            'error-sending-reset-link' => 'Une erreur s\'est produite lors de l\'envoi du lien de réinitialisation',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Votre mot de passe est requis pour supprimer votre compte',
             'delete-password-incorrect' => 'Le mot de passe que vous avez saisi est incorrect',
             'delete-has-active-orders' => 'Votre compte ne peut pas être supprimé tant que vous avez des commandes en attente ou en cours de traitement',
+            'delete-success' => 'Votre compte a été supprimé avec succès.',
             'unauthenticated' => 'Non authentifié. Veuillez vous connecter pour effectuer cette action',
             'id-required' => 'L\'ID du client est requis',
             'invalid-id-format' => 'Format d\'ID invalide. Format IRI attendu comme "/api/admin/customers/1" ou ID numérique',

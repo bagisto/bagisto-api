@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Dati di input non validi',
             'email-required' => 'L\'email è obbligatoria',
             'reset-link-sent' => 'Link di reimpostazione inviato con successo alla tua email',
-            'email-not-found' => 'Indirizzo email non trovato',
-            'throttled' => 'Troppi tentativi di reimpostazione. Attendi prima di riprovare.',
-            'error-sending-reset-link' => 'Si è verificato un errore durante l\'invio del link di reimpostazione',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'La tua password è obbligatoria per eliminare l\'account',
             'delete-password-incorrect' => 'La password inserita non è corretta',
             'delete-has-active-orders' => 'Il tuo account non può essere eliminato finché hai ordini in sospeso o in elaborazione',
+            'delete-success' => 'Il tuo account è stato eliminato correttamente.',
             'unauthenticated' => 'Non autenticato. Effettua l\'accesso per eseguire questa azione',
             'id-required' => 'L\'ID del cliente è obbligatorio',
             'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/admin/customers/1" o ID numerico',

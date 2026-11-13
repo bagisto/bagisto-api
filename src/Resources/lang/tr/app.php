@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Geçersiz giriş verileri',
             'email-required' => 'E-posta gereklidir',
             'reset-link-sent' => 'Sıfırlama bağlantısı e-postanıza başarıyla gönderildi',
-            'email-not-found' => 'E-posta adresi bulunamadı',
-            'throttled' => 'Çok fazla sıfırlama denemesi. Lütfen tekrar denemeden önce bekleyin.',
-            'error-sending-reset-link' => 'Sıfırlama bağlantısı gönderilirken bir hata oluştu',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Hesabınızı silmek için parolanız gereklidir',
             'delete-password-incorrect' => 'Girdiğiniz parola yanlış',
             'delete-has-active-orders' => 'Bekleyen veya işlenmekte olan siparişleriniz varken hesabınız silinemez',
+            'delete-success' => 'Hesabınız başarıyla silindi.',
             'unauthenticated' => 'Kimlik doğrulanmadı. Bu işlemi gerçekleştirmek için lütfen giriş yapın',
             'id-required' => 'Müşteri kimliği gereklidir',
             'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/admin/customers/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',

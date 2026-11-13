@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Date de intrare invalide',
             'email-required' => 'Adresa de e-mail este obligatorie',
             'reset-link-sent' => 'Linkul de resetare a fost trimis cu succes pe adresa dumneavoastră de e-mail',
-            'email-not-found' => 'Adresa de e-mail nu a fost găsită',
-            'throttled' => 'Prea multe încercări de resetare. Vă rugăm să așteptați înainte de a încerca din nou.',
-            'error-sending-reset-link' => 'A apărut o eroare la trimiterea linkului de resetare',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Parola este necesară pentru a vă șterge contul',
             'delete-password-incorrect' => 'Parola introdusă este incorectă',
             'delete-has-active-orders' => 'Contul nu poate fi șters cât timp aveți comenzi în așteptare sau în procesare',
+            'delete-success' => 'Contul tău a fost șters cu succes.',
             'unauthenticated' => 'Neautentificat. Vă rugăm să vă autentificați pentru a efectua această acțiune',
             'id-required' => 'ID-ul clientului este obligatoriu',
             'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/admin/customers/1" sau un ID numeric',

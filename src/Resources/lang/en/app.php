@@ -345,6 +345,9 @@ return [
             'payment-no-confirmation' => 'The selected payment method needs no confirmation.',
             'payment-not-verified' => 'The payment could not be verified.',
             'payment-confirmed' => 'Payment confirmed and order placed.',
+            'payment-pending' => 'The payment has not been completed yet. No order has been placed.',
+            'payment-awaiting-confirmation' => 'The order is placed. PayPal has not confirmed the payment yet.',
+            'payment-reference-not-found' => 'No payment was found for this reference.',
             'payment-method-mismatch' => 'The payment method does not match the one saved on the cart.',
             'invalid-input' => 'Invalid input data for checkout operation',
             'billing-address-required' => 'Billing address is required',
@@ -507,6 +510,7 @@ return [
             'config-permission-denied' => 'Permission denied: Cannot write to :directory. Please check directory permissions.',
 
             'composer-updated' => '✓ Composer autoload configuration updated',
+            'package-discover-error' => 'Refreshing the discovered package list failed.',
             'composer-file-not-found' => 'File not found: :file',
             'composer-permission-denied' => 'Permission denied: Cannot write to :file. Please check file permissions.',
 

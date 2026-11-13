@@ -147,4 +147,23 @@ class ProductReviewTest extends GraphQLTestCase
         expect($nodes[$withImage->id]['customerImageUrl'])->toContain('avatar.webp');
         expect($nodes[$guest->id]['customerImageUrl'])->toBe(bagisto_asset('images/user-placeholder.png', 'shop'));
     }
+
+    public function test_approved_reviews_belong_to_the_product_only(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->createBaseProduct('simple');
+        $other = $this->createBaseProduct('simple');
+
+        $own = ProductReview::factory()->create(['product_id' => $product->id, 'status' => 'approved']);
+        ProductReview::factory()->create(['product_id' => $product->id, 'status' => 'pending']);
+        ProductReview::factory()->create(['product_id' => $other->id, 'status' => 'approved']);
+
+        $response = $this->graphQL('query P($id: ID!) { product(id: $id) { approvedReviews { totalCount edges { node { _id } } } } }', [
+            'id' => '/api/shop/products/'.$product->id,
+        ]);
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.product.approvedReviews.totalCount'))->toBe(1);
+        expect(array_column(array_column($response->json('data.product.approvedReviews.edges'), 'node'), '_id'))->toBe([$own->id]);
+    }
 }

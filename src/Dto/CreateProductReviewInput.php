@@ -25,7 +25,7 @@ class CreateProductReviewInput
     public int $rating;
 
     #[Groups(['mutation'])]
-    public string $name;
+    public ?string $name = null;
 
     #[Groups(['mutation'])]
     public ?string $email = null;
@@ -41,7 +41,7 @@ class CreateProductReviewInput
         string $title,
         string $comment,
         int $rating,
-        string $name,
+        ?string $name = null,
         ?string $email = null,
         ?int $status = null,
         ?string $attachments = '',

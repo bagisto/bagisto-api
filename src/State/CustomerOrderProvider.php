@@ -80,6 +80,7 @@ class CustomerOrderProvider implements ProviderInterface
         $dto->order_currency_code = $order->order_currency_code;
         $dto->created_at = $order->created_at?->toIso8601String();
         $dto->updated_at = $order->updated_at?->toIso8601String();
+        $dto->has_non_cancelable_booking = $order->has_non_cancelable_booking;
 
         return $dto;
     }
@@ -182,6 +183,8 @@ class CustomerOrderProvider implements ProviderInterface
         $dto->shipments = $order->shipments
             ->map(fn ($s) => $this->toShipmentDto($s))
             ->all();
+
+        $dto->has_non_cancelable_booking = $order->has_non_cancelable_booking;
 
         return $dto;
     }
@@ -357,6 +360,13 @@ class CustomerOrderProvider implements ProviderInterface
             ->offset($offset)
             ->limit($perPage)
             ->get();
+
+        $restricted = CustomerOrder::nonCancelableBookingOrderIds($items->modelKeys());
+
+        $items->each(fn (CustomerOrder $order) => $order->setAttribute(
+            'has_non_cancelable_booking',
+            in_array((int) $order->id, $restricted, true),
+        ));
 
         $isGraphQL = ! empty($context['graphql_operation_name']);
 

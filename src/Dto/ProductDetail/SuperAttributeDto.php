@@ -16,6 +16,8 @@ class SuperAttributeDto
         public ?string $code = null,
         public ?string $label = null,
         public ?string $type = null,
+        #[ApiProperty(description: 'How the storefront renders the options: dropdown, color, image or text. Null renders as a dropdown.')]
+        public ?string $swatch_type = null,
         #[ApiProperty(readableLink: true)]
         public array $options = [],
     ) {}

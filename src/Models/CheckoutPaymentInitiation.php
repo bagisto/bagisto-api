@@ -30,7 +30,7 @@ use Webkul\BagistoApi\State\CheckoutPaymentInitiationProcessor;
             openapi: new Operation(
                 tags: ['Checkout'],
                 summary: 'Start payment for an online payment method',
-                description: 'Call this instead of placing the order when the selected payment method is an online gateway (the place-order response then has `redirect: true`). Uses the cart of the Bearer token; addresses, shipping and payment method must already be saved. The response says how to hand the customer to the gateway: `redirect` (open `redirectUrl`: Stripe, PhonePe, PayGlocal), `form` (POST `formFields` to `formAction`: PayPal Standard, PayU) or `sdk` (open the gateway SDK with `sdkData`: Razorpay, PayPal Smart Button). PayPal Smart Button returns the PayPal `order_id` to hand to the PayPal JS SDK `createOrder` callback, with the `client_id` and `currency` to load the SDK with. Stripe, PhonePe, PayGlocal and PayU create the order on their own return. For Razorpay, PayPal Standard and PayPal Smart Button, call `POST /api/shop/checkout-payments/confirm` after payment.',
+                description: 'Call this instead of placing the order when the selected payment method is an online gateway (the place-order response then has `redirect: true`). Uses the cart of the Bearer token; addresses, shipping and payment method must already be saved. The response says how to hand the customer to the gateway: `redirect` (open `redirectUrl`: Stripe, PhonePe, PayGlocal), `form` (POST `formFields` to `formAction`: PayPal Standard, PayU) or `sdk` (open the gateway SDK with `sdkData`: Razorpay, PayPal Smart Button). PayPal Smart Button returns the PayPal `order_id` to hand to the PayPal JS SDK `createOrder` callback, with the `client_id` and `currency` to load the SDK with. Stripe, PhonePe, PayGlocal, PayU and PayPal Standard create the order on their own return: open the page in a WebView, watch for `successUrl` (paid) or `failureUrl` (failed, cancelled or still pending), then call `POST /api/shop/checkout-payments/confirm` with `reference` to read the order. For Razorpay and PayPal Smart Button, call the same endpoint after payment. `reference` identifies this cart\'s payment; keep it, as it still resolves after the order is placed.',
                 responses: [
                     '201' => new Response(
                         description: 'What the client needs to start the payment.',
@@ -42,8 +42,11 @@ use Webkul\BagistoApi\State\CheckoutPaymentInitiationProcessor;
                                         'value' => [
                                             'method' => 'stripe',
                                             'type' => 'redirect',
+                                            'reference' => '12',
                                             'redirectUrl' => 'https://checkout.stripe.com/c/pay/cs_test_a1b2c3',
                                             'formAction' => null,
+                                            'successUrl' => 'https://example.com/checkout/onepage/success',
+                                            'failureUrl' => 'https://example.com/checkout/cart',
                                             'formFields' => null,
                                             'sdkData' => null,
                                         ],
@@ -53,8 +56,11 @@ use Webkul\BagistoApi\State\CheckoutPaymentInitiationProcessor;
                                         'value' => [
                                             'method' => 'razorpay',
                                             'type' => 'sdk',
+                                            'reference' => '12',
                                             'redirectUrl' => null,
                                             'formAction' => null,
+                                            'successUrl' => null,
+                                            'failureUrl' => null,
                                             'formFields' => null,
                                             'sdkData' => [
                                                 'key' => 'rzp_test_xxxxx',
@@ -69,8 +75,11 @@ use Webkul\BagistoApi\State\CheckoutPaymentInitiationProcessor;
                                         'value' => [
                                             'method' => 'paypal_smart_button',
                                             'type' => 'sdk',
+                                            'reference' => '12',
                                             'redirectUrl' => null,
                                             'formAction' => null,
+                                            'successUrl' => null,
+                                            'failureUrl' => null,
                                             'formFields' => null,
                                             'sdkData' => [
                                                 'order_id' => '5O190127TN364715T',
@@ -113,10 +122,19 @@ class CheckoutPaymentInitiation implements SnakeCaseFieldsResource
     public ?string $type = null;
 
     #[ApiProperty(writable: false)]
+    public ?string $reference = null;
+
+    #[ApiProperty(writable: false)]
     public ?string $redirect_url = null;
 
     #[ApiProperty(writable: false)]
     public ?string $form_action = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $success_url = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $failure_url = null;
 
     /**
      * @var array<string, mixed>|null

@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Webkul\Product\Models\ProductAttributeValue;
 
 /**
  * Product attribute value (EAV) — nested sub-resource of AdminCatalogProduct
@@ -79,16 +80,7 @@ class AdminProductDetailAttributeValue extends Model
     #[ApiProperty(writable: false)]
     public function getValueAttribute(): ?string
     {
-        $type = $this->attr()->type ?? 'text';
-        $col = match ($type) {
-            'boolean' => 'boolean_value',
-            'select', 'price', 'integer' => 'integer_value',
-            'decimal' => 'float_value',
-            'date' => 'date_value',
-            'datetime' => 'datetime_value',
-            'multiselect', 'checkbox' => 'text_value',
-            default => 'text_value',
-        };
+        $col = ProductAttributeValue::$attributeTypeFields[$this->attr()->type ?? 'text'] ?? 'text_value';
 
         $raw = $this->attributes[$col] ?? $this->attributes['text_value'] ?? null;
 

@@ -59,7 +59,7 @@ class AdminAccountProcessor implements ProcessorInterface
     {
         $this->validate($input, [
             'name' => 'required',
-            'email' => 'email|unique:admins,email,'.$admin->id,
+            'email' => 'nullable|email|unique:admins,email,'.$admin->id,
             'password' => 'nullable|min:6|confirmed',
             'current_password' => 'required|min:6',
         ]);

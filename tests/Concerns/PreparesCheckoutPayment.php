@@ -4,9 +4,14 @@ namespace Webkul\BagistoApi\Tests\Concerns;
 
 use Illuminate\Support\Facades\DB;
 use Mockery;
+use Webkul\Checkout\Facades\Cart;
+use Webkul\Checkout\Repositories\CartRepository;
 use Webkul\Customer\Models\Customer;
 use Webkul\Paypal\Payment\SmartButton;
 use Webkul\Razorpay\Payment\RazorpayPayment;
+use Webkul\Sales\Models\Order;
+use Webkul\Sales\Repositories\OrderRepository;
+use Webkul\Sales\Transformers\OrderResource;
 
 /**
  * Builds a customer cart that is ready to pay, and fakes the Razorpay and PayPal API calls.
@@ -44,6 +49,41 @@ trait PreparesCheckoutPayment
             'client_id' => 'rzp_test_key',
             'client_secret' => self::RAZORPAY_SECRET,
         ]);
+    }
+
+    protected function enableStripe(): void
+    {
+        $this->enablePaymentMethod('stripe', [
+            'sandbox' => '0',
+            'api_key' => 'sk_test_key',
+            'api_publishable_key' => 'pk_test_key',
+        ]);
+    }
+
+    protected function enablePayU(): void
+    {
+        $this->enablePaymentMethod('payu', [
+            'sandbox' => '1',
+            'merchant_key' => 'payu_test_key',
+            'merchant_salt' => 'payu_test_salt',
+        ]);
+    }
+
+    /**
+     * Places the cart's order and deactivates the cart, as a Stripe, PhonePe, PayU or PayGlocal
+     * callback does once the gateway reports the payment paid.
+     */
+    protected function placeOrderAsGatewayCallback(int $cartId): Order
+    {
+        Cart::setCart(app(CartRepository::class)->find($cartId));
+
+        Cart::collectTotals();
+
+        $order = app(OrderRepository::class)->create((new OrderResource(Cart::getCart()))->jsonSerialize());
+
+        Cart::deActivateCart();
+
+        return $order;
     }
 
     /**
@@ -138,9 +178,9 @@ trait PreparesCheckoutPayment
     }
 
     /**
-     * The approved PayPal order core would have created for the cart.
+     * The approved PayPal order core would have created for the cart. Pass `$customId` to fake an order made for another cart.
      */
-    protected function smartButtonOrder(int $cartId, string $status = 'APPROVED'): array
+    protected function smartButtonOrder(int $cartId, string $status = 'APPROVED', ?int $customId = null): array
     {
         $cart = DB::table('cart')->where('id', $cartId)->first();
 
@@ -149,7 +189,7 @@ trait PreparesCheckoutPayment
             'intent' => 'CAPTURE',
             'status' => $status,
             'purchase_units' => [[
-                'custom_id' => (string) $cartId,
+                'custom_id' => (string) ($customId ?? $cartId),
                 'amount' => ['currency_code' => $cart->cart_currency_code, 'value' => number_format((float) $cart->grand_total, 2, '.', '')],
             ]],
             'payer' => ['email_address' => 'john@example.com'],

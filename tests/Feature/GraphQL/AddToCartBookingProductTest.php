@@ -1402,6 +1402,8 @@ class AddToCartBookingProductTest extends GraphQLTestCase
               createAddProductInCart(input: { productId: $productId, booking: $booking }) {
                 addProductInCart {
                   success
+                  isGuest
+                  itemsCount
                 }
               }
             }

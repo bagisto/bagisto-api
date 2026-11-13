@@ -2,12 +2,17 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('admin_personal_access_tokens')) {
+            return;
+        }
+
         Schema::create('admin_personal_access_tokens', function (Blueprint $table) {
             $table->id();
 
@@ -39,7 +44,8 @@ return new class extends Migration
 
             $table->timestamp('regenerated_at')->nullable();
             $table->unsignedInteger('regenerated_by_admin_id')->nullable();
-            $table->foreign('regenerated_by_admin_id')->references('id')->on('admins')->nullOnDelete();
+            $table->foreign('regenerated_by_admin_id', DB::getTablePrefix().'admin_pat_regenerated_by_admin_id_foreign')
+                ->references('id')->on('admins')->nullOnDelete();
 
             $table->unsignedBigInteger('regenerated_to_id')->nullable();
             $table->foreign('regenerated_to_id')->references('id')->on('admin_personal_access_tokens')->nullOnDelete();

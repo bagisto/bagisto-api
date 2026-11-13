@@ -43,6 +43,10 @@ class CheckoutAddressOutput
 
     #[Groups(['query', 'mutation'])]
     #[ApiProperty(readable: true, writable: false)]
+    public ?string $billingVatId = null;
+
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(readable: true, writable: false)]
     public ?string $billingAddress = null;
 
     #[Groups(['query', 'mutation'])]

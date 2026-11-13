@@ -264,6 +264,48 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $this->assertArrayHasKey('success', $data);
     }
 
+    public function test_set_checkout_address_saves_the_billing_vat_number(): void
+    {
+        $token = $this->createTestCustomer()['token'];
+        $this->addProductToCart($token);
+
+        $query = <<<'GQL'
+            mutation createCheckoutAddress($input: createCheckoutAddressInput!) {
+              createCheckoutAddress(input: $input) {
+                checkoutAddress {
+                  success
+                  billingCompanyName
+                  billingVatId
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, ['input' => [
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'vat-gql@example.com',
+            'billingCompanyName' => 'Acme GmbH',
+            'billingVatId' => 'DE123456789',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Noida',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
+            'billingPhoneNumber' => '2125551234',
+            'useForShipping' => true,
+        ]], $this->customerHeaders($token));
+
+        $response->assertSuccessful();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.createCheckoutAddress.checkoutAddress.billingVatId'))->toBe('DE123456789');
+
+        expect(DB::table('addresses')
+            ->where('email', 'vat-gql@example.com')
+            ->where('address_type', 'cart_billing')
+            ->value('vat_id'))->toBe('DE123456789');
+    }
+
     /**
      * Set Shipping Method (Customer)
      */

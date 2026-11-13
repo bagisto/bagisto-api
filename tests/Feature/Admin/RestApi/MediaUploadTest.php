@@ -117,7 +117,7 @@ class MediaUploadTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $category = $this->category();
         Storage::put("category/{$category->id}/logo.webp", 'logo');
-        $category->update(['logo_path' => "category/{$category->id}/logo.webp"]);
+        $category->forceFill(['logo_path' => "category/{$category->id}/logo.webp"])->save();
 
         $response = $this->upload($admin, "/api/admin/catalog/categories/{$category->id}/media", [
             'banner' => UploadedFile::fake()->image('banner.jpg', 300, 100),
@@ -157,7 +157,7 @@ class MediaUploadTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $category = $this->category();
         Storage::put("category/{$category->id}/logo.webp", 'logo');
-        $category->update(['logo_path' => "category/{$category->id}/logo.webp"]);
+        $category->forceFill(['logo_path' => "category/{$category->id}/logo.webp"])->save();
         \DB::table('category_translations')->where('category_id', $category->id)->update(['logo_alt' => 'Old alt']);
 
         $response = $this->remove($admin, "/api/admin/catalog/categories/{$category->id}/media/logo");

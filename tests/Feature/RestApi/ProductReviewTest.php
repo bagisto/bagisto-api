@@ -184,6 +184,7 @@ class ProductReviewTest extends RestApiTestCase
             'customer_id' => $customer->id,
             'product_id' => $product->id,
             'title' => 'Fetch-me',
+            'status' => 'approved',
         ]);
 
         $response = $this->publicGet('/api/shop/reviews/'.$review->id);

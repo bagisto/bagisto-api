@@ -61,6 +61,52 @@ final class CollectionBuilder
         'categoryAttributeFilters' => 4,
     ];
 
+    /**
+     * The booking starting price, added to the product queries.
+     *
+     * It lives on the bookingProducts connection, which the depth-1 selection skips, yet the app
+     * needs it to show "Starting from" on a booking card as the storefront does.
+     */
+    private const BOOKING_PRICE_SELECTION = [
+        'bookingProducts' => [
+            'edges' => [
+                'node' => [
+                    'type' => null,
+                    'startingPrice' => null,
+                    'formattedStartingPrice' => null,
+                    'startingRegularPrice' => null,
+                    'formattedStartingRegularPrice' => null,
+                ],
+            ],
+        ],
+    ];
+
+    /**
+     * How the storefront labels a product's price, added to the product query descriptions.
+     */
+    private const PRICE_LABEL_RULES = "Show the price label by product type, as the storefront does:\n"
+        ."- grouped: \"Starting at\" + formattedMinimumPrice (price is 0 for a grouped product).\n"
+        ."- booking with bookingType event or rental: \"Starting from\" + bookingProducts[0].formattedStartingPrice; strike formattedStartingRegularPrice when startingRegularPrice is higher than startingPrice.\n"
+        ."- configurable: \"As low as\" + formattedMinimumPrice.\n"
+        ."- bundle: formattedMinimumPrice \"To\" formattedMaximumPrice when the two differ.\n"
+        ."- every other type, and booking default / appointment / table: formattedMinimumPrice.\n"
+        .'For every type, show the regular price struck through when it is higher than the final one (regularMinimumPrice / regularMaximumPrice against minimumPrice / maximumPrice).';
+
+    /**
+     * How a storefront draws a configurable product's option selector, added to the `product` query description.
+     */
+    private const CONFIGURABLE_OPTION_RULES = "Configurable products — render the option selector as the storefront does:\n"
+        ."- configurationConfig: the product page's whole selector as JSON — attributes (translated label, swatch_type, options with label, swatch_value, swatch_alt and the variant ids carrying each option), index (variantId → attributeId → optionId), variant_prices, variant_images, variant_videos, regular and final.\n"
+        ."- superAttributes.options, superAttributeOptions, index and combinations: only saleable variants count, options are in the admin sort order and labels are translated.\n"
+        .'- swatchType: dropdown or null → a select using label; color → swatchValue is the hex; image → swatchValueUrl is the picture, swatchAlt its alt text; text → swatchValue is the text.';
+
+    /**
+     * Notes appended to a shop query's description, keyed by root field.
+     */
+    private const SHOP_QUERY_NOTES = [
+        'attribute' => "options lists every option of the attribute with its swatch data (swatchValue, swatchValueUrl for an image swatch, swatchAlt) and translated label; a product's superAttributes list only the options its saleable variants use.",
+    ];
+
     private const HEADER_VARS = [
         'X-STOREFRONT-KEY' => '{{storefrontKey}}',
         'X-Locale' => '{{locale}}',
@@ -675,6 +721,10 @@ MD;
             $segments[] = $meta['kind'] === 'query' ? 'Queries' : 'Mutations';
 
             $grouped[implode("\0", $segments)][] = $this->graphQlRequest($field, $definition, $meta, $url, $surface);
+
+            if ($surface === 'shop' && $field === 'product') {
+                $grouped[implode("\0", $segments)][] = $this->configurableOptionSelectorRequest($url);
+            }
         }
 
         ksort($grouped);
@@ -716,6 +766,7 @@ query SectionProducts($first: Int, $sortKey: String, $reverse: Boolean, $filter:
         _id
         sku
         type
+        bookingType
         name
         urlKey
         price
@@ -724,12 +775,29 @@ query SectionProducts($first: Int, $sortKey: String, $reverse: Boolean, $filter:
         formattedSpecialPrice
         minimumPrice
         formattedMinimumPrice
+        maximumPrice
+        formattedMaximumPrice
+        regularMinimumPrice
+        formattedRegularMinimumPrice
+        regularMaximumPrice
+        formattedRegularMaximumPrice
         new
         featured
         isSaleable
         isInWishlist
         isInCompare
         baseImageUrl
+        bookingProducts {
+          edges {
+            node {
+              type
+              startingPrice
+              formattedStartingPrice
+              startingRegularPrice
+              formattedStartingRegularPrice
+            }
+          }
+        }
       }
     }
     pageInfo {
@@ -744,7 +812,8 @@ GQL;
         $mapping = "Build the variables from the section's `options.filters`:\n"
             ."- `limit` -> `first` (missing: the first value of `storeConfig.productsPerPage`, else 12).\n"
             ."- `sort` -> `sortKey` + `reverse`: split at the last `-`, uppercase the field (`name` -> `NAME`, `price` -> `PRICE`, `created_at` -> `CREATED_AT`), `desc` -> `reverse: true`, `asc` -> `reverse: false`.\n"
-            .'- Every other key (`new`, `featured`, `category_id`, ...) -> one object passed as `filter`, encoded as a JSON string. Leave `filter` out when there is none.';
+            .'- Every other key (`new`, `featured`, `category_id`, ...) -> one object passed as `filter`, encoded as a JSON string. Leave `filter` out when there is none.'
+            ."\n\n".self::PRICE_LABEL_RULES;
 
         $request = fn (string $name, string $query, array $variables, string $description): array => [
             'name' => $name,
@@ -805,6 +874,75 @@ GQL;
     }
 
     /**
+     * The `product` query trimmed to what a storefront needs to draw a configurable product's option selector.
+     *
+     * @return array<string, mixed>
+     */
+    private function configurableOptionSelectorRequest(string $url): array
+    {
+        $query = <<<'GQL'
+query ProductConfigurableOptions($id: ID) {
+  product(id: $id) {
+    _id
+    type
+    configurationConfig
+    combinations
+    superAttributeOptions
+    superAttributes {
+      edges {
+        node {
+          _id
+          code
+          adminName
+          type
+          swatchType
+          options {
+            edges {
+              node {
+                _id
+                adminName
+                label
+                sortOrder
+                swatchValue
+                swatchValueUrl
+                swatchAlt
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+GQL;
+
+        return [
+            'name' => 'product (configurable option selector)',
+            'request' => [
+                'method' => 'POST',
+                'header' => [
+                    ['key' => 'Content-Type', 'value' => 'application/json'],
+                    ['key' => 'X-STOREFRONT-KEY', 'value' => '{{storefrontKey}}'],
+                ],
+                'url' => $this->graphQlUrl($url),
+                'body' => [
+                    'mode' => 'graphql',
+                    'graphql' => [
+                        'query' => $query,
+                        'variables' => json_encode(['id' => '/api/shop/products/1'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+                    ],
+                ],
+                'description' => "The data a storefront needs to draw a configurable product's option selector exactly as the web product page does.\n\n"
+                    ."- configurationConfig is built by the same helper the web page uses: attributes with translated labels, swatch_type and per-option swatch_value (the image URL for an image swatch), swatch_alt and products; index (variantId → attributeId → optionId); variant_prices, variant_images, variant_videos; regular and final prices.\n"
+                    ."- Only saleable variants count: an option whose variants are all disabled or out of stock is not offered, as on the web.\n"
+                    ."- Render by swatchType: dropdown or null → select by label; color → swatchValue hex; image → swatchValueUrl (alt swatchAlt); text → swatchValue.\n"
+                    .'- Pick the variant from index once the shopper has chosen an option for every attribute, then swap in its variant_prices / variant_images.',
+            ],
+        ];
+    }
+
+    /**
      * Compose one Postman request from a root field definition.
      *
      * @return array<string, mixed>
@@ -816,6 +954,16 @@ GQL;
         [$arguments, $variables] = $this->arguments($definition, $field, $meta['example'] ?? null);
 
         $tree = $this->selectionTree($definition->getType(), 0, self::SELECTION_DEPTH_OVERRIDES[$field] ?? self::MAX_SELECTION_DEPTH);
+
+        $isProductQuery = $surface === 'shop' && in_array($field, ['product', 'products'], true);
+
+        if ($isProductQuery && $tree !== null) {
+            if (isset($tree['edges']['node'])) {
+                $tree['edges']['node'] += self::BOOKING_PRICE_SELECTION;
+            } else {
+                $tree += self::BOOKING_PRICE_SELECTION;
+            }
+        }
 
         $query = sprintf(
             "%s %s%s {\n  %s%s%s\n}\n",
@@ -851,6 +999,20 @@ GQL;
 
         if ($description = $definition->description) {
             $item['request']['description'] = $description;
+        }
+
+        if ($isProductQuery) {
+            $item['request']['description'] = trim(($item['request']['description'] ?? '')."\n\n".self::PRICE_LABEL_RULES);
+        }
+
+        if ($surface === 'shop' && $field === 'product') {
+            $item['request']['description'] .= "\n\n".self::CONFIGURABLE_OPTION_RULES;
+        }
+
+        if ($surface === 'shop' && isset(self::SHOP_QUERY_NOTES[$field])) {
+            $description = rtrim($item['request']['description'] ?? '', '.');
+
+            $item['request']['description'] = ($description === '' ? '' : $description.'. ').self::SHOP_QUERY_NOTES[$field];
         }
 
         if ($event = $this->graphQlTokenScript($field)) {

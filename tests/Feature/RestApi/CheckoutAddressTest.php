@@ -131,6 +131,60 @@ class CheckoutAddressTest extends RestApiTestCase
             ->exists())->toBeTrue();
     }
 
+    public function test_checkout_address_saves_the_billing_vat_number(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer([
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+        $this->addProductToCart($customer);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/checkout-addresses', [
+            ...$this->vatAddressPayload(),
+            'billingVatId' => 'DE123456789',
+        ]);
+
+        $response->assertCreated();
+        expect($response->json('billingVatId'))->toBe('DE123456789');
+
+        expect(CartAddress::where('address_type', CartAddress::ADDRESS_TYPE_BILLING)
+            ->where('email', 'vat@example.com')
+            ->value('vat_id'))->toBe('DE123456789');
+    }
+
+    public function test_checkout_address_rejects_an_invalid_billing_vat_number(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer([
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+        $this->addProductToCart($customer);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/checkout-addresses', [
+            ...$this->vatAddressPayload(),
+            'billingVatId' => 'DE12',
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([400, 422, 500]);
+        expect(CartAddress::where('email', 'vat@example.com')->exists())->toBeFalse();
+    }
+
+    private function vatAddressPayload(): array
+    {
+        return [
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'vat@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Noida',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
+            'billingPhoneNumber' => '2125551234',
+            'useForShipping' => true,
+        ];
+    }
+
     public function test_set_checkout_address_with_different_shipping_address(): void
     {
         $this->seedRequiredData();

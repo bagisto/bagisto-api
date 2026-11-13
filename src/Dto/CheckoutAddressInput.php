@@ -36,6 +36,11 @@ class CheckoutAddressInput
     public ?string $billingCompanyName = null;
 
     #[Groups(['mutation'])]
+    #[ApiProperty(description: 'Billing VAT number')]
+    #[SerializedName('billingVatId')]
+    public ?string $billingVatId = null;
+
+    #[Groups(['mutation'])]
     #[ApiProperty(description: 'Billing address')]
     #[SerializedName('billingAddress')]
     public ?string $billingAddress = null;

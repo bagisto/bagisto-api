@@ -29,12 +29,14 @@ class CheckoutRulesTest extends RestApiTestCase
     ];
 
     /**
-     * Test smart button payment method is rejected.
+     * Test disabled smart button payment method is rejected.
      */
-    public function test_smart_button_payment_method_is_rejected(): void
+    public function test_disabled_smart_button_payment_method_is_rejected(): void
     {
         $customer = $this->createActiveCustomer();
         $product = $this->createTestProduct()['product'];
+
+        $this->setCoreConfig('sales.payment_methods.paypal_smart_button.active', '0');
 
         $this->bearerPost($customer, '/api/shop/add-product-in-cart', [
             'productId' => $product->id,

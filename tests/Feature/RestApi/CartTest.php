@@ -331,6 +331,37 @@ class CartTest extends RestApiTestCase
     }
 
     /**
+     * Reading a cart whose only item became inactive drops the item and returns the empty cart.
+     */
+    public function test_read_cart_emptied_by_recalculation_returns_the_empty_cart(): void
+    {
+        $this->seedRequiredData();
+        $token = $this->createGuestCartToken();
+        $product = $this->createTestProduct()['product'];
+
+        $this->postWithToken('/api/shop/add-product-in-cart', $token, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ])->assertSuccessful();
+
+        DB::table('product_attribute_values')
+            ->where('product_id', $product->id)
+            ->where('attribute_id', DB::table('attributes')->where('code', 'status')->value('id'))
+            ->update(['boolean_value' => 0]);
+
+        $read = $this->postWithToken('/api/shop/cart', $token, []);
+
+        expect($read->getStatusCode())->toBe(201);
+        expect($read->json('itemsCount'))->toBe(0);
+        expect($read->json('items'))->toBe([]);
+
+        $again = $this->postWithToken('/api/shop/cart', $token, []);
+
+        expect($again->getStatusCode())->toBe(201);
+        expect($again->json('id'))->toBe($read->json('id'));
+    }
+
+    /**
      * Reading the cart returns the mini cart offer text when the mini cart is on.
      */
     public function test_read_cart_returns_the_mini_cart_offer_info(): void

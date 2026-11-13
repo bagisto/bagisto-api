@@ -12,7 +12,6 @@ use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\Dto\CheckoutAddressOutput;
 use Webkul\BagistoApi\Exception\AuthenticationException;
-use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\OperationFailedException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
@@ -22,20 +21,22 @@ use Webkul\BagistoApi\Models\CheckoutOrder;
 use Webkul\BagistoApi\Models\CheckoutPaymentMethod;
 use Webkul\BagistoApi\Models\CheckoutShippingMethod;
 use Webkul\BagistoApi\State\Concerns\ResolvesCartToken;
+use Webkul\BagistoApi\State\Concerns\ValidatesCheckoutCart;
 use Webkul\CartRule\Exceptions\CouponUsageLimitExceededException;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Checkout\Repositories\CartRepository;
 use Webkul\Core\Rules\PhoneNumber;
 use Webkul\Core\Rules\PostCode;
 use Webkul\Customer\Repositories\CustomerRepository;
+use Webkul\Customer\Rules\VatIdRule;
 use Webkul\Payment\Facades\Payment;
 use Webkul\Sales\Repositories\OrderRepository;
-use Webkul\Sales\Transformers\OrderResource;
 use Webkul\Shipping\Facades\Shipping;
 
 class CheckoutProcessor implements ProcessorInterface
 {
     use ResolvesCartToken;
+    use ValidatesCheckoutCart;
 
     /**
      * Create a new instance.
@@ -197,7 +198,10 @@ class CheckoutProcessor implements ProcessorInterface
     {
         $address = $input->{$type.'Address'};
 
+        $vatId = $type === 'billing' ? ['vat_id' => $input->billingVatId] : [];
+
         return [
+            ...$vatId,
             'company_name' => $input->{$type.'CompanyName'},
             'first_name' => $input->{$type.'FirstName'},
             'last_name' => $input->{$type.'LastName'},
@@ -246,6 +250,11 @@ class CheckoutProcessor implements ProcessorInterface
                 "{$type}.postcode" => "{$type}Postcode",
                 "{$type}.phone" => "{$type}PhoneNumber",
             ];
+        }
+
+        if (isset($params['billing'])) {
+            $rules['billing.vat_id'] = [(new VatIdRule)->setCountry($params['billing']['country'] ?? null)];
+            $attributes['billing.vat_id'] = 'billingVatId';
         }
 
         $validator = Validator::make($params, $rules, [], $attributes);
@@ -414,6 +423,10 @@ class CheckoutProcessor implements ProcessorInterface
 
             $this->validateOrderCreation($cart, $input);
 
+            if ($cart->payment?->method === 'paypal_smart_button') {
+                throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.paypal-smart-button-payment-flow'), 422);
+            }
+
             if ($redirectUrl = Payment::getRedirectUrl($cart)) {
                 return $this->orderOutput([
                     'id' => $cart->id,
@@ -469,132 +482,6 @@ class CheckoutProcessor implements ProcessorInterface
     }
 
     /**
-     * Build order data from cart.
-     */
-    private function buildOrderDataFromCart($cart): array
-    {
-        $orderResource = new OrderResource($cart);
-
-        return $orderResource->jsonSerialize();
-    }
-
-    /**
-     * Validate order can be created.
-     */
-    private function validateOrderCreation($cart, CheckoutAddressInput $input): void
-    {
-        if (
-            ! $cart
-            || $cart->items()->count() === 0
-        ) {
-            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.cart-empty'), 422);
-        }
-
-        $customer = $cart->customer;
-
-        if ($customer?->is_suspended) {
-            throw new AuthorizationException(__('bagistoapi::app.graphql.checkout.account-suspended'));
-        }
-
-        if (
-            $customer
-            && ! $customer->status
-        ) {
-            throw new AuthorizationException(__('bagistoapi::app.graphql.checkout.account-inactive'));
-        }
-
-        $this->assertGuestCheckoutAllowed($cart);
-
-        $minimumOrderAmount = core()->getConfigData('sales.order_settings.minimum_order.minimum_order_amount') ?: 0;
-        if (! Cart::haveMinimumOrderAmount()) {
-            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.minimum-order-not-met', ['amount' => core()->currency($minimumOrderAmount)]), 422);
-        }
-
-        $hasBillingAddress = $input->billingAddress || $cart->billing_address()->exists();
-        if (! $hasBillingAddress) {
-            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.billing-address-required'), 422);
-        }
-
-        $hasShippingAddress = $input->shippingAddress || $input->useForShipping || $cart->shipping_address()->exists();
-        if (
-            ! $hasShippingAddress
-            && $cart->haveStockableItems()
-        ) {
-            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.shipping-address-required'), 422);
-        }
-
-        $hasEmail = $cart->customer_email || $input->billingEmail || ($cart->billing_address && $cart->billing_address->email);
-        if (! $hasEmail) {
-            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.email-required'), 422);
-        }
-
-        if ($cart->haveStockableItems()) {
-            $hasShippingMethod = $input->shippingMethod || $cart->shipping_method;
-            if (! $hasShippingMethod) {
-                throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.shipping-method-required'), 422);
-            }
-
-            if (! $cart->selected_shipping_rate) {
-                throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.invalid-shipping-method'), 422);
-            }
-        }
-
-        $hasPaymentMethod = $input->paymentMethod || $cart->payment()->exists();
-        if (! $hasPaymentMethod) {
-            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.payment-method-required'), 422);
-        }
-
-        if (! $this->isPaymentMethodAvailable($cart->payment?->method)) {
-            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.invalid-payment-method'), 422);
-        }
-    }
-
-    /**
-     * Stop when the cart carries an error, such as an item no longer in stock.
-     */
-    private function assertCartHasNoErrors(): void
-    {
-        if (Cart::hasError()) {
-            throw new InvalidInputException(Cart::getErrors()['message'] ?? __('bagistoapi::app.graphql.checkout.cart-empty'), 422);
-        }
-    }
-
-    /**
-     * Apply the storefront's guest checkout rules to a cart that has no customer.
-     */
-    private function assertGuestCheckoutAllowed($cart): void
-    {
-        if ($cart->customer_id) {
-            return;
-        }
-
-        if (
-            ! core()->getConfigData('sales.checkout.shopping_cart.allow_guest_checkout')
-            || $cart->hasDownloadableItems()
-            || ! $cart->hasGuestCheckoutItems()
-        ) {
-            throw new AuthorizationException(__('bagistoapi::app.graphql.checkout.guest-checkout-not-allowed'));
-        }
-    }
-
-    /**
-     * Whether the method is offered for the current cart. The PayPal Smart Button is never
-     * accepted here, as it captures payment through its own client-side flow.
-     */
-    private function isPaymentMethodAvailable(?string $method): bool
-    {
-        if (
-            ! $method
-            || $method === 'paypal_smart_button'
-        ) {
-            return false;
-        }
-
-        return collect(Payment::getSupportedPaymentMethods()['payment_methods'] ?? [])
-            ->contains('method', $method);
-    }
-
-    /**
      * Build a CheckoutAddressInput DTO from the incoming REST request body.
      */
     private function buildCheckoutAddressInputFromRequest($request): CheckoutAddressInput
@@ -613,7 +500,7 @@ class CheckoutProcessor implements ProcessorInterface
         }
 
         $fields = [
-            'billingFirstName', 'billingLastName', 'billingEmail', 'billingCompanyName',
+            'billingFirstName', 'billingLastName', 'billingEmail', 'billingCompanyName', 'billingVatId',
             'billingAddress', 'billingCountry', 'billingState', 'billingCity',
             'billingPostcode', 'billingPhoneNumber',
             'shippingFirstName', 'shippingLastName', 'shippingEmail', 'shippingCompanyName',
@@ -664,6 +551,7 @@ class CheckoutProcessor implements ProcessorInterface
             $output->billingLastName = (string) ($billingAddress->last_name ?? '');
             $output->billingEmail = (string) ($billingAddress->email ?? '');
             $output->billingCompanyName = (string) ($billingAddress->company_name ?? '');
+            $output->billingVatId = $billingAddress->vat_id;
             $output->billingAddress = (string) ($billingAddress->address ?? '');
             $output->billingCountry = (string) ($billingAddress->country ?? '');
             $output->billingState = (string) ($billingAddress->state ?? '');
@@ -706,6 +594,7 @@ class CheckoutProcessor implements ProcessorInterface
                 $output->billingLastName = $billingAddress->last_name;
                 $output->billingEmail = $billingAddress->email;
                 $output->billingCompanyName = $billingAddress->company_name;
+                $output->billingVatId = $billingAddress->vat_id;
                 $output->billingAddress = $billingAddress->address;
                 $output->billingCountry = $billingAddress->country;
                 $output->billingState = $billingAddress->state;

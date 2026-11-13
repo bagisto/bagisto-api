@@ -20,7 +20,7 @@ const MSG = {
   LOGIN_SUCCESS: 'You have logged in successfully',
   TOKEN_VALID: 'Token is valid',
   UNAUTHENTICATED: 'Unauthenticated. Please login to perform this action',
-  EMAIL_NOT_FOUND: 'Email address not found',
+  RESET_LINK_SENT: 'Reset link sent successfully to your email',
   PROFILE_UPDATED: 'Customer profile updated successfully',
   LOGGED_OUT: 'Logged out successfully',
   TOKEN_REQUIRED: 'Authentication token is required. Please provide the token in the Authorization header as "Bearer <token>"',
@@ -320,12 +320,12 @@ test.describe('customer graphql api', () => {
     expect(typeof customer.token).toBe('string');
   });
 
-  test('should report a forgot password request for an email that is not registered', async ({ request }) => {
+  test('should answer a forgot password request for an unregistered email like a registered one', async ({ request }) => {
     const body = await gql(request, CREATE_FORGOT_PASSWORD, { email: `bagisto.playwright+${uniqueSuffix()}@example.com` });
 
     expect(body.errors).toBeUndefined();
-    expect(body.data.createForgotPassword.forgotPassword.success).toBe(false);
-    expect(body.data.createForgotPassword.forgotPassword.message).toBe(MSG.EMAIL_NOT_FOUND);
+    expect(body.data.createForgotPassword.forgotPassword.success).toBe(true);
+    expect(body.data.createForgotPassword.forgotPassword.message).toBe(MSG.RESET_LINK_SENT);
   });
 
   test('should update the customer profile and read the change back', async ({ request }) => {

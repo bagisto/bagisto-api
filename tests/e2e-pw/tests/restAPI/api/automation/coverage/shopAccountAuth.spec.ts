@@ -101,7 +101,10 @@ test.describe('shop account profile delete rest api', () => {
       headers: bearer(customer.token),
     });
 
-    expect([201, 204]).toContain(response.status());
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    expect(body.success).toBe(true);
+    expect(body.message).toBe(MSG.ACCOUNT_DELETED);
 
     await expectTokenRejected(request, customer.token);
 
@@ -214,7 +217,7 @@ test.describe('shop account forgot password rest api', () => {
     expect(body.message).toBe(MSG.RESET_LINK_SENT);
   });
 
-  test('should report an address that is not registered', async ({ request }) => {
+  test('should answer an address that is not registered like a registered one', async ({ request }) => {
     const response = await sendRestRequest(request, SHOP_ACCOUNT.FORGOT_PASSWORDS, {
       method: 'POST',
       data: { email: `shop-account-missing-${uniqueSuffix()}@example.com` },
@@ -222,8 +225,8 @@ test.describe('shop account forgot password rest api', () => {
 
     expect(response.status()).toBe(201);
     const body = await response.json();
-    expect(body.success).toBe(false);
-    expect(body.message).toBe(MSG.RESET_EMAIL_NOT_FOUND);
+    expect(body.success).toBe(true);
+    expect(body.message).toBe(MSG.RESET_LINK_SENT);
   });
 
   test('should require an email address', async ({ request }) => {
@@ -232,10 +235,9 @@ test.describe('shop account forgot password rest api', () => {
       data: { email: '' },
     });
 
-    expect(response.status()).toBe(201);
+    expect(response.status()).toBe(422);
     const body = await response.json();
-    expect(body.success).toBe(false);
-    expect(body.message).toBe(MSG.RESET_EMAIL_REQUIRED);
+    expect(body.detail).toBe(MSG.RESET_EMAIL_REQUIRED);
   });
 });
 

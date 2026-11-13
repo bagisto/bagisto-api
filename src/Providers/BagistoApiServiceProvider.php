@@ -75,6 +75,7 @@ use Webkul\BagistoApi\Http\Controllers\DownloadSampleController;
 use Webkul\BagistoApi\Http\Controllers\GdprDataPdfController;
 use Webkul\BagistoApi\Http\Controllers\GraphQLPlaygroundController;
 use Webkul\BagistoApi\Http\Controllers\InvoicePdfController;
+use Webkul\BagistoApi\Http\Controllers\PaypalStandardReturnController;
 use Webkul\BagistoApi\Http\Controllers\ReturnMessageAttachmentController;
 use Webkul\BagistoApi\Http\Controllers\SwaggerUIController;
 use Webkul\BagistoApi\Http\Middleware\EnforceAdminApiAuth;
@@ -344,6 +345,16 @@ class BagistoApiServiceProvider extends ServiceProvider
         Route::get('/api/shop/gdpr-data/pdf', GdprDataPdfController::class)
             ->middleware(['Webkul\\BagistoApi\\Http\\Middleware\\VerifyStorefrontKey'])
             ->name('bagistoapi.customer_gdpr_data_pdf');
+
+        Route::middleware('web')->group(function () {
+            Route::get('/api/checkout/paypal-standard/{cartId}/{signature}/success', [PaypalStandardReturnController::class, 'success'])
+                ->where('cartId', '[0-9]+')
+                ->name('bagistoapi.paypal_standard.success');
+
+            Route::get('/api/checkout/paypal-standard/{cartId}/{signature}/cancel', [PaypalStandardReturnController::class, 'cancel'])
+                ->where('cartId', '[0-9]+')
+                ->name('bagistoapi.paypal_standard.cancel');
+        });
 
         Route::get('/api/downloadable/download-sample/{type}/{id}', DownloadSampleController::class)
             ->where('type', 'link|sample')

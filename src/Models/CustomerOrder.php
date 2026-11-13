@@ -16,6 +16,7 @@ use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderDetailDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderListDto;
 use Webkul\BagistoApi\State\CustomerOrderProvider;
 use Webkul\Sales\Models\RefundProxy;
+use Webkul\Sales\Repositories\OrderRepository;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -171,6 +172,36 @@ class CustomerOrder extends Model
     public function getId(): int
     {
         return $this->id;
+    }
+
+    /**
+     * Whether the order holds an item the customer may not cancel, such as a booking without cancellation,
+     * by core's own rule; a value the provider preloaded for the page is used as it is.
+     */
+    public function getHasNonCancelableBookingAttribute(?bool $value = null): bool
+    {
+        return $value ?? in_array((int) $this->id, static::nonCancelableOrderIds([(int) $this->id]), true);
+    }
+
+    /**
+     * The ids, out of the given ones, of orders holding an item core's OrderItem::isCancelableByCustomer() refuses.
+     *
+     * @param  array<int, int>  $orderIds
+     * @return array<int, int>
+     */
+    public static function nonCancelableOrderIds(array $orderIds): array
+    {
+        if (! $orderIds) {
+            return [];
+        }
+
+        return app(OrderRepository::class)
+            ->with('items.booking')
+            ->findWhereIn('id', $orderIds)
+            ->filter(fn ($order) => $order->items->contains(fn ($item) => ! $item->isCancelableByCustomer()))
+            ->map(fn ($order) => (int) $order->id)
+            ->values()
+            ->all();
     }
 
     /**

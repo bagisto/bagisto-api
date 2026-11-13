@@ -62,6 +62,12 @@ class CheckoutAddressPayloadOutput
     public ?string $billingCompanyName = null;
 
     /**
+     * The billing VAT id.
+     */
+    #[ApiProperty(writable: false, readable: true)]
+    public ?string $billingVatId = null;
+
+    /**
      * The billing address.
      */
     #[ApiProperty(writable: false, readable: true)]

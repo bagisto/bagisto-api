@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderDetailDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderListDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\OrderAddressDto;
@@ -91,6 +92,7 @@ class CustomerOrderProvider implements ProviderInterface
         $dto->order_currency_code = $order->order_currency_code;
         $dto->created_at = $order->created_at?->toIso8601String();
         $dto->updated_at = $order->updated_at?->toIso8601String();
+        $dto->has_non_cancelable_booking = $order->has_non_cancelable_booking;
 
         return $dto;
     }
@@ -120,6 +122,8 @@ class CustomerOrderProvider implements ProviderInterface
                 __('bagistoapi::app.graphql.customer-order.not-found', ['id' => $id])
             );
         }
+
+        $this->preloadNonCancelable(new Collection([$order]));
 
         $isGraphQL = ! empty($context['graphql_operation_name']);
 
@@ -193,6 +197,7 @@ class CustomerOrderProvider implements ProviderInterface
         $dto->total_due = round((float) $coreOrder->total_due, 2) + 0.0;
         $dto->base_total_due = round((float) $coreOrder->base_total_due, 2) + 0.0;
         $dto->can_cancel = $coreOrder->canCancel();
+        $dto->has_non_cancelable_booking = $order->has_non_cancelable_booking;
         $dto->can_reorder = $coreOrder->canReorder();
         $dto->have_stockable_items = $coreOrder->haveStockableItems();
 
@@ -461,6 +466,8 @@ class CustomerOrderProvider implements ProviderInterface
 
         $page = $this->paginateCursorWindow($query, $args, $limit);
 
+        $this->preloadNonCancelable($page->getCollection());
+
         if (
             $operation instanceof GetCollection
             && ! $isGraphQL
@@ -469,6 +476,19 @@ class CustomerOrderProvider implements ProviderInterface
         }
 
         return new Paginator($page);
+    }
+
+    /**
+     * Mark which of the orders hold an item the customer may not cancel, with one lookup for all of them.
+     */
+    private function preloadNonCancelable(Collection $orders): void
+    {
+        $restricted = CustomerOrder::nonCancelableOrderIds($orders->modelKeys());
+
+        $orders->each(fn (CustomerOrder $order) => $order->setAttribute(
+            'has_non_cancelable_booking',
+            in_array((int) $order->id, $restricted, true),
+        ));
     }
 
     /**

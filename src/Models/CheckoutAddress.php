@@ -77,6 +77,12 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                                         'example' => '',
                                     ],
 
+                                    'billingVatId' => [
+                                        'type' => 'string',
+                                        'description' => 'Validated against the billing country. Saved on the billing address only, as the storefront does.',
+                                        'example' => '',
+                                    ],
+
                                     'billingAddress' => [
                                         'type' => 'string',
                                         'example' => '123 Main St',
@@ -179,6 +185,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                                     'billingLastName' => 'Doe',
                                     'billingEmail' => 'john@example.com',
                                     'billingCompanyName' => '',
+                                    'billingVatId' => null,
                                     'billingAddress' => '123 Main St',
                                     'billingCountry' => 'US',
                                     'billingState' => 'NY',

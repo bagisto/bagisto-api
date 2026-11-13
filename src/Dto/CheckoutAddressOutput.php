@@ -58,6 +58,13 @@ class CheckoutAddressOutput
     public ?string $billingCompanyName = null;
 
     /**
+     * The billing VAT id.
+     */
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(readable: true, writable: false)]
+    public ?string $billingVatId = null;
+
+    /**
      * The billing address.
      */
     #[Groups(['query', 'mutation'])]

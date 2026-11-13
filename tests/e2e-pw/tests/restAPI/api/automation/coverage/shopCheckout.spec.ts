@@ -13,6 +13,7 @@ import {
   findSaleableSimpleProducts,
   listPaymentMethodCodes,
   placeCustomerOrder,
+  prepareOfflinePaymentCart,
   randomUuid,
   readJson,
   registerShopCustomer,
@@ -129,21 +130,19 @@ test.describe('shop checkout payment initiate rest api', () => {
     expect(body.cartId).toBe(line.cartId);
     expect(body.sessionId).toMatch(/^cs_/);
     expect(body.redirectUrl).toMatch(/^https:\/\/checkout\.stripe\.com\//);
-    expect(body.message).toBe(SHOP_CART_MESSAGES.ORDER_REDIRECT_REQUIRED);
+    expect(body.message).toBe(SHOP_CART_MESSAGES.PAYMENT_STARTED);
   });
 
-  test('should refuse a cart that is not paying with stripe', async ({ request }) => {
-    const [productId] = await findSaleableSimpleProducts(request, 1);
-    const guest = await createGuestCart(request);
-    await addCartLine(request, guest.token, productId, 1);
+  test('should refuse to start a payment for a cart paying offline', async ({ request }) => {
+    const token = await prepareOfflinePaymentCart(request);
 
     const response = await sendRestRequest(request, SHOP_CART_ENDPOINTS.CHECKOUT_PAYMENTS_INITIATE, {
       method: 'POST',
       data: {},
-      headers: bearer(guest.token),
+      headers: bearer(token),
     });
 
-    await expectProblem(response, 422, SHOP_CART_MESSAGES.INVALID_PAYMENT_METHOD);
+    await expectProblem(response, 422, SHOP_CART_MESSAGES.PAYMENT_NOT_ONLINE);
   });
 
   test('should refuse to start a payment without a bearer token', async ({ request }) => {
@@ -167,16 +166,16 @@ test.describe('shop checkout payment initiate rest api', () => {
 });
 
 test.describe('shop checkout payment confirm rest api', () => {
-  test('should reject a confirmation without a session id', async ({ request }) => {
-    const guest = await createGuestCart(request);
+  test('should refuse to confirm a cart paying offline', async ({ request }) => {
+    const token = await prepareOfflinePaymentCart(request);
 
     const response = await sendRestRequest(request, SHOP_CART_ENDPOINTS.CHECKOUT_PAYMENTS_CONFIRM, {
       method: 'POST',
       data: {},
-      headers: bearer(guest.token),
+      headers: bearer(token),
     });
 
-    await expectProblem(response, 422, SHOP_CART_MESSAGES.STRIPE_INVALID_SESSION);
+    await expectProblem(response, 422, SHOP_CART_MESSAGES.PAYMENT_NO_CONFIRMATION);
   });
 
   test('should refuse a confirmation without a bearer token', async ({ request }) => {

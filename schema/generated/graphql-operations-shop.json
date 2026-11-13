@@ -177,7 +177,10 @@
     "createCheckoutPaymentConfirmation": {
         "kind": "mutation",
         "tag": "Checkout",
-        "resource": "Webkul\\BagistoApi\\Models\\CheckoutPaymentConfirmation"
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutPaymentConfirmation",
+        "example": {
+            "reference": "12"
+        }
     },
     "createCheckoutPaymentMethod": {
         "kind": "mutation",

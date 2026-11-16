@@ -4251,6 +4251,7 @@
                                     "billingLastName": "Doe",
                                     "billingEmail": "john@example.com",
                                     "billingCompanyName": "",
+                                    "billingVatId": "",
                                     "billingAddress": "123 Main St",
                                     "billingCountry": "US",
                                     "billingState": "NY",
@@ -4377,6 +4378,10 @@
                                         "example": "john@example.com"
                                     },
                                     "billingCompanyName": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "billingVatId": {
                                         "type": "string",
                                         "example": ""
                                     },

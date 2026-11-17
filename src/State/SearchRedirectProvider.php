@@ -64,8 +64,8 @@ class SearchRedirectProvider implements ProviderInterface
             return $this->searchRepository
                 ->setSearchContext(SearchContextEnum::STOREFRONT)
                 ->getSuggestions($query);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
 
             return null;
         }

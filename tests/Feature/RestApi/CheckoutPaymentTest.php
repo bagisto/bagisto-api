@@ -8,6 +8,8 @@ use Webkul\BagistoApi\Tests\Concerns\PreparesCheckoutPayment;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\PayGlocal\Payment\PayGlocal;
 use Webkul\PhonePe\Payment\PhonePe;
+use Webkul\Sales\Repositories\InvoiceRepository;
+use Webkul\Sales\Repositories\OrderRepository;
 use Webkul\Stripe\Payment\Stripe;
 
 class CheckoutPaymentTest extends RestApiTestCase
@@ -427,12 +429,20 @@ class CheckoutPaymentTest extends RestApiTestCase
 
         $orderId = (int) DB::table('orders')->where('cart_id', $cartId)->value('id');
 
+        $order = app(OrderRepository::class)->find($orderId);
+
+        $invoice = app(InvoiceRepository::class)->create([
+            'order_id' => $orderId,
+            'invoice' => ['items' => $order->items->mapWithKeys(fn ($item) => [$item->id => $item->qty_to_invoice])->all()],
+        ]);
+
         DB::table('order_transactions')->insert([
             'transaction_id' => 'TX1',
             'status' => 'Completed',
             'type' => 'instant',
             'payment_method' => 'paypal_standard',
             'order_id' => $orderId,
+            'invoice_id' => $invoice->id,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

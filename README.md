@@ -6,7 +6,9 @@ Comprehensive REST and GraphQL APIs for seamless e-commerce integration and exte
 
 ## Requirements
 
-- [Bagisto](https://github.com/bagisto/bagisto) **v2.4.10**
+- [Bagisto](https://github.com/bagisto/bagisto) **v2.4.10 – v2.4.14**
+
+The package supports Bagisto v2.4.10 and every later 2.4 patch release up to v2.4.14 (v2.4.11, v2.4.12, v2.4.13 and v2.4.14). Install the same package version on any of these releases.
 
 ## Installation
 

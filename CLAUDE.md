@@ -4212,7 +4212,7 @@ and the early return in `refreshFlatDerived()` in the 4 catalog product suites.
 
 Bump the minimum core in `composer.json` in the same commit, so a store that still needs
 the legacy path cannot install the release that dropped it. Update the **Bagisto
-Compatibility** table in `README.md` to a single supported line.
+Compatibility** table in `UPGRADE.md` to a single supported line.
 
 ## B. Symfony 7 cap in `composer.json`
 

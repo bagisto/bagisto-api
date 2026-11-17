@@ -6,26 +6,7 @@ Comprehensive REST and GraphQL APIs for seamless e-commerce integration and exte
 
 ## Requirements
 
-- PHP 8.3+
 - [Bagisto](https://github.com/bagisto/bagisto) **v2.4.10**
-- API Platform for Laravel — `api-platform/laravel` and `api-platform/graphql` (`~4.3.8`), which bring in the remaining `api-platform/*` components at a matching version, installed automatically via `composer require`
-
-## Bagisto Compatibility
-
-One package serves the whole 2.4 line. It detects what the store it is installed on can do, so most of the API is identical everywhere and only the theme surface follows the store.
-
-| Store | Theme endpoints | Permissions |
-|-------|-----------------|-------------|
-| **v2.4.10 and newer** | `/api/admin/appearance/themes`, `/api/admin/appearance/sections`, `/api/shop/sections` and `/api/shop/theme` — including the draft, publish, discard, reorder, duplicate and preview flow | `appearance.*` |
-| **v2.4.9 and older** | `/api/admin/settings/themes` with mass-delete and mass-update-status, and `/api/shop/theme-customizations` | `settings.themes.*` |
-
-Only one set is registered, so endpoints the store cannot support are absent rather than failing when called. A few smaller behaviours follow the store the same way: product image `alt_text`, the derived columns behind the product listing, attribute `regex` validation, the attribute-family delete guard, and the in-use guards on email templates and marketing events.
-
-Upgrading Bagisto is what moves the theme endpoints — the package itself needs no change. Rebuild the caches afterwards so the new surface is picked up:
-
-```bash
-php artisan bagisto-api-platform:optimize
-```
 
 ## Installation
 
@@ -34,7 +15,13 @@ composer require bagisto/bagisto-api
 php artisan bagisto-api-platform:install
 ```
 
-Your APIs are now ready! Access them at:
+The installer publishes the configuration and assets, runs the migrations, creates a storefront key and writes it to `.env`, then clears and rebuilds the caches, so the APIs work as soon as it finishes.
+
+It also edits application files: it adds the service provider to `bootstrap/providers.php`, registers the API Platform providers in `bootstrap/app.php`, adds `api-platform/laravel` to `dont-discover` in `composer.json`, and makes core's `packages/Webkul/Core/src/Eloquent/TranslatableModel.php` abstract.
+
+Upgrading Bagisto or this package? See [`UPGRADE.md`](UPGRADE.md).
+
+### Access Points
 
 - **API Landing**: [https://your-domain.com/api](https://api-demo.bagisto.com/api)
 - **REST API (Shop)**: [https://your-domain.com/api/shop/](https://api-demo.bagisto.com/api/shop)
@@ -132,8 +119,9 @@ Values in the requests are placeholders — replace them with records that exist
 
 Admin endpoints (`/api/admin/*` and `/api/admin/graphql`) require an integration-token Bearer header:
 
+```
 Authorization: Bearer id|generated-token
-
+```
 
 To generate a token:
 
@@ -148,12 +136,13 @@ Each token is scoped to a single admin user and inherits that admin's role permi
 Tokens can be revoked at any time from the same page or via the signed link in the lifecycle notification email sent to the token owner.
 
 ## Documentation
+
 - Bagisto API: [Demo Page](https://api-demo.bagisto.com/api)
 - API Documentation: [Bagisto API Docs](https://api-docs.bagisto.com/)
 - GraphQL Playground (Shop): [Interactive Playground](https://api-demo.bagisto.com/api/graphiql)
 - GraphQL Playground (Admin): [Interactive Playground](https://api-demo.bagisto.com/api/admin/graphiql)
 - Release history: see [`CHANGELOG.md`](CHANGELOG.md)
- 
+
 ## Support
 
 For issues and questions, please visit:

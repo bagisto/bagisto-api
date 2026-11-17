@@ -3,15 +3,19 @@
 namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Laravel\Eloquent\Paginator;
+use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
+use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Filter\Attribute;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\ResolvesCursorWindow;
 use Webkul\BagistoApi\Support\CurrentCustomer;
+use Webkul\Category\Repositories\CategoryRepository;
 
 class FilterableAttributesProvider implements ProviderInterface
 {
@@ -22,46 +26,95 @@ class FilterableAttributesProvider implements ProviderInterface
      * Create a new instance.
      */
     public function __construct(
-        private readonly Pagination $pagination
+        private readonly Pagination $pagination,
+        private readonly CategoryRepository $categoryRepository,
     ) {}
 
     /**
-     * Provide.
+     * Provide the filterable attributes, as a plain list over REST and a cursor page over GraphQL.
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $source = $context['source'] ?? null;
-        $args = $context['args'] ?? [];
-        $info = $context['info'] ?? null;
+        $isRest = $operation instanceof HttpOperation;
 
-        $categorySlug = $args['categorySlug'] ?? null;
+        $args = $isRest ? request()->query() : ($context['args'] ?? []);
 
-        $requested = $this->requestedCursorLimit($args, 30);
-        $limit = $requested > 0 ? $this->clampPageSize($requested) : 0;
+        $categoryId = $this->resolveCategoryId($args);
 
-        $query = Attribute::query();
+        [$minPrice, $maxPrice] = $this->priceBounds($categoryId);
 
-        $query->select('attributes.*');
+        $query = $this->attributeQuery($categoryId);
 
-        $categoryId = $categorySlug
-            ? DB::table('category_translations')->where('slug', $categorySlug)->select('category_id')->pluck('category_id')->first()
-            : null;
-
-        if ($categoryId) {
-            $query
-                ->leftJoin('category_filterable_attributes as cfa', 'cfa.attribute_id', '=', 'attributes.id')
-                ->where('cfa.category_id', $categoryId);
-        } else {
-            $query->where('is_filterable', 1);
+        if ($isRest) {
+            return $this->withPrices($query->get(), $minPrice, $maxPrice)->all();
         }
 
-        $query->with(['options', 'translations', 'options.translations']);
-        $query->orderBy('attributes.id', 'asc');
+        $requested = $this->requestedCursorLimit($args, 30);
 
+        $limit = $requested > 0 ? $this->clampPageSize($requested) : 0;
+
+        $page = $this->paginateCursorWindow($query, $args, $limit)
+            ->through(fn (Attribute $item) => $this->withPrice($item, $minPrice, $maxPrice));
+
+        return new Paginator($page);
+    }
+
+    /**
+     * The category from `categoryId` / `category_id`, refused when unknown, else from `categorySlug` / `category_slug`.
+     */
+    private function resolveCategoryId(array $args): ?int
+    {
+        $categoryId = $args['categoryId'] ?? $args['category_id'] ?? null;
+
+        if (
+            $categoryId !== null
+            && $categoryId !== ''
+        ) {
+            if (! $this->categoryRepository->find((int) $categoryId)) {
+                throw new ResourceNotFoundException(__('bagistoapi::app.graphql.category.not-found'));
+            }
+
+            return (int) $categoryId;
+        }
+
+        $categorySlug = $args['categorySlug'] ?? $args['category_slug'] ?? null;
+
+        if (! is_string($categorySlug) || $categorySlug === '') {
+            return null;
+        }
+
+        return $this->categoryRepository->findBySlug($categorySlug)?->id;
+    }
+
+    /**
+     * The category's own filterable attributes, or the store-wide filterable set when no category is given.
+     */
+    private function attributeQuery(?int $categoryId): Builder
+    {
+        $query = Attribute::query()
+            ->select('attributes.*')
+            ->with(['options', 'translations', 'options.translations'])
+            ->orderBy('attributes.id', 'asc');
+
+        if ($categoryId) {
+            return $query
+                ->join('category_filterable_attributes as cfa', 'cfa.attribute_id', '=', 'attributes.id')
+                ->where('cfa.category_id', $categoryId);
+        }
+
+        return $query->where('is_filterable', 1);
+    }
+
+    /**
+     * The lowest and highest product price for the customer's group, in the requested currency.
+     *
+     * @return array{0: float, 1: float}
+     */
+    private function priceBounds(?int $categoryId): array
+    {
         $customer = CurrentCustomer::user();
-        $customerGroup = ($customer && $customer->group)
-            ? $customer->group
-            : core()->getGuestCustomerGroup();
+
+        $customerGroup = $customer?->group ?: core()->getGuestCustomerGroup();
 
         $priceQuery = Product::query()
             ->leftJoin('product_price_indices', 'products.id', 'product_price_indices.product_id')
@@ -72,16 +125,28 @@ class FilterableAttributesProvider implements ProviderInterface
             $priceQuery->where('product_categories.category_id', $categoryId);
         }
 
-        $maxPrice = (clone $priceQuery)->max('min_price') ?? 0;
-        $minPrice = (clone $priceQuery)->min('min_price') ?? 0;
+        return [
+            (float) core()->convertPrice((float) ((clone $priceQuery)->min('min_price') ?? 0)),
+            (float) core()->convertPrice((float) ((clone $priceQuery)->max('min_price') ?? 0)),
+        ];
+    }
 
-        $page = $this->paginateCursorWindow($query, $args, $limit)->through(function ($item) use ($maxPrice, $minPrice) {
-            $item->maxPrice = (float) $maxPrice;
-            $item->minPrice = (float) $minPrice;
+    /**
+     * Attach the price range to every attribute of the list.
+     */
+    private function withPrices(Collection $items, float $minPrice, float $maxPrice): Collection
+    {
+        return $items->map(fn (Attribute $item) => $this->withPrice($item, $minPrice, $maxPrice));
+    }
 
-            return $item;
-        });
+    /**
+     * Attach the price range to one attribute.
+     */
+    private function withPrice(Attribute $item, float $minPrice, float $maxPrice): Attribute
+    {
+        $item->minPrice = $minPrice;
+        $item->maxPrice = $maxPrice;
 
-        return new Paginator($page);
+        return $item;
     }
 }

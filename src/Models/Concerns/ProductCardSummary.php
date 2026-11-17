@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\ApiProperty;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\Product\Helpers\ConfigurableOption;
+use Webkul\Product\Models\Product as CoreProduct;
 
 trait ProductCardSummary
 {
@@ -77,12 +79,18 @@ trait ProductCardSummary
     }
 
     /**
-     * Placeholder so the REST detail can carry the configurable option configuration; the REST detail fills it.
+     * The option configuration the storefront's option picker reads, as JSON; null for other product types.
      */
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getConfigurableConfigAttribute(): ?string
     {
-        return null;
+        if ($this->type !== 'configurable') {
+            return null;
+        }
+
+        $coreProduct = (new CoreProduct)->newFromBuilder($this->getAttributes())->setRelations($this->getRelations());
+
+        return json_encode(app(ConfigurableOption::class)->getConfigurationConfig($coreProduct));
     }
 
     /**

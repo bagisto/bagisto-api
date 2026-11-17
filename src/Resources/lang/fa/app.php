@@ -469,6 +469,15 @@ return [
             'not-found' => 'زبان یافت نشد',
         ],
 
+        'search' => [
+            'query-required' => 'عبارت جستجو الزامی است.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'مسیر الزامی است.',
+            'not-found' => 'هیچ چیزی با این مسیر مطابقت ندارد.',
+        ],
+
         'category' => [
             'id-required' => 'شناسه دسته‌بندی الزامی است',
             'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/categories/1" یا شناسه عددی انتظار می‌رود',

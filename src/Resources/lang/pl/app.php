@@ -469,6 +469,15 @@ return [
             'not-found' => 'Ustawienia regionalne nie znalezione',
         ],
 
+        'search' => [
+            'query-required' => 'Zapytanie wyszukiwania jest wymagane.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'Ścieżka jest wymagana.',
+            'not-found' => 'Nic nie pasuje do tej ścieżki.',
+        ],
+
         'category' => [
             'id-required' => 'Identyfikator kategorii jest wymagany',
             'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/categories/1" lub identyfikator liczbowy',

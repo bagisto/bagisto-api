@@ -469,6 +469,15 @@ return [
             'not-found' => '未找到语言区域',
         ],
 
+        'search' => [
+            'query-required' => '搜索关键词为必填项。',
+        ],
+
+        'url-resolver' => [
+            'path-required' => '路径为必填项。',
+            'not-found' => '没有与此路径匹配的内容。',
+        ],
+
         'category' => [
             'id-required' => '需要分类ID',
             'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/categories/1"的IRI格式或数字ID',

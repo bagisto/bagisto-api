@@ -56,7 +56,7 @@
     },
     "categoryAttributeFilters": {
         "kind": "query",
-        "tag": "CategoryAttributeFilter",
+        "tag": "Category",
         "resource": "Webkul\\BagistoApi\\Models\\Filter\\Attribute"
     },
     "channel": {
@@ -98,6 +98,11 @@
         "kind": "query",
         "tag": "ShippingRates",
         "resource": "Webkul\\BagistoApi\\Models\\ShippingRates"
+    },
+    "compareAttributes": {
+        "kind": "query",
+        "tag": "CompareItem",
+        "resource": "Webkul\\BagistoApi\\Models\\CompareAttribute"
     },
     "compareItem": {
         "kind": "query",
@@ -873,6 +878,11 @@
             "message": "Please delete my personal data."
         }
     },
+    "searchRedirect": {
+        "kind": "query",
+        "tag": "Product",
+        "resource": "Webkul\\BagistoApi\\Models\\SearchRedirect"
+    },
     "section": {
         "kind": "query",
         "tag": "Theme",
@@ -917,6 +927,11 @@
             "rating": 5,
             "name": "John Doe"
         }
+    },
+    "urlResolver": {
+        "kind": "query",
+        "tag": "Catalog",
+        "resource": "Webkul\\BagistoApi\\Models\\UrlResolver"
     },
     "wishlist": {
         "kind": "query",

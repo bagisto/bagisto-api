@@ -469,6 +469,15 @@ return [
             'not-found' => 'Idioma no encontrado',
         ],
 
+        'search' => [
+            'query-required' => 'La consulta de búsqueda es obligatoria.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'La ruta es obligatoria.',
+            'not-found' => 'Nada coincide con esta ruta.',
+        ],
+
         'category' => [
             'id-required' => 'El ID de la categoría es obligatorio',
             'invalid-id-format' => 'Formato de ID inválido. Se esperaba formato IRI como "/api/shop/categories/1" o ID numérico',

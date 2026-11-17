@@ -469,6 +469,15 @@ return [
             'not-found' => 'لم يتم العثور على اللغة',
         ],
 
+        'search' => [
+            'query-required' => 'استعلام البحث مطلوب.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'المسار مطلوب.',
+            'not-found' => 'لا يوجد شيء يطابق هذا المسار.',
+        ],
+
         'category' => [
             'id-required' => 'معرف الفئة مطلوب',
             'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/categories/1" أو معرف رقمي',

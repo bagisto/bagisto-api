@@ -469,6 +469,15 @@ return [
             'not-found' => 'लोकेल नहीं मिला',
         ],
 
+        'search' => [
+            'query-required' => 'खोज क्वेरी आवश्यक है।',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'पाथ आवश्यक है।',
+            'not-found' => 'इस पाथ से कुछ भी मेल नहीं खाता।',
+        ],
+
         'category' => [
             'id-required' => 'श्रेणी ID आवश्यक है',
             'invalid-id-format' => 'अमान्य ID प्रारूप। "/api/shop/categories/1" जैसा IRI प्रारूप या संख्यात्मक ID अपेक्षित है',

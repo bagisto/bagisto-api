@@ -97,6 +97,9 @@ type Query {
 
   "Attribute Filters for the category or product grid page"
   categoryAttributeFilters(
+    "Category ID; takes precedence over categorySlug"
+    categoryId: Int
+
     categorySlug: String
 
     "Number of items to return from the start"
@@ -168,6 +171,9 @@ type Query {
 
   "Get available shipping rates for a cart by token"
   collectionShippingRates: [ShippingRates]
+
+  "List the attributes the storefront compare page renders as comparison rows."
+  compareAttributes: [CompareAttribute]
 
   "One compare-list item of the authenticated customer; another customer's item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   compareItem(id: ID!): CompareItem
@@ -748,6 +754,15 @@ type Query {
     order: String
   ): [ReturnableOrder]
 
+  "The redirect URL set on a search term, or null, plus the \"did you mean\" suggestion."
+  searchRedirect(
+    "The search term."
+    query: String!
+
+    "Pass false to skip the \"did you mean\" lookup."
+    suggest: Boolean
+  ): SearchRedirect
+
   "One active theme section of the current channel's theme; a switched-off section or one of another channel or theme is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   section(id: ID!): Section
 
@@ -779,6 +794,9 @@ type Query {
     "Only children of this category will be returned, usually a root category."
     parentId: Int
   ): [Category]
+
+  "Resolve a storefront path to a category, a product or a redirect."
+  urlResolver(path: String!): UrlResolverItem
 
   "One wishlist item of the authenticated customer on the current channel; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   wishlist(id: ID!): Wishlist
@@ -1398,6 +1416,16 @@ type CheckoutAddress implements Node {
 type CheckoutMessage implements Node {
   id: ID!
   message: String
+}
+
+"List the attributes the storefront compare page renders as comparison rows."
+type CompareAttribute implements Node {
+  _id: Int
+  adminName: String
+  code: String
+  id: ID!
+  name: String
+  type: String
 }
 
 "One compare-list item of the authenticated customer; another customer's item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
@@ -4084,6 +4112,14 @@ type ReturnableOrder implements Node {
   totalReturnedQty: Int
 }
 
+"The redirect URL set on a search term, or null, plus the \"did you mean\" suggestion."
+type SearchRedirect implements Node {
+  id: ID!
+  query: String
+  redirectUrl: String
+  suggestion: String
+}
+
 "One active theme section of the current channel's theme; a switched-off section or one of another channel or theme is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
 type Section implements Node {
   _id: Int!
@@ -4233,6 +4269,24 @@ type Theme implements Node {
   id: ID!
   name: String
   sectionTypes: Iterable!
+}
+
+"Resolve a storefront path to a category, a product or a redirect."
+type UrlResolverItem implements Node {
+  "The category or product id, for those types."
+  entityId: Int
+
+  id: ID!
+  path: String
+
+  "HTTP status of the redirect, 301 or 302."
+  redirectType: Int
+
+  "Where to redirect, for the redirect type."
+  targetPath: String
+
+  "category, product, redirect or home."
+  type: String
 }
 
 "One wishlist item of the authenticated customer on the current channel; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."

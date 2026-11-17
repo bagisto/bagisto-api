@@ -469,6 +469,15 @@ return [
             'not-found' => 'Locale not found',
         ],
 
+        'search' => [
+            'query-required' => 'The search query is required.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'The path is required.',
+            'not-found' => 'Nothing matches this path.',
+        ],
+
         'category' => [
             'id-required' => 'Category ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/categories/1" or numeric ID',

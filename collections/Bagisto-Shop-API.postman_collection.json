@@ -1138,6 +1138,57 @@
                     ]
                 },
                 {
+                    "name": "Catalog",
+                    "item": [
+                        {
+                            "name": "Resolve a storefront URL",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/url-resolver?path=nike-shoes",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "url-resolver"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "path",
+                                            "value": "nike-shoes",
+                                            "description": "The path, without the domain, for example `men/shirts` or `/nike-shoes`.",
+                                            "disabled": false
+                                        }
+                                    ]
+                                },
+                                "description": "Tells a headless storefront what a path is, in the order the storefront checks it: a category slug, a product URL key (only a visible, enabled product), the last segment of a nested category path (a 301), then a URL rewrite. `type` is `category`, `product`, `redirect` or `home`. A path nothing matches answers 404. Returned as a list of one entry."
+                            }
+                        }
+                    ]
+                },
+                {
                     "name": "Category",
                     "item": [
                         {
@@ -1242,6 +1293,59 @@
                                     ]
                                 },
                                 "description": "Returns a flat list of active categories only (status=1). Admin-disabled categories are never returned. Use `?parent_id=N` for direct children of a category. Each item embeds its `translation`, `children`, and `filterableAttributes`. For a hierarchical tree response use /category-trees instead. Public endpoint."
+                            }
+                        },
+                        {
+                            "name": "List the filterable attributes of a category",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/categories/attributes",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "categories",
+                                        "attributes"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "category_id",
+                                            "value": "2",
+                                            "description": "Category ID. Answers 404 when the category does not exist.",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "category_slug",
+                                            "value": "men",
+                                            "description": "Category slug, used when `category_id` is not sent.",
+                                            "disabled": true
+                                        }
+                                    ]
+                                },
+                                "description": "Returns the attributes of the storefront filter panel for a category, with their options and the price range of its products in the requested currency. With no category, every attribute marked filterable is returned. Public endpoint."
                             }
                         }
                     ]
@@ -2192,6 +2296,44 @@
                                     ]
                                 },
                                 "description": "Returns the authenticated customer's compare list."
+                            }
+                        },
+                        {
+                            "name": "List the comparable attributes",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/compare-attributes",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "compare-attributes"
+                                    ]
+                                },
+                                "description": "Returns the attributes marked comparable that belong to an attribute family, excluding name and price, in the requested locale. These are the rows of the storefront compare page; read each value from the matching product field."
                             }
                         },
                         {
@@ -7673,6 +7815,58 @@
                             }
                         },
                         {
+                            "name": "Search-term redirect",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/search-redirect?query=summer sale",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "search-redirect"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "query",
+                                            "value": "summer sale",
+                                            "description": "The search term.",
+                                            "disabled": false
+                                        },
+                                        {
+                                            "key": "suggest",
+                                            "value": "",
+                                            "description": "Send `0` to skip the \"did you mean\" lookup; `suggestion` is then null.",
+                                            "disabled": true
+                                        }
+                                    ]
+                                },
+                                "description": "Call before searching. When the term has a redirect URL in Marketing > Search Terms for the current channel and locale, the storefront sends the shopper there instead of showing results; `redirectUrl` is that URL, or null. `suggestion` is the \"did you mean\" term of the storefront search engine, or null. Returned as a list of one entry."
+                            }
+                        },
+                        {
                             "name": "Translate an approved product review",
                             "request": {
                                 "method": "GET",
@@ -10836,6 +11030,50 @@
                     ]
                 },
                 {
+                    "name": "Catalog",
+                    "item": [
+                        {
+                            "name": "Queries",
+                            "item": [
+                                {
+                                    "name": "urlResolver",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query UrlResolver($path: String!) {\n  urlResolver(path: $path) {\n    entityId\n    id\n    path\n    redirectType\n    targetPath\n    type\n  }\n}\n",
+                                                "variables": "{\n    \"path\": \"sample\"\n}"
+                                            }
+                                        },
+                                        "description": "Resolve a storefront path to a category, a product or a redirect."
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
                     "name": "Category",
                     "item": [
                         {
@@ -11663,6 +11901,40 @@
                         {
                             "name": "Queries",
                             "item": [
+                                {
+                                    "name": "compareAttributes",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query CompareAttributes {\n  compareAttributes {\n    _id\n    adminName\n    code\n    id\n    name\n    type\n  }\n}\n",
+                                                "variables": "{}"
+                                            }
+                                        },
+                                        "description": "List the attributes the storefront compare page renders as comparison rows."
+                                    }
+                                },
                                 {
                                     "name": "compareItem",
                                     "request": {
@@ -15033,6 +15305,40 @@
                                             }
                                         },
                                         "description": "Products visible in the storefront of the channel. `query` searches SKU and name (partial match); `filter` is a JSON object of attribute filters such as type, sku, category_id or price; `sortKey` is TITLE (or NAME), CREATED_AT, UPDATED_AT, PRICE or ID (default), ascending unless `reverse` is true. `locale` and `channel` (codes) choose where values are read. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
+                                    }
+                                },
+                                {
+                                    "name": "searchRedirect",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query SearchRedirect($query: String!) {\n  searchRedirect(query: $query) {\n    id\n    query\n    redirectUrl\n    suggestion\n  }\n}\n",
+                                                "variables": "{\n    \"query\": \"sample\"\n}"
+                                            }
+                                        },
+                                        "description": "The redirect URL set on a search term, or null, plus the \"did you mean\" suggestion."
                                     }
                                 }
                             ]

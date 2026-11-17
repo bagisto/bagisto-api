@@ -469,6 +469,15 @@ return [
             'not-found' => 'লোকেল পাওয়া যায়নি',
         ],
 
+        'search' => [
+            'query-required' => 'অনুসন্ধানের শব্দ আবশ্যক।',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'পাথ আবশ্যক।',
+            'not-found' => 'এই পাথের সাথে কিছুই মেলে না।',
+        ],
+
         'category' => [
             'id-required' => 'ক্যাটাগরি আইডি প্রয়োজন',
             'invalid-id-format' => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/categories/1"-এর মতো IRI ফর্ম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',

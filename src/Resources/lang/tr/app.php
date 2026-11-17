@@ -469,6 +469,15 @@ return [
             'not-found' => 'Yerel ayar bulunamadı',
         ],
 
+        'search' => [
+            'query-required' => 'Arama sorgusu zorunludur.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'Yol zorunludur.',
+            'not-found' => 'Bu yolla eşleşen bir şey yok.',
+        ],
+
         'category' => [
             'id-required' => 'Kategori kimliği gereklidir',
             'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/categories/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',

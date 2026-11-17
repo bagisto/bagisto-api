@@ -469,6 +469,15 @@ return [
             'not-found' => 'השפה לא נמצאה',
         ],
 
+        'search' => [
+            'query-required' => 'שאילתת החיפוש נדרשת.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'הנתיב נדרש.',
+            'not-found' => 'שום דבר אינו תואם לנתיב זה.',
+        ],
+
         'category' => [
             'id-required' => 'מזהה הקטגוריה נדרש',
             'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/categories/1" או מזהה מספרי',

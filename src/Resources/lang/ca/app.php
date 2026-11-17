@@ -469,6 +469,15 @@ return [
             'not-found' => 'Configuració regional no trobada',
         ],
 
+        'search' => [
+            'query-required' => 'La consulta de cerca és obligatòria.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'El camí és obligatori.',
+            'not-found' => 'No hi ha res que coincideixi amb aquest camí.',
+        ],
+
         'category' => [
             'id-required' => 'Cal l\'ID de la categoria',
             'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/categories/1" o un ID numèric',

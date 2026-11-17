@@ -469,6 +469,15 @@ return [
             'not-found' => 'Taal niet gevonden',
         ],
 
+        'search' => [
+            'query-required' => 'De zoekopdracht is verplicht.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'Het pad is verplicht.',
+            'not-found' => 'Er komt niets overeen met dit pad.',
+        ],
+
         'category' => [
             'id-required' => 'Categorie-ID is vereist',
             'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht wordt een IRI-formaat zoals "/api/shop/categories/1" of een numerieke ID',

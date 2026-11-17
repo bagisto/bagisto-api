@@ -469,6 +469,15 @@ return [
             'not-found' => 'භාෂා ප්‍රදේශය හමු නොවිණි',
         ],
 
+        'search' => [
+            'query-required' => 'සෙවුම් විමසුම අවශ්‍ය වේ.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'මාර්ගය අවශ්‍ය වේ.',
+            'not-found' => 'මෙම මාර්ගයට කිසිවක් ගැළපෙන්නේ නැත.',
+        ],
+
         'category' => [
             'id-required' => 'ප්‍රවර්ග ID අවශ්‍ය වේ',
             'invalid-id-format' => 'අවලංගු ID ආකෘතිය. "/api/shop/categories/1" වැනි IRI ආකෘතියක් හෝ සංඛ්‍යාත්මක ID එකක් අපේක්ෂා කෙරේ',

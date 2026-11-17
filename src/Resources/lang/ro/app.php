@@ -469,6 +469,15 @@ return [
             'not-found' => 'Limba nu a fost găsită',
         ],
 
+        'search' => [
+            'query-required' => 'Termenul de căutare este obligatoriu.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'Calea este obligatorie.',
+            'not-found' => 'Nimic nu corespunde acestei căi.',
+        ],
+
         'category' => [
             'id-required' => 'ID-ul categoriei este obligatoriu',
             'invalid-id-format' => 'Format de ID invalid. Se așteaptă un format IRI precum "/api/shop/categories/1" sau un ID numeric',

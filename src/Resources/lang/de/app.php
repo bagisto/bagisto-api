@@ -469,6 +469,15 @@ return [
             'not-found' => 'Gebietsschema nicht gefunden',
         ],
 
+        'search' => [
+            'query-required' => 'Der Suchbegriff ist erforderlich.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'Der Pfad ist erforderlich.',
+            'not-found' => 'Zu diesem Pfad wurde nichts gefunden.',
+        ],
+
         'category' => [
             'id-required' => 'Kategorie-ID ist erforderlich',
             'invalid-id-format' => 'Ungültiges ID-Format. Erwartet wird ein IRI-Format wie "/api/shop/categories/1" oder eine numerische ID',

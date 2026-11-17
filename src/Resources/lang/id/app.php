@@ -469,6 +469,15 @@ return [
             'not-found' => 'Lokal tidak ditemukan',
         ],
 
+        'search' => [
+            'query-required' => 'Kata kunci pencarian wajib diisi.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'Path wajib diisi.',
+            'not-found' => 'Tidak ada yang cocok dengan path ini.',
+        ],
+
         'category' => [
             'id-required' => 'ID kategori diperlukan',
             'invalid-id-format' => 'Format ID tidak valid. Diharapkan format IRI seperti "/api/shop/categories/1" atau ID numerik',

@@ -469,6 +469,15 @@ return [
             'not-found' => 'ロケールが見つかりません',
         ],
 
+        'search' => [
+            'query-required' => '検索クエリは必須です。',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'パスは必須です。',
+            'not-found' => 'このパスに一致するものはありません。',
+        ],
+
         'category' => [
             'id-required' => 'カテゴリIDが必要です',
             'invalid-id-format' => '無効なID形式です。"/api/shop/categories/1"のようなIRI形式または数値IDが想定されています',

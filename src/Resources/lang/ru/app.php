@@ -469,6 +469,15 @@ return [
             'not-found' => 'Локаль не найдена',
         ],
 
+        'search' => [
+            'query-required' => 'Поисковый запрос обязателен.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'Путь обязателен.',
+            'not-found' => 'Ничего не найдено по этому пути.',
+        ],
+
         'category' => [
             'id-required' => 'Требуется ID категории',
             'invalid-id-format' => 'Недопустимый формат ID. Ожидается формат IRI, например "/api/shop/categories/1", или числовой ID',

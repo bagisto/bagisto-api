@@ -72,7 +72,7 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
 
         $servers = [
             new Server(
-                url: '/api/'.$endpointType,
+                url: request()->getBasePath().'/api/'.$endpointType,
                 description: $endpointType === 'shop' ? 'Shop API - Customer-facing endpoints' : 'Admin API - Administrative endpoints'
             ),
         ];

@@ -762,6 +762,67 @@ class AttributeFamilyTest extends AdminApiTestCase
     }
 
     /**
+     * Test update family with a group outside the family returns 404.
+     */
+    public function test_update_family_unknown_group_returns_404(): void
+    {
+        $admin = $this->createAdmin();
+        $familyId = $this->insertFamily(['code' => 'upd_badgrp_'.uniqid(), 'name' => 'Before']);
+        $code = \DB::table('attribute_families')->where('id', $familyId)->value('code');
+        $missingGroupId = (int) \DB::table('attribute_groups')->max('id') + 1000;
+
+        $response = $this->adminPut($admin, '/api/admin/catalog/families/'.$familyId, [
+            'code' => $code,
+            'name' => 'After',
+
+            'attribute_groups' => [
+                $missingGroupId => [
+                    'code' => 'ghost',
+                    'name' => 'Ghost',
+                    'column' => 1,
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(404);
+        expect(\DB::table('attribute_families')->where('id', $familyId)->value('name'))->toBe('Before');
+    }
+
+    /**
+     * Test update family with an unknown attribute returns 404.
+     */
+    public function test_update_family_unknown_attribute_returns_404(): void
+    {
+        $admin = $this->createAdmin();
+        $familyId = $this->insertFamily(['code' => 'upd_badattr_'.uniqid()]);
+        $code = \DB::table('attribute_families')->where('id', $familyId)->value('code');
+        $name = \DB::table('attribute_families')->where('id', $familyId)->value('name');
+        $missingAttributeId = (int) \DB::table('attributes')->max('id') + 1000;
+
+        $response = $this->adminPut($admin, '/api/admin/catalog/families/'.$familyId, [
+            'code' => $code,
+            'name' => $name,
+
+            'attribute_groups' => [
+                'group_new_1' => [
+                    'code' => 'new_group',
+                    'name' => 'New Group',
+                    'column' => 1,
+
+                    'custom_attributes' => [
+                        [
+                            'id' => $missingAttributeId,
+                            'position' => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(404);
+    }
+
+    /**
      * Test update family adds new group.
      */
     public function test_update_family_adds_new_group(): void

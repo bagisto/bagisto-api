@@ -1654,7 +1654,7 @@
                                             "variable": [
                                                 {
                                                     "key": "attributeId",
-                                                    "value": "12",
+                                                    "value": "23",
                                                     "description": "Attribute ID."
                                                 }
                                             ]
@@ -1775,7 +1775,7 @@
                                             "variable": [
                                                 {
                                                     "key": "attributeId",
-                                                    "value": "12",
+                                                    "value": "23",
                                                     "description": "Attribute ID."
                                                 },
                                                 {
@@ -2008,7 +2008,7 @@
                                             "variable": [
                                                 {
                                                     "key": "attributeId",
-                                                    "value": "12",
+                                                    "value": "23",
                                                     "description": "Attribute ID."
                                                 },
                                                 {
@@ -3709,7 +3709,7 @@
                                 "description": "New groups are always created with is_user_defined=1 (system groups cannot be created via API).",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"code\": \"wholesale\",\n    \"name\": \"Wholesale\"\n}",
+                                    "raw": "{\n    \"code\": \"vip_buyers\",\n    \"name\": \"VIP Buyers\"\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -3896,7 +3896,7 @@
                                 "description": "System groups refuse code/is_user_defined changes (422). Only name can be updated for system groups.",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"code\": \"wholesale\",\n    \"name\": \"Wholesale Buyers\"\n}",
+                                    "raw": "{\n    \"name\": \"General Customers\"\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -6465,7 +6465,7 @@
                                         "description": "Creates a cart price rule. `name`, `channels`, `customer_groups`, `coupon_type` (0 no coupon, 1 coupon), `action_type` (by_percent, by_fixed, cart_fixed or buy_x_get_y) and `discount_amount` are required; `ends_till` may not be before `starts_from`.",
                                         "body": {
                                             "mode": "raw",
-                                            "raw": "{\n    \"name\": \"10% off summer\",\n    \"description\": \"Sitewide 10% off summer collection\",\n    \"channels\": [\n        1\n    ],\n    \"customer_groups\": [\n        1,\n        2,\n        3\n    ],\n    \"coupon_type\": 1,\n    \"use_auto_generation\": 0,\n    \"coupon_code\": \"SUMMER10\",\n    \"uses_per_coupon\": 100,\n    \"usage_per_customer\": 1,\n    \"condition_type\": 1,\n    \"conditions\": [\n        {\n            \"attribute\": \"cart|base_sub_total\",\n            \"operator\": \">=\",\n            \"value\": \"100\",\n            \"attribute_type\": \"price\"\n        }\n    ],\n    \"action_type\": \"by_percent\",\n    \"discount_amount\": 10,\n    \"discount_quantity\": 1,\n    \"discount_step\": 0,\n    \"apply_to_shipping\": 0,\n    \"free_shipping\": 0,\n    \"end_other_rules\": 0,\n    \"sort_order\": 0,\n    \"starts_from\": \"2026-06-01 00:00:00\",\n    \"ends_till\": \"2026-08-31 23:59:59\",\n    \"status\": 1\n}",
+                                            "raw": "{\n    \"name\": \"10% off summer\",\n    \"description\": \"Sitewide 10% off summer collection\",\n    \"channels\": [\n        1\n    ],\n    \"customer_groups\": [\n        1,\n        2,\n        3\n    ],\n    \"coupon_type\": 1,\n    \"use_auto_generation\": 0,\n    \"coupon_code\": \"SUMMER10\",\n    \"uses_per_coupon\": 100,\n    \"usage_per_customer\": 1,\n    \"condition_type\": 1,\n    \"conditions\": [\n        {\n            \"attribute\": \"cart|base_sub_total\",\n            \"operator\": \">=\",\n            \"value\": \"100\",\n            \"attribute_type\": \"price\"\n        }\n    ],\n    \"action_type\": \"by_percent\",\n    \"discount_amount\": 10,\n    \"discount_quantity\": 1,\n    \"discount_step\": \"0\",\n    \"apply_to_shipping\": 0,\n    \"free_shipping\": 0,\n    \"end_other_rules\": 0,\n    \"sort_order\": 0,\n    \"starts_from\": \"2026-06-01 00:00:00\",\n    \"ends_till\": \"2026-08-31 23:59:59\",\n    \"status\": 1\n}",
                                             "options": {
                                                 "raw": {
                                                     "language": "json"
@@ -6962,7 +6962,7 @@
                                         "description": "Partial update — send only the fields you change. channels / customer_groups, when supplied, fully replace the current set.",
                                         "body": {
                                             "mode": "raw",
-                                            "raw": "{\n    \"name\": \"15% off summer\",\n    \"description\": \"Updated description\",\n    \"channels\": [\n        1\n    ],\n    \"customer_groups\": [\n        1,\n        2,\n        3\n    ],\n    \"coupon_type\": 1,\n    \"use_auto_generation\": 0,\n    \"coupon_code\": \"SUMMER15\",\n    \"uses_per_coupon\": 100,\n    \"usage_per_customer\": 1,\n    \"condition_type\": 1,\n    \"conditions\": [\n        {\n            \"attribute\": \"cart|base_sub_total\",\n            \"operator\": \">=\",\n            \"value\": \"100\",\n            \"attribute_type\": \"price\"\n        }\n    ],\n    \"action_type\": \"by_percent\",\n    \"discount_amount\": 15,\n    \"discount_quantity\": 1,\n    \"discount_step\": 0,\n    \"apply_to_shipping\": 0,\n    \"free_shipping\": 0,\n    \"end_other_rules\": 0,\n    \"sort_order\": 0,\n    \"starts_from\": \"2026-06-01 00:00:00\",\n    \"ends_till\": \"2026-08-31 23:59:59\",\n    \"status\": 1\n}",
+                                            "raw": "{\n    \"name\": \"15% off summer\",\n    \"description\": \"Updated description\",\n    \"channels\": [\n        1\n    ],\n    \"customer_groups\": [\n        1,\n        2,\n        3\n    ],\n    \"coupon_type\": 1,\n    \"use_auto_generation\": 0,\n    \"coupon_code\": \"SUMMER15\",\n    \"uses_per_coupon\": 100,\n    \"usage_per_customer\": 1,\n    \"condition_type\": 1,\n    \"conditions\": [\n        {\n            \"attribute\": \"cart|base_sub_total\",\n            \"operator\": \">=\",\n            \"value\": \"100\",\n            \"attribute_type\": \"price\"\n        }\n    ],\n    \"action_type\": \"by_percent\",\n    \"discount_amount\": 15,\n    \"discount_quantity\": 1,\n    \"discount_step\": \"0\",\n    \"apply_to_shipping\": 0,\n    \"free_shipping\": 0,\n    \"end_other_rules\": 0,\n    \"sort_order\": 0,\n    \"starts_from\": \"2026-06-01 00:00:00\",\n    \"ends_till\": \"2026-08-31 23:59:59\",\n    \"status\": 1\n}",
                                             "options": {
                                                 "raw": {
                                                     "language": "json"
@@ -14193,7 +14193,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminAppearanceSection($input: createAdminAppearanceSectionInput!) {\n  createAdminAppearanceSection(input: $input) {\n    adminAppearanceSection {\n      _id\n      channelId\n      createdAt\n      draftSortOrder\n      draftStatus\n      hasDraft\n      id\n      isPinned\n      message\n      name\n      sortOrder\n      status\n      themeCode\n      type\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"channel\": 1,\n        \"code\": \"SAMPLE\",\n        \"name\": \"Sample\",\n        \"type\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Summer Banner\",\n        \"type\": \"image_carousel\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminAppearanceSection."
@@ -14255,7 +14255,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminAppearanceSectionDraft($input: createAdminAppearanceSectionDraftInput!) {\n  createAdminAppearanceSectionDraft(input: $input) {\n    adminAppearanceSectionDraft {\n      hasDraft\n      id\n      locale\n      message\n      sectionId\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"locale\": \"{{locale}}\",\n        \"options\": \"sample\",\n        \"sectionId\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"options\": {\n            \"title\": \"Summer Sale\"\n        }\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminAppearanceSectionDraft."
@@ -14379,7 +14379,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminAppearanceSectionStatus($input: createAdminAppearanceSectionStatusInput!) {\n  createAdminAppearanceSectionStatus(input: $input) {\n    adminAppearanceSectionStatus {\n      draftStatus\n      hasDraft\n      id\n      message\n      sectionId\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"sectionId\": 1,\n        \"status\": false\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"status\": true\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminAppearanceSectionStatus."
@@ -14441,7 +14441,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminAppearanceSection($input: updateAdminAppearanceSectionInput!) {\n  updateAdminAppearanceSection(input: $input) {\n    adminAppearanceSection {\n      _id\n      channelId\n      createdAt\n      draftSortOrder\n      draftStatus\n      hasDraft\n      id\n      isPinned\n      message\n      name\n      sortOrder\n      status\n      themeCode\n      type\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"channelId\": 1,\n        \"id\": \"1\",\n        \"locale\": \"{{locale}}\",\n        \"name\": \"Sample\",\n        \"options\": \"sample\",\n        \"sortOrder\": 1,\n        \"status\": false,\n        \"themeCode\": \"SAMPLE\",\n        \"type\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Summer Banner\",\n        \"type\": \"image_carousel\",\n        \"sortOrder\": 2,\n        \"channelId\": 1,\n        \"themeCode\": \"default\",\n        \"status\": true,\n        \"options\": {\n            \"images\": []\n        },\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Updates a AdminAppearanceSection."
@@ -14611,7 +14611,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminAppearanceThemeActivate($input: createAdminAppearanceThemeActivateInput!) {\n  createAdminAppearanceThemeActivate(input: $input) {\n    adminAppearanceThemeActivate {\n      activatedOn\n      code\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"channelIds\": \"sample\",\n        \"code\": \"SAMPLE\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"channelIds\": [\n            1\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminAppearanceThemeActivate."
@@ -15171,7 +15171,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateAdminCmsPage($input: createAdminCmsPageInput!) {\n  createAdminCmsPage(input: $input) {\n    adminCmsPage {\n      _id\n      channel\n      createdAt\n      htmlContent\n      id\n      layout\n      locale\n      message\n      metaDescription\n      metaKeywords\n      metaTitle\n      pageTitle\n      previewUrl\n      updatedAt\n      urlKey\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"channels\": \"sample\",\n        \"htmlContent\": \"Sample text\",\n        \"metaDescription\": \"Sample text\",\n        \"metaKeywords\": \"sample\",\n        \"metaTitle\": \"Sample\",\n        \"pageTitle\": \"Sample\",\n        \"urlKey\": \"sample-url-key\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"urlKey\": \"about-us\",\n        \"pageTitle\": \"About Us\",\n        \"htmlContent\": \"<h1>About Us</h1><p>Welcome.</p>\",\n        \"channels\": [\n            1\n        ],\n        \"metaTitle\": \"About Us\",\n        \"metaKeywords\": \"about,us,company\",\n        \"metaDescription\": \"Learn more about our company.\"\n    }\n}"
                                             }
                                         },
                                         "description": "Create a new CMS page. Becomes createAdminCmsPage."
@@ -15202,7 +15202,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateAdminCmsPageMassDelete($input: createAdminCmsPageMassDeleteInput!) {\n  createAdminCmsPageMassDelete(input: $input) {\n    adminCmsPageMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"indices\": [\n            12,\n            18\n        ]\n    }\n}"
                                             }
                                         },
                                         "description": "Mass-delete a batch of CMS pages. Becomes createAdminCmsPageMassDelete."
@@ -15264,7 +15264,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation UpdateAdminCmsPage($input: updateAdminCmsPageInput!) {\n  updateAdminCmsPage(input: $input) {\n    adminCmsPage {\n      _id\n      channel\n      createdAt\n      htmlContent\n      id\n      layout\n      locale\n      message\n      metaDescription\n      metaKeywords\n      metaTitle\n      pageTitle\n      previewUrl\n      updatedAt\n      urlKey\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"channels\": \"sample\",\n        \"en\": \"sample\",\n        \"id\": \"1\",\n        \"locale\": \"{{locale}}\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"locale\": \"en\",\n        \"channels\": [\n            1\n        ],\n        \"en\": {\n            \"url_key\": \"about-us\",\n            \"page_title\": \"About Us (Updated)\",\n            \"html_content\": \"<h1>About Us</h1><p>Welcome back.</p>\",\n            \"meta_title\": \"About Us\",\n            \"meta_keywords\": \"about,us,company\",\n            \"meta_description\": \"Updated description.\"\n        },\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Update a CMS page. Becomes updateAdminCmsPage. Locale-nested payload."
@@ -15375,7 +15375,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminAttributeFamily($input: createAdminAttributeFamilyInput!) {\n  createAdminAttributeFamily(input: $input) {\n    adminAttributeFamily {\n      _id\n      attributeGroups\n      code\n      id\n      name\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"attributeGroups\": \"sample\",\n        \"code\": \"SAMPLE\",\n        \"name\": \"Sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"code\": \"electronics\",\n        \"name\": \"Electronics\",\n        \"attributeGroups\": [\n            {\n                \"code\": \"general\",\n                \"name\": \"General\",\n                \"column\": 1,\n                \"position\": 1,\n                \"custom_attributes\": [\n                    {\n                        \"id\": 1\n                    },\n                    {\n                        \"id\": 2\n                    }\n                ]\n            }\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a new attribute family. Becomes createAdminAttributeFamily."
@@ -15437,7 +15437,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminAttributeFamily($input: updateAdminAttributeFamilyInput!) {\n  updateAdminAttributeFamily(input: $input) {\n    adminAttributeFamily {\n      _id\n      attributeGroups\n      code\n      id\n      name\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"attributeGroups\": \"sample\",\n        \"code\": \"SAMPLE\",\n        \"id\": \"1\",\n        \"name\": \"Sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"code\": \"electronics\",\n        \"name\": \"Electronics (updated)\",\n        \"attributeGroups\": {\n            \"11\": {\n                \"code\": \"general\",\n                \"name\": \"General\",\n                \"column\": 1,\n                \"position\": 1,\n                \"custom_attributes\": [\n                    {\n                        \"id\": 1,\n                        \"position\": 1\n                    }\n                ]\n            },\n            \"group_new_1\": {\n                \"code\": \"pricing\",\n                \"name\": \"Pricing\",\n                \"column\": 2,\n                \"position\": 2,\n                \"custom_attributes\": [\n                    {\n                        \"id\": 11,\n                        \"position\": 1\n                    }\n                ]\n            }\n        },\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update an attribute family. Becomes updateAdminAttributeFamily."
@@ -15545,7 +15545,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminAttribute($input: createAdminAttributeInput!) {\n  createAdminAttribute(input: $input) {\n    adminAttribute {\n      _id\n      adminName\n      code\n      createdAt\n      defaultValue\n      enableWysiwyg\n      id\n      isComparable\n      isConfigurable\n      isFilterable\n      isRequired\n      isUnique\n      isUserDefined\n      isVisibleOnFront\n      locale\n      options\n      position\n      regex\n      swatchType\n      translations\n      type\n      updatedAt\n      validation\n      valuePerChannel\n      valuePerLocale\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"adminName\": \"Sample\",\n        \"code\": \"SAMPLE\",\n        \"defaultValue\": \"sample\",\n        \"enableWysiwyg\": false,\n        \"isComparable\": false,\n        \"isConfigurable\": false,\n        \"isFilterable\": false,\n        \"isRequired\": false,\n        \"isUnique\": false,\n        \"isVisibleOnFront\": false,\n        \"options\": \"sample\",\n        \"position\": 1,\n        \"regex\": \"sample\",\n        \"swatchType\": \"sample\",\n        \"translations\": \"sample\",\n        \"type\": \"sample\",\n        \"validation\": \"sample\",\n        \"valuePerChannel\": false,\n        \"valuePerLocale\": false\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"code\": \"material\",\n        \"adminName\": \"Material\",\n        \"type\": \"select\",\n        \"swatchType\": \"text\",\n        \"isRequired\": false,\n        \"isUnique\": false,\n        \"isFilterable\": true,\n        \"isConfigurable\": false,\n        \"isVisibleOnFront\": true,\n        \"isComparable\": false,\n        \"valuePerLocale\": false,\n        \"valuePerChannel\": false,\n        \"enableWysiwyg\": false,\n        \"validation\": null,\n        \"defaultValue\": null,\n        \"position\": 10,\n        \"translations\": {\n            \"en\": {\n                \"name\": \"Material\"\n            },\n            \"fr\": {\n                \"name\": \"Mati\\u00e8re\"\n            }\n        },\n        \"options\": [\n            {\n                \"admin_name\": \"Cotton\",\n                \"sort_order\": 1,\n                \"translations\": {\n                    \"en\": {\n                        \"label\": \"Cotton\"\n                    },\n                    \"fr\": {\n                        \"label\": \"Coton\"\n                    }\n                }\n            }\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a new catalog attribute. Becomes createAdminAttribute in GraphQL."
@@ -15576,7 +15576,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminAttributeMassDelete($input: createAdminAttributeMassDeleteInput!) {\n  createAdminAttributeMassDelete(input: $input) {\n    adminAttributeMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            24,\n            31\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-delete a batch of user-defined attributes. Becomes createAdminAttributeMassDelete in GraphQL."
@@ -15607,7 +15607,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminAttributeOption($input: createAdminAttributeOptionInput!) {\n  createAdminAttributeOption(input: $input) {\n    adminAttributeOption {\n      _id\n      adminName\n      attributeId\n      id\n      sortOrder\n      swatchValue\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"adminName\": \"Sample\",\n        \"attributeId\": 1,\n        \"sortOrder\": 1,\n        \"swatchValue\": \"sample\",\n        \"translations\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"adminName\": \"Wool\",\n        \"sortOrder\": 2,\n        \"swatchValue\": null,\n        \"translations\": {\n            \"en\": {\n                \"label\": \"Wool\"\n            },\n            \"fr\": {\n                \"label\": \"Laine\"\n            }\n        },\n        \"attributeId\": 23\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Add an option to a select/multiselect/checkbox attribute. Becomes createAdminAttributeOption in GraphQL. Returns the created AdminAttributeOption."
@@ -15700,7 +15700,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminAttribute($input: updateAdminAttributeInput!) {\n  updateAdminAttribute(input: $input) {\n    adminAttribute {\n      _id\n      adminName\n      code\n      createdAt\n      defaultValue\n      enableWysiwyg\n      id\n      isComparable\n      isConfigurable\n      isFilterable\n      isRequired\n      isUnique\n      isUserDefined\n      isVisibleOnFront\n      locale\n      options\n      position\n      regex\n      swatchType\n      translations\n      type\n      updatedAt\n      validation\n      valuePerChannel\n      valuePerLocale\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"adminName\": \"Sample\",\n        \"code\": \"SAMPLE\",\n        \"defaultValue\": \"sample\",\n        \"enableWysiwyg\": false,\n        \"id\": \"1\",\n        \"isComparable\": false,\n        \"isConfigurable\": false,\n        \"isFilterable\": false,\n        \"isRequired\": false,\n        \"isUnique\": false,\n        \"isVisibleOnFront\": false,\n        \"options\": \"sample\",\n        \"position\": 1,\n        \"regex\": \"sample\",\n        \"swatchType\": \"sample\",\n        \"translations\": \"sample\",\n        \"type\": \"sample\",\n        \"validation\": \"sample\",\n        \"valuePerChannel\": false,\n        \"valuePerLocale\": false\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"code\": \"material\",\n        \"adminName\": \"Material (updated)\",\n        \"type\": \"select\",\n        \"isFilterable\": true,\n        \"translations\": {\n            \"en\": {\n                \"name\": \"Material (updated)\"\n            },\n            \"fr\": {\n                \"name\": \"Mati\\u00e8re (mis \\u00e0 jour)\"\n            }\n        },\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update an existing catalog attribute. Becomes updateAdminAttribute in GraphQL."
@@ -15731,7 +15731,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminAttributeOption($input: updateAdminAttributeOptionInput!) {\n  updateAdminAttributeOption(input: $input) {\n    adminAttributeOption {\n      _id\n      adminName\n      attributeId\n      id\n      sortOrder\n      swatchValue\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"adminName\": \"Sample\",\n        \"attributeId\": 1,\n        \"id\": \"1\",\n        \"optionId\": 1,\n        \"sortOrder\": 1,\n        \"swatchValue\": \"sample\",\n        \"translations\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"adminName\": \"Merino Wool\",\n        \"sortOrder\": 1,\n        \"swatchValue\": null,\n        \"translations\": {\n            \"en\": {\n                \"label\": \"Merino Wool\"\n            },\n            \"fr\": {\n                \"label\": \"Laine M\\u00e9rinos\"\n            }\n        },\n        \"attributeId\": 1,\n        \"id\": \"1\",\n        \"optionId\": 1\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update an attribute option. Becomes updateAdminAttributeOption in GraphQL. Returns the updated AdminAttributeOption."
@@ -15839,7 +15839,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminCategory($input: createAdminCategoryInput!) {\n  createAdminCategory(input: $input) {\n    adminCategory {\n      _id\n      bannerUrl\n      createdAt\n      description\n      displayMode\n      filterableAttributeIds\n      id\n      locale\n      logoUrl\n      name\n      parentId\n      position\n      slug\n      status\n      translations\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"attributes\": \"sample\",\n        \"bannerPath\": \"sample\",\n        \"description\": \"Sample text\",\n        \"displayMode\": \"sample\",\n        \"locale\": \"{{locale}}\",\n        \"logoPath\": \"sample\",\n        \"metaDescription\": \"Sample text\",\n        \"metaKeywords\": \"sample\",\n        \"metaTitle\": \"Sample\",\n        \"name\": \"Sample\",\n        \"parentId\": 1,\n        \"position\": 1,\n        \"slug\": \"sample-url-key\",\n        \"status\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"slug\": \"apparel\",\n        \"name\": \"Apparel\",\n        \"description\": \"Men's and women's apparel\",\n        \"position\": 1,\n        \"attributes\": [\n            11,\n            23\n        ],\n        \"parentId\": 1,\n        \"displayMode\": \"products_and_description\",\n        \"status\": 1,\n        \"locale\": \"en\",\n        \"metaTitle\": \"Apparel\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a new category. Becomes createAdminCategory."
@@ -15870,7 +15870,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminCategoryMassDelete($input: createAdminCategoryMassDeleteInput!) {\n  createAdminCategoryMassDelete(input: $input) {\n    adminCategoryMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            12,\n            18\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-delete a batch of categories. Becomes createAdminCategoryMassDelete in GraphQL."
@@ -15901,7 +15901,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminCategoryMassUpdateStatus($input: createAdminCategoryMassUpdateStatusInput!) {\n  createAdminCategoryMassUpdateStatus(input: $input) {\n    adminCategoryMassUpdateStatus {\n      _id\n      id\n      message\n      updated\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\",\n        \"value\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            12,\n            18\n        ],\n        \"value\": 1\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-update status for a batch of categories. Becomes createAdminCategoryMassUpdateStatus."
@@ -15963,7 +15963,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminCategory($input: updateAdminCategoryInput!) {\n  updateAdminCategory(input: $input) {\n    adminCategory {\n      _id\n      bannerUrl\n      createdAt\n      description\n      displayMode\n      filterableAttributeIds\n      id\n      locale\n      logoUrl\n      name\n      parentId\n      position\n      slug\n      status\n      translations\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"attributes\": \"sample\",\n        \"bannerPath\": \"sample\",\n        \"displayMode\": \"sample\",\n        \"en\": \"sample\",\n        \"id\": \"1\",\n        \"locale\": \"{{locale}}\",\n        \"logoPath\": \"sample\",\n        \"parentId\": 1,\n        \"position\": 1,\n        \"status\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"locale\": \"en\",\n        \"position\": 2,\n        \"attributes\": [\n            11,\n            23\n        ],\n        \"parentId\": 1,\n        \"status\": 1,\n        \"en\": {\n            \"slug\": \"apparel\",\n            \"name\": \"Apparel\",\n            \"description\": \"Men's and women's apparel\"\n        },\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a category. Becomes updateAdminCategory. Move-by-parent_id is also handled here (no separate move mutation)."
@@ -16102,7 +16102,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminCatalogProduct($input: createAdminCatalogProductInput!) {\n  createAdminCatalogProduct(input: $input) {\n    adminCatalogProduct {\n      _id\n      additional\n      attributeFamilyId\n      attributeFamilyName\n      attributes\n      baseImageUrl\n      bookingProduct\n      categoryId\n      categoryName\n      channel\n      createdAt\n      description\n      featured\n      formattedPrice\n      formattedSpecialPrice\n      id\n      imagesCount\n      inStock\n      locale\n      manageStock\n      metaDescription\n      metaKeywords\n      metaTitle\n      name\n      new\n      parentId\n      price\n      quantity\n      shortDescription\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      warnings\n      weight\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"sku\": \"sp-001\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"sku\": \"sp-001\",\n        \"attributeFamilyId\": 1,\n        \"type\": \"simple\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Admin catalog product step-1 create (all 7 types). For configurable, pass superAttributes as a map of attribute code (or id) to non-empty list of option_ids. Becomes createAdminCatalogProduct in GraphQL."
@@ -16164,7 +16164,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminCatalogProductCustomerGroupPrice($input: createAdminCatalogProductCustomerGroupPriceInput!) {\n  createAdminCatalogProductCustomerGroupPrice(input: $input) {\n    adminCatalogProductCustomerGroupPrice {\n      _id\n      customerGroupId\n      customerGroupName\n      id\n      productId\n      qty\n      value\n      valueType\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"customerGroupId\": 1,\n        \"productId\": 1,\n        \"qty\": 1,\n        \"value\": 1,\n        \"valueType\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"qty\": 10,\n        \"valueType\": \"discount\",\n        \"value\": 15,\n        \"customerGroupId\": 2\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Add a customer-group price row to a product."
@@ -16195,7 +16195,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminCatalogProductImage($input: createAdminCatalogProductImageInput!) {\n  createAdminCatalogProductImage(input: $input) {\n    adminCatalogProductImage {\n      _id\n      altText\n      id\n      images\n      message\n      path\n      position\n      productId\n      success\n      url\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"order\": \"sample\",\n        \"productId\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"order\": [\n            {\n                \"id\": 47,\n                \"position\": 2\n            },\n            {\n                \"id\": 48,\n                \"position\": 1\n            }\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Placeholder for createAdminCatalogProductImage — binary upload is REST-only. Use POST /api/admin/catalog/products/{productId}/images."
@@ -16226,7 +16226,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminCatalogProductMassDelete($input: createAdminCatalogProductMassDeleteInput!) {\n  createAdminCatalogProductMassDelete(input: $input) {\n    adminCatalogProductMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            12,\n            18\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-delete a batch of catalog products. Becomes createAdminCatalogProductMassDelete in GraphQL."
@@ -16257,7 +16257,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminCatalogProductMassUpdateStatus($input: createAdminCatalogProductMassUpdateStatusInput!) {\n  createAdminCatalogProductMassUpdateStatus(input: $input) {\n    adminCatalogProductMassUpdateStatus {\n      _id\n      id\n      message\n      updated\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\",\n        \"value\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            12,\n            18\n        ],\n        \"value\": 1\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-update status for a batch of catalog products. Becomes createAdminCatalogProductMassUpdateStatus."
@@ -16443,7 +16443,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation ReorderAdminCatalogProductImage($input: reorderAdminCatalogProductImageInput!) {\n  reorderAdminCatalogProductImage(input: $input) {\n    adminCatalogProductImage {\n      _id\n      altText\n      id\n      images\n      message\n      path\n      position\n      productId\n      success\n      url\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"id\": \"1\",\n        \"order\": \"sample\",\n        \"productId\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"order\": [\n            {\n                \"id\": 47,\n                \"position\": 2\n            },\n            {\n                \"id\": 48,\n                \"position\": 1\n            }\n        ],\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Reorder product images. Becomes reorderAdminCatalogProductImage."
@@ -16474,7 +16474,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminCatalogProduct($input: updateAdminCatalogProductInput!) {\n  updateAdminCatalogProduct(input: $input) {\n    adminCatalogProduct {\n      _id\n      additional\n      attributeFamilyId\n      attributeFamilyName\n      attributes\n      baseImageUrl\n      bookingProduct\n      categoryId\n      categoryName\n      channel\n      createdAt\n      description\n      featured\n      formattedPrice\n      formattedSpecialPrice\n      id\n      imagesCount\n      inStock\n      locale\n      manageStock\n      metaDescription\n      metaKeywords\n      metaTitle\n      name\n      new\n      parentId\n      price\n      quantity\n      shortDescription\n      sku\n      specialPrice\n      specialPriceFrom\n      specialPriceTo\n      status\n      taxCategoryId\n      type\n      updatedAt\n      urlKey\n      visibleIndividually\n      warnings\n      weight\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"sku\": \"sp-001\",\n        \"urlKey\": \"arctic-beanie\",\n        \"status\": 1,\n        \"visibleIndividually\": 1,\n        \"guestCheckout\": 1,\n        \"new\": 1,\n        \"featured\": 1,\n        \"taxCategoryId\": 2,\n        \"price\": \"99.99\",\n        \"cost\": \"40.00\",\n        \"specialPrice\": \"79.99\",\n        \"specialPriceFrom\": \"2026-08-01\",\n        \"specialPriceTo\": \"2026-08-31\",\n        \"weight\": \"0.5\",\n        \"categories\": [\n            1,\n            8\n        ],\n        \"channels\": [\n            1\n        ]\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"sku\": \"sp-001\",\n        \"urlKey\": \"arctic-beanie\",\n        \"status\": 1,\n        \"visibleIndividually\": 1,\n        \"guestCheckout\": 1,\n        \"new\": 1,\n        \"featured\": 1,\n        \"taxCategoryId\": 2,\n        \"price\": \"99.99\",\n        \"cost\": \"40.00\",\n        \"specialPrice\": \"79.99\",\n        \"specialPriceFrom\": \"2026-08-01\",\n        \"specialPriceTo\": \"2026-08-31\",\n        \"weight\": \"0.5\",\n        \"categories\": [\n            1,\n            8\n        ],\n        \"channels\": [\n            1\n        ],\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Admin catalog product update. Pass the resource IRI as id. Free-shape payload: send only the fields you want to change. Sub-resource fields (images / inventories / customerGroupPrices / videos) are stripped — use the dedicated endpoints. Becomes updateAdminCatalogProduct in GraphQL."
@@ -16505,7 +16505,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminCatalogProductCustomerGroupPrice($input: updateAdminCatalogProductCustomerGroupPriceInput!) {\n  updateAdminCatalogProductCustomerGroupPrice(input: $input) {\n    adminCatalogProductCustomerGroupPrice {\n      _id\n      customerGroupId\n      customerGroupName\n      id\n      productId\n      qty\n      value\n      valueType\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"customerGroupId\": 1,\n        \"id\": \"1\",\n        \"productId\": 1,\n        \"qty\": 1,\n        \"value\": 1,\n        \"valueType\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"qty\": 5,\n        \"valueType\": \"fixed\",\n        \"value\": 17.5,\n        \"customerGroupId\": null,\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a customer-group price row."
@@ -16536,7 +16536,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminCatalogProductImage($input: updateAdminCatalogProductImageInput!) {\n  updateAdminCatalogProductImage(input: $input) {\n    adminCatalogProductImage {\n      _id\n      altText\n      id\n      images\n      message\n      path\n      position\n      productId\n      success\n      url\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"altText\": \"sample\",\n        \"id\": \"1\",\n        \"imageId\": 1,\n        \"position\": 1,\n        \"productId\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"altText\": \"Blue running shoe, side view\",\n        \"position\": 2,\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a product image's alt text and position. Becomes updateAdminCatalogProductImage."
@@ -16567,7 +16567,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminCatalogProductInventory($input: updateAdminCatalogProductInventoryInput!) {\n  updateAdminCatalogProductInventory(input: $input) {\n    adminCatalogProductInventory {\n      _id\n      id\n      qty\n      sourceCode\n      sourceId\n      sourceName\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"inventories\": {\n            \"1\": 25,\n            \"2\": 0\n        }\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"inventories\": {\n            \"1\": 25,\n            \"2\": 0\n        },\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Bulk-update inventories for a product (becomes updateAdminCatalogProductInventory in GraphQL). API Platform auto-injects `id: ID!` on the input — callers must pass a plausible IRI string (e.g. `/api/admin/catalog/products/{productId}/inventories`); the processor reads productId from the input, not from the IRI. The result is a single row for the first updated source — read `_id`/`sourceId`/`sourceCode`/`sourceName`/`qty`. Do NOT select the IRI `id` field (this is a routeless parent-scoped sub-resource — it has no per-row route and cannot resolve over a mutation payload). Re-query `adminCatalogProductInventories(productId:)` for the full refreshed list."
@@ -16739,7 +16739,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateAdminConfigurationUpdate($input: createAdminConfigurationUpdateInput!) {\n  createAdminConfigurationUpdate(input: $input) {\n    adminConfigurationUpdate {\n      channel\n      id\n      locale\n      message\n      slug\n      success\n      values\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"channel\": \"{{channel}}\",\n        \"locale\": \"{{locale}}\",\n        \"slug\": \"sample-url-key\",\n        \"values\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"slug\": \"sales.order_settings\",\n        \"channel\": \"default\",\n        \"locale\": \"en\",\n        \"values\": {\n            \"sales.order_settings.reorder.admin\": \"1\",\n            \"sales.order_settings.reorder.shop\": \"0\"\n        }\n    }\n}"
                                             }
                                         },
                                         "description": "Bulk-update configuration. Becomes createAdminConfigurationUpdate. File/image-type fields are REST-only."
@@ -16971,7 +16971,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation UpdateAdminCustomerGdprRequest($input: updateAdminCustomerGdprRequestInput!) {\n  updateAdminCustomerGdprRequest(input: $input) {\n    adminCustomerGdprRequest {\n      _id\n      createdAt\n      customerId\n      customerName\n      email\n      id\n      message\n      revokedAt\n      status\n      type\n      typeLabel\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"status\": \"processing\",\n        \"message\": \"Reviewing the request.\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"status\": \"processing\",\n        \"message\": \"Reviewing the request.\",\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Update a GDPR request. Becomes updateAdminCustomerGdprRequest."
@@ -17079,7 +17079,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateAdminCustomerGroup($input: createAdminCustomerGroupInput!) {\n  createAdminCustomerGroup(input: $input) {\n    adminCustomerGroup {\n      _id\n      code\n      createdAt\n      customersCount\n      id\n      isUserDefined\n      message\n      name\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"code\": \"wholesale\",\n        \"name\": \"Wholesale Buyers\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"code\": \"vip_buyers\",\n        \"name\": \"VIP Buyers\"\n    }\n}"
                                             }
                                         },
                                         "description": "Create a new customer group. Becomes createAdminCustomerGroup."
@@ -17172,7 +17172,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation UpdateAdminCustomerGroup($input: updateAdminCustomerGroupInput!) {\n  updateAdminCustomerGroup(input: $input) {\n    adminCustomerGroup {\n      _id\n      code\n      createdAt\n      customersCount\n      id\n      isUserDefined\n      message\n      name\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"code\": \"wholesale\",\n        \"name\": \"Wholesale Buyers\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"name\": \"General Customers\",\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Update a customer group. Becomes updateAdminCustomerGroup."
@@ -17280,7 +17280,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation AddItemAdminCart($input: addItemAdminCartInput!) {\n  addItemAdminCart(input: $input) {\n    adminCart {\n      _id\n      billingAddress\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedShippingAmount\n      formattedSubTotal\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isActive\n      isGuest\n      items\n      itemsCount\n      itemsQty\n      message\n      paymentMethod\n      paymentMethodTitle\n      shippingAddress\n      shippingAmount\n      shippingMethod\n      subTotal\n      success\n      taxTotal\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"productId\": 142,\n        \"quantity\": 1\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"productId\": 142,\n        \"quantity\": 1,\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Add a product to a draft cart. `cartId` is the draft cart id; other keys mirror the storefront add-to-cart shape."
@@ -17311,7 +17311,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation ApplyCouponAdminCart($input: applyCouponAdminCartInput!) {\n  applyCouponAdminCart(input: $input) {\n    adminCart {\n      _id\n      billingAddress\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedShippingAmount\n      formattedSubTotal\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isActive\n      isGuest\n      items\n      itemsCount\n      itemsQty\n      message\n      paymentMethod\n      paymentMethodTitle\n      shippingAddress\n      shippingAmount\n      shippingMethod\n      subTotal\n      success\n      taxTotal\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"cartId\": \"sample\",\n        \"code\": \"SAMPLE\",\n        \"id\": \"1\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"code\": \"WELCOME10\",\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Apply a coupon code to the draft cart."
@@ -17435,7 +17435,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation RemoveCouponAdminCart($input: removeCouponAdminCartInput!) {\n  removeCouponAdminCart(input: $input) {\n    adminCart {\n      _id\n      billingAddress\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedShippingAmount\n      formattedSubTotal\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isActive\n      isGuest\n      items\n      itemsCount\n      itemsQty\n      message\n      paymentMethod\n      paymentMethodTitle\n      shippingAddress\n      shippingAmount\n      shippingMethod\n      subTotal\n      success\n      taxTotal\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"cartId\": \"sample\",\n        \"code\": \"SAMPLE\",\n        \"id\": \"1\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"code\": \"WELCOME10\",\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Remove the applied coupon from the draft cart."
@@ -17466,7 +17466,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation RemoveItemAdminCart($input: removeItemAdminCartInput!) {\n  removeItemAdminCart(input: $input) {\n    adminCart {\n      _id\n      billingAddress\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedShippingAmount\n      formattedSubTotal\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isActive\n      isGuest\n      items\n      itemsCount\n      itemsQty\n      message\n      paymentMethod\n      paymentMethodTitle\n      shippingAddress\n      shippingAmount\n      shippingMethod\n      subTotal\n      success\n      taxTotal\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"cartId\": \"sample\",\n        \"cartItemId\": 1,\n        \"id\": \"1\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"cartItemId\": 41,\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Remove a single line item from the draft cart."
@@ -17497,7 +17497,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation SaveAddressAdminCart($input: saveAddressAdminCartInput!) {\n  saveAddressAdminCart(input: $input) {\n    adminCart {\n      _id\n      billingAddress\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedShippingAmount\n      formattedSubTotal\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isActive\n      isGuest\n      items\n      itemsCount\n      itemsQty\n      message\n      paymentMethod\n      paymentMethodTitle\n      shippingAddress\n      shippingAmount\n      shippingMethod\n      subTotal\n      success\n      taxTotal\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"billing\": \"sample\",\n        \"cartId\": \"sample\",\n        \"id\": \"1\",\n        \"shipping\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"billing\": {\n            \"firstName\": \"Jane\",\n            \"lastName\": \"Doe\",\n            \"email\": \"jane@example.com\",\n            \"address\": [\n                \"12 Main St\"\n            ],\n            \"city\": \"Berlin\",\n            \"country\": \"DE\",\n            \"state\": \"BE\",\n            \"postcode\": \"10115\",\n            \"phone\": \"+4930123456\",\n            \"useForShipping\": true\n        },\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Save billing and shipping addresses on the draft cart."
@@ -17528,7 +17528,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation SetPaymentMethodAdminCart($input: setPaymentMethodAdminCartInput!) {\n  setPaymentMethodAdminCart(input: $input) {\n    adminCart {\n      _id\n      billingAddress\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedShippingAmount\n      formattedSubTotal\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isActive\n      isGuest\n      items\n      itemsCount\n      itemsQty\n      message\n      paymentMethod\n      paymentMethodTitle\n      shippingAddress\n      shippingAmount\n      shippingMethod\n      subTotal\n      success\n      taxTotal\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"cartId\": 1,\n        \"id\": \"1\",\n        \"method\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"method\": \"cashondelivery\",\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Save the selected payment method on the draft cart. Shipping method must be selected first (409 otherwise)."
@@ -17559,7 +17559,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation SetShippingMethodAdminCart($input: setShippingMethodAdminCartInput!) {\n  setShippingMethodAdminCart(input: $input) {\n    adminCart {\n      _id\n      billingAddress\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedShippingAmount\n      formattedSubTotal\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isActive\n      isGuest\n      items\n      itemsCount\n      itemsQty\n      message\n      paymentMethod\n      paymentMethodTitle\n      shippingAddress\n      shippingAmount\n      shippingMethod\n      subTotal\n      success\n      taxTotal\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"cartId\": 1,\n        \"id\": \"1\",\n        \"shippingMethod\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"shippingMethod\": \"flatrate_flatrate\",\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Save the selected shipping method on the draft cart. Both addresses must be saved first (409 otherwise)."
@@ -17590,7 +17590,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation UpdateItemsAdminCart($input: updateItemsAdminCartInput!) {\n  updateItemsAdminCart(input: $input) {\n    adminCart {\n      _id\n      billingAddress\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedShippingAmount\n      formattedSubTotal\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isActive\n      isGuest\n      items\n      itemsCount\n      itemsQty\n      message\n      paymentMethod\n      paymentMethodTitle\n      shippingAddress\n      shippingAmount\n      shippingMethod\n      subTotal\n      success\n      taxTotal\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"cartId\": \"sample\",\n        \"id\": \"1\",\n        \"qty\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"qty\": {\n            \"12\": 3,\n            \"13\": 1\n        },\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Bulk-update quantities on a draft cart."
@@ -17822,7 +17822,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation UpdateAdminCustomerReview($input: updateAdminCustomerReviewInput!) {\n  updateAdminCustomerReview(input: $input) {\n    adminCustomerReview {\n      _id\n      comment\n      createdAt\n      id\n      message\n      name\n      rating\n      status\n      title\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"id\": \"1\",\n        \"status\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"status\": \"approved\",\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Update review status. Becomes updateAdminCustomerReview."
@@ -18038,7 +18038,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateAdminCustomer($input: createAdminCustomerInput!) {\n  createAdminCustomer(input: $input) {\n    adminCustomer {\n      _id\n      channelId\n      createdAt\n      dateOfBirth\n      email\n      firstName\n      gender\n      id\n      image\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      status\n      subscribedToNewsLetter\n      totalAddresses\n      totalAmountSpent\n      totalOrders\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"firstName\": \"Jane\",\n        \"lastName\": \"Doe\",\n        \"email\": \"jane@example.com\",\n        \"phone\": \"+1-202-555-0148\",\n        \"gender\": \"Female\",\n        \"dateOfBirth\": \"1990-01-01\",\n        \"customerGroupId\": 2,\n        \"status\": 1\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"firstName\": \"Jane\",\n        \"lastName\": \"Doe\",\n        \"email\": \"jane@example.com\",\n        \"dateOfBirth\": \"1990-01-01\",\n        \"customerGroupId\": 2,\n        \"status\": 1,\n        \"sendPassword\": true\n    }\n}"
                                             }
                                         },
                                         "description": "Create a new customer. Becomes createAdminCustomer."
@@ -18255,7 +18255,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation SetDefaultAdminCustomerAddress($input: setDefaultAdminCustomerAddressInput!) {\n  setDefaultAdminCustomerAddress(input: $input) {\n    adminCustomerAddress {\n      _id\n      address\n      addressType\n      city\n      companyName\n      country\n      customerId\n      defaultAddress\n      email\n      firstName\n      id\n      lastName\n      phone\n      postcode\n      state\n      vatId\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"firstName\": \"Jane\",\n        \"lastName\": \"Doe\",\n        \"companyName\": \"Acme Inc.\",\n        \"vatId\": \"GB123456789\",\n        \"address\": \"1600 Amphitheatre Parkway\",\n        \"city\": \"Mountain View\",\n        \"state\": \"CA\",\n        \"country\": \"US\",\n        \"postcode\": \"94043\",\n        \"phone\": \"+1-202-555-0148\",\n        \"email\": \"jane@example.com\",\n        \"defaultAddress\": true\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"firstName\": \"Jane\",\n        \"lastName\": \"Doe\",\n        \"companyName\": \"Acme Inc.\",\n        \"vatId\": \"GB123456789\",\n        \"address\": \"1600 Amphitheatre Parkway\",\n        \"city\": \"Mountain View\",\n        \"state\": \"CA\",\n        \"country\": \"US\",\n        \"postcode\": \"94043\",\n        \"phone\": \"+1-202-555-0148\",\n        \"email\": \"jane@example.com\",\n        \"defaultAddress\": true,\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Set a customer address as the default. Becomes setDefaultAdminCustomerAddress."
@@ -18286,7 +18286,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation UpdateAdminCustomer($input: updateAdminCustomerInput!) {\n  updateAdminCustomer(input: $input) {\n    adminCustomer {\n      _id\n      channelId\n      createdAt\n      dateOfBirth\n      email\n      firstName\n      gender\n      id\n      image\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      status\n      subscribedToNewsLetter\n      totalAddresses\n      totalAmountSpent\n      totalOrders\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"firstName\": \"Jane\",\n        \"lastName\": \"Doe\",\n        \"email\": \"jane@example.com\",\n        \"phone\": \"+1-202-555-0148\",\n        \"gender\": \"Female\",\n        \"dateOfBirth\": \"1990-01-01\",\n        \"customerGroupId\": 2,\n        \"status\": 1\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"firstName\": \"Jane\",\n        \"lastName\": \"Doe\",\n        \"email\": \"jane@example.com\",\n        \"phone\": \"+1-202-555-0148\",\n        \"gender\": \"Female\",\n        \"dateOfBirth\": \"1990-01-01\",\n        \"customerGroupId\": 2,\n        \"status\": 1,\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Update a customer. Becomes updateAdminCustomer."
@@ -18317,7 +18317,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation UpdateAdminCustomerAddress($input: updateAdminCustomerAddressInput!) {\n  updateAdminCustomerAddress(input: $input) {\n    adminCustomerAddress {\n      _id\n      address\n      addressType\n      city\n      companyName\n      country\n      customerId\n      defaultAddress\n      email\n      firstName\n      id\n      lastName\n      phone\n      postcode\n      state\n      vatId\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"firstName\": \"Jane\",\n        \"lastName\": \"Doe\",\n        \"companyName\": \"Acme Inc.\",\n        \"vatId\": \"GB123456789\",\n        \"address\": \"1600 Amphitheatre Parkway\",\n        \"city\": \"Mountain View\",\n        \"state\": \"CA\",\n        \"country\": \"US\",\n        \"postcode\": \"94043\",\n        \"phone\": \"+1-202-555-0148\",\n        \"email\": \"jane@example.com\",\n        \"defaultAddress\": true\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"firstName\": \"Jane\",\n        \"lastName\": \"Doe\",\n        \"address\": \"1601 Amphitheatre Parkway\",\n        \"city\": \"Mountain View\",\n        \"state\": \"CA\",\n        \"country\": \"US\",\n        \"postcode\": \"94043\",\n        \"phone\": \"+1-202-555-0148\",\n        \"defaultAddress\": true,\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Update customer address. Becomes updateAdminCustomerAddress."
@@ -18686,7 +18686,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingCampaign($input: createAdminMarketingCampaignInput!) {\n  createAdminMarketingCampaign(input: $input) {\n    adminMarketingCampaign {\n      _id\n      createdAt\n      id\n      mailTo\n      marketingEvent\n      marketingEventId\n      name\n      spooling\n      status\n      subject\n      type\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"channelId\": 1,\n        \"customerGroupId\": 1,\n        \"marketingEventId\": 1,\n        \"marketingTemplateId\": 1,\n        \"name\": \"Sample\",\n        \"status\": 1,\n        \"subject\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"July Newsletter\",\n        \"subject\": \"Big July deals inside!\",\n        \"marketingTemplateId\": 1,\n        \"marketingEventId\": 1,\n        \"channelId\": 1,\n        \"customerGroupId\": 1,\n        \"status\": 1\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a marketing campaign. Becomes createAdminMarketingCampaign."
@@ -18748,7 +18748,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingEvent($input: createAdminMarketingEventInput!) {\n  createAdminMarketingEvent(input: $input) {\n    adminMarketingEvent {\n      _id\n      createdAt\n      date\n      description\n      id\n      name\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"date\": \"2026-01-01\",\n        \"description\": \"Sample text\",\n        \"name\": \"Sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Holiday Sale Kickoff\",\n        \"description\": \"Email blast to all subscribers.\",\n        \"date\": \"2026-12-20\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a marketing event. Becomes createAdminMarketingEvent."
@@ -18779,7 +18779,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingTemplate($input: createAdminMarketingTemplateInput!) {\n  createAdminMarketingTemplate(input: $input) {\n    adminMarketingTemplate {\n      _id\n      content\n      createdAt\n      id\n      name\n      status\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"content\": \"Sample text\",\n        \"name\": \"Sample\",\n        \"status\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Welcome Email\",\n        \"status\": \"active\",\n        \"content\": \"<p>Welcome to our store!</p>\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create an email template. Becomes createAdminMarketingTemplate."
@@ -18934,7 +18934,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminMarketingCampaign($input: updateAdminMarketingCampaignInput!) {\n  updateAdminMarketingCampaign(input: $input) {\n    adminMarketingCampaign {\n      _id\n      createdAt\n      id\n      mailTo\n      marketingEvent\n      marketingEventId\n      name\n      spooling\n      status\n      subject\n      type\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"channelId\": 1,\n        \"customerGroupId\": 1,\n        \"id\": \"1\",\n        \"marketingEventId\": 1,\n        \"marketingTemplateId\": 1,\n        \"name\": \"Sample\",\n        \"status\": 1,\n        \"subject\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"July Newsletter\",\n        \"subject\": \"Big July deals inside!\",\n        \"marketingTemplateId\": 1,\n        \"marketingEventId\": 1,\n        \"channelId\": 1,\n        \"customerGroupId\": 1,\n        \"status\": 1,\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a marketing campaign. Becomes updateAdminMarketingCampaign."
@@ -18965,7 +18965,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminMarketingEvent($input: updateAdminMarketingEventInput!) {\n  updateAdminMarketingEvent(input: $input) {\n    adminMarketingEvent {\n      _id\n      createdAt\n      date\n      description\n      id\n      name\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"date\": \"2026-01-01\",\n        \"description\": \"Sample text\",\n        \"id\": \"1\",\n        \"name\": \"Sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Holiday Sale Kickoff\",\n        \"description\": \"Email blast to all subscribers.\",\n        \"date\": \"2026-08-01\",\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a marketing event. Becomes updateAdminMarketingEvent."
@@ -18996,7 +18996,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminMarketingSubscriber($input: updateAdminMarketingSubscriberInput!) {\n  updateAdminMarketingSubscriber(input: $input) {\n    adminMarketingSubscriber {\n      _id\n      createdAt\n      customerId\n      customerName\n      email\n      id\n      isSubscribed\n      token\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"id\": \"1\",\n        \"isSubscribed\": false\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"isSubscribed\": false,\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Toggle subscription status. Becomes updateAdminMarketingSubscriber."
@@ -19027,7 +19027,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminMarketingTemplate($input: updateAdminMarketingTemplateInput!) {\n  updateAdminMarketingTemplate(input: $input) {\n    adminMarketingTemplate {\n      _id\n      content\n      createdAt\n      id\n      name\n      status\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"content\": \"Sample text\",\n        \"id\": \"1\",\n        \"name\": \"Sample\",\n        \"status\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Welcome Email\",\n        \"status\": \"active\",\n        \"content\": \"<p>Welcome to our store!</p>\",\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update an email template. Becomes updateAdminMarketingTemplate."
@@ -19352,7 +19352,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingCartRule($input: createAdminMarketingCartRuleInput!) {\n  createAdminMarketingCartRule(input: $input) {\n    adminMarketingCartRule {\n      _id\n      actionType\n      applyToShipping\n      conditionType\n      conditions\n      couponCode\n      couponType\n      createdAt\n      description\n      discountAmount\n      discountQuantity\n      discountStep\n      endOtherRules\n      endsTill\n      freeShipping\n      id\n      name\n      sortOrder\n      startsFrom\n      status\n      timesUsed\n      updatedAt\n      usagePerCustomer\n      useAutoGeneration\n      usesAttributeConditions\n      usesPerCoupon\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"actionType\": \"sample\",\n        \"applyToShipping\": 1,\n        \"channels\": \"sample\",\n        \"conditionType\": 1,\n        \"conditions\": \"sample\",\n        \"couponCode\": \"SAMPLE\",\n        \"couponType\": 1,\n        \"customerGroups\": \"sample\",\n        \"description\": \"Sample text\",\n        \"discountAmount\": 100,\n        \"discountQuantity\": 1,\n        \"discountStep\": \"sample\",\n        \"endOtherRules\": 1,\n        \"endsTill\": \"2026-01-01\",\n        \"freeShipping\": 1,\n        \"name\": \"Sample\",\n        \"sortOrder\": 1,\n        \"startsFrom\": \"2026-01-01\",\n        \"status\": 1,\n        \"usagePerCustomer\": 1,\n        \"useAutoGeneration\": 1,\n        \"usesAttributeConditions\": 1,\n        \"usesPerCoupon\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"10% off summer\",\n        \"description\": \"Sitewide 10% off summer collection\",\n        \"channels\": [\n            1\n        ],\n        \"customerGroups\": [\n            1,\n            2,\n            3\n        ],\n        \"couponType\": 1,\n        \"useAutoGeneration\": 0,\n        \"couponCode\": \"SUMMER10\",\n        \"usesPerCoupon\": 100,\n        \"usagePerCustomer\": 1,\n        \"conditionType\": 1,\n        \"conditions\": [\n            {\n                \"attribute\": \"cart|base_sub_total\",\n                \"operator\": \">=\",\n                \"value\": \"100\",\n                \"attribute_type\": \"price\"\n            }\n        ],\n        \"actionType\": \"by_percent\",\n        \"discountAmount\": 10,\n        \"discountQuantity\": 1,\n        \"discountStep\": \"0\",\n        \"applyToShipping\": 0,\n        \"freeShipping\": 0,\n        \"endOtherRules\": 0,\n        \"sortOrder\": 0,\n        \"startsFrom\": \"2026-06-01 00:00:00\",\n        \"endsTill\": \"2026-08-31 23:59:59\",\n        \"status\": 1\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Becomes createAdminMarketingCartRule."
@@ -19383,7 +19383,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingCartRuleCoupon($input: createAdminMarketingCartRuleCouponInput!) {\n  createAdminMarketingCartRuleCoupon(input: $input) {\n    adminMarketingCartRuleCoupon {\n      _id\n      cartRuleId\n      code\n      createdAt\n      expiredAt\n      id\n      isPrimary\n      message\n      success\n      timesUsed\n      type\n      updatedAt\n      usageLimit\n      usagePerCustomer\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"cartRuleId\": 1,\n        \"code\": \"SAMPLE\",\n        \"expiredAt\": \"2026-01-01\",\n        \"usageLimit\": 1,\n        \"usagePerCustomer\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"code\": \"WELCOME10\",\n        \"usageLimit\": 100,\n        \"usagePerCustomer\": 1,\n        \"expiredAt\": \"2027-12-31\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a single coupon for a cart rule. Becomes createAdminMarketingCartRuleCoupon."
@@ -19414,7 +19414,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingCartRuleCouponGenerate($input: createAdminMarketingCartRuleCouponGenerateInput!) {\n  createAdminMarketingCartRuleCouponGenerate(input: $input) {\n    adminMarketingCartRuleCouponGenerate {\n      _id\n      cartRuleId\n      coupons\n      generated\n      id\n      message\n      success\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"cartRuleId\": 1,\n        \"couponQty\": 1,\n        \"format\": \"2026-01-01\",\n        \"length\": 1,\n        \"prefix\": \"sample\",\n        \"suffix\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"length\": 10,\n        \"format\": \"alphanumeric\",\n        \"prefix\": \"SAVE-\",\n        \"suffix\": \"-2026\",\n        \"couponQty\": 5\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Bulk-generate coupons for a cart rule. Becomes createAdminMarketingCartRuleCouponGenerate."
@@ -19445,7 +19445,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingCartRuleCouponMassDelete($input: createAdminMarketingCartRuleCouponMassDeleteInput!) {\n  createAdminMarketingCartRuleCouponMassDelete(input: $input) {\n    adminMarketingCartRuleCouponMassDelete {\n      _id\n      cartRuleId\n      deleted\n      id\n      message\n      skipped\n      success\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"cartRuleId\": 1,\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            12,\n            13,\n            14\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-delete coupons for a cart rule. Becomes createAdminMarketingCartRuleCouponMassDelete."
@@ -19476,7 +19476,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingCartRuleMassDelete($input: createAdminMarketingCartRuleMassDeleteInput!) {\n  createAdminMarketingCartRuleMassDelete(input: $input) {\n    adminMarketingCartRuleMassDelete {\n      _id\n      deleted\n      id\n      message\n      skipped\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            3,\n            5\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Becomes createAdminMarketingCartRuleMassDelete."
@@ -19507,7 +19507,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingCatalogRule($input: createAdminMarketingCatalogRuleInput!) {\n  createAdminMarketingCatalogRule(input: $input) {\n    adminMarketingCatalogRule {\n      _id\n      actionType\n      conditionType\n      conditions\n      createdAt\n      description\n      discountAmount\n      endOtherRules\n      endsTill\n      id\n      message\n      name\n      sortOrder\n      startsFrom\n      status\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"actionType\": \"sample\",\n        \"channels\": \"sample\",\n        \"conditionType\": 1,\n        \"conditions\": \"sample\",\n        \"customerGroups\": \"sample\",\n        \"description\": \"Sample text\",\n        \"discountAmount\": 100,\n        \"endOtherRules\": 1,\n        \"endsTill\": \"2026-01-01\",\n        \"name\": \"Sample\",\n        \"sortOrder\": 1,\n        \"startsFrom\": \"2026-01-01\",\n        \"status\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Summer 10% off\",\n        \"description\": \"Sitewide 10% off summer collection\",\n        \"startsFrom\": \"2026-06-01\",\n        \"endsTill\": \"2026-08-31\",\n        \"status\": 1,\n        \"sortOrder\": 0,\n        \"conditionType\": 1,\n        \"conditions\": [],\n        \"endOtherRules\": 0,\n        \"actionType\": \"by_percent\",\n        \"discountAmount\": 10,\n        \"channels\": [\n            1\n        ],\n        \"customerGroups\": [\n            1,\n            2\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a catalog rule. Becomes createAdminMarketingCatalogRule."
@@ -19538,7 +19538,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingCatalogRuleMassDelete($input: createAdminMarketingCatalogRuleMassDeleteInput!) {\n  createAdminMarketingCatalogRuleMassDelete(input: $input) {\n    adminMarketingCatalogRuleMassDelete {\n      _id\n      deleted\n      id\n      message\n      skipped\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            12,\n            18\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-delete a batch of catalog rules. Becomes createAdminMarketingCatalogRuleMassDelete."
@@ -19662,7 +19662,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminMarketingCartRule($input: updateAdminMarketingCartRuleInput!) {\n  updateAdminMarketingCartRule(input: $input) {\n    adminMarketingCartRule {\n      _id\n      actionType\n      applyToShipping\n      conditionType\n      conditions\n      couponCode\n      couponType\n      createdAt\n      description\n      discountAmount\n      discountQuantity\n      discountStep\n      endOtherRules\n      endsTill\n      freeShipping\n      id\n      name\n      sortOrder\n      startsFrom\n      status\n      timesUsed\n      updatedAt\n      usagePerCustomer\n      useAutoGeneration\n      usesAttributeConditions\n      usesPerCoupon\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"actionType\": \"sample\",\n        \"applyToShipping\": 1,\n        \"channels\": \"sample\",\n        \"conditionType\": 1,\n        \"conditions\": \"sample\",\n        \"couponCode\": \"SAMPLE\",\n        \"couponType\": 1,\n        \"customerGroups\": \"sample\",\n        \"description\": \"Sample text\",\n        \"discountAmount\": 100,\n        \"discountQuantity\": 1,\n        \"discountStep\": \"sample\",\n        \"endOtherRules\": 1,\n        \"endsTill\": \"2026-01-01\",\n        \"freeShipping\": 1,\n        \"id\": \"1\",\n        \"name\": \"Sample\",\n        \"sortOrder\": 1,\n        \"startsFrom\": \"2026-01-01\",\n        \"status\": 1,\n        \"usagePerCustomer\": 1,\n        \"useAutoGeneration\": 1,\n        \"usesAttributeConditions\": 1,\n        \"usesPerCoupon\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"15% off summer\",\n        \"description\": \"Updated description\",\n        \"channels\": [\n            1\n        ],\n        \"customerGroups\": [\n            1,\n            2,\n            3\n        ],\n        \"couponType\": 1,\n        \"useAutoGeneration\": 0,\n        \"couponCode\": \"SUMMER15\",\n        \"usesPerCoupon\": 100,\n        \"usagePerCustomer\": 1,\n        \"conditionType\": 1,\n        \"conditions\": [\n            {\n                \"attribute\": \"cart|base_sub_total\",\n                \"operator\": \">=\",\n                \"value\": \"100\",\n                \"attribute_type\": \"price\"\n            }\n        ],\n        \"actionType\": \"by_percent\",\n        \"discountAmount\": 15,\n        \"discountQuantity\": 1,\n        \"discountStep\": \"0\",\n        \"applyToShipping\": 0,\n        \"freeShipping\": 0,\n        \"endOtherRules\": 0,\n        \"sortOrder\": 0,\n        \"startsFrom\": \"2026-06-01 00:00:00\",\n        \"endsTill\": \"2026-08-31 23:59:59\",\n        \"status\": 1,\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Becomes updateAdminMarketingCartRule."
@@ -19693,7 +19693,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminMarketingCatalogRule($input: updateAdminMarketingCatalogRuleInput!) {\n  updateAdminMarketingCatalogRule(input: $input) {\n    adminMarketingCatalogRule {\n      _id\n      actionType\n      conditionType\n      conditions\n      createdAt\n      description\n      discountAmount\n      endOtherRules\n      endsTill\n      id\n      message\n      name\n      sortOrder\n      startsFrom\n      status\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"actionType\": \"sample\",\n        \"channels\": \"sample\",\n        \"conditionType\": 1,\n        \"conditions\": \"sample\",\n        \"customerGroups\": \"sample\",\n        \"description\": \"Sample text\",\n        \"discountAmount\": 100,\n        \"endOtherRules\": 1,\n        \"endsTill\": \"2026-01-01\",\n        \"id\": \"1\",\n        \"name\": \"Sample\",\n        \"sortOrder\": 1,\n        \"startsFrom\": \"2026-01-01\",\n        \"status\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Summer 15% off\",\n        \"description\": \"Updated description\",\n        \"channels\": [\n            1\n        ],\n        \"customerGroups\": [\n            1,\n            2\n        ],\n        \"conditionType\": 1,\n        \"conditions\": [\n            {\n                \"attribute\": \"product|category_ids\",\n                \"operator\": \"{}\",\n                \"value\": \"5\",\n                \"attribute_type\": \"select\"\n            }\n        ],\n        \"endOtherRules\": 0,\n        \"actionType\": \"by_percent\",\n        \"discountAmount\": 15,\n        \"sortOrder\": 0,\n        \"startsFrom\": \"2026-06-01\",\n        \"endsTill\": \"2026-08-31\",\n        \"status\": 1,\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a catalog rule. Becomes updateAdminMarketingCatalogRule."
@@ -19894,7 +19894,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingSearchSynonym($input: createAdminMarketingSearchSynonymInput!) {\n  createAdminMarketingSearchSynonym(input: $input) {\n    adminMarketingSearchSynonym {\n      _id\n      createdAt\n      id\n      name\n      terms\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Sample\",\n        \"terms\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"shirt-group\",\n        \"terms\": \"shirt,tshirt,tee\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a search synonym. Becomes createAdminMarketingSearchSynonym."
@@ -19925,7 +19925,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingSearchSynonymMassDelete($input: createAdminMarketingSearchSynonymMassDeleteInput!) {\n  createAdminMarketingSearchSynonymMassDelete(input: $input) {\n    adminMarketingSearchSynonymMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            12,\n            18\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-delete search synonyms. Becomes createAdminMarketingSearchSynonymMassDelete."
@@ -19956,7 +19956,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingSearchTerm($input: createAdminMarketingSearchTermInput!) {\n  createAdminMarketingSearchTerm(input: $input) {\n    adminMarketingSearchTerm {\n      _id\n      createdAt\n      displayInSuggestedTerms\n      id\n      locale\n      redirectUrl\n      results\n      term\n      updatedAt\n      uses\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"channelId\": 1,\n        \"locale\": \"{{locale}}\",\n        \"redirectUrl\": \"sample\",\n        \"term\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"term\": \"red shirt\",\n        \"redirectUrl\": \"https://example.com/shirts\",\n        \"channelId\": 1,\n        \"locale\": \"en\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a search term. Becomes createAdminMarketingSearchTerm."
@@ -19987,7 +19987,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingSearchTermMassDelete($input: createAdminMarketingSearchTermMassDeleteInput!) {\n  createAdminMarketingSearchTermMassDelete(input: $input) {\n    adminMarketingSearchTermMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            12,\n            18\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-delete a batch of search terms. Becomes createAdminMarketingSearchTermMassDelete."
@@ -20018,7 +20018,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingSitemap($input: createAdminMarketingSitemapInput!) {\n  createAdminMarketingSitemap(input: $input) {\n    adminMarketingSitemap {\n      _id\n      channels\n      createdAt\n      fileName\n      generatedAt\n      generatedFiles\n      generatedSitemaps\n      id\n      indexFile\n      path\n      updatedAt\n      urls\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"channels\": \"sample\",\n        \"fileName\": \"Sample\",\n        \"path\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"fileName\": \"sitemap.xml\",\n        \"path\": \"/\",\n        \"channels\": [\n            1\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a sitemap. Becomes createAdminMarketingSitemap."
@@ -20080,7 +20080,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingUrlRewrite($input: createAdminMarketingUrlRewriteInput!) {\n  createAdminMarketingUrlRewrite(input: $input) {\n    adminMarketingUrlRewrite {\n      _id\n      createdAt\n      entityType\n      id\n      locale\n      redirectType\n      requestPath\n      targetPath\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"entityType\": \"sample\",\n        \"locale\": \"{{locale}}\",\n        \"redirectType\": \"sample\",\n        \"requestPath\": \"sample\",\n        \"targetPath\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"entityType\": \"product\",\n        \"requestPath\": \"old-path\",\n        \"targetPath\": \"new-path\",\n        \"redirectType\": \"301\",\n        \"locale\": \"en\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a URL rewrite. Becomes createAdminMarketingUrlRewrite."
@@ -20111,7 +20111,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminMarketingUrlRewriteMassDelete($input: createAdminMarketingUrlRewriteMassDeleteInput!) {\n  createAdminMarketingUrlRewriteMassDelete(input: $input) {\n    adminMarketingUrlRewriteMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            12,\n            18\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-delete a batch of URL rewrites. Becomes createAdminMarketingUrlRewriteMassDelete."
@@ -20266,7 +20266,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminMarketingSearchSynonym($input: updateAdminMarketingSearchSynonymInput!) {\n  updateAdminMarketingSearchSynonym(input: $input) {\n    adminMarketingSearchSynonym {\n      _id\n      createdAt\n      id\n      name\n      terms\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"id\": \"1\",\n        \"name\": \"Sample\",\n        \"terms\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"shirt-group\",\n        \"terms\": \"shirt,tshirt,tee\",\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a search synonym. Becomes updateAdminMarketingSearchSynonym."
@@ -20297,7 +20297,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminMarketingSearchTerm($input: updateAdminMarketingSearchTermInput!) {\n  updateAdminMarketingSearchTerm(input: $input) {\n    adminMarketingSearchTerm {\n      _id\n      createdAt\n      displayInSuggestedTerms\n      id\n      locale\n      redirectUrl\n      results\n      term\n      updatedAt\n      uses\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"id\": \"1\",\n        \"redirectUrl\": \"sample\",\n        \"term\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"term\": \"red shirt\",\n        \"redirectUrl\": \"https://example.com/shirts\",\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a search term. Becomes updateAdminMarketingSearchTerm."
@@ -20328,7 +20328,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminMarketingSitemap($input: updateAdminMarketingSitemapInput!) {\n  updateAdminMarketingSitemap(input: $input) {\n    adminMarketingSitemap {\n      _id\n      channels\n      createdAt\n      fileName\n      generatedAt\n      generatedFiles\n      generatedSitemaps\n      id\n      indexFile\n      path\n      updatedAt\n      urls\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"channels\": \"sample\",\n        \"fileName\": \"Sample\",\n        \"id\": \"1\",\n        \"path\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"fileName\": \"sitemap.xml\",\n        \"path\": \"/\",\n        \"channels\": [\n            1\n        ],\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a sitemap. Becomes updateAdminMarketingSitemap."
@@ -20359,7 +20359,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminMarketingUrlRewrite($input: updateAdminMarketingUrlRewriteInput!) {\n  updateAdminMarketingUrlRewrite(input: $input) {\n    adminMarketingUrlRewrite {\n      _id\n      createdAt\n      entityType\n      id\n      locale\n      redirectType\n      requestPath\n      targetPath\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"entityType\": \"sample\",\n        \"id\": \"1\",\n        \"locale\": \"{{locale}}\",\n        \"redirectType\": \"sample\",\n        \"requestPath\": \"sample\",\n        \"targetPath\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"entityType\": \"product\",\n        \"requestPath\": \"old-path\",\n        \"targetPath\": \"new-path\",\n        \"redirectType\": \"301\",\n        \"locale\": \"en\",\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a URL rewrite. Becomes updateAdminMarketingUrlRewrite."
@@ -21105,7 +21105,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation DeclineAdminEuWithdrawal($input: declineAdminEuWithdrawalInput!) {\n  declineAdminEuWithdrawal(input: $input) {\n    adminEuWithdrawal {\n      _id\n      channelCode\n      channelId\n      confirmationError\n      confirmationSentAt\n      createdAt\n      customerEmail\n      customerId\n      customerName\n      declinedAt\n      declinedByName\n      declinedByUserId\n      declinedReason\n      finalConfirmationSentAt\n      id\n      isGuest\n      locale\n      message\n      orderId\n      orderIncrementId\n      reasonText\n      receivedAt\n      refundNote\n      refundedAt\n      refundedByName\n      refundedByUserId\n      status\n      updatedAt\n      uuid\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"declinedReason\": \"sample\",\n        \"id\": \"1\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"declinedReason\": \"Item was a personalised good, exempt from withdrawal.\",\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Declines a AdminEuWithdrawal."
@@ -21136,7 +21136,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation MarkRefundedAdminEuWithdrawal($input: markRefundedAdminEuWithdrawalInput!) {\n  markRefundedAdminEuWithdrawal(input: $input) {\n    adminEuWithdrawal {\n      _id\n      channelCode\n      channelId\n      confirmationError\n      confirmationSentAt\n      createdAt\n      customerEmail\n      customerId\n      customerName\n      declinedAt\n      declinedByName\n      declinedByUserId\n      declinedReason\n      finalConfirmationSentAt\n      id\n      isGuest\n      locale\n      message\n      orderId\n      orderIncrementId\n      reasonText\n      receivedAt\n      refundNote\n      refundedAt\n      refundedByName\n      refundedByUserId\n      status\n      updatedAt\n      uuid\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"id\": \"1\",\n        \"refundNote\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"refundNote\": \"Refunded via original payment method.\",\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "MarkRefundeds a AdminEuWithdrawal."
@@ -21306,7 +21306,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminInvoiceMassUpdateStatus($input: createAdminInvoiceMassUpdateStatusInput!) {\n  createAdminInvoiceMassUpdateStatus(input: $input) {\n    adminInvoiceMassUpdateStatus {\n      _id\n      id\n      message\n      updated\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\",\n        \"value\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            560,\n            561\n        ],\n        \"value\": \"paid\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-update status for a batch of invoices. Becomes createAdminInvoiceMassUpdateStatus."
@@ -21615,7 +21615,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminReturn($input: createAdminReturnInput!) {\n  createAdminReturn(input: $input) {\n    adminReturn {\n      _id\n      availableStatuses\n      canReopen\n      createdAt\n      customerEmail\n      customerName\n      id\n      images\n      information\n      isGuest\n      item\n      messagesCount\n      orderId\n      orderIncrementId\n      orderStatus\n      packageCondition\n      statusColor\n      statusId\n      statusTitle\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"information\": \"sample\",\n        \"orderId\": 1,\n        \"orderItemId\": 1,\n        \"packageCondition\": \"sample\",\n        \"resolutionType\": \"sample\",\n        \"rmaQty\": 1,\n        \"rmaReasonId\": 1,\n        \"variant\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"orderId\": 12,\n        \"orderItemId\": 45,\n        \"rmaQty\": 1,\n        \"resolutionType\": \"return\",\n        \"rmaReasonId\": 2,\n        \"information\": \"Customer reported a defect.\",\n        \"packageCondition\": \"opened\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminReturn."
@@ -21646,7 +21646,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminReturnMessage($input: createAdminReturnMessageInput!) {\n  createAdminReturnMessage(input: $input) {\n    adminReturnMessage {\n      _id\n      attachment\n      attachmentUrl\n      createdAt\n      id\n      isAdmin\n      message\n      rmaId\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"message\": \"Sample text\",\n        \"returnId\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"returnId\": 12,\n        \"message\": \"We have received your package.\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminReturnMessage."
@@ -21677,7 +21677,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminRmaCustomField($input: createAdminRmaCustomFieldInput!) {\n  createAdminRmaCustomField(input: $input) {\n    adminRmaCustomField {\n      _id\n      code\n      createdAt\n      id\n      inputValidation\n      isRequired\n      label\n      message\n      options\n      position\n      status\n      type\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"code\": \"SAMPLE\",\n        \"inputValidation\": \"sample\",\n        \"isRequired\": 1,\n        \"label\": \"Sample\",\n        \"options\": \"sample\",\n        \"position\": 1,\n        \"status\": 1,\n        \"type\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"code\": \"preferred_resolution\",\n        \"label\": \"Preferred resolution\",\n        \"type\": \"select\",\n        \"isRequired\": 1,\n        \"position\": 1,\n        \"inputValidation\": null,\n        \"status\": 1,\n        \"options\": [\n            {\n                \"name\": \"Refund\",\n                \"value\": \"refund\"\n            },\n            {\n                \"name\": \"Replacement\",\n                \"value\": \"replacement\"\n            }\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminRmaCustomField."
@@ -21708,7 +21708,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminRmaCustomFieldMassDelete($input: createAdminRmaCustomFieldMassDeleteInput!) {\n  createAdminRmaCustomFieldMassDelete(input: $input) {\n    adminRmaCustomFieldMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            4,\n            6\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminRmaCustomFieldMassDelete."
@@ -21739,7 +21739,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminRmaCustomFieldMassUpdateStatus($input: createAdminRmaCustomFieldMassUpdateStatusInput!) {\n  createAdminRmaCustomFieldMassUpdateStatus(input: $input) {\n    adminRmaCustomFieldMassUpdateStatus {\n      _id\n      id\n      message\n      updated\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\",\n        \"value\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            4,\n            6\n        ],\n        \"value\": 1\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminRmaCustomFieldMassUpdateStatus."
@@ -21770,7 +21770,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminRmaReason($input: createAdminRmaReasonInput!) {\n  createAdminRmaReason(input: $input) {\n    adminRmaReason {\n      _id\n      createdAt\n      id\n      isAdmin\n      message\n      position\n      resolutionType\n      status\n      title\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"position\": 1,\n        \"resolutionType\": \"sample\",\n        \"status\": 1,\n        \"title\": \"Sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"title\": \"Damaged product\",\n        \"status\": 1,\n        \"position\": 1,\n        \"resolutionType\": [\n            \"return\",\n            \"cancel_items\"\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminRmaReason."
@@ -21801,7 +21801,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminRmaReasonMassDelete($input: createAdminRmaReasonMassDeleteInput!) {\n  createAdminRmaReasonMassDelete(input: $input) {\n    adminRmaReasonMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            2,\n            3,\n            4\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminRmaReasonMassDelete."
@@ -21832,7 +21832,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminRmaReasonMassUpdateStatus($input: createAdminRmaReasonMassUpdateStatusInput!) {\n  createAdminRmaReasonMassUpdateStatus(input: $input) {\n    adminRmaReasonMassUpdateStatus {\n      _id\n      id\n      message\n      updated\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\",\n        \"value\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            2,\n            3\n        ],\n        \"value\": 1\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminRmaReasonMassUpdateStatus."
@@ -21863,7 +21863,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminRmaRule($input: createAdminRmaRuleInput!) {\n  createAdminRmaRule(input: $input) {\n    adminRmaRule {\n      _id\n      createdAt\n      default\n      description\n      id\n      message\n      name\n      returnPeriod\n      status\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"description\": \"Sample text\",\n        \"name\": \"Sample\",\n        \"returnPeriod\": 1,\n        \"status\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Apparel 30-day returns\",\n        \"description\": \"Return window for all clothing.\",\n        \"status\": 1,\n        \"returnPeriod\": 30\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminRmaRule."
@@ -21894,7 +21894,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminRmaRuleMassDelete($input: createAdminRmaRuleMassDeleteInput!) {\n  createAdminRmaRuleMassDelete(input: $input) {\n    adminRmaRuleMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            3,\n            5\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminRmaRuleMassDelete."
@@ -21925,7 +21925,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminRmaRuleMassUpdateStatus($input: createAdminRmaRuleMassUpdateStatusInput!) {\n  createAdminRmaRuleMassUpdateStatus(input: $input) {\n    adminRmaRuleMassUpdateStatus {\n      _id\n      id\n      message\n      updated\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\",\n        \"value\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            3,\n            5\n        ],\n        \"value\": 1\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminRmaRuleMassUpdateStatus."
@@ -21956,7 +21956,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminRmaStatus($input: createAdminRmaStatusInput!) {\n  createAdminRmaStatus(input: $input) {\n    adminRmaStatus {\n      _id\n      color\n      createdAt\n      default\n      id\n      message\n      status\n      title\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"color\": \"sample\",\n        \"status\": 1,\n        \"title\": \"Sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"title\": \"Awaiting inspection\",\n        \"status\": 1,\n        \"color\": \"#FDB022\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminRmaStatus."
@@ -21987,7 +21987,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminRmaStatusMassDelete($input: createAdminRmaStatusMassDeleteInput!) {\n  createAdminRmaStatusMassDelete(input: $input) {\n    adminRmaStatusMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            9,\n            10\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminRmaStatusMassDelete."
@@ -22018,7 +22018,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminRmaStatusMassUpdateStatus($input: createAdminRmaStatusMassUpdateStatusInput!) {\n  createAdminRmaStatusMassUpdateStatus(input: $input) {\n    adminRmaStatusMassUpdateStatus {\n      _id\n      id\n      message\n      updated\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\",\n        \"value\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            9,\n            10\n        ],\n        \"value\": 1\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Creates a AdminRmaStatusMassUpdateStatus."
@@ -22204,7 +22204,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminRmaCustomField($input: updateAdminRmaCustomFieldInput!) {\n  updateAdminRmaCustomField(input: $input) {\n    adminRmaCustomField {\n      _id\n      code\n      createdAt\n      id\n      inputValidation\n      isRequired\n      label\n      message\n      options\n      position\n      status\n      type\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"code\": \"SAMPLE\",\n        \"id\": \"1\",\n        \"inputValidation\": \"sample\",\n        \"isRequired\": 1,\n        \"label\": \"Sample\",\n        \"options\": \"sample\",\n        \"position\": 1,\n        \"status\": 1,\n        \"type\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"label\": \"How should we resolve this?\",\n        \"isRequired\": 0,\n        \"position\": 2,\n        \"status\": 1,\n        \"options\": [\n            {\n                \"name\": \"Refund\",\n                \"value\": \"refund\"\n            },\n            {\n                \"name\": \"Store credit\",\n                \"value\": \"store_credit\"\n            }\n        ],\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Updates a AdminRmaCustomField."
@@ -22235,7 +22235,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminRmaReason($input: updateAdminRmaReasonInput!) {\n  updateAdminRmaReason(input: $input) {\n    adminRmaReason {\n      _id\n      createdAt\n      id\n      isAdmin\n      message\n      position\n      resolutionType\n      status\n      title\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"id\": \"1\",\n        \"position\": 1,\n        \"resolutionType\": \"sample\",\n        \"status\": 1,\n        \"title\": \"Sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"title\": \"Damaged on arrival\",\n        \"status\": 1,\n        \"position\": 2,\n        \"resolutionType\": [\n            \"return\"\n        ],\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Updates a AdminRmaReason."
@@ -22266,7 +22266,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminRmaRule($input: updateAdminRmaRuleInput!) {\n  updateAdminRmaRule(input: $input) {\n    adminRmaRule {\n      _id\n      createdAt\n      default\n      description\n      id\n      message\n      name\n      returnPeriod\n      status\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"description\": \"Sample text\",\n        \"id\": \"1\",\n        \"name\": \"Sample\",\n        \"returnPeriod\": 1,\n        \"status\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Apparel 45-day returns\",\n        \"description\": \"Extended window for clothing.\",\n        \"status\": 1,\n        \"returnPeriod\": 45,\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Updates a AdminRmaRule."
@@ -22297,7 +22297,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminRmaStatus($input: updateAdminRmaStatusInput!) {\n  updateAdminRmaStatus(input: $input) {\n    adminRmaStatus {\n      _id\n      color\n      createdAt\n      default\n      id\n      message\n      status\n      title\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"color\": \"sample\",\n        \"id\": \"1\",\n        \"status\": 1,\n        \"title\": \"Sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"title\": \"Inspection complete\",\n        \"status\": 1,\n        \"color\": \"#12B76A\",\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Updates a AdminRmaStatus."
@@ -22328,7 +22328,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateStatusAdminReturn($input: updateStatusAdminReturnInput!) {\n  updateStatusAdminReturn(input: $input) {\n    adminReturn {\n      _id\n      availableStatuses\n      canReopen\n      createdAt\n      customerEmail\n      customerName\n      id\n      images\n      information\n      isGuest\n      item\n      messagesCount\n      orderId\n      orderIncrementId\n      orderStatus\n      packageCondition\n      statusColor\n      statusId\n      statusTitle\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"id\": \"1\",\n        \"rmaStatusId\": 1,\n        \"shipping\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"rmaStatusId\": 2,\n        \"shipping\": 0,\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "UpdateStatuss a AdminReturn."
@@ -23379,7 +23379,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminSettingsChannel($input: updateAdminSettingsChannelInput!) {\n  updateAdminSettingsChannel(input: $input) {\n    adminSettingsChannel {\n      _id\n      allowedIps\n      baseCurrencyId\n      code\n      createdAt\n      defaultLocaleId\n      description\n      favicon\n      faviconUrl\n      homeSeo\n      hostname\n      id\n      isMaintenanceOn\n      logo\n      logoUrl\n      maintenanceModeText\n      message\n      name\n      rootCategoryId\n      seoMetaDescription\n      seoMetaKeywords\n      seoMetaTitle\n      theme\n      timezone\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"code\": \"us_store\",\n        \"name\": \"US Store\",\n        \"hostname\": \"us.example.com\",\n        \"theme\": \"default\",\n        \"timezone\": \"America/New_York\",\n        \"locales\": [\n            1\n        ],\n        \"defaultLocaleId\": 1,\n        \"currencies\": [\n            1\n        ],\n        \"baseCurrencyId\": 1,\n        \"inventorySources\": [\n            1\n        ],\n        \"rootCategoryId\": 1,\n        \"seoTitle\": \"Welcome to the US store\",\n        \"seoDescription\": \"Best products for the US market\",\n        \"seoKeywords\": \"shop, us, store\",\n        \"isMaintenanceOn\": false\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"code\": \"us_store\",\n        \"hostname\": \"us.example.com\",\n        \"locales\": [\n            1\n        ],\n        \"defaultLocaleId\": 1,\n        \"currencies\": [\n            1\n        ],\n        \"baseCurrencyId\": 1,\n        \"inventorySources\": [\n            1\n        ],\n        \"rootCategoryId\": 1,\n        \"translations\": {\n            \"en\": {\n                \"name\": \"US Store\",\n                \"description\": \"Our US storefront\",\n                \"seo_title\": \"Welcome\",\n                \"seo_description\": \"Welcome to our shop\",\n                \"seo_keywords\": \"shop, us\"\n            }\n        },\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a channel."
@@ -23487,7 +23487,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminSettingsCurrency($input: createAdminSettingsCurrencyInput!) {\n  createAdminSettingsCurrency(input: $input) {\n    adminSettingsCurrency {\n      _id\n      code\n      createdAt\n      currencyPosition\n      decimal\n      decimalSeparator\n      groupSeparator\n      id\n      message\n      name\n      symbol\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"code\": \"SAMPLE\",\n        \"currencyPosition\": \"sample\",\n        \"decimal\": 1,\n        \"decimalSeparator\": \"sample\",\n        \"groupSeparator\": \"sample\",\n        \"name\": \"Sample\",\n        \"symbol\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"code\": \"EUR\",\n        \"name\": \"Euro\",\n        \"symbol\": \"\\u20ac\",\n        \"decimal\": 2,\n        \"groupSeparator\": \",\",\n        \"decimalSeparator\": \".\",\n        \"currencyPosition\": \"left\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a new currency. Becomes createAdminSettingsCurrency."
@@ -23518,7 +23518,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminSettingsCurrencyMassDelete($input: createAdminSettingsCurrencyMassDeleteInput!) {\n  createAdminSettingsCurrencyMassDelete(input: $input) {\n    adminSettingsCurrencyMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            2,\n            3\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-delete a batch of currencies. Becomes createAdminSettingsCurrencyMassDelete."
@@ -23580,7 +23580,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminSettingsCurrency($input: updateAdminSettingsCurrencyInput!) {\n  updateAdminSettingsCurrency(input: $input) {\n    adminSettingsCurrency {\n      _id\n      code\n      createdAt\n      currencyPosition\n      decimal\n      decimalSeparator\n      groupSeparator\n      id\n      message\n      name\n      symbol\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"currencyPosition\": \"sample\",\n        \"decimal\": 1,\n        \"decimalSeparator\": \"sample\",\n        \"groupSeparator\": \"sample\",\n        \"id\": \"1\",\n        \"name\": \"Sample\",\n        \"symbol\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Euro\",\n        \"symbol\": \"\\u20ac\",\n        \"decimal\": 2,\n        \"groupSeparator\": \",\",\n        \"decimalSeparator\": \".\",\n        \"currencyPosition\": \"left\",\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a currency. Becomes updateAdminSettingsCurrency."
@@ -23719,7 +23719,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminSettingsDataTransferImport($input: createAdminSettingsDataTransferImportInput!) {\n  createAdminSettingsDataTransferImport(input: $input) {\n    adminSettingsDataTransferImport {\n      _id\n      action\n      allowedErrors\n      code\n      completedAt\n      createdAt\n      errorFilePath\n      errors\n      errorsCount\n      fieldSeparator\n      filePath\n      id\n      imageSource\n      imagesArchiveName\n      imagesDirectoryPath\n      invalidRowsCount\n      isValid\n      message\n      processInQueue\n      processedRowsCount\n      startedAt\n      state\n      stats\n      success\n      summary\n      updatedAt\n      validationStrategy\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"action\": \"sample\",\n        \"allowedErrors\": 1,\n        \"fieldSeparator\": \"sample\",\n        \"imagesDirectoryPath\": \"sample\",\n        \"processInQueue\": false,\n        \"type\": \"sample\",\n        \"validationStrategy\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"type\": \"products\",\n        \"action\": \"append\",\n        \"validationStrategy\": \"stop-on-errors\",\n        \"allowedErrors\": 0,\n        \"fieldSeparator\": \",\",\n        \"processInQueue\": false,\n        \"imagesDirectoryPath\": \"\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Placeholder for createAdminSettingsDataTransferImport — binary upload is REST-only. Use POST /api/admin/settings/data-transfer/imports."
@@ -24013,7 +24013,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminSettingsExchangeRate($input: createAdminSettingsExchangeRateInput!) {\n  createAdminSettingsExchangeRate(input: $input) {\n    adminSettingsExchangeRate {\n      _id\n      createdAt\n      id\n      message\n      rate\n      targetCurrency\n      targetCurrencyCode\n      targetCurrencyName\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"rate\": 1,\n        \"targetCurrency\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"targetCurrency\": 2,\n        \"rate\": 1.085\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a new exchange rate. Becomes createAdminSettingsExchangeRate."
@@ -24044,7 +24044,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminSettingsExchangeRateMassDelete($input: createAdminSettingsExchangeRateMassDeleteInput!) {\n  createAdminSettingsExchangeRateMassDelete(input: $input) {\n    adminSettingsExchangeRateMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            4,\n            7\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-delete a batch of exchange rates. Becomes createAdminSettingsExchangeRateMassDelete."
@@ -24137,7 +24137,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminSettingsExchangeRate($input: updateAdminSettingsExchangeRateInput!) {\n  updateAdminSettingsExchangeRate(input: $input) {\n    adminSettingsExchangeRate {\n      _id\n      createdAt\n      id\n      message\n      rate\n      targetCurrency\n      targetCurrencyCode\n      targetCurrencyName\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"id\": \"1\",\n        \"rate\": 1,\n        \"targetCurrency\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"targetCurrency\": 2,\n        \"rate\": 1.09,\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update an exchange rate. Becomes updateAdminSettingsExchangeRate."
@@ -24245,7 +24245,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminSettingsInventorySource($input: createAdminSettingsInventorySourceInput!) {\n  createAdminSettingsInventorySource(input: $input) {\n    adminSettingsInventorySource {\n      _id\n      city\n      code\n      contactEmail\n      contactFax\n      contactName\n      contactNumber\n      country\n      createdAt\n      description\n      id\n      latitude\n      longitude\n      message\n      name\n      postcode\n      priority\n      state\n      status\n      street\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"city\": \"sample\",\n        \"code\": \"SAMPLE\",\n        \"contactEmail\": \"customer@example.com\",\n        \"contactFax\": \"sample\",\n        \"contactName\": \"Sample\",\n        \"contactNumber\": \"sample\",\n        \"country\": \"sample\",\n        \"description\": \"Sample text\",\n        \"latitude\": 1,\n        \"longitude\": 1,\n        \"name\": \"Sample\",\n        \"postcode\": \"SAMPLE\",\n        \"priority\": 1,\n        \"state\": \"sample\",\n        \"status\": 1,\n        \"street\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"code\": \"warehouse-1\",\n        \"name\": \"Warehouse 1\",\n        \"description\": \"Primary warehouse.\",\n        \"contactName\": \"Jane Doe\",\n        \"contactEmail\": \"jane@example.com\",\n        \"contactNumber\": \"1234567890\",\n        \"contactFax\": null,\n        \"country\": \"US\",\n        \"state\": \"CA\",\n        \"city\": \"Los Angeles\",\n        \"street\": \"123 Main St\",\n        \"postcode\": \"90001\",\n        \"priority\": 0,\n        \"latitude\": 34.05,\n        \"longitude\": -118.24,\n        \"status\": 1\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a new inventory source. Becomes createAdminSettingsInventorySource."
@@ -24276,7 +24276,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminSettingsInventorySourceMassDelete($input: createAdminSettingsInventorySourceMassDeleteInput!) {\n  createAdminSettingsInventorySourceMassDelete(input: $input) {\n    adminSettingsInventorySourceMassDelete {\n      _id\n      deleted\n      id\n      message\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            2,\n            3\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-delete a batch of inventory sources. Becomes createAdminSettingsInventorySourceMassDelete."
@@ -24338,7 +24338,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminSettingsInventorySource($input: updateAdminSettingsInventorySourceInput!) {\n  updateAdminSettingsInventorySource(input: $input) {\n    adminSettingsInventorySource {\n      _id\n      city\n      code\n      contactEmail\n      contactFax\n      contactName\n      contactNumber\n      country\n      createdAt\n      description\n      id\n      latitude\n      longitude\n      message\n      name\n      postcode\n      priority\n      state\n      status\n      street\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"city\": \"sample\",\n        \"code\": \"SAMPLE\",\n        \"contactEmail\": \"customer@example.com\",\n        \"contactFax\": \"sample\",\n        \"contactName\": \"Sample\",\n        \"contactNumber\": \"sample\",\n        \"country\": \"sample\",\n        \"description\": \"Sample text\",\n        \"id\": \"1\",\n        \"latitude\": 1,\n        \"longitude\": 1,\n        \"name\": \"Sample\",\n        \"postcode\": \"SAMPLE\",\n        \"priority\": 1,\n        \"state\": \"sample\",\n        \"status\": 1,\n        \"street\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Warehouse 1 (renamed)\",\n        \"priority\": 5,\n        \"status\": 0,\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update an inventory source. Becomes updateAdminSettingsInventorySource."
@@ -24446,7 +24446,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminSettingsLocale($input: createAdminSettingsLocaleInput!) {\n  createAdminSettingsLocale(input: $input) {\n    adminSettingsLocale {\n      _id\n      code\n      createdAt\n      direction\n      id\n      logoPath\n      logoUrl\n      message\n      name\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"code\": \"SAMPLE\",\n        \"direction\": \"sample\",\n        \"logoPath\": \"sample\",\n        \"name\": \"Sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"code\": \"fr\",\n        \"name\": \"French\",\n        \"direction\": \"ltr\",\n        \"logoPath\": \"locales/fr.png\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a new locale. Becomes createAdminSettingsLocale."
@@ -24477,7 +24477,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminSettingsLocaleMassDelete($input: createAdminSettingsLocaleMassDeleteInput!) {\n  createAdminSettingsLocaleMassDelete(input: $input) {\n    adminSettingsLocaleMassDelete {\n      _id\n      deleted\n      id\n      message\n      skipped\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"indices\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"indices\": [\n            5,\n            7\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Mass-delete a batch of locales. Becomes createAdminSettingsLocaleMassDelete."
@@ -24539,7 +24539,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminSettingsLocale($input: updateAdminSettingsLocaleInput!) {\n  updateAdminSettingsLocale(input: $input) {\n    adminSettingsLocale {\n      _id\n      code\n      createdAt\n      direction\n      id\n      logoPath\n      logoUrl\n      message\n      name\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"code\": \"SAMPLE\",\n        \"direction\": \"sample\",\n        \"id\": \"1\",\n        \"logoPath\": \"sample\",\n        \"name\": \"Sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"code\": \"fr\",\n        \"name\": \"French (FR)\",\n        \"direction\": \"ltr\",\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a locale. Becomes updateAdminSettingsLocale."
@@ -24647,7 +24647,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminSettingsRole($input: createAdminSettingsRoleInput!) {\n  createAdminSettingsRole(input: $input) {\n    adminSettingsRole {\n      _id\n      createdAt\n      description\n      id\n      message\n      name\n      permissionType\n      permissions\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"description\": \"Sample text\",\n        \"name\": \"Sample\",\n        \"permissionType\": \"sample\",\n        \"permissions\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Catalog Manager\",\n        \"description\": \"Can manage catalog only\",\n        \"permissionType\": \"custom\",\n        \"permissions\": [\n            \"catalog.products\",\n            \"catalog.categories\"\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a role. Becomes createAdminSettingsRole."
@@ -24709,7 +24709,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminSettingsRole($input: updateAdminSettingsRoleInput!) {\n  updateAdminSettingsRole(input: $input) {\n    adminSettingsRole {\n      _id\n      createdAt\n      description\n      id\n      message\n      name\n      permissionType\n      permissions\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"description\": \"Sample text\",\n        \"id\": \"1\",\n        \"name\": \"Sample\",\n        \"permissionType\": \"sample\",\n        \"permissions\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Catalog Manager\",\n        \"description\": \"Updated description\",\n        \"permissionType\": \"custom\",\n        \"permissions\": [\n            \"catalog.products\"\n        ],\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a role. Becomes updateAdminSettingsRole."
@@ -24817,7 +24817,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminSettingsTaxCategory($input: createAdminSettingsTaxCategoryInput!) {\n  createAdminSettingsTaxCategory(input: $input) {\n    adminSettingsTaxCategory {\n      _id\n      code\n      createdAt\n      description\n      id\n      message\n      name\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"code\": \"SAMPLE\",\n        \"description\": \"Sample text\",\n        \"name\": \"Sample\",\n        \"taxrates\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"code\": \"reduced-rate\",\n        \"name\": \"Reduced Rate\",\n        \"description\": \"Reduced VAT for essentials\",\n        \"taxrates\": [\n            1,\n            2\n        ]\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a tax category. Becomes createAdminSettingsTaxCategory."
@@ -24879,7 +24879,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminSettingsTaxCategory($input: updateAdminSettingsTaxCategoryInput!) {\n  updateAdminSettingsTaxCategory(input: $input) {\n    adminSettingsTaxCategory {\n      _id\n      code\n      createdAt\n      description\n      id\n      message\n      name\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"code\": \"SAMPLE\",\n        \"description\": \"Sample text\",\n        \"id\": \"1\",\n        \"name\": \"Sample\",\n        \"taxrates\": \"sample\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"code\": \"reduced-rate\",\n        \"name\": \"Reduced Rate\",\n        \"description\": \"Reduced VAT for essentials\",\n        \"taxrates\": [\n            1\n        ],\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a tax category. Becomes updateAdminSettingsTaxCategory."
@@ -25049,7 +25049,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminSettingsTaxRate($input: updateAdminSettingsTaxRateInput!) {\n  updateAdminSettingsTaxRate(input: $input) {\n    adminSettingsTaxRate {\n      _id\n      country\n      createdAt\n      id\n      identifier\n      isZip\n      message\n      state\n      taxRate\n      updatedAt\n      zipCode\n      zipFrom\n      zipTo\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"identifier\": \"US-CA-SF\",\n        \"isZip\": false,\n        \"zipCode\": \"94103\",\n        \"state\": \"CA\",\n        \"country\": \"US\",\n        \"taxRate\": 8.5\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"taxRate\": 9.25,\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update a tax rate. Becomes updateAdminSettingsTaxRate."
@@ -25157,7 +25157,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminSettingsUser($input: createAdminSettingsUserInput!) {\n  createAdminSettingsUser(input: $input) {\n    adminSettingsUser {\n      _id\n      createdAt\n      email\n      id\n      image\n      imageUrl\n      message\n      name\n      roleId\n      roleName\n      status\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Jane Manager\",\n        \"email\": \"jane.manager@example.com\",\n        \"roleId\": 2,\n        \"status\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Jane Doe\",\n        \"email\": \"jane@example.com\",\n        \"password\": \"secret123\",\n        \"roleId\": 1,\n        \"status\": 1,\n        \"image\": \"admins/jane.png\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Create a new admin user. Becomes createAdminSettingsUser."
@@ -25188,7 +25188,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation CreateAdminSettingsUserDeleteSelf($input: createAdminSettingsUserDeleteSelfInput!) {\n  createAdminSettingsUserDeleteSelf(input: $input) {\n    adminSettingsUserDeleteSelf {\n      _id\n      id\n      message\n      success\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"password\": \"password\"\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"password\": \"current-password\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Delete your own admin account (password-confirmed). Becomes createAdminSettingsUserDeleteSelf."
@@ -25281,7 +25281,7 @@
                                                     "mode": "graphql",
                                                     "graphql": {
                                                         "query": "mutation UpdateAdminSettingsUser($input: updateAdminSettingsUserInput!) {\n  updateAdminSettingsUser(input: $input) {\n    adminSettingsUser {\n      _id\n      createdAt\n      email\n      id\n      image\n      imageUrl\n      message\n      name\n      roleId\n      roleName\n      status\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Jane Manager\",\n        \"email\": \"jane.manager@example.com\",\n        \"roleId\": 2,\n        \"status\": 1\n    }\n}"
+                                                        "variables": "{\n    \"input\": {\n        \"name\": \"Jane Manager\",\n        \"email\": \"jane.manager@example.com\",\n        \"roleId\": 2,\n        \"status\": 1,\n        \"id\": \"1\"\n    }\n}"
                                                     }
                                                 },
                                                 "description": "Update an admin user. Becomes updateAdminSettingsUser."

@@ -46,12 +46,12 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                                 'properties' => [
                                     'code' => [
                                         'type' => 'string',
-                                        'example' => 'wholesale',
+                                        'example' => 'vip_buyers',
                                     ],
 
                                     'name' => [
                                         'type' => 'string',
-                                        'example' => 'Wholesale',
+                                        'example' => 'VIP Buyers',
                                     ],
                                 ],
                             ],
@@ -64,7 +64,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id' => 5, 'code' => 'wholesale', 'name' => 'Wholesale',
+                                    'id' => 5, 'code' => 'vip_buyers', 'name' => 'VIP Buyers',
                                     'isUserDefined' => 1, 'customersCount' => null,
                                     'createdAt' => '2026-06-24T10:15:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
                                 ],
@@ -102,8 +102,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                             ],
 
                             'example' => [
-                                'code' => 'wholesale',
-                                'name' => 'Wholesale Buyers',
+                                'name' => 'General Customers',
                             ],
                         ],
                     ]),
@@ -114,7 +113,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id' => 5, 'code' => 'wholesale', 'name' => 'Wholesale Buyers',
+                                    'id' => 5, 'code' => 'vip_buyers', 'name' => 'VIP Buyers',
                                     'isUserDefined' => 1, 'customersCount' => null,
                                     'createdAt' => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
                                 ],

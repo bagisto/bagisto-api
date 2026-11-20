@@ -1029,6 +1029,66 @@ class CategoryTest extends AdminApiTestCase
     }
 
     /**
+     * Test update category with itself as parent returns 422.
+     */
+    public function test_update_category_parent_self_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $category = Category::create([
+            'position' => 1, 'status' => 1, 'parent_id' => null, 'display_mode' => null,
+        ]);
+        $slug = 'self-mv-'.$category->id;
+        \DB::table('category_translations')->insert([
+            'category_id' => $category->id, 'locale' => 'en',
+            'name' => 'Self '.$category->id, 'slug' => $slug, 'url_path' => $slug,
+        ]);
+
+        $response = $this->adminPut($admin, '/api/admin/catalog/categories/'.$category->id, [
+            'locale' => 'en',
+            'position' => 1,
+            'attributes' => [1],
+            'parent_id' => $category->id,
+
+            'en' => [
+                'slug' => $slug,
+                'name' => 'Self',
+            ],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * Test update category with an unknown parent returns 404.
+     */
+    public function test_update_category_unknown_parent_returns_404(): void
+    {
+        $admin = $this->createAdmin();
+        $category = Category::create([
+            'position' => 1, 'status' => 1, 'parent_id' => null, 'display_mode' => null,
+        ]);
+        $slug = 'ghost-mv-'.$category->id;
+        \DB::table('category_translations')->insert([
+            'category_id' => $category->id, 'locale' => 'en',
+            'name' => 'Ghost '.$category->id, 'slug' => $slug, 'url_path' => $slug,
+        ]);
+
+        $response = $this->adminPut($admin, '/api/admin/catalog/categories/'.$category->id, [
+            'locale' => 'en',
+            'position' => 1,
+            'attributes' => [1],
+            'parent_id' => (int) \DB::table('categories')->max('id') + 1000,
+
+            'en' => [
+                'slug' => $slug,
+                'name' => 'Ghost',
+            ],
+        ]);
+
+        $response->assertStatus(404);
+    }
+
+    /**
      * Test update category move changes parent and position.
      */
     public function test_update_category_move_changes_parent_and_position(): void

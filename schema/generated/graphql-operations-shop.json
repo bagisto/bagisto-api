@@ -37,7 +37,18 @@
     "cancelCustomerReturn": {
         "kind": "mutation",
         "tag": "Customer Return",
-        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn"
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn",
+        "example": {
+            "order_id": 12,
+            "order_item_id": 45,
+            "rma_qty": 1,
+            "resolution_type": "return",
+            "rma_reason_id": 2,
+            "information": "Item arrived damaged.",
+            "package_condition": "open",
+            "custom_attributes": "{\"1\":\"INV-9921\"}",
+            "agreement": true
+        }
     },
     "cartCrossSells": {
         "kind": "query",
@@ -77,7 +88,18 @@
     "closeCustomerReturn": {
         "kind": "mutation",
         "tag": "Customer Return",
-        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn"
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn",
+        "example": {
+            "order_id": 12,
+            "order_item_id": 45,
+            "rma_qty": 1,
+            "resolution_type": "return",
+            "rma_reason_id": 2,
+            "information": "Item arrived damaged.",
+            "package_condition": "open",
+            "custom_attributes": "{\"1\":\"INV-9921\"}",
+            "agreement": true
+        }
     },
     "collectionDefaultChannels": {
         "kind": "query",
@@ -151,7 +173,10 @@
     "createApplyCoupon": {
         "kind": "mutation",
         "tag": "Cart",
-        "resource": "Webkul\\BagistoApi\\Models\\ApplyCoupon"
+        "resource": "Webkul\\BagistoApi\\Models\\ApplyCoupon",
+        "example": {
+            "couponCode": "DISCOUNT20"
+        }
     },
     "createCancelOrder": {
         "kind": "mutation",
@@ -172,7 +197,31 @@
     "createCheckoutAddress": {
         "kind": "mutation",
         "tag": "Checkout",
-        "resource": "Webkul\\BagistoApi\\Models\\CheckoutAddress"
+        "resource": "Webkul\\BagistoApi\\Models\\CheckoutAddress",
+        "example": {
+            "billingFirstName": "John",
+            "billingLastName": "Doe",
+            "billingEmail": "john@example.com",
+            "billingCompanyName": "",
+            "billingVatId": "",
+            "billingAddress": "123 Main St",
+            "billingCity": "Los Angeles",
+            "billingCountry": "US",
+            "billingState": "CA",
+            "billingPostcode": "90001",
+            "billingPhoneNumber": "2125551234",
+            "useForShipping": true,
+            "shippingFirstName": "Jane",
+            "shippingLastName": "Doe",
+            "shippingEmail": "jane@example.com",
+            "shippingCompanyName": "",
+            "shippingAddress": "456 Oak Ave",
+            "shippingCity": "San Francisco",
+            "shippingCountry": "US",
+            "shippingState": "CA",
+            "shippingPostcode": "94102",
+            "shippingPhoneNumber": "4155559876"
+        }
     },
     "createCheckoutOrder": {
         "kind": "mutation",
@@ -281,12 +330,27 @@
     "createCustomerReturn": {
         "kind": "mutation",
         "tag": "Customer Return",
-        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn"
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn",
+        "example": {
+            "order_id": 12,
+            "order_item_id": 45,
+            "rma_qty": 1,
+            "resolution_type": "return",
+            "rma_reason_id": 2,
+            "information": "Item arrived damaged.",
+            "package_condition": "open",
+            "custom_attributes": "{\"1\":\"INV-9921\"}",
+            "agreement": true
+        }
     },
     "createCustomerReturnMessage": {
         "kind": "mutation",
         "tag": "Customer Return",
-        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturnMessage"
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturnMessage",
+        "example": {
+            "return_id": 12,
+            "message": "Photo of the damaged zipper attached."
+        }
     },
     "createCustomerTokenRefresh": {
         "kind": "mutation",
@@ -299,7 +363,11 @@
     "createCustomizableOptionFile": {
         "kind": "mutation",
         "tag": "Cart",
-        "resource": "Webkul\\BagistoApi\\Models\\CustomizableOptionFile"
+        "resource": "Webkul\\BagistoApi\\Models\\CustomizableOptionFile",
+        "example": {
+            "product_id": 2977,
+            "option_id": 11
+        }
     },
     "createDeleteAllCompareItems": {
         "kind": "mutation",
@@ -329,12 +397,22 @@
     "createEstimateShipping": {
         "kind": "mutation",
         "tag": "Checkout",
-        "resource": "Webkul\\BagistoApi\\Models\\EstimateShipping"
+        "resource": "Webkul\\BagistoApi\\Models\\EstimateShipping",
+        "example": {
+            "country": "US",
+            "state": "CA",
+            "postcode": "90001",
+            "shippingMethod": "flatrate_flatrate"
+        }
     },
     "createEuWithdrawal": {
         "kind": "mutation",
         "tag": "EU Withdrawal",
-        "resource": "Webkul\\BagistoApi\\Models\\EuWithdrawal"
+        "resource": "Webkul\\BagistoApi\\Models\\EuWithdrawal",
+        "example": {
+            "order_id": 12,
+            "reason_text": "Changed my mind."
+        }
     },
     "createForgotPassword": {
         "kind": "mutation",
@@ -356,12 +434,20 @@
     "createGuestEuWithdrawal": {
         "kind": "mutation",
         "tag": "EU Withdrawal",
-        "resource": "Webkul\\BagistoApi\\Models\\GuestEuWithdrawal"
+        "resource": "Webkul\\BagistoApi\\Models\\GuestEuWithdrawal",
+        "example": {
+            "order_increment_id": "1000123",
+            "email": "guest@example.com",
+            "reason_text": "Changed my mind."
+        }
     },
     "createImageSearch": {
         "kind": "mutation",
         "tag": "Search",
-        "resource": "Webkul\\BagistoApi\\Models\\ImageSearch"
+        "resource": "Webkul\\BagistoApi\\Models\\ImageSearch",
+        "example": {
+            "image": "red-sneaker.jpg"
+        }
     },
     "createLogout": {
         "kind": "mutation",
@@ -379,7 +465,17 @@
     "createMoveToWishlist": {
         "kind": "mutation",
         "tag": "Cart",
-        "resource": "Webkul\\BagistoApi\\Models\\MoveToWishlist"
+        "resource": "Webkul\\BagistoApi\\Models\\MoveToWishlist",
+        "example": {
+            "itemIds": [
+                1,
+                2
+            ],
+            "quantities": [
+                1,
+                2
+            ]
+        }
     },
     "createMutationCheckoutAddress": {
         "kind": "mutation",
@@ -419,12 +515,21 @@
     "createRemoveCartItem": {
         "kind": "mutation",
         "tag": "Cart",
-        "resource": "Webkul\\BagistoApi\\Models\\RemoveCartItem"
+        "resource": "Webkul\\BagistoApi\\Models\\RemoveCartItem",
+        "example": {
+            "cartItemId": 1
+        }
     },
     "createRemoveCartItems": {
         "kind": "mutation",
         "tag": "Cart",
-        "resource": "Webkul\\BagistoApi\\Models\\RemoveCartItems"
+        "resource": "Webkul\\BagistoApi\\Models\\RemoveCartItems",
+        "example": {
+            "itemIds": [
+                1,
+                2
+            ]
+        }
     },
     "createRemoveCoupon": {
         "kind": "mutation",
@@ -470,7 +575,11 @@
     "createUpdateCartItem": {
         "kind": "mutation",
         "tag": "Cart",
-        "resource": "Webkul\\BagistoApi\\Models\\UpdateCartItem"
+        "resource": "Webkul\\BagistoApi\\Models\\UpdateCartItem",
+        "example": {
+            "cartItemId": 1,
+            "quantity": 3
+        }
     },
     "createVerifyAccount": {
         "kind": "mutation",
@@ -847,7 +956,18 @@
     "reopenCustomerReturn": {
         "kind": "mutation",
         "tag": "Customer Return",
-        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn"
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerReturn",
+        "example": {
+            "order_id": 12,
+            "order_item_id": 45,
+            "rma_qty": 1,
+            "resolution_type": "return",
+            "rma_reason_id": 2,
+            "information": "Item arrived damaged.",
+            "package_condition": "open",
+            "custom_attributes": "{\"1\":\"INV-9921\"}",
+            "agreement": true
+        }
     },
     "returnCustomFields": {
         "kind": "query",

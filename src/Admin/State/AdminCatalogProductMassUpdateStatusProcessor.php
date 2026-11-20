@@ -11,6 +11,7 @@ use Webkul\BagistoApi\Admin\Models\AdminCatalogProductMassUpdateStatus;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
+use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Product\Repositories\ProductRepository;
 
 class AdminCatalogProductMassUpdateStatusProcessor implements ProcessorInterface
@@ -49,10 +50,13 @@ class AdminCatalogProductMassUpdateStatusProcessor implements ProcessorInterface
         }
 
         $value = (int) $value;
+        $ids = array_map('intval', $indices);
+
+        $this->assertProductsExist($ids);
+
         $updated = [];
 
-        foreach ($indices as $index) {
-            $id = (int) $index;
+        foreach ($ids as $id) {
 
             Event::dispatch('catalog.product.update.before', $id);
 
@@ -102,6 +106,18 @@ class AdminCatalogProductMassUpdateStatusProcessor implements ProcessorInterface
             && ! in_array('*', $perms, true)
         ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.product.no-permission'));
+        }
+    }
+
+    /**
+     * Refuse the whole batch when any product id does not exist.
+     */
+    protected function assertProductsExist(array $ids): void
+    {
+        $found = $this->productRepository->findWhereIn('id', $ids)->pluck('id')->all();
+
+        if (count(array_diff($ids, $found))) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
     }
 

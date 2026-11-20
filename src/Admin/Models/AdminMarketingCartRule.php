@@ -144,9 +144,9 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                                     ],
 
                                     'discount_step' => [
-                                        'type' => 'integer',
+                                        'type' => 'string',
                                         'description' => 'Buy-X step (buy_x_get_y).',
-                                        'example' => 0,
+                                        'example' => '0',
                                     ],
 
                                     'apply_to_shipping' => [
@@ -358,8 +358,8 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                                     ],
 
                                     'discount_step' => [
-                                        'type' => 'integer',
-                                        'example' => 0,
+                                        'type' => 'string',
+                                        'example' => '0',
                                     ],
 
                                     'apply_to_shipping' => [

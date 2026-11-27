@@ -4141,6 +4141,154 @@
                 ]
             }
         },
+        "/url-resolver": {
+            "get": {
+                "operationId": "api_apishopurl-resolver_get_collection",
+                "tags": [
+                    "Catalog"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "What the path is.",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "path": "old-shoes",
+                                        "type": "redirect",
+                                        "entityId": null,
+                                        "targetPath": "nike-shoes",
+                                        "redirectType": 301
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The `X-STOREFRONT-KEY` header is missing (`missing_key`).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StorefrontKeyError"
+                                },
+                                "examples": {
+                                    "missing_key": {
+                                        "value": {
+                                            "message": "X-STOREFRONT-KEY header is required",
+                                            "error": "missing_key",
+                                            "header_name": "X-STOREFRONT-KEY",
+                                            "key_type": "shop"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The storefront key is invalid or inactive, or not allowed from this IP address (`invalid_key`).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StorefrontKeyError"
+                                },
+                                "examples": {
+                                    "invalid_key": {
+                                        "value": {
+                                            "message": "Invalid or inactive shop API key",
+                                            "error": "invalid_key"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Nothing matches the path."
+                    },
+                    "422": {
+                        "description": "The path is missing."
+                    }
+                },
+                "summary": "Resolve a storefront URL",
+                "description": "Tells a headless storefront what a path is, in the order the storefront checks it: a category slug, a product URL key (only a visible, enabled product), the last segment of a nested category path (a 301), then a URL rewrite. `type` is `category`, `product`, `redirect` or `home`. A path nothing matches answers 404. Returned as a list of one entry.",
+                "parameters": [
+                    {
+                        "name": "path",
+                        "in": "query",
+                        "description": "The path, without the domain, for example `men/shirts` or `/nike-shoes`.",
+                        "required": true,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "nike-shoes"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "security": [
+                    {
+                        "storefrontKey": []
+                    }
+                ]
+            }
+        },
         "/categories": {
             "get": {
                 "operationId": "api_apishopcategories_get_collection",
@@ -4251,6 +4399,175 @@
                         "schema": {
                             "type": "integer",
                             "default": 10
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "security": [
+                    {
+                        "storefrontKey": []
+                    }
+                ]
+            }
+        },
+        "/categories/attributes": {
+            "get": {
+                "operationId": "api_apishopcategoriesattributes_get_collection",
+                "tags": [
+                    "Category"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Filterable attributes.",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": 23,
+                                        "code": "color",
+                                        "adminName": "Color",
+                                        "type": "select",
+                                        "isFilterable": true,
+                                        "swatchType": "color",
+                                        "minPrice": 0,
+                                        "maxPrice": 120,
+                                        "options": [
+                                            {
+                                                "id": 1,
+                                                "adminName": "Red",
+                                                "sortOrder": 1,
+                                                "swatchValue": "#ff0000"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The `X-STOREFRONT-KEY` header is missing (`missing_key`).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StorefrontKeyError"
+                                },
+                                "examples": {
+                                    "missing_key": {
+                                        "value": {
+                                            "message": "X-STOREFRONT-KEY header is required",
+                                            "error": "missing_key",
+                                            "header_name": "X-STOREFRONT-KEY",
+                                            "key_type": "shop"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The storefront key is invalid or inactive, or not allowed from this IP address (`invalid_key`).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StorefrontKeyError"
+                                },
+                                "examples": {
+                                    "invalid_key": {
+                                        "value": {
+                                            "message": "Invalid or inactive shop API key",
+                                            "error": "invalid_key"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category not found."
+                    }
+                },
+                "summary": "List the filterable attributes of a category",
+                "description": "Returns the attributes of the storefront filter panel for a category, with their options and the price range of its products in the requested currency. With no category, every attribute marked filterable is returned. Public endpoint.",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Category ID. Answers 404 when the category does not exist.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "category_slug",
+                        "in": "query",
+                        "description": "Category slug, used when `category_id` is not sent.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "men"
                         },
                         "style": "form",
                         "explode": true
@@ -5566,6 +5883,7 @@
                                     "billingLastName": "Doe",
                                     "billingEmail": "john@example.com",
                                     "billingCompanyName": "",
+                                    "billingVatId": null,
                                     "billingAddress": "123 Main St",
                                     "billingCountry": "US",
                                     "billingState": "NY",
@@ -5761,6 +6079,11 @@
                                     },
                                     "billingCompanyName": {
                                         "type": "string",
+                                        "example": ""
+                                    },
+                                    "billingVatId": {
+                                        "type": "string",
+                                        "description": "Validated against the billing country. Saved on the billing address only, as the storefront does.",
                                         "example": ""
                                     },
                                     "billingAddress": {
@@ -6457,16 +6780,34 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "Payment verified and order created or already settled.",
+                        "description": "The order of the payment, or no order yet.",
                         "content": {
                             "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/CheckoutPaymentConfirmation-mutation"
-                                }
-                            },
-                            "text/html": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/CheckoutPaymentConfirmation.html-mutation"
+                                "examples": {
+                                    "success": {
+                                        "summary": "Paid and placed",
+                                        "value": {
+                                            "success": true,
+                                            "cartId": 12,
+                                            "orderId": "42",
+                                            "orderIncrementId": "42",
+                                            "status": "processing",
+                                            "paymentStatus": "success",
+                                            "message": "Payment confirmed and order placed."
+                                        }
+                                    },
+                                    "pending": {
+                                        "summary": "No order yet",
+                                        "value": {
+                                            "success": false,
+                                            "cartId": 12,
+                                            "orderId": null,
+                                            "orderIncrementId": null,
+                                            "status": null,
+                                            "paymentStatus": "pending",
+                                            "message": "The payment has not been completed yet. No order has been placed."
+                                        }
+                                    }
                                 }
                             }
                         },
@@ -6477,7 +6818,7 @@
                         "links": []
                     },
                     "401": {
-                        "description": "The `X-STOREFRONT-KEY` header is missing (`missing_key`), or no bearer token (a guest cart token or a customer token) was sent (a problem document).",
+                        "description": "A bearer cart token is required.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -6544,13 +6885,16 @@
                             }
                         }
                     },
+                    "404": {
+                        "description": "The reference is not a cart of the bearer token, or the bearer has no active cart."
+                    },
                     "422": {
-                        "description": "Missing, unpaid, invalid, or cart-mismatched Stripe session.",
+                        "description": "The payment method needs no confirmation, a required value is missing, or the payment could not be verified.",
                         "links": []
                     }
                 },
-                "summary": "Confirm a Stripe checkout payment",
-                "description": "Verifies the Stripe Checkout Session server-side (paid, same cart, same amount and currency) and returns the order for the cart identified by the bearer token. Repeatable: when the Stripe webhook or an earlier call already placed the order, that order is returned and no second order is created.",
+                "summary": "Confirm a payment and return its order",
+                "description": "Returns the order of a payment started with `POST /api/shop/checkout-payments/initiate`, for the cart of the Bearer token. Stripe, PhonePe, PayGlocal, PayU and PayPal Standard: the gateway's own return places the order, so once the WebView reaches `successUrl` or `failureUrl` send `reference`; the answer carries the order with `paymentStatus: success`, or `paymentStatus: pending` while no order exists yet. A PayPal Standard order is placed when PayPal returns the customer and stays `paymentStatus: pending` until PayPal's IPN records the payment, so repeat the call until it reports success. Stripe also accepts `sessionId`, which verifies the session and places the order when neither the webhook nor the return did. Razorpay: send the three values the Razorpay checkout returns; the signature, the Razorpay order and the payment are verified against Razorpay before the order is placed paid and invoiced. PayPal Smart Button: send `paypalOrderId` once the customer approved the payment; the PayPal order must belong to this cart and total, it is captured, and the order is placed paid and invoiced. Nothing the app reports is trusted. Repeatable: once an order exists for the cart, every call returns it and no second order is placed.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
@@ -6615,13 +6959,52 @@
                         "application/json": {
                             "schema": {
                                 "type": "object",
-                                "required": [
-                                    "sessionId"
-                                ],
                                 "properties": {
+                                    "reference": {
+                                        "type": "string",
+                                        "example": "12"
+                                    },
                                     "sessionId": {
                                         "type": "string",
                                         "example": "cs_test_123"
+                                    },
+                                    "razorpayOrderId": {
+                                        "type": "string",
+                                        "example": "order_P9xYz"
+                                    },
+                                    "razorpayPaymentId": {
+                                        "type": "string",
+                                        "example": "pay_P9xZa"
+                                    },
+                                    "razorpaySignature": {
+                                        "type": "string",
+                                        "example": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+                                    },
+                                    "paypalOrderId": {
+                                        "type": "string",
+                                        "example": "5O190127TN364715T"
+                                    }
+                                }
+                            },
+                            "examples": {
+                                "reference": {
+                                    "summary": "Stripe, PhonePe, PayGlocal, PayU, PayPal Standard",
+                                    "value": {
+                                        "reference": "12"
+                                    }
+                                },
+                                "razorpay": {
+                                    "summary": "Razorpay",
+                                    "value": {
+                                        "razorpayOrderId": "order_P9xYz",
+                                        "razorpayPaymentId": "pay_P9xZa",
+                                        "razorpaySignature": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+                                    }
+                                },
+                                "paypal_smart_button": {
+                                    "summary": "PayPal Smart Button",
+                                    "value": {
+                                        "paypalOrderId": "5O190127TN364715T"
                                     }
                                 }
                             }
@@ -6649,15 +7032,97 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "The Stripe Checkout Session was created.",
+                        "description": "What the client needs to start the payment.",
                         "content": {
                             "application/json": {
-                                "example": {
-                                    "success": true,
-                                    "cartId": 12,
-                                    "sessionId": "cs_test_123",
-                                    "redirectUrl": "https://checkout.stripe.com/c/pay/cs_test_123",
-                                    "message": "This payment method requires the shopper to complete payment on the gateway. Send them to redirectUrl; the order is created once the gateway confirms the payment."
+                                "examples": {
+                                    "redirect": {
+                                        "summary": "Stripe, PhonePe, PayGlocal",
+                                        "value": {
+                                            "success": true,
+                                            "cartId": 12,
+                                            "method": "stripe",
+                                            "type": "redirect",
+                                            "reference": "12",
+                                            "sessionId": "cs_test_a1b2c3",
+                                            "redirectUrl": "https://checkout.stripe.com/c/pay/cs_test_a1b2c3",
+                                            "formAction": null,
+                                            "formFields": null,
+                                            "sdkData": null,
+                                            "successUrl": "https://example.com/checkout/onepage/success",
+                                            "failureUrl": "https://example.com/checkout/cart",
+                                            "message": "Payment started. Hand the customer to the gateway."
+                                        }
+                                    },
+                                    "form": {
+                                        "summary": "PayU, PayPal Standard",
+                                        "value": {
+                                            "success": true,
+                                            "cartId": 12,
+                                            "method": "payu",
+                                            "type": "form",
+                                            "reference": "12",
+                                            "sessionId": null,
+                                            "redirectUrl": null,
+                                            "formAction": "https://test.payu.in/_payment",
+                                            "formFields": {
+                                                "key": "gtKFFx",
+                                                "txnid": "12_1730798400",
+                                                "amount": "109.00",
+                                                "hash": "a1b2c3"
+                                            },
+                                            "sdkData": null,
+                                            "successUrl": "https://example.com/checkout/onepage/success",
+                                            "failureUrl": "https://example.com/checkout/cart",
+                                            "message": "Payment started. Hand the customer to the gateway."
+                                        }
+                                    },
+                                    "razorpay": {
+                                        "summary": "Razorpay",
+                                        "value": {
+                                            "success": true,
+                                            "cartId": 12,
+                                            "method": "razorpay",
+                                            "type": "sdk",
+                                            "reference": "12",
+                                            "sessionId": null,
+                                            "redirectUrl": null,
+                                            "formAction": null,
+                                            "formFields": null,
+                                            "sdkData": {
+                                                "key": "rzp_test_xxxxx",
+                                                "amount": 10900,
+                                                "currency": "INR",
+                                                "order_id": "order_P9xYz"
+                                            },
+                                            "successUrl": null,
+                                            "failureUrl": null,
+                                            "message": "Payment started. Hand the customer to the gateway."
+                                        }
+                                    },
+                                    "paypal_smart_button": {
+                                        "summary": "PayPal Smart Button",
+                                        "value": {
+                                            "success": true,
+                                            "cartId": 12,
+                                            "method": "paypal_smart_button",
+                                            "type": "sdk",
+                                            "reference": "12",
+                                            "sessionId": null,
+                                            "redirectUrl": null,
+                                            "formAction": null,
+                                            "formFields": null,
+                                            "sdkData": {
+                                                "orderId": "5O190127TN364715T",
+                                                "clientId": "AbCdEf-sandbox-client-id",
+                                                "currency": "USD",
+                                                "intent": "capture"
+                                            },
+                                            "successUrl": null,
+                                            "failureUrl": null,
+                                            "message": "Payment started. Hand the customer to the gateway."
+                                        }
+                                    }
                                 }
                             }
                         },
@@ -6739,12 +7204,12 @@
                         "description": "The bearer token has no active cart."
                     },
                     "422": {
-                        "description": "The cart is not paying with Stripe, Stripe is not available, or the cart is not ready to be paid.",
+                        "description": "The cart is not ready, its payment method is not an online gateway or is not configured, the store currency is not supported, or the gateway refused the payment.",
                         "links": []
                     }
                 },
-                "summary": "Start a Stripe checkout payment",
-                "description": "Creates a Stripe Checkout Session for the cart identified by the bearer token, after the checkout-order call answered with redirect true. Open redirectUrl for the shopper to pay, then send sessionId to POST /api/shop/checkout-payments/confirm. Send an empty JSON body `{}`.",
+                "summary": "Start payment for an online payment method",
+                "description": "Starts payment for the online payment method saved on the cart of the Bearer token, instead of placing the order. Addresses, shipping method and payment method must already be saved. `type` says how to hand the customer to the gateway: `redirect` (open `redirectUrl`: Stripe, PhonePe, PayGlocal), `form` (POST `formFields` to `formAction`: PayU, PayPal Standard) or `sdk` (open the gateway SDK with `sdkData`: Razorpay, PayPal Smart Button). For `redirect` and `form`, open the page in a WebView and watch for `successUrl` (paid) or `failureUrl` (failed or cancelled); the gateway's own return places the order. Then call `POST /api/shop/checkout-payments/confirm` with `reference` to read it. For `sdk`, call the same endpoint with what the SDK returned. `reference` identifies this cart's payment and still resolves after the order is placed. Cash on delivery and money transfer are placed with `POST /api/shop/checkout-orders` instead. Stripe also returns `sessionId`, which the confirmation still accepts.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
@@ -6809,7 +7274,13 @@
                         "application/json": {
                             "schema": {
                                 "type": "object",
-                                "properties": []
+                                "properties": {
+                                    "paymentMethod": {
+                                        "type": "string",
+                                        "description": "Optional. When sent, it must match the payment method saved on the cart.",
+                                        "example": "razorpay"
+                                    }
+                                }
                             },
                             "example": []
                         }
@@ -7581,6 +8052,142 @@
                     {
                         "storefrontKey": [],
                         "guestCartToken": []
+                    }
+                ]
+            }
+        },
+        "/compare-attributes": {
+            "get": {
+                "operationId": "api_apishopcompare-attributes_get_collection",
+                "tags": [
+                    "CompareItem"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The comparable attributes.",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": 23,
+                                        "code": "color",
+                                        "adminName": "Color",
+                                        "name": "Color",
+                                        "type": "select"
+                                    },
+                                    {
+                                        "id": 24,
+                                        "code": "size",
+                                        "adminName": "Size",
+                                        "name": "Size",
+                                        "type": "select"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The `X-STOREFRONT-KEY` header is missing (`missing_key`).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StorefrontKeyError"
+                                },
+                                "examples": {
+                                    "missing_key": {
+                                        "value": {
+                                            "message": "X-STOREFRONT-KEY header is required",
+                                            "error": "missing_key",
+                                            "header_name": "X-STOREFRONT-KEY",
+                                            "key_type": "shop"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The storefront key is invalid or inactive, or not allowed from this IP address (`invalid_key`).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StorefrontKeyError"
+                                },
+                                "examples": {
+                                    "invalid_key": {
+                                        "value": {
+                                            "message": "Invalid or inactive shop API key",
+                                            "error": "invalid_key"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "summary": "List the comparable attributes",
+                "description": "Returns the attributes marked comparable that belong to an attribute family, excluding name and price, in the requested locale. These are the rows of the storefront compare page; read each value from the matching product field.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "security": [
+                    {
+                        "storefrontKey": []
                     }
                 ]
             }
@@ -10128,11 +10735,14 @@
                     "Customer"
                 ],
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Customer account deleted",
                         "content": {
                             "application/json": {
-                                "example": []
+                                "example": {
+                                    "success": true,
+                                    "message": "Your account has been deleted successfully."
+                                }
                             }
                         },
                         "links": []
@@ -10220,7 +10830,7 @@
                         }
                     },
                     "422": {
-                        "description": "Validation Error",
+                        "description": "The password is missing or incorrect, or the customer has pending or processing orders",
                         "links": []
                     }
                 },
@@ -13287,12 +13897,12 @@
                         }
                     },
                     "422": {
-                        "description": "Validation Error",
+                        "description": "The email is missing",
                         "links": []
                     }
                 },
                 "summary": "Request password reset link",
-                "description": "Sends a password reset email to the given customer email if the account exists.",
+                "description": "Sends a password reset email when the address belongs to a customer of the current channel. The answer is the same whether or not it does, so the endpoint cannot be used to discover registered addresses.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
@@ -27488,6 +28098,165 @@
                 ]
             }
         },
+        "/search-redirect": {
+            "get": {
+                "operationId": "api_apishopsearch-redirect_get_collection",
+                "tags": [
+                    "Product"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The redirect for the term.",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "query": "summer sale",
+                                        "redirectUrl": "https://shop.example.com/summer-sale",
+                                        "suggestion": null
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The `X-STOREFRONT-KEY` header is missing (`missing_key`).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StorefrontKeyError"
+                                },
+                                "examples": {
+                                    "missing_key": {
+                                        "value": {
+                                            "message": "X-STOREFRONT-KEY header is required",
+                                            "error": "missing_key",
+                                            "header_name": "X-STOREFRONT-KEY",
+                                            "key_type": "shop"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "The storefront key is invalid or inactive, or not allowed from this IP address (`invalid_key`).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StorefrontKeyError"
+                                },
+                                "examples": {
+                                    "invalid_key": {
+                                        "value": {
+                                            "message": "Invalid or inactive shop API key",
+                                            "error": "invalid_key"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "The search term is missing."
+                    }
+                },
+                "summary": "Search-term redirect",
+                "description": "Call before searching. When the term has a redirect URL in Marketing > Search Terms for the current channel and locale, the storefront sends the shopper there instead of showing results; `redirectUrl` is that URL, or null. `suggestion` is the \"did you mean\" term of the storefront search engine, or null. Returned as a list of one entry.",
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "The search term.",
+                        "required": true,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "summer sale"
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "suggest",
+                        "in": "query",
+                        "description": "Send `0` to skip the \"did you mean\" lookup; `suggestion` is then null.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "0",
+                                "1"
+                            ]
+                        },
+                        "style": "form",
+                        "explode": true
+                    },
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "security": [
+                    {
+                        "storefrontKey": []
+                    }
+                ]
+            }
+        },
         "/booking-products/{id}": {
             "get": {
                 "operationId": "api_apishopbooking-products_id_get",
@@ -35310,60 +36079,6 @@
                     }
                 }
             },
-            "CheckoutPaymentConfirmation-mutation": {
-                "type": "object",
-                "properties": {
-                    "success": {
-                        "readOnly": true,
-                        "type": "boolean"
-                    },
-                    "cartId": {
-                        "readOnly": true,
-                        "type": [
-                            "integer",
-                            "null"
-                        ]
-                    },
-                    "orderId": {
-                        "readOnly": true,
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "message": {
-                        "readOnly": true,
-                        "type": "string"
-                    }
-                }
-            },
-            "CheckoutPaymentConfirmation.html-mutation": {
-                "type": "object",
-                "properties": {
-                    "success": {
-                        "readOnly": true,
-                        "type": "boolean"
-                    },
-                    "cartId": {
-                        "readOnly": true,
-                        "type": [
-                            "integer",
-                            "null"
-                        ]
-                    },
-                    "orderId": {
-                        "readOnly": true,
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "message": {
-                        "readOnly": true,
-                        "type": "string"
-                    }
-                }
-            },
             "CustomerDownloadableProduct": {
                 "type": "object",
                 "properties": {
@@ -35667,24 +36382,6 @@
                             "null"
                         ]
                     },
-                    "shippingTaxAmount": {
-                        "type": "number"
-                    },
-                    "baseShippingTaxAmount": {
-                        "type": "number"
-                    },
-                    "subTotalInclTax": {
-                        "type": "number"
-                    },
-                    "baseSubTotalInclTax": {
-                        "type": "number"
-                    },
-                    "shippingAmountInclTax": {
-                        "type": "number"
-                    },
-                    "baseShippingAmountInclTax": {
-                        "type": "number"
-                    },
                     "transactionId": {
                         "type": [
                             "string",
@@ -35713,6 +36410,24 @@
                             "null"
                         ],
                         "format": "date-time"
+                    },
+                    "shippingTaxAmount": {
+                        "type": "number"
+                    },
+                    "baseShippingTaxAmount": {
+                        "type": "number"
+                    },
+                    "subTotalInclTax": {
+                        "type": "number"
+                    },
+                    "baseSubTotalInclTax": {
+                        "type": "number"
+                    },
+                    "shippingAmountInclTax": {
+                        "type": "number"
+                    },
+                    "baseShippingAmountInclTax": {
+                        "type": "number"
                     },
                     "downloadUrl": {
                         "type": "string"
@@ -35840,24 +36555,6 @@
                             "null"
                         ]
                     },
-                    "shippingTaxAmount": {
-                        "type": "number"
-                    },
-                    "baseShippingTaxAmount": {
-                        "type": "number"
-                    },
-                    "subTotalInclTax": {
-                        "type": "number"
-                    },
-                    "baseSubTotalInclTax": {
-                        "type": "number"
-                    },
-                    "shippingAmountInclTax": {
-                        "type": "number"
-                    },
-                    "baseShippingAmountInclTax": {
-                        "type": "number"
-                    },
                     "transactionId": {
                         "type": [
                             "string",
@@ -35886,6 +36583,24 @@
                             "null"
                         ],
                         "format": "date-time"
+                    },
+                    "shippingTaxAmount": {
+                        "type": "number"
+                    },
+                    "baseShippingTaxAmount": {
+                        "type": "number"
+                    },
+                    "subTotalInclTax": {
+                        "type": "number"
+                    },
+                    "baseSubTotalInclTax": {
+                        "type": "number"
+                    },
+                    "shippingAmountInclTax": {
+                        "type": "number"
+                    },
+                    "baseShippingAmountInclTax": {
+                        "type": "number"
                     },
                     "downloadUrl": {
                         "type": "string"
@@ -36320,6 +37035,12 @@
                         ]
                     },
                     "canCancel": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "hasNonCancelableBooking": {
                         "type": [
                             "boolean",
                             "null"
@@ -36796,6 +37517,12 @@
                             "null"
                         ]
                     },
+                    "hasNonCancelableBooking": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
                     "canReorder": {
                         "type": [
                             "boolean",
@@ -36990,6 +37717,12 @@
                             "string",
                             "null"
                         ]
+                    },
+                    "hasNonCancelableBooking": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
                     }
                 }
             },
@@ -37131,6 +37864,12 @@
                     "updatedAt": {
                         "type": [
                             "string",
+                            "null"
+                        ]
+                    },
+                    "hasNonCancelableBooking": {
+                        "type": [
+                            "boolean",
                             "null"
                         ]
                     }
@@ -37418,12 +38157,6 @@
                             "null"
                         ]
                     },
-                    "priceInclTax": {
-                        "type": "string"
-                    },
-                    "basePriceInclTax": {
-                        "type": "string"
-                    },
                     "productId": {
                         "type": [
                             "integer",
@@ -37456,6 +38189,12 @@
                             "null"
                         ],
                         "format": "date-time"
+                    },
+                    "priceInclTax": {
+                        "type": "string"
+                    },
+                    "basePriceInclTax": {
+                        "type": "string"
                     },
                     "shipment": {
                         "type": "string",
@@ -37530,12 +38269,6 @@
                             "null"
                         ]
                     },
-                    "priceInclTax": {
-                        "type": "string"
-                    },
-                    "basePriceInclTax": {
-                        "type": "string"
-                    },
                     "productId": {
                         "type": [
                             "integer",
@@ -37568,6 +38301,12 @@
                             "null"
                         ],
                         "format": "date-time"
+                    },
+                    "priceInclTax": {
+                        "type": "string"
+                    },
+                    "basePriceInclTax": {
+                        "type": "string"
                     },
                     "shipment": {
                         "type": "string",
@@ -40591,6 +41330,9 @@
         },
         {
             "name": "Store Config"
+        },
+        {
+            "name": "Catalog"
         }
     ],
     "webhooks": []

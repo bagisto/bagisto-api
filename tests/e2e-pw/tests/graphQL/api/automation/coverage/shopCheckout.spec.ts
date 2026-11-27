@@ -15,6 +15,7 @@ import {
   findSaleableSimpleProducts,
   listPaymentMethodCodes,
   placeCustomerOrder,
+  prepareOfflinePaymentCart,
   randomUuid,
   registerShopCustomer,
   saveCheckoutAddress,
@@ -333,17 +334,15 @@ test.describe('shop create checkout payment session graphql api', () => {
     expect(session.cartId).toBe(line.cartId);
     expect(session.sessionId).toMatch(/^cs_/);
     expect(session.redirectUrl).toMatch(/^https:\/\/checkout\.stripe\.com\//);
-    expect(session.message).toBe(SHOP_CART_MESSAGES.ORDER_REDIRECT_REQUIRED);
+    expect(session.message).toBe(SHOP_CART_MESSAGES.PAYMENT_STARTED);
   });
 
-  test('should refuse a cart that is not paying with stripe', async ({ request }) => {
-    const [productId] = await findSaleableSimpleProducts(request, 1);
-    const guest = await createGuestCart(request);
-    await addCartLine(request, guest.token, productId, 1);
+  test('should refuse to start a payment for a cart paying offline', async ({ request }) => {
+    const token = await prepareOfflinePaymentCart(request);
 
-    const body = await runGraphQL(request, SHOP_CART_QUERIES.createCheckoutPaymentSession, {}, bearer(guest.token));
+    const body = await runGraphQL(request, SHOP_CART_QUERIES.createCheckoutPaymentSession, {}, bearer(token));
 
-    expect(graphQLErrorMessages(body)).toContain(SHOP_CART_MESSAGES.INVALID_PAYMENT_METHOD);
+    expect(graphQLErrorMessages(body)).toContain(SHOP_CART_MESSAGES.PAYMENT_NOT_ONLINE);
     expect(body.data?.createCheckoutPaymentSession ?? null).toBeNull();
   });
 
@@ -363,12 +362,12 @@ test.describe('shop create checkout payment session graphql api', () => {
 });
 
 test.describe('shop create checkout payment confirmation graphql api', () => {
-  test('should reject a confirmation without a session id', async ({ request }) => {
-    const guest = await createGuestCart(request);
+  test('should refuse to confirm a cart paying offline', async ({ request }) => {
+    const token = await prepareOfflinePaymentCart(request);
 
-    const body = await runGraphQL(request, SHOP_CART_QUERIES.createCheckoutPaymentConfirmation, {}, bearer(guest.token));
+    const body = await runGraphQL(request, SHOP_CART_QUERIES.createCheckoutPaymentConfirmation, {}, bearer(token));
 
-    expect(graphQLErrorMessages(body)).toContain(SHOP_CART_MESSAGES.STRIPE_INVALID_SESSION);
+    expect(graphQLErrorMessages(body)).toContain(SHOP_CART_MESSAGES.PAYMENT_NO_CONFIRMATION);
     expect(body.data?.createCheckoutPaymentConfirmation ?? null).toBeNull();
   });
 

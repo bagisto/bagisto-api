@@ -1138,6 +1138,57 @@
                     ]
                 },
                 {
+                    "name": "Catalog",
+                    "item": [
+                        {
+                            "name": "Resolve a storefront URL",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/url-resolver?path=nike-shoes",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "url-resolver"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "path",
+                                            "value": "nike-shoes",
+                                            "description": "The path, without the domain, for example `men/shirts` or `/nike-shoes`.",
+                                            "disabled": false
+                                        }
+                                    ]
+                                },
+                                "description": "Tells a headless storefront what a path is, in the order the storefront checks it: a category slug, a product URL key (only a visible, enabled product), the last segment of a nested category path (a 301), then a URL rewrite. `type` is `category`, `product`, `redirect` or `home`. A path nothing matches answers 404. Returned as a list of one entry."
+                            }
+                        }
+                    ]
+                },
+                {
                     "name": "Category",
                     "item": [
                         {
@@ -1242,6 +1293,59 @@
                                     ]
                                 },
                                 "description": "Returns a flat list of active categories only (status=1). Admin-disabled categories are never returned. Use `?parent_id=N` for direct children of a category. Each item embeds its `translation`, `children`, and `filterableAttributes`. For a hierarchical tree response use /category-trees instead. Public endpoint."
+                            }
+                        },
+                        {
+                            "name": "List the filterable attributes of a category",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/categories/attributes",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "categories",
+                                        "attributes"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "category_id",
+                                            "value": "2",
+                                            "description": "Category ID. Answers 404 when the category does not exist.",
+                                            "disabled": true
+                                        },
+                                        {
+                                            "key": "category_slug",
+                                            "value": "men",
+                                            "description": "Category slug, used when `category_id` is not sent.",
+                                            "disabled": true
+                                        }
+                                    ]
+                                },
+                                "description": "Returns the attributes of the storefront filter panel for a category, with their options and the price range of its products in the requested currency. With no category, every attribute marked filterable is returned. Public endpoint."
                             }
                         }
                     ]
@@ -1508,7 +1612,7 @@
                     "name": "Checkout",
                     "item": [
                         {
-                            "name": "Confirm a Stripe checkout payment",
+                            "name": "Confirm a payment and return its order",
                             "request": {
                                 "method": "POST",
                                 "header": [
@@ -1547,10 +1651,10 @@
                                         "confirm"
                                     ]
                                 },
-                                "description": "Verifies the Stripe Checkout Session server-side (paid, same cart, same amount and currency) and returns the order for the cart identified by the bearer token. Repeatable: when the Stripe webhook or an earlier call already placed the order, that order is returned and no second order is created.",
+                                "description": "Returns the order of a payment started with `POST /api/shop/checkout-payments/initiate`, for the cart of the Bearer token. Stripe, PhonePe, PayGlocal, PayU and PayPal Standard: the gateway's own return places the order, so once the WebView reaches `successUrl` or `failureUrl` send `reference`; the answer carries the order with `paymentStatus: success`, or `paymentStatus: pending` while no order exists yet. A PayPal Standard order is placed when PayPal returns the customer and stays `paymentStatus: pending` until PayPal's IPN records the payment, so repeat the call until it reports success. Stripe also accepts `sessionId`, which verifies the session and places the order when neither the webhook nor the return did. Razorpay: send the three values the Razorpay checkout returns; the signature, the Razorpay order and the payment are verified against Razorpay before the order is placed paid and invoiced. PayPal Smart Button: send `paypalOrderId` once the customer approved the payment; the PayPal order must belong to this cart and total, it is captured, and the order is placed paid and invoiced. Nothing the app reports is trusted. Repeatable: once an order exists for the cart, every call returns it and no second order is placed.",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"sessionId\": \"cs_test_123\"\n}",
+                                    "raw": "{\n    \"reference\": \"12\"\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -1877,7 +1981,7 @@
                                 "description": "Saves billing and shipping addresses to the current cart. Use `useForShipping: true` to copy billing as shipping, or provide shipping fields for a different shipping address.",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"billingFirstName\": \"John\",\n    \"billingLastName\": \"Doe\",\n    \"billingEmail\": \"john@example.com\",\n    \"billingCompanyName\": \"\",\n    \"billingAddress\": \"123 Main St\",\n    \"billingCity\": \"Los Angeles\",\n    \"billingCountry\": \"US\",\n    \"billingState\": \"CA\",\n    \"billingPostcode\": \"90001\",\n    \"billingPhoneNumber\": \"2125551234\",\n    \"useForShipping\": true,\n    \"shippingFirstName\": \"Jane\",\n    \"shippingLastName\": \"Doe\",\n    \"shippingEmail\": \"jane@example.com\",\n    \"shippingCompanyName\": \"\",\n    \"shippingAddress\": \"456 Oak Ave\",\n    \"shippingCity\": \"San Francisco\",\n    \"shippingCountry\": \"US\",\n    \"shippingState\": \"CA\",\n    \"shippingPostcode\": \"94102\",\n    \"shippingPhoneNumber\": \"4155559876\"\n}",
+                                    "raw": "{\n    \"billingFirstName\": \"John\",\n    \"billingLastName\": \"Doe\",\n    \"billingEmail\": \"john@example.com\",\n    \"billingCompanyName\": \"\",\n    \"billingVatId\": \"\",\n    \"billingAddress\": \"123 Main St\",\n    \"billingCity\": \"Los Angeles\",\n    \"billingCountry\": \"US\",\n    \"billingState\": \"CA\",\n    \"billingPostcode\": \"90001\",\n    \"billingPhoneNumber\": \"2125551234\",\n    \"useForShipping\": true,\n    \"shippingFirstName\": \"Jane\",\n    \"shippingLastName\": \"Doe\",\n    \"shippingEmail\": \"jane@example.com\",\n    \"shippingCompanyName\": \"\",\n    \"shippingAddress\": \"456 Oak Ave\",\n    \"shippingCity\": \"San Francisco\",\n    \"shippingCountry\": \"US\",\n    \"shippingState\": \"CA\",\n    \"shippingPostcode\": \"94102\",\n    \"shippingPhoneNumber\": \"4155559876\"\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -1989,7 +2093,7 @@
                             }
                         },
                         {
-                            "name": "Start a Stripe checkout payment",
+                            "name": "Start payment for an online payment method",
                             "request": {
                                 "method": "POST",
                                 "header": [
@@ -2028,7 +2132,7 @@
                                         "initiate"
                                     ]
                                 },
-                                "description": "Creates a Stripe Checkout Session for the cart identified by the bearer token, after the checkout-order call answered with redirect true. Open redirectUrl for the shopper to pay, then send sessionId to POST /api/shop/checkout-payments/confirm. Send an empty JSON body `{}`.",
+                                "description": "Starts payment for the online payment method saved on the cart of the Bearer token, instead of placing the order. Addresses, shipping method and payment method must already be saved. `type` says how to hand the customer to the gateway: `redirect` (open `redirectUrl`: Stripe, PhonePe, PayGlocal), `form` (POST `formFields` to `formAction`: PayU, PayPal Standard) or `sdk` (open the gateway SDK with `sdkData`: Razorpay, PayPal Smart Button). For `redirect` and `form`, open the page in a WebView and watch for `successUrl` (paid) or `failureUrl` (failed or cancelled); the gateway's own return places the order. Then call `POST /api/shop/checkout-payments/confirm` with `reference` to read it. For `sdk`, call the same endpoint with what the SDK returned. `reference` identifies this cart's payment and still resolves after the order is placed. Cash on delivery and money transfer are placed with `POST /api/shop/checkout-orders` instead. Stripe also returns `sessionId`, which the confirmation still accepts.",
                                 "body": {
                                     "mode": "raw",
                                     "raw": "[]",
@@ -2192,6 +2296,44 @@
                                     ]
                                 },
                                 "description": "Returns the authenticated customer's compare list."
+                            }
+                        },
+                        {
+                            "name": "List the comparable attributes",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/compare-attributes",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "compare-attributes"
+                                    ]
+                                },
+                                "description": "Returns the attributes marked comparable that belong to an attribute family, excluding name and price, in the requested locale. These are the rows of the storefront compare page; read each value from the matching product field."
                             }
                         },
                         {
@@ -3762,7 +3904,7 @@
                                         "forgot-passwords"
                                     ]
                                 },
-                                "description": "Sends a password reset email to the given customer email if the account exists.",
+                                "description": "Sends a password reset email when the address belongs to a customer of the current channel. The answer is the same whether or not it does, so the endpoint cannot be used to discover registered addresses.",
                                 "body": {
                                     "mode": "raw",
                                     "raw": "{\n    \"email\": \"john@example.com\"\n}",
@@ -7673,6 +7815,58 @@
                             }
                         },
                         {
+                            "name": "Search-term redirect",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/search-redirect?query=summer sale",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "search-redirect"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "query",
+                                            "value": "summer sale",
+                                            "description": "The search term.",
+                                            "disabled": false
+                                        },
+                                        {
+                                            "key": "suggest",
+                                            "value": "",
+                                            "description": "Send `0` to skip the \"did you mean\" lookup; `suggestion` is then null.",
+                                            "disabled": true
+                                        }
+                                    ]
+                                },
+                                "description": "Call before searching. When the term has a redirect URL in Marketing > Search Terms for the current channel and locale, the storefront sends the shopper there instead of showing results; `redirectUrl` is that URL, or null. `suggestion` is the \"did you mean\" term of the storefront search engine, or null. Returned as a list of one entry."
+                            }
+                        },
+                        {
                             "name": "Translate an approved product review",
                             "request": {
                                 "method": "GET",
@@ -10465,7 +10659,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateApplyCoupon($input: createApplyCouponInput!) {\n  createApplyCoupon(input: $input) {\n    applyCoupon {\n      _id\n      appliedTaxes\n      baseDiscountAmount\n      baseGrandTotal\n      baseShippingAmount\n      baseShippingAmountInclTax\n      baseSubTotalInclTax\n      baseSubtotal\n      baseTaxAmount\n      billingAddress\n      cartToken\n      carts\n      channelId\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedItemsDiscountAmount\n      formattedShippingAmount\n      formattedShippingAmountInclTax\n      formattedShippingDiscountAmount\n      formattedSubTotalInclTax\n      formattedSubtotal\n      formattedTaxAmount\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isGuest\n      itemsCount\n      itemsDiscountAmount\n      itemsQty\n      message\n      miniCartOfferInfo\n      miniCartOfferInfoEnabled\n      orderId\n      orderIncrementId\n      paymentMethod\n      paymentMethodTitle\n      paymentRedirectUrl\n      redirect\n      redirectUri\n      redirectUrl\n      selectedShippingRate\n      selectedShippingRateTitle\n      sessionToken\n      shippingAddress\n      shippingAmount\n      shippingAmountInclTax\n      shippingDiscountAmount\n      subTotalInclTax\n      subtotal\n      success\n      taxAmount\n      taxTotal\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"additional\": \"sample\",\n        \"billingAddressId\": 1,\n        \"booking\": \"sample\",\n        \"bookingNote\": \"sample\",\n        \"bundleOptionQty\": \"sample\",\n        \"bundleOptions\": \"sample\",\n        \"cartId\": 1,\n        \"cartItemId\": 1,\n        \"country\": \"sample\",\n        \"couponCode\": \"SAMPLE\",\n        \"createNew\": false,\n        \"customizableOptions\": \"sample\",\n        \"deviceToken\": \"sample\",\n        \"groupedQty\": \"sample\",\n        \"guestCartToken\": \"sample\",\n        \"isBuyNow\": 1,\n        \"itemIds\": \"sample\",\n        \"links\": \"sample\",\n        \"options\": \"sample\",\n        \"paymentMethod\": \"sample\",\n        \"postcode\": \"SAMPLE\",\n        \"productId\": 1,\n        \"qty\": \"sample\",\n        \"quantities\": \"sample\",\n        \"quantity\": 1,\n        \"selectedConfigurableOption\": 1,\n        \"sessionId\": \"sample\",\n        \"shippingAddressId\": 1,\n        \"shippingMethod\": \"sample\",\n        \"specialNote\": \"sample\",\n        \"state\": \"sample\",\n        \"superAttribute\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"couponCode\": \"DISCOUNT20\"\n    }\n}"
                                             }
                                         },
                                         "description": "Apply coupon code to cart. Use token and couponCode."
@@ -10548,7 +10742,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateCustomizableOptionFile($input: createCustomizableOptionFileInput!) {\n  createCustomizableOptionFile(input: $input) {\n    clientMutationId\n    customizableOptionFile {\n      fileName\n      id\n      optionId\n      token\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"file\": \"sample\",\n        \"fileName\": \"Sample\",\n        \"optionId\": 1,\n        \"productId\": 1\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"productId\": 2977,\n        \"optionId\": 11,\n        \"file\": \"sample\"\n    }\n}"
                                             }
                                         },
                                         "description": "Stage a file for a file-type customizable option and return the token. Send the file base64-encoded (raw or a data: URI) in `file`. Send the token on add-to-cart as customizableOptions: { \"<optionId>\": [\"<token>\"] }."
@@ -10582,7 +10776,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateMoveToWishlist($input: createMoveToWishlistInput!) {\n  createMoveToWishlist(input: $input) {\n    clientMutationId\n    moveToWishlist {\n      _id\n      appliedTaxes\n      baseDiscountAmount\n      baseGrandTotal\n      baseShippingAmount\n      baseShippingAmountInclTax\n      baseSubTotalInclTax\n      baseSubtotal\n      baseTaxAmount\n      billingAddress\n      cartToken\n      carts\n      channelId\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedItemsDiscountAmount\n      formattedShippingAmount\n      formattedShippingAmountInclTax\n      formattedShippingDiscountAmount\n      formattedSubTotalInclTax\n      formattedSubtotal\n      formattedTaxAmount\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isGuest\n      itemsCount\n      itemsDiscountAmount\n      itemsQty\n      message\n      miniCartOfferInfo\n      miniCartOfferInfoEnabled\n      orderId\n      orderIncrementId\n      paymentMethod\n      paymentMethodTitle\n      paymentRedirectUrl\n      redirect\n      redirectUri\n      redirectUrl\n      selectedShippingRate\n      selectedShippingRateTitle\n      sessionToken\n      shippingAddress\n      shippingAmount\n      shippingAmountInclTax\n      shippingDiscountAmount\n      subTotalInclTax\n      subtotal\n      success\n      taxAmount\n      taxTotal\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"additional\": \"sample\",\n        \"billingAddressId\": 1,\n        \"booking\": \"sample\",\n        \"bookingNote\": \"sample\",\n        \"bundleOptionQty\": \"sample\",\n        \"bundleOptions\": \"sample\",\n        \"cartId\": 1,\n        \"cartItemId\": 1,\n        \"country\": \"sample\",\n        \"couponCode\": \"SAMPLE\",\n        \"createNew\": false,\n        \"customizableOptions\": \"sample\",\n        \"deviceToken\": \"sample\",\n        \"groupedQty\": \"sample\",\n        \"guestCartToken\": \"sample\",\n        \"isBuyNow\": 1,\n        \"itemIds\": \"sample\",\n        \"links\": \"sample\",\n        \"options\": \"sample\",\n        \"paymentMethod\": \"sample\",\n        \"postcode\": \"SAMPLE\",\n        \"productId\": 1,\n        \"qty\": \"sample\",\n        \"quantities\": \"sample\",\n        \"quantity\": 1,\n        \"selectedConfigurableOption\": 1,\n        \"sessionId\": \"sample\",\n        \"shippingAddressId\": 1,\n        \"shippingMethod\": \"sample\",\n        \"specialNote\": \"sample\",\n        \"state\": \"sample\",\n        \"superAttribute\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"itemIds\": [\n            1,\n            2\n        ],\n        \"quantities\": [\n            1,\n            2\n        ]\n    }\n}"
                                             }
                                         },
                                         "description": "Move items to wishlist. Use token, itemIds array, and quantities."
@@ -10650,7 +10844,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateRemoveCartItem($input: createRemoveCartItemInput!) {\n  createRemoveCartItem(input: $input) {\n    clientMutationId\n    removeCartItem {\n      _id\n      appliedTaxes\n      baseDiscountAmount\n      baseGrandTotal\n      baseShippingAmount\n      baseShippingAmountInclTax\n      baseSubTotalInclTax\n      baseSubtotal\n      baseTaxAmount\n      billingAddress\n      cartToken\n      carts\n      channelId\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedItemsDiscountAmount\n      formattedShippingAmount\n      formattedShippingAmountInclTax\n      formattedShippingDiscountAmount\n      formattedSubTotalInclTax\n      formattedSubtotal\n      formattedTaxAmount\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isGuest\n      itemsCount\n      itemsDiscountAmount\n      itemsQty\n      message\n      miniCartOfferInfo\n      miniCartOfferInfoEnabled\n      orderId\n      orderIncrementId\n      paymentMethod\n      paymentMethodTitle\n      paymentRedirectUrl\n      redirect\n      redirectUri\n      redirectUrl\n      selectedShippingRate\n      selectedShippingRateTitle\n      sessionToken\n      shippingAddress\n      shippingAmount\n      shippingAmountInclTax\n      shippingDiscountAmount\n      subTotalInclTax\n      subtotal\n      success\n      taxAmount\n      taxTotal\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"additional\": \"sample\",\n        \"billingAddressId\": 1,\n        \"booking\": \"sample\",\n        \"bookingNote\": \"sample\",\n        \"bundleOptionQty\": \"sample\",\n        \"bundleOptions\": \"sample\",\n        \"cartId\": 1,\n        \"cartItemId\": 1,\n        \"country\": \"sample\",\n        \"couponCode\": \"SAMPLE\",\n        \"createNew\": false,\n        \"customizableOptions\": \"sample\",\n        \"deviceToken\": \"sample\",\n        \"groupedQty\": \"sample\",\n        \"guestCartToken\": \"sample\",\n        \"isBuyNow\": 1,\n        \"itemIds\": \"sample\",\n        \"links\": \"sample\",\n        \"options\": \"sample\",\n        \"paymentMethod\": \"sample\",\n        \"postcode\": \"SAMPLE\",\n        \"productId\": 1,\n        \"qty\": \"sample\",\n        \"quantities\": \"sample\",\n        \"quantity\": 1,\n        \"selectedConfigurableOption\": 1,\n        \"sessionId\": \"sample\",\n        \"shippingAddressId\": 1,\n        \"shippingMethod\": \"sample\",\n        \"specialNote\": \"sample\",\n        \"state\": \"sample\",\n        \"superAttribute\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"cartItemId\": 1\n    }\n}"
                                             }
                                         },
                                         "description": "Remove item from cart. Use token and cartItemId."
@@ -10684,7 +10878,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateRemoveCartItems($input: createRemoveCartItemsInput!) {\n  createRemoveCartItems(input: $input) {\n    clientMutationId\n    removeCartItems {\n      _id\n      appliedTaxes\n      baseDiscountAmount\n      baseGrandTotal\n      baseShippingAmount\n      baseShippingAmountInclTax\n      baseSubTotalInclTax\n      baseSubtotal\n      baseTaxAmount\n      billingAddress\n      cartToken\n      carts\n      channelId\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedItemsDiscountAmount\n      formattedShippingAmount\n      formattedShippingAmountInclTax\n      formattedShippingDiscountAmount\n      formattedSubTotalInclTax\n      formattedSubtotal\n      formattedTaxAmount\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isGuest\n      itemsCount\n      itemsDiscountAmount\n      itemsQty\n      message\n      miniCartOfferInfo\n      miniCartOfferInfoEnabled\n      orderId\n      orderIncrementId\n      paymentMethod\n      paymentMethodTitle\n      paymentRedirectUrl\n      redirect\n      redirectUri\n      redirectUrl\n      selectedShippingRate\n      selectedShippingRateTitle\n      sessionToken\n      shippingAddress\n      shippingAmount\n      shippingAmountInclTax\n      shippingDiscountAmount\n      subTotalInclTax\n      subtotal\n      success\n      taxAmount\n      taxTotal\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"additional\": \"sample\",\n        \"billingAddressId\": 1,\n        \"booking\": \"sample\",\n        \"bookingNote\": \"sample\",\n        \"bundleOptionQty\": \"sample\",\n        \"bundleOptions\": \"sample\",\n        \"cartId\": 1,\n        \"cartItemId\": 1,\n        \"country\": \"sample\",\n        \"couponCode\": \"SAMPLE\",\n        \"createNew\": false,\n        \"customizableOptions\": \"sample\",\n        \"deviceToken\": \"sample\",\n        \"groupedQty\": \"sample\",\n        \"guestCartToken\": \"sample\",\n        \"isBuyNow\": 1,\n        \"itemIds\": \"sample\",\n        \"links\": \"sample\",\n        \"options\": \"sample\",\n        \"paymentMethod\": \"sample\",\n        \"postcode\": \"SAMPLE\",\n        \"productId\": 1,\n        \"qty\": \"sample\",\n        \"quantities\": \"sample\",\n        \"quantity\": 1,\n        \"selectedConfigurableOption\": 1,\n        \"sessionId\": \"sample\",\n        \"shippingAddressId\": 1,\n        \"shippingMethod\": \"sample\",\n        \"specialNote\": \"sample\",\n        \"state\": \"sample\",\n        \"superAttribute\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"itemIds\": [\n            1,\n            2\n        ]\n    }\n}"
                                             }
                                         },
                                         "description": "Remove multiple items from cart. Use token and itemIds array."
@@ -10718,7 +10912,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateRemoveCoupon($input: createRemoveCouponInput!) {\n  createRemoveCoupon(input: $input) {\n    clientMutationId\n    removeCoupon {\n      _id\n      appliedTaxes\n      baseDiscountAmount\n      baseGrandTotal\n      baseShippingAmount\n      baseShippingAmountInclTax\n      baseSubTotalInclTax\n      baseSubtotal\n      baseTaxAmount\n      billingAddress\n      cartToken\n      carts\n      channelId\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedItemsDiscountAmount\n      formattedShippingAmount\n      formattedShippingAmountInclTax\n      formattedShippingDiscountAmount\n      formattedSubTotalInclTax\n      formattedSubtotal\n      formattedTaxAmount\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isGuest\n      itemsCount\n      itemsDiscountAmount\n      itemsQty\n      message\n      miniCartOfferInfo\n      miniCartOfferInfoEnabled\n      orderId\n      orderIncrementId\n      paymentMethod\n      paymentMethodTitle\n      paymentRedirectUrl\n      redirect\n      redirectUri\n      redirectUrl\n      selectedShippingRate\n      selectedShippingRateTitle\n      sessionToken\n      shippingAddress\n      shippingAmount\n      shippingAmountInclTax\n      shippingDiscountAmount\n      subTotalInclTax\n      subtotal\n      success\n      taxAmount\n      taxTotal\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"additional\": \"sample\",\n        \"billingAddressId\": 1,\n        \"booking\": \"sample\",\n        \"bookingNote\": \"sample\",\n        \"bundleOptionQty\": \"sample\",\n        \"bundleOptions\": \"sample\",\n        \"cartId\": 1,\n        \"cartItemId\": 1,\n        \"country\": \"sample\",\n        \"couponCode\": \"SAMPLE\",\n        \"createNew\": false,\n        \"customizableOptions\": \"sample\",\n        \"deviceToken\": \"sample\",\n        \"groupedQty\": \"sample\",\n        \"guestCartToken\": \"sample\",\n        \"isBuyNow\": 1,\n        \"itemIds\": \"sample\",\n        \"links\": \"sample\",\n        \"options\": \"sample\",\n        \"paymentMethod\": \"sample\",\n        \"postcode\": \"SAMPLE\",\n        \"productId\": 1,\n        \"qty\": \"sample\",\n        \"quantities\": \"sample\",\n        \"quantity\": 1,\n        \"selectedConfigurableOption\": 1,\n        \"sessionId\": \"sample\",\n        \"shippingAddressId\": 1,\n        \"shippingMethod\": \"sample\",\n        \"specialNote\": \"sample\",\n        \"state\": \"sample\",\n        \"superAttribute\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"additional\": [],\n        \"billingAddressId\": 1,\n        \"booking\": \"sample\",\n        \"bookingNote\": \"sample\",\n        \"bundleOptionQty\": \"sample\",\n        \"bundleOptions\": \"sample\",\n        \"cartId\": 1,\n        \"cartItemId\": 1,\n        \"country\": \"sample\",\n        \"couponCode\": \"SAMPLE\",\n        \"createNew\": false,\n        \"customizableOptions\": [],\n        \"deviceToken\": \"sample\",\n        \"groupedQty\": \"sample\",\n        \"guestCartToken\": \"sample\",\n        \"isBuyNow\": 1,\n        \"itemIds\": [],\n        \"links\": [],\n        \"options\": [],\n        \"paymentMethod\": \"sample\",\n        \"postcode\": \"SAMPLE\",\n        \"productId\": 1,\n        \"qty\": [],\n        \"quantities\": [],\n        \"quantity\": 1,\n        \"selectedConfigurableOption\": 1,\n        \"sessionId\": \"sample\",\n        \"shippingAddressId\": 1,\n        \"shippingMethod\": \"sample\",\n        \"specialNote\": \"sample\",\n        \"state\": \"sample\",\n        \"superAttribute\": []\n    }\n}"
                                             }
                                         },
                                         "description": "Remove coupon code from cart. Use token."
@@ -10752,7 +10946,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateUpdateCartItem($input: createUpdateCartItemInput!) {\n  createUpdateCartItem(input: $input) {\n    clientMutationId\n    updateCartItem {\n      _id\n      appliedTaxes\n      baseDiscountAmount\n      baseGrandTotal\n      baseShippingAmount\n      baseShippingAmountInclTax\n      baseSubTotalInclTax\n      baseSubtotal\n      baseTaxAmount\n      billingAddress\n      cartToken\n      carts\n      channelId\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedItemsDiscountAmount\n      formattedShippingAmount\n      formattedShippingAmountInclTax\n      formattedShippingDiscountAmount\n      formattedSubTotalInclTax\n      formattedSubtotal\n      formattedTaxAmount\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isGuest\n      itemsCount\n      itemsDiscountAmount\n      itemsQty\n      message\n      miniCartOfferInfo\n      miniCartOfferInfoEnabled\n      orderId\n      orderIncrementId\n      paymentMethod\n      paymentMethodTitle\n      paymentRedirectUrl\n      redirect\n      redirectUri\n      redirectUrl\n      selectedShippingRate\n      selectedShippingRateTitle\n      sessionToken\n      shippingAddress\n      shippingAmount\n      shippingAmountInclTax\n      shippingDiscountAmount\n      subTotalInclTax\n      subtotal\n      success\n      taxAmount\n      taxTotal\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"additional\": \"sample\",\n        \"billingAddressId\": 1,\n        \"booking\": \"sample\",\n        \"bookingNote\": \"sample\",\n        \"bundleOptionQty\": \"sample\",\n        \"bundleOptions\": \"sample\",\n        \"cartId\": 1,\n        \"cartItemId\": 1,\n        \"country\": \"sample\",\n        \"couponCode\": \"SAMPLE\",\n        \"createNew\": false,\n        \"customizableOptions\": \"sample\",\n        \"deviceToken\": \"sample\",\n        \"groupedQty\": \"sample\",\n        \"guestCartToken\": \"sample\",\n        \"isBuyNow\": 1,\n        \"itemIds\": \"sample\",\n        \"links\": \"sample\",\n        \"options\": \"sample\",\n        \"paymentMethod\": \"sample\",\n        \"postcode\": \"SAMPLE\",\n        \"productId\": 1,\n        \"qty\": \"sample\",\n        \"quantities\": \"sample\",\n        \"quantity\": 1,\n        \"selectedConfigurableOption\": 1,\n        \"sessionId\": \"sample\",\n        \"shippingAddressId\": 1,\n        \"shippingMethod\": \"sample\",\n        \"specialNote\": \"sample\",\n        \"state\": \"sample\",\n        \"superAttribute\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"cartItemId\": 1,\n        \"quantity\": 3\n    }\n}"
                                             }
                                         },
                                         "description": "Update cart item quantity. Use token, cartItemId, and quantity."
@@ -10786,7 +10980,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation ReadGetCartToken($input: readGetCartTokenInput!) {\n  readGetCartToken(input: $input) {\n    clientMutationId\n    getCartToken {\n      _id\n      appliedTaxes\n      baseDiscountAmount\n      baseGrandTotal\n      baseShippingAmount\n      baseShippingAmountInclTax\n      baseSubTotalInclTax\n      baseSubtotal\n      baseTaxAmount\n      billingAddress\n      cartToken\n      carts\n      channelId\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedItemsDiscountAmount\n      formattedShippingAmount\n      formattedShippingAmountInclTax\n      formattedShippingDiscountAmount\n      formattedSubTotalInclTax\n      formattedSubtotal\n      formattedTaxAmount\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isGuest\n      itemsCount\n      itemsDiscountAmount\n      itemsQty\n      message\n      miniCartOfferInfo\n      miniCartOfferInfoEnabled\n      orderId\n      orderIncrementId\n      paymentMethod\n      paymentMethodTitle\n      paymentRedirectUrl\n      redirect\n      redirectUri\n      redirectUrl\n      selectedShippingRate\n      selectedShippingRateTitle\n      sessionToken\n      shippingAddress\n      shippingAmount\n      shippingAmountInclTax\n      shippingDiscountAmount\n      subTotalInclTax\n      subtotal\n      success\n      taxAmount\n      taxTotal\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"additional\": \"sample\",\n        \"billingAddressId\": 1,\n        \"booking\": \"sample\",\n        \"bookingNote\": \"sample\",\n        \"bundleOptionQty\": \"sample\",\n        \"bundleOptions\": \"sample\",\n        \"cartId\": 1,\n        \"cartItemId\": 1,\n        \"country\": \"sample\",\n        \"couponCode\": \"SAMPLE\",\n        \"createNew\": false,\n        \"customizableOptions\": \"sample\",\n        \"deviceToken\": \"sample\",\n        \"groupedQty\": \"sample\",\n        \"guestCartToken\": \"sample\",\n        \"id\": \"1\",\n        \"isBuyNow\": 1,\n        \"itemIds\": \"sample\",\n        \"links\": \"sample\",\n        \"options\": \"sample\",\n        \"paymentMethod\": \"sample\",\n        \"postcode\": \"SAMPLE\",\n        \"productId\": 1,\n        \"qty\": \"sample\",\n        \"quantities\": \"sample\",\n        \"quantity\": 1,\n        \"selectedConfigurableOption\": 1,\n        \"sessionId\": \"sample\",\n        \"shippingAddressId\": 1,\n        \"shippingMethod\": \"sample\",\n        \"specialNote\": \"sample\",\n        \"state\": \"sample\",\n        \"superAttribute\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"additional\": [],\n        \"billingAddressId\": 1,\n        \"booking\": \"sample\",\n        \"bookingNote\": \"sample\",\n        \"bundleOptionQty\": \"sample\",\n        \"bundleOptions\": \"sample\",\n        \"cartId\": 1,\n        \"cartItemId\": 1,\n        \"country\": \"sample\",\n        \"couponCode\": \"SAMPLE\",\n        \"createNew\": false,\n        \"customizableOptions\": [],\n        \"deviceToken\": \"sample\",\n        \"groupedQty\": \"sample\",\n        \"guestCartToken\": \"sample\",\n        \"id\": \"1\",\n        \"isBuyNow\": 1,\n        \"itemIds\": [],\n        \"links\": [],\n        \"options\": [],\n        \"paymentMethod\": \"sample\",\n        \"postcode\": \"SAMPLE\",\n        \"productId\": 1,\n        \"qty\": [],\n        \"quantities\": [],\n        \"quantity\": 1,\n        \"selectedConfigurableOption\": 1,\n        \"sessionId\": \"sample\",\n        \"shippingAddressId\": 1,\n        \"shippingMethod\": \"sample\",\n        \"specialNote\": \"sample\",\n        \"state\": \"sample\",\n        \"superAttribute\": []\n    }\n}"
                                             }
                                         },
                                         "description": "Get the cart identified by the Bearer token (customer token or guest cart token)."
@@ -10829,6 +11023,50 @@
                                             }
                                         },
                                         "description": "Returns cross-sell products for the cart identified by the Bearer token."
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Catalog",
+                    "item": [
+                        {
+                            "name": "Queries",
+                            "item": [
+                                {
+                                    "name": "urlResolver",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query UrlResolver($path: String!) {\n  urlResolver(path: $path) {\n    entityId\n    id\n    path\n    redirectType\n    targetPath\n    type\n  }\n}\n",
+                                                "variables": "{\n    \"path\": \"sample\"\n}"
+                                            }
+                                        },
+                                        "description": "Resolve a storefront path to a category, a product or a redirect."
                                     }
                                 }
                             ]
@@ -11126,8 +11364,8 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "mutation CreateCheckoutAddress($input: createCheckoutAddressInput!) {\n  createCheckoutAddress(input: $input) {\n    checkoutAddress {\n      _id\n      billingAddress\n      billingCity\n      billingCompanyName\n      billingCountry\n      billingEmail\n      billingFirstName\n      billingLastName\n      billingPhoneNumber\n      billingPostcode\n      billingState\n      cartToken\n      customerId\n      id\n      message\n      shippingAddress\n      shippingCity\n      shippingCompanyName\n      shippingCountry\n      shippingEmail\n      shippingFirstName\n      shippingLastName\n      shippingPhoneNumber\n      shippingPostcode\n      shippingState\n      success\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"billingAddress\": \"sample\",\n        \"billingCity\": \"sample\",\n        \"billingCompanyName\": \"Sample\",\n        \"billingCountry\": \"sample\",\n        \"billingEmail\": \"customer@example.com\",\n        \"billingFirstName\": \"Sample\",\n        \"billingLastName\": \"Sample\",\n        \"billingPhoneNumber\": \"1234567890\",\n        \"billingPostcode\": \"SAMPLE\",\n        \"billingState\": \"sample\",\n        \"paymentCancelUrl\": \"sample\",\n        \"paymentFailureUrl\": \"sample\",\n        \"paymentMethod\": \"sample\",\n        \"paymentSuccessUrl\": \"sample\",\n        \"shippingAddress\": \"sample\",\n        \"shippingCity\": \"sample\",\n        \"shippingCompanyName\": \"Sample\",\n        \"shippingCountry\": \"sample\",\n        \"shippingEmail\": \"customer@example.com\",\n        \"shippingFirstName\": \"Sample\",\n        \"shippingLastName\": \"Sample\",\n        \"shippingMethod\": \"sample\",\n        \"shippingPhoneNumber\": \"1234567890\",\n        \"shippingPostcode\": \"SAMPLE\",\n        \"shippingState\": \"sample\",\n        \"useForShipping\": false\n    }\n}"
+                                                "query": "mutation CreateCheckoutAddress($input: createCheckoutAddressInput!) {\n  createCheckoutAddress(input: $input) {\n    checkoutAddress {\n      _id\n      billingAddress\n      billingCity\n      billingCompanyName\n      billingCountry\n      billingEmail\n      billingFirstName\n      billingLastName\n      billingPhoneNumber\n      billingPostcode\n      billingState\n      billingVatId\n      cartToken\n      customerId\n      id\n      message\n      shippingAddress\n      shippingCity\n      shippingCompanyName\n      shippingCountry\n      shippingEmail\n      shippingFirstName\n      shippingLastName\n      shippingPhoneNumber\n      shippingPostcode\n      shippingState\n      success\n    }\n    clientMutationId\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"billingFirstName\": \"John\",\n        \"billingLastName\": \"Doe\",\n        \"billingEmail\": \"john@example.com\",\n        \"billingCompanyName\": \"\",\n        \"billingVatId\": \"\",\n        \"billingAddress\": \"123 Main St\",\n        \"billingCity\": \"Los Angeles\",\n        \"billingCountry\": \"US\",\n        \"billingState\": \"CA\",\n        \"billingPostcode\": \"90001\",\n        \"billingPhoneNumber\": \"2125551234\",\n        \"useForShipping\": true,\n        \"shippingFirstName\": \"Jane\",\n        \"shippingLastName\": \"Doe\",\n        \"shippingEmail\": \"jane@example.com\",\n        \"shippingCompanyName\": \"\",\n        \"shippingAddress\": \"456 Oak Ave\",\n        \"shippingCity\": \"San Francisco\",\n        \"shippingCountry\": \"US\",\n        \"shippingState\": \"CA\",\n        \"shippingPostcode\": \"94102\",\n        \"shippingPhoneNumber\": \"4155559876\"\n    }\n}"
                                             }
                                         },
                                         "description": "Save billing and shipping addresses for checkout. Returns the created address."
@@ -11161,7 +11399,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateCheckoutOrder($input: createCheckoutOrderInput!) {\n  createCheckoutOrder(input: $input) {\n    checkoutOrder {\n      _id\n      cartToken\n      id\n      message\n      orderId\n      redirect\n      redirectUrl\n      success\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"billingAddress\": \"sample\",\n        \"billingCity\": \"sample\",\n        \"billingCompanyName\": \"Sample\",\n        \"billingCountry\": \"sample\",\n        \"billingEmail\": \"customer@example.com\",\n        \"billingFirstName\": \"Sample\",\n        \"billingLastName\": \"Sample\",\n        \"billingPhoneNumber\": \"1234567890\",\n        \"billingPostcode\": \"SAMPLE\",\n        \"billingState\": \"sample\",\n        \"paymentCancelUrl\": \"sample\",\n        \"paymentFailureUrl\": \"sample\",\n        \"paymentMethod\": \"sample\",\n        \"paymentSuccessUrl\": \"sample\",\n        \"shippingAddress\": \"sample\",\n        \"shippingCity\": \"sample\",\n        \"shippingCompanyName\": \"Sample\",\n        \"shippingCountry\": \"sample\",\n        \"shippingEmail\": \"customer@example.com\",\n        \"shippingFirstName\": \"Sample\",\n        \"shippingLastName\": \"Sample\",\n        \"shippingMethod\": \"sample\",\n        \"shippingPhoneNumber\": \"1234567890\",\n        \"shippingPostcode\": \"SAMPLE\",\n        \"shippingState\": \"sample\",\n        \"useForShipping\": false\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"billingAddress\": \"sample\",\n        \"billingCity\": \"sample\",\n        \"billingCompanyName\": \"Sample\",\n        \"billingCountry\": \"sample\",\n        \"billingEmail\": \"customer@example.com\",\n        \"billingFirstName\": \"Sample\",\n        \"billingLastName\": \"Sample\",\n        \"billingPhoneNumber\": \"1234567890\",\n        \"billingPostcode\": \"SAMPLE\",\n        \"billingState\": \"sample\",\n        \"billingVatId\": \"sample\",\n        \"paymentCancelUrl\": \"sample\",\n        \"paymentFailureUrl\": \"sample\",\n        \"paymentMethod\": \"sample\",\n        \"paymentSuccessUrl\": \"sample\",\n        \"shippingAddress\": \"sample\",\n        \"shippingCity\": \"sample\",\n        \"shippingCompanyName\": \"Sample\",\n        \"shippingCountry\": \"sample\",\n        \"shippingEmail\": \"customer@example.com\",\n        \"shippingFirstName\": \"Sample\",\n        \"shippingLastName\": \"Sample\",\n        \"shippingMethod\": \"sample\",\n        \"shippingPhoneNumber\": \"1234567890\",\n        \"shippingPostcode\": \"SAMPLE\",\n        \"shippingState\": \"sample\",\n        \"useForShipping\": false\n    }\n}"
                                             }
                                         },
                                         "description": "Create order from cart. Validates all required fields and creates order. Returns order ID and redirect URL if payment redirect required."
@@ -11194,11 +11432,11 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "mutation CreateCheckoutPaymentConfirmation($input: createCheckoutPaymentConfirmationInput!) {\n  createCheckoutPaymentConfirmation(input: $input) {\n    checkoutPaymentConfirmation {\n      cartId\n      id\n      message\n      orderId\n      success\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"sessionId\": \"sample\"\n    }\n}"
+                                                "query": "mutation CreateCheckoutPaymentConfirmation($input: createCheckoutPaymentConfirmationInput!) {\n  createCheckoutPaymentConfirmation(input: $input) {\n    checkoutPaymentConfirmation {\n      cartId\n      id\n      message\n      orderId\n      orderIncrementId\n      paymentStatus\n      status\n      success\n    }\n    clientMutationId\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"reference\": \"12\"\n    }\n}"
                                             }
                                         },
-                                        "description": "Verify a Stripe Checkout Session server-side and return the order for the bearer cart, placing it once when it does not exist yet."
+                                        "description": "Return the order of a payment started with createCheckoutPaymentSession, placing it after a verified Razorpay or PayPal Smart Button payment."
                                     }
                                 },
                                 {
@@ -11262,11 +11500,11 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "mutation CreateCheckoutPaymentSession($input: createCheckoutPaymentSessionInput!) {\n  createCheckoutPaymentSession(input: $input) {\n    checkoutPaymentSession {\n      cartId\n      id\n      message\n      redirectUrl\n      sessionId\n      success\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {}\n}"
+                                                "query": "mutation CreateCheckoutPaymentSession($input: createCheckoutPaymentSessionInput!) {\n  createCheckoutPaymentSession(input: $input) {\n    checkoutPaymentSession {\n      cartId\n      failureUrl\n      formAction\n      formFields\n      id\n      message\n      method\n      redirectUrl\n      reference\n      sdkData\n      sessionId\n      success\n      successUrl\n      type\n    }\n    clientMutationId\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"paymentMethod\": \"sample\"\n    }\n}"
                                             }
                                         },
-                                        "description": "Create a Stripe Checkout Session for the bearer cart and return its id and payment page URL."
+                                        "description": "Start payment for the online payment method of the bearer cart and return how to hand the customer to the gateway."
                                     }
                                 },
                                 {
@@ -11331,7 +11569,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateEstimateShipping($input: createEstimateShippingInput!) {\n  createEstimateShipping(input: $input) {\n    clientMutationId\n    estimateShipping {\n      _id\n      appliedTaxes\n      baseDiscountAmount\n      baseGrandTotal\n      baseShippingAmount\n      baseShippingAmountInclTax\n      baseSubTotalInclTax\n      baseSubtotal\n      baseTaxAmount\n      billingAddress\n      cartToken\n      carts\n      channelId\n      couponCode\n      customerId\n      discountAmount\n      formattedDiscountAmount\n      formattedGrandTotal\n      formattedItemsDiscountAmount\n      formattedShippingAmount\n      formattedShippingAmountInclTax\n      formattedShippingDiscountAmount\n      formattedSubTotalInclTax\n      formattedSubtotal\n      formattedTaxAmount\n      formattedTaxTotal\n      grandTotal\n      haveStockableItems\n      id\n      isGuest\n      itemsCount\n      itemsDiscountAmount\n      itemsQty\n      message\n      miniCartOfferInfo\n      miniCartOfferInfoEnabled\n      orderId\n      orderIncrementId\n      paymentMethod\n      paymentMethodTitle\n      paymentRedirectUrl\n      redirect\n      redirectUri\n      redirectUrl\n      selectedShippingRate\n      selectedShippingRateTitle\n      sessionToken\n      shippingAddress\n      shippingAmount\n      shippingAmountInclTax\n      shippingDiscountAmount\n      subTotalInclTax\n      subtotal\n      success\n      taxAmount\n      taxTotal\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"additional\": \"sample\",\n        \"billingAddressId\": 1,\n        \"booking\": \"sample\",\n        \"bookingNote\": \"sample\",\n        \"bundleOptionQty\": \"sample\",\n        \"bundleOptions\": \"sample\",\n        \"cartId\": 1,\n        \"cartItemId\": 1,\n        \"country\": \"sample\",\n        \"couponCode\": \"SAMPLE\",\n        \"createNew\": false,\n        \"customizableOptions\": \"sample\",\n        \"deviceToken\": \"sample\",\n        \"groupedQty\": \"sample\",\n        \"guestCartToken\": \"sample\",\n        \"isBuyNow\": 1,\n        \"itemIds\": \"sample\",\n        \"links\": \"sample\",\n        \"options\": \"sample\",\n        \"paymentMethod\": \"sample\",\n        \"postcode\": \"SAMPLE\",\n        \"productId\": 1,\n        \"qty\": \"sample\",\n        \"quantities\": \"sample\",\n        \"quantity\": 1,\n        \"selectedConfigurableOption\": 1,\n        \"sessionId\": \"sample\",\n        \"shippingAddressId\": 1,\n        \"shippingMethod\": \"sample\",\n        \"specialNote\": \"sample\",\n        \"state\": \"sample\",\n        \"superAttribute\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"country\": \"US\",\n        \"state\": \"CA\",\n        \"postcode\": \"90001\",\n        \"shippingMethod\": \"flatrate_flatrate\"\n    }\n}"
                                             }
                                         },
                                         "description": "Estimate shipping methods and tax. Use token, country, state, postcode, and optional shippingMethod."
@@ -11365,7 +11603,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateMutationCheckoutAddress($input: createMutationCheckoutAddressInput!) {\n  createMutationCheckoutAddress(input: $input) {\n    clientMutationId\n    mutationCheckoutAddress {\n      id\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"billingAddress\": \"sample\",\n        \"billingCity\": \"sample\",\n        \"billingCompanyName\": \"Sample\",\n        \"billingCountry\": \"sample\",\n        \"billingEmail\": \"customer@example.com\",\n        \"billingFirstName\": \"Sample\",\n        \"billingLastName\": \"Sample\",\n        \"billingPhoneNumber\": \"1234567890\",\n        \"billingPostcode\": \"SAMPLE\",\n        \"billingState\": \"sample\",\n        \"paymentCancelUrl\": \"sample\",\n        \"paymentFailureUrl\": \"sample\",\n        \"paymentMethod\": \"sample\",\n        \"paymentSuccessUrl\": \"sample\",\n        \"shippingAddress\": \"sample\",\n        \"shippingCity\": \"sample\",\n        \"shippingCompanyName\": \"Sample\",\n        \"shippingCountry\": \"sample\",\n        \"shippingEmail\": \"customer@example.com\",\n        \"shippingFirstName\": \"Sample\",\n        \"shippingLastName\": \"Sample\",\n        \"shippingMethod\": \"sample\",\n        \"shippingPhoneNumber\": \"1234567890\",\n        \"shippingPostcode\": \"SAMPLE\",\n        \"shippingState\": \"sample\",\n        \"useForShipping\": false\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"billingAddress\": \"sample\",\n        \"billingCity\": \"sample\",\n        \"billingCompanyName\": \"Sample\",\n        \"billingCountry\": \"sample\",\n        \"billingEmail\": \"customer@example.com\",\n        \"billingFirstName\": \"Sample\",\n        \"billingLastName\": \"Sample\",\n        \"billingPhoneNumber\": \"1234567890\",\n        \"billingPostcode\": \"SAMPLE\",\n        \"billingState\": \"sample\",\n        \"billingVatId\": \"sample\",\n        \"paymentCancelUrl\": \"sample\",\n        \"paymentFailureUrl\": \"sample\",\n        \"paymentMethod\": \"sample\",\n        \"paymentSuccessUrl\": \"sample\",\n        \"shippingAddress\": \"sample\",\n        \"shippingCity\": \"sample\",\n        \"shippingCompanyName\": \"Sample\",\n        \"shippingCountry\": \"sample\",\n        \"shippingEmail\": \"customer@example.com\",\n        \"shippingFirstName\": \"Sample\",\n        \"shippingLastName\": \"Sample\",\n        \"shippingMethod\": \"sample\",\n        \"shippingPhoneNumber\": \"1234567890\",\n        \"shippingPostcode\": \"SAMPLE\",\n        \"shippingState\": \"sample\",\n        \"useForShipping\": false\n    }\n}"
                                             }
                                         },
                                         "description": "Save billing and shipping addresses for checkout. Returns the created address."
@@ -11539,7 +11777,7 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "query ReadCheckoutAddress($id: ID!) {\n  readCheckoutAddress(id: $id) {\n    _id\n    billingAddress\n    billingCity\n    billingCompanyName\n    billingCountry\n    billingEmail\n    billingFirstName\n    billingLastName\n    billingPhoneNumber\n    billingPostcode\n    billingState\n    cartToken\n    customerId\n    id\n    message\n    shippingAddress\n    shippingCity\n    shippingCompanyName\n    shippingCountry\n    shippingEmail\n    shippingFirstName\n    shippingLastName\n    shippingPhoneNumber\n    shippingPostcode\n    shippingState\n    success\n  }\n}\n",
+                                                "query": "query ReadCheckoutAddress($id: ID!) {\n  readCheckoutAddress(id: $id) {\n    _id\n    billingAddress\n    billingCity\n    billingCompanyName\n    billingCountry\n    billingEmail\n    billingFirstName\n    billingLastName\n    billingPhoneNumber\n    billingPostcode\n    billingState\n    billingVatId\n    cartToken\n    customerId\n    id\n    message\n    shippingAddress\n    shippingCity\n    shippingCompanyName\n    shippingCountry\n    shippingEmail\n    shippingFirstName\n    shippingLastName\n    shippingPhoneNumber\n    shippingPostcode\n    shippingState\n    success\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
                                         },
@@ -11663,6 +11901,40 @@
                         {
                             "name": "Queries",
                             "item": [
+                                {
+                                    "name": "compareAttributes",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query CompareAttributes {\n  compareAttributes {\n    _id\n    adminName\n    code\n    id\n    name\n    type\n  }\n}\n",
+                                                "variables": "{}"
+                                            }
+                                        },
+                                        "description": "List the attributes the storefront compare page renders as comparison rows."
+                                    }
+                                },
                                 {
                                     "name": "compareItem",
                                     "request": {
@@ -13116,7 +13388,7 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "query CustomerDownloadableProduct($id: ID!) {\n  customerDownloadableProduct(id: $id) {\n    _id\n    createdAt\n    customer {\n      _id\n      accessToken\n      accessTokenExpiresAt\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      expiresIn\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      refreshToken\n      refreshTokenExpiresAt\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    downloadBought\n    downloadCanceled\n    downloadUrl\n    downloadUsed\n    file\n    fileName\n    id\n    name\n    order {\n      _id\n      appliedCartRuleIds\n      baseCurrencyCode\n      baseDiscountAmount\n      baseDiscountInvoiced\n      baseDiscountRefunded\n      baseGrandTotal\n      baseGrandTotalInvoiced\n      baseGrandTotalRefunded\n      baseShippingAmount\n      baseShippingAmountInclTax\n      baseShippingDiscountAmount\n      baseShippingInvoiced\n      baseShippingRefunded\n      baseShippingTaxAmount\n      baseShippingTaxRefunded\n      baseSubTotal\n      baseSubTotalInclTax\n      baseSubTotalInvoiced\n      baseSubTotalRefunded\n      baseTaxAmount\n      baseTaxAmountInvoiced\n      baseTaxAmountRefunded\n      cartId\n      channelCurrencyCode\n      channelId\n      channelName\n      channelType\n      couponCode\n      createdAt\n      customerEmail\n      customerFirstName\n      customerFullName\n      customerId\n      customerLastName\n      customerType\n      discountAmount\n      discountInvoiced\n      discountPercent\n      discountRefunded\n      grandTotal\n      grandTotalInvoiced\n      grandTotalRefunded\n      id\n      incrementId\n      isGift\n      isGuest\n      orderCurrencyCode\n      shippingAmount\n      shippingAmountInclTax\n      shippingDescription\n      shippingDiscountAmount\n      shippingInvoiced\n      shippingMethod\n      shippingRefunded\n      shippingTaxAmount\n      shippingTaxRefunded\n      shippingTitle\n      status\n      subTotal\n      subTotalInclTax\n      subTotalInvoiced\n      subTotalRefunded\n      taxAmount\n      taxAmountInvoiced\n      taxAmountRefunded\n      totalItemCount\n      totalQtyOrdered\n      updatedAt\n    }\n    orderNumber\n    productName\n    remainingDownloads\n    status\n    type\n    updatedAt\n    url\n  }\n}\n",
+                                                "query": "query CustomerDownloadableProduct($id: ID!) {\n  customerDownloadableProduct(id: $id) {\n    _id\n    createdAt\n    customer {\n      _id\n      accessToken\n      accessTokenExpiresAt\n      apiToken\n      channelId\n      customerGroupId\n      dateOfBirth\n      email\n      expiresIn\n      firstName\n      gender\n      id\n      isSuspended\n      isVerified\n      lastName\n      message\n      name\n      phone\n      refreshToken\n      refreshTokenExpiresAt\n      rememberToken\n      status\n      subscribedToNewsLetter\n      token\n    }\n    downloadBought\n    downloadCanceled\n    downloadUrl\n    downloadUsed\n    file\n    fileName\n    id\n    name\n    order {\n      _id\n      appliedCartRuleIds\n      baseCurrencyCode\n      baseDiscountAmount\n      baseDiscountInvoiced\n      baseDiscountRefunded\n      baseGrandTotal\n      baseGrandTotalInvoiced\n      baseGrandTotalRefunded\n      baseShippingAmount\n      baseShippingAmountInclTax\n      baseShippingDiscountAmount\n      baseShippingInvoiced\n      baseShippingRefunded\n      baseShippingTaxAmount\n      baseShippingTaxRefunded\n      baseSubTotal\n      baseSubTotalInclTax\n      baseSubTotalInvoiced\n      baseSubTotalRefunded\n      baseTaxAmount\n      baseTaxAmountInvoiced\n      baseTaxAmountRefunded\n      cartId\n      channelCurrencyCode\n      channelId\n      channelName\n      channelType\n      couponCode\n      createdAt\n      customerEmail\n      customerFirstName\n      customerFullName\n      customerId\n      customerLastName\n      customerType\n      discountAmount\n      discountInvoiced\n      discountPercent\n      discountRefunded\n      grandTotal\n      grandTotalInvoiced\n      grandTotalRefunded\n      hasNonCancelableBooking\n      id\n      incrementId\n      isGift\n      isGuest\n      orderCurrencyCode\n      shippingAmount\n      shippingAmountInclTax\n      shippingDescription\n      shippingDiscountAmount\n      shippingInvoiced\n      shippingMethod\n      shippingRefunded\n      shippingTaxAmount\n      shippingTaxRefunded\n      shippingTitle\n      status\n      subTotal\n      subTotalInclTax\n      subTotalInvoiced\n      subTotalRefunded\n      taxAmount\n      taxAmountInvoiced\n      taxAmountRefunded\n      totalItemCount\n      totalQtyOrdered\n      updatedAt\n    }\n    orderNumber\n    productName\n    remainingDownloads\n    status\n    type\n    updatedAt\n    url\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
                                         },
@@ -13252,7 +13524,7 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "query CustomerOrder($id: ID!) {\n  customerOrder(id: $id) {\n    _id\n    appliedCartRuleIds\n    baseCurrencyCode\n    baseDiscountAmount\n    baseDiscountInvoiced\n    baseDiscountRefunded\n    baseGrandTotal\n    baseGrandTotalInvoiced\n    baseGrandTotalRefunded\n    baseShippingAmount\n    baseShippingAmountInclTax\n    baseShippingDiscountAmount\n    baseShippingInvoiced\n    baseShippingRefunded\n    baseShippingTaxAmount\n    baseShippingTaxRefunded\n    baseSubTotal\n    baseSubTotalInclTax\n    baseSubTotalInvoiced\n    baseSubTotalRefunded\n    baseTaxAmount\n    baseTaxAmountInvoiced\n    baseTaxAmountRefunded\n    cartId\n    channelCurrencyCode\n    channelId\n    channelName\n    channelType\n    couponCode\n    createdAt\n    customerEmail\n    customerFirstName\n    customerFullName\n    customerId\n    customerLastName\n    customerType\n    discountAmount\n    discountInvoiced\n    discountPercent\n    discountRefunded\n    grandTotal\n    grandTotalInvoiced\n    grandTotalRefunded\n    id\n    incrementId\n    isGift\n    isGuest\n    orderCurrencyCode\n    payment {\n      _id\n      additional\n      createdAt\n      id\n      method\n      methodTitle\n      orderId\n      updatedAt\n    }\n    shippingAmount\n    shippingAmountInclTax\n    shippingDescription\n    shippingDiscountAmount\n    shippingInvoiced\n    shippingMethod\n    shippingRefunded\n    shippingTaxAmount\n    shippingTaxRefunded\n    shippingTitle\n    status\n    subTotal\n    subTotalInclTax\n    subTotalInvoiced\n    subTotalRefunded\n    taxAmount\n    taxAmountInvoiced\n    taxAmountRefunded\n    totalItemCount\n    totalQtyOrdered\n    updatedAt\n  }\n}\n",
+                                                "query": "query CustomerOrder($id: ID!) {\n  customerOrder(id: $id) {\n    _id\n    appliedCartRuleIds\n    baseCurrencyCode\n    baseDiscountAmount\n    baseDiscountInvoiced\n    baseDiscountRefunded\n    baseGrandTotal\n    baseGrandTotalInvoiced\n    baseGrandTotalRefunded\n    baseShippingAmount\n    baseShippingAmountInclTax\n    baseShippingDiscountAmount\n    baseShippingInvoiced\n    baseShippingRefunded\n    baseShippingTaxAmount\n    baseShippingTaxRefunded\n    baseSubTotal\n    baseSubTotalInclTax\n    baseSubTotalInvoiced\n    baseSubTotalRefunded\n    baseTaxAmount\n    baseTaxAmountInvoiced\n    baseTaxAmountRefunded\n    cartId\n    channelCurrencyCode\n    channelId\n    channelName\n    channelType\n    couponCode\n    createdAt\n    customerEmail\n    customerFirstName\n    customerFullName\n    customerId\n    customerLastName\n    customerType\n    discountAmount\n    discountInvoiced\n    discountPercent\n    discountRefunded\n    grandTotal\n    grandTotalInvoiced\n    grandTotalRefunded\n    hasNonCancelableBooking\n    id\n    incrementId\n    isGift\n    isGuest\n    orderCurrencyCode\n    payment {\n      _id\n      additional\n      createdAt\n      id\n      method\n      methodTitle\n      orderId\n      updatedAt\n    }\n    shippingAmount\n    shippingAmountInclTax\n    shippingDescription\n    shippingDiscountAmount\n    shippingInvoiced\n    shippingMethod\n    shippingRefunded\n    shippingTaxAmount\n    shippingTaxRefunded\n    shippingTitle\n    status\n    subTotal\n    subTotalInclTax\n    subTotalInvoiced\n    subTotalRefunded\n    taxAmount\n    taxAmountInvoiced\n    taxAmountRefunded\n    totalItemCount\n    totalQtyOrdered\n    updatedAt\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
                                         },
@@ -13422,7 +13694,7 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "query CustomerOrders($first: Int) {\n  customerOrders(first: $first) {\n    edges {\n      node {\n        _id\n        appliedCartRuleIds\n        baseCurrencyCode\n        baseDiscountAmount\n        baseDiscountInvoiced\n        baseDiscountRefunded\n        baseGrandTotal\n        baseGrandTotalInvoiced\n        baseGrandTotalRefunded\n        baseShippingAmount\n        baseShippingAmountInclTax\n        baseShippingDiscountAmount\n        baseShippingInvoiced\n        baseShippingRefunded\n        baseShippingTaxAmount\n        baseShippingTaxRefunded\n        baseSubTotal\n        baseSubTotalInclTax\n        baseSubTotalInvoiced\n        baseSubTotalRefunded\n        baseTaxAmount\n        baseTaxAmountInvoiced\n        baseTaxAmountRefunded\n        cartId\n        channelCurrencyCode\n        channelId\n        channelName\n        channelType\n        couponCode\n        createdAt\n        customerEmail\n        customerFirstName\n        customerFullName\n        customerId\n        customerLastName\n        customerType\n        discountAmount\n        discountInvoiced\n        discountPercent\n        discountRefunded\n        grandTotal\n        grandTotalInvoiced\n        grandTotalRefunded\n        id\n        incrementId\n        isGift\n        isGuest\n        orderCurrencyCode\n        shippingAmount\n        shippingAmountInclTax\n        shippingDescription\n        shippingDiscountAmount\n        shippingInvoiced\n        shippingMethod\n        shippingRefunded\n        shippingTaxAmount\n        shippingTaxRefunded\n        shippingTitle\n        status\n        subTotal\n        subTotalInclTax\n        subTotalInvoiced\n        subTotalRefunded\n        taxAmount\n        taxAmountInvoiced\n        taxAmountRefunded\n        totalItemCount\n        totalQtyOrdered\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
+                                                "query": "query CustomerOrders($first: Int) {\n  customerOrders(first: $first) {\n    edges {\n      node {\n        _id\n        appliedCartRuleIds\n        baseCurrencyCode\n        baseDiscountAmount\n        baseDiscountInvoiced\n        baseDiscountRefunded\n        baseGrandTotal\n        baseGrandTotalInvoiced\n        baseGrandTotalRefunded\n        baseShippingAmount\n        baseShippingAmountInclTax\n        baseShippingDiscountAmount\n        baseShippingInvoiced\n        baseShippingRefunded\n        baseShippingTaxAmount\n        baseShippingTaxRefunded\n        baseSubTotal\n        baseSubTotalInclTax\n        baseSubTotalInvoiced\n        baseSubTotalRefunded\n        baseTaxAmount\n        baseTaxAmountInvoiced\n        baseTaxAmountRefunded\n        cartId\n        channelCurrencyCode\n        channelId\n        channelName\n        channelType\n        couponCode\n        createdAt\n        customerEmail\n        customerFirstName\n        customerFullName\n        customerId\n        customerLastName\n        customerType\n        discountAmount\n        discountInvoiced\n        discountPercent\n        discountRefunded\n        grandTotal\n        grandTotalInvoiced\n        grandTotalRefunded\n        hasNonCancelableBooking\n        id\n        incrementId\n        isGift\n        isGuest\n        orderCurrencyCode\n        shippingAmount\n        shippingAmountInclTax\n        shippingDescription\n        shippingDiscountAmount\n        shippingInvoiced\n        shippingMethod\n        shippingRefunded\n        shippingTaxAmount\n        shippingTaxRefunded\n        shippingTitle\n        status\n        subTotal\n        subTotalInclTax\n        subTotalInvoiced\n        subTotalRefunded\n        taxAmount\n        taxAmountInvoiced\n        taxAmountRefunded\n        totalItemCount\n        totalQtyOrdered\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
                                         },
@@ -13535,7 +13807,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateCustomerReturn($input: createCustomerReturnInput!) {\n  createCustomerReturn(input: $input) {\n    clientMutationId\n    customerReturn {\n      _id\n      canClose\n      canReopen\n      createdAt\n      customAttributes\n      id\n      images\n      information\n      isExpired\n      item\n      messagesCount\n      orderId\n      orderIncrementId\n      packageCondition\n      statusColor\n      statusId\n      statusTitle\n      updatedAt\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"agreement\": false,\n        \"customAttributes\": \"sample\",\n        \"information\": \"sample\",\n        \"orderId\": 1,\n        \"orderItemId\": 1,\n        \"packageCondition\": \"sample\",\n        \"resolutionType\": \"sample\",\n        \"rmaQty\": 1,\n        \"rmaReasonId\": 1,\n        \"variant\": 1\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"orderId\": 12,\n        \"orderItemId\": 45,\n        \"rmaQty\": 1,\n        \"resolutionType\": \"return\",\n        \"rmaReasonId\": 2,\n        \"information\": \"Item arrived damaged.\",\n        \"packageCondition\": \"open\",\n        \"customAttributes\": \"{\\\"1\\\":\\\"INV-9921\\\"}\",\n        \"agreement\": true\n    }\n}"
                                             }
                                         },
                                         "description": "Creates a CustomerReturn."
@@ -13569,7 +13841,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateCustomerReturnMessage($input: createCustomerReturnMessageInput!) {\n  createCustomerReturnMessage(input: $input) {\n    clientMutationId\n    customerReturnMessage {\n      _id\n      attachment\n      attachmentUrl\n      createdAt\n      id\n      isAdmin\n      message\n      rmaId\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"message\": \"Sample text\",\n        \"returnId\": 1\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"returnId\": 12,\n        \"message\": \"Photo of the damaged zipper attached.\"\n    }\n}"
                                             }
                                         },
                                         "description": "Creates a CustomerReturnMessage."
@@ -13968,7 +14240,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateEuWithdrawal($input: createEuWithdrawalInput!) {\n  createEuWithdrawal(input: $input) {\n    clientMutationId\n    euWithdrawal {\n      _id\n      confirmationSentAt\n      createdAt\n      customerEmail\n      declinedAt\n      declinedReason\n      id\n      isGuest\n      orderId\n      orderIncrementId\n      reasonText\n      receivedAt\n      refundNote\n      refundedAt\n      status\n      updatedAt\n      uuid\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"orderId\": 1,\n        \"reasonText\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"orderId\": 12,\n        \"reasonText\": \"Changed my mind.\"\n    }\n}"
                                             }
                                         },
                                         "description": "Creates a EuWithdrawal."
@@ -14002,7 +14274,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateGuestEuWithdrawal($input: createGuestEuWithdrawalInput!) {\n  createGuestEuWithdrawal(input: $input) {\n    clientMutationId\n    guestEuWithdrawal {\n      _id\n      confirmationSentAt\n      createdAt\n      customerEmail\n      id\n      isGuest\n      orderId\n      orderIncrementId\n      reasonText\n      receivedAt\n      status\n      uuid\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"email\": \"customer@example.com\",\n        \"orderIncrementId\": \"sample\",\n        \"reasonText\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"orderIncrementId\": \"1000123\",\n        \"email\": \"guest@example.com\",\n        \"reasonText\": \"Changed my mind.\"\n    }\n}"
                                             }
                                         },
                                         "description": "Creates a GuestEuWithdrawal."
@@ -14752,7 +15024,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation UpdateProductReview($input: updateProductReviewInput!) {\n  updateProductReview(input: $input) {\n    clientMutationId\n    productReview {\n      _id\n      attachments\n      comment\n      createdAt\n      id\n      name\n      rating\n      status\n      title\n      updatedAt\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"productId\": 1,\n        \"title\": \"Great product\",\n        \"comment\": \"Really enjoyed using this. Highly recommended.\",\n        \"rating\": 5,\n        \"name\": \"John Doe\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"productId\": 1,\n        \"title\": \"Great product\",\n        \"comment\": \"Really enjoyed using this. Highly recommended.\",\n        \"rating\": 5,\n        \"name\": \"John Doe\",\n        \"id\": \"1\"\n    }\n}"
                                             }
                                         },
                                         "description": "Update an existing product review"
@@ -15033,6 +15305,40 @@
                                             }
                                         },
                                         "description": "Products visible in the storefront of the channel. `query` searches SKU and name (partial match); `filter` is a JSON object of attribute filters such as type, sku, category_id or price; `sortKey` is TITLE (or NAME), CREATED_AT, UPDATED_AT, PRICE or ID (default), ascending unless `reverse` is true. `locale` and `channel` (codes) choose where values are read. Cursor pagination: `first` takes the first N rows (after `after` when given), `last` without `before` takes the last N, and `before` takes the N rows before that cursor; N defaults to 30 and is capped at 50, and `first: 0` returns an empty page. Needs the X-STOREFRONT-KEY header."
+                                    }
+                                },
+                                {
+                                    "name": "searchRedirect",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query SearchRedirect($query: String!) {\n  searchRedirect(query: $query) {\n    id\n    query\n    redirectUrl\n    suggestion\n  }\n}\n",
+                                                "variables": "{\n    \"query\": \"sample\"\n}"
+                                            }
+                                        },
+                                        "description": "The redirect URL set on a search term, or null, plus the \"did you mean\" suggestion."
                                     }
                                 }
                             ]
@@ -15457,7 +15763,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateImageSearch($input: createImageSearchInput!) {\n  createImageSearch(input: $input) {\n    clientMutationId\n    imageSearch {\n      engine\n      id\n      imageUrl\n      keywords\n    }\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"fileName\": \"Sample\",\n        \"image\": \"sample\",\n        \"mimeType\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"image\": \"red-sneaker.jpg\"\n    }\n}"
                                             }
                                         },
                                         "description": "Search products by image. Send the image base64-encoded (raw or a data: URI) in `image`; keywords are analyzed by Magic AI when storefront image search is enabled, otherwise the TensorFlow engine is reported."

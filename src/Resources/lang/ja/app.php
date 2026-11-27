@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => '無効な入力データです',
             'email-required' => 'メールアドレスが必要です',
             'reset-link-sent' => 'リセットリンクがメールに正常に送信されました',
-            'email-not-found' => 'メールアドレスが見つかりません',
-            'throttled' => 'リセットの試行回数が多すぎます。しばらく待ってから再度お試しください。',
-            'error-sending-reset-link' => 'リセットリンクの送信中にエラーが発生しました',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'アカウントを削除するにはパスワードが必要です',
             'delete-password-incorrect' => '入力されたパスワードが正しくありません',
             'delete-has-active-orders' => '保留中または処理中の注文がある間はアカウントを削除できません',
+            'delete-success' => 'アカウントは正常に削除されました。',
             'unauthenticated' => '認証されていません。この操作を行うにはログインしてください',
             'id-required' => '顧客IDが必要です',
             'invalid-id-format' => '無効なID形式です。"/api/admin/customers/1"のようなIRI形式または数値IDが想定されています',
@@ -363,6 +361,22 @@ return [
             'payment-method-error' => '支払い方法の保存中にエラーが発生しました',
             'order-placed' => '注文が正常に完了しました',
             'order-redirect-required' => 'この支払い方法では、購入者がゲートウェイで支払いを完了する必要があります。購入者を redirectUrl に送ってください。注文はゲートウェイが支払いを確認した時点で作成されます。',
+            'payment-started' => '支払いを開始しました。顧客を決済ゲートウェイへ移動させてください。',
+            'payment-not-online' => '選択された支払い方法はオンライン決済を必要としません。注文を直接確定してください。',
+            'payment-not-configured' => 'この支払い方法は設定されていません。',
+            'payment-currency-unsupported' => 'この支払い方法はストアの通貨に対応していません。対応通貨: :currencies。',
+            'payment-method-mismatch' => '支払い方法がカートに保存されているものと一致しません。',
+            'payment-initiation-failed' => '支払いを開始できませんでした。もう一度お試しいただくか、別の支払い方法を選択してください。',
+            'paypal-smart-button-payment-flow' => 'PayPal Smart Button の支払いは checkout-payments/initiate で開始し、checkout-payments/confirm で確認します。直接注文はできません。',
+            'payment-reference-not-found' => 'この参照に該当する支払いが見つかりません。',
+            'payment-reference-required' => '支払い開始時に返された参照を送信してください。',
+            'payment-no-confirmation' => '選択された支払い方法は確認を必要としません。',
+            'razorpay-fields-required' => 'Razorpay の注文 ID、支払い ID、署名が必要です。',
+            'paypal-order-id-required' => 'PayPal Smart Button の支払いを確認するには PayPal の注文 ID が必要です。',
+            'payment-not-verified' => '支払いを確認できませんでした。',
+            'payment-confirmed' => '支払いが確認され、注文が確定しました。',
+            'payment-pending' => '支払いはまだ完了していません。注文は作成されていません。',
+            'payment-awaiting-confirmation' => '注文は確定しました。PayPal はまだ支払いを確認していません。',
             'order-creation-failed' => '注文の作成に失敗しました: 注文IDがnullであるか、注文が保存されていません',
             'order-retrieval-failed' => '作成された注文を取得できませんでした',
             'order-creation-error' => '注文を作成できませんでした',
@@ -453,6 +467,15 @@ return [
             'id-required' => 'ロケールIDが必要です',
             'invalid-id-format' => '無効なID形式です。"/api/shop/locales/1"のようなIRI形式または数値IDが想定されています',
             'not-found' => 'ロケールが見つかりません',
+        ],
+
+        'search' => [
+            'query-required' => '検索クエリは必須です。',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'パスは必須です。',
+            'not-found' => 'このパスに一致するものはありません。',
         ],
 
         'category' => [
@@ -1231,6 +1254,8 @@ return [
             'description-required-for-mode' => '選択された表示モードには説明が必要です。',
             'cannot-delete-root' => 'ルートカテゴリとチャネルのルートカテゴリは削除できません。',
             'cannot-delete-channel-root' => 'このカテゴリはチャネルのルートであるため、削除できません。',
+            'parent-not-found' => '親カテゴリが見つかりません。',
+            'cannot-move-into-self' => 'カテゴリを自身またはそのサブカテゴリに移動することはできません。',
             'delete-failed' => 'カテゴリを削除できませんでした。',
             'no-permission' => 'カテゴリを管理する権限がありません。',
             'mass-delete-success' => 'カテゴリが正常に削除されました。',
@@ -1274,6 +1299,7 @@ return [
             'group-name-required' => '各属性グループには名前が必要です。',
             'group-column-invalid' => '各属性グループの列は 1 または 2 である必要があります。',
             'group-name-duplicate' => '属性グループ名は属性ファミリー内で一意である必要があります。',
+            'group-not-found' => 'この属性ファミリーに属性グループが見つかりません。',
             'update-failed' => '属性ファミリーを更新できませんでした。',
             'create-failed' => '属性ファミリーを作成できませんでした。',
             'default-delete-error' => 'デフォルトの属性ファミリーは削除できません。',

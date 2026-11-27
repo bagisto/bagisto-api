@@ -1364,6 +1364,10 @@ MD;
                 'refreshToken' => '{{adminRefreshToken}}',
             ]] + $variables,
 
+            'createAdminAttributeOption' => array_replace_recursive($variables, ['input' => [
+                'attributeId' => 23,
+            ]]),
+
             default => $variables,
         };
     }
@@ -1387,7 +1391,7 @@ MD;
             $mapped = $example === null ? [] : $this->matchExample($fields, $example);
 
             if ($mapped !== []) {
-                return $mapped;
+                return $this->withRequiredFields($fields, $mapped, $depth);
             }
 
             $value = [];
@@ -1422,6 +1426,29 @@ MD;
     }
 
     /**
+     * An example-backed input with every non-null field it left out filled in.
+     *
+     * @param  array<string, mixed>  $fields
+     * @param  array<string, mixed>  $value
+     * @return array<string, mixed>
+     */
+    private function withRequiredFields(array $fields, array $value, int $depth): array
+    {
+        foreach ($fields as $inputField) {
+            if (
+                isset($value[$inputField->name])
+                || ! $inputField->getType() instanceof NonNull
+            ) {
+                continue;
+            }
+
+            $value[$inputField->name] = $this->inputSkeleton($inputField->getType(), $depth + 1, null, $inputField->name);
+        }
+
+        return $value;
+    }
+
+    /**
      * The example values whose snake_case or camelCase key names an input field.
      *
      * @param  array<string, mixed>  $fields
@@ -1437,7 +1464,7 @@ MD;
 
             foreach ([$key, $camel] as $candidate) {
                 if (isset($fields[$candidate])) {
-                    $matched[$candidate] = $value;
+                    $matched[$candidate] = $this->coerce($value, Type::getNamedType($fields[$candidate]->getType())->name);
 
                     continue 2;
                 }
@@ -1448,6 +1475,24 @@ MD;
     }
 
     /**
+     * An example value cast to the scalar a GraphQL input field declares.
+     */
+    private function coerce(mixed $value, string $scalar): mixed
+    {
+        if (! is_scalar($value)) {
+            return $value;
+        }
+
+        return match ($scalar) {
+            'String', 'ID' => is_bool($value) ? ($value ? '1' : '0') : (string) $value,
+            'Int' => is_numeric($value) ? (int) $value : $value,
+            'Float' => is_numeric($value) ? (float) $value : $value,
+            'Boolean' => (bool) $value,
+            default => $value,
+        };
+    }
+
+    /**
      * A placeholder value for a GraphQL argument, guessed from its name and scalar type.
      */
     private function dummyValue(string $name, string $scalar): mixed
@@ -1455,6 +1500,7 @@ MD;
         $lower = strtolower($name);
 
         return match (true) {
+            $scalar === 'Iterable' => $this->iterableValue($lower),
             $scalar === 'Int' => str_contains($lower, 'quantity') || str_contains($lower, 'qty') ? 1 : 1,
             $scalar === 'Float' => str_contains($lower, 'price') || str_contains($lower, 'amount') ? 100 : 1,
             $scalar === 'Boolean' => false,
@@ -1472,6 +1518,20 @@ MD;
             str_contains($lower, 'description') || str_contains($lower, 'comment') || str_contains($lower, 'message') || str_contains($lower, 'content') => 'Sample text',
             str_contains($lower, 'name') || str_contains($lower, 'title') || str_contains($lower, 'label') => 'Sample',
             default => 'sample',
+        };
+    }
+
+    /**
+     * A list or map value for an `Iterable` argument, guessed from its name.
+     *
+     * @return array<int|string, mixed>
+     */
+    private function iterableValue(string $name): array
+    {
+        return match (true) {
+            $name === 'permissions' => ['catalog.products'],
+            in_array($name, ['indices', 'ids', 'channels', 'customergroups', 'customer_groups', 'locales', 'currencies', 'taxrates', 'inventorysources', 'inventory_sources', 'channelids', 'sectionids', 'categories'], true) => [1],
+            default => [],
         };
     }
 

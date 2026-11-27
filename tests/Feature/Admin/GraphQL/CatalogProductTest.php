@@ -306,6 +306,32 @@ class CatalogProductTest extends AdminApiTestCase
     }
 
     /**
+     * Test mutation mass update status with an unknown product returns a not-found error.
+     */
+    public function test_mutation_mass_update_status_unknown_product_returns_not_found(): void
+    {
+        $admin = $this->createAdmin();
+        $missingId = (int) \DB::table('products')->max('id') + 1000;
+        $mutation = <<<'GQL'
+            mutation($input: createAdminCatalogProductMassUpdateStatusInput!) {
+              createAdminCatalogProductMassUpdateStatus(input: $input) {
+                adminCatalogProductMassUpdateStatus { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'indices' => [$missingId],
+                'value' => 0,
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors.0.message'))->toBe(__('bagistoapi::app.admin.product.not-found'));
+    }
+
+    /**
      * Test mutation mass update status invalid value returns errors.
      */
     public function test_mutation_mass_update_status_invalid_value_returns_errors(): void

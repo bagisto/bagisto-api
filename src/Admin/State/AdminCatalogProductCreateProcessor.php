@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\DB;
@@ -134,7 +135,7 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
             );
         }
 
-        $isGraphQL = ! empty($context['graphql_operation_name']);
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL) {
             return $this->detailProvider->loadEloquentForGraphQL((int) $product->id)

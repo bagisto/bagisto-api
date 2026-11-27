@@ -343,9 +343,9 @@ class CustomerAuthTest extends GraphQLTestCase
     }
 
     /**
-     * Test forgot password for nonexistent email.
+     * Test forgot password answers a nonexistent email with the usual success.
      */
-    public function test_forgot_password_for_nonexistent_email(): void
+    public function test_forgot_password_answers_a_nonexistent_email_with_the_usual_success(): void
     {
         $this->seedRequiredData();
 
@@ -361,13 +361,11 @@ class CustomerAuthTest extends GraphQLTestCase
             'input' => ['email' => 'does-not-exist-'.uniqid().'@example.com'],
         ]);
 
-        $data = $response->json('data.createForgotPassword.forgotPassword');
-        $errors = $response->json('errors');
-
-        $this->assertTrue(
-            ! empty($errors) || ($data && isset($data['success']) && $data['success'] === false),
-            'Forgot password for non-existent email should indicate failure'
-        );
+        $this->assertNull($response->json('errors'));
+        $this->assertSame([
+            'success' => true,
+            'message' => __('bagistoapi::app.graphql.forgot-password.reset-link-sent'),
+        ], $response->json('data.createForgotPassword.forgotPassword'));
     }
 
     // ============================================================================

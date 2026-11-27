@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => '无效的输入数据',
             'email-required' => '需要电子邮箱',
             'reset-link-sent' => '重置链接已成功发送至您的电子邮箱',
-            'email-not-found' => '未找到电子邮箱地址',
-            'throttled' => '重置尝试次数过多。请稍候再试。',
-            'error-sending-reset-link' => '发送重置链接时发生错误',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => '删除账户需要提供您的密码',
             'delete-password-incorrect' => '您输入的密码不正确',
             'delete-has-active-orders' => '您有待处理或处理中的订单，无法删除账户',
+            'delete-success' => '您的账户已成功删除。',
             'unauthenticated' => '未通过身份验证。请登录以执行此操作',
             'id-required' => '需要客户ID',
             'invalid-id-format' => 'ID格式无效。应为类似"/api/admin/customers/1"的IRI格式或数字ID',
@@ -363,6 +361,22 @@ return [
             'payment-method-error' => '保存付款方式时出错',
             'order-placed' => '订单已成功提交',
             'order-redirect-required' => '此支付方式需要购物者在支付网关上完成付款。请将其引导至 redirectUrl；网关确认付款后才会创建订单。',
+            'payment-started' => '支付已开始。请将顾客转到支付网关。',
+            'payment-not-online' => '所选支付方式无需在线支付。请直接下单。',
+            'payment-not-configured' => '此支付方式尚未配置。',
+            'payment-currency-unsupported' => '此支付方式不支持店铺货币。支持的货币：:currencies。',
+            'payment-method-mismatch' => '支付方式与购物车中保存的不一致。',
+            'payment-initiation-failed' => '无法开始支付。请重试或选择其他支付方式。',
+            'paypal-smart-button-payment-flow' => 'PayPal Smart Button 支付通过 checkout-payments/initiate 开始，通过 checkout-payments/confirm 确认，不能直接下单。',
+            'payment-reference-not-found' => '未找到此参考号对应的支付。',
+            'payment-reference-required' => '请发送开始支付时返回的参考号。',
+            'payment-no-confirmation' => '所选支付方式无需确认。',
+            'razorpay-fields-required' => '需要 Razorpay 订单 ID、支付 ID 和签名。',
+            'paypal-order-id-required' => '确认 PayPal Smart Button 支付需要 PayPal 订单 ID。',
+            'payment-not-verified' => '无法验证支付。',
+            'payment-confirmed' => '支付已确认，订单已下达。',
+            'payment-pending' => '支付尚未完成，未下达任何订单。',
+            'payment-awaiting-confirmation' => '订单已下达。PayPal 尚未确认支付。',
             'order-creation-failed' => '订单创建失败：订单ID为空或订单未保存',
             'order-retrieval-failed' => '未能获取已创建的订单',
             'order-creation-error' => '未能创建订单',
@@ -453,6 +467,15 @@ return [
             'id-required' => '需要语言区域ID',
             'invalid-id-format' => 'ID格式无效。应为类似"/api/shop/locales/1"的IRI格式或数字ID',
             'not-found' => '未找到语言区域',
+        ],
+
+        'search' => [
+            'query-required' => '搜索关键词为必填项。',
+        ],
+
+        'url-resolver' => [
+            'path-required' => '路径为必填项。',
+            'not-found' => '没有与此路径匹配的内容。',
         ],
 
         'category' => [
@@ -1231,6 +1254,8 @@ return [
             'description-required-for-mode' => '所选显示模式需要描述。',
             'cannot-delete-root' => '根分类和渠道根分类无法删除。',
             'cannot-delete-channel-root' => '此分类是渠道根分类，无法删除。',
+            'parent-not-found' => '未找到父类别。',
+            'cannot-move-into-self' => '类别不能移动到其自身或其子类别中。',
             'delete-failed' => '无法删除分类。',
             'no-permission' => '您没有管理分类的权限。',
             'mass-delete-success' => '分类已成功删除。',
@@ -1274,6 +1299,7 @@ return [
             'group-name-required' => '每个属性组都必须有名称。',
             'group-column-invalid' => '每个属性组的列必须为1或2。',
             'group-name-duplicate' => '属性组名称在属性族内必须唯一。',
+            'group-not-found' => '在此属性族中未找到属性组。',
             'update-failed' => '无法更新属性族。',
             'create-failed' => '无法创建属性族。',
             'default-delete-error' => '默认属性族无法删除。',

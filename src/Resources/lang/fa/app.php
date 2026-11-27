@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'داده‌های ورودی نامعتبر',
             'email-required' => 'ایمیل الزامی است',
             'reset-link-sent' => 'لینک بازنشانی با موفقیت به ایمیل شما ارسال شد',
-            'email-not-found' => 'آدرس ایمیل یافت نشد',
-            'throttled' => 'تلاش‌های بازنشانی بیش از حد. لطفاً قبل از تلاش مجدد صبر کنید.',
-            'error-sending-reset-link' => 'هنگام ارسال لینک بازنشانی خطایی رخ داد',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'برای حذف حساب، رمز عبور شما الزامی است',
             'delete-password-incorrect' => 'رمز عبوری که وارد کردید نادرست است',
             'delete-has-active-orders' => 'تا زمانی که سفارش در انتظار یا در حال پردازش دارید، حساب شما قابل حذف نیست',
+            'delete-success' => 'حساب شما با موفقیت حذف شد.',
             'unauthenticated' => 'احراز هویت نشده. لطفاً برای انجام این عمل وارد شوید',
             'id-required' => 'شناسه مشتری الزامی است',
             'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/admin/customers/1" یا شناسه عددی انتظار می‌رود',
@@ -363,6 +361,22 @@ return [
             'payment-method-error' => 'خطا در ذخیره روش پرداخت',
             'order-placed' => 'سفارش با موفقیت ثبت شد',
             'order-redirect-required' => 'این روش پرداخت نیاز دارد که خریدار پرداخت را در درگاه تکمیل کند. او را به redirectUrl هدایت کنید؛ سفارش پس از تأیید پرداخت توسط درگاه ایجاد می‌شود.',
+            'payment-started' => 'پرداخت آغاز شد. مشتری را به درگاه بفرستید.',
+            'payment-not-online' => 'روش پرداخت انتخاب‌شده نیازی به پرداخت آنلاین ندارد. سفارش را مستقیماً ثبت کنید.',
+            'payment-not-configured' => 'این روش پرداخت پیکربندی نشده است.',
+            'payment-currency-unsupported' => 'این روش پرداخت از ارز فروشگاه پشتیبانی نمی‌کند. ارزهای پشتیبانی‌شده: :currencies.',
+            'payment-method-mismatch' => 'روش پرداخت با روش ذخیره‌شده در سبد خرید مطابقت ندارد.',
+            'payment-initiation-failed' => 'پرداخت آغاز نشد. لطفاً دوباره تلاش کنید یا روش پرداخت دیگری انتخاب کنید.',
+            'paypal-smart-button-payment-flow' => 'پرداخت‌های PayPal Smart Button با checkout-payments/initiate آغاز و با checkout-payments/confirm تأیید می‌شوند و مستقیماً ثبت نمی‌شوند.',
+            'payment-reference-not-found' => 'هیچ پرداختی برای این مرجع یافت نشد.',
+            'payment-reference-required' => 'مرجعی را که هنگام آغاز پرداخت برگردانده شد ارسال کنید.',
+            'payment-no-confirmation' => 'روش پرداخت انتخاب‌شده نیازی به تأیید ندارد.',
+            'razorpay-fields-required' => 'شناسه سفارش، شناسه پرداخت و امضای Razorpay الزامی است.',
+            'paypal-order-id-required' => 'برای تأیید پرداخت PayPal Smart Button، شناسه سفارش PayPal الزامی است.',
+            'payment-not-verified' => 'پرداخت تأیید نشد.',
+            'payment-confirmed' => 'پرداخت تأیید و سفارش ثبت شد.',
+            'payment-pending' => 'پرداخت هنوز کامل نشده است. هیچ سفارشی ثبت نشده است.',
+            'payment-awaiting-confirmation' => 'سفارش ثبت شده است. PayPal هنوز پرداخت را تأیید نکرده است.',
             'order-creation-failed' => 'ایجاد سفارش ناموفق بود: شناسه سفارش تهی است یا سفارش ذخیره نشده است',
             'order-retrieval-failed' => 'بازیابی سفارش ایجاد شده ناموفق بود',
             'order-creation-error' => 'ایجاد سفارش ناموفق بود',
@@ -453,6 +467,15 @@ return [
             'id-required' => 'شناسه زبان الزامی است',
             'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/locales/1" یا شناسه عددی انتظار می‌رود',
             'not-found' => 'زبان یافت نشد',
+        ],
+
+        'search' => [
+            'query-required' => 'عبارت جستجو الزامی است.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'مسیر الزامی است.',
+            'not-found' => 'هیچ چیزی با این مسیر مطابقت ندارد.',
         ],
 
         'category' => [
@@ -1231,6 +1254,8 @@ return [
             'description-required-for-mode' => 'برای حالت نمایش انتخاب‌شده، توضیحات الزامی است.',
             'cannot-delete-root' => 'دسته‌بندی ریشه و دسته‌بندی‌های ریشه کانال قابل حذف نیستند.',
             'cannot-delete-channel-root' => 'این دسته‌بندی ریشه یک کانال است و قابل حذف نیست.',
+            'parent-not-found' => 'دسته والد یافت نشد.',
+            'cannot-move-into-self' => 'یک دسته را نمی‌توان به خودش یا یکی از زیردسته‌هایش منتقل کرد.',
             'delete-failed' => 'حذف دسته‌بندی ممکن نبود.',
             'no-permission' => 'شما مجوز مدیریت دسته‌بندی‌ها را ندارید.',
             'mass-delete-success' => 'دسته‌بندی‌ها با موفقیت حذف شدند.',
@@ -1274,6 +1299,7 @@ return [
             'group-name-required' => 'هر گروه ویژگی باید یک نام داشته باشد.',
             'group-column-invalid' => 'ستون هر گروه ویژگی باید 1 یا 2 باشد.',
             'group-name-duplicate' => 'نام گروه ویژگی باید در خانواده ویژگی یکتا باشد.',
+            'group-not-found' => 'گروه ویژگی در این خانواده ویژگی یافت نشد.',
             'update-failed' => 'به‌روزرسانی خانواده ویژگی ممکن نبود.',
             'create-failed' => 'ایجاد خانواده ویژگی ممکن نبود.',
             'default-delete-error' => 'خانواده ویژگی پیش‌فرض قابل حذف نیست.',

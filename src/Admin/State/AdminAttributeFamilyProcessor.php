@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Webkul\Attribute\Models\AttributeFamily;
 use Webkul\Attribute\Repositories\AttributeFamilyRepository;
+use Webkul\Attribute\Repositories\AttributeRepository;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeFamilyCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeFamilyUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
@@ -31,6 +32,7 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
      */
     public function __construct(
         protected AttributeFamilyRepository $attributeFamilyRepository,
+        protected AttributeRepository $attributeRepository,
         protected AdminAttributeFamilyItemProvider $itemProvider,
         protected CoreCapabilities $capabilities,
     ) {}
@@ -128,6 +130,8 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         }
 
         $this->validateFamilyPayload($input, $id);
+
+        $this->assertGroupsAndAttributesExist($family, $input['attribute_groups'] ?? []);
 
         Event::dispatch('catalog.attribute_family.update.before', $id);
 
@@ -233,6 +237,41 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
                 throw new InvalidInputException(__('bagistoapi::app.admin.family.group-name-duplicate'), 422);
             }
             $seen[$name] = true;
+        }
+    }
+
+    /**
+     * Refuse an update that names a group outside this family or an attribute that does not exist.
+     */
+    protected function assertGroupsAndAttributesExist(AttributeFamily $family, array $groups): void
+    {
+        $familyGroupIds = $family->attribute_groups()->pluck('id')->map(fn ($id) => (string) $id)->all();
+
+        $attributeIds = [];
+
+        foreach ($groups as $groupKey => $group) {
+            if (
+                ! str_contains((string) $groupKey, 'group_')
+                && ! in_array((string) $groupKey, $familyGroupIds, true)
+            ) {
+                throw new ResourceNotFoundException(__('bagistoapi::app.admin.family.group-not-found'));
+            }
+
+            foreach ($group['custom_attributes'] ?? [] as $attribute) {
+                $attributeIds[] = (int) ($attribute['id'] ?? 0);
+            }
+        }
+
+        $attributeIds = array_unique($attributeIds);
+
+        if (empty($attributeIds)) {
+            return;
+        }
+
+        $found = $this->attributeRepository->findWhereIn('id', $attributeIds)->pluck('id')->all();
+
+        if (count(array_diff($attributeIds, $found))) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.attribute.not-found'));
         }
     }
 

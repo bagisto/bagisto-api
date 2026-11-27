@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Nieprawidłowe dane wejściowe',
             'email-required' => 'Adres e-mail jest wymagany',
             'reset-link-sent' => 'Link do resetowania został pomyślnie wysłany na Twój adres e-mail',
-            'email-not-found' => 'Adres e-mail nie znaleziony',
-            'throttled' => 'Zbyt wiele prób resetowania. Odczekaj chwilę przed ponowną próbą.',
-            'error-sending-reset-link' => 'Wystąpił błąd podczas wysyłania linku resetującego',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Do usunięcia konta wymagane jest Twoje hasło',
             'delete-password-incorrect' => 'Wprowadzone hasło jest nieprawidłowe',
             'delete-has-active-orders' => 'Nie można usunąć konta, dopóki masz zamówienia oczekujące lub w trakcie realizacji',
+            'delete-success' => 'Twoje konto zostało pomyślnie usunięte.',
             'unauthenticated' => 'Nieuwierzytelniony. Zaloguj się, aby wykonać tę akcję',
             'id-required' => 'Identyfikator klienta jest wymagany',
             'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/admin/customers/1" lub identyfikator liczbowy',
@@ -363,6 +361,22 @@ return [
             'payment-method-error' => 'Błąd podczas zapisywania metody płatności',
             'order-placed' => 'Zamówienie pomyślnie złożone',
             'order-redirect-required' => 'Ta metoda płatności wymaga, aby kupujący dokończył płatność w bramce płatniczej. Przekieruj go na redirectUrl; zamówienie zostanie utworzone, gdy bramka potwierdzi płatność.',
+            'payment-started' => 'Płatność rozpoczęta. Przekieruj klienta do bramki płatności.',
+            'payment-not-online' => 'Wybrana metoda płatności nie wymaga płatności online. Złóż zamówienie bezpośrednio.',
+            'payment-not-configured' => 'Ta metoda płatności nie jest skonfigurowana.',
+            'payment-currency-unsupported' => 'Ta metoda płatności nie obsługuje waluty sklepu. Obsługiwane waluty: :currencies.',
+            'payment-method-mismatch' => 'Metoda płatności nie zgadza się z zapisaną w koszyku.',
+            'payment-initiation-failed' => 'Nie udało się rozpocząć płatności. Spróbuj ponownie lub wybierz inną metodę płatności.',
+            'paypal-smart-button-payment-flow' => 'Płatności PayPal Smart Button rozpoczyna się przez checkout-payments/initiate i potwierdza przez checkout-payments/confirm, a nie składa bezpośrednio.',
+            'payment-reference-not-found' => 'Nie znaleziono płatności dla tego odniesienia.',
+            'payment-reference-required' => 'Wyślij odniesienie zwrócone przy rozpoczęciu płatności.',
+            'payment-no-confirmation' => 'Wybrana metoda płatności nie wymaga potwierdzenia.',
+            'razorpay-fields-required' => 'Wymagane są identyfikator zamówienia, identyfikator płatności i podpis Razorpay.',
+            'paypal-order-id-required' => 'Identyfikator zamówienia PayPal jest wymagany do potwierdzenia płatności PayPal Smart Button.',
+            'payment-not-verified' => 'Nie udało się zweryfikować płatności.',
+            'payment-confirmed' => 'Płatność potwierdzona, zamówienie złożone.',
+            'payment-pending' => 'Płatność nie została jeszcze zakończona. Nie złożono żadnego zamówienia.',
+            'payment-awaiting-confirmation' => 'Zamówienie zostało złożone. PayPal jeszcze nie potwierdził płatności.',
             'order-creation-failed' => 'Tworzenie zamówienia nie powiodło się: identyfikator zamówienia jest pusty lub zamówienie nie zostało zapisane',
             'order-retrieval-failed' => 'Nie udało się pobrać utworzonego zamówienia',
             'order-creation-error' => 'Nie udało się utworzyć zamówienia',
@@ -453,6 +467,15 @@ return [
             'id-required' => 'Identyfikator ustawień regionalnych jest wymagany',
             'invalid-id-format' => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/locales/1" lub identyfikator liczbowy',
             'not-found' => 'Ustawienia regionalne nie znalezione',
+        ],
+
+        'search' => [
+            'query-required' => 'Zapytanie wyszukiwania jest wymagane.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'Ścieżka jest wymagana.',
+            'not-found' => 'Nic nie pasuje do tej ścieżki.',
         ],
 
         'category' => [
@@ -1231,6 +1254,8 @@ return [
             'description-required-for-mode' => 'Dla wybranego trybu wyświetlania wymagany jest opis.',
             'cannot-delete-root' => 'Nie można usunąć kategorii głównej ani kategorii głównych kanałów.',
             'cannot-delete-channel-root' => 'Ta kategoria jest kategorią główną kanału i nie może zostać usunięta.',
+            'parent-not-found' => 'Nie znaleziono kategorii nadrzędnej.',
+            'cannot-move-into-self' => 'Kategorii nie można przenieść do niej samej ani do jednej z jej podkategorii.',
             'delete-failed' => 'Nie udało się usunąć kategorii.',
             'no-permission' => 'Nie masz uprawnień do zarządzania kategoriami.',
             'mass-delete-success' => 'Kategorie pomyślnie usunięte.',
@@ -1274,6 +1299,7 @@ return [
             'group-name-required' => 'Każda grupa atrybutów musi mieć nazwę.',
             'group-column-invalid' => 'Kolumna każdej grupy atrybutów musi mieć wartość 1 lub 2.',
             'group-name-duplicate' => 'Nazwa grupy atrybutów musi być unikalna w obrębie rodziny atrybutów.',
+            'group-not-found' => 'Nie znaleziono grupy atrybutów w tej rodzinie atrybutów.',
             'update-failed' => 'Nie udało się zaktualizować rodziny atrybutów.',
             'create-failed' => 'Nie udało się utworzyć rodziny atrybutów.',
             'default-delete-error' => 'Nie można usunąć domyślnej rodziny atrybutów.',

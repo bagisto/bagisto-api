@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'נתוני קלט לא חוקיים',
             'email-required' => 'כתובת אימייל נדרשת',
             'reset-link-sent' => 'קישור לאיפוס נשלח בהצלחה לאימייל שלך',
-            'email-not-found' => 'כתובת האימייל לא נמצאה',
-            'throttled' => 'יותר מדי ניסיונות איפוס. אנא המתן לפני שתנסה שוב.',
-            'error-sending-reset-link' => 'אירעה שגיאה בעת שליחת קישור האיפוס',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'הסיסמה שלך נדרשת כדי למחוק את החשבון',
             'delete-password-incorrect' => 'הסיסמה שהזנת שגויה',
             'delete-has-active-orders' => 'לא ניתן למחוק את החשבון שלך כל עוד יש לך הזמנות ממתינות או בעיבוד',
+            'delete-success' => 'החשבון שלך נמחק בהצלחה.',
             'unauthenticated' => 'לא מאומת. אנא התחבר כדי לבצע פעולה זו',
             'id-required' => 'מזהה הלקוח נדרש',
             'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/admin/customers/1" או מזהה מספרי',
@@ -363,6 +361,22 @@ return [
             'payment-method-error' => 'שגיאה בשמירת שיטת התשלום',
             'order-placed' => 'ההזמנה בוצעה בהצלחה',
             'order-redirect-required' => 'אמצעי תשלום זה מחייב את הקונה להשלים את התשלום בשער התשלום. הפנה אותו אל redirectUrl; ההזמנה נוצרת לאחר שהשער מאשר את התשלום.',
+            'payment-started' => 'התשלום התחיל. העבירו את הלקוח לשער התשלום.',
+            'payment-not-online' => 'אמצעי התשלום שנבחר אינו דורש תשלום מקוון. בצעו את ההזמנה ישירות.',
+            'payment-not-configured' => 'אמצעי תשלום זה אינו מוגדר.',
+            'payment-currency-unsupported' => 'אמצעי תשלום זה אינו תומך במטבע החנות. מטבעות נתמכים: :currencies.',
+            'payment-method-mismatch' => 'אמצעי התשלום אינו תואם לזה השמור בעגלה.',
+            'payment-initiation-failed' => 'לא ניתן היה להתחיל את התשלום. נסו שוב או בחרו אמצעי תשלום אחר.',
+            'paypal-smart-button-payment-flow' => 'תשלומי PayPal Smart Button מתחילים עם checkout-payments/initiate ומאושרים עם checkout-payments/confirm, ואינם מבוצעים ישירות.',
+            'payment-reference-not-found' => 'לא נמצא תשלום עבור אסמכתה זו.',
+            'payment-reference-required' => 'שלחו את האסמכתה שהוחזרה בעת התחלת התשלום.',
+            'payment-no-confirmation' => 'אמצעי התשלום שנבחר אינו דורש אישור.',
+            'razorpay-fields-required' => 'נדרשים מזהה ההזמנה, מזהה התשלום והחתימה של Razorpay.',
+            'paypal-order-id-required' => 'נדרש מזהה הזמנת PayPal כדי לאשר תשלום PayPal Smart Button.',
+            'payment-not-verified' => 'לא ניתן היה לאמת את התשלום.',
+            'payment-confirmed' => 'התשלום אושר וההזמנה בוצעה.',
+            'payment-pending' => 'התשלום טרם הושלם. לא בוצעה הזמנה.',
+            'payment-awaiting-confirmation' => 'ההזמנה בוצעה. PayPal טרם אישר את התשלום.',
             'order-creation-failed' => 'יצירת ההזמנה נכשלה: מזהה ההזמנה ריק או שההזמנה לא נשמרה',
             'order-retrieval-failed' => 'אחזור ההזמנה שנוצרה נכשל',
             'order-creation-error' => 'יצירת ההזמנה נכשלה',
@@ -453,6 +467,15 @@ return [
             'id-required' => 'מזהה השפה נדרש',
             'invalid-id-format' => 'פורמט מזהה לא חוקי. צפוי פורמט IRI כמו "/api/shop/locales/1" או מזהה מספרי',
             'not-found' => 'השפה לא נמצאה',
+        ],
+
+        'search' => [
+            'query-required' => 'שאילתת החיפוש נדרשת.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'הנתיב נדרש.',
+            'not-found' => 'שום דבר אינו תואם לנתיב זה.',
         ],
 
         'category' => [
@@ -1231,6 +1254,8 @@ return [
             'description-required-for-mode' => 'נדרש תיאור עבור מצב התצוגה שנבחר.',
             'cannot-delete-root' => 'לא ניתן למחוק את קטגוריית השורש ואת קטגוריות השורש של הערוצים.',
             'cannot-delete-channel-root' => 'קטגוריה זו היא שורש של ערוץ ולא ניתן למחוק אותה.',
+            'parent-not-found' => 'קטגוריית האב לא נמצאה.',
+            'cannot-move-into-self' => 'לא ניתן להעביר קטגוריה לתוך עצמה או לאחת מתתי-הקטגוריות שלה.',
             'delete-failed' => 'לא ניתן היה למחוק את הקטגוריה.',
             'no-permission' => 'אין לך הרשאה לנהל קטגוריות.',
             'mass-delete-success' => 'הקטגוריות נמחקו בהצלחה.',
@@ -1274,6 +1299,7 @@ return [
             'group-name-required' => 'לכל קבוצת מאפיינים חייב להיות שם.',
             'group-column-invalid' => 'העמודה של כל קבוצת מאפיינים חייבת להיות 1 או 2.',
             'group-name-duplicate' => 'שם קבוצת מאפיינים חייב להיות ייחודי בתוך משפחת המאפיינים.',
+            'group-not-found' => 'קבוצת המאפיינים לא נמצאה במשפחת המאפיינים הזו.',
             'update-failed' => 'לא ניתן היה לעדכן את משפחת המאפיינים.',
             'create-failed' => 'לא ניתן היה ליצור את משפחת המאפיינים.',
             'default-delete-error' => 'לא ניתן למחוק את משפחת המאפיינים המוגדרת כברירת מחדל.',

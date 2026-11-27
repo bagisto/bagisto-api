@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Dati di input non validi',
             'email-required' => 'L\'email è obbligatoria',
             'reset-link-sent' => 'Link di reimpostazione inviato con successo alla tua email',
-            'email-not-found' => 'Indirizzo email non trovato',
-            'throttled' => 'Troppi tentativi di reimpostazione. Attendi prima di riprovare.',
-            'error-sending-reset-link' => 'Si è verificato un errore durante l\'invio del link di reimpostazione',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'La tua password è obbligatoria per eliminare l\'account',
             'delete-password-incorrect' => 'La password inserita non è corretta',
             'delete-has-active-orders' => 'Il tuo account non può essere eliminato finché hai ordini in sospeso o in elaborazione',
+            'delete-success' => 'Il tuo account è stato eliminato correttamente.',
             'unauthenticated' => 'Non autenticato. Effettua l\'accesso per eseguire questa azione',
             'id-required' => 'L\'ID del cliente è obbligatorio',
             'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/admin/customers/1" o ID numerico',
@@ -363,6 +361,22 @@ return [
             'payment-method-error' => 'Errore durante il salvataggio del metodo di pagamento',
             'order-placed' => 'Ordine effettuato con successo',
             'order-redirect-required' => 'Questo metodo di pagamento richiede che l\'acquirente completi il pagamento sul gateway. Indirizzalo a redirectUrl; l\'ordine viene creato una volta che il gateway conferma il pagamento.',
+            'payment-started' => 'Pagamento avviato. Indirizzi il cliente al gateway.',
+            'payment-not-online' => 'Il metodo di pagamento selezionato non richiede un pagamento online. Effettui l\'ordine direttamente.',
+            'payment-not-configured' => 'Questo metodo di pagamento non è configurato.',
+            'payment-currency-unsupported' => 'Questo metodo di pagamento non supporta la valuta del negozio. Valute supportate: :currencies.',
+            'payment-method-mismatch' => 'Il metodo di pagamento non corrisponde a quello salvato nel carrello.',
+            'payment-initiation-failed' => 'Impossibile avviare il pagamento. Riprovi o scelga un altro metodo di pagamento.',
+            'paypal-smart-button-payment-flow' => 'I pagamenti con PayPal Smart Button si avviano con checkout-payments/initiate e si confermano con checkout-payments/confirm, non si effettuano direttamente.',
+            'payment-reference-not-found' => 'Nessun pagamento trovato per questo riferimento.',
+            'payment-reference-required' => 'Invii il riferimento restituito all\'avvio del pagamento.',
+            'payment-no-confirmation' => 'Il metodo di pagamento selezionato non richiede conferma.',
+            'razorpay-fields-required' => 'Sono obbligatori l\'ID ordine, l\'ID pagamento e la firma di Razorpay.',
+            'paypal-order-id-required' => 'L\'ID ordine PayPal è obbligatorio per confermare un pagamento con PayPal Smart Button.',
+            'payment-not-verified' => 'Impossibile verificare il pagamento.',
+            'payment-confirmed' => 'Pagamento confermato e ordine effettuato.',
+            'payment-pending' => 'Il pagamento non è ancora completato. Nessun ordine è stato effettuato.',
+            'payment-awaiting-confirmation' => 'L\'ordine è stato effettuato. PayPal non ha ancora confermato il pagamento.',
             'order-creation-failed' => 'Creazione dell\'ordine non riuscita: l\'ID dell\'ordine è nullo o l\'ordine non è stato salvato',
             'order-retrieval-failed' => 'Impossibile recuperare l\'ordine creato',
             'order-creation-error' => 'Impossibile creare l\'ordine',
@@ -453,6 +467,15 @@ return [
             'id-required' => 'L\'ID della lingua è obbligatorio',
             'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/locales/1" o ID numerico',
             'not-found' => 'Lingua non trovata',
+        ],
+
+        'search' => [
+            'query-required' => 'La query di ricerca è obbligatoria.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'Il percorso è obbligatorio.',
+            'not-found' => 'Nessun elemento corrisponde a questo percorso.',
         ],
 
         'category' => [
@@ -1231,6 +1254,8 @@ return [
             'description-required-for-mode' => 'È richiesta una descrizione per la modalità di visualizzazione scelta.',
             'cannot-delete-root' => 'Le categorie radice e radice di canale non possono essere eliminate.',
             'cannot-delete-channel-root' => 'Questa categoria è la radice di un canale e non può essere eliminata.',
+            'parent-not-found' => 'Categoria padre non trovata.',
+            'cannot-move-into-self' => 'Una categoria non può essere spostata in sé stessa o in una delle sue sottocategorie.',
             'delete-failed' => 'Impossibile eliminare la categoria.',
             'no-permission' => 'Non hai l\'autorizzazione per gestire le categorie.',
             'mass-delete-success' => 'Categorie eliminate con successo.',
@@ -1274,6 +1299,7 @@ return [
             'group-name-required' => 'Ogni gruppo di attributi deve avere un nome.',
             'group-column-invalid' => 'La colonna di ogni gruppo di attributi deve essere 1 o 2.',
             'group-name-duplicate' => 'Il nome di un gruppo di attributi deve essere univoco all\'interno della famiglia di attributi.',
+            'group-not-found' => 'Gruppo di attributi non trovato in questa famiglia di attributi.',
             'update-failed' => 'Impossibile aggiornare la famiglia di attributi.',
             'create-failed' => 'Impossibile creare la famiglia di attributi.',
             'default-delete-error' => 'La famiglia di attributi predefinita non può essere eliminata.',

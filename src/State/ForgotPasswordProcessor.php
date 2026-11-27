@@ -7,30 +7,23 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Password;
 use Webkul\BagistoApi\Dto\ForgotPasswordInput;
+use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Models\ForgotPassword;
 
 class ForgotPasswordProcessor implements ProcessorInterface
 {
     /**
-     * Send a password reset link to a customer of the current channel.
+     * Send a reset link to a customer of the current channel, answering the same way whether or not the email is known.
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ForgotPassword
     {
-        $defaultResponse = [
-            'success' => false,
-            'message' => '',
-        ];
-
         $isRestPost = $operation instanceof Post;
-        $isGraphQlCreate = $operation->getName() === 'create';
 
         if (
             ! $isRestPost
-            && ! $isGraphQlCreate
+            && $operation->getName() !== 'create'
         ) {
-            $defaultResponse['message'] = __('bagistoapi::app.graphql.forgot-password.invalid-operation');
-
-            return $this->output($defaultResponse);
+            throw new InvalidInputException(__('bagistoapi::app.graphql.forgot-password.invalid-operation'));
         }
 
         if (
@@ -42,70 +35,35 @@ class ForgotPasswordProcessor implements ProcessorInterface
             $data = $input;
         }
 
-        if (! ($data instanceof ForgotPasswordInput)) {
-            $defaultResponse['message'] = __('bagistoapi::app.graphql.forgot-password.invalid-input-data');
-
-            return $this->output($defaultResponse);
+        if (! $data instanceof ForgotPasswordInput) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.forgot-password.invalid-input-data'));
         }
 
         if (empty($data->email)) {
-            $defaultResponse['message'] = __('bagistoapi::app.graphql.forgot-password.email-required');
-
-            return $this->output($defaultResponse);
+            throw new InvalidInputException(__('bagistoapi::app.graphql.forgot-password.email-required'), 422);
         }
 
-        try {
-            $response = $this->broker()->sendResetLink([
-                'email' => $data->email,
-                'channel_id' => core()->getCurrentChannel()->id,
-            ]);
+        $this->sendResetLink($data->email);
 
-            if ($response == Password::RESET_LINK_SENT) {
-                return $this->output([
-                    'success' => true,
-                    'message' => __('bagistoapi::app.graphql.forgot-password.reset-link-sent'),
-                ]);
-            }
-
-            if ($response == Password::RESET_THROTTLED) {
-                return $this->output([
-                    'success' => false,
-                    'message' => __('bagistoapi::app.graphql.forgot-password.throttled'),
-                ]);
-            }
-
-            return $this->output([
-                'success' => false,
-                'message' => __('bagistoapi::app.graphql.forgot-password.email-not-found'),
-            ]);
-
-        } catch (\Exception $exception) {
-            return $this->output([
-                'success' => false,
-                'message' => __('bagistoapi::app.graphql.forgot-password.error-sending-reset-link'),
-            ]);
-        }
-    }
-
-    /**
-     * Get the password broker for customers.
-     */
-    private function broker()
-    {
-        return Password::broker('customers');
-    }
-
-    /**
-     * Build the response object from the result.
-     */
-    private function output(array $data): ForgotPassword
-    {
         $output = new ForgotPassword;
-
-        foreach ($data as $property => $value) {
-            $output->{$property} = $value;
-        }
+        $output->success = true;
+        $output->message = __('bagistoapi::app.graphql.forgot-password.reset-link-sent');
 
         return $output;
+    }
+
+    /**
+     * Ask the customers broker for a reset link, reporting a delivery failure without revealing it.
+     */
+    private function sendResetLink(string $email): void
+    {
+        try {
+            Password::broker('customers')->sendResetLink([
+                'email' => $email,
+                'channel_id' => core()->getCurrentChannel()->id,
+            ]);
+        } catch (\Exception $exception) {
+            report($exception);
+        }
     }
 }

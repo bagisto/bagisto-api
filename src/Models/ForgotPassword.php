@@ -27,7 +27,7 @@ use Webkul\BagistoApi\State\ForgotPasswordProcessor;
             openapi: new Operation(
                 tags: ['Customer Authentication'],
                 summary: 'Request password reset link',
-                description: 'Sends a password reset email to the given customer email if the account exists.',
+                description: 'Sends a password reset email when the address belongs to a customer of the current channel. The answer is the same whether or not it does, so the endpoint cannot be used to discover registered addresses.',
                 requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -61,6 +61,9 @@ use Webkul\BagistoApi\State\ForgotPasswordProcessor;
                                 ],
                             ],
                         ]),
+                    ),
+                    '422' => new Response(
+                        description: 'The email is missing',
                     ),
                 ],
             ),

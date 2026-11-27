@@ -359,6 +359,11 @@ class CustomerOrderDetailDto
     public ?bool $can_cancel = null;
 
     /**
+     * Whether the order holds an item the customer may not cancel, such as a booking without cancellation.
+     */
+    public ?bool $has_non_cancelable_booking = null;
+
+    /**
      * The can reorder.
      */
     public ?bool $can_reorder = null;

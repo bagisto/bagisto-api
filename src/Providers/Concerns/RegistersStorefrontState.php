@@ -46,6 +46,7 @@ use Webkul\BagistoApi\State\ReorderProcessor;
 use Webkul\BagistoApi\State\WishlistProcessor;
 use Webkul\BagistoApi\State\WishlistProvider;
 use Webkul\BagistoApi\Support\CartOptionFileStaging;
+use Webkul\Category\Repositories\CategoryRepository;
 use Webkul\EUWithdrawal\Services\WithdrawalService;
 use Webkul\RMA\Helpers\Helper;
 use Webkul\RMA\Repositories\RMAAdditionalFieldRepository;
@@ -289,7 +290,8 @@ trait RegistersStorefrontState
 
         $this->app->singleton(FilterableAttributesProvider::class, function ($app) {
             return new FilterableAttributesProvider(
-                $app->make(Pagination::class)
+                $app->make(Pagination::class),
+                $app->make(CategoryRepository::class),
             );
         });
 

@@ -47,9 +47,9 @@ export const SHOP_CART_MESSAGES = {
   TOKEN_IS_VALID: 'Token is valid',
   UNAUTHENTICATED: 'Unauthenticated. Please login to perform this action',
   INVALID_PAYMENT_METHOD: 'Invalid or unavailable payment method',
-  ORDER_REDIRECT_REQUIRED:
-    'This payment method requires the shopper to complete payment on the gateway. Send them to redirectUrl; the order is created once the gateway confirms the payment.',
-  STRIPE_INVALID_SESSION: 'Payment session is invalid.',
+  PAYMENT_STARTED: 'Payment started. Hand the customer to the gateway.',
+  PAYMENT_NOT_ONLINE: 'The selected payment method needs no online payment. Place the order directly.',
+  PAYMENT_NO_CONFIRMATION: 'The selected payment method needs no confirmation.',
   STRIPE_SESSION_INVALID: 'Payment session has expired or is invalid.',
   ORDER_NOT_FOUND: (orderId: number | string) => `Customer order with ID "${orderId}" not found`,
   COMPARE_ITEM_NOT_FOUND: 'Compare item not found',
@@ -403,6 +403,26 @@ export async function choosePaymentMethod(request: APIRequestContext, token: str
 
   expect(response.status(), `saving payment method ${method} failed: ${JSON.stringify(body)}`).toBe(201);
   expect(body?.success, JSON.stringify(body)).toBe(true);
+}
+
+export const OFFLINE_PAYMENT_METHODS = ['cashondelivery', 'moneytransfer'];
+
+export async function prepareOfflinePaymentCart(request: APIRequestContext): Promise<string> {
+  const [productId] = await findSaleableSimpleProducts(request, 1);
+  const customer = await registerShopCustomer(request);
+
+  await addCartLine(request, customer.token, productId, 1);
+  await saveCheckoutAddress(request, customer.token, buildBilling(uniqueSuffix()));
+  await chooseFirstShippingMethod(request, customer.token);
+
+  const available = await listPaymentMethodCodes(request, customer.token);
+  const offline = OFFLINE_PAYMENT_METHODS.find((method) => available.includes(method));
+
+  test.skip(!offline, 'no offline payment method is available on this store');
+
+  await choosePaymentMethod(request, customer.token, offline!);
+
+  return customer.token;
 }
 
 export async function placeCustomerOrder(

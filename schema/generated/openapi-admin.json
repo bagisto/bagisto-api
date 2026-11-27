@@ -7562,7 +7562,7 @@
                         "deprecated": false,
                         "schema": {
                             "type": "integer",
-                            "example": 12
+                            "example": 23
                         },
                         "style": "simple",
                         "explode": false
@@ -7739,7 +7739,7 @@
                         "deprecated": false,
                         "schema": {
                             "type": "integer",
-                            "example": 12
+                            "example": 23
                         },
                         "style": "simple",
                         "explode": false
@@ -7924,7 +7924,7 @@
                         "deprecated": false,
                         "schema": {
                             "type": "integer",
-                            "example": 12
+                            "example": 23
                         },
                         "style": "simple",
                         "explode": false
@@ -16355,8 +16355,8 @@
                             "application/json": {
                                 "example": {
                                     "id": 5,
-                                    "code": "wholesale",
-                                    "name": "Wholesale",
+                                    "code": "vip_buyers",
+                                    "name": "VIP Buyers",
                                     "isUserDefined": 1,
                                     "customersCount": null,
                                     "createdAt": "2026-06-24T10:15:00+00:00",
@@ -16460,11 +16460,11 @@
                                 "properties": {
                                     "code": {
                                         "type": "string",
-                                        "example": "wholesale"
+                                        "example": "vip_buyers"
                                     },
                                     "name": {
                                         "type": "string",
-                                        "example": "Wholesale"
+                                        "example": "VIP Buyers"
                                     }
                                 }
                             }
@@ -16770,8 +16770,8 @@
                             "application/json": {
                                 "example": {
                                     "id": 5,
-                                    "code": "wholesale",
-                                    "name": "Wholesale Buyers",
+                                    "code": "vip_buyers",
+                                    "name": "VIP Buyers",
                                     "isUserDefined": 1,
                                     "customersCount": null,
                                     "createdAt": "2026-05-01T09:00:00+00:00",
@@ -16902,8 +16902,7 @@
                                 }
                             },
                             "example": {
-                                "code": "wholesale",
-                                "name": "Wholesale Buyers"
+                                "name": "General Customers"
                             }
                         }
                     },
@@ -25729,9 +25728,9 @@
                                         "example": 1
                                     },
                                     "discount_step": {
-                                        "type": "integer",
+                                        "type": "string",
                                         "description": "Buy-X step (buy_x_get_y).",
-                                        "example": 0
+                                        "example": "0"
                                     },
                                     "apply_to_shipping": {
                                         "type": "integer",
@@ -27165,8 +27164,8 @@
                                         "example": 1
                                     },
                                     "discount_step": {
-                                        "type": "integer",
-                                        "example": 0
+                                        "type": "string",
+                                        "example": "0"
                                     },
                                     "apply_to_shipping": {
                                         "type": "integer",

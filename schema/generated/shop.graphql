@@ -97,6 +97,9 @@ type Query {
 
   "Attribute Filters for the category or product grid page"
   categoryAttributeFilters(
+    "Category ID; takes precedence over categorySlug"
+    categoryId: Int
+
     categorySlug: String
 
     "Number of items to return from the start"
@@ -168,6 +171,9 @@ type Query {
 
   "Get available shipping rates for a cart by token"
   collectionShippingRates: [ShippingRates]
+
+  "List the attributes the storefront compare page renders as comparison rows."
+  compareAttributes: [CompareAttribute]
 
   "One compare-list item of the authenticated customer; another customer's item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   compareItem(id: ID!): CompareItem
@@ -748,6 +754,15 @@ type Query {
     order: String
   ): [ReturnableOrder]
 
+  "The redirect URL set on a search term, or null, plus the \"did you mean\" suggestion."
+  searchRedirect(
+    "The search term."
+    query: String!
+
+    "Pass false to skip the \"did you mean\" lookup."
+    suggest: Boolean
+  ): SearchRedirect
+
   "One active theme section of the current channel's theme; a switched-off section or one of another channel or theme is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
   section(id: ID!): Section
 
@@ -779,6 +794,9 @@ type Query {
     "Only children of this category will be returned, usually a root category."
     parentId: Int
   ): [Category]
+
+  "Resolve a storefront path to a category, a product or a redirect."
+  urlResolver(path: String!): UrlResolverItem
 
   "One wishlist item of the authenticated customer on the current channel; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
   wishlist(id: ID!): Wishlist
@@ -1376,6 +1394,7 @@ type CheckoutAddress implements Node {
   billingPhoneNumber: String
   billingPostcode: String
   billingState: String
+  billingVatId: String
   cartToken: String
   customerId: Int
   id: ID!
@@ -1397,6 +1416,16 @@ type CheckoutAddress implements Node {
 type CheckoutMessage implements Node {
   id: ID!
   message: String
+}
+
+"List the attributes the storefront compare page renders as comparison rows."
+type CompareAttribute implements Node {
+  _id: Int
+  adminName: String
+  code: String
+  id: ID!
+  name: String
+  type: String
 }
 
 "One compare-list item of the authenticated customer; another customer's item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
@@ -2923,6 +2952,7 @@ type CustomerOrder implements Node {
   grandTotal: Float
   grandTotalInvoiced: Float
   grandTotalRefunded: Float
+  hasNonCancelableBooking: Boolean
   id: ID!
   incrementId: String!
   invoices(
@@ -4082,6 +4112,14 @@ type ReturnableOrder implements Node {
   totalReturnedQty: Int
 }
 
+"The redirect URL set on a search term, or null, plus the \"did you mean\" suggestion."
+type SearchRedirect implements Node {
+  id: ID!
+  query: String
+  redirectUrl: String
+  suggestion: String
+}
+
 "One active theme section of the current channel's theme; a switched-off section or one of another channel or theme is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header."
 type Section implements Node {
   _id: Int!
@@ -4233,6 +4271,24 @@ type Theme implements Node {
   sectionTypes: Iterable!
 }
 
+"Resolve a storefront path to a category, a product or a redirect."
+type UrlResolverItem implements Node {
+  "The category or product id, for those types."
+  entityId: Int
+
+  id: ID!
+  path: String
+
+  "HTTP status of the redirect, 301 or 302."
+  redirectType: Int
+
+  "Where to redirect, for the redirect type."
+  targetPath: String
+
+  "category, product, redirect or home."
+  type: String
+}
+
 "One wishlist item of the authenticated customer on the current channel; any other item is not found. Pass the IRI or the numeric ID as `id`; an unknown ID is an error. Needs the X-STOREFRONT-KEY header and a customer Bearer token."
 type Wishlist implements Node {
   _id: Int!
@@ -4306,13 +4362,13 @@ type Mutation {
   "Create order from cart. Validates all required fields and creates order. Returns order ID and redirect URL if payment redirect required."
   createCheckoutOrder(input: createCheckoutOrderInput!): createCheckoutOrderPayload
 
-  "Verify a Stripe Checkout Session server-side and return the order for the bearer cart, placing it once when it does not exist yet."
+  "Return the order of a payment started with createCheckoutPaymentSession, placing it after a verified Razorpay or PayPal Smart Button payment."
   createCheckoutPaymentConfirmation(input: createCheckoutPaymentConfirmationInput!): createCheckoutPaymentConfirmationPayload
 
   "Save selected payment method for checkout. Returns success status and message."
   createCheckoutPaymentMethod(input: createCheckoutPaymentMethodInput!): createCheckoutPaymentMethodPayload
 
-  "Create a Stripe Checkout Session for the bearer cart and return its id and payment page URL."
+  "Start payment for the online payment method of the bearer cart and return how to hand the customer to the gateway."
   createCheckoutPaymentSession(input: createCheckoutPaymentSessionInput!): createCheckoutPaymentSessionPayload
 
   "Save selected shipping method for checkout. Returns success status and message."
@@ -5164,6 +5220,9 @@ input createCheckoutAddressInput {
 
   "Billing state"
   billingState: String
+
+  "Billing VAT id, validated against the billing country"
+  billingVatId: String
   clientMutationId: String
 
   "Payment cancel callback URL"
@@ -5234,6 +5293,7 @@ type createCheckoutAddressPayloadData implements Node {
   billingPhoneNumber: String
   billingPostcode: String
   billingState: String
+  billingVatId: String
   cartToken: String
   customerId: Int
   id: ID!
@@ -5282,6 +5342,9 @@ input createCheckoutOrderInput {
 
   "Billing state"
   billingState: String
+
+  "Billing VAT id, validated against the billing country"
+  billingVatId: String
   clientMutationId: String
 
   "Payment cancel callback URL"
@@ -5360,26 +5423,44 @@ type createCheckoutOrderPayloadData implements Node {
   success: Boolean
 }
 
-"Verify a Stripe Checkout Session server-side and return the order for the bearer cart, placing it once when it does not exist yet."
+"Return the order of a payment started with createCheckoutPaymentSession, placing it after a verified Razorpay or PayPal Smart Button payment."
 input createCheckoutPaymentConfirmationInput {
   clientMutationId: String
 
-  "Stripe Checkout Session ID returned by the gateway."
+  "PayPal Smart Button only: the PayPal order id the customer approved, the sdkData.orderId returned when the payment was started."
+  paypalOrderId: String
+
+  "Razorpay only: razorpay_order_id from the Razorpay checkout response."
+  razorpayOrderId: String
+
+  "Razorpay only: razorpay_payment_id from the Razorpay checkout response."
+  razorpayPaymentId: String
+
+  "Razorpay only: razorpay_signature from the Razorpay checkout response."
+  razorpaySignature: String
+
+  "The reference returned by checkout-payments/initiate. Send it once the WebView reaches successUrl or failureUrl to read the order the gateway placed; with any method it returns the order already placed for the cart."
+  reference: String
+
+  "Stripe only: the Stripe Checkout Session ID returned when the payment was started."
   sessionId: String
 }
 
-"Verify a Stripe Checkout Session server-side and return the order for the bearer cart, placing it once when it does not exist yet."
+"Return the order of a payment started with createCheckoutPaymentSession, placing it after a verified Razorpay or PayPal Smart Button payment."
 type createCheckoutPaymentConfirmationPayload {
   checkoutPaymentConfirmation: createCheckoutPaymentConfirmationPayloadData
   clientMutationId: String
 }
 
-"Verify a Stripe Checkout Session server-side and return the order for the bearer cart, placing it once when it does not exist yet."
+"Return the order of a payment started with createCheckoutPaymentSession, placing it after a verified Razorpay or PayPal Smart Button payment."
 type createCheckoutPaymentConfirmationPayloadData implements Node {
   cartId: Int
   id: ID!
   message: String!
   orderId: String
+  orderIncrementId: String
+  paymentStatus: String
+  status: String
   success: Boolean!
 }
 
@@ -5414,6 +5495,9 @@ input createCheckoutPaymentMethodInput {
 
   "Billing state"
   billingState: String
+
+  "Billing VAT id, validated against the billing country"
+  billingVatId: String
   clientMutationId: String
 
   "Payment cancel callback URL"
@@ -5483,25 +5567,36 @@ type createCheckoutPaymentMethodPayloadData implements Node {
   success: Boolean!
 }
 
-"Create a Stripe Checkout Session for the bearer cart and return its id and payment page URL."
+"Start payment for the online payment method of the bearer cart and return how to hand the customer to the gateway."
 input createCheckoutPaymentSessionInput {
   clientMutationId: String
+
+  "Optional. When sent, it must match the payment method saved on the cart."
+  paymentMethod: String
 }
 
-"Create a Stripe Checkout Session for the bearer cart and return its id and payment page URL."
+"Start payment for the online payment method of the bearer cart and return how to hand the customer to the gateway."
 type createCheckoutPaymentSessionPayload {
   checkoutPaymentSession: createCheckoutPaymentSessionPayloadData
   clientMutationId: String
 }
 
-"Create a Stripe Checkout Session for the bearer cart and return its id and payment page URL."
+"Start payment for the online payment method of the bearer cart and return how to hand the customer to the gateway."
 type createCheckoutPaymentSessionPayloadData implements Node {
   cartId: Int
+  failureUrl: String
+  formAction: String
+  formFields: Iterable
   id: ID!
   message: String!
+  method: String
   redirectUrl: String
+  reference: String
+  sdkData: Iterable
   sessionId: String
   success: Boolean!
+  successUrl: String
+  type: String
 }
 
 "Save selected shipping method for checkout. Returns success status and message."
@@ -5535,6 +5630,9 @@ input createCheckoutShippingMethodInput {
 
   "Billing state"
   billingState: String
+
+  "Billing VAT id, validated against the billing country"
+  billingVatId: String
   clientMutationId: String
 
   "Payment cancel callback URL"
@@ -7639,6 +7737,9 @@ input createMutationCheckoutAddressInput {
 
   "Billing state"
   billingState: String
+
+  "Billing VAT id, validated against the billing country"
+  billingVatId: String
   clientMutationId: String
 
   "Payment cancel callback URL"

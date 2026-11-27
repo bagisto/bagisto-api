@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Dades d\'entrada no vàlides',
             'email-required' => 'Es requereix el correu electrònic',
             'reset-link-sent' => 'Enllaç de restabliment enviat correctament al vostre correu electrònic',
-            'email-not-found' => 'Adreça de correu electrònic no trobada',
-            'throttled' => 'Massa intents de restabliment. Espereu abans de tornar-ho a provar.',
-            'error-sending-reset-link' => 'S\'ha produït un error en enviar l\'enllaç de restabliment',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Cal la vostra contrasenya per suprimir el compte',
             'delete-password-incorrect' => 'La contrasenya que heu introduït és incorrecta',
             'delete-has-active-orders' => 'No es pot suprimir el vostre compte mentre tingueu comandes pendents o en procés',
+            'delete-success' => 'El vostre compte s\'ha suprimit correctament.',
             'unauthenticated' => 'No autenticat. Si us plau, inicieu la sessió per realitzar aquesta acció',
             'id-required' => 'Cal l\'ID del client',
             'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/admin/customers/1" o un ID numèric',
@@ -363,6 +361,22 @@ return [
             'payment-method-error' => 'Error en desar el mètode de pagament',
             'order-placed' => 'Comanda realitzada correctament',
             'order-redirect-required' => 'Aquest mètode de pagament requereix que el comprador completi el pagament a la passarel·la. Envieu-lo a redirectUrl; la comanda es crea un cop la passarel·la confirma el pagament.',
+            'payment-started' => 'Pagament iniciat. Envieu el client a la passarel·la.',
+            'payment-not-online' => 'El mètode de pagament seleccionat no necessita pagament en línia. Feu la comanda directament.',
+            'payment-not-configured' => 'Aquest mètode de pagament no està configurat.',
+            'payment-currency-unsupported' => 'Aquest mètode de pagament no admet la moneda de la botiga. Monedes admeses: :currencies.',
+            'payment-method-mismatch' => 'El mètode de pagament no coincideix amb el desat al carretó.',
+            'payment-initiation-failed' => 'No s\'ha pogut iniciar el pagament. Torneu-ho a provar o trieu un altre mètode de pagament.',
+            'paypal-smart-button-payment-flow' => 'Els pagaments amb PayPal Smart Button s\'inicien amb checkout-payments/initiate i es confirmen amb checkout-payments/confirm, no es fan directament.',
+            'payment-reference-not-found' => 'No s\'ha trobat cap pagament per a aquesta referència.',
+            'payment-reference-required' => 'Envieu la referència retornada en iniciar el pagament.',
+            'payment-no-confirmation' => 'El mètode de pagament seleccionat no necessita confirmació.',
+            'razorpay-fields-required' => 'Cal l\'identificador de comanda, l\'identificador de pagament i la signatura de Razorpay.',
+            'paypal-order-id-required' => 'Cal l\'identificador de comanda de PayPal per confirmar un pagament amb PayPal Smart Button.',
+            'payment-not-verified' => 'No s\'ha pogut verificar el pagament.',
+            'payment-confirmed' => 'Pagament confirmat i comanda feta.',
+            'payment-pending' => 'El pagament encara no s\'ha completat. No s\'ha fet cap comanda.',
+            'payment-awaiting-confirmation' => 'La comanda està feta. PayPal encara no ha confirmat el pagament.',
             'order-creation-failed' => 'Ha fallat la creació de la comanda: l\'ID de la comanda és nul o la comanda no s\'ha desat',
             'order-retrieval-failed' => 'No s\'ha pogut recuperar la comanda creada',
             'order-creation-error' => 'No s\'ha pogut crear la comanda',
@@ -453,6 +467,15 @@ return [
             'id-required' => 'Cal l\'ID de la configuració regional',
             'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera el format IRI com "/api/shop/locales/1" o un ID numèric',
             'not-found' => 'Configuració regional no trobada',
+        ],
+
+        'search' => [
+            'query-required' => 'La consulta de cerca és obligatòria.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'El camí és obligatori.',
+            'not-found' => 'No hi ha res que coincideixi amb aquest camí.',
         ],
 
         'category' => [
@@ -1231,6 +1254,8 @@ return [
             'description-required-for-mode' => 'Cal una descripció per al mode de visualització escollit.',
             'cannot-delete-root' => 'Les categories arrel i arrel de canal no es poden suprimir.',
             'cannot-delete-channel-root' => 'Aquesta categoria és l\'arrel d\'un canal i no es pot suprimir.',
+            'parent-not-found' => 'No s\'ha trobat la categoria pare.',
+            'cannot-move-into-self' => 'Una categoria no es pot moure dins d\'ella mateixa ni a una de les seves subcategories.',
             'delete-failed' => 'No s\'ha pogut suprimir la categoria.',
             'no-permission' => 'No teniu permís per gestionar les categories.',
             'mass-delete-success' => 'Categories suprimides correctament.',
@@ -1274,6 +1299,7 @@ return [
             'group-name-required' => 'Cada grup d\'atributs ha de tenir un nom.',
             'group-column-invalid' => 'Cada columna del grup d\'atributs ha de ser 1 o 2.',
             'group-name-duplicate' => 'El nom d\'un grup d\'atributs ha de ser únic dins de la família d\'atributs.',
+            'group-not-found' => 'No s\'ha trobat el grup d\'atributs en aquesta família d\'atributs.',
             'update-failed' => 'No s\'ha pogut actualitzar la família d\'atributs.',
             'create-failed' => 'No s\'ha pogut crear la família d\'atributs.',
             'default-delete-error' => 'La família d\'atributs predeterminada no es pot suprimir.',

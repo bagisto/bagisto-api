@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Ungültige Eingabedaten',
             'email-required' => 'E-Mail ist erforderlich',
             'reset-link-sent' => 'Der Link zum Zurücksetzen wurde erfolgreich an Ihre E-Mail-Adresse gesendet',
-            'email-not-found' => 'E-Mail-Adresse nicht gefunden',
-            'throttled' => 'Zu viele Versuche zum Zurücksetzen. Bitte warten Sie, bevor Sie es erneut versuchen.',
-            'error-sending-reset-link' => 'Beim Senden des Links zum Zurücksetzen ist ein Fehler aufgetreten',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Zum Löschen Ihres Kontos ist Ihr Passwort erforderlich',
             'delete-password-incorrect' => 'Das eingegebene Passwort ist falsch',
             'delete-has-active-orders' => 'Ihr Konto kann nicht gelöscht werden, solange Sie ausstehende oder in Bearbeitung befindliche Bestellungen haben',
+            'delete-success' => 'Ihr Konto wurde erfolgreich gelöscht.',
             'unauthenticated' => 'Nicht authentifiziert. Bitte melden Sie sich an, um diese Aktion auszuführen',
             'id-required' => 'Kunden-ID ist erforderlich',
             'invalid-id-format' => 'Ungültiges ID-Format. Erwartet wird ein IRI-Format wie "/api/admin/customers/1" oder eine numerische ID',
@@ -363,6 +361,22 @@ return [
             'payment-method-error' => 'Fehler beim Speichern der Zahlungsart',
             'order-placed' => 'Bestellung erfolgreich aufgegeben',
             'order-redirect-required' => 'Bei dieser Zahlungsart muss der Käufer die Zahlung beim Zahlungsanbieter abschließen. Leiten Sie ihn zu redirectUrl weiter; die Bestellung wird erstellt, sobald der Zahlungsanbieter die Zahlung bestätigt.',
+            'payment-started' => 'Zahlung gestartet. Leiten Sie den Kunden zum Zahlungsanbieter weiter.',
+            'payment-not-online' => 'Die gewählte Zahlungsart erfordert keine Online-Zahlung. Geben Sie die Bestellung direkt auf.',
+            'payment-not-configured' => 'Diese Zahlungsart ist nicht konfiguriert.',
+            'payment-currency-unsupported' => 'Diese Zahlungsart unterstützt die Shopwährung nicht. Unterstützte Währungen: :currencies.',
+            'payment-method-mismatch' => 'Die Zahlungsart stimmt nicht mit der im Warenkorb gespeicherten überein.',
+            'payment-initiation-failed' => 'Die Zahlung konnte nicht gestartet werden. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsart.',
+            'paypal-smart-button-payment-flow' => 'PayPal-Smart-Button-Zahlungen werden mit checkout-payments/initiate gestartet und mit checkout-payments/confirm bestätigt, nicht direkt aufgegeben.',
+            'payment-reference-not-found' => 'Für diese Referenz wurde keine Zahlung gefunden.',
+            'payment-reference-required' => 'Senden Sie die Referenz, die beim Start der Zahlung zurückgegeben wurde.',
+            'payment-no-confirmation' => 'Die gewählte Zahlungsart erfordert keine Bestätigung.',
+            'razorpay-fields-required' => 'Razorpay-Bestell-ID, Zahlungs-ID und Signatur sind erforderlich.',
+            'paypal-order-id-required' => 'Die PayPal-Bestell-ID ist erforderlich, um eine PayPal-Smart-Button-Zahlung zu bestätigen.',
+            'payment-not-verified' => 'Die Zahlung konnte nicht überprüft werden.',
+            'payment-confirmed' => 'Zahlung bestätigt und Bestellung aufgegeben.',
+            'payment-pending' => 'Die Zahlung ist noch nicht abgeschlossen. Es wurde keine Bestellung aufgegeben.',
+            'payment-awaiting-confirmation' => 'Die Bestellung ist aufgegeben. PayPal hat die Zahlung noch nicht bestätigt.',
             'order-creation-failed' => 'Bestellungserstellung fehlgeschlagen: Die Bestell-ID ist null oder die Bestellung wurde nicht gespeichert',
             'order-retrieval-failed' => 'Die erstellte Bestellung konnte nicht abgerufen werden',
             'order-creation-error' => 'Bestellung konnte nicht erstellt werden',
@@ -453,6 +467,15 @@ return [
             'id-required' => 'Gebietsschema-ID ist erforderlich',
             'invalid-id-format' => 'Ungültiges ID-Format. Erwartet wird ein IRI-Format wie "/api/shop/locales/1" oder eine numerische ID',
             'not-found' => 'Gebietsschema nicht gefunden',
+        ],
+
+        'search' => [
+            'query-required' => 'Der Suchbegriff ist erforderlich.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'Der Pfad ist erforderlich.',
+            'not-found' => 'Zu diesem Pfad wurde nichts gefunden.',
         ],
 
         'category' => [
@@ -1231,6 +1254,8 @@ return [
             'description-required-for-mode' => 'Für den gewählten Anzeigemodus ist eine Beschreibung erforderlich.',
             'cannot-delete-root' => 'Stammkategorien und Kanal-Stammkategorien können nicht gelöscht werden.',
             'cannot-delete-channel-root' => 'Diese Kategorie ist eine Kanal-Stammkategorie und kann nicht gelöscht werden.',
+            'parent-not-found' => 'Übergeordnete Kategorie nicht gefunden.',
+            'cannot-move-into-self' => 'Eine Kategorie kann nicht in sich selbst oder eine ihrer Unterkategorien verschoben werden.',
             'delete-failed' => 'Die Kategorie konnte nicht gelöscht werden.',
             'no-permission' => 'Sie haben keine Berechtigung, Kategorien zu verwalten.',
             'mass-delete-success' => 'Kategorien erfolgreich gelöscht.',
@@ -1274,6 +1299,7 @@ return [
             'group-name-required' => 'Jede Attributgruppe muss einen Namen haben.',
             'group-column-invalid' => 'Jede Spalte einer Attributgruppe muss 1 oder 2 sein.',
             'group-name-duplicate' => 'Der Name einer Attributgruppe muss innerhalb der Attributfamilie eindeutig sein.',
+            'group-not-found' => 'Attributgruppe in dieser Attributfamilie nicht gefunden.',
             'update-failed' => 'Die Attributfamilie konnte nicht aktualisiert werden.',
             'create-failed' => 'Die Attributfamilie konnte nicht erstellt werden.',
             'default-delete-error' => 'Die Standard-Attributfamilie kann nicht gelöscht werden.',

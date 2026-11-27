@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Geçersiz giriş verileri',
             'email-required' => 'E-posta gereklidir',
             'reset-link-sent' => 'Sıfırlama bağlantısı e-postanıza başarıyla gönderildi',
-            'email-not-found' => 'E-posta adresi bulunamadı',
-            'throttled' => 'Çok fazla sıfırlama denemesi. Lütfen tekrar denemeden önce bekleyin.',
-            'error-sending-reset-link' => 'Sıfırlama bağlantısı gönderilirken bir hata oluştu',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Hesabınızı silmek için parolanız gereklidir',
             'delete-password-incorrect' => 'Girdiğiniz parola yanlış',
             'delete-has-active-orders' => 'Bekleyen veya işlenmekte olan siparişleriniz varken hesabınız silinemez',
+            'delete-success' => 'Hesabınız başarıyla silindi.',
             'unauthenticated' => 'Kimlik doğrulanmadı. Bu işlemi gerçekleştirmek için lütfen giriş yapın',
             'id-required' => 'Müşteri kimliği gereklidir',
             'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/admin/customers/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
@@ -363,6 +361,22 @@ return [
             'payment-method-error' => 'Ödeme yöntemi kaydedilirken hata oluştu',
             'order-placed' => 'Sipariş başarıyla verildi',
             'order-redirect-required' => 'Bu ödeme yöntemi, alışverişçinin ödemeyi ödeme ağ geçidinde tamamlamasını gerektirir. Onu redirectUrl adresine yönlendirin; sipariş, ağ geçidi ödemeyi onayladığında oluşturulur.',
+            'payment-started' => 'Ödeme başlatıldı. Müşteriyi ödeme sağlayıcısına yönlendirin.',
+            'payment-not-online' => 'Seçilen ödeme yöntemi çevrimiçi ödeme gerektirmez. Siparişi doğrudan verin.',
+            'payment-not-configured' => 'Bu ödeme yöntemi yapılandırılmamış.',
+            'payment-currency-unsupported' => 'Bu ödeme yöntemi mağaza para birimini desteklemiyor. Desteklenen para birimleri: :currencies.',
+            'payment-method-mismatch' => 'Ödeme yöntemi sepette kayıtlı olanla eşleşmiyor.',
+            'payment-initiation-failed' => 'Ödeme başlatılamadı. Lütfen tekrar deneyin veya başka bir ödeme yöntemi seçin.',
+            'paypal-smart-button-payment-flow' => 'PayPal Smart Button ödemeleri checkout-payments/initiate ile başlatılır ve checkout-payments/confirm ile onaylanır, doğrudan verilmez.',
+            'payment-reference-not-found' => 'Bu referans için ödeme bulunamadı.',
+            'payment-reference-required' => 'Ödeme başlatıldığında döndürülen referansı gönderin.',
+            'payment-no-confirmation' => 'Seçilen ödeme yöntemi onay gerektirmez.',
+            'razorpay-fields-required' => 'Razorpay sipariş kimliği, ödeme kimliği ve imza gereklidir.',
+            'paypal-order-id-required' => 'PayPal Smart Button ödemesini onaylamak için PayPal sipariş kimliği gereklidir.',
+            'payment-not-verified' => 'Ödeme doğrulanamadı.',
+            'payment-confirmed' => 'Ödeme onaylandı ve sipariş verildi.',
+            'payment-pending' => 'Ödeme henüz tamamlanmadı. Sipariş verilmedi.',
+            'payment-awaiting-confirmation' => 'Sipariş verildi. PayPal ödemeyi henüz onaylamadı.',
             'order-creation-failed' => 'Sipariş oluşturma başarısız: Sipariş kimliği boş veya sipariş kaydedilmedi',
             'order-retrieval-failed' => 'Oluşturulan sipariş alınamadı',
             'order-creation-error' => 'Sipariş oluşturulamadı',
@@ -453,6 +467,15 @@ return [
             'id-required' => 'Yerel ayar kimliği gereklidir',
             'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/locales/1" gibi IRI biçimi veya sayısal kimlik bekleniyor',
             'not-found' => 'Yerel ayar bulunamadı',
+        ],
+
+        'search' => [
+            'query-required' => 'Arama sorgusu zorunludur.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'Yol zorunludur.',
+            'not-found' => 'Bu yolla eşleşen bir şey yok.',
         ],
 
         'category' => [
@@ -1231,6 +1254,8 @@ return [
             'description-required-for-mode' => 'Seçilen görüntüleme modu için açıklama gereklidir.',
             'cannot-delete-root' => 'Kök ve kanal kökü kategorileri silinemez.',
             'cannot-delete-channel-root' => 'Bu kategori bir kanal köküdür ve silinemez.',
+            'parent-not-found' => 'Üst kategori bulunamadı.',
+            'cannot-move-into-self' => 'Bir kategori kendisine veya alt kategorilerinden birine taşınamaz.',
             'delete-failed' => 'Kategori silinemedi.',
             'no-permission' => 'Kategorileri yönetme izniniz yok.',
             'mass-delete-success' => 'Kategoriler başarıyla silindi.',
@@ -1274,6 +1299,7 @@ return [
             'group-name-required' => 'Her nitelik grubunun bir adı olmalıdır.',
             'group-column-invalid' => 'Her nitelik grubu sütunu 1 veya 2 olmalıdır.',
             'group-name-duplicate' => 'Nitelik grubu adı nitelik ailesi içinde benzersiz olmalıdır.',
+            'group-not-found' => 'Bu nitelik ailesinde nitelik grubu bulunamadı.',
             'update-failed' => 'Nitelik ailesi güncellenemedi.',
             'create-failed' => 'Nitelik ailesi oluşturulamadı.',
             'default-delete-error' => 'Varsayılan nitelik ailesi silinemez.',

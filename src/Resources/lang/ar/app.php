@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'بيانات إدخال غير صحيحة',
             'email-required' => 'البريد الإلكتروني مطلوب',
             'reset-link-sent' => 'تم إرسال رابط إعادة التعيين بنجاح إلى بريدك الإلكتروني',
-            'email-not-found' => 'عنوان البريد الإلكتروني غير موجود',
-            'throttled' => 'محاولات إعادة تعيين كثيرة جدًا. يرجى الانتظار قبل المحاولة مرة أخرى.',
-            'error-sending-reset-link' => 'حدث خطأ أثناء إرسال رابط إعادة التعيين',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'كلمة المرور مطلوبة لحذف حسابك',
             'delete-password-incorrect' => 'كلمة المرور التي أدخلتها غير صحيحة',
             'delete-has-active-orders' => 'لا يمكن حذف حسابك أثناء وجود طلبات معلقة أو قيد المعالجة',
+            'delete-success' => 'تم حذف حسابك بنجاح.',
             'unauthenticated' => 'غير مصرح. يرجى تسجيل الدخول لتنفيذ هذا الإجراء',
             'id-required' => 'معرف العميل مطلوب',
             'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/admin/customers/1" أو معرف رقمي',
@@ -363,6 +361,22 @@ return [
             'payment-method-error' => 'خطأ في حفظ طريقة الدفع',
             'order-placed' => 'تم تقديم الطلب بنجاح',
             'order-redirect-required' => 'تتطلب طريقة الدفع هذه أن يكمل المتسوق الدفع على بوابة الدفع. أرسله إلى redirectUrl؛ يتم إنشاء الطلب بمجرد أن تؤكد البوابة الدفع.',
+            'payment-started' => 'بدأ الدفع. انقل العميل إلى بوابة الدفع.',
+            'payment-not-online' => 'طريقة الدفع المحددة لا تحتاج إلى دفع إلكتروني. قدّم الطلب مباشرة.',
+            'payment-not-configured' => 'طريقة الدفع هذه غير مُهيأة.',
+            'payment-currency-unsupported' => 'طريقة الدفع هذه لا تدعم عملة المتجر. العملات المدعومة: :currencies.',
+            'payment-method-mismatch' => 'طريقة الدفع لا تطابق الطريقة المحفوظة في السلة.',
+            'payment-initiation-failed' => 'تعذر بدء الدفع. يرجى المحاولة مرة أخرى أو اختيار طريقة دفع أخرى.',
+            'paypal-smart-button-payment-flow' => 'تبدأ مدفوعات PayPal Smart Button عبر checkout-payments/initiate وتُؤكَّد عبر checkout-payments/confirm، ولا تُقدَّم مباشرة.',
+            'payment-reference-not-found' => 'لم يُعثر على دفعة لهذا المرجع.',
+            'payment-reference-required' => 'أرسل المرجع الذي تم إرجاعه عند بدء الدفع.',
+            'payment-no-confirmation' => 'طريقة الدفع المحددة لا تحتاج إلى تأكيد.',
+            'razorpay-fields-required' => 'معرّف طلب Razorpay ومعرّف الدفع والتوقيع مطلوبة.',
+            'paypal-order-id-required' => 'معرّف طلب PayPal مطلوب لتأكيد دفعة PayPal Smart Button.',
+            'payment-not-verified' => 'تعذر التحقق من الدفع.',
+            'payment-confirmed' => 'تم تأكيد الدفع وتقديم الطلب.',
+            'payment-pending' => 'لم يكتمل الدفع بعد. لم يتم تقديم أي طلب.',
+            'payment-awaiting-confirmation' => 'تم تقديم الطلب. لم يؤكد PayPal الدفع بعد.',
             'order-creation-failed' => 'فشل إنشاء الطلب: معرف الطلب فارغ أو لم يتم الاحتفاظ بالطلب',
             'order-retrieval-failed' => 'فشل في استرجاع الطلب المنشأ',
             'order-creation-error' => 'فشل في إنشاء الطلب',
@@ -453,6 +467,15 @@ return [
             'id-required' => 'معرف اللغة مطلوب',
             'invalid-id-format' => 'تنسيق المعرف غير صحيح. المتوقع تنسيق IRI مثل "/api/shop/locales/1" أو معرف رقمي',
             'not-found' => 'لم يتم العثور على اللغة',
+        ],
+
+        'search' => [
+            'query-required' => 'استعلام البحث مطلوب.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'المسار مطلوب.',
+            'not-found' => 'لا يوجد شيء يطابق هذا المسار.',
         ],
 
         'category' => [
@@ -1231,6 +1254,8 @@ return [
             'description-required-for-mode' => 'الوصف مطلوب لوضع العرض المختار.',
             'cannot-delete-root' => 'لا يمكن حذف الفئة الجذرية والفئات الجذرية للقنوات.',
             'cannot-delete-channel-root' => 'هذه الفئة هي الجذر لقناة ولا يمكن حذفها.',
+            'parent-not-found' => 'الفئة الأصلية غير موجودة.',
+            'cannot-move-into-self' => 'لا يمكن نقل الفئة إلى نفسها أو إلى إحدى فئاتها الفرعية.',
             'delete-failed' => 'تعذر حذف الفئة.',
             'no-permission' => 'ليس لديك إذن لإدارة الفئات.',
             'mass-delete-success' => 'تم حذف الفئات بنجاح.',
@@ -1274,6 +1299,7 @@ return [
             'group-name-required' => 'يجب أن يكون لكل مجموعة سمات اسم.',
             'group-column-invalid' => 'يجب أن يكون عمود كل مجموعة سمات 1 أو 2.',
             'group-name-duplicate' => 'يجب أن يكون اسم مجموعة السمات فريدًا داخل عائلة السمات.',
+            'group-not-found' => 'مجموعة السمات غير موجودة في عائلة السمات هذه.',
             'update-failed' => 'تعذر تحديث عائلة السمات.',
             'create-failed' => 'تعذر إنشاء عائلة السمات.',
             'default-delete-error' => 'لا يمكن حذف عائلة السمات الافتراضية.',

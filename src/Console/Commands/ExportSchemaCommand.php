@@ -402,7 +402,7 @@ class ExportSchemaCommand extends Command
                         'kind' => $kind,
                         'tag' => $tag,
                         'resource' => $resourceClass,
-                        'example' => $kind === 'mutation' ? $this->resourceRequestExample($collection) : null,
+                        'example' => $kind === 'mutation' ? $this->resourceRequestExample($collection, $operation) : null,
                     ], fn ($value) => $value !== null);
                 }
             }
@@ -449,24 +449,88 @@ class ExportSchemaCommand extends Command
     }
 
     /**
-     * The request-body example the resource's REST write operation documents.
+     * The REST request-body example whose keys best cover the mutation's input fields.
      * GraphQL input types are almost entirely nullable, so a skeleton built from the schema.
      *
      * @return array<string, mixed>|null
      */
-    private function resourceRequestExample(iterable $collection): ?array
+    private function resourceRequestExample(iterable $collection, Mutation $mutation): ?array
     {
+        $fields = $this->mutationInputFields($mutation);
+
+        $preferred = $this->preferredHttpMethod((string) $mutation->getName());
+
+        $best = null;
+        $bestScore = -1;
+
         foreach ($collection as $resourceMetadata) {
             foreach ($resourceMetadata->getOperations() ?? [] as $operation) {
                 $example = $this->operationRequestExample($operation);
 
-                if ($example !== null) {
-                    return $example;
+                if ($example === null) {
+                    continue;
+                }
+
+                $score = count(array_intersect(array_map(fn ($key) => $this->snake((string) $key), array_keys($example)), $fields));
+
+                if (
+                    $score > 0
+                    && method_exists($operation, 'getMethod')
+                    && $operation->getMethod() === $preferred
+                ) {
+                    $score += 1000;
+                }
+
+                if ($score > $bestScore) {
+                    $best = $example;
+                    $bestScore = $score;
                 }
             }
         }
 
-        return null;
+        return $best;
+    }
+
+    /**
+     * Snake_case names of the public properties on a mutation's input class.
+     *
+     * @return list<string>
+     */
+    private function mutationInputFields(Mutation $mutation): array
+    {
+        $class = $mutation->getInput()['class'] ?? $mutation->getClass();
+
+        if (
+            ! is_string($class)
+            || ! class_exists($class)
+        ) {
+            return [];
+        }
+
+        return array_values(array_map(
+            fn (\ReflectionProperty $property) => $this->snake($property->getName()),
+            (new \ReflectionClass($class))->getProperties(\ReflectionProperty::IS_PUBLIC)
+        ));
+    }
+
+    /**
+     * The REST method a mutation of this name most likely mirrors.
+     */
+    private function preferredHttpMethod(string $name): string
+    {
+        return match (true) {
+            str_starts_with($name, 'update') => 'PUT',
+            str_starts_with($name, 'delete') => 'DELETE',
+            default => 'POST',
+        };
+    }
+
+    /**
+     * A camelCase or snake_case name in snake_case.
+     */
+    private function snake(string $name): string
+    {
+        return strtolower((string) preg_replace('/(?<!^)[A-Z]/', '_$0', $name));
     }
 
     /**
@@ -494,6 +558,8 @@ class ExportSchemaCommand extends Command
         foreach ((array) ($content instanceof \ArrayObject ? $content->getArrayCopy() : $content) as $media) {
             $example = $media['example'] ?? (is_array($media['examples'] ?? null) ? (reset($media['examples'])['value'] ?? null) : null);
 
+            $example ??= $this->propertyExamples($media['schema'] ?? null);
+
             if (
                 is_array($example)
                 && $example !== []
@@ -503,6 +569,35 @@ class ExportSchemaCommand extends Command
         }
 
         return null;
+    }
+
+    /**
+     * A request body assembled from the examples on a schema's properties.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function propertyExamples(mixed $schema): ?array
+    {
+        $schema = $schema instanceof \ArrayObject ? $schema->getArrayCopy() : $schema;
+
+        if (! is_array($schema['properties'] ?? null)) {
+            return null;
+        }
+
+        $example = [];
+
+        foreach ($schema['properties'] as $name => $property) {
+            $property = $property instanceof \ArrayObject ? $property->getArrayCopy() : $property;
+
+            if (
+                is_array($property)
+                && array_key_exists('example', $property)
+            ) {
+                $example[$name] = $property['example'];
+            }
+        }
+
+        return $example === [] ? null : $example;
     }
 
     /**

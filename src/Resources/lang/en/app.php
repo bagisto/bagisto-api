@@ -91,9 +91,6 @@ return [
             'invalid-input-data' => 'Invalid input data',
             'email-required' => 'Email is required',
             'reset-link-sent' => 'Reset link sent successfully to your email',
-            'email-not-found' => 'Email address not found',
-            'throttled' => 'Too many reset attempts. Please wait before trying again.',
-            'error-sending-reset-link' => 'An error occurred while sending reset link',
         ],
 
         'reset-password' => [
@@ -142,6 +139,7 @@ return [
             'delete-password-required' => 'Your password is required to delete your account',
             'delete-password-incorrect' => 'The password you entered is incorrect',
             'delete-has-active-orders' => 'Your account cannot be deleted while you have pending or processing orders',
+            'delete-success' => 'Your account has been deleted successfully.',
             'unauthenticated' => 'Unauthenticated. Please login to perform this action',
             'id-required' => 'Customer ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/admin/customers/1" or numeric ID',
@@ -363,6 +361,22 @@ return [
             'payment-method-error' => 'Error saving payment method',
             'order-placed' => 'Order placed successfully',
             'order-redirect-required' => 'This payment method requires the shopper to complete payment on the gateway. Send them to redirectUrl; the order is created once the gateway confirms the payment.',
+            'payment-started' => 'Payment started. Hand the customer to the gateway.',
+            'payment-not-online' => 'The selected payment method needs no online payment. Place the order directly.',
+            'payment-not-configured' => 'This payment method is not configured.',
+            'payment-currency-unsupported' => 'This payment method does not support the store currency. Supported currencies: :currencies.',
+            'payment-method-mismatch' => 'The payment method does not match the one saved on the cart.',
+            'payment-initiation-failed' => 'The payment could not be started. Please try again or choose another payment method.',
+            'paypal-smart-button-payment-flow' => 'PayPal Smart Button payments are started with checkout-payments/initiate and confirmed with checkout-payments/confirm, not placed directly.',
+            'payment-reference-not-found' => 'No payment was found for this reference.',
+            'payment-reference-required' => 'Send the reference returned when the payment was started.',
+            'payment-no-confirmation' => 'The selected payment method needs no confirmation.',
+            'razorpay-fields-required' => 'The Razorpay order id, payment id and signature are required.',
+            'paypal-order-id-required' => 'The PayPal order id is required to confirm a PayPal Smart Button payment.',
+            'payment-not-verified' => 'The payment could not be verified.',
+            'payment-confirmed' => 'Payment confirmed and order placed.',
+            'payment-pending' => 'The payment has not been completed yet. No order has been placed.',
+            'payment-awaiting-confirmation' => 'The order is placed. PayPal has not confirmed the payment yet.',
             'order-creation-failed' => 'Order creation failed: Order ID is null or order not persisted',
             'order-retrieval-failed' => 'Failed to retrieve created order',
             'order-creation-error' => 'Failed to create order',
@@ -453,6 +467,15 @@ return [
             'id-required' => 'Locale ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/locales/1" or numeric ID',
             'not-found' => 'Locale not found',
+        ],
+
+        'search' => [
+            'query-required' => 'The search query is required.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'The path is required.',
+            'not-found' => 'Nothing matches this path.',
         ],
 
         'category' => [
@@ -1231,6 +1254,8 @@ return [
             'description-required-for-mode' => 'A description is required for the chosen display mode.',
             'cannot-delete-root' => 'Root and channel-root categories cannot be deleted.',
             'cannot-delete-channel-root' => 'This category is a channel root and cannot be deleted.',
+            'parent-not-found' => 'Parent category not found.',
+            'cannot-move-into-self' => 'A category cannot be moved into itself or one of its subcategories.',
             'delete-failed' => 'Category could not be deleted.',
             'no-permission' => 'You do not have permission to manage categories.',
             'mass-delete-success' => 'Categories deleted successfully.',
@@ -1274,6 +1299,7 @@ return [
             'group-name-required' => 'Each attribute group must have a name.',
             'group-column-invalid' => 'Each attribute group column must be 1 or 2.',
             'group-name-duplicate' => 'An attribute group name must be unique within the attribute family.',
+            'group-not-found' => 'Attribute group not found in this attribute family.',
             'update-failed' => 'Attribute family could not be updated.',
             'create-failed' => 'Attribute family could not be created.',
             'default-delete-error' => 'The default attribute family cannot be deleted.',

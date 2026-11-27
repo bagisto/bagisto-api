@@ -66,7 +66,7 @@
                     <p>{{ $description }}</p>
                 </div>
             </div>
-            <a href="/api" class="back-to-docs">← Back to Docs</a>
+            <a href="{{ url('api') }}" class="back-to-docs">← Back to Docs</a>
         </div>
 
         <div id="swagger-ui" class="api-platform"></div>

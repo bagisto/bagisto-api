@@ -103,6 +103,8 @@ class AdminCategoryProcessor implements ProcessorInterface
     {
         $this->validateCreatePayload($input);
 
+        $this->assertValidParent($input);
+
         $input = $this->sanitiseLocalisedHtmlFields($input, ['description']);
 
         Event::dispatch('catalog.category.create.before');
@@ -123,11 +125,15 @@ class AdminCategoryProcessor implements ProcessorInterface
      */
     protected function handleUpdate(int $id, array $input): AdminCategory
     {
-        if (! $this->categoryRepository->find($id)) {
+        $category = $this->categoryRepository->find($id);
+
+        if (! $category) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.category.not-found'));
         }
 
         $this->validateUpdatePayload($input, $id);
+
+        $this->assertValidParent($input, $category);
 
         $input = $this->sanitiseLocalisedHtmlFields($input, ['description']);
 
@@ -144,6 +150,32 @@ class AdminCategoryProcessor implements ProcessorInterface
         Event::dispatch('catalog.category.update.after', $category);
 
         return $this->fetchAndMap($id);
+    }
+
+    /**
+     * Refuse a parent that does not exist, or one that is the category itself or below it.
+     */
+    protected function assertValidParent(array $input, ?object $category = null): void
+    {
+        if (empty($input['parent_id'])) {
+            return;
+        }
+
+        $parent = $this->categoryRepository->find((int) $input['parent_id']);
+
+        if (! $parent) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.category.parent-not-found'));
+        }
+
+        if (
+            $category
+            && (
+                (int) $parent->id === (int) $category->id
+                || $parent->isDescendantOf($category)
+            )
+        ) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.category.cannot-move-into-self'), 422);
+        }
     }
 
     /**

@@ -72,6 +72,7 @@ class CheckoutAddressProvider implements ProviderInterface
             $output->billingLastName = $billingAddress->last_name;
             $output->billingEmail = $billingAddress->email;
             $output->billingCompanyName = $billingAddress->company_name;
+            $output->billingVatId = $billingAddress->vat_id;
             $output->billingAddress = $billingAddress->address;
             $output->billingCountry = $billingAddress->country;
             $output->billingState = $billingAddress->state;

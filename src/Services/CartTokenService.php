@@ -52,6 +52,32 @@ class CartTokenService
     }
 
     /**
+     * The bearer's cart with the given id, active or already turned into an order, so a payment
+     * confirmation still finds the cart a gateway callback has closed; null when the bearer does not own it.
+     */
+    public function getOwnedCart(string $token, int $cartId): ?object
+    {
+        $guestCart = $this->guestCartTokensRepository->findCartByToken($token);
+
+        if ($guestCart) {
+            return (int) $guestCart->id === $cartId ? $guestCart : null;
+        }
+
+        $customer = $this->getCustomerByToken($token);
+
+        if (! $customer) {
+            return null;
+        }
+
+        $this->actAsCustomer($customer);
+
+        return $this->cartRepository->findOneWhere([
+            'id' => $cartId,
+            'customer_id' => $customer->id,
+        ]);
+    }
+
+    /**
      * Make the bearer's customer the current storefront customer for this request, so core
      * resolves their customer group for prices and cart rules instead of the guest group.
      */

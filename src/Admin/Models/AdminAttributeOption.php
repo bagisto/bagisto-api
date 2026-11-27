@@ -32,7 +32,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
                 parameters: [
                     new Model\Parameter('attributeId', 'path', 'Attribute ID.', true, schema: [
                         'type' => 'integer',
-                        'example' => 12,
+                        'example' => 23,
                     ]),
                 ],
                 requestBody: new Model\RequestBody(
@@ -126,7 +126,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
                 parameters: [
                     new Model\Parameter('attributeId', 'path', 'Attribute ID.', true, schema: [
                         'type' => 'integer',
-                        'example' => 12,
+                        'example' => 23,
                     ]),
                     new Model\Parameter('optionId', 'path', 'Option ID.', true, schema: [
                         'type' => 'integer',
@@ -214,7 +214,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
                 parameters: [
                     new Model\Parameter('attributeId', 'path', 'Attribute ID.', true, schema: [
                         'type' => 'integer',
-                        'example' => 12,
+                        'example' => 23,
                     ]),
                     new Model\Parameter('optionId', 'path', 'Option ID.', true, schema: [
                         'type' => 'integer',

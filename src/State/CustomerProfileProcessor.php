@@ -3,7 +3,9 @@
 namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Request;
@@ -51,7 +53,7 @@ class CustomerProfileProcessor implements ProcessorInterface
         $authenticatedCustomer = $this->authenticate($data, $request);
 
         return match (class_basename($operation->getClass())) {
-            'CustomerProfileDelete' => $this->handleDelete($authenticatedCustomer, $data),
+            'CustomerProfileDelete' => $this->handleDelete($authenticatedCustomer, $data, $operation),
             'CustomerProfileUpdate' => $this->handleUpdate($data, $authenticatedCustomer),
             'CustomerProfile' => $this->mapCustomerToProfile($authenticatedCustomer),
             default => throw new \InvalidArgumentException(__('bagistoapi::app.graphql.auth.unknown-resource')),
@@ -287,9 +289,9 @@ class CustomerProfileProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle customer profile deletion.
+     * Delete the customer's account, answering REST with a success message and GraphQL with nothing.
      */
-    private function handleDelete(Customer $authenticatedCustomer, mixed $data): null
+    private function handleDelete(Customer $authenticatedCustomer, mixed $data, Operation $operation): ?JsonResponse
     {
         $password = is_object($data) ? ($data->password ?? null) : null;
 
@@ -319,7 +321,14 @@ class CustomerProfileProcessor implements ProcessorInterface
 
         Event::dispatch('customer.delete.after', $authenticatedCustomer);
 
-        return null;
+        if (! $operation instanceof Post) {
+            return null;
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => __('bagistoapi::app.graphql.customer.delete-success'),
+        ]);
     }
 
     /**

@@ -6,6 +6,7 @@ use Illuminate\Cache\TaggableStore;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeOption;
@@ -52,10 +53,22 @@ abstract class BagistoApiTestCase extends BagistoApiTest
 
         $this->useFixtureJwtKeys();
 
+        URL::forceRootUrl($this->applicationOrigin());
+
         config([
             'repository.cache.enabled' => false,
             'repository.cache.repositories' => [],
         ]);
+    }
+
+    /**
+     * The scheme and host of the app URL, so a store served from a sub-folder still routes test requests.
+     */
+    protected function applicationOrigin(): string
+    {
+        $url = parse_url((string) config('app.url'));
+
+        return ($url['scheme'] ?? 'http').'://'.($url['host'] ?? 'localhost').(isset($url['port']) ? ':'.$url['port'] : '');
     }
 
     /**

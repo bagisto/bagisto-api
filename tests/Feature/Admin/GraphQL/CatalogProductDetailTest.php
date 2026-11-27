@@ -41,6 +41,50 @@ class CatalogProductDetailTest extends AdminApiTestCase
     }
 
     /**
+     * Test the price attribute value is read from the column core stores it in.
+     */
+    public function test_query_detail_reads_the_price_attribute_value_from_float_value(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $this->insertProductFlat($product);
+
+        $priceAttributeId = DB::table('attributes')->where('code', 'price')->value('id');
+
+        DB::table('product_attribute_values')->updateOrInsert(
+            ['product_id' => $product->id, 'attribute_id' => $priceAttributeId],
+            ['float_value' => 123.45, 'integer_value' => null, 'text_value' => null, 'channel' => null, 'locale' => null],
+        );
+
+        $response = $this->adminGraphQL(<<<'GQL'
+            query ($id: ID!) {
+              adminCatalogProduct(id: $id) {
+                attributeValues(first: 100) {
+                  edges {
+                    node {
+                      code
+                      type
+                      value
+                    }
+                  }
+                }
+              }
+            }
+        GQL, ['id' => '/api/admin/catalog/products/'.$product->id], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $price = collect($response->json('data.adminCatalogProduct.attributeValues.edges'))
+            ->pluck('node')
+            ->firstWhere('code', 'price');
+
+        expect($price)->not()->toBeNull();
+        expect($price['type'])->toBe('price');
+        expect((float) $price['value'])->toBe(123.45);
+    }
+
+    /**
      * Test query detail returns simple product with base fields.
      */
     public function test_query_detail_returns_simple_product_with_base_fields(): void

@@ -808,6 +808,25 @@ class CatalogProductTest extends AdminApiTestCase
     }
 
     /**
+     * Test mass update status with an unknown product returns 404 and changes nothing.
+     */
+    public function test_mass_update_status_unknown_product_returns_404(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $this->insertProductFlat($product, ['status' => 1]);
+        $missingId = (int) \DB::table('products')->max('id') + 1000;
+
+        $response = $this->adminPost($admin, '/api/admin/catalog/products/mass-update-status', [
+            'indices' => [$product->id, $missingId],
+            'value' => 0,
+        ]);
+
+        $response->assertStatus(404);
+        expect((int) \DB::table('product_flat')->where('product_id', $product->id)->value('status'))->toBe(1);
+    }
+
+    /**
      * Test mass update status invalid value returns 400.
      */
     public function test_mass_update_status_invalid_value_returns_400(): void

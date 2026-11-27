@@ -172,7 +172,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             );
         }
 
-        if (! empty($context['graphql_operation_name'])) {
+        if ($isGraphQL) {
             return $this->detailProvider->loadEloquentForGraphQL($id);
         }
 

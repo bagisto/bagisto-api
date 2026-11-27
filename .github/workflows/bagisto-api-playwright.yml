@@ -314,7 +314,20 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install Playwright
+      - name: Install Node.js Dependencies
+        working-directory: bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
+        run: npm install
+
+      - name: Type-check Playwright Tests
+        working-directory: bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
+        run: npx --yes -p typescript@5.6.3 tsc -p tsconfig.json
+
+      - name: Install Playwright Browsers
+        working-directory: bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright Tests
+        working-directory: bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
         env:
           BAGISTO_URL: ${{ env.BAGISTO_URL }}
           STOREFRONT_ACCESS_KEY: ${{ env.STOREFRONT_ACCESS_KEY }}
@@ -324,12 +337,7 @@ jobs:
           ADMIN_API_TOKEN_OTHER_DOMAIN: ${{ env.ADMIN_API_TOKEN_OTHER_DOMAIN }}
           ADMIN_API_TOKEN_REVOCABLE_REST: ${{ env.ADMIN_API_TOKEN_REVOCABLE_REST }}
           ADMIN_API_TOKEN_REVOCABLE_GRAPHQL: ${{ env.ADMIN_API_TOKEN_REVOCABLE_GRAPHQL }}
-        run: |
-          cd bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
-          npm install
-          npx --yes -p typescript@5.6.3 tsc -p tsconfig.json
-          npx playwright install --with-deps chromium
-          npx playwright test tests --shard=${{ matrix.shard }} --reporter=list,html
+        run: npx playwright test tests --shard=${{ matrix.shard }} --reporter=list,html
 
       - name: Upload Playwright report
         if: always()

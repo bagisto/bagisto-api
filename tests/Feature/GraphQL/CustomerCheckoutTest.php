@@ -882,6 +882,49 @@ class CustomerCheckoutTest extends GraphQLTestCase
     }
 
     /**
+     * The address mutation saves the billing vat id and returns it.
+     */
+    public function test_set_checkout_address_saves_the_billing_vat_id(): void
+    {
+        $token = $this->createTestCustomer()['token'];
+
+        $this->addProductToCart($token);
+
+        $mutation = <<<'GQL'
+            mutation {
+              createCheckoutAddress(
+                input: {
+                  billingFirstName: "John"
+                  billingLastName: "Doe"
+                  billingEmail: "john@example.com"
+                  billingCompanyName: "Acme GmbH"
+                  billingVatId: "DE123456789"
+                  billingAddress: "Unter den Linden 1"
+                  billingCity: "Berlin"
+                  billingCountry: "DE"
+                  billingState: "BE"
+                  billingPostcode: "10117"
+                  billingPhoneNumber: "2125551234"
+                  useForShipping: true
+                }
+              ) {
+                checkoutAddress {
+                  billingCompanyName
+                  billingVatId
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, [], $this->customerHeaders($token));
+
+        $response->assertSuccessful();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.createCheckoutAddress.checkoutAddress.billingVatId'))->toBe('DE123456789');
+        expect($response->json('data.createCheckoutAddress.checkoutAddress.billingCompanyName'))->toBe('Acme GmbH');
+    }
+
+    /**
      * The address mutation saves the billing address on the customer's cart.
      */
     public function test_mutation_checkout_address_saves_the_billing_address(): void

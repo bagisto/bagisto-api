@@ -152,6 +152,8 @@ class CustomerOrderDetailDto
 
     public ?string $updated_at = null;
 
+    public ?bool $has_non_cancelable_booking = null;
+
     /** @var OrderItemDto[] */
     #[ApiProperty(readableLink: true)]
     public array $items = [];

@@ -62,6 +62,44 @@ class CartTokenService
     }
 
     /**
+     * The bearer's cart, active or not: a gateway callback deactivates the cart once it places
+     * the order, so a payment confirmation must still find it. A guest token owns exactly one
+     * cart; a customer owns every cart carrying their id, the active one when none is named.
+     */
+    public function getOwnedCart(string $token, ?int $cartId = null): ?object
+    {
+        try {
+            $guestCart = $this->guestCartTokensRepository->findCartByToken($token);
+
+            if ($guestCart) {
+                return $cartId === null || (int) $guestCart->id === $cartId ? $guestCart : null;
+            }
+
+            $customer = $this->customerRepository->findOneByField('token', $token);
+
+            if (! $customer) {
+                $personalAccessToken = PersonalAccessToken::findToken($token);
+
+                $customer = $personalAccessToken?->tokenable instanceof Customer ? $personalAccessToken->tokenable : null;
+            }
+
+            if (! $customer) {
+                return null;
+            }
+
+            $this->actAsCustomer($customer);
+
+            return $this->cartRepository->findOneWhere(array_filter([
+                'customer_id' => $customer->id,
+                'id' => $cartId,
+                'is_active' => $cartId === null ? 1 : null,
+            ], fn ($value) => $value !== null));
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
      * Make the bearer's customer the current storefront customer for this request, so core
      * resolves their customer group for prices and cart rules instead of the guest group.
      */

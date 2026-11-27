@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use Webkul\BagistoApi\Dto\CheckoutPaymentInitiationInput;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Models\CheckoutPaymentInitiation;
+use Webkul\BagistoApi\Services\PaypalStandardReturnUrl;
 use Webkul\BagistoApi\State\Concerns\BuildsPaypalSmartButtonOrder;
 use Webkul\BagistoApi\State\Concerns\ResolvesCheckoutCart;
 use Webkul\BagistoApi\State\Concerns\ValidatesCheckoutCart;
@@ -49,7 +50,7 @@ class CheckoutPaymentInitiationProcessor implements ProcessorInterface
                 'phonepe' => $this->phonePe($cart),
                 'payglocal' => $this->payGlocal($cart),
                 'razorpay' => $this->razorpay($cart),
-                'paypal_standard' => $this->paypalStandard(),
+                'paypal_standard' => $this->paypalStandard($cart),
                 'paypal_smart_button' => $this->paypalSmartButton($cart),
                 'payu' => $this->payU($cart),
                 default => throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.payment-not-online'), 422),
@@ -63,6 +64,12 @@ class CheckoutPaymentInitiationProcessor implements ProcessorInterface
         }
 
         $result->method = $method;
+        $result->reference = (string) $cart->id;
+
+        if ($result->type !== 'sdk') {
+            $result->success_url = route('shop.checkout.onepage.success');
+            $result->failure_url = route('shop.checkout.cart.index');
+        }
 
         return $result;
     }
@@ -112,11 +119,17 @@ class CheckoutPaymentInitiationProcessor implements ProcessorInterface
         return $result;
     }
 
-    private function paypalStandard(): CheckoutPaymentInitiation
+    /**
+     * Core's return page reads the session cart, so PayPal returns an API customer to the API's own pages.
+     */
+    private function paypalStandard(object $cart): CheckoutPaymentInitiation
     {
         $paypal = app(Standard::class);
 
-        return $this->form($paypal->getPaypalUrl(), $paypal->getFormFields());
+        return $this->form($paypal->getPaypalUrl(), array_merge($paypal->getFormFields(), [
+            'return' => PaypalStandardReturnUrl::success($cart->id),
+            'cancel_return' => PaypalStandardReturnUrl::cancel($cart->id),
+        ]));
     }
 
     private function paypalSmartButton(object $cart): CheckoutPaymentInitiation

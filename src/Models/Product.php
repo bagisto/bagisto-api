@@ -22,6 +22,7 @@ use Webkul\BagistoApi\Dto\ProductDetail\ProductDetailDto;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\CartCrossSellResolver;
 use Webkul\BagistoApi\Resolver\SingleProductBagistoApiResolver;
+use Webkul\BagistoApi\Service\ConfigurableConfig;
 use Webkul\BagistoApi\State\CartCrossSellProvider;
 use Webkul\BagistoApi\State\ProductDetailProvider;
 use Webkul\BagistoApi\State\ProductGraphQLProvider;
@@ -42,7 +43,7 @@ use Webkul\Product\Models\Product as BaseProduct;
             openapi: new Operation(
                 tags: ['Product'],
                 summary: 'Get a single product by ID with all relations embedded',
-                description: 'Returns one product with every relation (categories, channels, images, videos, variants, bundle/grouped/downloadable options, customizable options, related/up-sell/cross-sell products) embedded inline. Public endpoint.',
+                description: 'Returns one product with every relation (categories, channels, images, videos, variants, bundle/grouped/downloadable options, customizable options, related/up-sell/cross-sell products) embedded inline. Public endpoint.'."\n\n".'Configurable products: superAttributes carries swatchType on each attribute, and on each option the translated label, swatchValue, swatchValueUrl (image swatch), swatchAlt and products (the saleable variants carrying it). Only saleable variants count and options follow the admin sort order, as on the storefront product page.',
                 responses: [
                     '200' => new Response(
                         description: 'The product with all relations embedded inline.',
@@ -818,51 +819,9 @@ class Product extends BaseProduct
 
     public function getCombinationsAttribute(): string
     {
-        if ($this->type !== 'configurable') {
-            return '{}';
-        }
+        $index = app(ConfigurableConfig::class)->index($this);
 
-        $index = [];
-
-        if (! $this->relationLoaded('super_attributes')) {
-            $this->load('super_attributes');
-        }
-
-        if (! $this->relationLoaded('variants')) {
-            $this->load([
-                'variants' => function ($query) {
-                    $query->with(['attribute_values.attribute']);
-                },
-            ]);
-        }
-
-        $superAttributeIds = $this->super_attributes->pluck('id')->toArray();
-        $attributeCodeMap = $this->super_attributes->pluck('code', 'id')->toArray();
-
-        if (empty($superAttributeIds)) {
-            return '{}';
-        }
-
-        foreach ($this->variants as $variant) {
-            if (! isset($index[$variant->id])) {
-                $index[$variant->id] = [];
-            }
-
-            if (! $variant->relationLoaded('attribute_values')) {
-                $variant->load('attribute_values.attribute');
-            }
-
-            foreach ($variant->attribute_values as $attrValue) {
-                if (in_array($attrValue->attribute_id, $superAttributeIds)) {
-                    $attributeCode = $attributeCodeMap[$attrValue->attribute_id] ?? null;
-                    if ($attributeCode) {
-                        $index[$variant->id][$attributeCode] = $attrValue->value;
-                    }
-                }
-            }
-        }
-
-        return json_encode($index);
+        return $index === [] ? '{}' : json_encode($index);
     }
 
     #[ApiProperty(writable: false, readable: true, required: false)]
@@ -875,56 +834,33 @@ class Product extends BaseProduct
 
     public function getSuperAttributeOptionsAttribute(): string
     {
-        if ($this->type !== 'configurable') {
+        $config = app(ConfigurableConfig::class)->for($this);
+
+        if ($config === []) {
             return '{}';
         }
 
-        if (! $this->relationLoaded('super_attributes')) {
-            $this->load('super_attributes');
-        }
-
-        if (! $this->relationLoaded('variants')) {
-            $this->load([
-                'variants' => function ($query) {
-                    $query->with(['attribute_values.attribute.options']);
-                },
-            ]);
-        }
-
-        $usedOptions = [];
-
-        foreach ($this->variants as $variant) {
-            foreach ($variant->attribute_values as $attrValue) {
-                $usedOptions[$attrValue->attribute_id][] = $attrValue->value;
-            }
-        }
-
-        foreach ($usedOptions as $attrId => $values) {
-            $usedOptions[$attrId] = array_unique($values);
-        }
+        $models = $this->super_attributes->load('options')->keyBy('id');
 
         $result = [];
 
-        foreach ($this->super_attributes as $attribute) {
-            $options = [];
+        foreach ($config['attributes'] as $attribute) {
+            $optionModels = $models->get($attribute['id'])?->options->keyBy('id');
 
-            foreach ($attribute->options as $option) {
-                if (in_array($option->id, $usedOptions[$attribute->id] ?? [])) {
-                    $options[] = [
-                        'id' => $option->id,
-                        'label' => $option->admin_name,
-                    ];
-                }
-            }
-
-            if (! empty($options)) {
-                $result[] = [
-                    'id' => $attribute->id,
-                    'code' => $attribute->code,
-                    'label' => $attribute->admin_name,
-                    'options' => $options,
-                ];
-            }
+            $result[] = [
+                'id' => $attribute['id'],
+                'code' => $attribute['code'],
+                'label' => $attribute['label'],
+                'swatchType' => $attribute['swatch_type'],
+                'options' => array_map(fn (array $option) => [
+                    'id' => $option['id'],
+                    'label' => $option['label'],
+                    'swatchValue' => $optionModels?->get($option['id'])?->swatch_value,
+                    'swatchValueUrl' => $optionModels?->get($option['id'])?->swatch_value_url,
+                    'swatchAlt' => $option['swatch_alt'],
+                    'products' => $option['products'],
+                ], $attribute['options']),
+            ];
         }
 
         return json_encode($result);
@@ -936,6 +872,27 @@ class Product extends BaseProduct
         $indexJson = $this->getSuperAttributeOptionsAttribute();
 
         return $indexJson !== '{}' ? $indexJson : null;
+    }
+
+    /**
+     * The storefront product page's full option-selector configuration.
+     */
+    public function getConfigurationConfigAttribute(): ?string
+    {
+        $config = app(ConfigurableConfig::class)->for($this);
+
+        return $config === [] ? null : json_encode($config);
+    }
+
+    #[ApiProperty(
+        description: 'Configurable only: the storefront product page\'s option-selector configuration as JSON — attributes with translated labels, swatch type, swatch value and alt text, the options each saleable variant uses (index), and each variant\'s prices, images and videos.',
+        writable: false,
+        readable: true,
+        required: false,
+    )]
+    public function getConfiguration_config(): ?string
+    {
+        return $this->getConfigurationConfigAttribute();
     }
 
     public function getSkuAttribute(): ?string

@@ -32,6 +32,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -107,6 +108,7 @@ use Webkul\BagistoApi\Http\Controllers\DownloadSampleController;
 use Webkul\BagistoApi\Http\Controllers\GdprDataPdfController;
 use Webkul\BagistoApi\Http\Controllers\GraphQLPlaygroundController;
 use Webkul\BagistoApi\Http\Controllers\InvoicePdfController;
+use Webkul\BagistoApi\Http\Controllers\PaypalStandardReturnController;
 use Webkul\BagistoApi\Http\Controllers\SwaggerUIController;
 use Webkul\BagistoApi\Http\Middleware\EnforceAdminApiAuth;
 use Webkul\BagistoApi\Http\Middleware\EnsureJsonContentType;
@@ -117,6 +119,7 @@ use Webkul\BagistoApi\Http\Middleware\SetAdminApiAuditContext;
 use Webkul\BagistoApi\Http\Middleware\SetLocaleChannel;
 use Webkul\BagistoApi\Http\Middleware\ThrottleAdminApi;
 use Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey;
+use Webkul\BagistoApi\Metadata\AccessorNativeTypePropertyMetadataFactory;
 use Webkul\BagistoApi\Metadata\CustomIdentifiersExtractor;
 use Webkul\BagistoApi\Metadata\PathGatedResourceNameCollectionFactory;
 use Webkul\BagistoApi\Metadata\SourceDocblockPropertyMetadataFactory;
@@ -147,6 +150,7 @@ use Webkul\BagistoApi\Routing\CustomIriConverter;
 use Webkul\BagistoApi\Serializer\AdminCollectionEnvelopeNormalizer;
 use Webkul\BagistoApi\Serializer\PaginationHeaderNormalizer;
 use Webkul\BagistoApi\Serializer\TokenHeaderDenormalizer;
+use Webkul\BagistoApi\Service\ConfigurableConfig;
 use Webkul\BagistoApi\Services\CartTokenService;
 use Webkul\BagistoApi\Services\StorefrontKeyService;
 use Webkul\BagistoApi\Services\TokenHeaderService;
@@ -284,6 +288,13 @@ class BagistoApiServiceProvider extends ServiceProvider
             PropertyMetadataFactoryInterface::class,
             function ($decorated) {
                 return new SourceDocblockPropertyMetadataFactory($decorated);
+            }
+        );
+
+        $this->app->extend(
+            PropertyMetadataFactoryInterface::class,
+            function ($decorated) {
+                return new AccessorNativeTypePropertyMetadataFactory($decorated);
             }
         );
 
@@ -671,6 +682,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         // Request-scoped: membership sets loaded once per request, reused across the page.
         $this->app->singleton(ProductRelationFlagResolver::class);
 
+        $this->app->scoped(ConfigurableConfig::class);
+
         $this->app->singleton(ProductRelationProvider::class, function ($app) {
             return new ProductRelationProvider(
                 $app->make(Pagination::class)
@@ -986,6 +999,18 @@ class BagistoApiServiceProvider extends ServiceProvider
             ->where('id', '[0-9]+')
             ->middleware(['Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey'])
             ->name('bagistoapi.customer-invoice-pdf');
+
+        Route::match(['get', 'post'], '/api/checkout/paypal-standard/{cartId}/{signature}/success', [PaypalStandardReturnController::class, 'success'])
+            ->where('cartId', '[0-9]+')
+            ->middleware('web')
+            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->name('bagistoapi.paypal-standard.success');
+
+        Route::match(['get', 'post'], '/api/checkout/paypal-standard/{cartId}/{signature}/cancel', [PaypalStandardReturnController::class, 'cancel'])
+            ->where('cartId', '[0-9]+')
+            ->middleware('web')
+            ->withoutMiddleware(VerifyCsrfToken::class)
+            ->name('bagistoapi.paypal-standard.cancel');
 
         Route::get('/api/downloadable/download-sample/{type}/{id}', DownloadSampleController::class)
             ->where('type', 'link|sample')

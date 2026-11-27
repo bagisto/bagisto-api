@@ -40,6 +40,9 @@ class CheckoutAddressPayloadOutput
     public ?string $billingCompanyName = null;
 
     #[ApiProperty(writable: false, readable: true)]
+    public ?string $billingVatId = null;
+
+    #[ApiProperty(writable: false, readable: true)]
     public ?string $billingAddress = null;
 
     #[ApiProperty(writable: false, readable: true)]

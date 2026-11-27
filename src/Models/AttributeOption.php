@@ -153,6 +153,24 @@ class AttributeOption extends \Webkul\Attribute\Models\AttributeOption
         return $this->id;
     }
 
+    /**
+     * The option label in the requested locale; Translatable resolves it and passes it in.
+     */
+    #[ApiProperty(description: 'The option label in the requested locale.')]
+    public function getLabelAttribute(?string $value = null): ?string
+    {
+        return $value;
+    }
+
+    /**
+     * Alt text for an image swatch in the requested locale; Translatable resolves it and passes it in.
+     */
+    #[ApiProperty(description: 'Alt text for an image swatch, in the requested locale.')]
+    public function getSwatchAltAttribute(?string $value = null): ?string
+    {
+        return $value;
+    }
+
     #[ApiProperty(readableLink: true)]
     public function getTranslations()
     {

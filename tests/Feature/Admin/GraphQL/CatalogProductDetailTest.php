@@ -189,6 +189,60 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertIsArray($restResponse->json('variants'));
     }
 
+    public function test_attribute_values_read_a_price_from_its_float_column(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $this->insertProductFlat($product);
+
+        $priceAttributeId = (int) DB::table('attributes')->where('code', 'price')->value('id');
+
+        DB::table('product_attribute_values')
+            ->where('product_id', $product->id)
+            ->where('attribute_id', $priceAttributeId)
+            ->delete();
+
+        DB::table('product_attribute_values')->insert([
+            'product_id' => $product->id,
+            'attribute_id' => $priceAttributeId,
+            'float_value' => 123.45,
+            'integer_value' => 7,
+            'unique_id' => 'default|en|'.$product->id.'|'.$priceAttributeId,
+        ]);
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminCatalogProduct(id: $id) {
+                attributeValues {
+                  edges {
+                    node {
+                      code
+                      type
+                      value
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->postJson('/api/admin/graphql', [
+            'query' => $query,
+            'variables' => ['id' => '/api/admin/catalog/products/'.$product->id],
+        ], $this->adminHeaders($admin));
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $price = collect($response->json('data.adminCatalogProduct.attributeValues.edges'))
+            ->pluck('node')
+            ->firstWhere('code', 'price');
+
+        expect($price)->not->toBeNull();
+        expect($price['type'])->toBe('price');
+        expect((float) $price['value'])->toBe(123.45);
+    }
+
     public function test_query_detail_unknown_id_returns_error(): void
     {
         $admin = $this->createAdmin();

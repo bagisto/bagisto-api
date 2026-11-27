@@ -152,17 +152,22 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install Playwright
+      - name: Install Node.js Dependencies
+        working-directory: bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
+        run: npm install
+
+      - name: Install Playwright Browsers
+        working-directory: bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright Tests (Shard ${{ matrix.shard }})
+        working-directory: bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
         env:
           BAGISTO_URL: ${{ env.BAGISTO_URL }}
           STOREFRONT_ACCESS_KEY: ${{ env.STOREFRONT_ACCESS_KEY }}
           ADMIN_INTEGRATION_TOKEN: ${{ env.ADMIN_INTEGRATION_TOKEN }}
           ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
-        run: |
-          cd bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
-          npm install
-          npx playwright install --with-deps chromium
-          npx playwright test tests --shard=${{ matrix.shard }} --reporter=list,html
+        run: npx playwright test tests --shard=${{ matrix.shard }} --reporter=list,html
 
       - name: Upload Playwright report
         if: always()

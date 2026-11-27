@@ -1035,17 +1035,7 @@ class CartTokenProcessor implements ProcessorInterface
         $cart = CartModel::find($cartId);
 
         if (! $cart) {
-            $cartData = new CartData;
-            $cartData->id = $cartId;
-            $cartData->itemsCount = 0;
-            $cartData->subtotal = 0;
-            $cartData->grandTotal = 0;
-            $cartData->taxAmount = 0;
-            $cartData->discountAmount = 0;
-            $cartData->shippingAmount = 0;
-            $cartData->items = [];
-
-            return (array) $cartData;
+            return (array) $this->emptyCartData($cartId);
         }
 
         return (array) CartData::fromModel($cart);
@@ -1067,14 +1057,37 @@ class CartTokenProcessor implements ProcessorInterface
             Shipping::collectRates();
         }
 
+        $cartId = $cart->id;
+
         CartFacade::collectTotals();
 
         $cart = CartFacade::getCart();
+
+        if (! $cart) {
+            return (array) $this->emptyCartData($cartId);
+        }
+
         $cart->load('items.product');
 
-        $cartData = CartData::fromModel($cart);
+        return (array) CartData::fromModel($cart);
+    }
 
-        return (array) $cartData;
+    /**
+     * The response for a cart that core removed while collecting totals because it had no items.
+     */
+    private function emptyCartData(int $cartId): CartData
+    {
+        $cartData = new CartData;
+        $cartData->id = $cartId;
+        $cartData->itemsCount = 0;
+        $cartData->subtotal = 0;
+        $cartData->grandTotal = 0;
+        $cartData->taxAmount = 0;
+        $cartData->discountAmount = 0;
+        $cartData->shippingAmount = 0;
+        $cartData->items = [];
+
+        return $cartData;
     }
 
     /**
@@ -1319,17 +1332,7 @@ class CartTokenProcessor implements ProcessorInterface
         $cart = CartModel::find($cartId);
 
         if (! $cart) {
-            $cartData = new CartData;
-            $cartData->id = $cartId;
-            $cartData->itemsCount = 0;
-            $cartData->subtotal = 0;
-            $cartData->grandTotal = 0;
-            $cartData->taxAmount = 0;
-            $cartData->discountAmount = 0;
-            $cartData->shippingAmount = 0;
-            $cartData->items = [];
-
-            return (array) $cartData;
+            return (array) $this->emptyCartData($cartId);
         }
 
         return (array) CartData::fromModel($cart);
@@ -1399,17 +1402,7 @@ class CartTokenProcessor implements ProcessorInterface
         $cart = CartModel::find($cartId);
 
         if (! $cart) {
-            $cartData = new CartData;
-            $cartData->id = $cartId;
-            $cartData->itemsCount = 0;
-            $cartData->subtotal = 0;
-            $cartData->grandTotal = 0;
-            $cartData->taxAmount = 0;
-            $cartData->discountAmount = 0;
-            $cartData->shippingAmount = 0;
-            $cartData->items = [];
-
-            return (array) $cartData;
+            return (array) $this->emptyCartData($cartId);
         }
 
         return (array) CartData::fromModel($cart);

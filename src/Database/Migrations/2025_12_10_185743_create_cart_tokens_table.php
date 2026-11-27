@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('guest_cart_tokens')) {
+            return;
+        }
+
         Schema::create('guest_cart_tokens', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('cart_id')->unique()->index();

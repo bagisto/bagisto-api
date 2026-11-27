@@ -336,6 +336,7 @@ class CustomerOrderTest extends RestApiTestCase
             'taxAmount', 'shippingAmount', 'discountAmount',
             'baseCurrencyCode', 'orderCurrencyCode',
             'createdAt', 'updatedAt',
+            'hasNonCancelableBooking',
         ];
 
         foreach ($expectedKeys as $key) {
@@ -469,5 +470,61 @@ class CustomerOrderTest extends RestApiTestCase
         ] as $field) {
             expect($json)->toHaveKey($field);
         }
+    }
+
+    /**
+     * Give an order a booking item the customer may not cancel.
+     */
+    private function addNonCancelableBooking(Order $order, Product $product): void
+    {
+        $item = OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'TEST-BOOKING-'.$order->id,
+            'type' => 'booking',
+            'name' => 'Test Booking',
+        ]);
+
+        DB::table('bookings')->insert([
+            'product_id' => $product->id,
+            'order_item_id' => $item->id,
+            'order_id' => $order->id,
+            'qty' => 1,
+            'allow_cancellation' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Test: the list flags only the order that holds a non-cancelable booking.
+     */
+    public function test_list_flags_non_cancelable_booking(): void
+    {
+        $testData = $this->createTestData();
+        $this->addNonCancelableBooking($testData['order1'], $testData['product']);
+
+        $response = $this->authenticatedGet($testData['customer'], '/api/shop/customer-orders');
+
+        $response->assertOk();
+        $flags = array_column($response->json(), 'hasNonCancelableBooking', 'id');
+
+        expect($flags[$testData['order1']->id])->toBeTrue()
+            ->and($flags[$testData['order2']->id])->toBeFalse();
+    }
+
+    /**
+     * Test: the detail carries the non-cancelable booking flag.
+     */
+    public function test_detail_flags_non_cancelable_booking(): void
+    {
+        $testData = $this->createTestData();
+        $this->addNonCancelableBooking($testData['order1'], $testData['product']);
+
+        $flagged = $this->authenticatedGet($testData['customer'], '/api/shop/customer-orders/'.$testData['order1']->id);
+        $plain = $this->authenticatedGet($testData['customer'], '/api/shop/customer-orders/'.$testData['order2']->id);
+
+        expect($flagged->json('hasNonCancelableBooking'))->toBeTrue()
+            ->and($plain->json('hasNonCancelableBooking'))->toBeFalse();
     }
 }

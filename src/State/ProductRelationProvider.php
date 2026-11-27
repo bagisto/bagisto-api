@@ -37,6 +37,7 @@ class ProductRelationProvider implements ProviderInterface
             'relatedProducts' => 'related_products',
             'superAttributes' => 'super_attributes',
             'reviews' => 'reviews',
+            'approvedReviews' => 'approved_reviews',
             'bookingProducts' => 'booking_products',
         ];
 

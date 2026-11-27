@@ -567,6 +567,18 @@ class CartTest extends RestApiTestCase
         expect((int) $data['items'][0]['quantity'])->toBe(2);
     }
 
+    public function test_read_cart_returns_an_empty_cart_for_a_fresh_guest_token(): void
+    {
+        $this->seedRequiredData();
+        $token = $this->createGuestCartToken();
+
+        $response = $this->postWithToken('/api/shop/cart', $token, []);
+
+        $response->assertSuccessful();
+        expect($response->json('itemsCount'))->toBe(0);
+        expect($response->json('items'))->toBe([]);
+    }
+
     public function test_read_cart_requires_auth(): void
     {
         $response = $this->publicPost('/api/shop/cart', []);

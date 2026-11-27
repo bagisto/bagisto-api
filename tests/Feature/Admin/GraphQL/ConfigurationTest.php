@@ -2,8 +2,8 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Webkul\Admin\Services\CacheManagerService;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Role;
 
@@ -237,14 +237,8 @@ class ConfigurationTest extends AdminApiTestCase
 
     public function test_cache_mutation_runs_the_action(): void
     {
-        $this->mock(CacheManagerService::class, function ($mock) {
-            $mock->shouldReceive('execute')->once()->with('clear-views')->andReturn([
-                'success' => true,
-                'message' => 'Action "view:clear" executed successfully.',
-                'output' => 'Compiled views cleared successfully.',
-                'command' => 'view:clear',
-            ]);
-        });
+        Artisan::shouldReceive('call')->once()->with('view:clear')->andReturn(0);
+        Artisan::shouldReceive('output')->andReturn('Compiled views cleared successfully.');
 
         $admin = $this->createAdmin();
 

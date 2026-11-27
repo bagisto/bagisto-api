@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
@@ -383,6 +384,8 @@ class CustomerProfileTest extends GraphQLTestCase
                 'lastName' => 'Change',
             ],
         ]);
+
+        Auth::forgetGuards();
 
         $readQuery = <<<'GQL'
             query readProfile {

@@ -5,6 +5,37 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `configurationConfig` on the storefront `Product` (GraphQL): the storefront product page's whole option-selector configuration as JSON — the super attributes with translated labels, swatch type, swatch value and alt text, the options each saleable variant uses (`index`), and each variant's prices, images and videos. It is built by the same helper the web page uses, so an app can render the selector exactly as the web does.
+- Swatch data on a configurable product's super attributes: `swatchType` on each attribute, and `swatchValueUrl` (the image swatch URL), `swatchAlt` and `products` (the variants carrying the option) on each option. On `GET /api/shop/products/{id}` (`superAttributes`), in `superAttributeOptions`, and on the GraphQL `superAttributes` options.
+- `label` and `swatchAlt` on `AttributeOption`, in the requested locale.
+- Mobile apps can now complete a Stripe, PhonePe, PayU or PayGlocal payment and learn which order was placed. `createCheckoutPaymentInitiation` and `POST /api/shop/checkout-payments/initiate` return a `reference` for the payment, and for redirect and form payments the `successUrl` and `failureUrl` the WebView lands on when the gateway returns. Send that `reference` to `createCheckoutPaymentConfirmation` or `POST /api/shop/checkout-payments/confirm`: the response carries the order the gateway's own callback placed, with `paymentStatus: success`, or `paymentStatus: pending` while no order exists yet. The gateway still verifies the payment on the server, so nothing the app reports is trusted.
+- `paymentStatus` on the payment confirmation, `success` or `pending`.
+- `billingVatId` on checkout addresses (`POST /api/shop/checkout-addresses`, `createCheckoutAddress`), saved on the billing address and returned with it. It is checked against the billing country's VAT format, as the storefront checkout does. Only the billing address carries a VAT number, matching the storefront.
+- `hasNonCancelableBooking` on customer orders: `true` when the order holds a booking item the customer may not cancel, using the same rule as the storefront. On `customerOrders` and `customerOrder` (GraphQL), and on `GET /api/shop/customer-orders` and `GET /api/shop/customer-orders/{id}`.
+
+### Changed
+
+- PayPal Standard confirmation no longer places the order from an empty body. The order is placed when PayPal returns the customer to `successUrl`; send the initiation `reference` to read it. Before, confirming after a cancelled payment still placed an unpaid order.
+
+### Fixed
+
+- Installing on a store with a database table prefix (`DB_PREFIX`) failed at the admin-token migration with `Unknown table '..._KEY_COLUMN_USAGE' in information_schema`. The migrations now work with or without a prefix, and the admin-token foreign key names fit MySQL's 64-character limit for any prefix core Bagisto supports.
+- `bagisto-api-platform:install` no longer leaves the store without `config/api-platform.php` when a migration fails: the config is copied before migrations run. Migrations now run with `--force`, so the installer no longer stops on the production confirmation prompt, and a failed migration reports its real error.
+- `bagisto-api-platform:install` failed at the migration step on a fresh store with `Target [Webkul\RMA\Contracts\RMA] is not instantiable`. The installer adds API Platform to `dont-discover` but left the cached package list in place, so API Platform stayed auto-discovered and booted before core's model bindings. With the config already published, that boot built the GraphQL schema and failed. The installer now refreshes the package list right after updating `composer.json`.
+- `bagisto-api-platform:install` stopped at the migration step on a fresh database with `The process "'php' 'artisan' 'migrate' '--force'" exceeded the timeout of 60 seconds.` The migration step no longer has a time limit. A rerun after an interrupted install no longer fails with `Duplicate column name 'allowed_ips'` or `Table already exists`: the package migrations skip a column or table that is already there.
+- A mobile app paying with PayPal Standard ended on a 500 error after PayPal returned the customer, because the storefront return page reads the cart from a browser session that the app's WebView does not have. PayPal now returns the customer to the API, which places the order pending, as the storefront does, and then redirects to the same `successUrl` the other gateways use. A cancelled payment places no order and redirects to `failureUrl`. Confirm with the initiation `reference`. The response carries the order with `paymentStatus: pending` until PayPal's IPN records the payment, then `paymentStatus: success`.
+- Confirming a payment twice no longer fails or places a second order. Sent with the initiation `reference`, the confirmation returns the order already placed for the cart, for every payment method.
+- Reading a cart that has no items (`POST /api/shop/cart`, `createReadCart`), such as a fresh guest cart, failed with HTTP 500 (`Call to a member function load() on null`). It now returns an empty cart.
+- The admin product `attributeValues { value }` (GraphQL) read a `price` attribute from the wrong column, so it returned a value unrelated to the stored price. It now reads each attribute type from the same column core stores it in.
+- Updating the admin account (`PUT /api/admin/account`, `updateAdminProfile`) without sending `email`, for example to change only the name or the password, was rejected with "The email field must be a valid email address." The email is now optional on update, as the other fields are.
+- `createProductReview` required `name` even for a signed-in customer, whose name is always taken from the account. `name` is now optional in the GraphQL input, matching the REST endpoint.
+- The GraphQL `superAttributes { options }` connection returned `null`, so an app could not read a configurable product's option labels or swatches.
+- The configurable option selector now matches the storefront: `index`, `combinations`, `superAttributeOptions` and `superAttributes` count only saleable variants, list options in their admin sort order and use translated labels. A disabled or out-of-stock variant's option was offered before, and labels were the admin names in every locale.
+
 ## [2.4.10] - 2026-10-15
 
 Security and correctness release from the Bagisto v2.4.10 API audit. Tested against Bagisto v2.4.10.

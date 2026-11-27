@@ -12,6 +12,7 @@ use ApiPlatform\OpenApi\Model\Operation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderDetailDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderListDto;
 use Webkul\BagistoApi\State\CustomerOrderProvider;
@@ -143,6 +144,43 @@ class CustomerOrder extends Model
     public function getId(): int
     {
         return $this->id;
+    }
+
+    /**
+     * True when the order holds a booking item the customer may not cancel.
+     *
+     * Same rule as Webkul\Sales\Models\OrderItem::isCancelableByCustomer(). A value preloaded by the
+     * provider is used as-is, so a listing does not query once per order.
+     */
+    public function getHasNonCancelableBookingAttribute(): bool
+    {
+        if (array_key_exists('has_non_cancelable_booking', $this->attributes)) {
+            return (bool) $this->attributes['has_non_cancelable_booking'];
+        }
+
+        return in_array((int) $this->id, static::nonCancelableBookingOrderIds([(int) $this->id]), true);
+    }
+
+    /**
+     * Return the ids, out of the given ones, of orders that hold a booking the customer may not cancel.
+     *
+     * @param  array<int, int>  $orderIds
+     * @return array<int, int>
+     */
+    public static function nonCancelableBookingOrderIds(array $orderIds): array
+    {
+        if (empty($orderIds)) {
+            return [];
+        }
+
+        return DB::table('order_items')
+            ->join('bookings', 'bookings.order_item_id', '=', 'order_items.id')
+            ->whereIn('order_items.order_id', $orderIds)
+            ->where('bookings.allow_cancellation', 0)
+            ->distinct()
+            ->pluck('order_items.order_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
     }
 
     /**
